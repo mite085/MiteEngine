@@ -1,0 +1,129 @@
+#ifndef MITE_APPLICATION
+#define MITE_APPLICATION
+
+#include "headers.h"
+#include "timer/timer.h"
+#include "event/dispatcher.h"
+
+#include "assert_manager.h"
+#include "input_system.h"
+#include "material_system.h"
+#include "opengl_renderer/opengl_renderer.h"
+#include "scene_core.h"
+#include "scene_system.h"
+#include "scene_view.h"
+#include "glfw_window/glfw_window.h"
+
+namespace mite {
+
+// 当前帧统计信息
+struct FrameStatistics {
+  float fps = 0.0f;
+  float frameTime = 0.0f;
+  uint32_t drawCalls = 0;
+  uint32_t entityCount = 0;
+  size_t gpuMemoryUsage = 0;
+};
+
+// Editor状态
+struct EditorState {
+  bool showDemoWindow = false;
+  bool showMetricsWindow = false;
+  bool showSceneHierarchy = true;
+  bool showPropertiesPanel = true;
+  bool showMaterialEditor = false;
+  bool showPreviewWindow = false;
+  bool showDebugOverlay = true;
+};
+
+class MiteApplication {
+ public:
+  MiteApplication();
+  ~MiteApplication();
+
+  // 主循环控制
+  void run();
+  void close();
+
+  // 场景管理
+  void NewScene();
+  void LoadScene(const std::string &filepath);
+  void SaveScene(const std::string &filepath);
+
+  // 获取子系统
+  Window* GetWindow() const { return m_Window.get(); }
+  Renderer* GetRenderer() const { return m_Renderer.get(); }
+  Scene* GetScene() const { return m_Scene.get(); }
+  //AssetManager* GetAssetManager() const { return m_AssetManager.get(); }
+  //MaterialSystem* GetMaterialSystem() const { return m_MaterialSystem.get(); }
+
+
+ private:
+  // 初始化与清理
+  void Initialize();
+  void InitializeWithOpenGL();
+  void Cleanup();
+  void LoadDefaultScene();
+  void InitializeSubsystems();
+
+  // 帧循环相关
+  void BeginFrame();
+  void Update();
+  void Render();
+  void EndFrame();
+  void LimitFrameRate();
+  void UpdateFrameStats();
+
+  // 渲染相关
+  void RenderUI();
+  void RenderSceneHierarchy();
+  void RenderPropertiesPanel();
+  void RenderViewport();
+  void RenderPreviewWindow();
+  void RenderMainMenu();
+
+  // 更新相关
+  void UpdateEditorState();
+  void UpdateAnimations();
+  void HandlePendingOperations();
+
+  // 事件处理
+  bool OnEvent(Event &event) const;
+  void OnWindowResize(uint32_t width, uint32_t height);
+  void OnWindowClose();
+
+ private:
+  // 子系统
+  std::unique_ptr<Window> m_Window;
+  std::unique_ptr<Renderer> m_Renderer;
+  std::unique_ptr<Scene> m_Scene;
+  std::unique_ptr<SceneView> m_SceneView;
+  //std::unique_ptr<UIManager> m_UIManager;
+  //std::unique_ptr<AssetManager> m_AssetManager;
+  //std::unique_ptr<MaterialSystem> m_MaterialSystem;
+  std::unique_ptr<InputSystem> m_InputSystem;
+
+  // 状态信息
+  WindowConfig m_Config;
+  FrameStatistics m_FrameStats;
+  EditorState m_EditorState;
+  bool m_ShowMainViewport = true;
+  bool m_ShowDebug = true;
+  bool m_ShouldClose = false;
+  bool m_IsInitialized = false;
+  float m_TargetFrameRate = 60.0f;
+  Timer m_Timer;
+
+  // 待处理操作队列
+  std::vector<std::function<void()>> m_PendingOperations;
+  std::mutex m_PendingOperationsMutex;
+
+  // 日志系统
+  Logger m_logger;
+};
+
+
+
+}  // namespace mite
+
+#endif
