@@ -474,7 +474,6 @@ void GLFWWindow::WindowCloseCallback(GLFWwindow *window)
 
   // 触发事件回调
   if (data->callback) {
-    struct WindowCloseEvent {};
     WindowCloseEvent event;
     data->callback(&event);
   }

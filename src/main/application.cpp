@@ -59,8 +59,7 @@ void MiteApplication::InitializeWithOpenGL()
   m_Config = WindowConfig();
   m_Window = Window::Create();
   m_Window->Initialize(m_Config);
-  // TODO：EVENT事件触发存在问题
-  //m_Window->SetEventCallback(BindEventFn(this, &MiteApplication::OnEvent));
+  m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 
   // 初始化渲染器
   m_Renderer = std::make_unique<OpenGLRenderer>();
@@ -194,9 +193,13 @@ void MiteApplication::OnEvent(Event &event) const
   // }
   EventDispatcher dispatcher(event);
 
+  dispatcher.Dispatch<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
 }
 
 void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
 
-void MiteApplication::OnWindowClose() {}
+bool MiteApplication::OnWindowClose(WindowCloseEvent& e) const {
+    m_logger->info("Window close event triggered.");
+    return true;
+}
 }  // namespace mite

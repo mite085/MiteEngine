@@ -92,7 +92,7 @@ class Window {
 // TODO: 窗口事件具体实现
 class WindowCloseEvent : public Event {
  public:
-  WindowCloseEvent() {}
+  WindowCloseEvent() = default;
   EVENT_CLASS_TYPE(WindowClose)
   EVENT_CLASS_CATEGORY(EventCategoryWindow)
 };
@@ -110,19 +110,19 @@ class WindowResizeEvent : public Event {
 };
 
 class WindowFocusEvent : public Event {
-  WindowFocusEvent() {}
+  WindowFocusEvent() = default;
   EVENT_CLASS_TYPE(WindowFocus)
   EVENT_CLASS_CATEGORY(EventCategoryWindow)
 };
 
 class WindowLostFocusEvent : public Event {
-  WindowLostFocusEvent() {}
+  WindowLostFocusEvent() = default;
   EVENT_CLASS_TYPE(WindowLostFocus)
   EVENT_CLASS_CATEGORY(EventCategoryWindow)
 };
 
 class WindowMovedEvent : public Event {
-  WindowMovedEvent() {}
+  WindowMovedEvent() = default;
   EVENT_CLASS_TYPE(WindowMoved)
   EVENT_CLASS_CATEGORY(EventCategoryWindow)
 };

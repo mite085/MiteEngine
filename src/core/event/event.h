@@ -41,17 +41,15 @@ class Event {
   bool handled = false;  // 标记事件是否已被处理
 };
 
-// 将成员函数绑定为事件回调
-template<typename T, typename EventT>
-auto BindEventFn(T *instance, bool (T::*fn)(EventT &))
-{
-  return [instance, method](Event &e) -> bool {
-    if (e.GetEventType() == EventT::GetStaticType()) {
-      return (instance->*method)(static_cast<EventT &>(e));
-    }
-    return false;
-  };
+// 通用成员函数绑定（支持 void* 回调）
+#define BIND_EVENT_FN(fn) [this](void* payload) -> void { \
+    using EventT = std::remove_reference_t<decltype(*static_cast<Event*>(payload))>; \
+    if (auto* event = dynamic_cast<EventT*>(static_cast<Event*>(payload))) { \
+        this->fn(*event); \
+    } \
 }
+
+
 
 }  // namespace mite
 #endif
