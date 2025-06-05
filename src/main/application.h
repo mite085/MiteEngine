@@ -88,9 +88,9 @@ class MiteApplication {
   void HandlePendingOperations();
 
   // 事件处理
-  void OnEvent(Event &event) const;
+  void OnEvent(Event &event);
   void OnWindowResize(uint32_t width, uint32_t height);
-  bool OnWindowClose(WindowCloseEvent& e) const;
+  bool OnWindowClose(WindowCloseEvent& e);
 
  private:
   // 子系统
@@ -105,11 +105,12 @@ class MiteApplication {
 
   // 状态信息
   WindowConfig m_Config;
+  bool m_ShouldClose = false;
+  // TODO: 以下状态信息暂未启用
   FrameStatistics m_FrameStats;
   EditorState m_EditorState;
   bool m_ShowMainViewport = true;
   bool m_ShowDebug = true;
-  bool m_ShouldClose = false;
   bool m_IsInitialized = false;
   float m_TargetFrameRate = 60.0f;
   Timer m_Timer;

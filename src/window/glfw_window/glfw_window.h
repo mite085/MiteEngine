@@ -56,7 +56,11 @@ class GLFWWindow : public Window {
 
   // 窗口数量计数
   static const uint32_t GLFWWindowCount();
-  private:
+
+  // 回调设置
+  void SetEventCallback(const EventCallbackFn& callback) override;
+
+private:
 
   // 初始化GLFW库（静态）
   static void InitGLFW();

@@ -4,7 +4,6 @@
 #include "headers.h"
 
 namespace mite {
-
 // Window类型
 enum WindowType {
   GLFWWINDOW,
@@ -69,17 +68,13 @@ class Window {
 
   // 回调设置
   using EventCallbackFn = std::function<void(void *)>;
-  void SetEventCallback(const EventCallbackFn &callback)
-  {
-    m_EventCallback = callback;
-  }
+  virtual void SetEventCallback(const EventCallbackFn &callback) = 0;
 
   // 工厂方法 - 创建特定类型的窗口
   static std::unique_ptr<Window> Create(const WindowConfig &config = WindowConfig());
 
  protected:
   WindowConfig m_Config;
-  EventCallbackFn m_EventCallback;
 
   // 窗口状态标志
   bool m_Initialized = false;
@@ -99,34 +94,84 @@ class WindowCloseEvent : public Event {
 
 class WindowResizeEvent : public Event {
  public:
-  WindowResizeEvent(unsigned int width, unsigned int height) : m_Width(width), m_Height(height) {}
-  unsigned int GetWidth() const;
-  unsigned int GetHeight() const;
+  WindowResizeEvent(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) {}
+  uint32_t GetWidth() const;
+  uint32_t GetHeight() const;
   EVENT_CLASS_TYPE(WindowResize)
   EVENT_CLASS_CATEGORY(EventCategoryWindow)
 
  private:
-  unsigned int m_Width, m_Height;
+  uint32_t m_Width, m_Height;
 };
 
 class WindowFocusEvent : public Event {
+ public:
   WindowFocusEvent() = default;
   EVENT_CLASS_TYPE(WindowFocus)
   EVENT_CLASS_CATEGORY(EventCategoryWindow)
 };
 
 class WindowLostFocusEvent : public Event {
+ public:
   WindowLostFocusEvent() = default;
   EVENT_CLASS_TYPE(WindowLostFocus)
   EVENT_CLASS_CATEGORY(EventCategoryWindow)
 };
 
 class WindowMovedEvent : public Event {
+ public:
   WindowMovedEvent() = default;
   EVENT_CLASS_TYPE(WindowMoved)
   EVENT_CLASS_CATEGORY(EventCategoryWindow)
 };
 
+class MouseMoveEvent : public Event {
+ public:
+  MouseMoveEvent(double xpos, double ypos) : xpos(xpos), ypos(ypos) {}
+  double GetXPos() const;
+  double GetYPos() const;
+
+  EVENT_CLASS_TYPE(MouseMoved)
+  EVENT_CLASS_CATEGORY(EventCategoryMouse)
+ private:
+  double xpos, ypos;
+};
+
+class MouseButtonEvent : public Event {
+ public:
+  MouseButtonEvent(int button, int action, int mods, double xpos, double ypos)
+      : button(button), action(action), mods(mods), xpos(xpos), ypos(ypos)
+  {
+  }
+  int GetButton() const;
+  int GetAction() const;
+  int GetMods() const;
+  double GetXPos() const;
+  double GetYPos() const;
+
+  EVENT_CLASS_TYPE(MouseButtonReleased)
+  EVENT_CLASS_CATEGORY(EventCategoryMouse)
+ private:
+  int button, action, mods;
+  double xpos, ypos;
+};
+
+class KeyEvent : public Event {
+ public:
+  KeyEvent(int key, int scancode, int action, int mods)
+      : key(key), scancode(scancode), action(action), mods(mods)
+  {
+  }
+  int GetKey() const;
+  int GetScancode() const;
+  int GetAction() const;
+  int GetMods() const;
+
+  EVENT_CLASS_TYPE(KeyReleased)
+  EVENT_CLASS_CATEGORY(EventCategoryMouse)
+ private:
+  int key, scancode, action /*GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT*/ , mods/*修饰键状态*/;
+};
 }  // namespace mite
 
 #endif

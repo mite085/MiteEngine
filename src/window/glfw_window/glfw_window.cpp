@@ -315,6 +315,10 @@ const uint32_t GLFWWindow::GLFWWindowCount()
 {
   return s_GLFWWindowCount;
 }
+void GLFWWindow::SetEventCallback(const EventCallbackFn& callback)
+{
+    m_WindowData.callback = callback;
+}
 void GLFWWindow::InitWindowData(const WindowConfig &config) {
   m_WindowData.title      = config.title;
   m_WindowData.width      = config.width;
@@ -360,12 +364,7 @@ void GLFWWindow::FramebufferSizeCallback(GLFWwindow *window, int width, int heig
 
   // 如果有事件回调，触发它
   if (data->callback) {
-    // 可以定义一个更具体的事件结构体来传递更多信息
-    struct FramebufferResizeEvent {
-      uint32_t width;
-      uint32_t height;
-    };
-    FramebufferResizeEvent event{static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+    WindowResizeEvent event{static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
     data->callback(&event);
   }
 
@@ -387,12 +386,6 @@ void GLFWWindow::KeyCallback(GLFWwindow *window, int key, int scancode, int acti
 
   // 触发事件回调
   if (data->callback) {
-    struct KeyEvent {
-      int key;
-      int scancode;
-      int action;  // GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT
-      int mods;    // 修饰键状态
-    };
     KeyEvent event{key, scancode, action, mods};
     data->callback(&event);
   }
@@ -417,14 +410,6 @@ void GLFWWindow::MouseButtonCallback(GLFWwindow *window, int button, int action,
 
   // 触发事件回调
   if (data->callback) {
-    struct MouseButtonEvent {
-      int button;
-      int action;
-      int mods;
-      double x;
-      double y;
-    };
-
     double x, y;
     glfwGetCursorPos(window, &x, &y);
 
@@ -449,10 +434,6 @@ void GLFWWindow::CursorPosCallback(GLFWwindow *window, double xpos, double ypos)
 
   // 触发事件回调
   if (data->callback) {
-    struct MouseMoveEvent {
-      double x;
-      double y;
-    };
     MouseMoveEvent event{xpos, ypos};
     data->callback(&event);
   }

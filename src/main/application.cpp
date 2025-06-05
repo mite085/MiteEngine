@@ -14,7 +14,7 @@ void MiteApplication::run()
 {
   Initialize();
 
-  while (!m_Window->WindowShouldClose()) {
+  while (!m_ShouldClose) {
     // 1、处理窗口事件
     m_Window->PollEvents();
 
@@ -180,7 +180,7 @@ void MiteApplication::UpdateAnimations() {}
 
 void MiteApplication::HandlePendingOperations() {}
 
-void MiteApplication::OnEvent(Event &event) const
+void MiteApplication::OnEvent(Event &event)
 {
   //// 优先让UI消费事件
   // if (m_UIManager->OnEvent(event)) {
@@ -198,8 +198,9 @@ void MiteApplication::OnEvent(Event &event) const
 
 void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
 
-bool MiteApplication::OnWindowClose(WindowCloseEvent& e) const {
+bool MiteApplication::OnWindowClose(WindowCloseEvent& e) {
     m_logger->info("Window close event triggered.");
+    m_ShouldClose = true;
     return true;
 }
 }  // namespace mite
