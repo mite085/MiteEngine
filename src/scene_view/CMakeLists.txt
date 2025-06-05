@@ -18,7 +18,6 @@ add_library(${SCENE_VIEW_LIB_NAME}  STATIC  ${SCENE_VIEW_INTERFACE_SRCS})
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${SCENE_VIEW_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
-    PRIVATE "../../thirdparty/"
 )
 
 # 链接核心库

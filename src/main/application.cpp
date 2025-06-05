@@ -181,7 +181,7 @@ void MiteApplication::UpdateAnimations() {}
 
 void MiteApplication::HandlePendingOperations() {}
 
-bool MiteApplication::OnEvent(Event &event) const
+void MiteApplication::OnEvent(Event &event) const
 {
   //// 优先让UI消费事件
   // if (m_UIManager->OnEvent(event)) {

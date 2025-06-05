@@ -31,6 +31,9 @@ set(THIRDPARTY_FOLDER "ThirdParty")
 
 # 添加第三方目录
 add_subdirectory(thirdparty/glfw)
+include_directories(thirdparty/glm)
+include_directories(thirdparty/glad)
+include_directories(thirdparty/imgui)
 add_subdirectory(thirdparty/spdlog)
 
 # 为第三方库设置文件夹属性

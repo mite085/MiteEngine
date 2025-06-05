@@ -20,7 +20,6 @@ add_library(${MATERIAL_LIB_NAME}
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${MATERIAL_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
-    PRIVATE "../../thirdparty/"
 )
 
 target_link_libraries(${MATERIAL_LIB_NAME}

@@ -26,7 +26,6 @@ add_library(${RENDERER_LIB_NAME}  STATIC  ${RENDERER_INTERFACE_SRCS}  ${OPENGL_R
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${RENDERER_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
-    PRIVATE "../../thirdparty/"
 )
 
 # 链接核心库

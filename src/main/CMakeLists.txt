@@ -20,7 +20,6 @@ endif()
 # 设置头文件路径
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
-    "../../thirdparty/"
     "../../thirdparty/imgui/"
 )
 

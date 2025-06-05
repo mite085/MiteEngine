@@ -4,7 +4,7 @@
 #include "headers.h"
 
 #include "renderer.h"
-#include "glad/glad.h"
+#include "glad.h"
 #include "GLFW/glfw3.h"// 必须在GLAD加载库之后
 
 namespace mite {
