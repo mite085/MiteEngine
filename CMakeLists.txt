@@ -30,7 +30,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(THIRDPARTY_FOLDER "ThirdParty")
 
 # 添加第三方目录
-add_subdirectory(thirdparty/glfw-3.4)
+add_subdirectory(thirdparty/glfw)
 add_subdirectory(thirdparty/spdlog)
 
 # 为第三方库设置文件夹属性
