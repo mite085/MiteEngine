@@ -182,18 +182,13 @@ void MiteApplication::HandlePendingOperations() {}
 
 void MiteApplication::OnEvent(Event &event)
 {
-  //// 优先让UI消费事件
-  // if (m_UIManager->OnEvent(event)) {
-  //   return;
-  // }
-
-  //// 未被UI消费的事件交给场景/摄像机
-  // if (auto *camera = m_SceneCore->GetMainCamera()) {
-  //   camera->OnEvent(event);  // 例如处理WASD移动
-  // }
+  // 事件总线，由分发器进行事件分发
   EventDispatcher dispatcher(event);
 
+  // 将WindowCloseEvent事件分发给Application::OnWindowClose函数
   dispatcher.Dispatch<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
+
+
 }
 
 void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}

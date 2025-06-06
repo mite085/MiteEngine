@@ -49,7 +49,5 @@ class Event {
     } \
 }
 
-
-
 }  // namespace mite
 #endif
