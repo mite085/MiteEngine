@@ -5,10 +5,16 @@ set(INPUT_LIB_NAME MiteEngine_Input)
 
 # 创建源代码组(筛选器)
 set(INPUT_SRCS
-    input_system.cpp
-    input_system.h
+    input.h
+    input.cpp
+    input_context.h
+    input_context.cpp
+    input_manager.h
+    input_manager.cpp
+    input_events.h
+    input_events.cpp
 )
-source_group("input_system" FILES ${INPUT_SRCS})
+source_group("input" FILES ${INPUT_SRCS})
 
 
 # 创建静态库

@@ -2,11 +2,10 @@
 #define MITE_APPLICATION
 
 #include "headers.h"
-#include "timer/timer.h"
 #include "event/dispatcher.h"
 
 #include "assert_manager.h"
-#include "input_system.h"
+#include "input.h"
 #include "material_system.h"
 #include "opengl_renderer/opengl_renderer.h"
 #include "scene_core.h"
@@ -101,7 +100,7 @@ class MiteApplication {
   //std::unique_ptr<UIManager> m_UIManager;
   //std::unique_ptr<AssetManager> m_AssetManager;
   //std::unique_ptr<MaterialSystem> m_MaterialSystem;
-  std::unique_ptr<InputSystem> m_InputSystem;
+  //std::unique_ptr<InputSystem> m_InputSystem;
 
   // 状态信息
   WindowConfig m_Config;
@@ -113,7 +112,6 @@ class MiteApplication {
   bool m_ShowDebug = true;
   bool m_IsInitialized = false;
   float m_TargetFrameRate = 60.0f;
-  Timer m_Timer;
 
   // 待处理操作队列
   std::vector<std::function<void()>> m_PendingOperations;
