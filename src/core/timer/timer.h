@@ -1,9 +1,14 @@
 #ifndef MITE_TIMER
 #define MITE_TIMER
 
-#include "headers.h"
+#include <chrono>
+#include <unordered_map>
 
 namespace mite {
+
+// Timer仅负责精确计时，
+// 用于局部计时器和性能分析。
+// 一般情况下Time模块已经足够使用，该模块暂时保留
 class Timer {
  public:
   Timer();

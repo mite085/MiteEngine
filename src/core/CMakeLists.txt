@@ -55,6 +55,12 @@ set(EVENT_SRCS
 )
 source_group("event" FILES ${EVENT_SRCS})
 
+set(TIME_SRCS
+    time/time.h
+    time/time.cpp
+)
+source_group("time" FILES ${TIME_SRCS})
+
 set(TIMER_SRCS
     timer/timer.h
     timer/timer.cpp
@@ -69,6 +75,7 @@ add_library(${CORE_LIB_NAME}
     ${HEADERS_SRCS}  
     ${LOGGER_SRCS} 
     ${EVENT_SRCS}
+    ${TIME_SRCS}
     ${TIMER_SRCS}
 )
 

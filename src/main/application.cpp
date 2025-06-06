@@ -15,11 +15,14 @@ void MiteApplication::run()
   Initialize();
 
   while (!m_ShouldClose) {
+    // Time系统更新时间
+    Time::Update();
+
     // 1、处理窗口事件
     m_Window->PollEvents();
 
     // 2、更新输入系统
-    m_InputSystem->Update();
+    //m_InputSystem->Update();
 
     // 3、开始新的一帧
     BeginFrame();
