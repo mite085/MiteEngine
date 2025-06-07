@@ -31,4 +31,5 @@ target_link_libraries(${WINDOW_LIB_NAME}
     glfw
     spdlog::spdlog
     MiteEngine_Core
+    MiteEngine_Input
 )
