@@ -22,7 +22,7 @@ void MiteApplication::run()
     m_Window->PollEvents();
 
     // 2、更新输入系统
-    //m_InputSystem->Update();
+    // m_InputSystem->Update();
 
     // 3、开始新的一帧
     BeginFrame();
@@ -50,39 +50,89 @@ void MiteApplication::SaveScene(const std::string &filepath) {}
 
 void MiteApplication::Initialize()
 {
-  // TODO: 目前仅实现OpenGL模式，预留添加新模式接口
-  InitializeWithOpenGL();
-}
+  // 目前仅实现OpenGL模式，预留添加新模式接口
+  InitializeWindowWithOpenGL();
 
-void MiteApplication::InitializeWithOpenGL()
-{ 
-  m_logger->info("Initialize applicaton with OpenGL mode");
+  InitializeRenderWithOpenGL();
 
-  // 初始化窗口
-  m_Config = WindowConfig();
-  m_Window = Window::Create();
-  m_Window->Initialize(m_Config);
-  m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+  InitializeUI();
 
-  // 初始化渲染器
-  m_Renderer = std::make_unique<OpenGLRenderer>();
-  m_Renderer->Init(GetWindow());
+  InitializeAssertManager();
 
-  // 初始化场景系统
-  m_Scene = std::make_unique<Scene>();
-  m_SceneView = std::make_unique<SceneView>(*m_Scene.get());
+  InitializeMaterialSystem();
 
-  // TODO：初始化UI
-
-  // TODO：初始化资产和材质系统
+  InitializeScene();
 
   // 加载默认场景
   LoadDefaultScene();
 }
 
-void MiteApplication::Cleanup() {
+void MiteApplication::InitializeWindowWithOpenGL()
+{
+  m_logger->info("Initializing window with OpenGL mode");
+
+  // 初始化OpenGL窗口
+  m_Config = WindowConfig();
+  m_Window = Window::Create();
+  m_Window->Initialize(m_Config);
+  m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+}
+
+void MiteApplication::InitializeRenderWithOpenGL()
+{
+  m_logger->info("Initializing renderer with OpenGL mode");
+
+  // 初始化OpenGL渲染器
+  m_Renderer = std::make_unique<OpenGLRenderer>();
+  m_Renderer->Init(GetWindow());
+}
+
+void MiteApplication::InitializeUI()
+{
+  m_logger->info("Initializing user interface");
+
+  // TODO：初始化UI
+}
+
+void MiteApplication::InitializeScene()
+{
+  m_logger->info("Initializing scene");
+
+  // 初始化场景系统
+  m_Scene = std::make_unique<Scene>();
+  m_SceneView = std::make_unique<SceneView>(*m_Scene.get());
+}
+
+void MiteApplication::InitializeAssertManager()
+{
+  m_logger->info("Initializing assert manager");
+
+  // TODO：初始化资产管理系统
+}
+
+void MiteApplication::InitializeMaterialSystem()
+{
+  m_logger->info("Initializing material system");
+
+  // TODO：初始化材质系统
+}
+
+void MiteApplication::Cleanup()
+{
   m_logger->info("Cleaning up application");
   m_Window->Shutdown();
+}
+
+void MiteApplication::InitializeInputSystem()
+{
+  m_logger->info("Initializing input system");
+
+  // 初始化输入系统
+  Input::Init();
+  
+  // 创建输入上下文
+  auto editor_context = std::make_shared<InputContext>("Editor");
+
 }
 
 void MiteApplication::LoadDefaultScene()
@@ -97,8 +147,6 @@ void MiteApplication::LoadDefaultScene()
   // 更新场景视图
   m_SceneView->SyncFromSceneCore();
 }
-
-void MiteApplication::InitializeSubsystems() {}
 
 void MiteApplication::BeginFrame()
 {
@@ -190,15 +238,14 @@ void MiteApplication::OnEvent(Event &event)
 
   // 将WindowCloseEvent事件分发给Application::OnWindowClose函数
   dispatcher.Dispatch<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
-
-
 }
 
 void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
 
-bool MiteApplication::OnWindowClose(WindowCloseEvent& e) {
-    m_logger->info("Window close event triggered.");
-    m_ShouldClose = true;
-    return true;
+bool MiteApplication::OnWindowClose(WindowCloseEvent &e)
+{
+  m_logger->info("Window close event triggered.");
+  m_ShouldClose = true;
+  return true;
 }
 }  // namespace mite

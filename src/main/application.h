@@ -5,7 +5,7 @@
 #include "event/dispatcher.h"
 
 #include "assert_manager.h"
-#include "input.h"
+#include "input_context.h"
 #include "material_system.h"
 #include "opengl_renderer/opengl_renderer.h"
 #include "scene_core.h"
@@ -60,10 +60,16 @@ class MiteApplication {
  private:
   // 初始化与清理
   void Initialize();
-  void InitializeWithOpenGL();
   void Cleanup();
+  void InitializeInputSystem();
+  void InitializeWindowWithOpenGL();
+  void InitializeRenderWithOpenGL();
+  void InitializeUI();
+  void InitializeAssertManager();
+  void InitializeMaterialSystem();
+  void InitializeScene();
   void LoadDefaultScene();
-  void InitializeSubsystems();
+  //void InitializeSubsystems();
 
   // 帧循环相关
   void BeginFrame();
@@ -100,7 +106,7 @@ class MiteApplication {
   //std::unique_ptr<UIManager> m_UIManager;
   //std::unique_ptr<AssetManager> m_AssetManager;
   //std::unique_ptr<MaterialSystem> m_MaterialSystem;
-  //std::unique_ptr<InputSystem> m_InputSystem;
+  std::unique_ptr<Input> m_Input;
 
   // 状态信息
   WindowConfig m_Config;
