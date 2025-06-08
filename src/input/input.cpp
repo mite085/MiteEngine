@@ -2,9 +2,9 @@
 #include "input_manager.h"
 
 namespace mite {
-void Input::Init()
+void Input::Init(const std::shared_ptr<InputContextStack> &stack)
 {
-  InputManager::Init();
+  InputManager::Init(stack);
 }
 
 void Input::Shutdown()

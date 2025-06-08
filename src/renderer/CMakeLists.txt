@@ -35,5 +35,6 @@ target_link_libraries(${RENDERER_LIB_NAME}
     spdlog::spdlog
     MiteEngine_Core
     MiteEngine_Window
+    MiteEngine_Input
     MiteEngine_Scene_View
 )

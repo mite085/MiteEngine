@@ -50,6 +50,8 @@ void MiteApplication::SaveScene(const std::string &filepath) {}
 
 void MiteApplication::Initialize()
 {
+  InitializeInputSystem();
+
   // 目前仅实现OpenGL模式，预留添加新模式接口
   InitializeWindowWithOpenGL();
 
@@ -126,13 +128,14 @@ void MiteApplication::Cleanup()
 void MiteApplication::InitializeInputSystem()
 {
   m_logger->info("Initializing input system");
+ 
+  // 创建输入上下文栈
+  m_InputContextStack = std::make_shared<InputContextStack>();
 
-  // 初始化输入系统
-  Input::Init();
-  
-  // 创建输入上下文
-  auto editor_context = std::make_shared<InputContext>("Editor");
+  // 初始化输入系统,将ContextStack注入到Manager
+  Input::Init(m_InputContextStack);
 
+  // 
 }
 
 void MiteApplication::LoadDefaultScene()

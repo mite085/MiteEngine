@@ -5,7 +5,7 @@
 #include "event/dispatcher.h"
 
 #include "assert_manager.h"
-#include "input_context.h"
+#include "input.h"
 #include "material_system.h"
 #include "opengl_renderer/opengl_renderer.h"
 #include "scene_core.h"
@@ -106,7 +106,7 @@ class MiteApplication {
   //std::unique_ptr<UIManager> m_UIManager;
   //std::unique_ptr<AssetManager> m_AssetManager;
   //std::unique_ptr<MaterialSystem> m_MaterialSystem;
-  std::unique_ptr<Input> m_Input;
+  std::shared_ptr<InputContextStack> m_InputContextStack;
 
   // ×´Ì¬ÐÅÏ¢
   WindowConfig m_Config;

@@ -11,7 +11,7 @@ namespace mite {
 // 处理输入事件的分发逻辑，并维护输入上下文栈。
 class InputManager {
  public:
-  static void Init();
+  static void Init(const std::shared_ptr<InputContextStack> &stack);
   static void Shutdown();
   static void Update();
 
@@ -62,7 +62,7 @@ class InputManager {
   static float s_PrevMouseScrollDelta;
 
   // 输入上下文栈
-  static std::vector<std::shared_ptr<InputContext>> s_ContextStack;
+  static std::shared_ptr<InputContextStack> s_ContextStack;
 };
 
 };

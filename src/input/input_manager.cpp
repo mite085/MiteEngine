@@ -3,10 +3,24 @@
 namespace mite {
 
 // 静态成员初始化
-std::vector<std::shared_ptr<InputContext>> InputManager::s_ContextStack;
+std::array<InputState, 512> InputManager::s_KeyStates;
+std::array<InputState, 512> InputManager::s_PrevKeyStates;
+std::array<float, 512> InputManager::s_KeyHeldDurations;
+std::array<InputState, 8> InputManager::s_MouseButtonStates;
+std::array<InputState, 8> InputManager::s_PrevMouseButtonStates;
+glm::vec2 InputManager::s_MousePosition;
+glm::vec2 InputManager::s_PrevMousePosition;
+glm::vec2 InputManager::s_MouseDelta;
+float InputManager::s_MouseScrollDelta;
+float InputManager::s_PrevMouseScrollDelta;
+std::shared_ptr<InputContextStack> InputManager::s_ContextStack;
 
-void InputManager::Init()
-{  // 初始化所有键状态为Released
+void InputManager::Init(const std::shared_ptr<InputContextStack> &stack)
+{
+  // 由Application创建输入上下文栈，并由Manager进行管理
+  s_ContextStack = stack;
+
+  // 初始化所有键状态为Released
   s_KeyStates.fill(InputState::Released);
   s_PrevKeyStates.fill(InputState::Released);
   s_KeyHeldDurations.fill(0.0f);
@@ -23,14 +37,14 @@ void InputManager::Init()
   s_PrevMouseScrollDelta = 0.0f;
 
   // 确保至少有一个默认上下文
-  if (s_ContextStack.empty()) {
+  if (s_ContextStack->IsEmpty()) {
     auto defaultContext = std::make_shared<InputContext>("Default");
-    s_ContextStack.push_back(defaultContext);
+    s_ContextStack->Push(defaultContext);
   }
 }
 void InputManager::Shutdown()
 {  // 清理所有上下文
-  s_ContextStack.clear();
+  s_ContextStack->Clear();
 
   // 重置所有输入状态
   s_KeyStates.fill(InputState::Released);
@@ -66,7 +80,7 @@ void InputManager::Update()
   }
 
   // 鼠标移动与滚轮状态由GLFW回调改变（异步），并非input模块负责
-  // s_MousePosition = 
+  // s_MousePosition =
 
   // 计算Delta（鼠标移动增量与滚轮变化量）
   s_MouseDelta = s_MousePosition - s_PrevMousePosition;
@@ -151,8 +165,8 @@ void InputManager::PushContext(std::shared_ptr<InputContext> context)
 
   // 非空栈情况下，
   // 日志记录Input输入的入栈顺序
-  if (!s_ContextStack.empty()) {
-    auto &current = s_ContextStack.back();
+  if (!s_ContextStack->IsEmpty()) {
+    auto &current = s_ContextStack->GetCurrent();
     LOG_DEBUG("Pushing input context '{}' over '{}'", context->GetName(), current->GetName());
   }
   else {
@@ -160,27 +174,27 @@ void InputManager::PushContext(std::shared_ptr<InputContext> context)
   }
 
   // 执行入栈操作
-  s_ContextStack.push_back(context);
+  s_ContextStack->Push(context);
 }
 
 void InputManager::PopContext()
 {
-  if (s_ContextStack.empty()) {
+  if (s_ContextStack->IsEmpty()) {
     LOG_ERROR("Attempted to pop empty input context stack");
     return;
   }
 
   // 执行出栈操作
-  auto popped = s_ContextStack.back();
-  s_ContextStack.pop_back();
+  auto popped = s_ContextStack->GetCurrent();
+  s_ContextStack->Pop();
 
   // 出栈后非空栈的情况下，
   // 日志记录下一个Input事件
-  if (!s_ContextStack.empty()) {
-    auto &newCurrent = s_ContextStack.back();
+  if (!s_ContextStack->IsEmpty()) {
+    auto &newCurrent = s_ContextStack->GetCurrent();
     LOG_DEBUG("Popped input context '{}', new current is '{}'",
-                 popped->GetName(),
-                 newCurrent->GetName());
+              popped->GetName(),
+              newCurrent->GetName());
   }
   else {
     LOG_DEBUG("Popped last input context '{}'", popped->GetName());
@@ -190,22 +204,22 @@ void InputManager::PopContext()
 std::shared_ptr<InputContext> InputManager::GetCurrentContext()
 {
   // 空栈情况下访问当前上下文
-  if (s_ContextStack.empty()) {
+  if (s_ContextStack->IsEmpty()) {
     LOG_WARN("No input context available");
     return nullptr;
   }
 
-  return s_ContextStack.back();
+  return s_ContextStack->GetCurrent();
 }
 
 float InputManager::GetActionValue(const std::string &actionName)
 {
   // 如果没有活跃的输入上下文，返回0.0
-  if (s_ContextStack.empty())
+  if (s_ContextStack->IsEmpty())
     return 0.0f;
 
   // 获取当前上下文
-  auto &currentContext = s_ContextStack.back();
+  auto &currentContext = s_ContextStack->GetCurrent();
 
   // 查找指定名称的动作
   InputAction *action = currentContext->GetAction(actionName);
@@ -303,5 +317,4 @@ float InputManager::GetMouseScrollDelta(MouseCode button)
 {
   return s_MouseScrollDelta;
 }
-
 };  // namespace mite
