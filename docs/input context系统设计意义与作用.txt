@@ -1,0 +1,100 @@
+一、核心意义：输入逻辑的解耦与动态控制
+上下文系统本质上是将原始输入事件（如按键、鼠标点击）与具体功能逻辑解耦的中间层，通过语义化抽象实现：
+
+1、输入动作的语义化
+将KeyCode::W → "Player.MoveForward"，使代码不再依赖具体键位，而是通过有意义的动作名交互。
+
+2、状态感知的输入处理
+根据应用当前模式（如编辑模式、游戏模式、UI弹窗）自动切换输入行为，无需全局条件判断。
+
+
+
+二、核心作用
+1. 分层输入优先级控制
+场景：当3D编辑器同时存在场景视图、属性面板和快捷键时：
+// 上下文栈示例（栈顶优先）：
+[属性面板上下文] ← 阻塞场景操作
+[场景导航上下文]   ← 处理摄像机控制
+[全局快捷键上下文] ← 保存/撤销等
+优势：避免if (uiFocused) return;式的代码污染。
+
+2. 动态输入行为切换
+案例：
+进入顶点编辑模式：将鼠标左键行为从选择物体变为拖动顶点
+播放动画时：屏蔽场景操作，只允许暂停/视角旋转
+实现：通过推入/弹出不同上下文即时切换映射规则。
+
+3. 多设备输入统一
+需求：同一个"Camera.Rotate"动作可同时绑定：
+鼠标右键拖拽
+键盘指定按键操作
+上下文作用：在不同上下文中维护各自的设备绑定配置。
+
+4. 输入阻塞与穿透
+典型场景：
+模态对话框出现时：阻塞背景层输入
+开发者控制台打开时：允许输入穿透到游戏
+实现：通过上下文的m_BlockInput标志控制。
+
+5. 配置化输入映射
+功能：允许用户自定义快捷键而不修改代码。
+机制：上下文将键位配置（如{"Save": "Ctrl+S"}）与业务逻辑隔离。
+
+
+
+三、Push 操作时机（进入新交互模式）
+
+1. UI模态窗口打开时
+// 打开材质编辑器窗口时
+void OpenMaterialEditor() {
+    m_InputStack->Push(m_MaterialEditorContext);
+    m_MaterialEditor->SetCloseCallback([this]() {
+        m_InputStack->Pop(); // 关闭时自动恢复
+    });
+}
+效果：阻塞场景操作，将快捷键（如Ctrl+S）重定向到材质保存。
+
+2. 工具模式切换
+// 切换到顶点编辑工具
+void ActivateVertexTool() {
+    m_InputStack->Push(m_VertexEditContext);
+    // 左键行为变为顶点拖动而非物体选择
+}
+
+3. 摄像机模式切换
+// 进入飞行摄像机模式
+m_InputStack->Push(m_FlyCameraContext);
+// 鼠标移动变为控制视角，滚轮调整飞行速度
+
+
+
+四、Pop 操作时机（退出当前模式）
+
+1. 关闭模态UI时
+// 点击属性面板的关闭按钮
+void OnPropertyPanelClosed() {
+    m_InputStack->Pop(); // 恢复场景操作
+}
+
+2. 工具完成时
+// 完成顶点编辑
+void FinishVertexEditing() {
+    m_InputStack->Pop(); 
+    // 左键行为恢复为物体选择
+}
+
+3. 异常状态恢复
+// 载入失败时回退
+void OnLoadFailed() {
+    while (m_InputStack->GetCurrent() != m_BaseContext) {
+        m_InputStack->Pop(); // 强制回到基础上下文
+    }
+}
+
+4. 层级导航返回
+// 按ESC键逐级返回
+void OnEscapePressed() {
+    if (m_InputStack->GetDepth() > 1) {
+        m_InputStack->Pop(); 
+    }
+}
