@@ -16,19 +16,19 @@
 // C++17 标准库
 #include <any>
 
-// 日志
+// 数学库
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
+
+// 日志系统
 #include "logger/logger.h"
 
-// 时间
+// 时间系统
 #include "time/time.h"
 
 // 事件系统
 #include "event/event_types.h"
 #include "event/event.h"
 #include "event/dispatcher.h"
-
-// 数学库
-#include "glm/glm.hpp"
-#include "glm/gtc/quaternion.hpp"
 
 #endif

@@ -5,27 +5,6 @@
 
 namespace mite {
 
-class WindowFocusEvent : public Event {
- public:
-  WindowFocusEvent() = default;
-  EVENT_CLASS_TYPE(WindowFocus)
-  EVENT_CLASS_CATEGORY(EventCategoryWindow)
-};
-
-class WindowLostFocusEvent : public Event {
- public:
-  WindowLostFocusEvent() = default;
-  EVENT_CLASS_TYPE(WindowLostFocus)
-  EVENT_CLASS_CATEGORY(EventCategoryWindow)
-};
-
-class WindowMovedEvent : public Event {
- public:
-  WindowMovedEvent() = default;
-  EVENT_CLASS_TYPE(WindowMoved)
-  EVENT_CLASS_CATEGORY(EventCategoryWindow)
-};
-
 class MouseMoveEvent : public Event {
  public:
   MouseMoveEvent(double xpos, double ypos) : xpos(xpos), ypos(ypos) {}

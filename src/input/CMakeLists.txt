@@ -11,8 +11,8 @@ set(INPUT_SRCS
     input_context.cpp
     input_manager.h
     input_manager.cpp
-    input_events.h
-    input_events.cpp
+    input_event.h
+    input_event.cpp
 )
 source_group("input" FILES ${INPUT_SRCS})
 

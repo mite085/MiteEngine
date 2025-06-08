@@ -7,6 +7,8 @@ set(WINDOW_LIB_NAME MiteEngine_Window)
 set(WINDOW_LIB_SRCS
     window.h
     window.cpp
+    window_event.h
+    window_event.cpp
 )
 source_group("interface" FILES ${WINDOW_LIB_SRCS})
 
