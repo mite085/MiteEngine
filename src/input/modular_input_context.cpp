@@ -1,4 +1,4 @@
-#include "mudular_input_context.h"
+#include "modular_input_context.h"
 
 namespace mite {
 ModularInputContext::ModularInputContext(const std::string &name) : InputContext(name) {}
