@@ -1,8 +1,7 @@
 #ifndef MITE_INPUT_MANAGER
 #define MITE_INPUT_MANAGER
 
-#include "headers.h"
-#include "input_context.h"
+#include "input_context_stack.h"
 
 namespace mite {
 

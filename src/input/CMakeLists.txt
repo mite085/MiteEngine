@@ -15,6 +15,8 @@ set(INPUT_SRCS
     input_manager.cpp
     input_define.h
     input_define.cpp
+    input_context_stack.h
+    input_context_stack.cpp
 )
 source_group("input" FILES ${INPUT_SRCS})
 

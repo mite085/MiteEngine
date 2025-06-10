@@ -1,9 +1,7 @@
 #ifndef MITE_INPUT
 #define MITE_INPUT
 
-#include "event/event.h"
 #include "glm/glm.hpp"
-#include "headers.h"
 #include "input_context.h"
 
 namespace mite {
