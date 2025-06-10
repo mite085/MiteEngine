@@ -1,7 +1,7 @@
 #ifndef MITE_RENDERER_API
 #define MITE_RENDERER_API
 
-#include "headers.h"
+#include "headers/headers.h"
 #include "glm/glm.hpp"
 #include "window.h"
 #include "scene_data.h"

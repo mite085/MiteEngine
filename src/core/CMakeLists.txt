@@ -29,14 +29,8 @@ cmake_minimum_required(VERSION 3.10)
 set(CORE_LIB_NAME MiteEngine_Core)
 
 # 创建源代码组(筛选器)
-set(CORE_SRCS
-    core_code.cpp
-    core_code.h
-)
-source_group("core" FILES ${CORE_SRCS})
-
 set(HEADERS_SRCS
-    headers.h
+    headers/headers.h
 )
 source_group("headers" FILES ${HEADERS_SRCS})
 
@@ -71,7 +65,6 @@ source_group("timer" FILES ${TIMER_SRCS})
 # 创建静态库
 add_library(${CORE_LIB_NAME}  
     STATIC  
-    ${CORE_SRCS}  
     ${HEADERS_SRCS}  
     ${LOGGER_SRCS} 
     ${EVENT_SRCS}

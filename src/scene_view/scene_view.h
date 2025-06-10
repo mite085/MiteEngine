@@ -1,7 +1,6 @@
 #ifndef MITE_SCENE_VIEW
 #define MITE_SCENE_VIEW
 
-#include "headers.h"
 #include "scene_core.h"
 #include "scene_data.h"
 

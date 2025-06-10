@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_DATA
 #define MITE_SCENE_DATA
 
-#include "headers.h"
+#include "headers/headers.h"
 
 namespace mite {
 // Ç°ÖÃÉùÃ÷

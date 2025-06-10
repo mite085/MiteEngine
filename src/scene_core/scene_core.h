@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_CORE
 #define MITE_SCENE_CORE
 
-#include "headers.h"
+#include "headers/headers.h"
 
 namespace mite {
 using Entity = uint32_t;

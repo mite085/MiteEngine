@@ -1,7 +1,7 @@
 #ifndef MITE_INPUT_EVENTS
 #define MITE_INPUT_EVENTS
 
-#include "headers.h"
+#include "headers/headers.h"
 
 namespace mite {
 

@@ -1,7 +1,7 @@
 #ifndef MITE_INPUT_PROCESSOR
 #define MITE_INPUT_PROCESSOR
 
-#include "headers.h"
+#include "headers/headers.h"
 
 namespace mite {
 // 处理器优先级常量

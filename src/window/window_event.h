@@ -1,7 +1,7 @@
 #ifndef MITE_WINDOW_EVENT
 #define MITE_WINDOW_EVENT
 
-#include "headers.h"
+#include "headers/headers.h"
 
 namespace mite {
 

@@ -1,9 +1,6 @@
 #ifndef MITE_APPLICATION
 #define MITE_APPLICATION
 
-#include "headers.h"
-#include "event/dispatcher.h"
-
 #include "assert_manager.h"
 #include "input.h"
 #include "material_system.h"

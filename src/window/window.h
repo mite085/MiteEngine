@@ -1,7 +1,6 @@
 #ifndef MITE_WINDOW
 #define MITE_WINDOW
 
-#include "headers.h"
 #include "input_event.h"
 #include "window_event.h"
 
