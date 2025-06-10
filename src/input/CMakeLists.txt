@@ -17,6 +17,10 @@ set(INPUT_SRCS
     input_define.cpp
     input_context_stack.h
     input_context_stack.cpp
+    input_processor.h
+    input_processor.cpp
+    mudular_input_context.h
+    mudular_input_context.cpp
 )
 source_group("input" FILES ${INPUT_SRCS})
 

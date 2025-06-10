@@ -2,7 +2,7 @@
 #define MITE_INPUT
 
 #include "glm/glm.hpp"
-#include "input_context.h"
+#include "input_context_stack.h"
 
 namespace mite {
 
