@@ -129,13 +129,20 @@ void MiteApplication::InitializeInputSystem()
 {
   m_logger->info("Initializing input system");
  
-  // 创建输入上下文栈
+  // 创建输入上下文栈ContextStack
   m_InputContextStack = std::make_shared<InputContextStack>();
 
-  // 初始化输入系统,将ContextStack注入到Manager
+  // 初始化输入系统,将输入上下文栈ContextStack注入到Manager
   Input::Init(m_InputContextStack);
 
-  // 
+  // 创建编辑器上下文
+  auto editorContext = std::make_shared<ModularInputContext>("Editor");
+
+  // TODO: 为编辑器上下文装配处理器，以PropertyPanelProcessor为例
+  editorContext->AddProcessor(std::make_shared<PropertyPanelProcessor>(new PropertyPanel()));
+
+  // 将编辑器上下文推入全局栈
+  Input::PushContext(editorContext);
 }
 
 void MiteApplication::LoadDefaultScene()

@@ -5,8 +5,10 @@ set(UI_LIB_NAME MiteEngine_Ui)
 
 # 创建源代码组(筛选器)
 set(UI_SRCS
-    main_window.cpp
     main_window.h
+    main_window.cpp
+    property_panel_processor.h
+    property_panel_processor.cpp
 )
 source_group("UI" FILES ${UI_SRCS})
 
@@ -24,4 +26,5 @@ target_link_libraries(${UI_LIB_NAME}
     glfw
     spdlog::spdlog
     MiteEngine_Core
+    MiteEngine_Input
 )

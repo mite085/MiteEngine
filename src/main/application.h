@@ -3,12 +3,16 @@
 
 #include "assert_manager.h"
 #include "input.h"
+#include "mudular_input_context.h"
 #include "material_system.h"
 #include "opengl_renderer/opengl_renderer.h"
 #include "scene_core.h"
 #include "scene_system.h"
 #include "scene_view.h"
 #include "glfw_window/glfw_window.h"
+
+// TODO: 确保编译通过，仅include panel组件，后续重新整理include层级
+#include "property_panel_processor.h"
 
 namespace mite {
 

@@ -83,10 +83,8 @@ float Input::GetMouseScrollDelta(MouseCode button)
   return InputManager::GetMouseScrollDelta(button);
 }
 
-void Input::PushContext(const std::string &contextName)
+void Input::PushContext(std::shared_ptr<InputContext> context)
 {
-  // 创建新的上下文并推入管理器栈
-  std::shared_ptr<InputContext> context = std::make_shared<InputContext>(contextName);
   InputManager::PushContext(context);
 }
 

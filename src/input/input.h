@@ -27,7 +27,7 @@ class Input {
   static float GetMouseScrollDelta(MouseCode button);
 
   // 输入上下文管理
-  static void PushContext(const std::string &contextName);
+  static void PushContext(std::shared_ptr<InputContext> contextName);
   static void PopContext();
   static bool IsCurrentContext(const std::string &contextName);
 

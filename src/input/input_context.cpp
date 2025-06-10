@@ -3,7 +3,7 @@
 namespace mite {
 InputContext::InputContext(const std::string &name) : m_Name(name)
 {
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Input Context");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Input Context: {" + name + "}");
   m_Logger->trace("Created input context: {}", name);
 }
 
