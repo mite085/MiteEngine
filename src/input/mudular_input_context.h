@@ -27,7 +27,7 @@ class ModularInputContext : public InputContext {
   std::vector<InputProcessor *> m_SortedProcessors;  // 缓存排序结果
   std::unordered_map<std::string, size_t> m_ProcessorIndexMap;
   bool m_Dirty = false;  // 是否需要重新排序
-  InputProcessor *m_HotProcessor;
+  InputProcessor *m_HotProcessor = nullptr;
 };
 };
 
