@@ -8,6 +8,7 @@ namespace mite {
 class MouseMoveEvent : public Event {
  public:
   MouseMoveEvent(double xpos, double ypos) : xpos(xpos), ypos(ypos) {}
+  glm::vec2 GetPosition() const;
   double GetXPos() const;
   double GetYPos() const;
 
