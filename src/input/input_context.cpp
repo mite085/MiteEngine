@@ -9,7 +9,7 @@ InputContext::InputContext(const std::string &name) : m_Name(name)
 
 InputContext::~InputContext()
 {
-  m_Logger->trace("Created input context: {}", m_Name);
+  m_Logger->trace("Destroy input context: {}", m_Name);
 }
 
 const std::string &InputContext::GetName() const
