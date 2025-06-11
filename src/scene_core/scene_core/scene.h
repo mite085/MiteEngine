@@ -1,38 +1,10 @@
-#ifndef MITE_SCENE_CORE
-#define MITE_SCENE_CORE
+#ifndef MITE_SCENE
+#define MITE_SCENE
 
 #include "headers/headers.h"
 
 namespace mite {
 using Entity = uint32_t;
-
-// 基础组件
-struct TransformComponent {
-  glm::vec3 position;
-  glm::quat rotation;
-  glm::vec3 scale;
-
-  glm::mat4 getMatrix() const
-  { /*...*/
-  }
-};
-
-//struct MeshComponent {
-//  std::shared_ptr<MeshData> mesh;
-//  bool visible = true;
-//};
-//
-//struct MaterialComponent {
-//  std::shared_ptr<MaterialData> material;
-//};
-
-struct LightComponent {
-  enum Type { Point, Directional, Spot };
-  Type type;
-  glm::vec3 color;
-  float intensity;
-  // 其他光照参数...
-};
 
 // 场景类
 class Scene {

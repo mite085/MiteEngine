@@ -1,4 +1,4 @@
-#include "scene_core.h"
+#include "scene.h"
 
 namespace mite {
 

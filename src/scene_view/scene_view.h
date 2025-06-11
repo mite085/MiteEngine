@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_VIEW
 #define MITE_SCENE_VIEW
 
-#include "scene_core.h"
+#include "scene_core/scene.h"
 #include "scene_data.h"
 
 namespace mite {

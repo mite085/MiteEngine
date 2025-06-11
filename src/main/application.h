@@ -6,8 +6,7 @@
 #include "modular_input_context.h"
 #include "material_system.h"
 #include "opengl_renderer/opengl_renderer.h"
-#include "scene_core.h"
-#include "scene_system.h"
+#include "scene_core/scene.h"
 #include "scene_view.h"
 #include "glfw_window/glfw_window.h"
 

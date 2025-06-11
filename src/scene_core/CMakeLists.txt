@@ -4,18 +4,34 @@ cmake_minimum_required(VERSION 3.10)
 set(SCENE_CORE_LIB_NAME MiteEngine_Scene_Core)
 
 # 创建源代码组(筛选器)
-set(SCENE_CORE_INTERFACE_SRCS
-    entity.h
-    entity.cpp
-    scene_core.h
-    scene_core.cpp
-    scene_system.h
-    scene_system.cpp
+set(SCENE_CORE_SRCS
+    scene_core/component.h
+    scene_core/component.cpp
+    scene_core/component_manager.h
+    scene_core/component_manager.cpp
+    scene_core/entity.h
+    scene_core/entity.cpp
+    scene_core/scene.h
+    scene_core/scene.cpp
+    scene_core/scene_system.h
+    scene_core/scene_system.cpp
 )
-source_group("scene core" FILES ${SCENE_CORE_INTERFACE_SRCS})
+source_group("core" FILES ${SCENE_CORE_SRCS})
+
+set(SCENE_COMPONENTS_SRCS
+    scene_core_components/transform_component.h
+    scene_core_components/transform_component.cpp
+    scene_core_components/mesh_component.h
+    scene_core_components/mesh_component.cpp
+)
+source_group("components" FILES ${SCENE_COMPONENTS_SRCS})
 
 # 创建静态库
-add_library(${SCENE_CORE_LIB_NAME}  STATIC  ${SCENE_CORE_INTERFACE_SRCS})
+add_library(${SCENE_CORE_LIB_NAME}
+    STATIC
+    ${SCENE_CORE_SRCS}
+    ${SCENE_COMPONENTS_SRCS}
+)
 
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${SCENE_CORE_LIB_NAME}

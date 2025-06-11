@@ -3,6 +3,6 @@
 
 namespace mite {
 
-}  // namespace mite
+};
 
 #endif
