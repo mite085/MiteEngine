@@ -18,6 +18,7 @@
 
 // C++17 标准库
 #include <any>
+#include <optional>
 
 // 数学库
 #include "glm/glm.hpp"

@@ -63,7 +63,7 @@ Entity Scene::CreateEntity(const std::string &name)
   auto &id = entity.AddComponent<IDComponent>();
   ++m_EntityCounter;
 
-  // TODO: 添加Tag系统，用于实体搜索和筛选
+  // 添加Tag系统，用于实体搜索和筛选
   auto &tag = entity.AddComponent<TagComponent>();
   tag.Tag = name.empty() ? "Entity_" + id.String() : name;
 
