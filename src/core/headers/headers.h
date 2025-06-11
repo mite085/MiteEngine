@@ -12,6 +12,9 @@
 #include <mutex>
 #include <sstream>
 #include <array>
+#include <typeindex>
+#include <cassert>
+#include <atomic>
 
 // C++17 ±ê×¼¿â
 #include <any>

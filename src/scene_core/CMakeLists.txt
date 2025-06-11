@@ -9,6 +9,10 @@ set(SCENE_CORE_SRCS
     scene_core/component.cpp
     scene_core/component_manager.h
     scene_core/component_manager.cpp
+    scene_core/component_pool.h
+    scene_core/component_pool.cpp
+    scene_core/component_type.h
+    scene_core/component_type.cpp
     scene_core/entity.h
     scene_core/entity.cpp
     scene_core/scene.h
@@ -19,12 +23,12 @@ set(SCENE_CORE_SRCS
 source_group("core" FILES ${SCENE_CORE_SRCS})
 
 set(SCENE_COMPONENTS_SRCS
-    scene_core_components/transform_component.h
-    scene_core_components/transform_component.cpp
-    scene_core_components/mesh_component.h
-    scene_core_components/mesh_component.cpp
+    scene_core_transform/transform_component.h
+    scene_core_transform/transform_component.cpp
+    scene_core_transform/transform_system.h
+    scene_core_transform/transform_system.cpp
 )
-source_group("components" FILES ${SCENE_COMPONENTS_SRCS})
+source_group("transform" FILES ${SCENE_COMPONENTS_SRCS})
 
 # 创建静态库
 add_library(${SCENE_CORE_LIB_NAME}
