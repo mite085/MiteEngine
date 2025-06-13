@@ -129,7 +129,7 @@ bool SceneSerializer::DeserializeFromBinary(const std::string &filepath)
 template<typename Archive> void SceneSerializer::RegisterComponentTypes(Archive &archive)
 {
   // 为每个组件类型注册序列化函数
-  // 使用CEREAL_REGISTER_TYPE宏确保类型信息被正确记录
+  // TODO: 使用CEREAL_REGISTER_TYPE宏确保类型信息被正确记录
 
   // 示例：Tag组件
   archive.template register_type<TagComponent>();

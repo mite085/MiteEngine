@@ -115,7 +115,7 @@ Entity Scene::CreateEntity(const std::string &name)
 
   // 添加Tag系统，用于实体搜索和筛选
   auto &tag = entity.AddComponent<TagComponent>();
-  tag.Tag = name.empty() ? "Entity_" + id.String() : name;
+  tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
 
   //// TODO: 添加变换系统
   // entity.AddComponent<TransformComponent>();
