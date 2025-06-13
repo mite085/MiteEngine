@@ -25,7 +25,7 @@ bool TagComponent::MatchSearch(const std::string &searchStr) const
   }
 
   // ºÚµ•Õ®≈‰∑˚∆•≈‰
-  return Core::StringMatchWildcard(m_Tag, searchStr);
+  return CoreFunctions::StringMatchWildcard(m_Tag, searchStr);
 }
 
 std::string TagComponent::GetDisplayName() const

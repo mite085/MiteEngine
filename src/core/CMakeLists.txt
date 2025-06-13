@@ -32,7 +32,12 @@ set(CORE_LIB_NAME MiteEngine_Core)
 set(HEADERS_SRCS
     headers/headers.h
 )
-source_group("headers" FILES ${HEADERS_SRCS})
+
+set(CORE_SRCS
+    core/core_functions.h
+    core/core_functions.cpp
+)
+source_group("core" FILES ${CORE_SRCS})
 
 set(LOGGER_SRCS
     logger/logger.h
@@ -65,6 +70,7 @@ source_group("timer" FILES ${TIMER_SRCS})
 # 创建静态库
 add_library(${CORE_LIB_NAME}  
     STATIC  
+    ${CORE_SRCS}
     ${HEADERS_SRCS}  
     ${LOGGER_SRCS} 
     ${EVENT_SRCS}

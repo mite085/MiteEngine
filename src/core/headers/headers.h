@@ -20,6 +20,9 @@
 #include <any>
 #include <optional>
 
+// 核心函数模块
+#include "core/core_functions.h"
+
 // 数学库
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
