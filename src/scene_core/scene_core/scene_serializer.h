@@ -91,6 +91,12 @@ class SceneSerializer {
    * @param registry EnTT注册表
    */
   template<typename Archive> void DeserializeEntities(Archive &archive, entt::registry &registry);
+
+  /**
+   * @brief 类型名称辅助函数
+   * @return Component的类型名称，如"Transform"、"Tag"等
+   */
+  template<typename T> const char *component_type_name();
 };
 };
 

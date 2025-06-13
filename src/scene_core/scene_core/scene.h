@@ -92,11 +92,11 @@ class Scene : public std::enable_shared_from_this<Scene> {
   /**
    * @brief 获取主相机实体
    */
-  Entity GetMainCamera() const
+  std::shared_ptr<Entity> GetMainCamera() const
   {
     return m_MainCamera;
   }
-  void SetMainCamera(Entity entity)
+  void SetMainCamera(std::shared_ptr<Entity> entity)
   {
     m_MainCamera = entity;
   }
@@ -143,7 +143,7 @@ class Scene : public std::enable_shared_from_this<Scene> {
   std::unique_ptr<SceneSerializer> m_Serializer;   // 序列化系统
 
   // 场景状态
-  std::unique_ptr<Entity> m_MainCamera;  // 主相机实体
+  std::shared_ptr<Entity> m_MainCamera;  // 主相机实体
 
   // 注册的系统
   std::unordered_map<size_t, std::unique_ptr<ComponentSystem>> m_Systems;

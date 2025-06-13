@@ -15,6 +15,7 @@
 #include <typeindex>
 #include <cassert>
 #include <atomic>
+#include <filesystem>
 
 // C++17 ±ê×¼¿â
 #include <any>

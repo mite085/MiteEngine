@@ -3,18 +3,16 @@
 #include "scene_observer.h"
 #include "scene_serializer.h"
 namespace mite {
-Scene::Scene(const std::string &name)
-    : m_Name(name)
+Scene::Scene(const std::string &name) : m_Name(name)
 {
-
   // 初始化核心系统
   InitSystems();
 
   //// TODO: 创建默认环境实体
-  //auto env = CreateEntity("Environment");
-  //env.AddComponent<EnvironmentComponent>();
+  // auto env = CreateEntity("Environment");
+  // env.AddComponent<EnvironmentComponent>();
 
-  m_MainCamera = std::make_unique<Entity>(weak_from_this());
+  m_MainCamera = std::make_shared<Entity>(weak_from_this(), entt::null);
 }
 
 Scene::~Scene()
@@ -31,7 +29,7 @@ void Scene::InitSystems()
   m_Serializer = std::make_unique<SceneSerializer>(this);
 
   //// TODO: 注册变换系统
-  //RegisterSystem<TransformSystem>();
+  // RegisterSystem<TransformSystem>();
 }
 
 void Scene::OnUpdate(float timestep)
@@ -59,15 +57,15 @@ void Scene::OnRenderPrepare()
 }
 
 void Scene::Clear(bool keepSystems)
-{  
+{
   // 1. 销毁所有实体（不触发单独销毁事件，直接批量清除）
-  m_Registry.each([this](auto entity) { m_Registry.destroy(entity); });
+  m_Registry.clear();
 
   // 2. 重置实体ID计数器
   m_EntityCounter = 0;
 
   // 3. 重置主相机引用
-  m_MainCamera = {this, entt::null};
+  m_MainCamera = std::make_unique<Entity>(weak_from_this(), entt::null);
 
   // 4. 重置场景图状态
   if (m_SceneGraph) {
@@ -120,7 +118,7 @@ Entity Scene::CreateEntity(const std::string &name)
   tag.Tag = name.empty() ? "Entity_" + id.String() : name;
 
   //// TODO: 添加变换系统
-  //entity.AddComponent<TransformComponent>();
+  // entity.AddComponent<TransformComponent>();
 
   return entity;
 }
@@ -142,12 +140,42 @@ bool Scene::IsValid(Entity entity) const
 
 void Scene::Serialize(const std::filesystem::path &filepath)
 {
-  m_Serializer->Serialize(filepath);
-}
+  const std::string ext = filepath.extension().string();
 
-void Scene::Deserialize(const std::filesystem::path &filepath)
-{
-  m_Serializer->Deserialize(filepath);
+  if (ext == ".json") {
+    if (!m_Serializer->SerializeToJson(filepath.string()))
+      throw std::runtime_error("JSON serialization failed: " + m_Serializer->GetLastError());
+  }
+  else if (ext == ".bin") {
+    if (!m_Serializer->SerializeToBinary(filepath.string()))
+      throw std::runtime_error("Binary serialization failed: " + m_Serializer->GetLastError());
+  }
+  else {
+    throw std::runtime_error("Unsupported file extension: " + ext);
+  }
 }
+  void Scene::Deserialize(const std::filesystem::path &filepath)
+  {
+    if (!m_Serializer) {
+      throw std::runtime_error("Serializer not initialized");
+    }
 
+    if (!std::filesystem::exists(filepath)) {
+      throw std::runtime_error("File not found: " + filepath.string());
+    }
+
+    const std::string ext = filepath.extension().string();
+
+    if (ext == ".json") {
+      if (!m_Serializer->DeserializeFromJson(filepath.string()))
+        throw std::runtime_error("JSON deserialization failed: " + m_Serializer->GetLastError());
+    }
+    else if (ext == ".bin") {
+      if (!m_Serializer->DeserializeFromBinary(filepath.string()))
+        throw std::runtime_error("Binary deserialization failed: " + m_Serializer->GetLastError());
+    }
+    else {
+      throw std::runtime_error("Unsupported file extension: " + ext);
+    }
+  }
 }  // namespace mite

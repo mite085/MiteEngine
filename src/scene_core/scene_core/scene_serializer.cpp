@@ -152,19 +152,24 @@ void SceneSerializer::SerializeEntities(Archive &archive, entt::registry &regist
   const auto count = view.size();
   archive(cereal::make_nvp("EntityCount", count));
 
-  // 序列化每个实体及其组件
-  registry.each([&archive, &registry](auto entity) {
-    // 序列化实体ID（确保反序列化时可以重建相同的实体关系）
+  // 序列化每个实体及其组件 - 使用视图迭代
+  for (auto entity : view) {
+    // 序列化实体ID
     archive(cereal::make_nvp("Entity", entity));
 
     // 序列化该实体上的所有组件
-    // Cereal会自动处理已注册的组件类型
-    registry.visit(entity, [&archive, &registry, entity](auto &&component) {
-      using ComponentType = std::decay_t<decltype(component)>;
-      archive(cereal::make_nvp(ComponentType::GetSerializationName(),
-                               registry.template get<ComponentType>(entity)));
+    registry.visit(entity, [&archive, &registry, entity](const auto &component) {
+      using ComponentType = std::decay_t<decltype(registry.get<ComponentType>(entity))>;
+      try {
+        archive(cereal::make_nvp(component_type_name<ComponentType>(),  // 需要实现获取类型名的函数
+                                 registry.template get<ComponentType>(entity)));
+      }
+      catch (const std::exception &e) {
+        // 处理序列化错误
+        m_lastError = "Failed to serialize component: " + std::string(e.what());
+      }
     });
-  });
+  }
 }
 
 template<typename Archive>
@@ -224,4 +229,19 @@ void SceneSerializer::DeserializeEntities(Archive &archive, entt::registry &regi
   // 反序列化后可能需要重建实体间的关系（如父子关系）
   // 可以在所有实体加载完成后进行这一步
 }
+
+template<typename T> const char *SceneSerializer::component_type_name()
+{
+  if constexpr (std::is_same_v<T, TransformComponent>) {
+    return "Transform";
+  }
+  else if constexpr (std::is_same_v<T, TagComponent>) {
+    return "Tag";
+  }
+  // TODO: 其他组件类型...
+  else {
+    static_assert(false, "Unregistered component type");
+  }
+}
+
 };
