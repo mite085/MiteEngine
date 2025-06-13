@@ -8,11 +8,11 @@ Entity::Entity(std::weak_ptr<Scene> scene, entt::entity handle) : m_Scene(scene)
 {
   // 确保实体有必需组件
   if (auto scenePtr = m_Scene.lock()) {
-    if (!scenePtr->Reg().any_of<IDComponent>(m_Handle)) {
-      scenePtr->Reg().emplace<IDComponent>(m_Handle);
+    if (!scenePtr->GetRegistry().any_of<IDComponent>(m_Handle)) {
+      scenePtr->GetRegistry().emplace<IDComponent>(m_Handle);
     }
-    if (!scenePtr->Reg().any_of<HierarchyComponent>(m_Handle)) {
-      scenePtr->Reg().emplace<HierarchyComponent>(m_Handle);
+    if (!scenePtr->GetRegistry().any_of<HierarchyComponent>(m_Handle)) {
+      scenePtr->GetRegistry().emplace<HierarchyComponent>(m_Handle);
     }
   }
 }
@@ -215,7 +215,7 @@ bool Entity::IsValid() const
   if (m_Handle == entt::null)
     return false;
   if (auto scenePtr = m_Scene.lock()) {
-    return scenePtr->m_Registry.valid(m_Handle);
+    return scenePtr->IsValid(*this);
   }
   return false;
 }
@@ -236,7 +236,7 @@ void Entity::Destroy()
     RemoveFromParent();
 
     // 标记实体为销毁状态
-    scenePtr->m_Registry.destroy(m_Handle);
+    scenePtr->GetRegistry().destroy(m_Handle);
     m_Handle = entt::null;
   }
 }

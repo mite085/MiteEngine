@@ -3,7 +3,8 @@
 #include "scene_observer.h"
 #include "scene_serializer.h"
 namespace mite {
-Scene::Scene(const std::string &name) : m_Name(name), m_MainCamera(entt::null, this)
+Scene::Scene(const std::string &name)
+    : m_Name(name)
 {
 
   // 初始化核心系统
@@ -12,6 +13,8 @@ Scene::Scene(const std::string &name) : m_Name(name), m_MainCamera(entt::null, t
   //// TODO: 创建默认环境实体
   //auto env = CreateEntity("Environment");
   //env.AddComponent<EnvironmentComponent>();
+
+  m_MainCamera = std::make_unique<Entity>(weak_from_this());
 }
 
 Scene::~Scene()
@@ -53,6 +56,55 @@ void Scene::OnRenderPrepare()
 
   // 准备场景图渲染状态
   m_SceneGraph->OnRenderPrepare();
+}
+
+void Scene::Clear(bool keepSystems)
+{  
+  // 1. 销毁所有实体（不触发单独销毁事件，直接批量清除）
+  m_Registry.each([this](auto entity) { m_Registry.destroy(entity); });
+
+  // 2. 重置实体ID计数器
+  m_EntityCounter = 0;
+
+  // 3. 重置主相机引用
+  m_MainCamera = {this, entt::null};
+
+  // 4. 重置场景图状态
+  if (m_SceneGraph) {
+    m_SceneGraph->Clear();
+  }
+
+  // 5. 重置场景观察者状态
+  if (m_SceneObserver) {
+    m_SceneObserver->Clear();
+  }
+
+  // 6. 根据参数决定是否重置系统
+  if (!keepSystems) {
+    // 销毁所有系统（除了核心系统）
+    auto it = m_Systems.begin();
+    while (it != m_Systems.end()) {
+      // 保留核心系统
+      if (it->second == m_SceneGraph || it->second == m_SceneObserver ||
+          it->second == m_Serializer)
+      {
+        ++it;
+      }
+      else {
+        it = m_Systems.erase(it);
+      }
+    }
+
+    // 重新初始化核心系统
+    if (m_SceneGraph)
+      m_SceneGraph->Init();
+    if (m_SceneObserver)
+      m_SceneObserver->Init();
+  }
+
+  // 7. 重新创建默认环境实体（类似构造函数中的初始化）
+  auto env = CreateEntity("Environment");
+  env.AddComponent<EnvironmentComponent>();
 }
 
 Entity Scene::CreateEntity(const std::string &name)

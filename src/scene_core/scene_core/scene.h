@@ -18,7 +18,7 @@ class SceneSerializer;
  * - 场景状态维护
  * - 序列化支持
  */
-class Scene {
+class Scene : public std::enable_shared_from_this<Scene> {
  public:
   Scene(const std::string &name = "Untitled Scene");
   ~Scene();
@@ -38,6 +38,12 @@ class Scene {
    * @brief 场景视图渲染前的准备
    */
   void OnRenderPrepare();
+
+  /**
+   * @brief 清空场景中的所有内容，重置为初始状态
+   * @param keepSystems 是否保留已注册的系统（默认false，完全重置）
+   */
+  void Clear(bool keepSystems = false);
 
   // ------------------------ 实体管理 ------------------------
   /**
@@ -110,13 +116,15 @@ class Scene {
 
   // ------------------------ EnTT访问 ------------------------
   /**
-   * @brief 获取底层EnTT registry(谨慎使用)
+   * @brief 获取底层EnTT registry
+   * 
+   * 场景序列化需要修改registry内的entities顺序
    */
-  entt::registry &Reg()
+  entt::registry &GetRegistry()
   {
     return m_Registry;
   }
-  const entt::registry &Reg() const
+  const entt::registry &GetRegistry() const
   {
     return m_Registry;
   }
@@ -135,7 +143,7 @@ class Scene {
   std::unique_ptr<SceneSerializer> m_Serializer;   // 序列化系统
 
   // 场景状态
-  Entity m_MainCamera;  // 主相机实体
+  std::unique_ptr<Entity> m_MainCamera;  // 主相机实体
 
   // 注册的系统
   std::unordered_map<size_t, std::unique_ptr<ComponentSystem>> m_Systems;
