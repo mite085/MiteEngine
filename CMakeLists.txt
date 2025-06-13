@@ -37,6 +37,7 @@ include_directories(thirdparty/imgui)
 add_subdirectory(thirdparty/spdlog)
 add_subdirectory(thirdparty/entt)
 add_subdirectory(thirdparty/stduuid)
+include_directories(thirdparty/cereal/include)
 
 # 为第三方库设置文件夹属性
 if(TARGET spdlog)

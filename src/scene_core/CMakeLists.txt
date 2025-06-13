@@ -9,6 +9,8 @@ set(SCENE_CORE_SRCS
     scene_core/entity.cpp
     scene_core/scene.h
     scene_core/scene.cpp
+    scene_core/scene_serializer.h
+    scene_core/scene_serializer.cpp
 )
 source_group("core" FILES ${SCENE_CORE_SRCS})
 
