@@ -25,9 +25,13 @@
 // 核心函数模块
 #include "core/core_functions.h"
 
-// 数学库
-#include "glm/glm.hpp"
-#include "glm/gtc/quaternion.hpp"
+// 数学库（使用gtx相关函数，需要启用EXPERIMENTAL）
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 
 // 日志系统
 #include "logger/logger.h"

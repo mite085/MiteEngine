@@ -1,6 +1,8 @@
 #ifndef MITE_SCENE_ENTITY
 #define MITE_SCENE_ENTITY
 
+#include "component.h"
+
 namespace mite {
 
 // Ç°ÖÃÉùÃ÷

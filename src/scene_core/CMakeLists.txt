@@ -28,6 +28,9 @@ set(SCENE_COMPONENTS_SRCS
     scene_core_components/destroy_component.cpp
     scene_core_components/tag_component.h
     scene_core_components/tag_component.cpp
+    scene_core_components/transform_component.h
+    scene_core_components/transform_component.cpp
+    
 )
 source_group("components" FILES ${SCENE_COMPONENTS_SRCS})
 

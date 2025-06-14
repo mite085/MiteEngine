@@ -1,17 +1,18 @@
 #ifndef MITE_SCENE_HIERACHY_COMPONENT
 #define MITE_SCENE_HIERACHY_COMPONENT
 
-#include "headers/headers.h"
-#include <entt/entt.hpp>
+#include "scene_core/component.h"
 
 namespace mite {
+// 前向声明
+class Entity;
 /**
  * @brief 实体层次结构组件
  *
  * 管理实体间的父子关系，构成场景图的基础结构
  * 注意：实际父子关系逻辑由Entity类管理，此类仅存储数据
  */
-class HierarchyComponent {
+class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component::Family::Core> {
  public:
   /**
    * @brief 默认构造函数（创建无父节点的根实体）
@@ -30,7 +31,7 @@ class HierarchyComponent {
    * @brief 获取父实体句柄
    * @return 父实体EnTT句柄（entt::null表示无父节点）
    */
-  entt::entity GetParent() const
+  std::shared_ptr<Entity> GetParent() const
   {
     return m_Parent;
   }
@@ -39,7 +40,7 @@ class HierarchyComponent {
    * @brief 获取所有子实体句柄
    * @return 子实体句柄列表（按添加顺序）
    */
-  const std::vector<entt::entity> &GetChildren() const
+  const std::vector<std::shared_ptr<Entity>> &GetChildren() const
   {
     return m_Children;
   }
@@ -72,7 +73,7 @@ class HierarchyComponent {
    * @brief 获取深度（距离根节点的层级数）
    * @note 需要在场景中查询父级，可能有一定开销
    */
-  size_t GetDepth(const entt::registry &registry) const;
+  size_t GetDepth(const entt::registry &registry);
 
  private:
   friend class Entity;      // 允许Entity类直接修改层次关系
@@ -84,14 +85,14 @@ class HierarchyComponent {
    * @brief 添加子节点（内部使用）
    * @param child 子实体句柄
    */
-  void AddChild(entt::entity child);
+  void AddChild(std::shared_ptr<Entity> child);
 
   /**
    * @brief 移除子节点（内部使用）
    * @param child 子实体句柄
    * @return 是否成功移除
    */
-  bool RemoveChild(entt::entity child);
+  bool RemoveChild(std::shared_ptr<Entity> child);
 
   /**
    * @brief 清空所有子节点（内部使用）
@@ -102,12 +103,12 @@ class HierarchyComponent {
    * @brief 设置父节点（内部使用）
    * @param parent 父实体句柄
    */
-  void SetParent(entt::entity parent);
+  void SetParent(std::shared_ptr<Entity> parent);
 
  private:
-  entt::entity m_Parent{entt::null};     // 父实体句柄
-  std::vector<entt::entity> m_Children;  // 子实体列表
-  size_t m_DepthCache = 0;               // 深度缓存（非持久化）
+  std::shared_ptr<Entity> m_Parent{nullptr};        // 父实体句柄
+  std::vector<std::shared_ptr<Entity>> m_Children;  // 子实体列表
+  size_t m_DepthCache = 0;                          // 深度缓存（非持久化）
 };
 };
 

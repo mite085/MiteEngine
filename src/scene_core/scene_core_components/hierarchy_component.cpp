@@ -1,7 +1,8 @@
 #include "hierarchy_component.h"
+#include "scene_core/entity.h"
 
 namespace mite {
-size_t HierarchyComponent::GetDepth(const entt::registry &registry) const
+size_t HierarchyComponent::GetDepth(const entt::registry &registry)
 {
   // 如果已经是根节点，深度为0
   if (IsRoot()) {
@@ -14,8 +15,9 @@ size_t HierarchyComponent::GetDepth(const entt::registry &registry) const
   }
 
   // 递归计算深度
+  // TODO: 此处不应直接接触entt::registry的逻辑，应当对其进行进一步封装。
   size_t depth = 0;
-  entt::entity current = m_Parent;
+  entt::entity current = m_Parent->GetHandle();
 
   while (current != entt::null) {
     if (!registry.valid(current)) {
@@ -28,7 +30,7 @@ size_t HierarchyComponent::GetDepth(const entt::registry &registry) const
     }
 
     ++depth;
-    current = parentHierarchy->m_Parent;
+    current = parentHierarchy->m_Parent->GetHandle();
   }
 
   // 更新缓存（注意：缓存只在计算期间有效，不持久化）
@@ -37,7 +39,7 @@ size_t HierarchyComponent::GetDepth(const entt::registry &registry) const
   return depth;
 }
 
-void HierarchyComponent::AddChild(entt::entity child)
+void HierarchyComponent::AddChild(std::shared_ptr<Entity> child)
 {
   // Error check: Cannot add null entity as child!
   assert(child != entt::null);
@@ -51,7 +53,7 @@ void HierarchyComponent::AddChild(entt::entity child)
   m_DepthCache = 0;  // 使深度缓存失效
 }
 
-bool HierarchyComponent::RemoveChild(entt::entity child)
+bool HierarchyComponent::RemoveChild(std::shared_ptr<Entity> child)
 {
   auto it = std::find(m_Children.begin(), m_Children.end(), child);
   if (it != m_Children.end()) {
@@ -68,7 +70,7 @@ void HierarchyComponent::ClearChildren()
   m_DepthCache = 0;  // 使深度缓存失效
 }
 
-void HierarchyComponent::SetParent(entt::entity parent)
+void HierarchyComponent::SetParent(std::shared_ptr<Entity> parent)
 {
   m_Parent = parent;
   m_DepthCache = 0;  // 使深度缓存失效

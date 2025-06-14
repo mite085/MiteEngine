@@ -240,6 +240,11 @@ void Entity::Destroy()
   }
 }
 
+entt::entity Entity::GetHandle() const
+{
+  return m_Handle;
+}
+
 // ²Ù×÷·ûÖØÔØ ===============================================
 
 bool Entity::operator==(const Entity &other) const

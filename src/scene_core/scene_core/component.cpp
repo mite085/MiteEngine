@@ -1,4 +1,5 @@
 #include "component.h"
+#include "entity.h"
 
 namespace mite {
 // 基类方法的基础实现
@@ -37,4 +38,6 @@ bool Component::Deserialize(std::istream &input)
   input.read(reinterpret_cast<char *>(&m_Enabled), sizeof(m_Enabled));
   return !input.fail();
 }
+
+Component::Component(std::weak_ptr<Entity> owner) : m_OwnerEntity(owner) {}
 };  // namespace mite
