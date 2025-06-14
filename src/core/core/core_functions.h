@@ -16,8 +16,10 @@ class CoreFunctions {
    * @brief 通配符字符串匹配函数
    *
    * 用于判断一个字符串是否与给定的通配符模式匹配，
-   * * - 匹配任意数量的任意字符，包括零个字符(*.jpg)
-   * ? - 匹配任意单个字符(如test可以被te??匹配)
+   * * - 匹配任意数量的任意字符，包括零个字符
+   *	 (如my_image.jpg可以被*.jpg匹配)
+   * ? - 匹配任意单个字符
+   *	 (如test可以被te??匹配)
    *
    * @param str		被匹配的字符串
    * @param pattern 包含通配符的字符串(支持 * 以及 ? 符号)
@@ -27,4 +29,5 @@ class CoreFunctions {
 };
 
 }  // namespace mite
+
 #endif

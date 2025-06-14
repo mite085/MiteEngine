@@ -75,7 +75,8 @@ class HierarchyComponent {
   size_t GetDepth(const entt::registry &registry) const;
 
  private:
-  friend class Entity;  // 允许Entity类直接修改层次关系
+  friend class Entity;      // 允许Entity类直接修改层次关系
+  friend class SceneGraph;
 
   // 内部方法 ==============================================
 

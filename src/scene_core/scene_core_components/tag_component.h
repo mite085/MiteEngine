@@ -85,6 +85,6 @@ class TagComponent {
   void UpdateSubTagsCache() const;
 };
 
-};
+};  // namespace mite
 
 #endif
