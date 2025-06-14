@@ -16,6 +16,7 @@
 #include <cassert>
 #include <atomic>
 #include <filesystem>
+#include <queue>
 
 // C++17 ±ê×¼¿â
 #include <any>

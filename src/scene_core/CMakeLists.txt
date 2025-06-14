@@ -10,6 +10,8 @@ set(SCENE_CORE_SRCS
     scene_core/components.h
     scene_core/scene.h
     scene_core/scene.cpp
+    scene_core/scene_graph.h
+    scene_core/scene_graph.cpp
     scene_core/scene_serializer.h
     scene_core/scene_serializer.cpp
 )
