@@ -1,7 +1,6 @@
 #include "entity.h"
 #include "scene.h"
-#include "scene_core_components/id_component.h"
-#include "scene_core_components/hierarchy_component.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
 Entity::Entity(std::weak_ptr<Scene> scene, entt::entity handle) : m_Scene(scene), m_Handle(handle)

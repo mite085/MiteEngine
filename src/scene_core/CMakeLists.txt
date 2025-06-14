@@ -5,9 +5,10 @@ set(SCENE_CORE_LIB_NAME MiteEngine_Scene_Core)
 
 # 创建源代码组(筛选器)
 set(SCENE_CORE_SRCS
+    scene_core/component.h
+    scene_core/component.cpp
     scene_core/entity.h
     scene_core/entity.cpp
-    scene_core/components.h
     scene_core/scene.h
     scene_core/scene.cpp
     scene_core/scene_graph.h
@@ -18,6 +19,7 @@ set(SCENE_CORE_SRCS
 source_group("core" FILES ${SCENE_CORE_SRCS})
 
 set(SCENE_COMPONENTS_SRCS
+    scene_core_components/component_headers.h
     scene_core_components/hierarchy_component.h
     scene_core_components/hierarchy_component.cpp
     scene_core_components/id_component.h

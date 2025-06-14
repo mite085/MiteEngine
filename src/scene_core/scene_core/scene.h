@@ -2,7 +2,7 @@
 #define MITE_SCENE
 
 #include "entity.h"
-#include "components.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
 // Ç°ÏòÉùÃ÷

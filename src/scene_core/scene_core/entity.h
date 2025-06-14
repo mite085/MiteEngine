@@ -1,10 +1,6 @@
 #ifndef MITE_SCENE_ENTITY
 #define MITE_SCENE_ENTITY
 
-#include "scene_core_components/id_component.h"
-#include "scene_core_components/hierarchy_component.h"
-#include "scene_core_components/destroy_component.h"
-
 namespace mite {
 
 // Ç°ÖÃÉùÃ÷
