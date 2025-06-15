@@ -6,6 +6,7 @@
 #include "id_component.h"
 #include "tag_component.h"
 #include "transform_component.h"
+#include "visibility_component.h"
 
 namespace mite {
 

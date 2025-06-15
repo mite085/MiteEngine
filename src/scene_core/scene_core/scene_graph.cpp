@@ -201,96 +201,23 @@ void SceneGraph::RecalculateAllDepths()
   }
 }
 
+void SceneGraph::OnRenderPrepare()
+{
+  // 现阶段仅确保世界变换更新
+  UpdateWorldTransformsAndVisibility(true);
+}
+
 void SceneGraph::OnUpdate(float timestep)
 {  
-  // 1. 处理变换继承 --------------------------------------------
+  // 1. 处理变换继承和可见性继承 --------------------------------
+  UpdateWorldTransformsAndVisibility(true);
 
-  // 使用EnTT的多线程视图(如果可用)并行处理变换更新
-  auto view = m_Registry.GetEntitiesWith<TransformComponent, HierarchyComponent>();
-
-  // 第一遍: 收集所有脏标记的根变换
-  std::vector<Entity> dirtyRoots;
-  for (auto entity : view) {
-    auto &transform = m_Registry.GetComponent<TransformComponent>(entity);
-    auto &hierarchy = m_Registry.GetComponent<HierarchyComponent>(entity);
-
-    // 如果是根节点或者父节点没有脏标记，但自身有脏标记
-    if (hierarchy.IsRoot() && transform.IsDirty()) {
-      dirtyRoots.push_back(entity);
-    }
-    else if (!hierarchy.IsRoot()) {
-      auto parent = hierarchy.GetParent();
-      if (m_Registry.IsValid(parent)) {
-        if (auto parentTransform = m_Registry.TryGetComponent<TransformComponent>(parent)) {
-          // 如果父节点有脏标记，子节点也需要更新
-          if (parentTransform->IsDirty() || transform.IsDirty()) {
-            dirtyRoots.push_back(entity);
-          }
-        }
-      }
-    }
-  }
-
-  // 第二遍: 从脏标记根节点开始向下传播变换
-  for (auto root : dirtyRoots) {
-    Traverse(
-        root,
-        [this](Entity entity) {
-          if (auto transform = m_Registry.TryGetComponent<TransformComponent>(entity)) {
-            // 获取父节点变换(如果是根节点则为单位矩阵)
-            glm::mat4 parentTransform = glm::mat4(1.0f);
-            if (auto hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
-              if (!hierarchy->IsRoot()) {
-                auto parent = hierarchy->GetParent();
-                if (m_Registry.IsValid(parent)) {
-                  if (auto parentTransformComp = m_Registry.TryGetComponent<TransformComponent>(parent)) {
-                    parentTransform = parentTransformComp->GetWorldMatrix();
-                  }
-                }
-              }
-            }
-
-            // 更新世界变换
-            transform->UpdateTransform();
-
-            // Event触发时自动清除脏标记
-            // transform->ClearDirtyFlag();
-          }
-          return true;  // 继续遍历
-        },
-        TraversalOrder::DepthFirst);
-  }
-
-  // 2. 处理可见性继承 ------------------------------------------
-
-  // 只有在前一阶段有变换更新时才需要更新可见性
-  if (!dirtyRoots.empty()) {
-    auto visibilityView = m_Registry.GetEntitiesWith<VisibilityComponent, HierarchyComponent>();
-
-    for (auto entity : visibilityView) {
-      auto &visibility = m_Registry.GetComponent<VisibilityComponent>(entity);
-      auto &hierarchy = m_Registry.GetComponent<HierarchyComponent>(entity);
-
-      // 如果父节点不可见，子节点也不可见
-      if (!hierarchy.IsRoot()) {
-        auto parent = hierarchy.GetParent();
-        if (m_Registry.IsValid(parent)) {
-          if (auto parentVisibility = m_Registry.TryGetComponent<VisibilityComponent>(parent)) {
-            if (!parentVisibility->IsVisible()) {
-              visibility.SetVisible(false, false);  // 不传播，避免重复处理
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // 3. 处理延迟的层次结构变更 ----------------------------------
+  // 2. 处理延迟的层次结构变更 ----------------------------------
 
   //// TODO: 如果有延迟的父子关系变更，在这里处理
   //ProcessDeferredHierarchyChanges();
 
-  // 4. 更新场景图统计信息 --------------------------------------
+  // 3. 更新场景图统计信息 --------------------------------------
 
   //// TODO: 按照时间step更新统计信息
   //UpdateSceneStatistics(timestep);
@@ -358,5 +285,94 @@ bool SceneGraph::TraverseReverseDFS(Entity entity, const VisitorFunc &visitor) c
   }
 
   return visitor(entity);
+}
+void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
+{
+  // 1. 处理变换继承 --------------------------------------------
+
+  auto view = m_Registry.GetEntitiesWith<TransformComponent, HierarchyComponent>();
+
+  // 第一遍: 收集所有脏标记的根变换
+  std::vector<Entity> dirtyRoots;
+  for (auto entity : view) {
+    auto &transform = m_Registry.GetComponent<TransformComponent>(entity);
+    auto &hierarchy = m_Registry.GetComponent<HierarchyComponent>(entity);
+
+    // 如果是根节点或者父节点没有脏标记，但自身有脏标记
+    // (或者dirtyOnly关闭的情况下，不考虑当前是否有脏标记，均收集并更新)
+    if (hierarchy.IsRoot() && (transform.IsDirty() || !dirtyOnly)) {
+      dirtyRoots.push_back(entity);
+    }
+    else if (!hierarchy.IsRoot()) {
+      auto parent = hierarchy.GetParent();
+      if (m_Registry.IsValid(parent)) {
+        if (auto parentTransform = m_Registry.TryGetComponent<TransformComponent>(parent)) {
+          // 如果父节点有脏标记，子节点也需要更新 
+          // (或者dirtyOnly关闭的情况下，不考虑当前是否有脏标记，均收集并更新)
+          if ((parentTransform->IsDirty() || !dirtyOnly) || (transform.IsDirty() || !dirtyOnly))
+            {
+            dirtyRoots.push_back(entity);
+          }
+        }
+      }
+    }
+  }
+
+  // 第二遍: 从脏标记根节点开始向下传播变换
+  for (auto root : dirtyRoots) {
+    Traverse(
+        root,
+        [this](Entity entity) {
+          if (auto transform = m_Registry.TryGetComponent<TransformComponent>(entity)) {
+            // 获取父节点变换(如果是根节点则为单位矩阵)
+            glm::mat4 parentTransform = glm::mat4(1.0f);
+            if (auto hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
+              if (!hierarchy->IsRoot()) {
+                auto parent = hierarchy->GetParent();
+                if (m_Registry.IsValid(parent)) {
+                  if (auto parentTransformComp = m_Registry.TryGetComponent<TransformComponent>(
+                          parent))
+                  {
+                    parentTransform = parentTransformComp->GetWorldMatrix();
+                  }
+                }
+              }
+            }
+
+            // 更新世界变换
+            transform->UpdateTransform();
+
+            // 清除脏标记
+            transform->SetDirty(false);
+          }
+          return true;  // 继续遍历
+        },
+        TraversalOrder::DepthFirst);
+  }
+
+  // 2. 处理可见性继承 ------------------------------------------
+
+  // 只有在前一阶段有变换更新时才需要更新可见性
+  if (!dirtyRoots.empty()) {
+    auto visibilityView = m_Registry.GetEntitiesWith<VisibilityComponent, HierarchyComponent>();
+
+    for (auto entity : visibilityView) {
+      auto &visibility = m_Registry.GetComponent<VisibilityComponent>(entity);
+      auto &hierarchy = m_Registry.GetComponent<HierarchyComponent>(entity);
+
+      // 如果父节点不可见，子节点也不可见
+      if (!hierarchy.IsRoot()) {
+        auto parent = hierarchy.GetParent();
+        if (m_Registry.IsValid(parent)) {
+          if (auto parentVisibility = m_Registry.TryGetComponent<VisibilityComponent>(parent)) {
+            if (!parentVisibility->IsVisible()) {
+              visibility.SetVisibilityState(
+                  parentVisibility->GetVisibilityState());  // 不传播，避免重复处理
+            }
+          }
+        }
+      }
+    }
+  }
 }
 };

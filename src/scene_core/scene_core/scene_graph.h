@@ -130,6 +130,19 @@ class SceneGraph {
   void RecalculateAllDepths();
 
   /**
+   * @brief 渲染准备阶段回调，将场景图数据组织为渲染友好格式
+   * 
+   * TODO: 典型工作：
+   * 1. 更新所有脏节点的世界变换
+   * 2. 执行视锥体剔除
+   * 3. 生成渲染队列
+   * 4. 重置脏标记
+   * 
+   * 现阶段仅确保世界变换更新
+   */
+  void OnRenderPrepare();
+
+  /**
    * @brief 每帧更新场景图状态
    * @param timestep 帧时间间隔(秒)
    *
@@ -171,6 +184,13 @@ class SceneGraph {
    * @return 是否继续遍历
    */
   bool TraverseReverseDFS(Entity entity, const VisitorFunc &visitor) const;
+
+
+  /**
+   * @brief 更新世界变换
+   * @param dirtyOnly 仅更新dirty entity的flag
+   */
+  void UpdateWorldTransforms(bool dirtyOnly);
 
   // EnTT注册表引用
   SceneRegistry &m_Registry;

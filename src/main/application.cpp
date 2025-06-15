@@ -176,7 +176,7 @@ void MiteApplication::BeginFrame()
 void MiteApplication::Update()
 {
   // 更新场景状态(ECS系统更新)
-  m_Scene->UpDate();
+  m_Scene->OnUpdate(Time::DeltaTime());
 
   // TODO：处理动画
   UpdateAnimations();
