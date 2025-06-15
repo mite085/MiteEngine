@@ -44,8 +44,12 @@ class Component {
   /**
    * @brief 克隆组件(深拷贝)
    * @return 新组件实例的共享指针
+   *
+   * 注意：Component克隆方法，和HierarchyComponent的禁用拷贝构造函数，
+   * 相互冲突，引发编译错误。现阶段优先确保HierarchyComponent禁止拷贝，
+   * 后续需要深拷贝时添加clone方法
    */
-  virtual std::shared_ptr<Component> Clone() const = 0;
+  // virtual std::shared_ptr<Component> Clone() const = 0;
 
   /**
    * @brief 标记组件为已修改
@@ -81,12 +85,12 @@ class Component {
   /**
    * @brief 返回组件是否依赖于其他组件
    * @return 依赖的组件类型列表
-   * 
-   * 注意: 
+   *
+   * 注意:
    * 与场景树直接相关的组件(如TransformComponent、
    * LightComponent、CameraComponent等)，需要依赖
    * HierarchyComponent，它就是组成场景树的核心。
-   * 
+   *
    * 或者通过对TransformComponent的依赖，实现对
    * HierarchyComponent的间接依赖(如MeshComponent、
    * AnimationComponent等)。
@@ -132,10 +136,10 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
   {
     return typeid(T);
   }
-  std::shared_ptr<Component> Clone() const override
-  {
-    return std::make_shared<T>(static_cast<const T &>(*this));
-  }
+  // std::shared_ptr<Component> Clone() const override
+  //{
+  //   return std::make_shared<T>(static_cast<const T &>(*this));
+  // }
 
   // 启用静态类型检查的组件ID获取
   static std::type_index GetStaticType()
@@ -147,6 +151,6 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
     return family;
   }
 };
-};
+};  // namespace mite
 
 #endif
