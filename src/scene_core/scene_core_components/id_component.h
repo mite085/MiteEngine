@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_ID_COMPONENT
 #define MITE_SCENE_ID_COMPONENT
 
-#include "headers/headers.h"
+#include "scene_core/component.h"
 
 #define UUID_SYSTEM_GENERATOR
 #include <uuid.h> 
@@ -16,19 +16,19 @@ namespace mite {
  * 3. 跨场景引用
  * 4. 网络同步标识
  */
-class IDComponent {
+class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core> {
  public:
   /**
    * @brief 默认构造函数（生成新UUID）
    */
-  IDComponent();
+  IDComponent(std::weak_ptr<Entity> owner);
 
   /**
    * @brief 从现有UUID字符串构造
    * @param id 符合RFC4122标准的UUID字符串
    * @throws std::runtime_error 当UUID格式无效时抛出
    */
-  explicit IDComponent(const std::string &id);
+  explicit IDComponent(std::weak_ptr<Entity> owner, const std::string &id);
 
   // 禁止拷贝和赋值（保持ID唯一性）
   IDComponent(const IDComponent &) = delete;
@@ -70,7 +70,7 @@ class IDComponent {
   /**
    * @brief 生成新的随机UUID（静态方法）
    */
-  static IDComponent Generate();
+  static IDComponent Generate(std::weak_ptr<Entity> owner);
 
   /**
    * @brief 检查字符串是否为有效UUID

@@ -1,8 +1,7 @@
 #ifndef MITE_SCENE_DESTROY_COMPONENT
 #define MITE_SCENE_DESTROY_COMPONENT
 
-#include "headers/headers.h"
-#include <entt/entt.hpp>
+#include "scene_core/component.h"
 
 namespace mite {
 /**
@@ -13,13 +12,13 @@ namespace mite {
  *
  * 注意：这是一个空组件，仅作为标记使用，不包含任何数据成员。
  */
-struct DestroyComponent {
+struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Family::Core> {
   // 无数据成员，纯标记组件
 
   /**
    * @brief 默认构造函数
    */
-  DestroyComponent() = default;
+  DestroyComponent(std::weak_ptr<Entity> owner);
 
   /**
    * @brief 用于调试的字符串表示

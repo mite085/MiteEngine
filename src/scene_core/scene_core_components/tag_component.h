@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_TAG_COMPONENT
 #define MITE_SCENE_TAG_COMPONENT
 
-#include "headers/headers.h"
+#include "scene_core/component.h"
 
 namespace mite {
 /**
@@ -12,23 +12,23 @@ namespace mite {
  * - 实体搜索和筛选
  * - 运行时实体标识
  */
-class TagComponent {
+class TagComponent : public ComponentTraits<TagComponent, Component::Family::Core> {
  public:
   // 默认构造
-  TagComponent() = default;
+  TagComponent(std::weak_ptr<Entity> owner);
 
   /**
    * @brief 使用指定名称构造
    * @param tag 实体名称/标签
    */
-  explicit TagComponent(const std::string &tag);
+  TagComponent(std::weak_ptr<Entity> owner, const std::string &tag);
 
   /**
    * @brief 使用指定名称和颜色构造
    * @param tag 实体名称/标签
    * @param color 编辑器显示颜色(RGBA)
    */
-  TagComponent(const std::string &tag, const glm::vec4 &color);
+  TagComponent(std::weak_ptr<Entity> owner, const std::string &tag, const glm::vec4 &color);
 
   // 序列化支持
   template<typename Archive> void serialize(Archive &archive);

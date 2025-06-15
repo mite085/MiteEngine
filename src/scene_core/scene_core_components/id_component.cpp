@@ -1,16 +1,15 @@
 #include "id_component.h"
 
 namespace mite {
-
 // UUID字符串转换的本地辅助函数
 std::string UUIDToString(const uuids::uuid &id)
 {
   return uuids::to_string(id);
 }
 
-IDComponent::IDComponent()
-    : m_UUID(uuids::uuid_system_generator{}())  // 使用系统级随机生成器
-      ,
+IDComponent::IDComponent(std::weak_ptr<Entity> owner)
+    : ComponentTraits(owner),
+      m_UUID(uuids::uuid_system_generator{}()),
       m_UUIDString(UUIDToString(m_UUID))
 {
   // 确保生成的UUID有效
@@ -19,7 +18,8 @@ IDComponent::IDComponent()
   }
 }
 
-IDComponent::IDComponent(const std::string &id)
+IDComponent::IDComponent(std::weak_ptr<Entity> owner, const std::string &id)
+    : ComponentTraits(owner)
 {
   // 尝试解析字符串
   auto optionalUUID = uuids::uuid::from_string(id);
@@ -34,9 +34,9 @@ IDComponent::IDComponent(const std::string &id)
   m_UUIDString = UUIDToString(m_UUID);
 }
 
-IDComponent IDComponent::Generate()
+IDComponent IDComponent::Generate(std::weak_ptr<Entity> owner)
 {
-  return IDComponent();  // 委托给默认构造函数
+  return IDComponent(owner);  // 委托给默认构造函数
 }
 
 bool IDComponent::IsValid(const std::string &id)
@@ -49,4 +49,4 @@ bool IDComponent::IsValid(const std::string &id)
   auto optionalUUID = uuids::uuid::from_string(id);
   return optionalUUID.has_value() && !optionalUUID->is_nil();
 }
-};
+};  // namespace mite

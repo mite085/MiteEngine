@@ -1,7 +1,9 @@
 #include "tag_component.h"
 
 namespace mite {
-TagComponent::TagComponent(const std::string &tag) : m_Tag(tag)
+TagComponent::TagComponent(std::weak_ptr<Entity> owner) : ComponentTraits(owner) {}
+TagComponent::TagComponent(std::weak_ptr<Entity> owner, const std::string &tag)
+    : ComponentTraits(owner), m_Tag(tag)
 {
   // 验证标签有效性
   if (m_Tag.empty()) {
@@ -9,8 +11,10 @@ TagComponent::TagComponent(const std::string &tag) : m_Tag(tag)
   }
 }
 
-TagComponent::TagComponent(const std::string &tag, const glm::vec4 &color)
-    : m_Tag(tag), m_Color(color)
+TagComponent::TagComponent(std::weak_ptr<Entity> owner,
+                           const std::string &tag,
+                           const glm::vec4 &color)
+    : ComponentTraits(owner), m_Tag(tag), m_Color(color)
 {
   if (m_Tag.empty()) {
     m_Tag = "Entity";
@@ -78,4 +82,4 @@ template<typename Archive> void TagComponent::serialize(Archive &archive)
 {
   archive(cereal::make_nvp("Tag", m_Tag), cereal::make_nvp("Color", m_Color));
 }
-};
+};  // namespace mite
