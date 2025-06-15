@@ -6,12 +6,12 @@ namespace mite {
 bool SceneGraph::SetParent(Entity entity, Entity newParent)
 {
   // 检查实体有效性
-  if (!m_Registry.valid(entity)) {
+  if (!m_Registry.IsValid(entity)) {
     return false;
   }
 
   // 如果新父节点不为null，检查其有效性
-  if (newParent != entt::null && !m_Registry.valid(newParent)) {
+  if (newParent != entt::null && !m_Registry.IsValid(newParent)) {
     return false;
   }
 
@@ -26,7 +26,7 @@ bool SceneGraph::SetParent(Entity entity, Entity newParent)
   }
 
   // 获取当前父节点
-  auto &hierarchy = m_Registry.get_or_emplace<HierarchyComponent>(entity);
+  auto &hierarchy = m_Registry.GetOrAddComponent<HierarchyComponent>(entity);
   Entity oldParent = hierarchy.GetParent();
 
   // 如果父节点没有变化，直接返回成功
@@ -36,7 +36,7 @@ bool SceneGraph::SetParent(Entity entity, Entity newParent)
 
   // 从旧父节点中移除
   if (oldParent != entt::null) {
-    auto &oldParentHierarchy = m_Registry.get<HierarchyComponent>(oldParent);
+    auto &oldParentHierarchy = m_Registry.GetComponent<HierarchyComponent>(oldParent);
     oldParentHierarchy.RemoveChild(entity);
   }
 
@@ -45,7 +45,7 @@ bool SceneGraph::SetParent(Entity entity, Entity newParent)
 
   // 添加到新父节点的子列表
   if (newParent != entt::null) {
-    auto &newParentHierarchy = m_Registry.get_or_emplace<HierarchyComponent>(newParent);
+    auto &newParentHierarchy = m_Registry.GetOrAddComponent<HierarchyComponent>(newParent);
     newParentHierarchy.AddChild(entity);
   }
 
@@ -58,7 +58,7 @@ bool SceneGraph::SetParent(Entity entity, Entity newParent)
 
 Entity SceneGraph::GetParent(Entity entity) const
 {
-  if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+  if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
     return hierarchy->GetParent();
   }
   return entt::null;
@@ -68,7 +68,7 @@ const std::vector<Entity> &SceneGraph::GetChildren(Entity entity) const
 {
   static const std::vector<Entity> emptyChildren;
 
-  if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+  if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
     return hierarchy->GetChildren();
   }
   return emptyChildren;
@@ -76,7 +76,7 @@ const std::vector<Entity> &SceneGraph::GetChildren(Entity entity) const
 
 bool SceneGraph::IsRoot(Entity entity) const
 {
-  if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+  if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
     return hierarchy->IsRoot();
   }
   return true;  // 没有HierarchyComponent的实体视为根节点
@@ -84,7 +84,7 @@ bool SceneGraph::IsRoot(Entity entity) const
 
 bool SceneGraph::IsLeaf(Entity entity) const
 {
-  if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+  if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
     return hierarchy->IsLeaf();
   }
   return true;  // 没有HierarchyComponent的实体视为叶节点
@@ -92,7 +92,7 @@ bool SceneGraph::IsLeaf(Entity entity) const
 
 size_t SceneGraph::GetDepth(Entity entity) const
 {
-  if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+  if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
     return hierarchy->GetDepth(m_Registry);
   }
   return 0;  // 没有HierarchyComponent的实体深度为0
@@ -102,7 +102,7 @@ void SceneGraph::Traverse(Entity root,
                           const VisitorFunc &visitor,
                           TraversalOrder order) const
 {
-  if (!m_Registry.valid(root) || !visitor) {
+  if (!m_Registry.IsValid(root) || !visitor) {
     return;
   }
 
@@ -129,9 +129,9 @@ void SceneGraph::TraverseAll(const VisitorFunc &visitor, TraversalOrder order) c
 
 std::vector<Entity> SceneGraph::GetPathToRoot(Entity entity) const
 {
-  std::vector<entt::entity> path;
+  std::vector<Entity> path;
 
-  while (m_Registry.valid(entity)) {
+  while (m_Registry.IsValid(entity)) {
     path.push_back(entity);
     entity = GetParent(entity);
   }
@@ -160,9 +160,9 @@ std::vector<Entity> SceneGraph::GetRoots() const
   std::vector<Entity> roots;
 
   // 遍历所有有HierarchyComponent的实体，收集根节点
-  auto &storage = m_Registry.storage<Entity>();
+  auto &storage = m_Registry.GetAllEntities();
   for (auto entity : storage) {
-    if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+    if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
       if (hierarchy->IsRoot()) {
         roots.push_back(entity);
       }

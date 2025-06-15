@@ -101,9 +101,9 @@ class Component {
   // 并接收对Entity的弱引用，确保支持向上查询
   explicit Component(std::weak_ptr<Entity> owner);
 
-  std::weak_ptr<Entity> GetOwner() const
+  std::shared_ptr<Entity> GetOwner() const
   {
-    return m_OwnerEntity;
+    return m_OwnerEntity.lock();
   }
 
  private:

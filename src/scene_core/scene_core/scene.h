@@ -2,6 +2,7 @@
 #define MITE_SCENE
 
 #include "entity.h"
+#include "scene_registry.h"
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
@@ -121,11 +122,11 @@ class Scene : public std::enable_shared_from_this<Scene> {
    * 
    * 场景序列化需要修改registry内的entities顺序
    */
-  entt::registry &GetRegistry()
+  SceneRegistry &GetRegistry()
   {
     return m_Registry;
   }
-  const entt::registry &GetRegistry() const
+  const SceneRegistry &GetRegistry() const
   {
     return m_Registry;
   }
@@ -136,7 +137,7 @@ class Scene : public std::enable_shared_from_this<Scene> {
 
  private:
   std::string m_Name;         // 场景名称
-  entt::registry m_Registry;  // EnTT实体组件注册表
+  SceneRegistry m_Registry;  // EnTT实体组件注册表(直接值持有,与Scene共享生命周期，避免unique_ptr不必要的堆分配)
 
   // 场景系统
   std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统

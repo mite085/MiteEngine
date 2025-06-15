@@ -3,6 +3,7 @@
 
 #include "headers/headers.h"
 #include "entity.h"
+#include "scene_registry.h"
 
 namespace mite {
 /**
@@ -32,7 +33,7 @@ class SceneGraph {
    * @brief 构造函数
    * @param registry EnTT注册表引用
    */
-  explicit SceneGraph(entt::registry &registry) : m_Registry(registry) {}
+  explicit SceneGraph(SceneRegistry &registry) : m_Registry(registry) {}
 
   // 禁止拷贝
   SceneGraph(const SceneGraph &) = delete;
@@ -172,7 +173,7 @@ class SceneGraph {
   bool TraverseReverseDFS(Entity entity, const VisitorFunc &visitor) const;
 
   // EnTT注册表引用
-  entt::registry &m_Registry;
+  SceneRegistry &m_Registry;
 };
 };  // namespace mite
 

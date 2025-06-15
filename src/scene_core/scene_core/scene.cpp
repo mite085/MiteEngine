@@ -3,7 +3,7 @@
 #include "scene_observer.h"
 #include "scene_serializer.h"
 namespace mite {
-Scene::Scene(const std::string &name) : m_Name(name)
+Scene::Scene(const std::string &name) : m_Name(name), m_Registry(weak_from_this())
 {
   // 初始化核心系统
   InitSystems();
@@ -12,7 +12,7 @@ Scene::Scene(const std::string &name) : m_Name(name)
   // auto env = CreateEntity("Environment");
   // env.AddComponent<EnvironmentComponent>();
 
-  m_MainCamera = std::make_shared<Entity>(weak_from_this(), entt::null);
+  m_MainCamera = Entity(weak_from_this(), entt::null);
 }
 
 Scene::~Scene()
@@ -43,7 +43,7 @@ void Scene::OnUpdate(float timestep)
   m_SceneGraph->OnUpdate(timestep);
 
   // 处理实体销毁队列
-  m_Registry.view<DestroyComponent>().each(
+  m_Registry.View<DestroyComponent>().each(
       [this](auto entity, auto &) { m_Registry.destroy(entity); });
 }
 
@@ -59,13 +59,13 @@ void Scene::OnRenderPrepare()
 void Scene::Clear(bool keepSystems)
 {
   // 1. 销毁所有实体（不触发单独销毁事件，直接批量清除）
-  m_Registry.clear();
+  m_Registry.Clear();
 
   // 2. 重置实体ID计数器
   m_EntityCounter = 0;
 
   // 3. 重置主相机引用
-  m_MainCamera = std::make_unique<Entity>(weak_from_this(), entt::null);
+  m_MainCamera = Entity(weak_from_this(), entt::null);
 
   // 4. 重置场景图状态
   if (m_SceneGraph) {
@@ -135,7 +135,7 @@ void Scene::DestroyEntity(Entity entity)
 
 bool Scene::IsValid(Entity entity) const
 {
-  return entity && m_Registry.valid(entity.GetHandle());
+  return entity && m_Registry.IsValid(entity);
 }
 
 void Scene::Serialize(const std::filesystem::path &filepath)

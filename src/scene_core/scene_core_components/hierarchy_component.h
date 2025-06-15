@@ -2,6 +2,7 @@
 #define MITE_SCENE_HIERACHY_COMPONENT
 
 #include "scene_core/component.h"
+#include "scene_core/scene_registry.h"
 
 namespace mite {
 // 前向声明
@@ -74,7 +75,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
    * @brief 获取深度（距离根节点的层级数）
    * @note 需要在场景中查询父级，可能有一定开销
    */
-  size_t GetDepth(const entt::registry &registry);
+  size_t GetDepth(SceneRegistry &registry);
 
  private:
   friend class Entity;  // 允许Entity类直接修改层次关系

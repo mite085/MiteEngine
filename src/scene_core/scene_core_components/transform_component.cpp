@@ -49,12 +49,12 @@ glm::vec3 TransformComponent::GetWorldPosition() const
 
 void TransformComponent::SetWorldPosition(const glm::vec3 &position)
 {
-  if (GetOwner().lock()->HasComponent<HierarchyComponent>()) {
-    auto &hierarchy = GetOwner().lock()->GetComponent<HierarchyComponent>();
+  if (GetOwner()->HasComponent<HierarchyComponent>()) {
+    auto &hierarchy = GetOwner()->GetComponent<HierarchyComponent>();
     if (hierarchy.GetParent() != entt::null) {
       // 如果有父节点，转换为局部位置
       TransformComponent &parentTransform =
-          hierarchy.GetParent()->GetComponent<TransformComponent>();
+          hierarchy.GetParent().GetComponent<TransformComponent>();
       glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix();
       glm::mat4 inverseParent = glm::inverse(parentWorldMat);
       glm::vec4 localPos = inverseParent * glm::vec4(position, 1.0f);
