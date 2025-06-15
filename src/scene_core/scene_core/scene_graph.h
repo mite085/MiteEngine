@@ -1,8 +1,6 @@
 #ifndef MITE_SCENE_GRAPH
 #define MITE_SCENE_GRAPH
 
-#include "headers/headers.h"
-#include "entity.h"
 #include "scene_registry.h"
 
 namespace mite {
@@ -190,7 +188,7 @@ class SceneGraph {
    * @brief 更新世界变换
    * @param dirtyOnly 仅更新dirty entity的flag
    */
-  void UpdateWorldTransforms(bool dirtyOnly);
+  void UpdateWorldTransformsAndVisibility(bool dirtyOnly);
 
   // EnTT注册表引用
   SceneRegistry &m_Registry;

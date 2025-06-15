@@ -97,9 +97,7 @@ size_t SceneGraph::GetDepth(Entity entity) const
   return 0;  // 没有HierarchyComponent的实体深度为0
 }
 
-void SceneGraph::Traverse(Entity root,
-                          const VisitorFunc &visitor,
-                          TraversalOrder order) const
+void SceneGraph::Traverse(Entity root, const VisitorFunc &visitor, TraversalOrder order) const
 {
   if (!m_Registry.IsValid(root) || !visitor) {
     return;
@@ -208,19 +206,19 @@ void SceneGraph::OnRenderPrepare()
 }
 
 void SceneGraph::OnUpdate(float timestep)
-{  
+{
   // 1. 处理变换继承和可见性继承 --------------------------------
   UpdateWorldTransformsAndVisibility(true);
 
   // 2. 处理延迟的层次结构变更 ----------------------------------
 
   //// TODO: 如果有延迟的父子关系变更，在这里处理
-  //ProcessDeferredHierarchyChanges();
+  // ProcessDeferredHierarchyChanges();
 
   // 3. 更新场景图统计信息 --------------------------------------
 
   //// TODO: 按照时间step更新统计信息
-  //UpdateSceneStatistics(timestep);
+  // UpdateSceneStatistics(timestep);
 }
 
 bool SceneGraph::WouldFormCycle(Entity child, Entity newParent) const
@@ -307,10 +305,9 @@ void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
       auto parent = hierarchy.GetParent();
       if (m_Registry.IsValid(parent)) {
         if (auto parentTransform = m_Registry.TryGetComponent<TransformComponent>(parent)) {
-          // 如果父节点有脏标记，子节点也需要更新 
+          // 如果父节点有脏标记，子节点也需要更新
           // (或者dirtyOnly关闭的情况下，不考虑当前是否有脏标记，均收集并更新)
-          if ((parentTransform->IsDirty() || !dirtyOnly) || (transform.IsDirty() || !dirtyOnly))
-            {
+          if ((parentTransform->IsDirty() || !dirtyOnly) || (transform.IsDirty() || !dirtyOnly)) {
             dirtyRoots.push_back(entity);
           }
         }
@@ -375,4 +372,4 @@ void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
     }
   }
 }
-};
+};  // namespace mite

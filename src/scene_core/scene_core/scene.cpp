@@ -2,6 +2,8 @@
 #include "scene_graph.h"
 #include "scene_observer.h"
 #include "scene_serializer.h"
+#include "scene_core_components/component_headers.h"
+
 namespace mite {
 Scene::Scene(const std::string &name) : m_Name(name), m_Registry(weak_from_this())
 {

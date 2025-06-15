@@ -1,3 +1,6 @@
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
 #include "scene_serializer.h"
 #include "scene.h"
 
