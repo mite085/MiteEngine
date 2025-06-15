@@ -5,7 +5,7 @@
 
 namespace mite {
 
-// 前置声明
+// 前向声明
 class Scene;
 
 /**
@@ -20,6 +20,8 @@ class Entity {
 
   /**
    * @brief 默认构造一个空实体（无效实体）
+   * 
+   * 注意，此时m_Handle = entt::null，执行IsValid()返回值为false
    */
   Entity() = default;
 
@@ -182,7 +184,11 @@ class Entity {
 
  private:
   // 内部方法 ===================================================
-  void UpdateChildParentRelationship(Entity child, bool keepWorldTransform);
+  /**
+   * @brief 保持世界变换不变的情况下，按照新的Parent世界变换，更新局部变换
+   * @param keepWorldTransform 保持世界变换不变的flag
+   */
+  void UpdateChildParentRelationship(bool keepWorldTransform);
   void RemoveFromParent();
 
  private:

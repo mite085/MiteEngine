@@ -3,18 +3,7 @@
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
-Entity::Entity(std::weak_ptr<Scene> scene, entt::entity handle) : m_Scene(scene), m_Handle(handle)
-{
-  // 确保实体有必需组件
-  if (auto scenePtr = m_Scene.lock()) {
-    if (!scenePtr->GetRegistry().any_of<IDComponent>(m_Handle)) {
-      scenePtr->GetRegistry().emplace<IDComponent>(m_Handle);
-    }
-    if (!scenePtr->GetRegistry().any_of<HierarchyComponent>(m_Handle)) {
-      scenePtr->GetRegistry().emplace<HierarchyComponent>(m_Handle);
-    }
-  }
-}
+Entity::Entity(std::weak_ptr<Scene> scene, entt::entity handle) : m_Scene(scene), m_Handle(handle){}
 
 // 组件操作实现 ==============================================
 
@@ -31,7 +20,7 @@ template<typename T, typename... Args> T &Entity::AddComponent(Args &&...args)
     RemoveComponent<T>();
   }
 
-  auto &component = scenePtr->Reg().emplace<T>(m_Handle, std::forward<Args>(args)...);
+  auto &component = scenePtr->GetRegistry().AddComponent<T>(m_Handle, std::forward<Args>(args)...);
   scenePtr->OnComponentAdded<T>(*this, component);
   return component;
 }
@@ -42,7 +31,7 @@ template<typename T> void Entity::RemoveComponent()
     return;
 
   if (auto scenePtr = m_Scene.lock()) {
-    if (scenePtr->m_Registry.any_of<T>(m_Handle)) {
+    if (scenePtr->GetRegistry().AnyOf<T>(m_Handle)) {
       auto &component = scenePtr->m_Registry.get<T>(m_Handle);
       scenePtr->OnComponentRemoved<T>(*this, component);
       scenePtr->m_Registry.remove<T>(m_Handle);
@@ -63,7 +52,7 @@ template<typename T> bool Entity::HasComponent() const
   if (!IsValid())
     return false;
   if (auto scenePtr = m_Scene.lock()) {
-    return scenePtr->m_Registry.all_of<T>(m_Handle);
+    return scenePtr->GetRegistry().AllOf<T>(m_Handle);
   }
   return false;
 }
@@ -73,7 +62,7 @@ template<typename T> T &Entity::GetComponent()
   // Error check: Entity does not have component!
   assert(HasComponent<T>());
   if (auto scenePtr = m_Scene.lock()) {
-    return scenePtr->m_Registry.get<T>(m_Handle);
+    return scenePtr->GetRegistry().GetComponent<T>(m_Handle);
   }
   throw std::runtime_error("Scene is expired!");
 }
@@ -83,7 +72,7 @@ template<typename T> const T &Entity::GetComponent() const
   // Error check: Entity does not have component!
   assert(HasComponent<T>());
   if (auto scenePtr = m_Scene.lock()) {
-    return scenePtr->m_Registry.get<T>(m_Handle);
+    return scenePtr->GetRegistry().GetComponent<T>(m_Handle);
   }
   throw std::runtime_error("Scene is expired!");
 }
@@ -93,7 +82,7 @@ template<typename T> T *Entity::TryGetComponent()
   if (!IsValid())
     return nullptr;
   if (auto scenePtr = m_Scene.lock()) {
-    return scenePtr->m_Registry.try_get<T>(m_Handle);
+    return scenePtr->GetRegistry().TryGetComponent<T>(m_Handle);
   }
   return nullptr;
 }
@@ -103,7 +92,7 @@ template<typename T> const T *Entity::TryGetComponent() const
   if (!IsValid())
     return nullptr;
   if (auto scenePtr = m_Scene.lock()) {
-    return scenePtr->m_Registry.try_get<T>(m_Handle);
+    return scenePtr->GetRegistry().TryGetComponent<T>(m_Handle);
   }
   return nullptr;
 }
@@ -120,12 +109,12 @@ void Entity::SetParent(Entity parent, bool keepWorldTransform)
 
   if (parent.IsValid()) {
     auto &hierarchy = GetComponent<HierarchyComponent>();
-    hierarchy.SetParent(parent.m_Handle);
+    hierarchy.SetParent(parent);
 
     auto &parentHierarchy = parent.GetComponent<HierarchyComponent>();
-    parentHierarchy.AddChild(m_Handle);
+    parentHierarchy.AddChild(*this);
 
-    UpdateChildParentRelationship(*this, keepWorldTransform);
+    UpdateChildParentRelationship(keepWorldTransform);
   }
 }
 
@@ -136,37 +125,32 @@ Entity Entity::GetParent() const
   }
 
   const auto &hierarchy = GetComponent<HierarchyComponent>();
-  if (hierarchy.GetParent() == entt::null) {
+  if (!hierarchy.GetParent().IsValid()) {
     return Entity();
   }
 
-  if (auto scenePtr = m_Scene.lock()) {
-    return Entity(scenePtr, hierarchy.GetParent());
-  }
-  return Entity();
+  return hierarchy.GetParent();
 }
 
 const std::vector<Entity> &Entity::GetChildren() const
 {
+  // 所有线程共享一份static const常量，减少开销(?，是否有存在意义)
   static const std::vector<Entity> emptyChildren;
 
   if (!IsValid() || !HasComponent<HierarchyComponent>()) {
     return emptyChildren;
   }
 
-  if (auto scenePtr = m_Scene.lock()) {
-    const auto &hierarchy = GetComponent<HierarchyComponent>();
-    if (!hierarchy.GetChildren().empty()) {
-      thread_local std::vector<Entity> children;
-      children.clear();
-      for (auto childHandle : hierarchy.GetChildren()) {
-        children.emplace_back(scenePtr, childHandle);
-      }
-      return children;
+  const auto &hierarchy = GetComponent<HierarchyComponent>();
+  if (!hierarchy.GetChildren().empty()) {
+    // 确保线程安全，使用thread_local关键字
+    thread_local std::vector<Entity> children;
+    children.clear();
+    for (auto childHandle : hierarchy.GetChildren()) {
+      children.emplace_back(m_Scene, childHandle);
     }
+    return children;
   }
-
-  return emptyChildren;
 }
 
 void Entity::AddChild(Entity child, bool keepWorldTransform)
@@ -235,7 +219,7 @@ void Entity::Destroy()
     RemoveFromParent();
 
     // 标记实体为销毁状态
-    scenePtr->GetRegistry().destroy(m_Handle);
+    scenePtr->GetRegistry().DestroyEntity(*this);
     m_Handle = entt::null;
   }
 }
@@ -269,12 +253,52 @@ std::shared_ptr<Scene> Entity::GetScene() const
 
 // 私有方法 =================================================
 
-void Entity::UpdateChildParentRelationship(Entity child, bool keepWorldTransform)
+void Entity::UpdateChildParentRelationship(bool keepWorldTransform)
 {
-  // TODO: 这里可以添加保持世界变换的逻辑
-  // 实际实现需要TransformSystem的支持
+  
   if (keepWorldTransform) {
-    // TODO: 计算并更新局部变换以保持当前世界变换
+    auto parent = GetParent();
+    // 检查parent实体存在性
+    if (parent.IsValid()) {
+      // 检查parent是否包含Transform component
+      if (HasComponent<TransformComponent>() && parent.HasComponent<TransformComponent>()) {
+        auto &this_transform = GetComponent<TransformComponent>();
+        auto &parent_transform = parent.GetComponent<TransformComponent>();
+
+        // 保存当前世界变换
+        glm::mat4 worldMatrix = this_transform.GetWorldMatrix();
+
+        // 计算相对于新父级的局部变换
+        glm::mat4 parentWorldMatrix = parent_transform.GetWorldMatrix();
+        glm::mat4 newLocalMatrix = glm::inverse(parentWorldMatrix) * worldMatrix;
+
+        // 分解矩阵应用到局部变换
+        glm::vec3 scale;
+        glm::quat rotation;
+        glm::vec3 translation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+
+        if (glm::decompose(newLocalMatrix, scale, rotation, translation, skew, perspective)) {
+          // 应用新的局部变换
+          this_transform.SetLocalPosition(translation);
+          this_transform.SetLocalRotation(rotation);
+          this_transform.SetLocalScale(scale);
+        }
+        else {
+          // 分解失败，保持原样(Entity为轻量级组件基类，并不包含独立的logger)
+          LOG_WARN("Failed to decompose matrix when updating parent-child relationship");
+        }
+      }
+      else {
+        // this或parent实体无Transform组件，无需改变
+        return;
+      }
+    }
+    else {
+      // 无parent实体，无需改变
+      return;
+    }
   }
 }
 
@@ -288,7 +312,7 @@ void Entity::RemoveFromParent()
   if (hierarchy.GetParent() != entt::null) {
     if (auto parent = GetParent(); parent.IsValid()) {
       auto &parentHierarchy = parent.GetComponent<HierarchyComponent>();
-      parentHierarchy.RemoveChild(m_Handle);
+      parentHierarchy.RemoveChild(*this);
     }
     hierarchy.SetParent(entt::null);
   }
