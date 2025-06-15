@@ -26,6 +26,11 @@ TransformComponent::TransformComponent(std::weak_ptr<Entity> owner, const glm::m
 
 // 位置相关方法 ==============================================
 
+const glm::vec3 &TransformComponent::GetLocalPosition() const
+{
+  return m_Position;
+}
+
 void TransformComponent::SetLocalPosition(const glm::vec3 &position)
 {
   if (m_Position != position) {
@@ -68,7 +73,16 @@ void TransformComponent::Translate(const glm::vec3 &translation)
   SetDirty();
 }
 
+void TransformComponent::Translate(float x, float y, float z) {
+  Translate(glm::vec3{x, y, z});
+}
+
 // 旋转相关方法 ==============================================
+
+const glm::quat &TransformComponent::GetLocalRotation() const
+{
+  return m_Rotation;
+}
 
 void TransformComponent::SetLocalRotation(const glm::quat &rotation)
 {
@@ -90,6 +104,11 @@ void TransformComponent::SetLocalEulerAngles(const glm::vec3 &eulerAngles)
   SetLocalRotation(glm::quat(eulerAngles));
 }
 
+void TransformComponent::SetLocalEulerAngles(float x, float y, float z)
+{
+  SetLocalEulerAngles(glm::vec3{x, y, z});
+}
+
 glm::quat TransformComponent::GetWorldRotation() const
 {
   const glm::mat4 &worldMat = GetWorldMatrix();
@@ -102,12 +121,84 @@ glm::quat TransformComponent::GetWorldRotation() const
   return rotation;
 }
 
+void TransformComponent::SetWorldRotation(const glm::quat &rotation)
+{
+  if (GetOwner().lock()->HasComponent<HierarchyComponent>()) {
+    auto &hierarchy = GetOwner().lock()->GetComponent<HierarchyComponent>();
+    if (hierarchy.GetParent() != entt::null) {
+      // 如果有父节点，转换为局部旋转
+      TransformComponent &parentTransform =
+          hierarchy.GetParent()->GetComponent<TransformComponent>();
+      glm::quat parentWorldRot = parentTransform.GetWorldRotation();
+      SetLocalRotation(glm::inverse(parentWorldRot) * rotation);
+      return;
+    }
+  }
+  // 没有父节点，世界旋转就是局部旋转
+  SetLocalRotation(rotation);
+}
+
 void TransformComponent::Rotate(const glm::quat &rotation)
 {
+  // 应用旋转（局部空间，右乘）
   m_Rotation = rotation * m_Rotation;
+
+  // 标记矩阵需要更新
   m_LocalMatrixDirty = true;
   m_WorldMatrixDirty = true;
   SetDirty();
+}
+
+void TransformComponent::Rotate(const glm::vec3 &axis, float angle)
+{  // 确保旋转轴是单位向量
+  const glm::vec3 normalizedAxis = glm::normalize(axis);
+
+  // 创建旋转四元数 (角度/2 因为四元数使用半角)
+  const glm::quat rotation = glm::angleAxis(angle, normalizedAxis);
+
+  // 应用旋转
+  Rotate(rotation);
+}
+
+void TransformComponent::RotateAround(const glm::vec3 &point, const glm::vec3 &axis, float angle)
+{
+  // 获取当前世界位置
+  const glm::vec3 worldPos = GetWorldPosition();
+
+  // 计算从旋转中心到实体的向量
+  const glm::vec3 toObject = worldPos - point;
+
+  // 创建旋转四元数
+  const glm::vec3 normalizedAxis = glm::normalize(axis);
+  const glm::quat rotation = glm::angleAxis(angle, normalizedAxis);
+
+  // 旋转向量并计算新位置
+  const glm::vec3 rotatedVec = rotation * toObject;
+  const glm::vec3 newWorldPos = point + rotatedVec;
+
+  // 更新世界位置（会自动处理父子关系）
+  SetWorldPosition(newWorldPos);
+
+  // 同时应用旋转到实体朝向（世界空间）
+  if (GetOwner().lock()->HasComponent<HierarchyComponent>()) {
+    auto &hierarchy = GetOwner().lock()->GetComponent<HierarchyComponent>();
+    if (hierarchy.GetParent() != entt::null) {
+      // 如果有父节点，转换为局部旋转
+      TransformComponent &parentTransform =
+          hierarchy.GetParent()->GetComponent<TransformComponent>();
+      glm::quat parentWorldRot = parentTransform.GetWorldRotation();
+      glm::quat localRot = glm::inverse(parentWorldRot) * rotation * parentWorldRot;
+      Rotate(localRot);
+    }
+    else {
+      Rotate(rotation);
+    }
+  }
+  else {
+    Rotate(rotation);
+  }
+
+  // 注意：不需要再设置脏标记，因为SetWorldPosition和Rotate已经处理
 }
 
 void TransformComponent::LookAt(const glm::vec3 &target, const glm::vec3 &up)
@@ -133,6 +224,11 @@ void TransformComponent::LookAt(const glm::vec3 &target, const glm::vec3 &up)
 
 // 缩放相关方法 ==============================================
 
+const glm::vec3 &TransformComponent::GetLocalScale() const
+{
+  return m_Scale;
+}
+
 void TransformComponent::SetLocalScale(const glm::vec3 &scale)
 {
   if (m_Scale != scale) {
@@ -141,6 +237,11 @@ void TransformComponent::SetLocalScale(const glm::vec3 &scale)
     m_WorldMatrixDirty = true;
     SetDirty();
   }
+}
+
+void TransformComponent::SetLocalScale(float scale)
+{
+  SetLocalScale(glm::vec3{scale, scale, scale});
 }
 
 glm::vec3 TransformComponent::GetWorldScale() const
