@@ -81,6 +81,15 @@ class Component {
   /**
    * @brief 返回组件是否依赖于其他组件
    * @return 依赖的组件类型列表
+   * 
+   * 注意: 
+   * 与场景树直接相关的组件(如TransformComponent、
+   * LightComponent、CameraComponent等)，需要依赖
+   * HierarchyComponent，它就是组成场景树的核心。
+   * 
+   * 或者通过对TransformComponent的依赖，实现对
+   * HierarchyComponent的间接依赖(如MeshComponent、
+   * AnimationComponent等)。
    */
   virtual std::vector<std::type_index> GetDependencies() const
   {

@@ -7,10 +7,11 @@ namespace mite {
 // 前向声明
 class Entity;
 /**
- * @brief 实体层次结构组件
- *
- * 管理实体间的父子关系，构成场景图的基础结构
- * 注意：实际父子关系逻辑由Entity类管理，此类仅存储数据
+ * @brief 实体层次结构组件，
+ * 管理实体间的父子关系，构成场景树的基础结构
+ * 
+ * 注意：
+ * 实际父子关系逻辑由Entity类管理，此类仅存储数据
  */
 class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component::Family::Core> {
  public:

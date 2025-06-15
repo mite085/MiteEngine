@@ -71,14 +71,14 @@ class SceneSerializer {
 
   /**
    * @brief 注册所有可序列化的组件类型
-   * @tparam Archive Cereal存档类型
+   * @tparam Archive Cereal存档类型(Json/Binary)
    * @param archive Cereal存档对象
    */
   template<typename Archive> void RegisterComponentTypes(Archive &archive);
 
   /**
    * @brief 序列化实体及其组件
-   * @tparam Archive Cereal存档类型
+   * @tparam Archive Cereal存档类型(Json/Binary)
    * @param archive Cereal存档对象
    * @param registry EnTT注册表
    */
@@ -86,7 +86,7 @@ class SceneSerializer {
 
   /**
    * @brief 反序列化实体及其组件
-   * @tparam Archive Cereal存档类型
+   * @tparam Archive Cereal存档类型(Json/Binary)
    * @param archive Cereal存档对象
    * @param registry EnTT注册表
    */
