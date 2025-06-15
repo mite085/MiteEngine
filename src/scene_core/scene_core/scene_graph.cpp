@@ -1,8 +1,9 @@
 #include "scene_graph.h"
 #include "scene_core_components/hierarchy_component.h"
+#include "scene_core_components/transform_component.h"
 
 namespace mite {
-bool SceneGraph::SetParent(entt::entity entity, entt::entity newParent)
+bool SceneGraph::SetParent(Entity entity, Entity newParent)
 {
   // 检查实体有效性
   if (!m_Registry.valid(entity)) {
@@ -26,7 +27,7 @@ bool SceneGraph::SetParent(entt::entity entity, entt::entity newParent)
 
   // 获取当前父节点
   auto &hierarchy = m_Registry.get_or_emplace<HierarchyComponent>(entity);
-  entt::entity oldParent = hierarchy.GetParent();
+  Entity oldParent = hierarchy.GetParent();
 
   // 如果父节点没有变化，直接返回成功
   if (oldParent == newParent) {
@@ -55,7 +56,7 @@ bool SceneGraph::SetParent(entt::entity entity, entt::entity newParent)
   return true;
 }
 
-entt::entity SceneGraph::GetParent(entt::entity entity) const
+Entity SceneGraph::GetParent(Entity entity) const
 {
   if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
     return hierarchy->GetParent();
@@ -63,9 +64,9 @@ entt::entity SceneGraph::GetParent(entt::entity entity) const
   return entt::null;
 }
 
-const std::vector<entt::entity> &SceneGraph::GetChildren(entt::entity entity) const
+const std::vector<Entity> &SceneGraph::GetChildren(Entity entity) const
 {
-  static const std::vector<entt::entity> emptyChildren;
+  static const std::vector<Entity> emptyChildren;
 
   if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
     return hierarchy->GetChildren();
@@ -73,7 +74,7 @@ const std::vector<entt::entity> &SceneGraph::GetChildren(entt::entity entity) co
   return emptyChildren;
 }
 
-bool SceneGraph::IsRoot(entt::entity entity) const
+bool SceneGraph::IsRoot(Entity entity) const
 {
   if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
     return hierarchy->IsRoot();
@@ -81,7 +82,7 @@ bool SceneGraph::IsRoot(entt::entity entity) const
   return true;  // 没有HierarchyComponent的实体视为根节点
 }
 
-bool SceneGraph::IsLeaf(entt::entity entity) const
+bool SceneGraph::IsLeaf(Entity entity) const
 {
   if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
     return hierarchy->IsLeaf();
@@ -89,7 +90,7 @@ bool SceneGraph::IsLeaf(entt::entity entity) const
   return true;  // 没有HierarchyComponent的实体视为叶节点
 }
 
-size_t SceneGraph::GetDepth(entt::entity entity) const
+size_t SceneGraph::GetDepth(Entity entity) const
 {
   if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
     return hierarchy->GetDepth(m_Registry);
@@ -97,7 +98,7 @@ size_t SceneGraph::GetDepth(entt::entity entity) const
   return 0;  // 没有HierarchyComponent的实体深度为0
 }
 
-void SceneGraph::Traverse(entt::entity root,
+void SceneGraph::Traverse(Entity root,
                           const VisitorFunc &visitor,
                           TraversalOrder order) const
 {
@@ -126,7 +127,7 @@ void SceneGraph::TraverseAll(const VisitorFunc &visitor, TraversalOrder order) c
   }
 }
 
-std::vector<entt::entity> SceneGraph::GetPathToRoot(entt::entity entity) const
+std::vector<Entity> SceneGraph::GetPathToRoot(Entity entity) const
 {
   std::vector<entt::entity> path;
 
@@ -138,7 +139,7 @@ std::vector<entt::entity> SceneGraph::GetPathToRoot(entt::entity entity) const
   return path;
 }
 
-bool SceneGraph::IsInSameHierarchy(entt::entity entity1, entt::entity entity2) const
+bool SceneGraph::IsInSameHierarchy(Entity entity1, Entity entity2) const
 {
   // 获取两个实体到根节点的路径
   auto path1 = GetPathToRoot(entity1);
@@ -154,12 +155,12 @@ bool SceneGraph::IsInSameHierarchy(entt::entity entity1, entt::entity entity2) c
   return false;
 }
 
-std::vector<entt::entity> SceneGraph::GetRoots() const
+std::vector<Entity> SceneGraph::GetRoots() const
 {
-  std::vector<entt::entity> roots;
+  std::vector<Entity> roots;
 
   // 遍历所有有HierarchyComponent的实体，收集根节点
-  auto &storage = m_Registry.storage<entt::entity>();
+  auto &storage = m_Registry.storage<Entity>();
   for (auto entity : storage) {
     if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
       if (hierarchy->IsRoot()) {
@@ -178,7 +179,7 @@ std::vector<entt::entity> SceneGraph::GetRoots() const
 void SceneGraph::RecalculateAllDepths()
 {
   // 广度优先遍历所有根节点，计算深度
-  std::queue<std::pair<entt::entity, size_t>> queue;
+  std::queue<std::pair<Entity, size_t>> queue;
 
   // 初始队列包含所有根节点，深度为0
   auto roots = GetRoots();
@@ -209,7 +210,7 @@ void SceneGraph::OnUpdate(float timestep)
   auto view = m_Registry.view<TransformComponent, HierarchyComponent>();
 
   // 第一遍: 收集所有脏标记的根变换
-  std::vector<entt::entity> dirtyRoots;
+  std::vector<Entity> dirtyRoots;
   for (auto entity : view) {
     auto &transform = view.get<TransformComponent>(entity);
     auto &hierarchy = view.get<HierarchyComponent>(entity);
@@ -235,7 +236,7 @@ void SceneGraph::OnUpdate(float timestep)
   for (auto root : dirtyRoots) {
     Traverse(
         root,
-        [this](entt::entity entity) {
+        [this](Entity entity) {
           if (auto transform = m_Registry.try_get<TransformComponent>(entity)) {
             // 获取父节点变换(如果是根节点则为单位矩阵)
             glm::mat4 parentTransform = glm::mat4(1.0f);
@@ -296,11 +297,11 @@ void SceneGraph::OnUpdate(float timestep)
   //UpdateSceneStatistics(timestep);
 }
 
-bool SceneGraph::WouldFormCycle(entt::entity child, entt::entity newParent) const
+bool SceneGraph::WouldFormCycle(Entity child, Entity newParent) const
 {
   // 从新父节点向上遍历，如果遇到child则形成循环
-  entt::entity current = newParent;
-  while (current != entt::null) {
+  Entity current = newParent;
+  while (current != nullptr) {
     if (current == child) {
       return true;
     }
@@ -309,7 +310,7 @@ bool SceneGraph::WouldFormCycle(entt::entity child, entt::entity newParent) cons
   return false;
 }
 
-bool SceneGraph::TraverseDFS(entt::entity entity, const VisitorFunc &visitor) const
+bool SceneGraph::TraverseDFS(Entity entity, const VisitorFunc &visitor) const
 {
   if (!visitor(entity)) {
     return false;
@@ -326,9 +327,9 @@ bool SceneGraph::TraverseDFS(entt::entity entity, const VisitorFunc &visitor) co
   return true;
 }
 
-void SceneGraph::TraverseBFS(entt::entity entity, const VisitorFunc &visitor) const
+void SceneGraph::TraverseBFS(Entity entity, const VisitorFunc &visitor) const
 {
-  std::queue<entt::entity> queue;
+  std::queue<Entity> queue;
   queue.push(entity);
 
   while (!queue.empty()) {
@@ -347,7 +348,7 @@ void SceneGraph::TraverseBFS(entt::entity entity, const VisitorFunc &visitor) co
   }
 }
 
-bool SceneGraph::TraverseReverseDFS(entt::entity entity, const VisitorFunc &visitor) const
+bool SceneGraph::TraverseReverseDFS(Entity entity, const VisitorFunc &visitor) const
 {
   if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
     for (auto child : hierarchy->GetChildren()) {

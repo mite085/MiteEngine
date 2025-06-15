@@ -15,6 +15,9 @@ set(SCENE_CORE_SRCS
     scene_core/scene_graph.cpp
     scene_core/scene_serializer.h
     scene_core/scene_serializer.cpp
+    scene_core/scene_registry.h
+    scene_core/scene_registry.cpp
+    
 )
 source_group("core" FILES ${SCENE_CORE_SRCS})
 

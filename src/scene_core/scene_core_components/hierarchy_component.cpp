@@ -39,7 +39,7 @@ size_t HierarchyComponent::GetDepth(const entt::registry &registry)
   return depth;
 }
 
-void HierarchyComponent::AddChild(std::shared_ptr<Entity> child)
+void HierarchyComponent::AddChild(Entity child)
 {
   // Error check: Cannot add null entity as child!
   assert(child != entt::null);
@@ -53,7 +53,7 @@ void HierarchyComponent::AddChild(std::shared_ptr<Entity> child)
   m_DepthCache = 0;  // 使深度缓存失效
 }
 
-bool HierarchyComponent::RemoveChild(std::shared_ptr<Entity> child)
+bool HierarchyComponent::RemoveChild(Entity child)
 {
   auto it = std::find(m_Children.begin(), m_Children.end(), child);
   if (it != m_Children.end()) {
@@ -70,7 +70,7 @@ void HierarchyComponent::ClearChildren()
   m_DepthCache = 0;  // 使深度缓存失效
 }
 
-void HierarchyComponent::SetParent(std::shared_ptr<Entity> parent)
+void HierarchyComponent::SetParent(Entity parent)
 {
   m_Parent = parent;
   m_DepthCache = 0;  // 使深度缓存失效

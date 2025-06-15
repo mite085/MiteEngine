@@ -9,7 +9,7 @@ class Entity;
 /**
  * @brief 实体层次结构组件，
  * 管理实体间的父子关系，构成场景树的基础结构
- * 
+ *
  * 注意：
  * 实际父子关系逻辑由Entity类管理，此类仅存储数据
  */
@@ -32,7 +32,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
    * @brief 获取父实体句柄
    * @return 父实体EnTT句柄（entt::null表示无父节点）
    */
-  std::shared_ptr<Entity> GetParent() const
+  Entity GetParent() const
   {
     return m_Parent;
   }
@@ -41,7 +41,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
    * @brief 获取所有子实体句柄
    * @return 子实体句柄列表（按添加顺序）
    */
-  const std::vector<std::shared_ptr<Entity>> &GetChildren() const
+  const std::vector<Entity> &GetChildren() const
   {
     return m_Children;
   }
@@ -77,7 +77,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
   size_t GetDepth(const entt::registry &registry);
 
  private:
-  friend class Entity;      // 允许Entity类直接修改层次关系
+  friend class Entity;  // 允许Entity类直接修改层次关系
   friend class SceneGraph;
 
   // 内部方法 ==============================================
@@ -86,14 +86,14 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
    * @brief 添加子节点（内部使用）
    * @param child 子实体句柄
    */
-  void AddChild(std::shared_ptr<Entity> child);
+  void AddChild(Entity child);
 
   /**
    * @brief 移除子节点（内部使用）
    * @param child 子实体句柄
    * @return 是否成功移除
    */
-  bool RemoveChild(std::shared_ptr<Entity> child);
+  bool RemoveChild(Entity child);
 
   /**
    * @brief 清空所有子节点（内部使用）
@@ -104,13 +104,13 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
    * @brief 设置父节点（内部使用）
    * @param parent 父实体句柄
    */
-  void SetParent(std::shared_ptr<Entity> parent);
+  void SetParent(Entity parent);
 
  private:
-  std::shared_ptr<Entity> m_Parent{nullptr};        // 父实体句柄
-  std::vector<std::shared_ptr<Entity>> m_Children;  // 子实体列表
-  size_t m_DepthCache = 0;                          // 深度缓存（非持久化）
+  Entity m_Parent;                 // 父实体句柄
+  std::vector<Entity> m_Children;  // 子实体列表
+  size_t m_DepthCache = 0;         // 深度缓存（非持久化）
 };
-};
+};  // namespace mite
 
 #endif

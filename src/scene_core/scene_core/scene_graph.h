@@ -2,7 +2,7 @@
 #define MITE_SCENE_GRAPH
 
 #include "headers/headers.h"
-#include <entt/entt.hpp>
+#include "entity.h"
 
 namespace mite {
 /**
@@ -26,7 +26,7 @@ class SceneGraph {
   };
 
   // 遍历回调函数类型
-  using VisitorFunc = std::function<bool(entt::entity)>;
+  using VisitorFunc = std::function<bool(Entity)>;
 
   /**
    * @brief 构造函数
@@ -46,40 +46,40 @@ class SceneGraph {
    *
    * @note 会进行循环依赖检查，如果形成循环则操作失败
    */
-  bool SetParent(entt::entity entity, entt::entity newParent);
+  bool SetParent(Entity entity, Entity newParent);
 
   /**
    * @brief 获取实体父节点
    * @param entity 目标实体
    * @return 父实体句柄(entt::null表示无父节点)
    */
-  entt::entity GetParent(entt::entity entity) const;
+  Entity GetParent(Entity entity) const;
 
   /**
    * @brief 获取实体子节点列表
    * @param entity 目标实体
    * @return 子实体列表(按添加顺序)
    */
-  const std::vector<entt::entity> &GetChildren(entt::entity entity) const;
+  const std::vector<Entity> &GetChildren(Entity entity) const;
 
   /**
    * @brief 检查实体是否为根节点
    * @param entity 目标实体
    */
-  bool IsRoot(entt::entity entity) const;
+  bool IsRoot(Entity entity) const;
 
   /**
    * @brief 检查实体是否为叶节点
    * @param entity 目标实体
    */
-  bool IsLeaf(entt::entity entity) const;
+  bool IsLeaf(Entity entity) const;
 
   /**
    * @brief 获取实体在场景图中的深度
    * @param entity 目标实体
    * @return 深度值(根节点为0)
    */
-  size_t GetDepth(entt::entity entity) const;
+  size_t GetDepth(Entity entity) const;
 
   /**
    * @brief 遍历场景图
@@ -89,7 +89,7 @@ class SceneGraph {
    *
    * @note 如果visitor返回false，则停止遍历
    */
-  void Traverse(entt::entity root,
+  void Traverse(Entity root,
                 const VisitorFunc &visitor,
                 TraversalOrder order = TraversalOrder::DepthFirst) const;
 
@@ -106,20 +106,20 @@ class SceneGraph {
    * @param entity 起始实体
    * @return 路径实体列表(从实体到根节点顺序)
    */
-  std::vector<entt::entity> GetPathToRoot(entt::entity entity) const;
+  std::vector<Entity> GetPathToRoot(Entity entity) const;
 
   /**
    * @brief 检查两个实体是否在同一个层次结构中
    * @param entity1 实体1
    * @param entity2 实体2
    */
-  bool IsInSameHierarchy(entt::entity entity1, entt::entity entity2) const;
+  bool IsInSameHierarchy(Entity entity1, Entity entity2) const;
 
   /**
    * @brief 获取场景中所有根实体
    * @return 根实体列表
    */
-  std::vector<entt::entity> GetRoots() const;
+  std::vector<Entity> GetRoots() const;
 
   /**
    * @brief 重新计算并缓存所有实体的深度值
@@ -146,7 +146,7 @@ class SceneGraph {
    * @param child 子实体
    * @param newParent 新父实体
    */
-  bool WouldFormCycle(entt::entity child, entt::entity newParent) const;
+  bool WouldFormCycle(Entity child, Entity newParent) const;
 
   /**
    * @brief 内部方法 - 深度优先遍历实现
@@ -154,14 +154,14 @@ class SceneGraph {
    * @param visitor 访问者回调
    * @return 是否继续遍历
    */
-  bool TraverseDFS(entt::entity entity, const VisitorFunc &visitor) const;
+  bool TraverseDFS(Entity entity, const VisitorFunc &visitor) const;
 
   /**
    * @brief 内部方法 - 广度优先遍历实现
    * @param entity 起始实体
    * @param visitor 访问者回调
    */
-  void TraverseBFS(entt::entity entity, const VisitorFunc &visitor) const;
+  void TraverseBFS(Entity entity, const VisitorFunc &visitor) const;
 
   /**
    * @brief 内部方法 - 逆深度优先遍历实现
@@ -169,7 +169,7 @@ class SceneGraph {
    * @param visitor 访问者回调
    * @return 是否继续遍历
    */
-  bool TraverseReverseDFS(entt::entity entity, const VisitorFunc &visitor) const;
+  bool TraverseReverseDFS(Entity entity, const VisitorFunc &visitor) const;
 
   // EnTT注册表引用
   entt::registry &m_Registry;
