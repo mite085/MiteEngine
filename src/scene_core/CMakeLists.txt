@@ -54,6 +54,4 @@ target_link_libraries(${SCENE_CORE_LIB_NAME}
     PRIVATE 
     spdlog::spdlog
     MiteEngine_Core
-    EnTT::EnTT
-    stduuid
 )

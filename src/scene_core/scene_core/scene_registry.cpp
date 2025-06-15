@@ -46,7 +46,8 @@ std::vector<Entity> SceneRegistry::GetAllEntities()
   return entities;
 }
 
-template<typename... Component> std::vector<Entity> SceneRegistry::GetEntitiesWith()
+template<typename... Component>
+std::vector<Entity> SceneRegistry::GetEntitiesWith()
 {
   std::vector<Entity> entities;
   auto view = m_Registry.view<Component...>();
@@ -69,7 +70,7 @@ template<typename... Component> std::vector<Entity> SceneRegistry::GetEntitiesWi
 template<typename T, typename... Args>
 T &SceneRegistry::AddComponent(Entity entity, Args &&...args)
 {
-  assert(IsValid(entity), "Cannot add component to invalid entity!");
+  assert(IsValid(entity));
   if (HasComponent<T>(entity)) {
     RemoveComponent<T>(entity);
   }
@@ -78,7 +79,7 @@ T &SceneRegistry::AddComponent(Entity entity, Args &&...args)
 
 template<typename T> T &SceneRegistry::GetOrAddComponent(Entity entity)
 {
-  assert(IsValid(entity), "Cannot get component from invalid entity!");
+  assert(IsValid(entity));
   return m_Registry.get_or_emplace<T>(entity.GetHandle());
 }
 
@@ -96,13 +97,13 @@ template<typename T> bool SceneRegistry::HasComponent(Entity entity) const
 
 template<typename T> T &SceneRegistry::GetComponent(Entity entity)
 {
-  assert(HasComponent<T>(entity), "Entity does not have component!");
+  assert(HasComponent<T>(entity));
   return m_Registry.get<T>(entity.GetHandle());
 }
 
 template<typename T> const T &SceneRegistry::GetComponent(Entity entity) const
 {
-  assert(HasComponent<T>(entity), "Entity does not have component!");
+  assert(HasComponent<T>(entity));
   return m_Registry.get<T>(entity.GetHandle());
 }
 
@@ -121,12 +122,6 @@ template<typename T> const T *SceneRegistry::TryGetComponent(Entity entity) cons
 }
 
 // 视图和查询实现 ===========================================
-
-template<typename... Component, typename... Exclude>
-auto SceneRegistry::View(entt::exclude_t<Exclude...> exclude) const
-{
-  return m_Registry.view<Component...>(exclude);
-}
 
 template<typename... Component> bool SceneRegistry::AnyOf(Entity entity) const
 {

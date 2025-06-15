@@ -123,12 +123,12 @@ glm::quat TransformComponent::GetWorldRotation() const
 
 void TransformComponent::SetWorldRotation(const glm::quat &rotation)
 {
-  if (GetOwner().lock()->HasComponent<HierarchyComponent>()) {
-    auto &hierarchy = GetOwner().lock()->GetComponent<HierarchyComponent>();
+  if (GetOwner()->HasComponent<HierarchyComponent>()) {
+    auto &hierarchy = GetOwner()->GetComponent<HierarchyComponent>();
     if (hierarchy.GetParent() != entt::null) {
       // 如果有父节点，转换为局部旋转
       TransformComponent &parentTransform =
-          hierarchy.GetParent()->GetComponent<TransformComponent>();
+          hierarchy.GetParent().GetComponent<TransformComponent>();
       glm::quat parentWorldRot = parentTransform.GetWorldRotation();
       SetLocalRotation(glm::inverse(parentWorldRot) * rotation);
       return;
@@ -180,12 +180,12 @@ void TransformComponent::RotateAround(const glm::vec3 &point, const glm::vec3 &a
   SetWorldPosition(newWorldPos);
 
   // 同时应用旋转到实体朝向（世界空间）
-  if (GetOwner().lock()->HasComponent<HierarchyComponent>()) {
-    auto &hierarchy = GetOwner().lock()->GetComponent<HierarchyComponent>();
+  if (GetOwner()->HasComponent<HierarchyComponent>()) {
+    auto &hierarchy = GetOwner()->GetComponent<HierarchyComponent>();
     if (hierarchy.GetParent() != entt::null) {
       // 如果有父节点，转换为局部旋转
       TransformComponent &parentTransform =
-          hierarchy.GetParent()->GetComponent<TransformComponent>();
+          hierarchy.GetParent().GetComponent<TransformComponent>();
       glm::quat parentWorldRot = parentTransform.GetWorldRotation();
       glm::quat localRot = glm::inverse(parentWorldRot) * rotation * parentWorldRot;
       Rotate(localRot);
@@ -207,12 +207,12 @@ void TransformComponent::LookAt(const glm::vec3 &target, const glm::vec3 &up)
   const glm::mat4 lookAtMat = glm::lookAt(position, target, up);
   const glm::quat rotation = glm::quat_cast(glm::inverse(lookAtMat));
 
-  if (GetOwner().lock()->HasComponent<HierarchyComponent>()) {
-    auto &hierarchy = GetOwner().lock()->GetComponent<HierarchyComponent>();
+  if (GetOwner()->HasComponent<HierarchyComponent>()) {
+    auto &hierarchy = GetOwner()->GetComponent<HierarchyComponent>();
     if (hierarchy.GetParent() != entt::null) {
       // 转换为局部旋转
       TransformComponent &parentTransform =
-          hierarchy.GetParent()->GetComponent<TransformComponent>();
+          hierarchy.GetParent().GetComponent<TransformComponent>();
       glm::quat parentRotation = parentTransform.GetWorldRotation();
       SetLocalRotation(glm::inverse(parentRotation) * rotation);
       return;
@@ -283,12 +283,12 @@ void TransformComponent::SetLocalMatrix(const glm::mat4 &matrix)
 
 void TransformComponent::SetWorldMatrix(const glm::mat4 &matrix)
 {
-  if (GetOwner().lock()->HasComponent<HierarchyComponent>()) {
-    auto &hierarchy = GetOwner().lock()->GetComponent<HierarchyComponent>();
+  if (GetOwner()->HasComponent<HierarchyComponent>()) {
+    auto &hierarchy = GetOwner()->GetComponent<HierarchyComponent>();
     if (hierarchy.GetParent() != entt::null) {
       // 转换为局部矩阵
       TransformComponent &parentTransform =
-          hierarchy.GetParent()->GetComponent<TransformComponent>();
+          hierarchy.GetParent().GetComponent<TransformComponent>();
       glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix();
       glm::mat4 localMat = glm::inverse(parentWorldMat) * matrix;
       DecomposeMatrix(localMat);
@@ -371,12 +371,12 @@ void TransformComponent::CalculateWorldMatrix() const
 {
   const glm::mat4 localMat = GetLocalMatrix();
 
-  if (GetOwner().lock()->HasComponent<HierarchyComponent>()) {
-    auto &hierarchy = GetOwner().lock()->GetComponent<HierarchyComponent>();
+  if (GetOwner()->HasComponent<HierarchyComponent>()) {
+    auto &hierarchy = GetOwner()->GetComponent<HierarchyComponent>();
     if (hierarchy.GetParent() != entt::null) {
       // 如果有父节点，计算世界矩阵
       TransformComponent &parentTransform =
-          hierarchy.GetParent()->GetComponent<TransformComponent>();
+          hierarchy.GetParent().GetComponent<TransformComponent>();
       m_WorldMatrix = parentTransform.GetWorldMatrix() * localMat;
     }
     else {

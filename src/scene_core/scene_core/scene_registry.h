@@ -116,15 +116,6 @@ class SceneRegistry {
   // 视图和查询 =================================================
 
   /**
-   * @brief 创建组件视图
-   * @tparam Component 要包含在视图中的组件类型
-   * @tparam Exclude 要从视图中排除的组件类型
-   * @return 视图对象
-   */
-  template<typename... Component, typename... Exclude>
-  auto View(entt::exclude_t<Exclude...> = {}) const;
-
-  /**
    * @brief 检查实体是否拥有任何指定的组件
    * @tparam Component 要检查的组件类型
    * @param entity 目标实体
@@ -149,9 +140,11 @@ class SceneRegistry {
   /**
    * @brief 获取当前registry中所有拥有指定组件的Entity集合
    * @tparam Component 要筛选的组件类型
+   * @tparam Exclude 要从视图中排除的组件类型
    * @return 包含所有符合条件的Entity的vector（按创建顺序）
    */
-  template<typename... Component> std::vector<Entity> GetEntitiesWith();
+  template<typename... Component>
+  std::vector<Entity> GetEntitiesWith();
 
   // 原生访问（谨慎使用） ========================================
 

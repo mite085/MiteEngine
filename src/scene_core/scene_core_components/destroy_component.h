@@ -2,6 +2,7 @@
 #define MITE_SCENE_DESTROY_COMPONENT
 
 #include "headers/headers.h"
+#include <entt/entt.hpp>
 
 namespace mite {
 /**

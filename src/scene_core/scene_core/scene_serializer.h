@@ -6,6 +6,7 @@
 #include <cereal/cereal.hpp>
 #include <entt/entt.hpp>
 #include "headers/headers.h"
+#include "scene_core/scene_registry.h"
 
 namespace mite {
 // 前向声明
@@ -82,7 +83,7 @@ class SceneSerializer {
    * @param archive Cereal存档对象
    * @param registry EnTT注册表
    */
-  template<typename Archive> void SerializeEntities(Archive &archive, entt::registry &registry);
+  template<typename Archive> void SerializeEntities(Archive &archive, SceneRegistry &registry);
 
   /**
    * @brief 反序列化实体及其组件
@@ -90,7 +91,7 @@ class SceneSerializer {
    * @param archive Cereal存档对象
    * @param registry EnTT注册表
    */
-  template<typename Archive> void DeserializeEntities(Archive &archive, entt::registry &registry);
+  template<typename Archive> void DeserializeEntities(Archive &archive, SceneRegistry &registry);
 
   /**
    * @brief 类型名称辅助函数

@@ -41,7 +41,7 @@ size_t HierarchyComponent::GetDepth(SceneRegistry &registry)
 void HierarchyComponent::AddChild(Entity child)
 {
   // Error check: Cannot add null entity as child!
-  assert(child != entt::null);
+  assert(child.IsValid());
 
   // 检查是否已经是子节点
   if (std::find(m_Children.begin(), m_Children.end(), child) != m_Children.end()) {

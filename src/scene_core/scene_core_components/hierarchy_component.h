@@ -23,15 +23,15 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
 
   // 禁止拷贝（层次关系应唯一）
   HierarchyComponent(const HierarchyComponent &) = delete;
-  HierarchyComponent &operator=(const HierarchyComponent &) = delete;
 
-  // 允许移动
+  // 允许引用和移动（风险：允许引用使其所有权模糊，可能导致难以追踪的共享状态问题）
+  HierarchyComponent &operator=(const HierarchyComponent &) = default;
   HierarchyComponent(HierarchyComponent &&) noexcept = default;
   HierarchyComponent &operator=(HierarchyComponent &&) noexcept = default;
 
   /**
    * @brief 获取父实体句柄
-   * @return 父实体EnTT句柄（entt::null表示无父节点）
+   * @return 父实体EnTT句柄（Entity()表示无父节点）
    */
   Entity GetParent() const
   {
@@ -68,7 +68,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
    */
   bool IsRoot() const
   {
-    return m_Parent == entt::null;
+    return m_Parent == Entity();
   }
 
   /**
@@ -78,6 +78,8 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
   size_t GetDepth(SceneRegistry &registry);
 
  private:
+  
+
   friend class Entity;  // 允许Entity类直接修改层次关系
   friend class SceneGraph;
 

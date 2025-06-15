@@ -2,9 +2,9 @@
 #define MITE_SCENE_ENTITY
 
 #include "component.h"
+#include <entt/entt.hpp>
 
 namespace mite {
-
 // 前向声明
 class Scene;
 
@@ -16,11 +16,23 @@ class Scene;
  */
 class Entity {
  public:
+  // 基于EnTT的Custom class Entity所必须的设定 ==================
+
+  using entity_type = uint32_t;
+  operator entt::entity() const noexcept
+  {
+    return m_Handle;
+  }
+  operator entt::entity &() noexcept
+  {
+    return m_Handle;
+  }
+
   // 构造函数 ===================================================
 
   /**
    * @brief 默认构造一个空实体（无效实体）
-   * 
+   *
    * 注意，此时m_Handle = entt::null，执行IsValid()返回值为false
    */
   Entity() = default;
@@ -30,7 +42,13 @@ class Entity {
    * @param scene 所属场景的弱引用
    * @param handle 底层EnTT实体句柄
    */
-  Entity(std::weak_ptr<Scene> scene, entt::entity handle);
+  explicit Entity(std::weak_ptr<Scene> scene, entt::entity handle);
+
+  /**
+   * @brief 拷贝构造函数
+   * @param other
+   */
+  Entity(const Entity &other);
 
   /**
    * @brief 默认析构函数
@@ -195,7 +213,6 @@ class Entity {
   std::weak_ptr<Scene> m_Scene;       // 所属场景的弱引用（避免循环引用）
   entt::entity m_Handle{entt::null};  // 底层EnTT实体句柄
 };
-
 };  // namespace mite
 
 // 哈希支持，用于将Entity用作unordered_map的key
@@ -207,5 +224,12 @@ template<> struct hash<mite::Entity> {
   }
 };
 }  // namespace std
+
+// 将 Entity 用作 EnTT 的标识类型,特化entt_traits
+// （暂时不需要，自定义的注册组件已完成对其功能的替代）
+namespace entt {
+template<> struct entt_traits<mite::Entity> : entt_traits<entt::entity> {};
+
+}  // namespace entt
 
 #endif

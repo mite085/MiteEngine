@@ -1,6 +1,5 @@
 #include "scene_graph.h"
-#include "scene_core_components/hierarchy_component.h"
-#include "scene_core_components/transform_component.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
 bool SceneGraph::SetParent(Entity entity, Entity newParent)
@@ -10,8 +9,8 @@ bool SceneGraph::SetParent(Entity entity, Entity newParent)
     return false;
   }
 
-  // 如果新父节点不为null，检查其有效性
-  if (newParent != entt::null && !m_Registry.IsValid(newParent)) {
+  // 检查parent有效性 (疑问：空实体是否能成为合法的parent?)
+  if (!m_Registry.IsValid(newParent)) {
     return false;
   }
 
@@ -21,7 +20,7 @@ bool SceneGraph::SetParent(Entity entity, Entity newParent)
   }
 
   // 检查是否形成循环依赖
-  if (newParent != entt::null && WouldFormCycle(entity, newParent)) {
+  if (newParent.IsValid() && WouldFormCycle(entity, newParent)) {
     return false;
   }
 
@@ -35,7 +34,7 @@ bool SceneGraph::SetParent(Entity entity, Entity newParent)
   }
 
   // 从旧父节点中移除
-  if (oldParent != entt::null) {
+  if (oldParent.IsValid()) {
     auto &oldParentHierarchy = m_Registry.GetComponent<HierarchyComponent>(oldParent);
     oldParentHierarchy.RemoveChild(entity);
   }
@@ -44,7 +43,7 @@ bool SceneGraph::SetParent(Entity entity, Entity newParent)
   hierarchy.SetParent(newParent);
 
   // 添加到新父节点的子列表
-  if (newParent != entt::null) {
+  if (newParent.IsValid()) {
     auto &newParentHierarchy = m_Registry.GetOrAddComponent<HierarchyComponent>(newParent);
     newParentHierarchy.AddChild(entity);
   }
@@ -61,7 +60,7 @@ Entity SceneGraph::GetParent(Entity entity) const
   if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
     return hierarchy->GetParent();
   }
-  return entt::null;
+  return Entity();
 }
 
 const std::vector<Entity> &SceneGraph::GetChildren(Entity entity) const
@@ -191,7 +190,7 @@ void SceneGraph::RecalculateAllDepths()
     auto [entity, depth] = queue.front();
     queue.pop();
 
-    if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+    if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
       hierarchy->m_DepthCache = depth;
 
       // 将子节点加入队列，深度+1
@@ -207,13 +206,13 @@ void SceneGraph::OnUpdate(float timestep)
   // 1. 处理变换继承 --------------------------------------------
 
   // 使用EnTT的多线程视图(如果可用)并行处理变换更新
-  auto view = m_Registry.view<TransformComponent, HierarchyComponent>();
+  auto view = m_Registry.GetEntitiesWith<TransformComponent, HierarchyComponent>();
 
   // 第一遍: 收集所有脏标记的根变换
   std::vector<Entity> dirtyRoots;
   for (auto entity : view) {
-    auto &transform = view.get<TransformComponent>(entity);
-    auto &hierarchy = view.get<HierarchyComponent>(entity);
+    auto &transform = m_Registry.GetComponent<TransformComponent>(entity);
+    auto &hierarchy = m_Registry.GetComponent<HierarchyComponent>(entity);
 
     // 如果是根节点或者父节点没有脏标记，但自身有脏标记
     if (hierarchy.IsRoot() && transform.IsDirty()) {
@@ -221,8 +220,8 @@ void SceneGraph::OnUpdate(float timestep)
     }
     else if (!hierarchy.IsRoot()) {
       auto parent = hierarchy.GetParent();
-      if (m_Registry.valid(parent)) {
-        if (auto parentTransform = m_Registry.try_get<TransformComponent>(parent)) {
+      if (m_Registry.IsValid(parent)) {
+        if (auto parentTransform = m_Registry.TryGetComponent<TransformComponent>(parent)) {
           // 如果父节点有脏标记，子节点也需要更新
           if (parentTransform->IsDirty() || transform.IsDirty()) {
             dirtyRoots.push_back(entity);
@@ -237,25 +236,25 @@ void SceneGraph::OnUpdate(float timestep)
     Traverse(
         root,
         [this](Entity entity) {
-          if (auto transform = m_Registry.try_get<TransformComponent>(entity)) {
+          if (auto transform = m_Registry.TryGetComponent<TransformComponent>(entity)) {
             // 获取父节点变换(如果是根节点则为单位矩阵)
             glm::mat4 parentTransform = glm::mat4(1.0f);
-            if (auto hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+            if (auto hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
               if (!hierarchy->IsRoot()) {
                 auto parent = hierarchy->GetParent();
-                if (m_Registry.valid(parent)) {
-                  if (auto parentTransformComp = m_Registry.try_get<TransformComponent>(parent)) {
-                    parentTransform = parentTransformComp->GetWorldTransform();
+                if (m_Registry.IsValid(parent)) {
+                  if (auto parentTransformComp = m_Registry.TryGetComponent<TransformComponent>(parent)) {
+                    parentTransform = parentTransformComp->GetWorldMatrix();
                   }
                 }
               }
             }
 
             // 更新世界变换
-            transform->UpdateWorldTransform(parentTransform);
+            transform->UpdateTransform();
 
-            // 清除脏标记
-            transform->ClearDirtyFlag();
+            // Event触发时自动清除脏标记
+            // transform->ClearDirtyFlag();
           }
           return true;  // 继续遍历
         },
@@ -266,17 +265,17 @@ void SceneGraph::OnUpdate(float timestep)
 
   // 只有在前一阶段有变换更新时才需要更新可见性
   if (!dirtyRoots.empty()) {
-    auto visibilityView = m_Registry.view<VisibilityComponent, HierarchyComponent>();
+    auto visibilityView = m_Registry.GetEntitiesWith<VisibilityComponent, HierarchyComponent>();
 
     for (auto entity : visibilityView) {
-      auto &visibility = visibilityView.get<VisibilityComponent>(entity);
-      auto &hierarchy = visibilityView.get<HierarchyComponent>(entity);
+      auto &visibility = m_Registry.GetComponent<VisibilityComponent>(entity);
+      auto &hierarchy = m_Registry.GetComponent<HierarchyComponent>(entity);
 
       // 如果父节点不可见，子节点也不可见
       if (!hierarchy.IsRoot()) {
         auto parent = hierarchy.GetParent();
-        if (m_Registry.valid(parent)) {
-          if (auto parentVisibility = m_Registry.try_get<VisibilityComponent>(parent)) {
+        if (m_Registry.IsValid(parent)) {
+          if (auto parentVisibility = m_Registry.TryGetComponent<VisibilityComponent>(parent)) {
             if (!parentVisibility->IsVisible()) {
               visibility.SetVisible(false, false);  // 不传播，避免重复处理
             }
@@ -301,7 +300,7 @@ bool SceneGraph::WouldFormCycle(Entity child, Entity newParent) const
 {
   // 从新父节点向上遍历，如果遇到child则形成循环
   Entity current = newParent;
-  while (current != nullptr) {
+  while (current.IsValid()) {
     if (current == child) {
       return true;
     }
@@ -316,7 +315,7 @@ bool SceneGraph::TraverseDFS(Entity entity, const VisitorFunc &visitor) const
     return false;
   }
 
-  if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+  if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
     for (auto child : hierarchy->GetChildren()) {
       if (!TraverseDFS(child, visitor)) {
         return false;
@@ -340,7 +339,7 @@ void SceneGraph::TraverseBFS(Entity entity, const VisitorFunc &visitor) const
       return;
     }
 
-    if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(current)) {
+    if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(current)) {
       for (auto child : hierarchy->GetChildren()) {
         queue.push(child);
       }
@@ -350,7 +349,7 @@ void SceneGraph::TraverseBFS(Entity entity, const VisitorFunc &visitor) const
 
 bool SceneGraph::TraverseReverseDFS(Entity entity, const VisitorFunc &visitor) const
 {
-  if (auto *hierarchy = m_Registry.try_get<HierarchyComponent>(entity)) {
+  if (auto *hierarchy = m_Registry.TryGetComponent<HierarchyComponent>(entity)) {
     for (auto child : hierarchy->GetChildren()) {
       if (!TraverseReverseDFS(child, visitor)) {
         return false;

@@ -143,7 +143,7 @@ template<typename Archive> void SceneSerializer::RegisterComponentTypes(Archive 
 }
 
 template<typename Archive>
-void SceneSerializer::SerializeEntities(Archive &archive, entt::registry &registry)
+void SceneSerializer::SerializeEntities(Archive &archive, SceneRegistry &registry)
 {
   // 获取所有实体
   auto view = registry.view<entt::entity>();
@@ -173,7 +173,7 @@ void SceneSerializer::SerializeEntities(Archive &archive, entt::registry &regist
 }
 
 template<typename Archive>
-void SceneSerializer::DeserializeEntities(Archive &archive, entt::registry &registry)
+void SceneSerializer::DeserializeEntities(Archive &archive, SceneRegistry &registry)
 {
   // 反序列化实体数量
   size_t entityCount = 0;

@@ -43,8 +43,10 @@ void Scene::OnUpdate(float timestep)
   m_SceneGraph->OnUpdate(timestep);
 
   // 处理实体销毁队列
-  m_Registry.View<DestroyComponent>().each(
-      [this](auto entity, auto &) { m_Registry.destroy(entity); });
+  auto entities = m_Registry.GetEntitiesWith<DestroyComponent>();
+  for (auto entity : entities) {
+    m_Registry.DestroyEntity(entity);
+  }
 }
 
 void Scene::OnRenderPrepare()

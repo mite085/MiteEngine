@@ -42,7 +42,7 @@ class SceneGraph {
   /**
    * @brief 设置实体父节点
    * @param entity 目标实体
-   * @param newParent 新父实体(entt::null表示设为根节点)
+   * @param newParent 新父实体(Entity()表示设为根节点)
    * @return 是否设置成功
    *
    * @note 会进行循环依赖检查，如果形成循环则操作失败
@@ -52,7 +52,7 @@ class SceneGraph {
   /**
    * @brief 获取实体父节点
    * @param entity 目标实体
-   * @return 父实体句柄(entt::null表示无父节点)
+   * @return 父实体句柄(Entity()表示无父节点)
    */
   Entity GetParent(Entity entity) const;
 

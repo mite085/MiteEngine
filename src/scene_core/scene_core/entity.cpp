@@ -3,7 +3,15 @@
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
-Entity::Entity(std::weak_ptr<Scene> scene, entt::entity handle) : m_Scene(scene), m_Handle(handle){}
+Entity::Entity(std::weak_ptr<Scene> scene, entt::entity handle) : m_Scene(scene), m_Handle(handle)
+{
+}
+
+Entity::Entity(const Entity &other)
+    : m_Scene(other.m_Scene),   // weak_ptr拷贝是安全的
+      m_Handle(other.m_Handle)  // entt::entity可以直接拷贝
+{
+}
 
 // 组件操作实现 ==============================================
 
@@ -37,7 +45,7 @@ template<typename T> void Entity::RemoveComponent()
       scenePtr->m_Registry.remove<T>(m_Handle);
 
       // 特殊处理Hierarchy组件
-      if constexpr (std::is_same_v<T, HierarchyComponent>) {
+      if constexpr (std::is_same<T, HierarchyComponent>.value) {
         RemoveFromParent();
         for (auto child : GetChildren()) {
           child.RemoveFromParent();
@@ -255,7 +263,6 @@ std::shared_ptr<Scene> Entity::GetScene() const
 
 void Entity::UpdateChildParentRelationship(bool keepWorldTransform)
 {
-  
   if (keepWorldTransform) {
     auto parent = GetParent();
     // 检查parent实体存在性
