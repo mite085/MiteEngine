@@ -14,15 +14,16 @@ class Scene;
 class SceneRegistry {
  public:
   SceneRegistry(std::weak_ptr<Scene> scene);
-  ~SceneRegistry() = default;
+  ~SceneRegistry();
 
   // 实体管理 ===================================================
 
   /**
    * @brief 创建新实体
+   * @param name 新实体的名字
    * @return 新创建的实体
    */
-  Entity CreateEntity();
+  Entity CreateEntity(const std::string &name);
 
   /**
    * @brief 销毁实体
@@ -143,8 +144,7 @@ class SceneRegistry {
    * @tparam Exclude 要从视图中排除的组件类型
    * @return 包含所有符合条件的Entity的vector（按创建顺序）
    */
-  template<typename... Component>
-  std::vector<Entity> GetEntitiesWith();
+  template<typename... Component> std::vector<Entity> GetEntitiesWith();
 
   // 原生访问（谨慎使用） ========================================
 
@@ -166,9 +166,60 @@ class SceneRegistry {
     return m_Registry;
   }
 
+  // 事件回调相关 ===============================================
+
+  // 组件构造回调函数类型
+  using ComponentConstructCallback = std::function<void(Entity, Component &)>;
+  // 组件更新回调函数类型
+  using ComponentUpdateCallback = std::function<void(Entity, Component &)>;
+  // 组件销毁回调函数类型
+  using ComponentDestroyCallback = std::function<void(Entity, Component &)>;
+
+  /**
+   * @brief 注册组件构造回调
+   * @tparam T 组件类型
+   * @param callback 回调函数
+   */
+  template<typename T> void OnComponentConstruct(ComponentConstructCallback callback);
+
+  /**
+   * @brief 注册组件更新回调
+   * @tparam T 组件类型
+   * @param callback 回调函数
+   */
+  template<typename T> void OnComponentUpdate(ComponentUpdateCallback callback);
+
+  /**
+   * @brief 注册组件销毁回调
+   * @tparam T 组件类型
+   * @param callback 回调函数
+   */
+  template<typename T> void OnComponentDestroy(ComponentDestroyCallback callback);
+
  private:
-  entt::registry m_Registry;    // 底层EnTT registry
-  std::weak_ptr<Scene> m_Scene; // 场景引用
+  /**
+   * @brief 触发组件构造事件(内部使用)
+   */
+  template<typename T> void InvokeConstruct(Entity entity, T &component);
+
+  /**
+   * @brief 触发组件更新事件(内部使用)
+   */
+  template<typename T> void InvokeUpdate(Entity entity, T &component);
+
+  /**
+   * @brief 触发组件销毁事件(内部使用)
+   */
+  template<typename T> void InvokeDestroy(Entity entity, T &component);
+
+  // 存储所有组件类型的回调
+  std::unordered_map<std::type_index, ComponentConstructCallback> m_ConstructCallbacks;
+  std::unordered_map<std::type_index, ComponentUpdateCallback> m_UpdateCallbacks;
+  std::unordered_map<std::type_index, ComponentDestroyCallback> m_DestroyCallbacks;
+
+ private:
+  entt::registry m_Registry;     // 底层EnTT registry
+  std::weak_ptr<Scene> m_Scene;  // 场景引用
 
   // 将Scene设为友元，允许Scene直接访问底层registry（用于性能关键路径）
   friend class Scene;

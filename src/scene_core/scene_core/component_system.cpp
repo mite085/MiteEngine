@@ -1,6 +1,17 @@
 #include "component_system.h"
 
 namespace mite {
+ComponentSystemManager::ComponentSystemManager(SceneRegistry &registry) : m_Registry(registry)
+{  // 注册组件事件回调
+  m_Registry.OnComponentConstruct<Component>(
+      [this](Entity entity, Component &component) { OnComponentAdded(entity, component); });
+
+  m_Registry.OnComponentUpdate<Component>(
+      [this](Entity entity, Component &component) { OnComponentUpdated(entity, component); });
+
+  m_Registry.OnComponentDestroy<Component>(
+      [this](Entity entity, Component &component) { OnComponentRemoved(entity, component); });
+}
 ComponentSystemManager::~ComponentSystemManager()
 {
   // 确保所有系统都已销毁
@@ -42,7 +53,7 @@ template<typename T> T *ComponentSystemManager::GetSystem() const
   return nullptr;
 }
 
-void ComponentSystemManager::InitializeAll(SceneRegistry &registry)
+void ComponentSystemManager::InitializeAll()
 {
   // 确保系统已排序
   if (!m_SystemsSorted) {
@@ -51,26 +62,26 @@ void ComponentSystemManager::InitializeAll(SceneRegistry &registry)
 
   // 按顺序初始化
   for (auto &system : m_Systems) {
-    system->Initialize(registry);
+    system->Initialize(m_Registry);
   }
 }
 
-void ComponentSystemManager::UpdateAll(SceneRegistry &registry, float deltaTime)
+void ComponentSystemManager::UpdateAll(float deltaTime)
 {
   // 按顺序更新
   for (auto &system : m_Systems) {
     auto entry = m_SystemMap.find(system->GetSystemType());
     if (entry != m_SystemMap.end() && entry->second.enabled) {
-      system->Update(registry, deltaTime);
+      system->Update(m_Registry, deltaTime);
     }
   }
 }
 
-void ComponentSystemManager::ShutdownAll(SceneRegistry &registry)
+void ComponentSystemManager::ShutdownAll()
 {
   // 逆序销毁
   for (auto it = m_Systems.rbegin(); it != m_Systems.rend(); ++it) {
-    (*it)->Shutdown(registry);
+    (*it)->Shutdown(m_Registry);
   }
 }
 
@@ -150,4 +161,49 @@ void ComponentSystemManager::SortSystems()
 
   m_SystemsSorted = true;
 }
+void ComponentSystemManager::OnComponentAdded(Entity entity, Component &component)
+{
+  const auto componentType = component.GetType();
+
+  for (auto &system : m_Systems) {
+    // 检查系统是否管理此组件类型
+    for (const auto &managedType : system->GetComponentTypes()) {
+      if (managedType == componentType) {
+        system->OnComponentAdded(entity, component);
+        break;
+      }
+    }
+  }
+}
+
+void ComponentSystemManager::OnComponentUpdated(Entity entity, Component &component)
+{
+  const auto componentType = component.GetType();
+
+  for (auto &system : m_Systems) {
+    // 检查系统是否管理此组件类型
+    for (const auto &managedType : system->GetComponentTypes()) {
+      if (managedType == componentType) {
+        system->OnComponentUpdated(entity, component);
+        break;
+      }
+    }
+  }
+}
+
+void ComponentSystemManager::OnComponentRemoved(Entity entity, Component &component)
+{
+  const auto componentType = component.GetType();
+
+  for (auto &system : m_Systems) {
+    // 检查系统是否管理此组件类型
+    for (const auto &managedType : system->GetComponentTypes()) {
+      if (managedType == componentType) {
+        system->OnComponentRemoved(entity, component);
+        break;
+      }
+    }
+  }
+}
+
 };

@@ -45,7 +45,7 @@ template<typename T> void Entity::RemoveComponent()
       scenePtr->m_Registry.remove<T>(m_Handle);
 
       // 特殊处理Hierarchy组件
-      if constexpr (std::is_same<T, HierarchyComponent>.value) {
+      if constexpr (std::is_same<T, HierarchyComponent>::value) {
         RemoveFromParent();
         for (auto child : GetChildren()) {
           child.RemoveFromParent();

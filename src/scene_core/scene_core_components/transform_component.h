@@ -260,6 +260,7 @@ class TransformSystem : public ComponentSystem {
   std::vector<std::type_index> GetComponentTypes() const override;
   std::vector<std::type_index> GetSystemDependencies() const override;
   void OnComponentAdded(Entity entity, Component &component) override;
+  void OnComponentUpdated(Entity entity, Component &component) override;
   void OnComponentRemoved(Entity entity, Component &component) override;
 };
 

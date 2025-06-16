@@ -1,15 +1,33 @@
 #include "scene_registry.h"
-#include "scene_core_components/id_component.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
-SceneRegistry::SceneRegistry(std::weak_ptr<Scene> scene) : m_Scene(scene) {}
+SceneRegistry::SceneRegistry(std::weak_ptr<Scene> scene) : m_Scene(scene) {
+  // 注册基础Component类型的回调
+  m_Registry.on_construct<Component>().connect<&SceneRegistry::FireConstructEvent>(this);
+  m_Registry.on_update<Component>().connect<&SceneRegistry::FireUpdateEvent>(this);
+  m_Registry.on_destroy<Component>().connect<&SceneRegistry::FireDestroyEvent>(this);
+}
 
-Entity SceneRegistry::CreateEntity()
+SceneRegistry::~SceneRegistry()
+{  // 断开所有回调
+  m_Registry.on_construct<Component>().disconnect(this);
+  m_Registry.on_update<Component>().disconnect(this);
+  m_Registry.on_destroy<Component>().disconnect(this);
+}
+
+Entity SceneRegistry::CreateEntity(const std::string &name)
 {
-  auto entity = m_Registry.create();
-  // 确保每个实体都有ID组件
-  m_Registry.emplace<IDComponent>(entity);
-  return Entity(m_Scene, entity);
+  Entity entity = Entity{m_Scene, m_Registry.create()};
+  
+  // 添加基本组件，自动生成唯一ID
+  auto &id = entity.AddComponent<IDComponent>();
+
+  // 添加Tag系统，用于实体搜索和筛选
+  auto &tag = entity.AddComponent<TagComponent>();
+  tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
+
+  return entity;
 }
 
 void SceneRegistry::DestroyEntity(Entity entity)
@@ -132,4 +150,62 @@ template<typename... Component> bool SceneRegistry::AllOf(Entity entity) const
 {
   return IsValid(entity) && m_Registry.all_of<Component...>(entity.GetHandle());
 }
+
+template<typename T> void SceneRegistry::OnComponentConstruct(ComponentConstructCallback callback)
+{
+  static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+  const std::type_index type = typeid(T);
+  m_ConstructCallbacks[type] = callback;
+
+  // 连接到EnTT的回调系统
+  m_Registry.on_construct<T>().template connect<&SceneRegistry::InvokeConstruct<T>>(this);
+}
+
+template<typename T> void SceneRegistry::OnComponentUpdate(ComponentUpdateCallback callback)
+{
+  static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+  const std::type_index type = typeid(T);
+  m_UpdateCallbacks[type] = callback;
+
+  // 连接到EnTT的回调系统
+  m_Registry.on_update<T>().template connect<&SceneRegistry::InvokeUpdate<T>>(this);
+}
+
+template<typename T> void SceneRegistry::OnComponentDestroy(ComponentDestroyCallback callback)
+{
+  static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+  const std::type_index type = typeid(T);
+  m_DestroyCallbacks[type] = callback;
+
+  // 连接到EnTT的回调系统
+  m_Registry.on_destroy<T>().template connect<&SceneRegistry::InvokeDestroy<T>>(this);
+}
+
+template<typename T> void SceneRegistry::InvokeConstruct(Entity entity, T &component)
+{
+  const std::type_index type = typeid(T);
+  if (auto it = m_ConstructCallbacks.find(type); it != m_ConstructCallbacks.end()) {
+    it->second(entity, component);
+  }
+}
+
+template<typename T> void SceneRegistry::InvokeUpdate(Entity entity, T &component)
+{
+  const std::type_index type = typeid(T);
+  if (auto it = m_UpdateCallbacks.find(type); it != m_UpdateCallbacks.end()) {
+    it->second(entity, component);
+  }
+}
+
+template<typename T> void SceneRegistry::InvokeDestroy(Entity entity, T &component)
+{
+  const std::type_index type = typeid(T);
+  if (auto it = m_DestroyCallbacks.find(type); it != m_DestroyCallbacks.end()) {
+    it->second(entity, component);
+  }
+}
+
 };  // namespace mite

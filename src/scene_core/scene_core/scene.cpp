@@ -5,7 +5,8 @@
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
-Scene::Scene(const std::string &name) : m_Name(name), m_Registry(weak_from_this())
+Scene::Scene(const std::string &name)
+    : m_Name(name), m_Registry(weak_from_this()), m_SystemManager(m_Registry)
 {
   // 初始化核心系统
   InitSystems();
@@ -20,7 +21,7 @@ Scene::Scene(const std::string &name) : m_Name(name), m_Registry(weak_from_this(
 Scene::~Scene()
 {
   // 确保所有系统按正确顺序销毁
-  m_Systems.clear();
+  m_SystemManager.ShutdownAll();
 }
 
 void Scene::InitSystems()
@@ -34,12 +35,39 @@ void Scene::InitSystems()
   // RegisterSystem<TransformSystem>();
 }
 
+void Scene::RegisterDefaultSystems()
+{  // TODO: 注册核心系统（按执行顺序）
+  m_SystemManager.RegisterSystem<TransformSystem>();
+  //m_SystemManager.RegisterSystem<AnimationSystem>();
+  //m_SystemManager.RegisterSystem<RenderSystem>();
+
+  // TODO: 设置系统初始状态
+  m_SystemManager.SetSystemEnabled<TransformSystem>(true);
+}
+
+void Scene::OnComponentConstructed(Entity entity, Component &component)
+{
+  // 通知所有管理系统该组件类型的系统
+  m_SystemManager.OnComponentAdded(entity, component);
+}
+
+void Scene::OnComponentUpdated(Entity entity, Component &component)
+{
+  // 处理组件更新逻辑
+  // 例如标记脏数据或触发特定系统更新
+  m_SystemManager.OnComponentUpdated(entity, component);
+}
+
+void Scene::OnComponentDestroyed(Entity entity, Component &component)
+{
+  // 通知所有管理系统该组件类型的系统
+  m_SystemManager.OnComponentRemoved(entity, component);
+}
+
 void Scene::OnUpdate(float timestep)
 {
   // 更新所有注册的系统
-  for (auto &[_, system] : m_Systems) {
-    system->OnUpdate(timestep);
-  }
+  m_SystemManager.UpdateAll(timestep);
 
   // 场景图更新
   m_SceneGraph->OnUpdate(timestep);
@@ -71,10 +99,10 @@ void Scene::Clear(bool keepSystems)
   // 3. 重置主相机引用
   m_MainCamera = Entity(weak_from_this(), entt::null);
 
-  // 4. 重置场景图状态
-  if (m_SceneGraph) {
-    m_SceneGraph->Clear();
-  }
+  // 4. TODO: 重置场景图状态
+  //if (m_SceneGraph) {
+  //  m_SceneGraph->Clear();
+  //}
 
   // 5. 重置场景观察者状态
   if (m_SceneObserver) {
@@ -83,19 +111,8 @@ void Scene::Clear(bool keepSystems)
 
   // 6. 根据参数决定是否重置系统
   if (!keepSystems) {
-    // 销毁所有系统（除了核心系统）
-    auto it = m_Systems.begin();
-    while (it != m_Systems.end()) {
-      // 保留核心系统
-      if (it->second == m_SceneGraph || it->second == m_SceneObserver ||
-          it->second == m_Serializer)
-      {
-        ++it;
-      }
-      else {
-        it = m_Systems.erase(it);
-      }
-    }
+    // 销毁所有系统
+    m_SystemManager.ShutdownAll();
 
     // 重新初始化核心系统
     if (m_SceneGraph)

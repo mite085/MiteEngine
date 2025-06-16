@@ -70,6 +70,13 @@ class ComponentSystem {
    * @param entity 实体
    * @param component 组件
    */
+  virtual void OnComponentUpdated(Entity entity, Component &component) = 0;
+
+  /**
+   * @brief 当组件被移除时的回调
+   * @param entity 实体
+   * @param component 组件
+   */
   virtual void OnComponentRemoved(Entity entity, Component &component) = 0;
 
   /**
@@ -94,7 +101,7 @@ class ComponentSystem {
  */
 class ComponentSystemManager {
  public:
-  ComponentSystemManager() = default;
+  ComponentSystemManager(SceneRegistry &registry);
   ~ComponentSystemManager();
 
   /**
@@ -117,20 +124,20 @@ class ComponentSystemManager {
    * @brief 初始化所有系统
    * @param registry EnTT registry
    */
-  void InitializeAll(SceneRegistry &registry);
+  void InitializeAll();
 
   /**
    * @brief 更新所有系统
    * @param registry EnTT registry
    * @param deltaTime 帧间隔时间
    */
-  void UpdateAll(SceneRegistry &registry, float deltaTime);
+  void UpdateAll(float deltaTime);
 
   /**
    * @brief 销毁所有系统
    * @param registry EnTT registry
    */
-  void ShutdownAll(SceneRegistry &registry);
+  void ShutdownAll();
 
   /**
    * @brief 设置系统是否启用
@@ -145,18 +152,41 @@ class ComponentSystemManager {
    */
   template<typename T> bool IsSystemEnabled() const;
 
+  /**
+   * @brief 当组件被添加时的处理
+   * @param entity 实体
+   * @param component 组件
+   */
+  void OnComponentAdded(Entity entity, Component &component);
+
+  /**
+   * @brief 当组件被更新时的处理
+   * @param entity 实体
+   * @param component 组件
+   */
+  void OnComponentUpdated(Entity entity, Component &component);
+
+  /**
+   * @brief 当组件被移除时的处理
+   * @param entity 实体
+   * @param component 组件
+   */
+  void OnComponentRemoved(Entity entity, Component &component);
+
  private:
   // 系统执行顺序排序
   void SortSystems();
 
  private:
+  SceneRegistry &m_Registry;
+
   struct SystemEntry {
     std::unique_ptr<ComponentSystem> system;
     bool enabled = true;
   };
 
-  std::vector<std::unique_ptr<ComponentSystem>> m_Systems;
-  std::unordered_map<std::type_index, SystemEntry> m_SystemMap;
+  std::vector<std::unique_ptr<ComponentSystem>> m_Systems;      // 用于遍历
+  std::unordered_map<std::type_index, SystemEntry> m_SystemMap; // 用于查找
   bool m_SystemsSorted = false;
 };
 

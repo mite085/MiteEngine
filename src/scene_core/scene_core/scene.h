@@ -65,21 +65,6 @@ class Scene : public std::enable_shared_from_this<Scene> {
    */
   bool IsValid(Entity entity) const;
 
-  // ------------------------ 系统管理 ------------------------
-  /**
-   * @brief 注册组件系统
-   * @tparam T 系统类型
-   * @tparam Args 构造参数类型
-   * @param args 构造参数
-   * @return 注册的系统引用
-   */
-  template<typename T, typename... Args> T &RegisterSystem(Args &&...args);
-
-  /**
-   * @brief 获取已注册的系统
-   */
-  template<typename T> T &GetSystem();
-
   // ------------------------ 场景状态 ------------------------
   const std::string &GetName() const
   {
@@ -117,9 +102,7 @@ class Scene : public std::enable_shared_from_this<Scene> {
 
   // ------------------------ EnTT访问 ------------------------
   /**
-   * @brief 获取底层EnTT registry
-   * 
-   * 场景序列化需要修改registry内的entities顺序
+   * @brief 获取registry
    */
   SceneRegistry &GetRegistry()
   {
@@ -133,10 +116,25 @@ class Scene : public std::enable_shared_from_this<Scene> {
  private:
   // 初始化默认系统
   void InitSystems();
+  /**
+   * @brief 初始化组件事件监听
+   */
+  void RegisterDefaultSystems();
 
  private:
-  std::string m_Name;         // 场景名称
-  SceneRegistry m_Registry;  // EnTT实体组件注册表(直接值持有,与Scene共享生命周期，避免unique_ptr不必要的堆分配)
+  // 场景名称
+  std::string m_Name;         
+
+  // EnTT实体组件注册表：
+  // 直接值持有,与Scene共享生命周期，
+  // 避免unique_ptr不必要的堆分配，
+  // 并方便其他模块直接引用m_Registry(可能存在风险？)
+  SceneRegistry m_Registry;  
+
+  // 组件事件处理函数
+  void OnComponentConstructed(Entity entity, Component &component);
+  void OnComponentUpdated(Entity entity, Component &component);
+  void OnComponentDestroyed(Entity entity, Component &component);
 
   // 场景系统
   std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统
@@ -146,10 +144,10 @@ class Scene : public std::enable_shared_from_this<Scene> {
   // 场景状态
   Entity m_MainCamera;  // 主相机实体
 
-  // 注册的系统
-  std::unordered_map<size_t, std::unique_ptr<ComponentSystem>> m_Systems;
+  // 系统管理
+  ComponentSystemManager m_SystemManager;
 
-  // 实体ID生成
+  // 实体ID生成计数
   uint32_t m_EntityCounter = 0;
 };
 
