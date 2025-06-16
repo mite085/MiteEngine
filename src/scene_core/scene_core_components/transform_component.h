@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_TRANSFORM_COMPONENT
 #define MITE_SCENE_TRANSFORM_COMPONENT
 
-#include "scene_core/component.h"
+#include "scene_core/component_system.h"
 
 namespace mite {
 /**
@@ -249,6 +249,20 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   mutable bool m_LocalMatrixDirty = true;
   mutable bool m_WorldMatrixDirty = true;
 };
+
+class TransformSystem : public ComponentSystem {
+  DECLARE_COMPONENT_SYSTEM(TransformSystem)
+ public:
+  Component::Family GetExecutionOrder() const override;
+  void Initialize(SceneRegistry &registry) override;
+  void Update(SceneRegistry &registry, float deltaTime) override;
+  void Shutdown(SceneRegistry &registry) override;
+  std::vector<std::type_index> GetComponentTypes() const override;
+  std::vector<std::type_index> GetSystemDependencies() const override;
+  void OnComponentAdded(Entity entity, Component &component) override;
+  void OnComponentRemoved(Entity entity, Component &component) override;
+};
+
 };
 
 #endif

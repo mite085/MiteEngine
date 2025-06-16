@@ -21,11 +21,11 @@ class Component {
  public:
   // 组件家族类型标识，用于组件分类
   enum class Family : uint8_t {
-    Core = 0,     // 核心组件(Transform等)
-    Render,       // 渲染相关组件
-    Geometry,     // 几何相关组件
-    Logic,        // 逻辑/行为组件
-    Custom = 100  // 自定义组件起始值
+    Core = 0,      // 核心组件(Transform等)
+    Render = 1,    // 渲染相关组件
+    Geometry = 2,  // 几何相关组件
+    Logic = 3,     // 逻辑/行为组件
+    Custom = 100   // 自定义组件起始值
   };
 
   virtual ~Component() = default;
@@ -135,10 +135,16 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
   {
     return typeid(T);
   }
-  // std::shared_ptr<Component> Clone() const override
+
+  /**
+   * 注意：Component克隆方法，和HierarchyComponent的禁用拷贝构造函数，
+   * 相互冲突，引发编译错误。现阶段优先确保HierarchyComponent禁止拷贝，
+   * 后续需要深拷贝时添加clone方法
+   */
+  //std::shared_ptr<Component> Clone() const override
   //{
-  //   return std::make_shared<T>(static_cast<const T &>(*this));
-  // }
+  //  return std::make_shared<T>(static_cast<const T &>(*this));
+  //}
 
   // 启用静态类型检查的组件ID获取
   static std::type_index GetStaticType()

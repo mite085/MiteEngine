@@ -2,6 +2,7 @@
 #define MITE_SCENE
 
 #include "scene_registry.h"
+#include "component_system.h"
 
 namespace mite {
 // 前向声明
@@ -151,30 +152,6 @@ class Scene : public std::enable_shared_from_this<Scene> {
   // 实体ID生成
   uint32_t m_EntityCounter = 0;
 };
-
-// 模板方法实现
-template<typename T, typename... Args> T &Scene::RegisterSystem(Args &&...args)
-{
-  auto typeHash = typeid(T).hash_code();
-  if (m_Systems.find(typeHash) != m_Systems.end()) {
-    return *static_cast<T *>(m_Systems[typeHash].get());
-  }
-
-  auto system = std::make_unique<T>(std::forward<Args>(args)...);
-  system->m_Scene = this;
-  m_Systems[typeHash] = system;
-  return *system;
-}
-
-template<typename T> T &Scene::GetSystem()
-{
-  auto typeHash = typeid(T).hash_code();
-  auto it = m_Systems.find(typeHash);
-  if (it == m_Systems.end()) {
-    throw std::runtime_error("System not registered");
-  }
-  return *static_cast<T *>(it->second.get());
-}
 
 }  // namespace mite
 

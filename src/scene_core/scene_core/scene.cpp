@@ -111,18 +111,8 @@ void Scene::Clear(bool keepSystems)
 
 Entity Scene::CreateEntity(const std::string &name)
 {
-  Entity entity = {std::make_shared<Scene>(this), m_Registry.create()};
-
-  // 添加基本组件，自动生成唯一ID
-  auto &id = entity.AddComponent<IDComponent>();
+  auto entity = m_Registry.CreateEntity(name);
   ++m_EntityCounter;
-
-  // 添加Tag系统，用于实体搜索和筛选
-  auto &tag = entity.AddComponent<TagComponent>();
-  tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
-
-  //// TODO: 添加变换系统
-  // entity.AddComponent<TransformComponent>();
 
   return entity;
 }

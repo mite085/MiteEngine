@@ -7,6 +7,8 @@ set(SCENE_CORE_LIB_NAME MiteEngine_Scene_Core)
 set(SCENE_CORE_SRCS
     scene_core/component.h
     scene_core/component.cpp
+    scene_core/component_system.h
+    scene_core/component_system.cpp
     scene_core/entity.h
     scene_core/entity.cpp
     scene_core/scene.h

@@ -405,4 +405,35 @@ void TransformComponent::DecomposeMatrix(const glm::mat4 &matrix)
   m_WorldMatrixDirty = true;
   SetDirty();
 }
+
+std::vector<std::type_index> TransformSystem::GetComponentTypes() const 
+{
+  return {typeid(TransformComponent)};
+}
+
+Component::Family TransformSystem::GetExecutionOrder() const
+{
+  return TransformComponent::Family();
+}
+
+void TransformSystem::Update(SceneRegistry &registry, float deltaTime)
+{
+  // 更新所有脏变换
+  auto view = registry.GetEntitiesWith<TransformComponent>();
+  for (auto entity : view) {
+    auto &transform = entity.GetComponent<TransformComponent>();
+    if (transform.IsDirty()) {
+      transform.UpdateTransform();
+    }
+  }
+}
+
+void TransformSystem::OnComponentAdded(Entity entity, Component &component)
+{
+  if (auto *transform = dynamic_cast<TransformComponent *>(&component)) {
+    // 新变换组件初始化逻辑
+    transform->UpdateTransform();
+  }
+}
+
 };
