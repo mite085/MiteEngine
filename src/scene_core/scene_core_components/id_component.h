@@ -15,6 +15,16 @@ namespace mite {
  * 2. 场景序列化/反序列化
  * 3. 跨场景引用
  * 4. 网络同步标识
+ * 
+ * 注意，和class ComponentID存在区别：
+ * 1.关注点分离：
+ *  - IDComponent解决"这个实体是谁"的问题
+ *  - ComponentID解决"这是什么类型的组件"的问题
+ * 2.性能考虑：
+ *  - ComponentID可以在编译期确定（通过模板元编程）
+ *  - IDComponent需要运行时生成和管理
+ * 3.架构清晰性：
+ *  - 避免将实例标识和类型标识混为一谈
  */
 class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core> {
  public:
