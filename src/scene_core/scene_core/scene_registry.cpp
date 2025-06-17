@@ -3,10 +3,6 @@
 
 namespace mite {
 SceneRegistry::SceneRegistry(std::weak_ptr<Scene> scene) : m_Scene(scene) {
-  // 注册基础Component类型的回调
-  m_Registry.on_construct<Component>().connect<&SceneRegistry::FireConstructEvent>(this);
-  m_Registry.on_update<Component>().connect<&SceneRegistry::FireUpdateEvent>(this);
-  m_Registry.on_destroy<Component>().connect<&SceneRegistry::FireDestroyEvent>(this);
 }
 
 SceneRegistry::~SceneRegistry()
