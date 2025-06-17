@@ -7,6 +7,8 @@ set(SCENE_CORE_LIB_NAME MiteEngine_Scene_Core)
 set(SCENE_CORE_SRCS
     scene_core/component.h
     scene_core/component.cpp
+    scene_core/component_id.h
+    scene_core/component_id.cpp
     scene_core/component_system.h
     scene_core/component_system.cpp
     scene_core/entity.h
@@ -15,10 +17,12 @@ set(SCENE_CORE_SRCS
     scene_core/scene.cpp
     scene_core/scene_graph.h
     scene_core/scene_graph.cpp
-    scene_core/scene_serializer.h
-    scene_core/scene_serializer.cpp
+    scene_core/scene_observer.h
+    scene_core/scene_observer.cpp
     scene_core/scene_registry.h
     scene_core/scene_registry.cpp
+    scene_core/scene_serializer.h
+    scene_core/scene_serializer.cpp
     
 )
 source_group("core" FILES ${SCENE_CORE_SRCS})
