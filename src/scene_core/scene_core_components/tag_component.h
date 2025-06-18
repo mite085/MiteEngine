@@ -15,20 +15,20 @@ namespace mite {
 class TagComponent : public ComponentTraits<TagComponent, Component::Family::Core> {
  public:
   // 默认构造
-  TagComponent(std::weak_ptr<Entity> owner);
+  TagComponent(Entity owner);
 
   /**
    * @brief 使用指定名称构造
    * @param tag 实体名称/标签
    */
-  TagComponent(std::weak_ptr<Entity> owner, const std::string &tag);
+  TagComponent(Entity owner, const std::string &tag);
 
   /**
    * @brief 使用指定名称和颜色构造
    * @param tag 实体名称/标签
    * @param color 编辑器显示颜色(RGBA)
    */
-  TagComponent(std::weak_ptr<Entity> owner, const std::string &tag, const glm::vec4 &color);
+  TagComponent(Entity owner, const std::string &tag, const glm::vec4 &color);
 
   // 序列化支持
   template<typename Archive> void serialize(Archive &archive);

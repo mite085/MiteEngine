@@ -5,7 +5,7 @@ namespace mite {
 static_assert(sizeof(VisibilityComponent::State) == sizeof(uint8_t),
               "VisibilityComponent::State size mismatch");
 
-VisibilityComponent::VisibilityComponent(std::weak_ptr<Entity> owner)
+VisibilityComponent::VisibilityComponent(Entity owner)
     : ComponentTraits(owner),
       m_VisibilityState(State::FullyVisible),
       m_TargetVisibilityState(State::FullyVisible),
@@ -19,7 +19,7 @@ VisibilityComponent::VisibilityComponent(std::weak_ptr<Entity> owner)
   assert(m_CurrentOpacity >= 0.0f && m_CurrentOpacity <= 1.0f);
 }
 
-VisibilityComponent::VisibilityComponent(std::weak_ptr<Entity> owner,
+VisibilityComponent::VisibilityComponent(Entity owner,
                                          State initialVisibility,
                                          float initialOpacity)
     : ComponentTraits(owner),

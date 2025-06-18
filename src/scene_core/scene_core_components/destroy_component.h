@@ -18,7 +18,7 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
   /**
    * @brief 默认构造函数
    */
-  DestroyComponent(std::weak_ptr<Entity> owner);
+  DestroyComponent(Entity owner);
 
   /**
    * @brief 用于调试的字符串表示

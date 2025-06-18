@@ -2,10 +2,9 @@
 #define MITE_SCENE_COMPONENT
 
 #include "headers/headers.h"
+#include "entity.h"
 
 namespace mite {
-// 前向声明
-class Entity;
 
 /**
  * @brief 组件基类，所有场景组件都应继承自此类
@@ -101,16 +100,12 @@ class Component {
 
  protected:
   // 保护构造函数，确保只能通过子类实例化，
-  // 并接收对Entity的弱引用，确保支持向上查询
-  explicit Component(std::weak_ptr<Entity> owner);
+  // 并接收Entity，确保支持向上查询
+  explicit Component(Entity owner);
 
-  std::shared_ptr<Entity> GetOwner() const
-  {
-    return m_OwnerEntity.lock();
-  }
+  Entity GetOwnerEntity() const;
 
- private:
-  std::weak_ptr<Entity> m_OwnerEntity;
+  Entity m_OwnerEntity;
 
   bool m_Dirty = false;   // 脏标记，标识组件是否被修改
   bool m_Enabled = true;  // 组件是否启用
@@ -125,7 +120,7 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
  public:
   static constexpr Family family = F;
 
-  explicit ComponentTraits(std::weak_ptr<Entity> owner) : Component(owner) {}
+  explicit ComponentTraits(Entity owner) : Component(owner) {}
 
   Family GetFamily() const override
   {

@@ -7,7 +7,7 @@ std::string UUIDToString(const uuids::uuid &id)
   return uuids::to_string(id);
 }
 
-IDComponent::IDComponent(std::weak_ptr<Entity> owner)
+IDComponent::IDComponent(Entity owner)
     : ComponentTraits(owner),
       m_UUID(uuids::uuid_system_generator{}()),
       m_UUIDString(UUIDToString(m_UUID))
@@ -18,7 +18,7 @@ IDComponent::IDComponent(std::weak_ptr<Entity> owner)
   }
 }
 
-IDComponent::IDComponent(std::weak_ptr<Entity> owner, const std::string &id)
+IDComponent::IDComponent(Entity owner, const std::string &id)
     : ComponentTraits(owner)
 {
   // 尝试解析字符串
@@ -34,7 +34,7 @@ IDComponent::IDComponent(std::weak_ptr<Entity> owner, const std::string &id)
   m_UUIDString = UUIDToString(m_UUID);
 }
 
-IDComponent IDComponent::Generate(std::weak_ptr<Entity> owner)
+IDComponent IDComponent::Generate(Entity owner)
 {
   return IDComponent(owner);  // 委托给默认构造函数
 }

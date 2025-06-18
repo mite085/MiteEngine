@@ -1,8 +1,8 @@
 #include "tag_component.h"
 
 namespace mite {
-TagComponent::TagComponent(std::weak_ptr<Entity> owner) : ComponentTraits(owner) {}
-TagComponent::TagComponent(std::weak_ptr<Entity> owner, const std::string &tag)
+TagComponent::TagComponent(Entity owner) : ComponentTraits(owner) {}
+TagComponent::TagComponent(Entity owner, const std::string &tag)
     : ComponentTraits(owner), m_Tag(tag)
 {
   // 验证标签有效性
@@ -11,7 +11,7 @@ TagComponent::TagComponent(std::weak_ptr<Entity> owner, const std::string &tag)
   }
 }
 
-TagComponent::TagComponent(std::weak_ptr<Entity> owner,
+TagComponent::TagComponent(Entity owner,
                            const std::string &tag,
                            const glm::vec4 &color)
     : ComponentTraits(owner), m_Tag(tag), m_Color(color)

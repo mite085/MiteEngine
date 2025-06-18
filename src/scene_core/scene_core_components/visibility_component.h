@@ -26,7 +26,7 @@ class VisibilityComponent : public ComponentTraits<VisibilityComponent, Componen
    * 
    * 注意：默认状态为FullyVisible，透明度为1.0
    */
-  VisibilityComponent(std::weak_ptr<Entity> owner);
+  VisibilityComponent(Entity owner);
 
   /**
    * @brief 带参数的构造函数
@@ -34,7 +34,7 @@ class VisibilityComponent : public ComponentTraits<VisibilityComponent, Componen
    * @param initialVisibility 初始可见性状态
    * @param initialOpacity 初始透明度(0.0-1.0)
    */
-  explicit VisibilityComponent(std::weak_ptr<Entity> owner,
+  explicit VisibilityComponent(Entity owner,
                                State initialVisibility,
                                float initialOpacity = 1.0f);
 

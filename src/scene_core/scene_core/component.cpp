@@ -39,5 +39,10 @@ bool Component::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-Component::Component(std::weak_ptr<Entity> owner) : m_OwnerEntity(owner) {}
+Component::Component(Entity owner) : m_OwnerEntity(owner) {}
+
+Entity Component::GetOwnerEntity() const
+{
+  return m_OwnerEntity;
+}
 };  // namespace mite

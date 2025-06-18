@@ -16,10 +16,11 @@ class Entity;
  */
 class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component::Family::Core> {
  public:
+
   /**
-   * @brief 默认构造函数（创建无父节点的根实体）
+   * @brief 构造函数（创建无父节点的根实体）
    */
-  HierarchyComponent() = default;
+  HierarchyComponent(Entity owner);
 
   // 禁止拷贝（层次关系应唯一）
   HierarchyComponent(const HierarchyComponent &) = delete;

@@ -24,7 +24,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @brief 默认构造函数
    * @param owner 持有该旋转组件的实体
    */
-  TransformComponent(std::weak_ptr<Entity> owner);
+  TransformComponent(Entity owner);
 
   /**
    * @brief 带初始值的构造函数
@@ -33,7 +33,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @param rotation 旋转
    * @param scale 缩放
    */
-  explicit TransformComponent(std::weak_ptr<Entity> owner,
+  explicit TransformComponent(Entity owner,
                               const glm::vec3 &position,
                               const glm::quat &rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
                               const glm::vec3 &scale = glm::vec3(1.0f));
@@ -43,7 +43,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @param owner 持有该旋转组件的实体
    * @param matrix 变换矩阵
    */
-  explicit TransformComponent(std::weak_ptr<Entity> owner, const glm::mat4 &matrix);
+  explicit TransformComponent(Entity owner, const glm::mat4 &matrix);
 
   ~TransformComponent() override = default;
 

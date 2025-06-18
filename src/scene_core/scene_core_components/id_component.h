@@ -31,22 +31,18 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   /**
    * @brief 默认构造函数（生成新UUID）
    */
-  IDComponent(std::weak_ptr<Entity> owner);
+  IDComponent(Entity owner);
 
   /**
    * @brief 从现有UUID字符串构造
    * @param id 符合RFC4122标准的UUID字符串
    * @throws std::runtime_error 当UUID格式无效时抛出
    */
-  explicit IDComponent(std::weak_ptr<Entity> owner, const std::string &id);
+  explicit IDComponent(Entity owner, const std::string &id);
 
   // 禁止拷贝和赋值（保持ID唯一性）
   IDComponent(const IDComponent &) = delete;
   IDComponent &operator=(const IDComponent &) = delete;
-
-  // 允许移动（转移所有权）
-  IDComponent(IDComponent &&) = default;
-  IDComponent &operator=(IDComponent &&) = default;
 
   /**
    * @brief 获取UUID字符串表示（RFC4122格式）
@@ -80,7 +76,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   /**
    * @brief 生成新的随机UUID（静态方法）
    */
-  static IDComponent Generate(std::weak_ptr<Entity> owner);
+  static IDComponent Generate(Entity owner);
 
   /**
    * @brief 检查字符串是否为有效UUID
