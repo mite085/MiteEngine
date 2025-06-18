@@ -118,10 +118,10 @@ bool InputContext::_ProcessKeyEvent(const KeyEvent &e)
       if (binding.device == InputDevice::Keyboard && binding.code == e.GetKey()) {
         // 根据事件类型更新动作值
         float newValue = 0.0f;
-        if (e.GetEventType() == EventType::KeyPressed) {
+        if (e.GetEventType() == EventType::KEY_PRESSED) {
           newValue = 1.0f * binding.scale;
         }
-        else if (e.GetEventType() == EventType::KeyReleased) {
+        else if (e.GetEventType() == EventType::KEY_RELEASED) {
           newValue = 0.0f;
         }
 
@@ -142,9 +142,9 @@ bool InputContext::_ProcessMouseButtonEvent(const MouseButtonEvent &e)
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse && binding.code == e.GetButton()) {
         float newValue = 0.0f;
-        if (e.GetEventType() == EventType::MouseButtonPressed)
+        if (e.GetEventType() == EventType::MOUSE_BUTTON_PRESSED)
           newValue = 1.0f * binding.scale;
-        else if (e.GetEventType() == EventType::MouseButtonReleased)
+        else if (e.GetEventType() == EventType::MOUSE_BUTTON_RELEASED)
           newValue = 0.0f;
 
         _UpdateActionValue(name, newValue);
@@ -164,7 +164,7 @@ bool InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse) {
           // TODO: 鼠标移动作为超高频事件，是否应当放在这里处理？
-        float newValue = (e.GetEventType() == EventType::MouseMoved) ? 1.0f * binding.scale : 0.0f;
+        float newValue = (e.GetEventType() == EventType::MOUSE_POSITION_MOVED) ? 1.0f * binding.scale : 0.0f;
 
         _UpdateActionValue(name, newValue);
         consumed = true;
