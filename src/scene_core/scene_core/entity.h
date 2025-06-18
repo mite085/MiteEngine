@@ -1,12 +1,13 @@
 #ifndef MITE_SCENE_ENTITY
 #define MITE_SCENE_ENTITY
 
-#include "component.h"
+#include "headers/headers.h"
 #include <entt/entt.hpp>
 
 namespace mite {
 // 前向声明
 class Scene;
+class SceneRegistry;
 
 /**
  * @brief 实体类，表示场景中的一个独立对象
@@ -34,6 +35,8 @@ class Entity {
    * @brief 默认构造一个空实体（无效实体）
    *
    * 注意，此时m_Handle = entt::null，执行IsValid()返回值为false
+   * 
+   * TODO：潜在风险：智能指针weak_ptr未正常初始化，可能导致逻辑错误
    */
   Entity() = default;
 
@@ -55,115 +58,115 @@ class Entity {
    */
   ~Entity() = default;
 
-  // 组件操作 ===================================================
+  // 组件操作--组件完全交付给Registry系统管理，此处不直接接触 =========================================
 
-  /**
-   * @brief 添加组件（构造新组件）
-   * @tparam T 组件类型
-   * @tparam Args 构造参数类型
-   * @param args 组件构造参数
-   * @return 新添加的组件引用
-   */
-  template<typename T, typename... Args> T &AddComponent(Args &&...args);
+  ///**
+  // * @brief 添加组件（构造新组件）
+  // * @tparam T 组件类型
+  // * @tparam Args 构造参数类型
+  // * @param args 组件构造参数
+  // * @return 新添加的组件引用
+  // */
+  //template<typename T, typename... Args> T &AddComponent(Args &&...args);
 
-  /**
-   * @brief 移除组件
-   * @tparam T 组件类型
-   */
-  template<typename T> void RemoveComponent();
+  ///**
+  // * @brief 移除组件
+  // * @tparam T 组件类型
+  // */
+  //template<typename T> void RemoveComponent();
 
-  /**
-   * @brief 检查是否拥有某个组件
-   * @tparam T 组件类型
-   * @return 是否拥有该组件
-   */
-  template<typename T> bool HasComponent() const;
+  ///**
+  // * @brief 检查是否拥有某个组件
+  // * @tparam T 组件类型
+  // * @return 是否拥有该组件
+  // */
+  //template<typename T> bool HasComponent() const;
 
-  /**
-   * @brief 获取组件（非const版本）
-   * @tparam T 组件类型
-   * @return 组件引用
-   * @throws std::runtime_error 当组件不存在时抛出异常
-   */
-  template<typename T> T &GetComponent();
+  ///**
+  // * @brief 获取组件（非const版本）
+  // * @tparam T 组件类型
+  // * @return 组件引用
+  // * @throws std::runtime_error 当组件不存在时抛出异常
+  // */
+  //template<typename T> T &GetComponent();
 
-  /**
-   * @brief 获取组件（const版本）
-   * @tparam T 组件类型
-   * @return 组件const引用
-   * @throws std::runtime_error 当组件不存在时抛出异常
-   */
-  template<typename T> const T &GetComponent() const;
+  ///**
+  // * @brief 获取组件（const版本）
+  // * @tparam T 组件类型
+  // * @return 组件const引用
+  // * @throws std::runtime_error 当组件不存在时抛出异常
+  // */
+  //template<typename T> const T &GetComponent() const;
 
-  /**
-   * @brief 尝试获取组件（非const版本）
-   * @tparam T 组件类型
-   * @return 组件指针（不存在时返回nullptr）
-   */
-  template<typename T> T *TryGetComponent();
+  ///**
+  // * @brief 尝试获取组件（非const版本）
+  // * @tparam T 组件类型
+  // * @return 组件指针（不存在时返回nullptr）
+  // */
+  //template<typename T> T *TryGetComponent();
 
-  /**
-   * @brief 尝试获取组件（const版本）
-   * @tparam T 组件类型
-   * @return 组件const指针（不存在时返回nullptr）
-   */
-  template<typename T> const T *TryGetComponent() const;
+  ///**
+  // * @brief 尝试获取组件（const版本）
+  // * @tparam T 组件类型
+  // * @return 组件const指针（不存在时返回nullptr）
+  // */
+  //template<typename T> const T *TryGetComponent() const;
 
-  // 层次结构操作 ================================================
+  // 层次结构操作--完全交给HierarchyComponent实现，此处不直接接触 ================================================
 
-  /**
-   * @brief 设置父实体
-   * @param parent 父实体
-   * @param keepWorldTransform 是否保持世界空间变换
-   */
-  void SetParent(Entity parent, bool keepWorldTransform = true);
+  ///**
+  // * @brief 设置父实体
+  // * @param parent 父实体
+  // * @param keepWorldTransform 是否保持世界空间变换
+  // */
+  //void SetParent(Entity parent, bool keepWorldTransform = true);
 
-  /**
-   * @brief 获取父实体
-   * @return 父实体（无效实体表示没有父级）
-   */
-  Entity GetParent() const;
+  ///**
+  // * @brief 获取父实体
+  // * @return 父实体（无效实体表示没有父级）
+  // */
+  //Entity GetParent() const;
 
-  /**
-   * @brief 获取所有子实体
-   * @return 子实体列表（按创建顺序）
-   */
-  const std::vector<Entity> &GetChildren() const;
+  ///**
+  // * @brief 获取所有子实体
+  // * @return 子实体列表（按创建顺序）
+  // */
+  //const std::vector<Entity> &GetChildren() const;
 
-  /**
-   * @brief 添加子实体
-   * @param child 子实体
-   * @param keepWorldTransform 是否保持世界空间变换
-   */
-  void AddChild(Entity child, bool keepWorldTransform = true);
+  ///**
+  // * @brief 添加子实体
+  // * @param child 子实体
+  // * @param keepWorldTransform 是否保持世界空间变换
+  // */
+  //void AddChild(Entity child, bool keepWorldTransform = true);
 
-  /**
-   * @brief 移除子实体
-   * @param child 子实体
-   * @param keepWorldTransform 是否保持世界空间变换
-   */
-  void RemoveChild(Entity child, bool keepWorldTransform = true);
+  ///**
+  // * @brief 移除子实体
+  // * @param child 子实体
+  // * @param keepWorldTransform 是否保持世界空间变换
+  // */
+  //void RemoveChild(Entity child, bool keepWorldTransform = true);
 
-  /**
-   * @brief 检查是否为某个实体的祖先
-   * @param potentialAncestor 可能的祖先实体
-   * @return 是否是祖先
-   */
-  bool IsDescendantOf(Entity potentialAncestor) const;
+  ///**
+  // * @brief 检查是否为某个实体的祖先
+  // * @param potentialAncestor 可能的祖先实体
+  // * @return 是否是祖先
+  // */
+  //bool IsDescendantOf(Entity potentialAncestor) const;
 
-  /**
-   * @brief 获取实体层级
-   * @return 当前实体的层数
-   */
-  size_t GetDepth() const;
+  ///**
+  // * @brief 获取实体层级
+  // * @return 当前实体的层数
+  // */
+  //size_t GetDepth() const;
 
   // 实体状态 ===================================================
 
-  /**
-   * @brief 获取实体ID（持久化标识）
-   * @return UUID字符串
-   */
-  const std::string &GetID() const;
+  ///**
+  // * @brief 获取实体ID（持久化标识）--完全交给IDComponent实现，此处不直接接触
+  // * @return UUID字符串
+  // */
+  //const std::string &GetID() const;
 
   /**
    * @brief 检查实体是否有效
@@ -187,6 +190,12 @@ class Entity {
    */
   std::shared_ptr<Scene> GetScene() const;
 
+  /**
+   * @brief 获取所属注册器
+   * @return 场景共享指针（可能为空）
+   */
+  SceneRegistry &GetSceneRegistry() const;
+
   // 操作符重载 =================================================
 
   /**
@@ -201,13 +210,13 @@ class Entity {
   explicit operator bool() const;
 
  private:
-  // 内部方法 ===================================================
-  /**
-   * @brief 保持世界变换不变的情况下，按照新的Parent世界变换，更新局部变换
-   * @param keepWorldTransform 保持世界变换不变的flag
-   */
-  void UpdateChildParentRelationship(bool keepWorldTransform);
-  void RemoveFromParent();
+  //// 内部方法 --完全交给TransformComponent和HierarchyComponent实现，此处不直接接触===================================================
+  ///**
+  // * @brief 保持世界变换不变的情况下，按照新的Parent世界变换，更新局部变换
+  // * @param keepWorldTransform 保持世界变换不变的flag
+  // */
+  //void UpdateChildParentRelationship(bool keepWorldTransform);
+  //void RemoveFromParent();
 
  private:
   std::weak_ptr<Scene> m_Scene;       // 所属场景的弱引用（避免循环引用）
