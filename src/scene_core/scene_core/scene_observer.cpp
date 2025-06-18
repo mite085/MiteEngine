@@ -4,14 +4,6 @@ namespace mite {
 
 SceneObserver::SceneObserver(SceneRegistry &registry) : m_Registry(registry)
 {
-  // 确保IDComponent总是被跟踪（因为它是实体标识的关键组件）
-  m_Registry.RegisterCallbackComponentConstruct<IDComponent>(
-      [this](Entity entity, Component &comp) { OnComponentAdded(entity, comp); });
-  m_Registry.RegisterCallbackComponentUpdate<IDComponent>(
-      [this](Entity entity, Component &comp) { OnComponentChanged(entity, comp); });
-  m_Registry.RegisterCallbackComponentDestroy<IDComponent>(
-      [this](Entity entity, Component &comp) { OnComponentRemoved(entity, comp); });
-  
   SetupCallbacks();
 }
 

@@ -12,8 +12,8 @@ class MouseMoveEvent : public Event {
   double GetXPos() const;
   double GetYPos() const;
 
-  EVENT_CLASS_TYPE(MouseMoved)
-  EVENT_CLASS_CATEGORY(EventCategoryMouse)
+  EVENT_CLASS_TYPE(MOUSE_POSITION_MOVED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
  private:
   double xpos, ypos;
 };
@@ -30,8 +30,8 @@ class MouseButtonEvent : public Event {
   double GetXPos() const;
   double GetYPos() const;
 
-  EVENT_CLASS_TYPE(MouseButtonReleased)
-  EVENT_CLASS_CATEGORY(EventCategoryMouse)
+  EVENT_CLASS_TYPE(MOUSE_BUTTON_RELEASED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
  private:
   int button, action, mods;
   double xpos, ypos;
@@ -48,8 +48,8 @@ class KeyEvent : public Event {
   int GetAction() const;
   int GetMods() const;
 
-  EVENT_CLASS_TYPE(KeyReleased)
-  EVENT_CLASS_CATEGORY(EventCategoryMouse)
+  EVENT_CLASS_TYPE(KEY_RELEASED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
  private:
   int key, scancode, action /*GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT*/, mods /*ÐÞÊÎ¼ü×´Ì¬*/;
 };

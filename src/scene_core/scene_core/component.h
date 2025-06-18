@@ -19,7 +19,7 @@ class Entity;
  */
 class Component {
  public:
-  // 组件家族类型标识，用于组件分类
+  // 组件家族类型标识，用于组件分类，以及优先级判断
   enum class Family : uint8_t {
     Core = 0,      // 核心组件(Transform等)
     Render = 1,    // 渲染相关组件

@@ -20,7 +20,8 @@ enum class SceneChangeType {
 };
 
 // 场景变更事件数据结构
-struct SceneChangeEvent {
+class SceneChangeEvent:public Event {
+ public:
   SceneChangeType changeType = SceneChangeType::VOID_TYPE;  // 变更类型
   Entity entity;                                            // 关联的实体
   ComponentID componentType;      // 关联的组件类型ID (如果是组件相关变更)

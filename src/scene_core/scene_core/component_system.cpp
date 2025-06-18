@@ -2,7 +2,8 @@
 
 namespace mite {
 ComponentSystemManager::ComponentSystemManager(SceneRegistry &registry) : m_Registry(registry)
-{  // 注册组件事件回调
+{  
+  // 注册组件事件回调
   m_Registry.RegisterCallbackComponentConstruct<Component>(
       [this](Entity entity, Component &component) { OnComponentAdded(entity, component); });
 
@@ -27,7 +28,7 @@ template<typename T, typename... Args> T *ComponentSystemManager::RegisterSystem
 
   const std::type_index type = typeid(T);
 
-  // 检查是否已注册
+  // 检查是否已注册，若已注册则直接返回已有的系统
   if (m_SystemMap.find(type) != m_SystemMap.end()) {
     return static_cast<T *>(m_SystemMap[type].system.get());
   }
@@ -43,8 +44,20 @@ template<typename T, typename... Args> T *ComponentSystemManager::RegisterSystem
   return rawPtr;
 }
 
+template<typename T> bool ComponentSystemManager::HasSystem() const
+{
+  const std::type_index type = typeid(T);
+  auto it = m_SystemMap.find(type);
+  if (it != m_SystemMap.end() && it->second.enabled) {
+    return true;
+  }
+  return false;
+}
+
 template<typename T> T *ComponentSystemManager::GetSystem() const
 {
+  // 获取前使用assert断言检查，便于在debug阶段发现问题。
+  assert(HasSystem<T>());
   const std::type_index type = typeid(T);
   auto it = m_SystemMap.find(type);
   if (it != m_SystemMap.end() && it->second.enabled) {

@@ -20,12 +20,12 @@ class ComponentSystem {
   virtual ~ComponentSystem() = default;
 
   /**
-   * @brief 获取系统类型ID
+   * @brief 获取系统类型ID(使用辅助宏定义，无需在子类实现)
    */
   virtual std::type_index GetSystemType() const = 0;
 
   /**
-   * @brief 系统执行优先级（越小越先执行）
+   * @brief 系统执行优先级(越小越先执行)
    */
   virtual Component::Family GetExecutionOrder() const = 0;
 
@@ -66,11 +66,16 @@ class ComponentSystem {
   virtual void OnComponentAdded(Entity entity, Component &component) = 0;
 
   /**
-   * @brief 当组件被移除时的回调
+   * @brief 当组件被替换时的回调
    * @param entity 实体
    * @param component 组件
+   * 
+   * 注意：
+   * 仅当调用registry.replace<T>(entity, ...)
+   * 或registry.patch<T>(entity, ...)，修改现有组件时触发，
+   * 故基本无需考虑在子类override该方法。
    */
-  virtual void OnComponentUpdated(Entity entity, Component &component) = 0;
+  virtual void OnComponentUpdated(Entity entity, Component &component){};
 
   /**
    * @brief 当组件被移除时的回调
@@ -98,6 +103,18 @@ class ComponentSystem {
 
 /**
  * @brief 组件系统管理器，集中管理所有组件系统
+ * 
+ * 
+ * 使用方法：
+ * 1. Scene构造阶段--调用默认构造函数，构造Manager对象
+ * 2. Scene构造阶段--调用RegisterSystem()，逐个注册各个ComponentSystem
+ * 
+ * 3. Scene初始化阶段--调用InitializeAll()，初始化所有系统
+ * 
+ * 4. Scene运行阶段--每帧调用UpdateAll(deltaTime)，更新所有系统
+ * 5. Scene运行阶段--视情况调用GetSystem()，针对某一系统进行处理
+ * 
+ * 6. Scene销毁阶段--调用ShutdownAll()，关闭所有系统
  */
 class ComponentSystemManager {
  public:
@@ -112,6 +129,13 @@ class ComponentSystemManager {
    * @return 注册的系统指针
    */
   template<typename T, typename... Args> T *RegisterSystem(Args &&...args);
+
+  /**
+   * @brief 获取已注册的系统
+   * @tparam T 系统类型
+   * @return 系统指针，未找到返回nullptr
+   */
+  template<typename T> bool HasSystem() const;
 
   /**
    * @brief 获取已注册的系统
@@ -152,6 +176,8 @@ class ComponentSystemManager {
    */
   template<typename T> bool IsSystemEnabled() const;
 
+private:
+
   /**
    * @brief 当组件被添加时的处理
    * @param entity 实体
@@ -173,7 +199,6 @@ class ComponentSystemManager {
    */
   void OnComponentRemoved(Entity entity, Component &component);
 
- private:
   // 系统执行顺序排序
   void SortSystems();
 

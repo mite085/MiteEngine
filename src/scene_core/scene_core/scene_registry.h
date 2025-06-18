@@ -121,7 +121,7 @@ class SceneRegistry {
    * @tparam Component 要检查的组件类型(支持多个组件)
    * @param entity 目标实体
    * @return 是否拥有任意一个指定组件
-   * 
+   *
    * 使用示例: 检查某个entity是否具有变换组件、可见性组件和层次结构组件中的任意一种
    * if(m_Registry.AnyOf<TransformComponent, VisibilityComponent, HierarchyComponent>(entity))
    */
@@ -132,7 +132,7 @@ class SceneRegistry {
    * @tparam Component 要检查的组件类型(支持多个组件)
    * @param entity 目标实体
    * @return 是否拥有所有指定组件
-   * 
+   *
    * 使用示例: 检查某个entity是否同时具有变换组件、可见性组件和层次结构组件
    * if(m_Registry.AllOf<TransformComponent, VisibilityComponent, HierarchyComponent>(entity))
    */
@@ -149,7 +149,7 @@ class SceneRegistry {
    * @tparam Component 要筛选的组件类型
    * @tparam Exclude 要从视图中排除的组件类型
    * @return 包含所有符合条件的Entity的vector（按创建顺序）
-   * 
+   *
    * 使用示例：获取所有同时具备变换组件、可见性组件的实体
    * m_Registry.GetEntitiesWith<TransformComponent, VisibilityComponent>()
    */
@@ -175,7 +175,7 @@ class SceneRegistry {
     return m_Registry;
   }
 
-  // 6. 组件事件回调相关 ===============================================
+  // 6. 组件事件回调相关(由ComponentSystem全权管理) ===========================
  public:
   // 组件回调函数类型
   using ComponentCallback = std::function<void(Entity, Component &)>;
@@ -222,7 +222,7 @@ class SceneRegistry {
   std::unordered_map<std::type_index, ComponentCallback> m_UpdateCallbacks;
   std::unordered_map<std::type_index, ComponentCallback> m_DestroyCallbacks;
 
-  // 7. 实体事件回调相关 ===============================================
+  // 7. 实体事件回调相关(由SceneObserver全权管理) ===================================
  public:
   // 实体生命周期回调类型
   using EntityCallback = std::function<void(Entity)>;
@@ -272,7 +272,7 @@ class SceneRegistry {
     std::unordered_map<size_t, std::vector<EntityCallbackWrapper> *> entityCallbackMap;
   } m_EntityCallbacks;
 
-  size_t m_NextEntityCallbackID = 1; // 全局的CallBack自增计数器，同时作为ID
+  size_t m_NextEntityCallbackID = 1;  // 全局的CallBack自增计数器，同时作为ID
 
   /**
    * @brief 执行回调辅助函数
