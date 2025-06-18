@@ -10,19 +10,27 @@ template<typename T> using EventFn = std::function<bool(T &)>;
 
 class EventDispatcher {
  public:
-  explicit EventDispatcher(Event &event) : m_Event(event) {}
+  
+  EventDispatcher() = default;
+
+  explicit EventDispatcher(Event &event) : m_Event(&event) {}
+
+  void SetEvent(Event &event)
+  {
+    m_Event = &event;
+  }
 
   template<typename T>
   bool Dispatch(std::function<bool(T&)> func) {
-	  if (m_Event.GetEventType() == T::GetStaticType()) {
-		  m_Event.handled = func(static_cast<T&>(m_Event));
-		  return true;
-	  }
-	  return false;
+    if (m_Event && m_Event->GetEventType() == T::GetStaticType()) {
+      m_Event->handled = func(static_cast<T &>(*m_Event));
+      return true;
+    }
+    return false;
   }
 
  private:
-  Event &m_Event;
+  Event *m_Event = nullptr;
 };
 
 // 辅助宏：用于 EventDispatcher 分发（保持原有类型安全）
