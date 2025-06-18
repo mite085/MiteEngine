@@ -3,6 +3,7 @@
 #include <cereal/cereal.hpp>
 #include "scene_serializer.h"
 #include "scene.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
 SceneSerializer::SceneSerializer(Scene &scene) : m_scene(scene) {}
@@ -19,13 +20,13 @@ bool SceneSerializer::SerializeToJson(const std::string &filepath)
     cereal::JSONOutputArchive archive(os);
 
     // 序列化场景元数据
-    archive(cereal::make_nvp("Scene", m_scene.GetName()));
+    //archive(cereal::make_nvp("Scene", m_scene.GetName()));
 
     // 注册并序列化所有组件类型
-    RegisterComponentTypes(archive);
+    //RegisterComponentTypes(archive);
 
     // 序列化实体
-    SerializeEntities(archive, m_scene.GetRegistry());
+    //SerializeEntities(archive, m_scene.GetRegistry());
 
     return true;
   }
@@ -48,17 +49,17 @@ bool SceneSerializer::DeserializeFromJson(const std::string &filepath)
 
     // 反序列化场景元数据
     std::string sceneName;
-    archive(cereal::make_nvp("Scene", sceneName));
+    //archive(cereal::make_nvp("Scene", sceneName));
     m_scene.SetName(sceneName);
 
     // 注册组件类型
-    RegisterComponentTypes(archive);
+    //RegisterComponentTypes(archive);
 
     // 清空当前场景
     m_scene.Clear();
 
     // 反序列化实体
-    DeserializeEntities(archive, m_scene.GetRegistry());
+    //DeserializeEntities(archive, m_scene.GetRegistry());
 
     return true;
   }
@@ -77,16 +78,16 @@ bool SceneSerializer::SerializeToBinary(const std::string &filepath)
       return false;
     }
 
-    cereal::BinaryOutputArchive archive(os);
+    //cereal::BinaryOutputArchive archive(os);
 
     // 序列化场景元数据
-    archive(m_scene.GetName());
+    //archive(cereal::make_nvp("Scene", m_scene.GetName()));
 
     // 注册并序列化所有组件类型
-    RegisterComponentTypes(archive);
+    //RegisterComponentTypes(archive);
 
     // 序列化实体
-    SerializeEntities(archive, m_scene.GetRegistry());
+    //SerializeEntities(archive, m_scene.GetRegistry());
 
     return true;
   }
@@ -105,21 +106,21 @@ bool SceneSerializer::DeserializeFromBinary(const std::string &filepath)
       return false;
     }
 
-    cereal::BinaryInputArchive archive(is);
+    //cereal::BinaryInputArchive archive(is);
 
     // 反序列化场景元数据
     std::string sceneName;
-    archive(sceneName);
+    //archive(cereal::make_nvp("Scene", m_scene.GetName()));
     m_scene.SetName(sceneName);
 
     // 注册组件类型
-    RegisterComponentTypes(archive);
+    //RegisterComponentTypes(archive);
 
     // 清空当前场景
     m_scene.Clear();
 
     // 反序列化实体
-    DeserializeEntities(archive, m_scene.GetRegistry());
+    //DeserializeEntities(archive, m_scene.GetRegistry());
 
     return true;
   }
@@ -135,7 +136,7 @@ template<typename Archive> void SceneSerializer::RegisterComponentTypes(Archive 
   // TODO: 使用CEREAL_REGISTER_TYPE宏确保类型信息被正确记录
 
   // 示例：Tag组件
-  archive.template register_type<TagComponent>();
+  //archive.template register_type<TagComponent>();
 
   // TODO: 其他组件...
   // archive.template register_type<TransformComponent>();
@@ -149,7 +150,7 @@ template<typename Archive>
 void SceneSerializer::SerializeEntities(Archive &archive, SceneRegistry &registry)
 {
   // 获取所有实体
-  auto view = registry.view<entt::entity>();
+  auto view = registry.GetAllEntities();
 
   // 首先序列化实体数量
   const auto count = view.size();
@@ -161,17 +162,12 @@ void SceneSerializer::SerializeEntities(Archive &archive, SceneRegistry &registr
     archive(cereal::make_nvp("Entity", entity));
 
     // 序列化该实体上的所有组件
-    registry.visit(entity, [&archive, &registry, entity](const auto &component) {
-      using ComponentType = std::decay_t<decltype(registry.get<ComponentType>(entity))>;
-      try {
-        archive(cereal::make_nvp(component_type_name<ComponentType>(),  // 需要实现获取类型名的函数
-                                 registry.template get<ComponentType>(entity)));
-      }
-      catch (const std::exception &e) {
-        // 处理序列化错误
-        m_lastError = "Failed to serialize component: " + std::string(e.what());
-      }
-    });
+    //auto view = registry.GetAllEntities();
+    //for (auto entity : view) {
+    //  using ComponentType = std::decay_t<decltype(registry.GetComponent<ComponentType>(entity))>;
+    //  archive(cereal::make_nvp(component_type_name<ComponentType>(),  // 需要实现获取类型名的函数
+    //                           registry.template GetComponent<ComponentType>(entity)));
+    //}
   }
 }
 
@@ -180,45 +176,39 @@ void SceneSerializer::DeserializeEntities(Archive &archive, SceneRegistry &regis
 {
   // 反序列化实体数量
   size_t entityCount = 0;
-  archive(cereal::make_nvp("EntityCount", entityCount));
+  //archive(cereal::make_nvp("EntityCount", entityCount));
 
   // 反序列化每个实体及其组件
   for (size_t i = 0; i < entityCount; ++i) {
-    entt::entity entity = entt::null;
-
+    Entity entity = registry.CreateEntity();
     // 反序列化实体ID
-    archive(cereal::make_nvp("Entity", entity));
-
-    // 确保实体在注册表中存在
-    if (!registry.valid(entity)) {
-      entity = registry.create(entity);
-    }
+    //archive(cereal::make_nvp("Entity", entity));
 
     // 反序列化组件
     // Cereal会根据序列化时记录的类型信息自动处理
     std::string componentName;
     while (true) {
       try {
-        // 尝试读取下一个组件名
-        archive.setNextName(nullptr);
-        if (!archive.tryGetName(componentName)) {
-          break;  // 没有更多组件了
-        }
+        //// 尝试读取下一个组件名
+        //archive.setNextName(nullptr);
+        //if (!archive.tryGetName(componentName)) {
+        //  break;  // 没有更多组件了
+        //}
 
         // 根据组件名反序列化组件
         // 这里需要为每个组件类型实现特定的反序列化逻辑
         // 可以使用工厂模式或类型注册表来动态创建组件
 
-        if (componentName == TransformComponent::GetSerializationName()) {
-          TransformComponent transform;
-          archive(transform);
-          registry.emplace_or_replace<TransformComponent>(entity, transform);
-        }
-        else if (componentName == TagComponent::GetSerializationName()) {
-          TagComponent tag;
-          archive(tag);
-          registry.emplace_or_replace<TagComponent>(entity, tag);
-        }
+        //if (componentName == TransformComponent::GetSerializationName()) {
+        //  TransformComponent transform;
+        //  archive(transform);
+        //  registry.emplace_or_replace<TransformComponent>(entity, transform);
+        //}
+        //else if (componentName == TagComponent::GetSerializationName()) {
+        //  TagComponent tag;
+        //  archive(tag);
+        //  registry.emplace_or_replace<TagComponent>(entity, tag);
+        //}
         // 其他组件类型的处理...
       }
       catch (const cereal::Exception &e) {
