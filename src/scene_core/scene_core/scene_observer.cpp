@@ -1,178 +1,99 @@
+#include "scene.h"
 #include "scene_observer.h"
 #include "scene_core_components/component_headers.h"
 namespace mite {
 
-SceneObserver::SceneObserver(SceneRegistry &registry) : m_Registry(registry)
+SceneObserver::SceneObserver(std::weak_ptr<Scene> scene)
+    : m_Scene(scene)
 {
-  SetupCallbacks();
+  // 注册到场景的回调
+  m_Scene.lock()->GetRegistry().RegisterCallbackEntityCreated(
+      [this](Entity entity) { OnEntityCreated(entity); });
+
+  m_Scene.lock()->GetRegistry().RegisterCallbackEntityPreDestroyed(
+      [this](Entity entity) { OnEntityDestroyed(entity); });
 }
 
 SceneObserver::~SceneObserver()
 {
-  StopTracking();
-  CleanupCallbacks();
+  // 清理时取消回调注册
+  m_Scene.lock()->GetRegistry().UnregisterCallbackEntity();
 }
 
-size_t SceneObserver::RegisterCallback(const SceneObserverCallback &callback)
+void SceneObserver::BeginObservation()
 {
-  size_t id = m_NextCallbackId++;
-  m_Callbacks[id] = callback;
-  return id;
+  m_IsObserving = true;
+  m_CreatedEntities.clear();
+  m_DestroyedEntities.clear();
+  m_ModifiedEntities.clear();
 }
 
-void SceneObserver::UnregisterCallback(size_t callbackId)
+void SceneObserver::EndObservationAndEmitEvents(EventDispatcher &dispatcher)
 {
-  m_Callbacks.erase(callbackId);
-}
-
-void SceneObserver::StartTracking()
-{
-  m_IsTracking = true;
-  m_ChangeEvents.clear();
-  m_DirtyEntities.clear();
-}
-
-void SceneObserver::StopTracking()
-{
-  m_IsTracking = false;
-}
-
-std::vector<SceneChangeEvent> SceneObserver::FlushChanges()
-{
-  std::vector<SceneChangeEvent> changes;
-  std::swap(changes, m_ChangeEvents);
-  m_DirtyEntities.clear();
-  return changes;
-}
-
-bool SceneObserver::IsEntityDirty(Entity entity) const
-{
-  return m_DirtyEntities.find(entity) != m_DirtyEntities.end();
-}
-
-void SceneObserver::SetupCallbacks()
-{
-  // 设置实体生命周期回调
-  m_Registry.RegisterCallbackEntityCreated([this](Entity entity) { OnEntityCreated(entity); });
-
-  m_Registry.RegisterCallbackEntityPreDestroyed(
-      [this](Entity entity) { OnEntityDestroyed(entity); });
-}
-
-void SceneObserver::CleanupCallbacks()
-{
-  // 清理所有注册的回调
-  m_Registry.UnregisterEntityCreatedCallback(m_EntityCreatedCallback);
-  m_Registry.UnregisterEntityDestroyedCallback(m_EntityDestroyedCallback);
-
-  // 清理组件回调
-  for (auto &[id, data] : m_ComponentCallbacks) {
-    m_Registry.UnregisterComponentCallbacks(id);
-  }
-  m_ComponentCallbacks.clear();
-}
-
-void SceneObserver::NotifyCallbacks(const SceneChangeEvent &event)
-{
-  for (auto &[id, callback] : m_Callbacks) {
-    if (callback) {
-      callback(event);
-    }
-  }
-}
-
-void SceneObserver::OnEntityCreated(Entity entity)
-{
-  if (!m_IsTracking)
+  if (!m_IsObserving)
     return;
 
-  SceneChangeEvent event;
-  event.changeType = SceneChangeType::ENTITY_CREATED;
-  event.entity = entity;
+  m_IsObserving = false;
 
-  m_ChangeEvents.push_back(event);
-  m_DirtyEntities.insert(entity);
+  // 处理实体创建事件
+  for (auto &entity : m_CreatedEntities) {
+    dispatcher.Dispatch<EntityCreatedEvent>(
+        [this](EntityCreatedEvent &e) { return OnEntityCreated(e.GetEntity()); });
 
-  NotifyCallbacks(event);
-}
-
-void SceneObserver::OnEntityDestroyed(Entity entity)
-{
-  if (!m_IsTracking)
-    return;
-
-  SceneChangeEvent event;
-  event.changeType = SceneChangeType::ENTITY_DESTROYED;
-  event.entity = entity;
-
-  m_ChangeEvents.push_back(event);
-  m_DirtyEntities.erase(entity);  // 实体被销毁，从脏集合中移除
-
-  NotifyCallbacks(event);
-}
-
-template<typename T> void SceneObserver::OnComponentAdded(Entity entity, T &component)
-{
-  if (!m_IsTracking)
-    return;
-
-  SceneChangeEvent event;
-  event.changeType = SceneChangeType::COMPONENT_ADDED;
-  event.entity = entity;
-  event.componentType = ComponentTypeID<T>();
-
-  // 存储组件快照（如果需要）
-  if constexpr (std::is_copy_constructible_v<T>) {
-    event.newData = std::make_shared<T>(component);
+    // 若有需要，通知ComponentSystemManager检查新实体的组件
+    // (目前ComponentSystemManager不维护任何和entity相关的内容)
+    //m_Scene.lock()->GetComponentSystemManager().OnEntityCreated(entity);
   }
 
-  m_ChangeEvents.push_back(event);
-  m_DirtyEntities.insert(entity);
-
-  NotifyCallbacks(event);
-}
-
-template<typename T> void SceneObserver::OnComponentRemoved(Entity entity, T &component)
-{
-  if (!m_IsTracking)
-    return;
-
-  SceneChangeEvent event;
-  event.changeType = SceneChangeType::COMPONENT_REMOVED;
-  event.entity = entity;
-  event.componentType = ComponentTypeID<T>();
-
-  // 存储组件快照（如果需要）
-  if constexpr (std::is_copy_constructible_v<T>) {
-    event.oldData = std::make_shared<T>(component);
+  // 处理实体改变事件
+  for (auto &entity : m_ModifiedEntities) {
+    dispatcher.Dispatch<EntityParentChangedEvent>(
+        [this](EntityParentChangedEvent &e) { return MarkEntityModified(e.GetEntity()); });
   }
 
-  m_ChangeEvents.push_back(event);
-  m_DirtyEntities.insert(entity);
-
-  NotifyCallbacks(event);
-}
-
-template<typename T> void SceneObserver::OnComponentChanged(Entity entity, T &component)
-{
-  if (!m_IsTracking)
-    return;
-
-  SceneChangeEvent event;
-  event.changeType = SceneChangeType::COMPONENT_CHANGED;
-  event.entity = entity;
-  event.componentType = ComponentTypeID<T>();
-
-  // 对于可复制的组件，可以存储新旧值
-  if constexpr (std::is_copy_constructible_v<T>) {
-    // 注意：实际实现中可能需要更高效的方式来存储变更
-    event.oldData = std::make_shared<T>(component);  // 这里简化了，实际应该存储旧值
-    event.newData = std::make_shared<T>(component);
+  // 处理实体销毁事件
+  for (auto &entity : m_DestroyedEntities) {
+    dispatcher.Dispatch<EntityDestroyedEvent>(
+        [this](EntityDestroyedEvent &e) { return OnEntityDestroyed(e.GetEntity()); });
   }
 
-  m_ChangeEvents.push_back(event);
-  m_DirtyEntities.insert(entity);
+  m_CreatedEntities.clear();
+  m_DestroyedEntities.clear();
+  m_ModifiedEntities.clear();
+}
 
-  NotifyCallbacks(event);
+void SceneObserver::Clear()
+{
+  m_IsObserving = false;
+  m_CreatedEntities.clear();
+  m_DestroyedEntities.clear();
+  m_ModifiedEntities.clear();
+}
+
+bool SceneObserver::MarkEntityModified(Entity entity)
+{
+  if (!m_IsObserving)
+    return false;
+
+  m_ModifiedEntities.push_back(entity);
+  return true;
+}
+
+bool SceneObserver::OnEntityCreated(Entity entity)
+{
+  if (!m_IsObserving)
+    return false;
+
+  m_CreatedEntities.push_back(entity);
+  return true;
+}
+
+bool SceneObserver::OnEntityDestroyed(Entity entity)
+{
+  if (!m_IsObserving)
+    return false;
+
+  m_DestroyedEntities.push_back(entity);
+  return true;
 }
 };

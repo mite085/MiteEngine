@@ -40,6 +40,10 @@ class SceneClearedEvent : public Event {
 class EntityEvent : public Event {
  public:
   EntityEvent(Entity entity) : entity(entity) {}
+  Entity GetEntity()
+  {
+    return entity;
+  }
 
   virtual EventType GetEventType() const = 0;
   virtual const char *GetName() const = 0;
@@ -90,7 +94,7 @@ class EntityTagChangedEvent : public EntityEvent {
  public:
   EntityTagChangedEvent(Entity entity) : EntityEvent(entity) {}
 
-  EVENT_CLASS_TYPE(PARENT_CHANGED)
+  EVENT_CLASS_TYPE(TAG_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 };
 
