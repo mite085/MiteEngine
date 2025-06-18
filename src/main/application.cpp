@@ -151,7 +151,7 @@ void MiteApplication::LoadDefaultScene()
 
   // TODO：协调各模块，加载初始场景
   // m_AssetManager->LoadDefaultAssets();
-  m_Scene->LoadDefaultScene();
+  //m_Scene->LoadDefaultScene();
   // m_MaterialSystem->CreateDefaultMaterials();
 
   // 更新场景视图
