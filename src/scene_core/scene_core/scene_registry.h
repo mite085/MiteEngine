@@ -16,8 +16,8 @@ class SceneRegistry {
   SceneRegistry(std::weak_ptr<Scene> scene);
   ~SceneRegistry();
 
-  // 实体管理 ===================================================
-
+  // 1. 实体管理 ===================================================
+ public:
   /**
    * @brief 创建新实体
    * @param name 新实体的名字
@@ -43,8 +43,8 @@ class SceneRegistry {
    */
   void Clear();
 
-  // 组件操作 - 基础 ============================================
-
+  // 2. 组件操作 - 基础 ============================================
+ public:
   /**
    * @brief 添加组件（构造新组件）
    * @tparam T 组件类型
@@ -78,8 +78,8 @@ class SceneRegistry {
    */
   template<typename T> bool HasComponent(Entity entity) const;
 
-  // 组件操作 - 获取 ============================================
-
+  // 3. 组件操作 - 获取 ============================================
+ public:
   /**
    * @brief 获取组件（非const版本）
    * @tparam T 组件类型
@@ -114,21 +114,27 @@ class SceneRegistry {
    */
   template<typename T> const T *TryGetComponent(Entity entity) const;
 
-  // 视图和查询 =================================================
-
+  // 4. 视图和查询 =================================================
+ public:
   /**
    * @brief 检查实体是否拥有任何指定的组件
-   * @tparam Component 要检查的组件类型
+   * @tparam Component 要检查的组件类型(支持多个组件)
    * @param entity 目标实体
    * @return 是否拥有任意一个指定组件
+   * 
+   * 使用示例: 检查某个entity是否具有变换组件、可见性组件和层次结构组件中的任意一种
+   * if(m_Registry.AnyOf<TransformComponent, VisibilityComponent, HierarchyComponent>(entity))
    */
   template<typename... Component> bool AnyOf(Entity entity) const;
 
   /**
    * @brief 检查实体是否拥有所有指定的组件
-   * @tparam Component 要检查的组件类型
+   * @tparam Component 要检查的组件类型(支持多个组件)
    * @param entity 目标实体
    * @return 是否拥有所有指定组件
+   * 
+   * 使用示例: 检查某个entity是否同时具有变换组件、可见性组件和层次结构组件
+   * if(m_Registry.AllOf<TransformComponent, VisibilityComponent, HierarchyComponent>(entity))
    */
   template<typename... Component> bool AllOf(Entity entity) const;
 
@@ -143,11 +149,14 @@ class SceneRegistry {
    * @tparam Component 要筛选的组件类型
    * @tparam Exclude 要从视图中排除的组件类型
    * @return 包含所有符合条件的Entity的vector（按创建顺序）
+   * 
+   * 使用示例：获取所有同时具备变换组件、可见性组件的实体
+   * m_Registry.GetEntitiesWith<TransformComponent, VisibilityComponent>()
    */
   template<typename... Component> std::vector<Entity> GetEntitiesWith();
 
-  // 原生访问（谨慎使用） ========================================
-
+  // 5. 原生访问（禁止外部调用） ========================================
+ private:
   /**
    * @brief 获取底层registry（谨慎使用）
    * @return 底层entt::registry引用
@@ -166,35 +175,31 @@ class SceneRegistry {
     return m_Registry;
   }
 
-  // 事件回调相关 ===============================================
-
-  // 组件构造回调函数类型
-  using ComponentConstructCallback = std::function<void(Entity, Component &)>;
-  // 组件更新回调函数类型
-  using ComponentUpdateCallback = std::function<void(Entity, Component &)>;
-  // 组件销毁回调函数类型
-  using ComponentDestroyCallback = std::function<void(Entity, Component &)>;
+  // 6. 组件事件回调相关 ===============================================
+ public:
+  // 组件回调函数类型
+  using ComponentCallback = std::function<void(Entity, Component &)>;
 
   /**
    * @brief 注册组件构造回调
    * @tparam T 组件类型
    * @param callback 回调函数
    */
-  template<typename T> void OnComponentConstruct(ComponentConstructCallback callback);
+  template<typename T> void RegisterCallbackComponentConstruct(ComponentCallback callback);
 
   /**
    * @brief 注册组件更新回调
    * @tparam T 组件类型
    * @param callback 回调函数
    */
-  template<typename T> void OnComponentUpdate(ComponentUpdateCallback callback);
+  template<typename T> void RegisterCallbackComponentUpdate(ComponentCallback callback);
 
   /**
    * @brief 注册组件销毁回调
    * @tparam T 组件类型
    * @param callback 回调函数
    */
-  template<typename T> void OnComponentDestroy(ComponentDestroyCallback callback);
+  template<typename T> void RegisterCallbackComponentDestroy(ComponentCallback callback);
 
  private:
   /**
@@ -212,11 +217,77 @@ class SceneRegistry {
    */
   template<typename T> void InvokeDestroy(Entity entity, T &component);
 
-  // 存储所有组件类型的回调
-  std::unordered_map<std::type_index, ComponentConstructCallback> m_ConstructCallbacks;
-  std::unordered_map<std::type_index, ComponentUpdateCallback> m_UpdateCallbacks;
-  std::unordered_map<std::type_index, ComponentDestroyCallback> m_DestroyCallbacks;
+  // 存储所有组件类型的回调(同一组件类型仅存放一个回调函数)
+  std::unordered_map<std::type_index, ComponentCallback> m_ConstructCallbacks;
+  std::unordered_map<std::type_index, ComponentCallback> m_UpdateCallbacks;
+  std::unordered_map<std::type_index, ComponentCallback> m_DestroyCallbacks;
 
+  // 7. 实体事件回调相关 ===============================================
+ public:
+  // 实体生命周期回调类型
+  using EntityCallback = std::function<void(Entity)>;
+  // 带优先级的回调包装器
+  struct EntityCallbackWrapper {
+    EntityCallback callback;
+    int priority = 0;  // 默认优先级，数字越大优先级越高
+    size_t id = 0;     // 唯一标识
+  };
+
+  /**
+   * @brief 注册实体创建回调
+   * @param callback 回调函数
+   * @param priority 调用优先级（数值越大越早执行）
+   * @return 可用于取消注册的回调ID
+   */
+  size_t RegisterCallbackEntityCreated(EntityCallback callback, int priority = 0);
+
+  /**
+   * @brief 注册实体销毁回调（在实体实际销毁前调用）
+   * @param callback 回调函数
+   * @param priority 调用优先级（数值越大越早执行）
+   * @return 回调ID
+   */
+  size_t RegisterCallbackEntityPreDestroyed(EntityCallback callback, int priority = 0);
+
+  /**
+   * @brief 注册实体销毁回调（在实体实际销毁后调用）
+   * @param callback 回调函数
+   * @param priority 调用优先级（数值越大越早执行）
+   * @return 回调ID
+   */
+  size_t RegisterCallbackEntityPostDestroyed(EntityCallback callback, int priority = 0);
+
+  /**
+   * @brief 取消注册生命周期回调
+   * @param callbackId 由注册函数返回的ID
+   */
+  void UnregisterCallbackEntity(size_t callbackId);
+
+ private:
+  // 回调存储结构
+  struct EntityCallbackLists {
+    std::vector<EntityCallbackWrapper> createdCallbacks;
+    std::vector<EntityCallbackWrapper> preDestroyCallbacks;
+    std::vector<EntityCallbackWrapper> postDestroyCallbacks;
+    std::unordered_map<size_t, std::vector<EntityCallbackWrapper> *> entityCallbackMap;
+  } m_EntityCallbacks;
+
+  size_t m_NextEntityCallbackID = 1; // 全局的CallBack自增计数器，同时作为ID
+
+  /**
+   * @brief 执行回调辅助函数
+   * @param callbacks 一般为EntityCallbackLists中的一个，如createdCallbacks
+   * @param entity 执行的实体对象
+   */
+  void ExecuteCallbacks(const std::vector<EntityCallbackWrapper> &callbacks, Entity entity);
+
+  /**
+   * @brief 排序回调列表（按优先级降序）
+   * @param callbacks 一般为EntityCallbackLists中的一个，如createdCallbacks
+   */
+  void SortCallbackList(std::vector<EntityCallbackWrapper> &callbacks);
+
+  // 8. 基本数据存储 ===============================================
  private:
   entt::registry m_Registry;     // 底层EnTT registry
   std::weak_ptr<Scene> m_Scene;  // 场景引用

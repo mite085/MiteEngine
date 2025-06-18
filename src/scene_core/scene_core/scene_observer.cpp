@@ -1,15 +1,17 @@
 #include "scene_observer.h"
-
+#include "scene_core_components/component_headers.h"
 namespace mite {
 
 SceneObserver::SceneObserver(SceneRegistry &registry) : m_Registry(registry)
 {
   // 确保IDComponent总是被跟踪（因为它是实体标识的关键组件）
-  m_Registry.RegisterComponentCallback<IDComponent>(
-      [this](Entity entity, IDComponent &comp) { OnComponentAdded(entity, comp); },
-      [this](Entity entity, IDComponent &comp) { OnComponentRemoved(entity, comp); },
-      [this](Entity entity, IDComponent &comp) { OnComponentChanged(entity, comp); });
-
+  m_Registry.RegisterCallbackComponentConstruct<IDComponent>(
+      [this](Entity entity, Component &comp) { OnComponentAdded(entity, comp); });
+  m_Registry.RegisterCallbackComponentUpdate<IDComponent>(
+      [this](Entity entity, Component &comp) { OnComponentChanged(entity, comp); });
+  m_Registry.RegisterCallbackComponentDestroy<IDComponent>(
+      [this](Entity entity, Component &comp) { OnComponentRemoved(entity, comp); });
+  
   SetupCallbacks();
 }
 
@@ -59,10 +61,9 @@ bool SceneObserver::IsEntityDirty(Entity entity) const
 void SceneObserver::SetupCallbacks()
 {
   // 设置实体生命周期回调
-  m_EntityCreatedCallback = m_Registry.OnEntityCreated(
-      [this](Entity entity) { OnEntityCreated(entity); });
+  m_Registry.RegisterCallbackEntityCreated([this](Entity entity) { OnEntityCreated(entity); });
 
-  m_EntityDestroyedCallback = m_Registry.OnEntityDestroyed(
+  m_Registry.RegisterCallbackEntityPreDestroyed(
       [this](Entity entity) { OnEntityDestroyed(entity); });
 }
 

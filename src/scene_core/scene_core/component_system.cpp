@@ -3,13 +3,13 @@
 namespace mite {
 ComponentSystemManager::ComponentSystemManager(SceneRegistry &registry) : m_Registry(registry)
 {  // 注册组件事件回调
-  m_Registry.OnComponentConstruct<Component>(
+  m_Registry.RegisterCallbackComponentConstruct<Component>(
       [this](Entity entity, Component &component) { OnComponentAdded(entity, component); });
 
-  m_Registry.OnComponentUpdate<Component>(
+  m_Registry.RegisterCallbackComponentUpdate<Component>(
       [this](Entity entity, Component &component) { OnComponentUpdated(entity, component); });
 
-  m_Registry.OnComponentDestroy<Component>(
+  m_Registry.RegisterCallbackComponentDestroy<Component>(
       [this](Entity entity, Component &component) { OnComponentRemoved(entity, component); });
 }
 ComponentSystemManager::~ComponentSystemManager()
