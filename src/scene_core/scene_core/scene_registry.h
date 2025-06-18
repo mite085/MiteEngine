@@ -2,6 +2,7 @@
 #define MITE_SCENE_REGISTRY
 
 #include "entity.h"
+#include "component.h"
 
 namespace mite {
 // 前向声明
@@ -23,7 +24,7 @@ class SceneRegistry {
    * @param name 新实体的名字
    * @return 新创建的实体
    */
-  Entity CreateEntity(const std::string &name);
+  Entity CreateEntity(const std::string name = "");
 
   /**
    * @brief 销毁实体
@@ -258,10 +259,15 @@ class SceneRegistry {
   size_t RegisterCallbackEntityPostDestroyed(EntityCallback callback, int priority = 0);
 
   /**
-   * @brief 取消注册生命周期回调
+   * @brief 卸载指定的Entity回调函数
    * @param callbackId 由注册函数返回的ID
    */
   void UnregisterCallbackEntity(size_t callbackId);
+
+  /**
+   * @brief 卸载全部Entity回调函数
+   */
+  void UnregisterCallbackEntity();
 
  private:
   // 回调存储结构

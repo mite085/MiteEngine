@@ -27,17 +27,18 @@ Scene::~Scene()
 void Scene::InitSystems()
 {
   // 注册核心系统
-  m_SceneGraph = std::make_unique<SceneGraph>(this);
-  m_SceneObserver = std::make_unique<SceneObserver>(this);
-  m_Serializer = std::make_unique<SceneSerializer>(this);
+  m_SceneGraph = std::make_unique<SceneGraph>(GetRegistry());
+  m_SceneObserver = std::make_unique<SceneObserver>(weak_from_this());
+  m_Serializer = std::make_unique<SceneSerializer>(*this);
 
   //// TODO: 注册变换系统
   // RegisterSystem<TransformSystem>();
 }
 
 void Scene::RegisterDefaultSystems()
-{  // TODO: 注册核心系统（按执行顺序）
-  m_SystemManager.RegisterSystem<TransformSystem>();
+{  
+  // TODO: 注册核心系统（按执行顺序）
+  //m_SystemManager.RegisterSystem<TransformSystem>();
   //m_SystemManager.RegisterSystem<AnimationSystem>();
   //m_SystemManager.RegisterSystem<RenderSystem>();
 
@@ -45,27 +46,11 @@ void Scene::RegisterDefaultSystems()
   m_SystemManager.SetSystemEnabled<TransformSystem>(true);
 }
 
-void Scene::OnComponentConstructed(Entity entity, Component &component)
-{
-  // 通知所有管理系统该组件类型的系统
-  m_SystemManager.OnComponentAdded(entity, component);
-}
-
-void Scene::OnComponentUpdated(Entity entity, Component &component)
-{
-  // 处理组件更新逻辑
-  // 例如标记脏数据或触发特定系统更新
-  m_SystemManager.OnComponentUpdated(entity, component);
-}
-
-void Scene::OnComponentDestroyed(Entity entity, Component &component)
-{
-  // 通知所有管理系统该组件类型的系统
-  m_SystemManager.OnComponentRemoved(entity, component);
-}
-
 void Scene::OnUpdate(float timestep)
 {
+  // 开始记录本帧的变更
+  m_SceneObserver->BeginObservation();
+
   // 更新所有注册的系统
   m_SystemManager.UpdateAll(timestep);
 
@@ -77,13 +62,14 @@ void Scene::OnUpdate(float timestep)
   for (auto entity : entities) {
     m_Registry.DestroyEntity(entity);
   }
+
+  // 结束观察并分发事件
+  EventDispatcher dispatcher;
+  m_SceneObserver->EndObservationAndEmitEvents(dispatcher);
 }
 
 void Scene::OnRenderPrepare()
 {
-  // 更新场景观察者
-  m_SceneObserver->OnUpdate();
-
   // 准备场景图渲染状态
   m_SceneGraph->OnRenderPrepare();
 }
@@ -113,17 +99,9 @@ void Scene::Clear(bool keepSystems)
   if (!keepSystems) {
     // 销毁所有系统
     m_SystemManager.ShutdownAll();
-
-    // 重新初始化核心系统
-    if (m_SceneGraph)
-      m_SceneGraph->Init();
-    if (m_SceneObserver)
-      m_SceneObserver->Init();
   }
 
-  // 7. 重新创建默认环境实体（类似构造函数中的初始化）
-  auto env = CreateEntity("Environment");
-  env.AddComponent<EnvironmentComponent>();
+  // 7. TODO: 重新创建默认环境实体(是否存在重新创建的必要？)
 }
 
 Entity Scene::CreateEntity(const std::string &name)
@@ -141,7 +119,7 @@ void Scene::DestroyEntity(Entity entity)
   }
 
   // 标记销毁而不是立即销毁，避免迭代器失效
-  entity.AddComponent<DestroyComponent>();
+  m_Registry.AddComponent<DestroyComponent>(entity);
 }
 
 bool Scene::IsValid(Entity entity) const

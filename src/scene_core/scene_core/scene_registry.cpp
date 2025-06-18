@@ -14,16 +14,16 @@ SceneRegistry::~SceneRegistry()
 
 // 1. 实体管理 ===================================================
 
-Entity SceneRegistry::CreateEntity(const std::string &name)
+Entity SceneRegistry::CreateEntity(const std::string name)
 {
   // 使用entt::registry::create()创建实体
   Entity entity = Entity{m_Scene, m_Registry.create()};
 
   // 添加基本组件，自动生成唯一ID
-  auto &id = entity.AddComponent<IDComponent>();
+  auto &id = AddComponent<IDComponent>(entity);
 
   // 添加Tag系统，用于实体搜索和筛选
-  auto &tag = entity.AddComponent<TagComponent>();
+  auto &tag = AddComponent<TagComponent>(entity);
   tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
 
   // 主动触发回调函数
@@ -295,6 +295,13 @@ void SceneRegistry::UnregisterCallbackEntity(size_t callbackId)
         callbacks.end());
     m_EntityCallbacks.entityCallbackMap.erase(it);
   }
+}
+
+void SceneRegistry::UnregisterCallbackEntity() {
+  m_EntityCallbacks.createdCallbacks.clear();
+  m_EntityCallbacks.preDestroyCallbacks.clear();
+  m_EntityCallbacks.postDestroyCallbacks.clear();
+  m_EntityCallbacks.entityCallbackMap.clear();
 }
 
 void SceneRegistry::ExecuteCallbacks(const std::vector<EntityCallbackWrapper> &callbacks,

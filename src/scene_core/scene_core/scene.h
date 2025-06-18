@@ -100,9 +100,9 @@ class Scene : public std::enable_shared_from_this<Scene> {
    */
   void Deserialize(const std::filesystem::path &filepath);
 
-  // ------------------------ EnTT访问 ------------------------
+  // ------------------------ 模块访问 ------------------------
   /**
-   * @brief 获取registry
+   * @brief 获取Registry
    */
   SceneRegistry &GetRegistry()
   {
@@ -111,6 +111,17 @@ class Scene : public std::enable_shared_from_this<Scene> {
   const SceneRegistry &GetRegistry() const
   {
     return m_Registry;
+  }
+  /**
+   * @brief 获取ComponentSystemManager
+   */
+  ComponentSystemManager &GetComponentSystemManager()
+  {
+    return m_SystemManager;
+  }
+  const ComponentSystemManager &GetComponentSystemManager() const
+  {
+    return m_SystemManager;
   }
 
  private:
@@ -125,16 +136,14 @@ class Scene : public std::enable_shared_from_this<Scene> {
   // 场景名称
   std::string m_Name;         
 
+  // 可重用的dispatcher实例
+  EventDispatcher m_Dispatcher;
+
   // EnTT实体组件注册表：
   // 直接值持有,与Scene共享生命周期，
   // 避免unique_ptr不必要的堆分配，
   // 并方便其他模块直接引用m_Registry(可能存在风险？)
   SceneRegistry m_Registry;  
-
-  // 组件事件处理函数
-  void OnComponentConstructed(Entity entity, Component &component);
-  void OnComponentUpdated(Entity entity, Component &component);
-  void OnComponentDestroyed(Entity entity, Component &component);
 
   // 场景系统
   std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统
