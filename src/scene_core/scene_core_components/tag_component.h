@@ -15,20 +15,20 @@ namespace mite {
 class TagComponent : public ComponentTraits<TagComponent, Component::Family::Core> {
  public:
   // 默认构造
-  TagComponent(Entity owner);
+  TagComponent();
 
   /**
    * @brief 使用指定名称构造
    * @param tag 实体名称/标签
    */
-  TagComponent(Entity owner, const std::string &tag);
+  TagComponent(const std::string &tag);
 
   /**
    * @brief 使用指定名称和颜色构造
    * @param tag 实体名称/标签
    * @param color 编辑器显示颜色(RGBA)
    */
-  TagComponent(Entity owner, const std::string &tag, const glm::vec4 &color);
+  TagComponent(const std::string &tag, const glm::vec4 &color);
 
   // 序列化支持
   template<typename Archive> void serialize(Archive &archive);
@@ -84,7 +84,6 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
    */
   void UpdateSubTagsCache() const;
 };
-
 };  // namespace mite
 
 #endif

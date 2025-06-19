@@ -98,10 +98,27 @@ class Component {
     return {};
   }
 
+  /**
+   * @brief 设定所属实体对象
+   * @param entity 实体对象
+   * 
+   * 注意：
+   * 由于SceneRegistry::AddComponent所调用的
+   * m_Registry.emplace<T>(entt::entity, Args &&...args)
+   * 方法对完美转发的参数包的要求，Component的构造函数
+   * 所传入的参数必须和参数包的参数类型一致，
+   * 故需要单独将SetOwnerEntity分离开执行。
+   * 
+   * TODO: entt对这部分的设定，说明了Component的
+   * 内部逻辑不应当依赖于Entity对象。所以该函数
+   * 是违背entt的设计理念的。后续应当考虑删除
+   * 
+   */
+  void SetOwnerEntity(Entity entity);
+
  protected:
   // 保护构造函数，确保只能通过子类实例化，
-  // 并接收Entity，确保支持向上查询
-  explicit Component(Entity owner);
+  explicit Component() = default;
 
   Entity GetOwnerEntity() const;
 
@@ -120,7 +137,7 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
  public:
   static constexpr Family family = F;
 
-  explicit ComponentTraits(Entity owner) : Component(owner) {}
+  explicit ComponentTraits() : Component() {}
 
   Family GetFamily() const override
   {

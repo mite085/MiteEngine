@@ -5,8 +5,8 @@ namespace mite {
 static_assert(sizeof(VisibilityComponent::State) == sizeof(uint8_t),
               "VisibilityComponent::State size mismatch");
 
-VisibilityComponent::VisibilityComponent(Entity owner)
-    : ComponentTraits(owner),
+VisibilityComponent::VisibilityComponent()
+    : ComponentTraits(),
       m_VisibilityState(State::FullyVisible),
       m_TargetVisibilityState(State::FullyVisible),
       m_CurrentOpacity(1.0f),
@@ -19,10 +19,8 @@ VisibilityComponent::VisibilityComponent(Entity owner)
   assert(m_CurrentOpacity >= 0.0f && m_CurrentOpacity <= 1.0f);
 }
 
-VisibilityComponent::VisibilityComponent(Entity owner,
-                                         State initialVisibility,
-                                         float initialOpacity)
-    : ComponentTraits(owner),
+VisibilityComponent::VisibilityComponent(State initialVisibility, float initialOpacity)
+    : ComponentTraits(),
       m_VisibilityState(initialVisibility),
       m_TargetVisibilityState(initialVisibility),
       m_CurrentOpacity(initialOpacity),
@@ -122,5 +120,4 @@ void VisibilityComponent::CompleteTransitions()
   m_OpacityTransitionTime = 0.0f;
   m_OpacityTransitionSpeed = 0.0f;
 }
-
-};
+};  // namespace mite

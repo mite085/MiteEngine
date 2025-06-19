@@ -22,21 +22,17 @@ class VisibilityComponent : public ComponentTraits<VisibilityComponent, Componen
 
   /**
    * @brief 默认构造函数
-   * @param owner 持有该旋转组件的实体
-   * 
+   *
    * 注意：默认状态为FullyVisible，透明度为1.0
    */
-  VisibilityComponent(Entity owner);
+  VisibilityComponent();
 
   /**
    * @brief 带参数的构造函数
-   * @param owner 持有该旋转组件的实体
    * @param initialVisibility 初始可见性状态
    * @param initialOpacity 初始透明度(0.0-1.0)
    */
-  explicit VisibilityComponent(Entity owner,
-                               State initialVisibility,
-                               float initialOpacity = 1.0f);
+  explicit VisibilityComponent(State initialVisibility, float initialOpacity = 1.0f);
 
   ~VisibilityComponent() = default;
 
@@ -113,6 +109,6 @@ class VisibilityComponent : public ComponentTraits<VisibilityComponent, Componen
 
   float m_OpacityTransitionSpeed;  // 透明度过渡速度(每秒变化量)
 };
-};
+};  // namespace mite
 
 #endif

@@ -18,7 +18,7 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
   /**
    * @brief 默认构造函数
    */
-  DestroyComponent(Entity owner);
+  DestroyComponent();
 
   /**
    * @brief 用于调试的字符串表示

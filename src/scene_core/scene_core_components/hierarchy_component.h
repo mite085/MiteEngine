@@ -20,7 +20,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
   /**
    * @brief 构造函数（创建无父节点的根实体）
    */
-  HierarchyComponent(Entity owner);
+  HierarchyComponent();
 
   // 禁止拷贝（层次关系应唯一）
   HierarchyComponent(const HierarchyComponent &) = delete;

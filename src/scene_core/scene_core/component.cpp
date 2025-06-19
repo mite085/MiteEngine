@@ -39,7 +39,10 @@ bool Component::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-Component::Component(Entity owner) : m_OwnerEntity(owner) {}
+void Component::SetOwnerEntity(Entity entity)
+{
+  m_OwnerEntity = entity;
+}
 
 Entity Component::GetOwnerEntity() const
 {

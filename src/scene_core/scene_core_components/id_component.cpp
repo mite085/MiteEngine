@@ -7,8 +7,8 @@ std::string UUIDToString(const uuids::uuid &id)
   return uuids::to_string(id);
 }
 
-IDComponent::IDComponent(Entity owner)
-    : ComponentTraits(owner),
+IDComponent::IDComponent()
+    : ComponentTraits(),
       m_UUID(uuids::uuid_system_generator{}()),
       m_UUIDString(UUIDToString(m_UUID))
 {
@@ -18,8 +18,7 @@ IDComponent::IDComponent(Entity owner)
   }
 }
 
-IDComponent::IDComponent(Entity owner, const std::string &id)
-    : ComponentTraits(owner)
+IDComponent::IDComponent(const std::string &id) : ComponentTraits()
 {
   // 尝试解析字符串
   auto optionalUUID = uuids::uuid::from_string(id);
@@ -32,11 +31,6 @@ IDComponent::IDComponent(Entity owner, const std::string &id)
 
   // 标准化字符串表示（小写、无花括号等）
   m_UUIDString = UUIDToString(m_UUID);
-}
-
-IDComponent IDComponent::Generate(Entity owner)
-{
-  return IDComponent(owner);  // 委托给默认构造函数
 }
 
 bool IDComponent::IsValid(const std::string &id)

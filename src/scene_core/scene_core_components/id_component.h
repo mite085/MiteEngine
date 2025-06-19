@@ -4,7 +4,7 @@
 #include "scene_core/component.h"
 
 #define UUID_SYSTEM_GENERATOR
-#include <uuid.h> 
+#include <uuid.h>
 
 namespace mite {
 /**
@@ -15,7 +15,7 @@ namespace mite {
  * 2. 场景序列化/反序列化
  * 3. 跨场景引用
  * 4. 网络同步标识
- * 
+ *
  * 注意，和class ComponentID存在区别：
  * 1.关注点分离：
  *  - IDComponent解决"这个实体是谁"的问题
@@ -31,14 +31,14 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   /**
    * @brief 默认构造函数（生成新UUID）
    */
-  IDComponent(Entity owner);
+  IDComponent();
 
   /**
    * @brief 从现有UUID字符串构造
    * @param id 符合RFC4122标准的UUID字符串
    * @throws std::runtime_error 当UUID格式无效时抛出
    */
-  explicit IDComponent(Entity owner, const std::string &id);
+  explicit IDComponent(const std::string &id);
 
   // 禁止拷贝和赋值（保持ID唯一性）
   IDComponent(const IDComponent &) = delete;
@@ -74,11 +74,6 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   }
 
   /**
-   * @brief 生成新的随机UUID（静态方法）
-   */
-  static IDComponent Generate(Entity owner);
-
-  /**
    * @brief 检查字符串是否为有效UUID
    * @param id 待检查字符串
    * @return 是否有效
@@ -89,6 +84,6 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   uuids::uuid m_UUID;        // 二进制格式UUID
   std::string m_UUIDString;  // 字符串缓存（优化频繁访问）
 };
-};
+};  // namespace mite
 
 #endif

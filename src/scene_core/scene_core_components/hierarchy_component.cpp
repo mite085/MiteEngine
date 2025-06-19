@@ -2,7 +2,7 @@
 #include "scene_core/entity.h"
 
 namespace mite {
-HierarchyComponent::HierarchyComponent(Entity owner) : ComponentTraits(owner) {}
+HierarchyComponent::HierarchyComponent() : ComponentTraits() {}
 size_t HierarchyComponent::GetDepth(SceneRegistry &registry)
 {
   // 如果已经是根节点，深度为0

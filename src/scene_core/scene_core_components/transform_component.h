@@ -22,28 +22,24 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
  public:
   /**
    * @brief 默认构造函数
-   * @param owner 持有该旋转组件的实体
    */
-  TransformComponent(Entity owner);
+  TransformComponent();
 
   /**
    * @brief 带初始值的构造函数
-   * @param owner 持有该旋转组件的实体
    * @param position 位置坐标
    * @param rotation 旋转
    * @param scale 缩放
    */
-  explicit TransformComponent(Entity owner,
-                              const glm::vec3 &position,
+  explicit TransformComponent(const glm::vec3 &position,
                               const glm::quat &rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
                               const glm::vec3 &scale = glm::vec3(1.0f));
 
   /**
    * @brief 使用变换矩阵的构造函数
-   * @param owner 持有该旋转组件的实体
    * @param matrix 变换矩阵
    */
-  explicit TransformComponent(Entity owner, const glm::mat4 &matrix);
+  explicit TransformComponent(const glm::mat4 &matrix);
 
   ~TransformComponent() override = default;
 
@@ -218,7 +214,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   /**
    * @brief TransformComponent直接依赖于
    * 场景树核心组件HierarchyComponent。
-   * 
+   *
    * @return {typeid(HierarchyComponent)}
    */
   std::vector<std::type_index> GetDependencies() const override;
@@ -262,7 +258,6 @@ class TransformSystem : public ComponentSystem {
   void OnComponentAdded(Entity entity, Component &component) override;
   void OnComponentRemoved(Entity entity, Component &component) override;
 };
-
-};
+};  // namespace mite
 
 #endif

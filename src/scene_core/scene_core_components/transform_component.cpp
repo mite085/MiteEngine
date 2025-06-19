@@ -6,20 +6,19 @@ namespace mite {
 // æ≤Ã¨≥ı ºªØ
 constexpr float EPSILON = 0.00001f;
 
-TransformComponent::TransformComponent(Entity owner) : ComponentTraits(owner) {}
+TransformComponent::TransformComponent() : ComponentTraits() {}
 
-TransformComponent::TransformComponent(Entity owner,
-                                       const glm::vec3 &position,
+TransformComponent::TransformComponent(const glm::vec3 &position,
                                        const glm::quat &rotation,
                                        const glm::vec3 &scale)
-    : ComponentTraits(owner), m_Position(position), m_Rotation(rotation), m_Scale(scale)
+    : ComponentTraits(), m_Position(position), m_Rotation(rotation), m_Scale(scale)
 {
   m_LocalMatrixDirty = true;
   m_WorldMatrixDirty = true;
 }
 
-TransformComponent::TransformComponent(Entity owner, const glm::mat4 &matrix)
-    : ComponentTraits(owner)
+TransformComponent::TransformComponent( const glm::mat4 &matrix)
+    : ComponentTraits()
 {
   DecomposeMatrix(matrix);
 }
@@ -74,7 +73,8 @@ void TransformComponent::Translate(const glm::vec3 &translation)
   SetDirty();
 }
 
-void TransformComponent::Translate(float x, float y, float z) {
+void TransformComponent::Translate(float x, float y, float z)
+{
   Translate(glm::vec3{x, y, z});
 }
 
@@ -412,7 +412,7 @@ void TransformComponent::DecomposeMatrix(const glm::mat4 &matrix)
   SetDirty();
 }
 
-std::vector<std::type_index> TransformSystem::GetComponentTypes() const 
+std::vector<std::type_index> TransformSystem::GetComponentTypes() const
 {
   return {typeid(TransformComponent)};
 }
@@ -452,5 +452,4 @@ void TransformSystem::OnComponentAdded(Entity entity, Component &component)
 }
 
 void TransformSystem::OnComponentRemoved(Entity entity, Component &component) {}
-
-};
+};  // namespace mite

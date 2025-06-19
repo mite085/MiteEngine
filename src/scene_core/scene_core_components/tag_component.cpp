@@ -1,9 +1,8 @@
 #include "tag_component.h"
 
 namespace mite {
-TagComponent::TagComponent(Entity owner) : ComponentTraits(owner) {}
-TagComponent::TagComponent(Entity owner, const std::string &tag)
-    : ComponentTraits(owner), m_Tag(tag)
+TagComponent::TagComponent() : ComponentTraits() {}
+TagComponent::TagComponent(const std::string &tag) : ComponentTraits(), m_Tag(tag)
 {
   // 验证标签有效性
   if (m_Tag.empty()) {
@@ -11,10 +10,8 @@ TagComponent::TagComponent(Entity owner, const std::string &tag)
   }
 }
 
-TagComponent::TagComponent(Entity owner,
-                           const std::string &tag,
-                           const glm::vec4 &color)
-    : ComponentTraits(owner), m_Tag(tag), m_Color(color)
+TagComponent::TagComponent(const std::string &tag, const glm::vec4 &color)
+    : ComponentTraits(), m_Tag(tag), m_Color(color)
 {
   if (m_Tag.empty()) {
     m_Tag = "Entity";
