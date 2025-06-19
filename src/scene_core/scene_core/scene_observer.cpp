@@ -3,21 +3,20 @@
 #include "scene_core_components/component_headers.h"
 namespace mite {
 
-SceneObserver::SceneObserver(std::weak_ptr<Scene> scene)
-    : m_Scene(scene)
+SceneObserver::SceneObserver(SceneRegistry &registry) : m_Registry(registry)
 {
   // 注册到场景的回调
-  m_Scene.lock()->GetRegistry().RegisterCallbackEntityCreated(
+  m_Registry.RegisterCallbackEntityCreated(
       [this](Entity entity) { OnEntityCreated(entity); });
 
-  m_Scene.lock()->GetRegistry().RegisterCallbackEntityPreDestroyed(
+  m_Registry.RegisterCallbackEntityPreDestroyed(
       [this](Entity entity) { OnEntityDestroyed(entity); });
 }
 
 SceneObserver::~SceneObserver()
 {
   // 清理时取消回调注册
-  m_Scene.lock()->GetRegistry().UnregisterCallbackEntity();
+  m_Registry.UnregisterCallbackEntity();
 }
 
 void SceneObserver::BeginObservation()

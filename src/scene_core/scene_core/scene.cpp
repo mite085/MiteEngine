@@ -28,7 +28,7 @@ void Scene::InitSystems()
 {
   // 注册核心系统
   m_SceneGraph = std::make_unique<SceneGraph>(GetRegistry());
-  m_SceneObserver = std::make_unique<SceneObserver>(weak_from_this());
+  m_SceneObserver = std::make_unique<SceneObserver>(GetRegistry());
   m_Serializer = std::make_unique<SceneSerializer>(*this);
 
   //// TODO: 注册变换系统

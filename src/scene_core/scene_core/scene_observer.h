@@ -14,7 +14,7 @@ class Scene;
  */
 class SceneObserver {
  public:
-  SceneObserver(std::weak_ptr<Scene> scene);
+  SceneObserver(SceneRegistry &registry);
   ~SceneObserver();
 
   /**
@@ -53,7 +53,7 @@ class SceneObserver {
   bool OnEntityDestroyed(Entity entity);
 
  private:
-  std::weak_ptr<Scene> m_Scene;  // 场景引用
+  SceneRegistry& m_Registry;  // 场景注册信息引用
   std::vector<Entity> m_CreatedEntities;
   std::vector<Entity> m_DestroyedEntities;
   std::vector<Entity> m_ModifiedEntities;
