@@ -168,13 +168,25 @@ class ComponentSystemManager {
    * @tparam T 系统类型
    * @param enabled 是否启用
    */
-  template<typename T> void SetSystemEnabled(bool enabled);
+  template<typename T> void SetSystemEnabled(bool enabled)
+  {
+    const std::type_index type = typeid(T);
+    auto it = m_SystemMap.find(type);
+    if (it != m_SystemMap.end()) {
+      it->second.enabled = enabled;
+    }
+  }
 
   /**
    * @brief 检查系统是否启用
    * @tparam T 系统类型
    */
-  template<typename T> bool IsSystemEnabled() const;
+  template<typename T> bool IsSystemEnabled() const
+  {
+    const std::type_index type = typeid(T);
+    auto it = m_SystemMap.find(type);
+    return it != m_SystemMap.end() && it->second.enabled;
+  }
 
 private:
 

@@ -5,14 +5,14 @@ namespace mite {
 ComponentSystemManager::ComponentSystemManager(SceneRegistry &registry) : m_Registry(registry)
 {  
   // 注册组件事件回调
-  m_Registry.RegisterCallbackComponentConstruct<Component>(
-      [this](Entity entity, Component &component) { OnComponentAdded(entity, component); });
+  //m_Registry.RegisterCallbackComponentConstruct<Component>(
+  //    [this](Entity entity, Component &component) { OnComponentAdded(entity, component); });
 
-  m_Registry.RegisterCallbackComponentUpdate<Component>(
-      [this](Entity entity, Component &component) { OnComponentUpdated(entity, component); });
+  //m_Registry.RegisterCallbackComponentUpdate<Component>(
+  //    [this](Entity entity, Component &component) { OnComponentUpdated(entity, component); });
 
-  m_Registry.RegisterCallbackComponentDestroy<Component>(
-      [this](Entity entity, Component &component) { OnComponentRemoved(entity, component); });
+  //m_Registry.RegisterCallbackComponentDestroy<Component>(
+  //    [this](Entity entity, Component &component) { OnComponentRemoved(entity, component); });
 }
 ComponentSystemManager::~ComponentSystemManager()
 {
@@ -97,22 +97,6 @@ void ComponentSystemManager::ShutdownAll()
   for (auto it = m_Systems.rbegin(); it != m_Systems.rend(); ++it) {
     (*it)->Shutdown(m_Registry);
   }
-}
-
-template<typename T> void ComponentSystemManager::SetSystemEnabled(bool enabled)
-{
-  const std::type_index type = typeid(T);
-  auto it = m_SystemMap.find(type);
-  if (it != m_SystemMap.end()) {
-    it->second.enabled = enabled;
-  }
-}
-
-template<typename T> bool ComponentSystemManager::IsSystemEnabled() const
-{
-  const std::type_index type = typeid(T);
-  auto it = m_SystemMap.find(type);
-  return it != m_SystemMap.end() && it->second.enabled;
 }
 
 void ComponentSystemManager::SortSystems()

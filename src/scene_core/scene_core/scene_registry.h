@@ -54,7 +54,24 @@ class SceneRegistry {
    * @param args 组件构造参数
    * @return 新添加的组件引用
    */
-  template<typename T, typename... Args> T &AddComponent(Entity entity, Args &&...args);
+  template<typename T, typename... Args> T &AddComponent(Entity entity, Args &&...args)
+  {
+    // 使用Assert断言，确保entity有效
+    assert(IsValid(entity));
+
+    // 若该实体已经挂载了和当前添加组件
+    // 同类型的组件，则移除原组件，
+    // 以确保新组件正常添加
+    if (HasComponent<T>(entity)) {
+      RemoveComponent<T>(entity);
+    }
+
+    // 注意：若T已经被RegisterCallbackComponentConstruct注册，
+    // 这里会触发entt内部的回调，运行被注册的callback函数
+    T &component = m_Registry.emplace<T>(entity.GetHandle(), std::forward<Args>(args)...);
+    component.SetOwnerEntity(entity);
+    return component;
+  }
 
   /**
    * @brief 获取或添加组件
@@ -62,14 +79,32 @@ class SceneRegistry {
    * @param entity 目标实体
    * @return 组件引用
    */
-  template<typename T> T &GetOrAddComponent(Entity entity);
+  template<typename T> T &GetOrAddComponent(Entity entity)
+  {
+    assert(IsValid(entity));
+
+    // 破坏性低于AddComponent的用法，
+    // 原组件存在时不移除，直接返回原组件
+    T &component = m_Registry.get_or_emplace<T>(entity.GetHandle());
+    component.SetOwnerEntity(entity);
+    return component;
+  }
 
   /**
    * @brief 移除组件
    * @tparam T 组件类型
    * @param entity 目标实体
    */
-  template<typename T> void RemoveComponent(Entity entity);
+  template<typename T> void RemoveComponent(Entity entity)
+  {
+    // 销毁组件时，无需使用assert断言确保entity有效。
+    if (IsValid(entity) && m_Registry.all_of<T>(entity.GetHandle())) {
+
+      // 注意：若T已经被RegisterCallbackComponentDestroy注册，
+      // 这里会触发回调，运行被注册的callback函数
+      m_Registry.remove<T>(entity.GetHandle());
+    }
+  }
 
   /**
    * @brief 检查实体是否拥有组件
@@ -77,7 +112,10 @@ class SceneRegistry {
    * @param entity 目标实体
    * @return 是否拥有该组件
    */
-  template<typename T> bool HasComponent(Entity entity) const;
+  template<typename T> bool HasComponent(Entity entity) const
+  {
+    return IsValid(entity) && m_Registry.all_of<T>(entity.GetHandle());
+  }
 
   // 3. 组件操作 - 获取 ============================================
  public:
@@ -88,7 +126,13 @@ class SceneRegistry {
    * @return 组件引用
    * @throws std::runtime_error 当组件不存在时抛出异常
    */
-  template<typename T> T &GetComponent(Entity entity);
+  template<typename T> T &GetComponent(Entity entity)
+  {
+    // 使用Assert断言，确保entity具有该组件。
+    // 若无法确定，则应当使用TryGetComponent
+    assert(HasComponent<T>(entity));
+    return m_Registry.get<T>(entity.GetHandle());
+  }
 
   /**
    * @brief 获取组件（const版本）
@@ -97,7 +141,11 @@ class SceneRegistry {
    * @return 组件const引用
    * @throws std::runtime_error 当组件不存在时抛出异常
    */
-  template<typename T> const T &GetComponent(Entity entity) const;
+  template<typename T> const T &GetComponent(Entity entity) const
+  {
+    assert(HasComponent<T>(entity));
+    return m_Registry.get<T>(entity.GetHandle());
+  }
 
   /**
    * @brief 尝试获取组件（非const版本）
@@ -105,7 +153,12 @@ class SceneRegistry {
    * @param entity 目标实体
    * @return 组件指针（不存在时返回nullptr）
    */
-  template<typename T> T *TryGetComponent(Entity entity);
+  template<typename T> T *TryGetComponent(Entity entity)
+  {
+    if (!IsValid(entity))
+      return nullptr;
+    return m_Registry.try_get<T>(entity.GetHandle());
+  }
 
   /**
    * @brief 尝试获取组件（const版本）
@@ -113,7 +166,12 @@ class SceneRegistry {
    * @param entity 目标实体
    * @return 组件const指针（不存在时返回nullptr）
    */
-  template<typename T> const T *TryGetComponent(Entity entity) const;
+  template<typename T> const T *TryGetComponent(Entity entity) const
+  {
+    if (!IsValid(entity))
+      return nullptr;
+    return m_Registry.try_get<T>(entity.GetHandle());
+  }
 
   // 4. 视图和查询 =================================================
  public:
@@ -126,7 +184,10 @@ class SceneRegistry {
    * 使用示例: 检查某个entity是否具有变换组件、可见性组件和层次结构组件中的任意一种
    * if(m_Registry.AnyOf<TransformComponent, VisibilityComponent, HierarchyComponent>(entity))
    */
-  template<typename... Component> bool AnyOf(Entity entity) const;
+  template<typename... Component> bool AnyOf(Entity entity) const
+  {
+    return IsValid(entity) && m_Registry.any_of<Component...>(entity.GetHandle());
+  }
 
   /**
    * @brief 检查实体是否拥有所有指定的组件
@@ -137,7 +198,10 @@ class SceneRegistry {
    * 使用示例: 检查某个entity是否同时具有变换组件、可见性组件和层次结构组件
    * if(m_Registry.AllOf<TransformComponent, VisibilityComponent, HierarchyComponent>(entity))
    */
-  template<typename... Component> bool AllOf(Entity entity) const;
+  template<typename... Component> bool AllOf(Entity entity) const
+  {
+    return IsValid(entity) && m_Registry.all_of<Component...>(entity.GetHandle());
+  }
 
   /**
    * @brief 获取当前registry中所有有效的Entity集合
@@ -154,7 +218,22 @@ class SceneRegistry {
    * 使用示例：获取所有同时具备变换组件、可见性组件的实体
    * m_Registry.GetEntitiesWith<TransformComponent, VisibilityComponent>()
    */
-  template<typename... Component> std::vector<Entity> GetEntitiesWith();
+  template<typename... Component> std::vector<Entity> GetEntitiesWith()
+  {
+    std::vector<Entity> entities;
+
+    // 使用entt::registry::view方法，
+    // 获取符合类型要求的Component列表
+    auto view = m_Registry.view<Component...>();
+
+    for (auto entity : view) {
+      if (m_Registry.valid(entity)) {
+        entities.emplace_back(m_Scene, entity);
+      }
+    }
+
+    return entities;
+  }
 
   // 5. 原生访问（禁止外部调用） ========================================
  private:
@@ -186,37 +265,86 @@ class SceneRegistry {
    * @tparam T 组件类型
    * @param callback 回调函数
    */
-  template<typename T> void RegisterCallbackComponentConstruct(ComponentCallback callback);
+  template<typename T> void RegisterCallbackComponentConstruct(ComponentCallback callback)
+  {
+    // 编译时检查，确保注册使用的模板为Component的子类
+    static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+    // 根据typeid构建key-value对，存入哈希表
+    const std::type_index type = typeid(T);
+    m_ConstructCallbacks[type] = callback;
+
+    // 连接到EnTT的回调系统
+    m_Registry.on_construct<T>().template connect<&SceneRegistry::InvokeConstruct<T>>(this);
+  }
 
   /**
    * @brief 注册组件更新回调
    * @tparam T 组件类型
    * @param callback 回调函数
    */
-  template<typename T> void RegisterCallbackComponentUpdate(ComponentCallback callback);
+  template<typename T> void RegisterCallbackComponentUpdate(ComponentCallback callback)
+  {
+    static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+    const std::type_index type = typeid(T);
+    m_UpdateCallbacks[type] = callback;
+
+    m_Registry.on_update<T>().template connect<&SceneRegistry::InvokeUpdate<T>>(this);
+  }
 
   /**
    * @brief 注册组件销毁回调
    * @tparam T 组件类型
    * @param callback 回调函数
    */
-  template<typename T> void RegisterCallbackComponentDestroy(ComponentCallback callback);
+  template<typename T> void RegisterCallbackComponentDestroy(ComponentCallback callback)
+  {
+    static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+    const std::type_index type = typeid(T);
+    m_DestroyCallbacks[type] = callback;
+
+    m_Registry.on_destroy<T>().template connect<&SceneRegistry::InvokeDestroy<T>>(this);
+  }
 
  private:
   /**
    * @brief 触发组件构造事件(内部使用)
    */
-  template<typename T> void InvokeConstruct(Entity entity, T &component);
+  template<typename T> void InvokeConstruct(Entity entity, T &component)
+  {
+    // 以typeid作为key查表
+    const std::type_index type = typeid(T);
+    if (auto it = m_ConstructCallbacks.find(type); it != m_ConstructCallbacks.end()) {
+      // it->second类型为函数指针
+      // std::function<void(Entity, Component &)>
+      // 此处可以直接运行该函数
+      it->second(entity, component);
+    }
+  }
 
   /**
    * @brief 触发组件更新事件(内部使用)
    */
-  template<typename T> void InvokeUpdate(Entity entity, T &component);
+  template<typename T> void InvokeUpdate(Entity entity, T &component)
+  {
+    const std::type_index type = typeid(T);
+    if (auto it = m_UpdateCallbacks.find(type); it != m_UpdateCallbacks.end()) {
+      it->second(entity, component);
+    }
+  }
 
   /**
    * @brief 触发组件销毁事件(内部使用)
    */
-  template<typename T> void InvokeDestroy(Entity entity, T &component);
+  template<typename T> void InvokeDestroy(Entity entity, T &component)
+  {
+    const std::type_index type = typeid(T);
+    if (auto it = m_DestroyCallbacks.find(type); it != m_DestroyCallbacks.end()) {
+      it->second(entity, component);
+    }
+  }
 
   // 存储所有组件类型的回调(同一组件类型仅存放一个回调函数)
   std::unordered_map<std::type_index, ComponentCallback> m_ConstructCallbacks;
