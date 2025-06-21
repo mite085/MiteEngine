@@ -127,7 +127,7 @@ void TransformComponent::SetWorldRotation(const glm::quat &rotation)
   auto &registry = GetOwnerEntity().GetSceneRegistry();
   if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
-    if (hierarchy.GetParent() != entt::null) {
+    if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，转换为局部旋转
       TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
           hierarchy.GetParent());
@@ -185,7 +185,7 @@ void TransformComponent::RotateAround(const glm::vec3 &point, const glm::vec3 &a
   auto &registry = GetOwnerEntity().GetSceneRegistry();
   if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
-    if (hierarchy.GetParent() != entt::null) {
+    if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，转换为局部旋转
       TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
           hierarchy.GetParent());
@@ -213,7 +213,7 @@ void TransformComponent::LookAt(const glm::vec3 &target, const glm::vec3 &up)
   auto &registry = GetOwnerEntity().GetSceneRegistry();
   if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
-    if (hierarchy.GetParent() != entt::null) {
+    if (hierarchy.GetParent().IsValid()) {
       // 转换为局部旋转
       TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
           hierarchy.GetParent());
@@ -290,7 +290,7 @@ void TransformComponent::SetWorldMatrix(const glm::mat4 &matrix)
   auto &registry = GetOwnerEntity().GetSceneRegistry();
   if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
-    if (hierarchy.GetParent() != entt::null) {
+    if (hierarchy.GetParent().IsValid()) {
       // 转换为局部矩阵
       TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
           hierarchy.GetParent());
@@ -379,7 +379,7 @@ void TransformComponent::CalculateWorldMatrix() const
   auto &registry = GetOwnerEntity().GetSceneRegistry();
   if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
-    if (hierarchy.GetParent() != entt::null) {
+    if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，计算世界矩阵
       TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
           hierarchy.GetParent());

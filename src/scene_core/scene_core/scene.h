@@ -130,7 +130,7 @@ class Scene : public std::enable_shared_from_this<Scene> {
   /**
    * @brief 初始化组件事件监听
    */
-  void RegisterDefaultSystems();
+  void RegisterComponentSystems();
 
  private:
   // 场景名称

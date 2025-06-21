@@ -31,14 +31,14 @@ void Scene::InitSystems()
   m_SceneObserver = std::make_unique<SceneObserver>(GetRegistry());
   m_Serializer = std::make_unique<SceneSerializer>(*this);
 
-  //// TODO: 注册变换系统
-  // RegisterSystem<TransformSystem>();
+  // 注册组件系统
+  RegisterComponentSystems();
 }
 
-void Scene::RegisterDefaultSystems()
+void Scene::RegisterComponentSystems()
 {  
   // TODO: 注册核心系统（按执行顺序）
-  m_SystemManager.RegisterSystem<TransformSystem>();
+  m_SystemManager.RegisterSystem<TransformSystem, TransformComponent>();
   //m_SystemManager.RegisterSystem<AnimationSystem>();
   //m_SystemManager.RegisterSystem<RenderSystem>();
 

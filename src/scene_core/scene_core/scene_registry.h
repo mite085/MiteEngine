@@ -275,7 +275,7 @@ class SceneRegistry {
     m_ConstructCallbacks[type] = callback;
 
     // 连接到EnTT的回调系统
-    m_Registry.on_construct<T>().template connect<&SceneRegistry::InvokeConstruct<T>>(this);
+    m_Registry.on_construct<T>().connect<&SceneRegistry::InvokeConstruct<T>>(this);
   }
 
   /**
@@ -310,10 +310,15 @@ class SceneRegistry {
 
  private:
   /**
-   * @brief 触发组件构造事件(内部使用)
+   * @brief 触发组件构造事件(RegisterCallbackComponentConstruct使用)
+   * 
+   * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
    */
-  template<typename T> void InvokeConstruct(Entity entity, T &component)
+  template<typename T>
+  void InvokeConstruct(entt::registry &reg, entt::entity ent)
   {
+    Entity entity{m_Scene, ent};
+    T &component = reg.get<T>(ent);
     // 以typeid作为key查表
     const std::type_index type = typeid(T);
     if (auto it = m_ConstructCallbacks.find(type); it != m_ConstructCallbacks.end()) {
@@ -326,9 +331,13 @@ class SceneRegistry {
 
   /**
    * @brief 触发组件更新事件(内部使用)
+   * 
+   * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
    */
-  template<typename T> void InvokeUpdate(Entity entity, T &component)
+  template<typename T> void InvokeUpdate(entt::registry &reg, entt::entity ent)
   {
+    Entity entity{m_Scene, ent};
+    T &component = reg.get<T>(ent);
     const std::type_index type = typeid(T);
     if (auto it = m_UpdateCallbacks.find(type); it != m_UpdateCallbacks.end()) {
       it->second(entity, component);
@@ -337,9 +346,13 @@ class SceneRegistry {
 
   /**
    * @brief 触发组件销毁事件(内部使用)
+   * 
+   * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
    */
-  template<typename T> void InvokeDestroy(Entity entity, T &component)
+  template<typename T> void InvokeDestroy(entt::registry &reg, entt::entity ent)
   {
+    Entity entity{m_Scene, ent};
+    T &component = reg.get<T>(ent);
     const std::type_index type = typeid(T);
     if (auto it = m_DestroyCallbacks.find(type); it != m_DestroyCallbacks.end()) {
       it->second(entity, component);

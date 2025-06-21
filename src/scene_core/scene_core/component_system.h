@@ -150,14 +150,17 @@ class ComponentSystemManager {
     m_SystemsSorted = false;
 
     // 注册组件事件回调
+    static_assert(std::is_base_of<Component, U>::value,
+                  "Registered component must inherit from class component");
+
     m_Registry.RegisterCallbackComponentConstruct<U>(
-        [this](Entity entity, U &component) { OnComponentAdded<U>(entity, component); });
+        [this](Entity e, Component &c) { OnComponentAdded<U>(e, static_cast<U &>(c)); });
 
     m_Registry.RegisterCallbackComponentUpdate<U>(
-        [this](Entity entity, U &component) { OnComponentUpdated<U>(entity, component); });
+        [this](Entity e, Component &c) { OnComponentUpdated<U>(e, static_cast<U &>(c)); });
 
     m_Registry.RegisterCallbackComponentDestroy<U>(
-        [this](Entity entity, U &component) { OnComponentRemoved<U>(entity, component); });
+        [this](Entity e, Component &c) { OnComponentRemoved<U>(e, static_cast<U &>(c)); });
 
     return rawPtr;
   }
