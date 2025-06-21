@@ -30,6 +30,11 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
    */
   TagComponent(const std::string &tag, const glm::vec4 &color);
 
+  /**
+   * @brief 针对dirty对象进行处理
+   */
+  void ProcessDirty() override {}
+
   // 序列化支持
   template<typename Archive> void serialize(Archive &archive);
 

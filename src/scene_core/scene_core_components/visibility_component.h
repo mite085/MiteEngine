@@ -43,6 +43,11 @@ class VisibilityComponent : public ComponentTraits<VisibilityComponent, Componen
   VisibilityComponent &operator=(VisibilityComponent &&) = delete;
 
   /**
+   * @brief 针对dirty对象进行处理
+   */
+  void ProcessDirty() override {}
+
+  /**
    * @brief 获取当前可见性状态
    * @return 可见性状态枚举值
    */

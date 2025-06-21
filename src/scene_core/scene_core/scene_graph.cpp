@@ -350,7 +350,7 @@ void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
             }
 
             // 更新世界变换
-            transform->Recalculate();
+            transform->ProcessDirty();
           }
           return true;  // 继续遍历
         },

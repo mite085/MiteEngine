@@ -45,6 +45,11 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   IDComponent &operator=(const IDComponent &) = delete;
 
   /**
+   * @brief 针对dirty对象进行处理
+   */
+  void ProcessDirty() override {}
+
+  /**
    * @brief 获取UUID字符串表示（RFC4122格式）
    * @return 示例："f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
    */

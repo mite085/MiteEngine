@@ -40,24 +40,17 @@ class Component {
   virtual std::type_index GetType() const = 0;
 
   /**
-   * @brief 克隆组件(深拷贝)
-   * @return 新组件实例的共享指针
-   *
-   * 注意：Component克隆方法，和HierarchyComponent的禁用拷贝构造函数，
-   * 相互冲突，引发编译错误。现阶段优先确保HierarchyComponent禁止拷贝，
-   * 后续需要深拷贝时添加clone方法
-   */
-  // virtual std::shared_ptr<Component> Clone() const = 0;
-
-  /**
    * @brief 标记组件为已修改
-   * @param dirty 是否为脏数据
    */
-  void SetDirty(bool dirty = true);
+  void MarkDirty();
   /**
    * @brief 检查组件是否被修改过
    */
   bool IsDirty() const;
+  /**
+   * @brief 清理组件修改状态
+   */
+  void CleanDirty();
   /**
    * @brief 更新方法，通常每帧调用
    */
@@ -65,7 +58,7 @@ class Component {
   /**
    * @brief 针对dirty对象进行处理
    */
-  virtual void Recalculate() = 0;
+  virtual void ProcessDirty() = 0;
 
   /**
    * @brief 组件启用状态
@@ -131,7 +124,7 @@ class Component {
 
   Entity m_OwnerEntity;
 
-  bool m_Dirty = false;   // 脏标记，标识组件是否被修改
+  std::atomic<bool> m_Dirty{false};  // 脏标记，标识组件是否被修改
   bool m_Enabled = true;  // 组件是否启用
 };
 

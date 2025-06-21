@@ -7,6 +7,7 @@
 #include <atomic>
 #include <cassert>
 #include <cstdint>
+#include <execution>
 #include <filesystem>
 #include <functional>
 #include <memory>

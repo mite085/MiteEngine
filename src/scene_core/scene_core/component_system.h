@@ -37,14 +37,12 @@ class ComponentSystem {
 
   /**
    * @brief 系统更新（每帧调用）
-   * @param registry 关联的EnTT registry
    * @param deltaTime 帧间隔时间(秒)
    */
-  virtual void Update(SceneRegistry &registry, float deltaTime) = 0;
+  virtual void Update(float deltaTime) = 0;
 
   /**
    * @brief 系统销毁（场景卸载时调用）
-   * @param registry 关联的EnTT registry
    */
   virtual void Shutdown(SceneRegistry &registry) = 0;
 
@@ -84,14 +82,6 @@ class ComponentSystem {
    */
   virtual void OnComponentRemoved(Entity entity, Component &component) = 0;
 
-  /**
-   * @brief 是否需要在编辑器模式下运行
-   */
-  virtual bool RunInEditor() const
-  {
-    return true;
-  }
-
  protected:
   // 保护构造函数，确保只能通过派生类实例化
   ComponentSystem() = default;
@@ -99,243 +89,6 @@ class ComponentSystem {
   // 禁用拷贝
   ComponentSystem(const ComponentSystem &) = delete;
   ComponentSystem &operator=(const ComponentSystem &) = delete;
-};
-
-/**
- * @brief 组件系统管理器，集中管理所有组件系统
- *
- *
- * 使用方法：
- * 1. Scene构造阶段--调用默认构造函数，构造Manager对象
- * 2. Scene构造阶段--调用RegisterSystem()，逐个注册各个ComponentSystem
- *
- * 3. Scene初始化阶段--调用InitializeAll()，初始化所有系统
- *
- * 4. Scene运行阶段--每帧调用UpdateAll(deltaTime)，更新所有系统
- * 5. Scene运行阶段--视情况调用GetSystem()，针对某一系统进行处理
- *
- * 6. Scene运行阶段--每当新的Component创建/更新/移除，触发对应ComponentSystem的回调函数OnComponentAdded等
- * 
- * 7. Scene销毁阶段--调用ShutdownAll()，关闭所有系统
- */
-class ComponentSystemManager {
- public:
-  ComponentSystemManager(SceneRegistry &registry);
-  ~ComponentSystemManager();
-
-  /**
-   * @brief 注册组件系统
-   * 
-   * @tparam T 系统类型
-   * @tparam U 组件类型
-   * @tparam Args 构造参数类型
-   * @param args 构造参数
-   * @return 注册的系统指针
-   */
-  template<typename T, typename U, typename... Args> T *RegisterSystem(Args &&...args)
-  {
-    static_assert(std::is_base_of<ComponentSystem, T>::value,
-                  "Registered system must inherit from ComponentSystem");
-
-    const std::type_index type = typeid(T);
-
-    // 检查是否已注册，若已注册则直接返回已有的系统
-    if (m_SystemMap.find(type) != m_SystemMap.end()) {
-      return static_cast<T *>(m_SystemMap[type].system.get());
-    }
-
-    // 创建新系统
-    auto system = std::make_unique<T>(std::forward<Args>(args)...);
-    T *rawPtr = system.get();
-
-    // 存入管理结构
-    m_SystemMap[type] = SystemEntry{std::move(system), true};
-    m_SystemsSorted = false;
-
-    // 注册组件事件回调
-    static_assert(std::is_base_of<Component, U>::value,
-                  "Registered component must inherit from class component");
-
-    m_Registry.RegisterCallbackComponentConstruct<U>(
-        [this](Entity e, Component &c) { OnComponentAdded<U>(e, static_cast<U &>(c)); });
-
-    m_Registry.RegisterCallbackComponentUpdate<U>(
-        [this](Entity e, Component &c) { OnComponentUpdated<U>(e, static_cast<U &>(c)); });
-
-    m_Registry.RegisterCallbackComponentDestroy<U>(
-        [this](Entity e, Component &c) { OnComponentRemoved<U>(e, static_cast<U &>(c)); });
-
-    // 启用系统
-    SetSystemEnabled<T>(true);
-
-    return rawPtr;
-  }
-
-  /**
-   * @brief 检查系统是否注册
-   * 
-   * @tparam T 系统类型
-   * @return 系统指针，未找到返回nullptr
-   */
-  template<typename T> bool HasSystem() const
-  {
-    const std::type_index type = typeid(T);
-    auto it = m_SystemMap.find(type);
-    if (it != m_SystemMap.end() && it->second.enabled) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * @brief 获取已注册的系统
-   * 
-   * @tparam T 系统类型
-   * @return 系统指针，未找到返回nullptr
-   */
-  template<typename T> T *GetSystem() const
-  {
-    // 获取前使用assert断言检查，便于在debug阶段发现问题。
-    assert(HasSystem<T>());
-    const std::type_index type = typeid(T);
-    auto it = m_SystemMap.find(type);
-    if (it != m_SystemMap.end() && it->second.enabled) {
-      return static_cast<T *>(it->second.system.get());
-    }
-    return nullptr;
-  }
-
-  /**
-   * @brief 初始化所有系统
-   */
-  void InitializeAll();
-
-  /**
-   * @brief 更新所有系统
-   * 
-   * @param deltaTime 帧间隔时间
-   */
-  void UpdateAll(float deltaTime);
-
-  /**
-   * @brief 销毁所有系统
-   */
-  void ShutdownAll();
-
-  /**
-   * @brief 设置系统是否启用
-   * 
-   * @tparam T 系统类型
-   * @param enabled 是否启用
-   */
-  template<typename T> void SetSystemEnabled(bool enabled)
-  {
-    const std::type_index type = typeid(T);
-    auto it = m_SystemMap.find(type);
-    if (it != m_SystemMap.end()) {
-      it->second.enabled = enabled;
-    }
-  }
-
-  /**
-   * @brief 检查系统是否启用
-   * 
-   * @tparam T 系统类型
-   */
-  template<typename T> bool IsSystemEnabled() const
-  {
-    const std::type_index type = typeid(T);
-    auto it = m_SystemMap.find(type);
-    return it != m_SystemMap.end() && it->second.enabled;
-  }
-
- private:
-  /**
-   * @brief 当组件被添加时的处理
-   * 
-   * @param entity 实体
-   * @param component 组件
-   */
-  template<typename T> void OnComponentAdded(Entity entity, T &component)
-  {
-    static_assert(std::is_base_of<Component, T>::value,
-                  "Registered component must inherit from class component");
-
-    const auto componentType = component.GetType();
-
-    for (auto &system : m_Systems) {
-      // 检查系统是否管理此组件类型
-      for (const auto &managedType : system->GetComponentTypes()) {
-        if (managedType == componentType) {
-          system->OnComponentAdded(entity, component);
-          break;
-        }
-      }
-    }
-  }
-
-  /**
-   * @brief 当组件被更新时的处理
-   * 
-   * @param entity 实体
-   * @param component 组件
-   */
-  template<typename T> void OnComponentUpdated(Entity entity, T &component)
-  {
-    static_assert(std::is_base_of<Component, T>::value,
-                  "Registered component must inherit from class component");
-
-    const auto componentType = component.GetType();
-
-    for (auto &system : m_Systems) {
-      // 检查系统是否管理此组件类型
-      for (const auto &managedType : system->GetComponentTypes()) {
-        if (managedType == componentType) {
-          system->OnComponentUpdated(entity, component);
-          break;
-        }
-      }
-    }
-  }
-
-  /**
-   * @brief 当组件被移除时的处理
-   * 
-   * @param entity 实体
-   * @param component 组件
-   */
-  template<typename T> void OnComponentRemoved(Entity entity, T &component)
-  {
-    static_assert(std::is_base_of<Component, T>::value,
-                  "Registered component must inherit from class component");
-
-    const auto componentType = component.GetType();
-
-    for (auto &system : m_Systems) {
-      // 检查系统是否管理此组件类型
-      for (const auto &managedType : system->GetComponentTypes()) {
-        if (managedType == componentType) {
-          system->OnComponentRemoved(entity, component);
-          break;
-        }
-      }
-    }
-  }
-
-  // 系统执行顺序排序
-  void SortSystems();
-
- private:
-  SceneRegistry &m_Registry;
-
-  struct SystemEntry {
-    std::unique_ptr<ComponentSystem> system;
-    bool enabled = true;
-  };
-
-  std::vector<std::unique_ptr<ComponentSystem>> m_Systems;       // 用于遍历
-  std::unordered_map<std::type_index, SystemEntry> m_SystemMap;  // 用于查找
-  bool m_SystemsSorted = false;
 };
 
 /**
@@ -351,6 +104,135 @@ class ComponentSystemManager {
   { \
     return typeid(system_name); \
   }
+
+/**
+ * @brief 基于Dirty Flag驱动的组件系统模板类
+ *
+ * 基本实现原理
+ * 1. 标记为脏（Dirty）：当组件的状态发生变化时，将 m_Dirty 设为 true
+ * 2. 处理脏状态：在适当的时机（如每帧更新时）检查并处理脏状态
+ * 3. 清除脏标记：处理完成后将 m_Dirty 设为 false
+ */
+template<typename T> class DirtyComponentSystem : public ComponentSystem {
+  // 限制模板T必须继承自Component类型。
+  static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+ public:
+  /**
+   * @brief 将组件注册进维护列表
+   * @param component 组件指针
+   */
+  void Register(T *component)
+  {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_AllComponents.push_back(component);
+  }
+
+  /**
+   * @brief 将组件从维护列表移除
+   * @param component 组件指针
+   */
+  void Unregister(T *component)
+  {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_AllComponents.erase(std::remove(m_AllComponents.begin(), m_AllComponents.end(), component),
+                          m_AllComponents.end());
+  }
+
+  /**
+   * @brief 按照脏标记更新组件(逐帧调用)
+   * @param deltaTime 帧与帧时间间隔
+   */
+  void Update(float deltaTime) override
+  {
+    // 阶段1：收集脏组件
+    CollectDirtyComponents();
+
+    // 阶段2：并行处理
+    ProcessDirtyComponents(deltaTime);
+  }
+
+  /**
+   * @brief 获取该系统管理的组件类型列表
+   */
+  std::vector<std::type_index> GetComponentTypes() const
+  {
+    return {typeid(T)};
+  }
+
+  /**
+   * @brief 获取该系统依赖的其他系统类型
+   */
+  std::vector<std::type_index> GetSystemDependencies() const override
+  {
+    return {};
+  }
+
+  /**
+   * @brief 系统执行优先级(越小越先执行)
+   */
+  virtual Component::Family GetExecutionOrder() const
+  {
+    return T::family;
+  }
+
+  /**
+   * @brief 当组件被添加时的回调
+   * @param entity 实体
+   * @param component 组件
+   */
+  void OnComponentAdded(Entity entity, Component &component) override
+  {
+    Register(static_cast<T *>(&component));
+  }
+
+  /**
+   * @brief 当组件被移除时的回调
+   * @param entity 实体
+   * @param component 组件
+   */
+  void OnComponentRemoved(Entity entity, Component &component) override
+  {
+    Unregister(static_cast<T *>(&component));
+  }
+
+ private:
+  /**
+   * @brief 获取脏组件列表
+   */
+  void CollectDirtyComponents()
+  {
+    m_DirtyComponents.clear();
+
+    // 并行收集优化
+    std::vector<T *> localDirtyComponents;
+    std::mutex mutex;
+    std::for_each(
+        std::execution::par, m_AllComponents.begin(), m_AllComponents.end(), [&](T *comp) {
+          if (comp->IsDirty()) {
+            std::lock_guard<std::mutex> lock(mutex);
+            localDirtyComponents.push_back(comp);
+          }
+        });
+
+    // 合并结果
+    m_DirtyComponents.insert(
+        m_DirtyComponents.end(), localDirtyComponents.begin(), localDirtyComponents.end());
+  }
+
+  void ProcessDirtyComponents(float deltaTime)
+  {
+    // 并行处理优化
+    std::for_each(
+        std::execution::par, m_DirtyComponents.begin(), m_DirtyComponents.end(), [&](T *comp) {
+          static_cast<Component *>(comp)->Update();
+        });
+  }
+
+  std::vector<T *> m_AllComponents;
+  std::vector<T *> m_DirtyComponents;
+  std::mutex m_Mutex;
+};
 };  // namespace mite
 
 #endif

@@ -43,6 +43,11 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
 
   ~TransformComponent() override = default;
 
+  /**
+   * @brief 针对dirty对象进行处理
+   */
+  void ProcessDirty() override;
+
   // 位置操作 ==============================================
   /**
    * @brief 获取局部空间位置
@@ -221,8 +226,6 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
-  void Recalculate() override;
-
  private:
   /**
    * @brief 计算局部变换矩阵
@@ -259,17 +262,11 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   mutable bool m_WorldMatrixDirty = true;
 };
 
-class TransformSystem : public ComponentSystem {
+class TransformSystem : public DirtyComponentSystem<TransformComponent> {
   DECLARE_COMPONENT_SYSTEM(TransformSystem)
  public:
-  Component::Family GetExecutionOrder() const override;
-  void Initialize(SceneRegistry &registry) override;
-  void Update(SceneRegistry &registry, float deltaTime) override;
-  void Shutdown(SceneRegistry &registry) override;
-  std::vector<std::type_index> GetComponentTypes() const override;
-  std::vector<std::type_index> GetSystemDependencies() const override;
-  void OnComponentAdded(Entity entity, Component &component) override;
-  void OnComponentRemoved(Entity entity, Component &component) override;
+  void Initialize(SceneRegistry &registry) override {}
+  void Shutdown(SceneRegistry &registry) override {}
 };
 };  // namespace mite
 

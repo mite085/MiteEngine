@@ -21,6 +21,11 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
   DestroyComponent();
 
   /**
+   * @brief 针对dirty对象进行处理
+   */
+  void ProcessDirty() override {}
+
+  /**
    * @brief 用于调试的字符串表示
    */
   std::string ToString() const

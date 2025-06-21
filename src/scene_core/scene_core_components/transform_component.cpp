@@ -20,6 +20,11 @@ TransformComponent::TransformComponent( const glm::mat4 &matrix)
   DecomposeMatrix(matrix);
 }
 
+void TransformComponent::ProcessDirty()
+{
+  CalculateWorldMatrix();
+}
+
 // 位置相关方法 ==============================================
 
 const glm::vec3 &TransformComponent::GetLocalPosition() const
@@ -33,7 +38,7 @@ void TransformComponent::SetLocalPosition(const glm::vec3 &position)
     m_Position = position;
     m_LocalMatrixDirty = true;
     m_WorldMatrixDirty = true;
-    SetDirty();
+    MarkDirty();
   }
 }
 
@@ -67,7 +72,7 @@ void TransformComponent::Translate(const glm::vec3 &translation)
   m_Position += translation;
   m_LocalMatrixDirty = true;
   m_WorldMatrixDirty = true;
-  SetDirty();
+  MarkDirty();
 }
 
 void TransformComponent::Translate(float x, float y, float z)
@@ -88,7 +93,7 @@ void TransformComponent::SetLocalRotation(const glm::quat &rotation)
     m_Rotation = rotation;
     m_LocalMatrixDirty = true;
     m_WorldMatrixDirty = true;
-    SetDirty();
+    MarkDirty();
   }
 }
 
@@ -145,7 +150,7 @@ void TransformComponent::Rotate(const glm::quat &rotation)
   // 标记矩阵需要更新
   m_LocalMatrixDirty = true;
   m_WorldMatrixDirty = true;
-  SetDirty();
+  MarkDirty();
 }
 
 void TransformComponent::Rotate(const glm::vec3 &axis, float angle)
@@ -197,8 +202,6 @@ void TransformComponent::RotateAround(const glm::vec3 &point, const glm::vec3 &a
   else {
     Rotate(rotation);
   }
-
-  // 注意：不需要再设置脏标记，因为SetWorldPosition和Rotate已经处理
 }
 
 void TransformComponent::LookAt(const glm::vec3 &target, const glm::vec3 &up)
@@ -236,7 +239,7 @@ void TransformComponent::SetLocalScale(const glm::vec3 &scale)
     m_Scale = scale;
     m_LocalMatrixDirty = true;
     m_WorldMatrixDirty = true;
-    SetDirty();
+    MarkDirty();
   }
 }
 
@@ -358,10 +361,6 @@ bool TransformComponent::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-void TransformComponent::Recalculate() {
-  CalculateWorldMatrix();
-}
-
 // 私有方法 ==============================================
 
 void TransformComponent::CalculateLocalMatrix() const {
@@ -417,46 +416,7 @@ void TransformComponent::DecomposeMatrix(const glm::mat4 &matrix)
 
   m_LocalMatrixDirty = true;
   m_WorldMatrixDirty = true;
-  SetDirty();
+  MarkDirty();
 }
 
-std::vector<std::type_index> TransformSystem::GetComponentTypes() const
-{
-  return {typeid(TransformComponent)};
-}
-
-std::vector<std::type_index> TransformSystem::GetSystemDependencies() const
-{
-  return std::vector<std::type_index>();
-}
-
-Component::Family TransformSystem::GetExecutionOrder() const
-{
-  return TransformComponent::Family();
-}
-
-void TransformSystem::Initialize(SceneRegistry &registry) {}
-
-void TransformSystem::Update(SceneRegistry &registry, float deltaTime)
-{
-  // 更新所有脏变换
-  auto view = registry.GetEntitiesWith<TransformComponent>();
-  for (auto entity : view) {
-    auto &transform = registry.GetComponent<TransformComponent>(entity);
-    if (transform.IsDirty()) {
-    }
-  }
-}
-
-void TransformSystem::Shutdown(SceneRegistry &registry) {}
-
-void TransformSystem::OnComponentAdded(Entity entity, Component &component)
-{
-  if (auto *transform = dynamic_cast<TransformComponent *>(&component)) {
-    // 新变换组件初始化逻辑
-    transform->Recalculate();
-  }
-}
-
-void TransformSystem::OnComponentRemoved(Entity entity, Component &component) {}
 };  // namespace mite

@@ -5,9 +5,9 @@ namespace mite {
 // 基类方法的基础实现
 // 注意：大部分功能已在头文件中实现为纯虚函数
 
-void Component::SetDirty(bool dirty)
+void Component::MarkDirty()
 {
-  m_Dirty = dirty;
+  m_Dirty = true;
 }
 
 bool Component::IsDirty() const
@@ -15,14 +15,19 @@ bool Component::IsDirty() const
   return m_Dirty;
 }
 
+void Component::CleanDirty()
+{
+  m_Dirty = false;
+}
+
 void Component::Update()
 {
-  if (m_Dirty) {
+  if (IsDirty()) {
     // 执行必要的更新或重新计算
-    Recalculate();
+    ProcessDirty();
 
     // 清除脏标记
-    m_Dirty = false;
+    CleanDirty();
   }
 }
 

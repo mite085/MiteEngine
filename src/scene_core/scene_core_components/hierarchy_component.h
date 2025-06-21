@@ -31,6 +31,11 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
   HierarchyComponent &operator=(HierarchyComponent &&) noexcept = default;
 
   /**
+   * @brief 针对dirty对象进行处理
+   */
+  void ProcessDirty() override {}
+
+  /**
    * @brief 获取父实体句柄
    * @return 父实体EnTT句柄（Entity()表示无父节点）
    */
