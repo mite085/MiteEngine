@@ -114,10 +114,13 @@ class ComponentSystem {
  * 3. 清除脏标记：处理完成后将 m_Dirty 设为 false
  */
 template<typename T> class DirtyComponentSystem : public ComponentSystem {
-  // 限制模板T必须继承自Component类型。
+  // 限制模板T必须继承自Component类型
   static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
 
- public:
+public:
+  // 暴露组件类型
+  using ComponentType = T;
+
   /**
    * @brief 将组件注册进维护列表
    * @param component 组件指针
@@ -223,10 +226,10 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   void ProcessDirtyComponents(float deltaTime)
   {
     // 并行处理优化
-    std::for_each(
-        std::execution::par, m_DirtyComponents.begin(), m_DirtyComponents.end(), [&](T *comp) {
-          static_cast<Component *>(comp)->Update();
-        });
+    std::for_each(std::execution::par,
+                  m_DirtyComponents.begin(),
+                  m_DirtyComponents.end(),
+                  [&](T *comp) { static_cast<Component *>(comp)->Update(); });
   }
 
   std::vector<T *> m_AllComponents;

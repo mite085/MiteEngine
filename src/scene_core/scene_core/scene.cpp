@@ -38,7 +38,7 @@ void Scene::InitSystems()
 void Scene::RegisterComponentSystems()
 {  
   // TODO: 注册核心系统（按执行顺序）
-  m_SystemManager.RegisterSystem<TransformSystem, TransformComponent>();
+  m_SystemManager.RegisterSystem<TransformSystem>();
   //m_SystemManager.RegisterSystem<id>();
   //m_SystemManager.RegisterSystem<RenderSystem>();
 

@@ -36,10 +36,13 @@ class ComponentSystemManager {
    * @param args 构造参数
    * @return 注册的系统指针
    */
-  template<typename T, typename U, typename... Args> T *RegisterSystem(Args &&...args)
+  template<typename T, typename... Args> T *RegisterSystem(Args &&...args)
   {
     static_assert(std::is_base_of<ComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
+    using U = typename T::ComponentType;
+    static_assert(std::is_base_of<Component, U>::value,
+                  "Registered component must inherit from class component");
 
     const std::type_index type = typeid(T);
 
@@ -58,15 +61,10 @@ class ComponentSystemManager {
     m_SystemsSorted = false;
 
     // 注册组件事件回调
-    static_assert(std::is_base_of<Component, U>::value,
-                  "Registered component must inherit from class component");
-
     m_Registry.RegisterCallbackComponentConstruct<U>(
         [this](Entity e, Component &c) { OnComponentAdded<U>(e, static_cast<U &>(c)); });
-
     m_Registry.RegisterCallbackComponentUpdate<U>(
         [this](Entity e, Component &c) { OnComponentUpdated<U>(e, static_cast<U &>(c)); });
-
     m_Registry.RegisterCallbackComponentDestroy<U>(
         [this](Entity e, Component &c) { OnComponentRemoved<U>(e, static_cast<U &>(c)); });
 
