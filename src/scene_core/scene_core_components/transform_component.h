@@ -267,6 +267,9 @@ class TransformSystem : public DirtyComponentSystem<TransformComponent> {
  public:
   void Initialize(SceneRegistry &registry) override {}
   void Shutdown(SceneRegistry &registry) override {}
+
+ private:
+  void ProcessDirtyComponents(float deltaTime) override;
 };
 };  // namespace mite
 

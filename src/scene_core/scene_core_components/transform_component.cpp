@@ -419,4 +419,6 @@ void TransformComponent::DecomposeMatrix(const glm::mat4 &matrix)
   MarkDirty();
 }
 
+void TransformSystem::ProcessDirtyComponents(float deltaTime) {}
+
 };  // namespace mite
