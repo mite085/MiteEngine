@@ -316,6 +316,19 @@ void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
   }
 
   // 第二遍: 从脏标记根节点开始向下传播变换
+  // 该方法对比传统方法优点如下
+  // 
+  //    假设存在情况：A依赖B，B依赖C
+  //    传统方式：
+  //        修改C → 立即计算B → 立即计算A 
+  //        再修改C → 又立即计算B → 又立即计算A
+  // 
+  //    统一计算： 
+  //        修改C → 标记B脏 
+  //        再修改C → 还是标记B脏 
+  //    最终阶段： 
+  //        每帧进行深度优先遍历，在C修改的帧，依次收集C、B、A的Dirty标记
+  //        计算C → 计算B(用最终值算一次) → 计算A(只用最终B值算一次)
   for (auto root : dirtyRoots) {
     Traverse(
         root,
@@ -337,10 +350,7 @@ void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
             }
 
             // 更新世界变换
-            transform->UpdateTransform();
-
-            // 清除脏标记
-            transform->SetDirty(false);
+            transform->Recalculate();
           }
           return true;  // 继续遍历
         },

@@ -39,11 +39,9 @@ void Scene::RegisterComponentSystems()
 {  
   // TODO: 注册核心系统（按执行顺序）
   m_SystemManager.RegisterSystem<TransformSystem, TransformComponent>();
-  //m_SystemManager.RegisterSystem<AnimationSystem>();
+  //m_SystemManager.RegisterSystem<id>();
   //m_SystemManager.RegisterSystem<RenderSystem>();
 
-  // TODO: 设置系统初始状态
-  m_SystemManager.SetSystemEnabled<TransformSystem>(true);
 }
 
 void Scene::OnUpdate(float timestep)

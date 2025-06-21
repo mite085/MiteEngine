@@ -221,14 +221,27 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
-  // 变换更新标志
-  void UpdateTransform();
+  void Recalculate() override;
 
  private:
-  // 计算世界变换矩阵(递归)
+  /**
+   * @brief 计算局部变换矩阵
+   */
+  void CalculateLocalMatrix() const;
+  /**
+   * @brief 计算世界变换矩阵(递归)
+   */
   void CalculateWorldMatrix() const;
 
-  // 从矩阵分解变换
+  /**
+   * @brief 将矩阵分解成变换，更新position、rotation以及scale
+   * @param matrix
+   * 
+   * 注意：
+   * 该步骤不直接更新LocalMatrix和WorldMatrix，
+   * 而是设定MatrixDirty，由SceneGraph的
+   * UpdateWorldTransformsAndVisibility函数进行统一更新
+   */
   void DecomposeMatrix(const glm::mat4 &matrix);
 
  private:

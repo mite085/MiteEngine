@@ -3,9 +3,6 @@
 #include "scene_core/entity.h"
 
 namespace mite {
-// 静态初始化
-constexpr float EPSILON = 0.00001f;
-
 TransformComponent::TransformComponent() : ComponentTraits() {}
 
 TransformComponent::TransformComponent(const glm::vec3 &position,
@@ -265,9 +262,7 @@ glm::vec3 TransformComponent::GetWorldScale() const
 glm::mat4 TransformComponent::GetLocalMatrix() const
 {
   if (m_LocalMatrixDirty) {
-    m_LocalMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::mat4_cast(m_Rotation) *
-                    glm::scale(glm::mat4(1.0f), m_Scale);
-    m_LocalMatrixDirty = false;
+    CalculateLocalMatrix();
   }
   return m_LocalMatrix;
 }
@@ -291,7 +286,7 @@ void TransformComponent::SetWorldMatrix(const glm::mat4 &matrix)
   if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
     if (hierarchy.GetParent().IsValid()) {
-      // 转换为局部矩阵
+      // 将世界矩阵转换为局部矩阵
       TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
           hierarchy.GetParent());
       glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix();
@@ -363,17 +358,21 @@ bool TransformComponent::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-void TransformComponent::UpdateTransform()
-{
-  m_LocalMatrixDirty = true;
-  m_WorldMatrixDirty = true;
-  SetDirty();
+void TransformComponent::Recalculate() {
+  CalculateWorldMatrix();
 }
 
 // 私有方法 ==============================================
 
+void TransformComponent::CalculateLocalMatrix() const {
+  m_LocalMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::mat4_cast(m_Rotation) *
+                  glm::scale(glm::mat4(1.0f), m_Scale);
+  m_LocalMatrixDirty = false;
+}
+
 void TransformComponent::CalculateWorldMatrix() const
 {
+  // 在执行GetLocalMatrix()时，就已经清理了m_LocalMatrixDirty标记
   const glm::mat4 localMat = GetLocalMatrix();
 
   auto &registry = GetOwnerEntity().GetSceneRegistry();
@@ -381,6 +380,15 @@ void TransformComponent::CalculateWorldMatrix() const
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，计算世界矩阵
+      // 
+      // 注意：
+      // SceneGraph::UpdateWorldTransformsAndVisibility的
+      // 深度优先遍历算法，可以确保此时parentTransform的
+      // m_WorldMatrixDirty脏标记已经被处理，不会出现处理
+      // 子节点的transform时，需要同步处理父节点的问题。
+      // 
+      // 但如果真的出现了，GetWorldMatrix()也会检查
+      // parentTransform的脏标记并更新其transform
       TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
           hierarchy.GetParent());
       m_WorldMatrix = parentTransform.GetWorldMatrix() * localMat;
@@ -436,7 +444,6 @@ void TransformSystem::Update(SceneRegistry &registry, float deltaTime)
   for (auto entity : view) {
     auto &transform = registry.GetComponent<TransformComponent>(entity);
     if (transform.IsDirty()) {
-      transform.UpdateTransform();
     }
   }
 }
@@ -447,7 +454,7 @@ void TransformSystem::OnComponentAdded(Entity entity, Component &component)
 {
   if (auto *transform = dynamic_cast<TransformComponent *>(&component)) {
     // 新变换组件初始化逻辑
-    transform->UpdateTransform();
+    transform->Recalculate();
   }
 }
 

@@ -54,11 +54,18 @@ class Component {
    * @param dirty 是否为脏数据
    */
   void SetDirty(bool dirty = true);
-
   /**
    * @brief 检查组件是否被修改过
    */
   bool IsDirty() const;
+  /**
+   * @brief 更新方法，通常每帧调用
+   */
+  void Update();
+  /**
+   * @brief 针对dirty对象进行处理
+   */
+  virtual void Recalculate() = 0;
 
   /**
    * @brief 组件启用状态

@@ -114,7 +114,9 @@ class ComponentSystem {
  * 4. Scene运行阶段--每帧调用UpdateAll(deltaTime)，更新所有系统
  * 5. Scene运行阶段--视情况调用GetSystem()，针对某一系统进行处理
  *
- * 6. Scene销毁阶段--调用ShutdownAll()，关闭所有系统
+ * 6. Scene运行阶段--每当新的Component创建/更新/移除，触发对应ComponentSystem的回调函数OnComponentAdded等
+ * 
+ * 7. Scene销毁阶段--调用ShutdownAll()，关闭所有系统
  */
 class ComponentSystemManager {
  public:
@@ -123,6 +125,7 @@ class ComponentSystemManager {
 
   /**
    * @brief 注册组件系统
+   * 
    * @tparam T 系统类型
    * @tparam U 组件类型
    * @tparam Args 构造参数类型
@@ -162,11 +165,15 @@ class ComponentSystemManager {
     m_Registry.RegisterCallbackComponentDestroy<U>(
         [this](Entity e, Component &c) { OnComponentRemoved<U>(e, static_cast<U &>(c)); });
 
+    // 启用系统
+    SetSystemEnabled<T>(true);
+
     return rawPtr;
   }
 
   /**
-   * @brief 获取已注册的系统
+   * @brief 检查系统是否注册
+   * 
    * @tparam T 系统类型
    * @return 系统指针，未找到返回nullptr
    */
@@ -182,6 +189,7 @@ class ComponentSystemManager {
 
   /**
    * @brief 获取已注册的系统
+   * 
    * @tparam T 系统类型
    * @return 系统指针，未找到返回nullptr
    */
@@ -199,25 +207,24 @@ class ComponentSystemManager {
 
   /**
    * @brief 初始化所有系统
-   * @param registry EnTT registry
    */
   void InitializeAll();
 
   /**
    * @brief 更新所有系统
-   * @param registry EnTT registry
+   * 
    * @param deltaTime 帧间隔时间
    */
   void UpdateAll(float deltaTime);
 
   /**
    * @brief 销毁所有系统
-   * @param registry EnTT registry
    */
   void ShutdownAll();
 
   /**
    * @brief 设置系统是否启用
+   * 
    * @tparam T 系统类型
    * @param enabled 是否启用
    */
@@ -232,6 +239,7 @@ class ComponentSystemManager {
 
   /**
    * @brief 检查系统是否启用
+   * 
    * @tparam T 系统类型
    */
   template<typename T> bool IsSystemEnabled() const
@@ -244,6 +252,7 @@ class ComponentSystemManager {
  private:
   /**
    * @brief 当组件被添加时的处理
+   * 
    * @param entity 实体
    * @param component 组件
    */
@@ -267,6 +276,7 @@ class ComponentSystemManager {
 
   /**
    * @brief 当组件被更新时的处理
+   * 
    * @param entity 实体
    * @param component 组件
    */
@@ -290,6 +300,7 @@ class ComponentSystemManager {
 
   /**
    * @brief 当组件被移除时的处理
+   * 
    * @param entity 实体
    * @param component 组件
    */

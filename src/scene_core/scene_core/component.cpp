@@ -15,6 +15,17 @@ bool Component::IsDirty() const
   return m_Dirty;
 }
 
+void Component::Update()
+{
+  if (m_Dirty) {
+    // 执行必要的更新或重新计算
+    Recalculate();
+
+    // 清除脏标记
+    m_Dirty = false;
+  }
+}
+
 void Component::SetEnabled(bool enabled)
 {
   m_Enabled = enabled;
