@@ -22,51 +22,6 @@ ComponentSystemManager::~ComponentSystemManager()
   }
 }
 
-template<typename T, typename... Args> T *ComponentSystemManager::RegisterSystem(Args &&...args)
-{
-  static_assert(std::is_base_of_v<ComponentSystem, T>,
-                "Registered system must inherit from ComponentSystem");
-
-  const std::type_index type = typeid(T);
-
-  // 检查是否已注册，若已注册则直接返回已有的系统
-  if (m_SystemMap.find(type) != m_SystemMap.end()) {
-    return static_cast<T *>(m_SystemMap[type].system.get());
-  }
-
-  // 创建新系统
-  auto system = std::make_unique<T>(std::forward<Args>(args)...);
-  T *rawPtr = system.get();
-
-  // 存入管理结构
-  m_SystemMap[type] = SystemEntry{std::move(system), true};
-  m_SystemsSorted = false;
-
-  return rawPtr;
-}
-
-template<typename T> bool ComponentSystemManager::HasSystem() const
-{
-  const std::type_index type = typeid(T);
-  auto it = m_SystemMap.find(type);
-  if (it != m_SystemMap.end() && it->second.enabled) {
-    return true;
-  }
-  return false;
-}
-
-template<typename T> T *ComponentSystemManager::GetSystem() const
-{
-  // 获取前使用assert断言检查，便于在debug阶段发现问题。
-  assert(HasSystem<T>());
-  const std::type_index type = typeid(T);
-  auto it = m_SystemMap.find(type);
-  if (it != m_SystemMap.end() && it->second.enabled) {
-    return static_cast<T *>(it->second.system.get());
-  }
-  return nullptr;
-}
-
 void ComponentSystemManager::InitializeAll()
 {
   // 确保系统已排序
@@ -158,50 +113,6 @@ void ComponentSystemManager::SortSystems()
   }
 
   m_SystemsSorted = true;
-}
-void ComponentSystemManager::OnComponentAdded(Entity entity, Component &component)
-{
-  const auto componentType = component.GetType();
-
-  for (auto &system : m_Systems) {
-    // 检查系统是否管理此组件类型
-    for (const auto &managedType : system->GetComponentTypes()) {
-      if (managedType == componentType) {
-        system->OnComponentAdded(entity, component);
-        break;
-      }
-    }
-  }
-}
-
-void ComponentSystemManager::OnComponentUpdated(Entity entity, Component &component)
-{
-  const auto componentType = component.GetType();
-
-  for (auto &system : m_Systems) {
-    // 检查系统是否管理此组件类型
-    for (const auto &managedType : system->GetComponentTypes()) {
-      if (managedType == componentType) {
-        system->OnComponentUpdated(entity, component);
-        break;
-      }
-    }
-  }
-}
-
-void ComponentSystemManager::OnComponentRemoved(Entity entity, Component &component)
-{
-  const auto componentType = component.GetType();
-
-  for (auto &system : m_Systems) {
-    // 检查系统是否管理此组件类型
-    for (const auto &managedType : system->GetComponentTypes()) {
-      if (managedType == componentType) {
-        system->OnComponentRemoved(entity, component);
-        break;
-      }
-    }
-  }
 }
 
 };
