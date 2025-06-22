@@ -93,7 +93,6 @@ class MiteApplication {
   void HandlePendingOperations();
 
   // 事件处理
-  void OnEvent(Event &event);
   void OnWindowResize(uint32_t width, uint32_t height);
   bool OnWindowClose(WindowCloseEvent& e);
 

@@ -41,8 +41,6 @@
 #include "time/time.h"
 
 // 事件系统
-#include "event/event_types.h"
-#include "event/event.h"
-#include "event/dispatcher.h"
+#include "event/event_bus.h"
 
 #endif

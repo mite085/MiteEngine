@@ -37,7 +37,6 @@ class PropertyPanelProcessor : public InputProcessor {
   explicit PropertyPanelProcessor(PropertyPanel *panel);
 
   // IInputProcessor接口实现
-  bool HandleEvent(Event &e) override;
   int GetPriority() const override
   {
     return InputPriority::UI_FORM;

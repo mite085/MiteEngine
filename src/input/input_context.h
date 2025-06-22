@@ -73,7 +73,6 @@ class InputContext {
   float GetActionValue(const std::string &name) const;
 
   // 核心处理流程
-  virtual bool ProcessEvent(Event &event);
   void Update();
 
   // 调试工具

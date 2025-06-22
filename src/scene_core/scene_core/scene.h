@@ -136,9 +136,6 @@ class Scene : public std::enable_shared_from_this<Scene> {
   // 场景名称
   std::string m_Name;         
 
-  // 可重用的dispatcher实例
-  EventDispatcher m_Dispatcher;
-
   // EnTT实体组件注册表：
   // 直接值持有,与Scene共享生命周期，
   // 避免unique_ptr不必要的堆分配，

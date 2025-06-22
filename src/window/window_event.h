@@ -10,6 +10,10 @@ class WindowCloseEvent : public Event {
   WindowCloseEvent() = default;
   EVENT_CLASS_TYPE(WINDOW_CLOSE)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
+  Event *Clone() const override
+  {
+    return new WindowCloseEvent();
+  }
 };
 
 class WindowResizeEvent : public Event {
@@ -19,7 +23,10 @@ class WindowResizeEvent : public Event {
   uint32_t GetHeight() const;
   EVENT_CLASS_TYPE(WINDOW_RESIZE)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
-
+  Event *Clone() const override
+  {
+    return new WindowResizeEvent(m_Width, m_Height);
+  }
  private:
   uint32_t m_Width, m_Height;
 };
@@ -29,6 +36,10 @@ class WindowFocusEvent : public Event {
   WindowFocusEvent() = default;
   EVENT_CLASS_TYPE(WINDOW_FOCUS)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
+  Event *Clone() const override
+  {
+    return new WindowFocusEvent();
+  }
 };
 
 class WindowLostFocusEvent : public Event {
@@ -36,6 +47,10 @@ class WindowLostFocusEvent : public Event {
   WindowLostFocusEvent() = default;
   EVENT_CLASS_TYPE(WINDOW_LOST_FOCUS)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
+  Event *Clone() const override
+  {
+    return new WindowLostFocusEvent();
+  }
 };
 
 class WindowMovedEvent : public Event {
@@ -43,7 +58,12 @@ class WindowMovedEvent : public Event {
   WindowMovedEvent() = default;
   EVENT_CLASS_TYPE(WINDOW_MOVED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
+  Event *Clone() const override
+  {
+    return new WindowMovedEvent();
+  }
 };
+
 };
 
 #endif

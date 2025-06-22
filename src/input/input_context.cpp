@@ -5,6 +5,11 @@ InputContext::InputContext(const std::string &name) : m_Name(name)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Input Context: {" + name + "}");
   m_Logger->trace("Created input context: {}", name);
+
+  // 订阅事件
+  EventBus::Get().Subscribe<KeyEvent>(BIND_DISPATCH_FN(_ProcessKeyEvent));
+  EventBus::Get().Subscribe<MouseButtonEvent>(BIND_DISPATCH_FN(_ProcessMouseButtonEvent));
+  EventBus::Get().Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(_ProcessMouseMoveEvent));
 }
 
 InputContext::~InputContext()
@@ -25,26 +30,6 @@ void InputContext::SetBlockInput(bool block)
 bool InputContext::IsInputBlocked() const
 {
   return m_BlockInput;
-}
-
-bool InputContext::ProcessEvent(Event &event)
-{
-  // 1. 检查全局阻塞
-  if (m_BlockInput)
-    return true;
-
-  // 2. 动作映射系统处理
-  EventDispatcher dispatcher(event);
-
-  dispatcher.Dispatch<KeyEvent>([this](KeyEvent &e) { return _ProcessKeyEvent(e); });
-
-  dispatcher.Dispatch<MouseButtonEvent>(
-      [this](MouseButtonEvent &e) { return _ProcessMouseButtonEvent(e); });
-  dispatcher.Dispatch<MouseMoveEvent>(
-      [this](MouseMoveEvent &e) { return _ProcessMouseMoveEvent(e); });
-
-  // 2. 返回是否消费事件
-  return event.handled;
 }
 
 void InputContext::Update(){

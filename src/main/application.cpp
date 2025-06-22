@@ -50,6 +50,9 @@ void MiteApplication::SaveScene(const std::string &filepath) {}
 
 void MiteApplication::Initialize()
 {
+  // 订阅事件
+  EventBus::Get().Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
+
   InitializeInputSystem();
 
   // 目前仅实现OpenGL模式，预留添加新模式接口
@@ -240,15 +243,6 @@ void MiteApplication::UpdateEditorState() {}
 void MiteApplication::UpdateAnimations() {}
 
 void MiteApplication::HandlePendingOperations() {}
-
-void MiteApplication::OnEvent(Event &event)
-{
-  // 事件总线，由分发器进行事件分发
-  EventDispatcher dispatcher(event);
-
-  // 将WindowCloseEvent事件分发给Application::OnWindowClose函数
-  dispatcher.Dispatch<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
-}
 
 void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
 

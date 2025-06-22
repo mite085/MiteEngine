@@ -14,6 +14,10 @@ class MouseMoveEvent : public Event {
 
   EVENT_CLASS_TYPE(MOUSE_POSITION_MOVED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
+  Event *Clone() const override
+  {
+    return new MouseMoveEvent(xpos, ypos);
+  }
  private:
   double xpos, ypos;
 };
@@ -32,6 +36,10 @@ class MouseButtonEvent : public Event {
 
   EVENT_CLASS_TYPE(MOUSE_BUTTON_RELEASED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
+  Event *Clone() const override
+  {
+    return new MouseButtonEvent(button, action, mods, xpos, ypos);
+  }
  private:
   int button, action, mods;
   double xpos, ypos;
@@ -50,6 +58,10 @@ class KeyEvent : public Event {
 
   EVENT_CLASS_TYPE(KEY_RELEASED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
+  Event *Clone() const override
+  {
+    return new KeyEvent(key, scancode, action, mods);
+  }
  private:
   int key, scancode, action /*GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT*/, mods /*ÐÞÊÎ¼ü×´Ì¬*/;
 };

@@ -4,26 +4,10 @@ namespace mite {
 PropertyPanelProcessor::PropertyPanelProcessor(PropertyPanel *panel)
     : InputProcessor(), m_Panel(panel)
 {
-}
-
-bool PropertyPanelProcessor::HandleEvent(Event &e)
-{
-  if (!m_Active)
-    return false;
-
-  EventDispatcher dispatcher(e);
-
-  // 按事件类型分发处理
-  bool handled = false;
-  dispatcher.Dispatch<MouseButtonEvent>(BIND_DISPATCH_FN(_HandleMouseClick));
-
-  dispatcher.Dispatch<MouseMoveEvent>(BIND_DISPATCH_FN(_HandleMouseDrag));
-
-  dispatcher.Dispatch<KeyEvent>(BIND_DISPATCH_FN(_HandleKeyPress));
-
-  //dispatcher.Dispatch<MouseScrolledEvent>(BIND_DISPATCH_FN(_HandleMouseScroll));
-
-  return handled;
+  // 订阅事件
+  EventBus::Get().Subscribe<MouseButtonEvent>(BIND_DISPATCH_FN(_HandleMouseClick));
+  EventBus::Get().Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(_HandleMouseDrag));
+  EventBus::Get().Subscribe<KeyEvent>(BIND_DISPATCH_FN(_HandleKeyPress));
 }
 
 //--- 鼠标点击处理 ---

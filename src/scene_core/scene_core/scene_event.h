@@ -18,6 +18,10 @@ class SceneLoadedEvent : public Event {
 
   EVENT_CLASS_TYPE(SCENE_LOADED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new SceneLoadedEvent();
+  }
 };
 /**
  * @class SceneLoadedEvent
@@ -29,6 +33,10 @@ class SceneClearedEvent : public Event {
 
   EVENT_CLASS_TYPE(SCENE_CLEARED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new SceneClearedEvent();
+  }
 };
 
 // 2. 实体事件	=====================================================
@@ -63,6 +71,10 @@ class EntityCreatedEvent : public EntityEvent {
 
   EVENT_CLASS_TYPE(ENTITY_CREATED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new EntityCreatedEvent(entity);
+  }
 };
 /**
  * @class EntityDestroyedEvent
@@ -74,6 +86,10 @@ class EntityDestroyedEvent : public EntityEvent {
 
   EVENT_CLASS_TYPE(ENTITY_DESTROYED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new EntityDestroyedEvent(entity);
+  }
 };
 /**
  * @class EntityParentChangedEvent
@@ -85,6 +101,10 @@ class EntityParentChangedEvent : public EntityEvent {
 
   EVENT_CLASS_TYPE(PARENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new EntityParentChangedEvent(entity);
+  }
 };
 /**
  * @class EntityTagChangedEvent
@@ -96,6 +116,10 @@ class EntityTagChangedEvent : public EntityEvent {
 
   EVENT_CLASS_TYPE(TAG_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new EntityTagChangedEvent(entity);
+  }
 };
 
 // 3. 组件事件	=====================================================
@@ -130,6 +154,10 @@ template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
 
   EVENT_CLASS_TYPE(COMPONENT_ADDED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new ComponentAddedEvent<T>(entity);
+  }
 };
 
 /**
@@ -142,6 +170,10 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
 
   EVENT_CLASS_TYPE(COMPONENT_REMOVED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new ComponentRemovedEvent<T>(entity);
+  }
 
 };
 /**
@@ -154,6 +186,10 @@ template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
 
   EVENT_CLASS_TYPE(COMPONENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new ComponentChangedEvent<T>(entity);
+  }
 };
 
 };  // namespace mite

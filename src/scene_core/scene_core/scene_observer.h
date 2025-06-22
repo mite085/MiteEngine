@@ -37,20 +37,18 @@ class SceneObserver {
 
   /**
    * @brief 标记实体为已修改
-   * @param entity 被修改的实体
-   * @note 会通知ComponentSystemManager检查组件变更
    */
-  bool MarkEntityModified(Entity entity);
+  bool MarkEntityModified(EntityParentChangedEvent &e);
 
   /**
    * @brief 处理实体创建
    */
-  bool OnEntityCreated(Entity entity);
+  bool OnEntityCreated(EntityCreatedEvent &e);
 
   /**
    * @brief 处理实体销毁
    */
-  bool OnEntityDestroyed(Entity entity);
+  bool OnEntityDestroyed(EntityDestroyedEvent &e);
 
  private:
   SceneRegistry& m_Registry;  // 场景注册信息引用
