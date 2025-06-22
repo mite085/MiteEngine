@@ -418,6 +418,10 @@ void TransformComponent::DecomposeMatrix(const glm::mat4 &matrix)
 
 void TransformSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
+  // 并行处理所有根节点。
+  // 其他叶节点需要串行处理，
+  // 交由SceneGraph的UpdateWorldTransformsAndVisibility执行
+  // TODO: Transform的dirty flag在向上传递时存在问题
   std::for_each(std::execution::par,
                 m_DirtyComponents.begin(),
                 m_DirtyComponents.end(),

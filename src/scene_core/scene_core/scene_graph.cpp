@@ -290,7 +290,14 @@ void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
 
   auto view = m_Registry.GetEntitiesWith<TransformComponent, HierarchyComponent>();
 
+  // TODO: Transform的dirty flag在向上传递时存在问题
+
   // 第一遍: 收集所有脏标记的根变换
+  // 
+  // 注意：
+  // 该步骤应当在TransformSystem::ProcessDirtyComponents运行之后运行
+  // 此时所有的根节点已经ClearDirty了。所以仅收集标记Dirty的叶子节点
+  // 和其下属的叶子节点。
   std::vector<Entity> dirtyRoots;
   for (auto entity : view) {
     auto &transform = m_Registry.GetComponent<TransformComponent>(entity);
@@ -298,6 +305,8 @@ void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
 
     // 如果是根节点或者父节点没有脏标记，但自身有脏标记
     // (或者dirtyOnly关闭的情况下，不考虑当前是否有脏标记，均收集并更新)
+
+    // 冗余设计：虽然仅收集叶子节点
     if (hierarchy.IsRoot() && (transform.IsDirty() || !dirtyOnly)) {
       dirtyRoots.push_back(entity);
     }

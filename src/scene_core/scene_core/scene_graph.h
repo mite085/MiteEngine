@@ -186,9 +186,9 @@ class SceneGraph {
 
   /**
    * @brief 更新世界变换
-   * @param dirtyOnly 仅更新dirty entity的flag
+   * @param dirtyOnly 仅更新dirty entity的flag，默认开启。
    */
-  void UpdateWorldTransformsAndVisibility(bool dirtyOnly);
+  void UpdateWorldTransformsAndVisibility(bool dirtyOnly = true);
 
   // EnTT注册表引用
   SceneRegistry &m_Registry;

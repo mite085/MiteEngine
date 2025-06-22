@@ -130,7 +130,13 @@ class Component {
    * @param reg 注册表，用于查询
    * @return parent实体
    * 
-   * 注意：使用时应当与Component::HasParent配合使用
+   * 注意：
+   * 使用时应当与Component::HasParent配合使用
+   * 
+   * 注意2：
+   * HierarchyComponent的GetParent()方法无参数，
+   * 与基类Component的GetParent(SceneRegistry &)
+   * 并不存在继承关系。无需构建Virtual虚函数
    */
   Entity GetParent(SceneRegistry &reg);
 
