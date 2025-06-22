@@ -39,7 +39,7 @@ class ComponentSystem {
    * @brief 系统更新（每帧调用）
    * @param deltaTime 帧间隔时间(秒)
    */
-  virtual void Update(float deltaTime) = 0;
+  virtual void Update(float deltaTime, SceneRegistry &registry) = 0;
 
   /**
    * @brief 系统销毁（场景卸载时调用）
@@ -146,13 +146,13 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
    * @brief 按照脏标记更新组件(逐帧调用)
    * @param deltaTime 帧与帧时间间隔
    */
-  void Update(float deltaTime) override
+  void Update(float deltaTime, SceneRegistry &registry) override
   {
     // 阶段1：收集脏组件
     CollectDirtyComponents();
 
     // 阶段2：并行处理
-    ProcessDirtyComponents(deltaTime);
+    ProcessDirtyComponents(deltaTime, registry);
   }
 
   /**
@@ -232,7 +232,7 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
    * 自动实现并行处理脏组件，无需重写该方法，
    * （详见下文）
    */
-  virtual void ProcessDirtyComponents(float deltaTime) = 0;
+  virtual void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) = 0;
 
   std::vector<T *> m_AllComponents;
   std::vector<T *> m_DirtyComponents;
@@ -254,13 +254,13 @@ class DirtyComponentSystem<T, SelfDirtyPolicy> : public DirtyComponentSystem<T, 
   /**
    * @brief 并行执行脏组件的Update
    */
-  void ProcessDirtyComponents(float deltaTime) override
+  void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override
   {
     // 并行处理优化
     std::for_each(std::execution::par,
                   m_DirtyComponents.begin(),
                   m_DirtyComponents.end(),
-                  [&](T *comp) { static_cast<Component *>(comp)->Update(); });
+                  [&](T *comp) { static_cast<Component *>(comp)->Update(deltaTime, registry); });
   }
 };
 

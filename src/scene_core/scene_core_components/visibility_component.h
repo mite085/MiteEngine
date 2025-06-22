@@ -4,6 +4,8 @@
 #include "scene_core/component.h"
 
 namespace mite {
+// 前向声明
+class SceneRegistry;
 /**
  * @brief 可见性组件，控制实体在场景中的可见性状态
  *
@@ -45,7 +47,7 @@ class VisibilityComponent : public ComponentTraits<VisibilityComponent, Componen
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty() override {}
+  void ProcessDirty(SceneRegistry &reg) override {}
 
   /**
    * @brief 获取当前可见性状态

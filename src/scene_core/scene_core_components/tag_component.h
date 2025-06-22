@@ -4,6 +4,8 @@
 #include "scene_core/component.h"
 
 namespace mite {
+// 前向声明
+class SceneRegistry;
 /**
  * @brief 标签组件 - 为实体提供名称标识和分类标签
  *
@@ -33,7 +35,7 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty() override {}
+  void ProcessDirty(SceneRegistry &reg) override {}
 
   // 序列化支持
   template<typename Archive> void serialize(Archive &archive);

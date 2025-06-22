@@ -6,7 +6,7 @@
 
 namespace mite {
 // 前向声明
-class Entity;
+class SceneRegistry;
 /**
  * @brief 实体层次结构组件，
  * 管理实体间的父子关系，构成场景树的基础结构
@@ -33,7 +33,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty() override {}
+  void ProcessDirty(SceneRegistry &reg) override {}
 
   /**
    * @brief 获取父实体句柄

@@ -31,7 +31,7 @@ void ComponentSystemManager::UpdateAll(float deltaTime)
   for (auto &system : m_Systems) {
     auto entry = m_SystemMap.find(system->GetSystemType());
     if (entry != m_SystemMap.end()) {
-      system->Update(deltaTime);
+      system->Update(deltaTime, m_Registry);
     }
   }
 }

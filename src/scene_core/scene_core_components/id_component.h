@@ -7,6 +7,8 @@
 #include <uuid.h>
 
 namespace mite {
+// 前向声明
+class SceneRegistry;
 /**
  * @brief 实体唯一标识组件
  *
@@ -47,7 +49,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty() override {}
+  void ProcessDirty(SceneRegistry &reg) override {}
 
   /**
    * @brief 获取UUID字符串表示（RFC4122格式）

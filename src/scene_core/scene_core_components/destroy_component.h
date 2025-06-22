@@ -4,6 +4,8 @@
 #include "scene_core/component.h"
 
 namespace mite {
+// 前向声明
+class SceneRegistry;
 /**
  * @brief 销毁标记组件
  *
@@ -23,7 +25,7 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty() override {}
+  void ProcessDirty(SceneRegistry &reg) override {}
 
   /**
    * @brief 用于调试的字符串表示
