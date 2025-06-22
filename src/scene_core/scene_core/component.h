@@ -1,10 +1,12 @@
 #ifndef MITE_SCENE_COMPONENT
 #define MITE_SCENE_COMPONENT
 
-#include "headers/headers.h"
 #include "entity.h"
+#include "headers/headers.h"
 
 namespace mite {
+// 前向声明
+class SceneRegistry;
 
 /**
  * @brief 组件基类，所有场景组件都应继承自此类
@@ -54,11 +56,11 @@ class Component {
   /**
    * @brief 更新方法，通常每帧调用
    */
-  void Update();
+  void Update(SceneRegistry &reg);
   /**
    * @brief 针对dirty对象进行处理
    */
-  virtual void ProcessDirty() = 0;
+  virtual void ProcessDirty(SceneRegistry &reg) = 0;
 
   /**
    * @brief 组件启用状态
@@ -101,20 +103,36 @@ class Component {
   /**
    * @brief 设定所属实体对象
    * @param entity 实体对象
-   * 
+   *
    * 注意：
    * 由于SceneRegistry::AddComponent所调用的
    * m_Registry.emplace<T>(entt::entity, Args &&...args)
    * 方法对完美转发的参数包的要求，Component的构造函数
    * 所传入的参数必须和参数包的参数类型一致，
    * 故需要单独将SetOwnerEntity分离开执行。
-   * 
+   *
    * TODO: entt对这部分的设定，说明了Component的
    * 内部逻辑不应当依赖于Entity对象。所以该函数
    * 是违背entt的设计理念的。后续应当考虑删除
-   * 
+   *
    */
   void SetOwnerEntity(Entity entity);
+
+  /**
+   * @brief 判断该组件所属的实体是否存在parent
+   * @param reg 注册表，用于查询
+   * @return 是否存在parent
+   */
+  bool HasParent(SceneRegistry &reg);
+
+  /**
+   * @brief 获取该组件所属的实体的parent实体
+   * @param reg 注册表，用于查询
+   * @return parent实体
+   * 
+   * 注意：使用时应当与Component::HasParent配合使用
+   */
+  Entity GetParent(SceneRegistry &reg);
 
  protected:
   // 保护构造函数，确保只能通过子类实例化，
@@ -125,7 +143,7 @@ class Component {
   Entity m_OwnerEntity;
 
   std::atomic<bool> m_Dirty{false};  // 脏标记，标识组件是否被修改
-  bool m_Enabled = true;  // 组件是否启用
+  bool m_Enabled = true;             // 组件是否启用
 };
 
 /**
@@ -153,10 +171,10 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
    * 相互冲突，引发编译错误。现阶段优先确保HierarchyComponent禁止拷贝，
    * 后续需要深拷贝时添加clone方法
    */
-  //std::shared_ptr<Component> Clone() const override
+  // std::shared_ptr<Component> Clone() const override
   //{
-  //  return std::make_shared<T>(static_cast<const T &>(*this));
-  //}
+  //   return std::make_shared<T>(static_cast<const T &>(*this));
+  // }
 
   // 启用静态类型检查的组件ID获取
   static std::type_index GetStaticType()

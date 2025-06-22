@@ -343,14 +343,14 @@ void SceneGraph::UpdateWorldTransformsAndVisibility(bool dirtyOnly)
                   if (auto parentTransformComp = m_Registry.TryGetComponent<TransformComponent>(
                           parent))
                   {
-                    parentTransform = parentTransformComp->GetWorldMatrix();
+                    parentTransform = parentTransformComp->GetWorldMatrix(m_Registry);
                   }
                 }
               }
             }
 
             // 更新世界变换
-            transform->ProcessDirty();
+            transform->ProcessDirty(m_Registry);
           }
           return true;  // 继续遍历
         },

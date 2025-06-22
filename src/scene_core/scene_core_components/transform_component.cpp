@@ -20,9 +20,9 @@ TransformComponent::TransformComponent( const glm::mat4 &matrix)
   DecomposeMatrix(matrix);
 }
 
-void TransformComponent::ProcessDirty()
+void TransformComponent::ProcessDirty(SceneRegistry &reg)
 {
-  CalculateWorldMatrix();
+  CalculateWorldMatrix(reg);
 }
 
 // 位置相关方法 ==============================================
@@ -42,22 +42,21 @@ void TransformComponent::SetLocalPosition(const glm::vec3 &position)
   }
 }
 
-glm::vec3 TransformComponent::GetWorldPosition() const
+glm::vec3 TransformComponent::GetWorldPosition(SceneRegistry &reg) const
 {
-  const glm::mat4 &worldMat = GetWorldMatrix();
+  const glm::mat4 &worldMat = GetWorldMatrix(reg);
   return glm::vec3(worldMat[3]);
 }
 
-void TransformComponent::SetWorldPosition(const glm::vec3 &position)
+void TransformComponent::SetWorldPosition(SceneRegistry &reg, const glm::vec3 &position)
 {
-  auto &registry = GetOwnerEntity().GetSceneRegistry();
-  if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，转换为局部位置
-      TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
+      TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
-      glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix();
+      glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix(reg);
       glm::mat4 inverseParent = glm::inverse(parentWorldMat);
       glm::vec4 localPos = inverseParent * glm::vec4(position, 1.0f);
       SetLocalPosition(glm::vec3(localPos));
@@ -112,9 +111,9 @@ void TransformComponent::SetLocalEulerAngles(float x, float y, float z)
   SetLocalEulerAngles(glm::vec3{x, y, z});
 }
 
-glm::quat TransformComponent::GetWorldRotation() const
+glm::quat TransformComponent::GetWorldRotation(SceneRegistry &reg) const
 {
-  const glm::mat4 &worldMat = GetWorldMatrix();
+  const glm::mat4 &worldMat = GetWorldMatrix(reg);
   glm::vec3 scale;
   glm::quat rotation;
   glm::vec3 translation;
@@ -124,16 +123,15 @@ glm::quat TransformComponent::GetWorldRotation() const
   return rotation;
 }
 
-void TransformComponent::SetWorldRotation(const glm::quat &rotation)
+void TransformComponent::SetWorldRotation(SceneRegistry &reg, const glm::quat &rotation)
 {
-  auto &registry = GetOwnerEntity().GetSceneRegistry();
-  if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，转换为局部旋转
-      TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
+      TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
-      glm::quat parentWorldRot = parentTransform.GetWorldRotation();
+      glm::quat parentWorldRot = parentTransform.GetWorldRotation(reg);
       SetLocalRotation(glm::inverse(parentWorldRot) * rotation);
       return;
     }
@@ -164,10 +162,13 @@ void TransformComponent::Rotate(const glm::vec3 &axis, float angle)
   Rotate(rotation);
 }
 
-void TransformComponent::RotateAround(const glm::vec3 &point, const glm::vec3 &axis, float angle)
+void TransformComponent::RotateAround(SceneRegistry &reg,
+                                      const glm::vec3 &point,
+                                      const glm::vec3 &axis,
+                                      float angle)
 {
   // 获取当前世界位置
-  const glm::vec3 worldPos = GetWorldPosition();
+  const glm::vec3 worldPos = GetWorldPosition(reg);
 
   // 计算从旋转中心到实体的向量
   const glm::vec3 toObject = worldPos - point;
@@ -181,17 +182,16 @@ void TransformComponent::RotateAround(const glm::vec3 &point, const glm::vec3 &a
   const glm::vec3 newWorldPos = point + rotatedVec;
 
   // 更新世界位置（会自动处理父子关系）
-  SetWorldPosition(newWorldPos);
+  SetWorldPosition(reg, newWorldPos);
 
   // 同时应用旋转到实体朝向（世界空间）
-  auto &registry = GetOwnerEntity().GetSceneRegistry();
-  if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，转换为局部旋转
-      TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
+      TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
-      glm::quat parentWorldRot = parentTransform.GetWorldRotation();
+      glm::quat parentWorldRot = parentTransform.GetWorldRotation(reg);
       glm::quat localRot = glm::inverse(parentWorldRot) * rotation * parentWorldRot;
       Rotate(localRot);
     }
@@ -204,20 +204,19 @@ void TransformComponent::RotateAround(const glm::vec3 &point, const glm::vec3 &a
   }
 }
 
-void TransformComponent::LookAt(const glm::vec3 &target, const glm::vec3 &up)
+void TransformComponent::LookAt(SceneRegistry &reg, const glm::vec3 &target, const glm::vec3 &up)
 {
-  const glm::vec3 position = GetWorldPosition();
+  const glm::vec3 position = GetWorldPosition(reg);
   const glm::mat4 lookAtMat = glm::lookAt(position, target, up);
   const glm::quat rotation = glm::quat_cast(glm::inverse(lookAtMat));
 
-  auto &registry = GetOwnerEntity().GetSceneRegistry();
-  if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 转换为局部旋转
-      TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
+      TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
-      glm::quat parentRotation = parentTransform.GetWorldRotation();
+      glm::quat parentRotation = parentTransform.GetWorldRotation(reg);
       SetLocalRotation(glm::inverse(parentRotation) * rotation);
       return;
     }
@@ -248,9 +247,9 @@ void TransformComponent::SetLocalScale(float scale)
   SetLocalScale(glm::vec3{scale, scale, scale});
 }
 
-glm::vec3 TransformComponent::GetWorldScale() const
+glm::vec3 TransformComponent::GetWorldScale(SceneRegistry &reg) const
 {
-  const glm::mat4 &worldMat = GetWorldMatrix();
+  const glm::mat4 &worldMat = GetWorldMatrix(reg);
   glm::vec3 scale;
   glm::quat rotation;
   glm::vec3 translation;
@@ -270,10 +269,10 @@ glm::mat4 TransformComponent::GetLocalMatrix() const
   return m_LocalMatrix;
 }
 
-glm::mat4 TransformComponent::GetWorldMatrix() const
+glm::mat4 TransformComponent::GetWorldMatrix(SceneRegistry &reg) const
 {
   if (m_WorldMatrixDirty) {
-    CalculateWorldMatrix();
+    CalculateWorldMatrix(reg);
   }
   return m_WorldMatrix;
 }
@@ -283,16 +282,15 @@ void TransformComponent::SetLocalMatrix(const glm::mat4 &matrix)
   DecomposeMatrix(matrix);
 }
 
-void TransformComponent::SetWorldMatrix(const glm::mat4 &matrix)
+void TransformComponent::SetWorldMatrix(SceneRegistry &reg, const glm::mat4 &matrix)
 {
-  auto &registry = GetOwnerEntity().GetSceneRegistry();
-  if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 将世界矩阵转换为局部矩阵
-      TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
+      TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
-      glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix();
+      glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix(reg);
       glm::mat4 localMat = glm::inverse(parentWorldMat) * matrix;
       DecomposeMatrix(localMat);
       return;
@@ -369,14 +367,13 @@ void TransformComponent::CalculateLocalMatrix() const {
   m_LocalMatrixDirty = false;
 }
 
-void TransformComponent::CalculateWorldMatrix() const
+void TransformComponent::CalculateWorldMatrix(SceneRegistry &reg) const
 {
   // 在执行GetLocalMatrix()时，就已经清理了m_LocalMatrixDirty标记
   const glm::mat4 localMat = GetLocalMatrix();
 
-  auto &registry = GetOwnerEntity().GetSceneRegistry();
-  if (registry.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = registry.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，计算世界矩阵
       // 
@@ -388,9 +385,9 @@ void TransformComponent::CalculateWorldMatrix() const
       // 
       // 但如果真的出现了，GetWorldMatrix()也会检查
       // parentTransform的脏标记并更新其transform
-      TransformComponent &parentTransform = registry.GetComponent<TransformComponent>(
+      TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
-      m_WorldMatrix = parentTransform.GetWorldMatrix() * localMat;
+      m_WorldMatrix = parentTransform.GetWorldMatrix(reg) * localMat;
     }
     else {
       // 没有父节点，局部矩阵就是世界矩阵
@@ -419,6 +416,16 @@ void TransformComponent::DecomposeMatrix(const glm::mat4 &matrix)
   MarkDirty();
 }
 
-void TransformSystem::ProcessDirtyComponents(float deltaTime) {}
+void TransformSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
+{
+  std::for_each(std::execution::par,
+                m_DirtyComponents.begin(),
+                m_DirtyComponents.end(),
+                [&](TransformComponent *tf) {
+                  if (!tf->HasParent(registry)) {
+                    tf->Update(registry);
+                  }
+                });
+}
 
 };  // namespace mite

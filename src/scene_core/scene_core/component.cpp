@@ -1,5 +1,7 @@
 #include "component.h"
 #include "entity.h"
+#include "scene_core_components/hierarchy_component.h"
+#include "scene_registry.h"
 
 namespace mite {
 // 基类方法的基础实现
@@ -20,11 +22,11 @@ void Component::CleanDirty()
   m_Dirty = false;
 }
 
-void Component::Update()
+void Component::Update(SceneRegistry &reg)
 {
   if (IsDirty()) {
     // 执行必要的更新或重新计算
-    ProcessDirty();
+    ProcessDirty(reg);
 
     // 清除脏标记
     CleanDirty();
@@ -58,6 +60,20 @@ bool Component::Deserialize(std::istream &input)
 void Component::SetOwnerEntity(Entity entity)
 {
   m_OwnerEntity = entity;
+}
+
+bool Component::HasParent(SceneRegistry &reg)
+{
+  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity()))
+    return reg.GetComponent<HierarchyComponent>(GetOwnerEntity()).GetParent().IsValid();
+  else
+    return false;
+}
+
+Entity Component::GetParent(SceneRegistry &reg)
+{
+  // 与Component::HasParent配合使用，故不设置if分支进行正确性检查。
+  return reg.GetComponent<HierarchyComponent>(GetOwnerEntity()).GetParent();
 }
 
 Entity Component::GetOwnerEntity() const

@@ -4,6 +4,8 @@
 #include "scene_core/component_system.h"
 
 namespace mite {
+// 前向声明
+class SceneRegistry;
 /**
  * @brief 变换组件，管理实体的位置、旋转和缩放
  *
@@ -46,7 +48,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty() override;
+  void ProcessDirty(SceneRegistry &reg) override;
 
   // 位置操作 ==============================================
   /**
@@ -64,12 +66,12 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @brief 获取世界空间位置(需要父变换计算)
    * @return 世界空间三维位置坐标
    */
-  glm::vec3 GetWorldPosition() const;
+  glm::vec3 GetWorldPosition(SceneRegistry &reg) const;
   /**
    * @brief 设定世界空间位置
    * @param position 世界空间三维位置坐标
    */
-  void SetWorldPosition(const glm::vec3 &position);
+  void SetWorldPosition(SceneRegistry &reg, const glm::vec3 &position);
 
   /**
    * @brief 相对移动
@@ -118,12 +120,12 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @brief 获取世界空间旋转(四元数)
    * @return 世界空间旋转四元数
    */
-  glm::quat GetWorldRotation() const;
+  glm::quat GetWorldRotation(SceneRegistry &reg) const;
   /**
    * @brief 设定世界空间旋转(四元数)
    * @param rotation 世界空间旋转四元数
    */
-  void SetWorldRotation(const glm::quat &rotation);
+  void SetWorldRotation(SceneRegistry &reg, const glm::quat &rotation);
 
   // 旋转方法
   /**
@@ -157,13 +159,17 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * - 行星绕太阳公转
    * - 摄像机绕目标旋转
    */
-  void RotateAround(const glm::vec3 &point, const glm::vec3 &axis, float angle);
+  void RotateAround(SceneRegistry &reg,
+                    const glm::vec3 &point,
+                    const glm::vec3 &axis,
+                    float angle);
   /**
    * @brief 旋转至看向某个目标
    * @param target 目标的世界空间三维位置坐标
    * @param up 观察的Up方向
    */
-  void LookAt(const glm::vec3 &target, const glm::vec3 &up = glm::vec3(0.0f, 1.0f, 0.0f));
+  void LookAt(SceneRegistry &reg, const glm::vec3 &target,
+              const glm::vec3 &up = glm::vec3(0.0f, 1.0f, 0.0f));
 
   // 缩放操作 ==============================================
   /**
@@ -186,7 +192,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @brief 根据GetWorldMatrix近似计算世界空间缩放
    * @return 世界空间三轴缩放值
    */
-  glm::vec3 GetWorldScale() const;
+  glm::vec3 GetWorldScale(SceneRegistry &reg) const;
 
   // 变换矩阵操作 ==========================================
   /**
@@ -198,7 +204,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @brief 获取世界空间变换矩阵
    * @return 世界空间变换矩阵
    */
-  glm::mat4 GetWorldMatrix() const;
+  glm::mat4 GetWorldMatrix(SceneRegistry &reg) const;
   /**
    * @brief 设定局部空间变换矩阵
    * @param matrix 局部空间变换矩阵
@@ -208,7 +214,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @brief 设定世界空间变换矩阵
    * @param matrix 世界空间变换矩阵
    */
-  void SetWorldMatrix(const glm::mat4 &matrix);
+  void SetWorldMatrix(SceneRegistry &reg, const glm::mat4 &matrix);
 
   // 方向向量 ==============================================
   glm::vec3 Forward() const;  // 正Z轴方向
@@ -234,7 +240,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   /**
    * @brief 计算世界变换矩阵(递归)
    */
-  void CalculateWorldMatrix() const;
+  void CalculateWorldMatrix(SceneRegistry &reg) const;
 
   /**
    * @brief 将矩阵分解成变换，更新position、rotation以及scale
@@ -269,7 +275,7 @@ class TransformSystem : public DirtyComponentSystem<TransformComponent> {
   void Shutdown(SceneRegistry &registry) override {}
 
  private:
-  void ProcessDirtyComponents(float deltaTime) override;
+  void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
 };
 };  // namespace mite
 
