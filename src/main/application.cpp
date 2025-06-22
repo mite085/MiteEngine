@@ -80,7 +80,7 @@ void MiteApplication::InitializeWindowWithOpenGL()
   m_Config = WindowConfig();
   m_Window = Window::Create();
   m_Window->Initialize(m_Config);
-  m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+  //m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 }
 
 void MiteApplication::InitializeRenderWithOpenGL()

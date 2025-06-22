@@ -315,10 +315,10 @@ const uint32_t GLFWWindow::GLFWWindowCount()
 {
   return s_GLFWWindowCount;
 }
-void GLFWWindow::SetEventCallback(const EventCallbackFn& callback)
-{
-    m_WindowData.callback = callback;
-}
+//void GLFWWindow::SetEventCallback(const EventCallbackFn& callback)
+//{
+//    m_WindowData.callback = callback;
+//}
 void GLFWWindow::InitWindowData(const WindowConfig &config) {
   m_WindowData.title      = config.title;
   m_WindowData.width      = config.width;
@@ -456,7 +456,7 @@ void GLFWWindow::WindowCloseCallback(GLFWwindow *window)
   // 触发事件回调
   if (data->callback) {
     WindowCloseEvent event;
-    data->callback(&event);
+    EventBus::Get().Post(event);
   }
 
   LOG_INFO("Window close requested");

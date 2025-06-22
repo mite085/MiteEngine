@@ -50,30 +50,30 @@ std::shared_ptr<InputProcessor> ModularInputContext::GetProcessor(const std::str
   return it != m_ProcessorIndexMap.end() ? m_Processors[it->second] : nullptr;
 }
 
-bool ModularInputContext::ProcessEvent(Event &e)
-{
-  // 1. 阻塞检查
-  if (m_BlockInput)
-    return true;
-
-  // 2. 处理器优先处理（按优先级排序）
-  if (m_Dirty)
-    _SortProcessors();
-
-  for (auto processor : m_SortedProcessors) {
-    if (!processor->IsEnabled())
-      continue;
-
-    if (processor->HandleEvent(e)) {
-      // 记录最后成功的处理器（热点优化）
-      m_HotProcessor = processor;
-      return true;
-    }
-  }
-
-  // 3. 回退到基类的动作映射处理
-  return InputContext::ProcessEvent(e);
-}
+//bool ModularInputContext::ProcessEvent(Event &e)
+//{
+//  // 1. 阻塞检查
+//  if (m_BlockInput)
+//    return true;
+//
+//  // 2. 处理器优先处理（按优先级排序）
+//  if (m_Dirty)
+//    _SortProcessors();
+//
+//  for (auto processor : m_SortedProcessors) {
+//    if (!processor->IsEnabled())
+//      continue;
+//
+//    if (processor->HandleEvent(e)) {
+//      // 记录最后成功的处理器（热点优化）
+//      m_HotProcessor = processor;
+//      return true;
+//    }
+//  }
+//
+//  // 3. 回退到基类的动作映射处理
+//  return InputContext::ProcessEvent(e);
+//}
 
 void ModularInputContext::_SortProcessors()
 {

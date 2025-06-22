@@ -68,8 +68,9 @@ class Window {
   static const uint32_t WindowCount(WindowType &type);
 
   // 回调设置
+  // TODO: 按照事件总线重新规划EventCallbackFn相关实现
   using EventCallbackFn = std::function<void(void *)>;
-  virtual void SetEventCallback(const EventCallbackFn &callback) = 0;
+  //virtual void SetEventCallback(const EventCallbackFn &callback) = 0;
 
   // 工厂方法 - 创建特定类型的窗口
   static std::unique_ptr<Window> Create(const WindowConfig &config = WindowConfig());

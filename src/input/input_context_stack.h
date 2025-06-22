@@ -22,7 +22,7 @@ class InputContextStack {
   bool IsInContext(const std::string &name);
 
   // 处理输入事件（返回是否被消费）
-  bool ProcessEvent(Event &event);
+  //bool ProcessEvent(Event &event);
 
   // 查询是否空栈
   bool IsEmpty();

@@ -18,7 +18,8 @@ class InputProcessor {
   virtual ~InputProcessor() = default;
 
   // 核心处理接口
-  virtual bool HandleEvent(Event &e) = 0;
+  // TODO: 按照事件总线重新规划EventCallbackFn相关实现
+  //virtual bool HandleEvent(Event &e) = 0;
 
   // 配置接口
   virtual int GetPriority() const = 0;
