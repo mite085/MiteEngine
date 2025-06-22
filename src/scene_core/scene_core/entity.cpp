@@ -56,8 +56,8 @@ Entity::operator bool() const
   return IsValid();
 }
 
-std::shared_ptr<Scene> Entity::GetScene() const
-{
-  return m_Scene.lock();
-}
+//std::shared_ptr<Scene> Entity::GetScene() const
+//{
+//  return m_Scene.lock();
+//}
 };  // namespace mite

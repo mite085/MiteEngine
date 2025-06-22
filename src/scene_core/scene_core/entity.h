@@ -79,8 +79,12 @@ class Entity {
   /**
    * @brief 获取所属场景
    * @return 场景共享指针（可能为空）
+   * 
+   * 注意：
+   * 实体不应当有任何访问并修改Scene对象的权限，
+   * 应当删除该方法，并终止维护std::weak_ptr<Scene> m_Scene。
    */
-  std::shared_ptr<Scene> GetScene() const;
+  //std::shared_ptr<Scene> GetScene() const;
 
   // 操作符重载 =================================================
 
