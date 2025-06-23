@@ -72,6 +72,13 @@ class Event {
    */
   bool IsInCategory(EventCategory category);
 
+  /**
+   * @brief 标记事件已处理，阻断传播
+   */
+  void Handled() {
+    handled = true;
+  }
+
   // 标记事件是否已被处理
   bool handled = false;
 };

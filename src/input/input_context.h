@@ -89,9 +89,9 @@ class InputContext {
 
  protected:
   // 内部处理方法
-  bool _ProcessKeyPressedEvent(const KeyPressedEvent &e);
-  bool _ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e);
-  bool _ProcessMouseMoveEvent(const MouseMoveEvent &e);
+  void _ProcessKeyPressedEvent(const KeyPressedEvent &e);
+  void _ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e);
+  void _ProcessMouseMoveEvent(const MouseMoveEvent &e);
   // bool _ProcessMouseScrollEvent(const MouseScrollEvent &e);
   void _UpdateActionValue(const std::string &actionName, float newValue);
 
@@ -103,7 +103,10 @@ class InputContext {
   // 动作系统
   std::unordered_map<std::string, InputAction> m_Actions;
 
+  // 日志系统
   Logger m_Logger;
+  // 订阅事件集合
+  SubscriptionGroup m_EventSubscriptions;
 };
 };  // namespace mite
 

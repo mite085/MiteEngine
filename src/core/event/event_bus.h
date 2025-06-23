@@ -14,7 +14,7 @@ namespace mite {
  *
  * 负责管理事件的订阅和分发，作为系统中各个模块间通信的枢纽
  *
- * 使用示例：
+ * 使用示例：（注意：第二步和第四步可以由SubscriptionGroup代为实现）
  * 
  * 1. 创建并发布事件（触发事件）：
  *      mite::EventBus::Get().Post(event);
@@ -29,7 +29,7 @@ namespace mite {
  */
 class EventBus {
  public:
-  using EventHandler = std::function<bool(Event &)>;  // 事件处理函数类型, bool返回值决定是否继续传播
+  using EventHandler = std::function<void(Event &)>;  // 事件处理函数类型
   using HandlerID = size_t;                           // 处理器ID类型
 
   /**

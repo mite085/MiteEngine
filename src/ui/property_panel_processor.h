@@ -58,9 +58,9 @@ class PropertyPanelProcessor : public InputProcessor {
 
  private:
   // 事件处理方法
-  bool _HandleMouseClick(MouseButtonPressedEvent &e);
-  bool _HandleMouseDrag(MouseMoveEvent &e);
-  bool _HandleKeyPress(KeyPressedEvent &e);
+  void _HandleMouseClick(MouseButtonPressedEvent &e);
+  void _HandleMouseDrag(MouseMoveEvent &e);
+  void _HandleKeyPress(KeyPressedEvent &e);
   // TODO: 添加MouseScrolledEvent事件后补全
   //bool _HandleMouseScroll(MouseScrolledEvent &e);
 

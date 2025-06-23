@@ -11,10 +11,10 @@ PropertyPanelProcessor::PropertyPanelProcessor(PropertyPanel *panel)
 }
 
 //--- 鼠标点击处理 ---
-bool PropertyPanelProcessor::_HandleMouseClick(MouseButtonPressedEvent &e)
+void PropertyPanelProcessor::_HandleMouseClick(MouseButtonPressedEvent &e)
 {
   if (!_IsMouseInPanel())
-    return false;
+    return ;
 
   // TODO: 添加MouseButton定义后补全
   if (e.GetButton()/* == MouseButton::Left*/) {
@@ -24,35 +24,35 @@ bool PropertyPanelProcessor::_HandleMouseClick(MouseButtonPressedEvent &e)
     auto panelPos = _ToPanelSpace(m_LastMousePos);
     if (m_Panel->TestSliderHit(panelPos)) {
       m_IsDragging = true;
-      return true;
+      return ;
     }
   }
-  return false;
+  return ;
 }
 
 //--- 鼠标拖动处理 ---
-bool PropertyPanelProcessor::_HandleMouseDrag(MouseMoveEvent &e)
+void PropertyPanelProcessor::_HandleMouseDrag(MouseMoveEvent &e)
 {
   auto currentPos = e.GetPosition();
   auto delta = currentPos - m_LastMousePos;
 
   // 检查是否达到拖动阈值
   if (!m_IsDragging && glm::length(delta) < m_DragThreshold) {
-    return false;
+    return ;
   }
 
   m_IsDragging = true;
   auto panelPos = _ToPanelSpace(currentPos);
   m_Panel->OnDrag(panelPos, delta);
   m_LastMousePos = currentPos;
-  return true;
+  return ;
 }
 
 //--- 键盘快捷键处理 ---
-bool PropertyPanelProcessor::_HandleKeyPress(KeyPressedEvent &e)
+void PropertyPanelProcessor::_HandleKeyPress(KeyPressedEvent &e)
 {
   if (!m_HotkeysEnabled)
-    return false;
+    return ;
 
   // TODO: 添加Key定义后补全
   //bool ctrl = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
@@ -72,7 +72,7 @@ bool PropertyPanelProcessor::_HandleKeyPress(KeyPressedEvent &e)
   //  case Key::Down:
   //    return m_Panel->Navigate(1);  // 下一个属性
   //}
-  return false;
+  return ;
 }
 
 //--- 鼠标滚轮处理 ---

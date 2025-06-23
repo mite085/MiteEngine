@@ -38,17 +38,18 @@ class SceneObserver {
   /**
    * @brief 标记实体为已修改
    */
-  bool MarkEntityModified(EntityParentChangedEvent &e);
+  void MarkEntityModified(EntityParentChangedEvent &e);
 
   /**
    * @brief 处理实体创建
    */
-  bool OnEntityCreated(EntityCreatedEvent &e);
+  void OnEntityCreated(EntityCreatedEvent &e);
 
   /**
-   * @brief 处理实体销毁
+   * @brief 处理实体销毁，仅在实体销毁之前处理。
    */
-  bool OnEntityDestroyed(EntityDestroyedEvent &e);
+  void OnEntityPreDestroyed(EntityPreDestroyedEvent &e);
+
 
  private:
   SceneRegistry& m_Registry;  // 场景注册信息引用
@@ -56,6 +57,11 @@ class SceneObserver {
   std::vector<Entity> m_DestroyedEntities;
   std::vector<Entity> m_ModifiedEntities;
   bool m_IsObserving = false;
+
+  // 日志系统
+  Logger m_Logger;
+  // 订阅事件集合
+  SubscriptionGroup m_EventSubscriptions;
 };
 };  // namespace mite
 

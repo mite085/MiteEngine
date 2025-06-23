@@ -99,7 +99,7 @@ class MiteApplication {
 
   // 事件处理
   void OnWindowResize(uint32_t width, uint32_t height);
-  bool OnWindowClose(WindowCloseEvent& e);
+  void OnWindowClose(WindowCloseEvent& e);
 
  private:
   // 子系统
@@ -129,9 +129,8 @@ class MiteApplication {
 
   // 日志系统
   Logger m_logger;
-
   // 订阅事件集合
-  std::vector<EventBus::HandlerID> m_HandlerIDs;
+  SubscriptionGroup m_EventSubscriptions;
 };
 
 

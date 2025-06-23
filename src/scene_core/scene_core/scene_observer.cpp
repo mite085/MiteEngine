@@ -5,16 +5,19 @@ namespace mite {
 
 SceneObserver::SceneObserver(SceneRegistry &registry) : m_Registry(registry)
 {
+  // 创建日志系统
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Scene Observer");
+  m_Logger->trace("Created scene observer system");
   // 订阅事件
-  EventBus::Get().Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
-  EventBus::Get().Subscribe<EntityParentChangedEvent>(BIND_DISPATCH_FN(MarkEntityModified));
-  EventBus::Get().Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
+  m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
+  m_EventSubscriptions.Subscribe<EntityParentChangedEvent>(BIND_DISPATCH_FN(MarkEntityModified));
+  m_EventSubscriptions.Subscribe<EntityPreDestroyedEvent>(BIND_DISPATCH_FN(OnEntityPreDestroyed));
 }
 
 SceneObserver::~SceneObserver()
 {
   // 清理时取消回调注册
-  m_Registry.UnregisterCallbackEntity();
+  m_EventSubscriptions.UnsubscribeAll();
 }
 
 void SceneObserver::BeginObservation()
@@ -67,30 +70,23 @@ void SceneObserver::Clear()
   m_ModifiedEntities.clear();
 }
 
-bool SceneObserver::MarkEntityModified(EntityParentChangedEvent &e)
+void SceneObserver::MarkEntityModified(EntityParentChangedEvent &e)
 {
-  if (!m_IsObserving)
-    return false;
-
-  m_ModifiedEntities.push_back(e.GetEntity());
-  return true;
+  if (m_IsObserving) {
+    m_ModifiedEntities.push_back(e.GetEntity());
+  }
 }
 
-bool SceneObserver::OnEntityCreated(EntityCreatedEvent &e)
+void SceneObserver::OnEntityCreated(EntityCreatedEvent &e)
 {
-  if (!m_IsObserving)
-    return false;
-
-  m_CreatedEntities.push_back(e.GetEntity());
-  return true;
+  if (m_IsObserving)
+    m_CreatedEntities.push_back(e.GetEntity());
 }
 
-bool SceneObserver::OnEntityDestroyed(EntityDestroyedEvent &e)
+void SceneObserver::OnEntityPreDestroyed(EntityPreDestroyedEvent &e)
 {
   if (!m_IsObserving)
-    return false;
-
-  m_DestroyedEntities.push_back(e.GetEntity());
-  return true;
+    m_DestroyedEntities.push_back(e.GetEntity());
 }
-};
+
+};  // namespace mite

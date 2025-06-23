@@ -52,8 +52,7 @@ void MiteApplication::Initialize()
   m_logger->info("Initialize application");
 
   // 订阅事件，并管理订阅句柄
-  m_HandlerIDs.push_back(
-      EventBus::Get().Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose)));
+  m_EventSubscriptions.Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
 
   InitializeInputSystem();
   InitializeWindowWithOpenGL();
@@ -155,8 +154,7 @@ void MiteApplication::CleanUp()
   m_logger->info("Cleaning up application");
 
   // 取消事件订阅
-  for (auto handlerID : m_HandlerIDs)
-    EventBus::Get().Unsubscribe(handlerID);
+  m_EventSubscriptions.UnsubscribeAll();
 
   CleanUpInputSystem();
   CleanUpWindow();
@@ -275,10 +273,12 @@ void MiteApplication::HandlePendingOperations() {}
 
 void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
 
-bool MiteApplication::OnWindowClose(WindowCloseEvent &e)
+void MiteApplication::OnWindowClose(WindowCloseEvent &e)
 {
   m_logger->info("Window close event triggered.");
   m_ShouldClose = true;
-  return true;
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
 }
 }  // namespace mite

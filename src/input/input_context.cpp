@@ -7,15 +7,16 @@ InputContext::InputContext(const std::string &name) : m_Name(name)
   m_Logger->trace("Created input context: {}", name);
 
   // 订阅事件
-  EventBus::Get().Subscribe<KeyPressedEvent>(BIND_DISPATCH_FN(_ProcessKeyPressedEvent));
-  EventBus::Get().Subscribe<MouseButtonPressedEvent>(
+  m_EventSubscriptions.Subscribe<KeyPressedEvent>(BIND_DISPATCH_FN(_ProcessKeyPressedEvent));
+  m_EventSubscriptions.Subscribe<MouseButtonPressedEvent>(
       BIND_DISPATCH_FN(_ProcessMouseButtonPressedEvent));
-  EventBus::Get().Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(_ProcessMouseMoveEvent));
+  m_EventSubscriptions.Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(_ProcessMouseMoveEvent));
 }
 
 InputContext::~InputContext()
 {
   m_Logger->trace("Destroy input context: {}", m_Name);
+  m_EventSubscriptions.UnsubscribeAll();
 }
 
 const std::string &InputContext::GetName() const
@@ -94,10 +95,8 @@ float InputContext::GetActionValue(const std::string &name) const
   return it != m_Actions.end() ? it->second.value : 0.0f;
 }
 
-bool InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
+void InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
 {
-  bool consumed = false;
-
   // 遍历所有动作，检查是否匹配当前按键
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
@@ -112,18 +111,13 @@ bool InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
         }
 
         _UpdateActionValue(name, newValue);
-        consumed = true;
       }
     }
   }
-
-  return consumed;
 }
 
-bool InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e)
+void InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e)
 {
-  bool consumed = false;
-
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse && binding.code == e.GetButton()) {
@@ -134,18 +128,14 @@ bool InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent
           newValue = 0.0f;
 
         _UpdateActionValue(name, newValue);
-        consumed = true;
+
       }
     }
   }
-
-  return consumed;
 }
 
-bool InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
+void InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
 {
-  bool consumed = false;
-
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse) {
@@ -153,12 +143,9 @@ bool InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
         float newValue = (e.GetEventType() == EventType::MOUSE_POSITION_MOVED) ? 1.0f * binding.scale : 0.0f;
 
         _UpdateActionValue(name, newValue);
-        consumed = true;
       }
     }
   }
-
-  return consumed;
 }
 
 void InputContext::_UpdateActionValue(const std::string &actionName, float newValue)
