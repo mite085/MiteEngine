@@ -6,8 +6,12 @@
 
 namespace mite {
 Scene::Scene(const std::string &name)
-    : m_Name(name), m_Registry(weak_from_this()), m_SystemManager(m_Registry)
+    : m_Name(name),
+      m_Registry(weak_from_this()),
+      m_EventCallbackAdapter(&m_Registry),
+      m_SystemManager(m_Registry, m_EventCallbackAdapter)
 {
+  m_EventCallbackAdapter.RegisterComponentCallbacks<TransformComponent>();
   // 初始化核心系统
   InitSystems();
 
@@ -37,9 +41,9 @@ void Scene::InitSystems()
 
 void Scene::RegisterComponentSystems()
 {  
-  // TODO: 注册核心系统（按执行顺序）
+  // 注册核心系统（按执行顺序）
   m_SystemManager.RegisterSystem<TransformSystem>();
-  //m_SystemManager.RegisterSystem<id>();
+  //m_SystemManager.RegisterSystem<ID>();
   //m_SystemManager.RegisterSystem<RenderSystem>();
 
 }

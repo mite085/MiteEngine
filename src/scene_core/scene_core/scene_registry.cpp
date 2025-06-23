@@ -17,7 +17,7 @@ SceneRegistry::~SceneRegistry()
 Entity SceneRegistry::CreateEntity(const std::string name)
 {
   // 使用entt::registry::create()创建实体
-  Entity entity = Entity{m_Scene, m_Registry.create()};
+  Entity entity {m_Scene, m_Registry.create()};
 
   // 添加基本组件，自动生成唯一ID
   auto &id = AddComponent<IDComponent>(entity);
@@ -26,8 +26,9 @@ Entity SceneRegistry::CreateEntity(const std::string name)
   auto &tag = AddComponent<TagComponent>(entity);
   tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
 
-  // 主动触发回调函数
-  ExecuteCallbacks(m_EntityCallbacks.createdCallbacks, entity);
+  // 创建事件并发布
+  EntityCreatedEvent event(entity);
+  EventBus::Get().Post(event);
 
   return entity;
 }
@@ -35,8 +36,9 @@ Entity SceneRegistry::CreateEntity(const std::string name)
 void SceneRegistry::DestroyEntity(Entity entity)
 {
   if (IsValid(entity)) {
-    // 1. 主动触发PreDestroy回调（实体仍完整）
-    ExecuteCallbacks(m_EntityCallbacks.preDestroyCallbacks, entity);
+    // 1. 创建PreDestroyed事件并发布（立即执行）
+    EntityPreDestroyedEvent event(entity);
+    EventBus::Get().Post(event);
 
     // 2. 使用entt::registry::destroy销毁实体
     //
@@ -47,8 +49,9 @@ void SceneRegistry::DestroyEntity(Entity entity)
     // 运行各个被注册的callback函数
     m_Registry.destroy(entity.GetHandle());
 
-    // 3. 主动触发PostDestroy回调（实体已无效）
-    ExecuteCallbacks(m_EntityCallbacks.postDestroyCallbacks, entity);
+    // 3. 创建PostDestroyed事件并发布（可延后执行）
+    EntityPostDestroyedEvent event2(entity);
+    EventBus::Get().Post(event2);
   }
 }
 
@@ -81,73 +84,5 @@ std::vector<Entity> SceneRegistry::GetAllEntities()
   return entities;
 }
 
-// 7. 实体事件回调相关 ===============================================
 
-size_t SceneRegistry::RegisterCallbackEntityCreated(EntityCallback callback, int priority)
-{
-  const size_t id = m_NextEntityCallbackID++;
-  m_EntityCallbacks.createdCallbacks.push_back({std::move(callback), priority, id});
-  m_EntityCallbacks.entityCallbackMap[id] = &m_EntityCallbacks.createdCallbacks;
-  SortCallbackList(m_EntityCallbacks.createdCallbacks);
-  return id;
-}
-
-size_t SceneRegistry::RegisterCallbackEntityPreDestroyed(EntityCallback callback, int priority)
-{
-  const size_t id = m_NextEntityCallbackID++;
-  m_EntityCallbacks.preDestroyCallbacks.push_back({std::move(callback), priority, id});
-  m_EntityCallbacks.entityCallbackMap[id] = &m_EntityCallbacks.preDestroyCallbacks;
-  SortCallbackList(m_EntityCallbacks.preDestroyCallbacks);
-  return id;
-}
-
-size_t SceneRegistry::RegisterCallbackEntityPostDestroyed(EntityCallback callback, int priority)
-{
-  const size_t id = m_NextEntityCallbackID++;
-  m_EntityCallbacks.postDestroyCallbacks.push_back({std::move(callback), priority, id});
-  m_EntityCallbacks.entityCallbackMap[id] = &m_EntityCallbacks.postDestroyCallbacks;
-  SortCallbackList(m_EntityCallbacks.postDestroyCallbacks);
-  return id;
-}
-
-void SceneRegistry::UnregisterCallbackEntity(size_t callbackId)
-{
-  auto it = m_EntityCallbacks.entityCallbackMap.find(callbackId);
-  if (it != m_EntityCallbacks.entityCallbackMap.end()) {
-    auto &callbacks = *it->second;
-    // 根据remove_if返回的迭代器，
-    // 从callbacks列表中，
-    // 移除所有id等于callbackId的回调函数。
-    callbacks.erase(
-        std::remove_if(callbacks.begin(),
-                       callbacks.end(),
-                       [callbackId](const auto &wrapper) { return wrapper.id == callbackId; }),
-        callbacks.end());
-    m_EntityCallbacks.entityCallbackMap.erase(it);
-  }
-}
-
-void SceneRegistry::UnregisterCallbackEntity() {
-  m_EntityCallbacks.createdCallbacks.clear();
-  m_EntityCallbacks.preDestroyCallbacks.clear();
-  m_EntityCallbacks.postDestroyCallbacks.clear();
-  m_EntityCallbacks.entityCallbackMap.clear();
-}
-
-void SceneRegistry::ExecuteCallbacks(const std::vector<EntityCallbackWrapper> &callbacks,
-                                     Entity entity)
-{
-  for (const auto &wrapper : callbacks) {
-    if (wrapper.callback) {
-      wrapper.callback(entity);
-    }
-  }
-}
-
-void SceneRegistry::SortCallbackList(std::vector<EntityCallbackWrapper> &callbacks)
-{
-  std::sort(callbacks.begin(), callbacks.end(), [](const auto &a, const auto &b) {
-    return a.priority > b.priority;
-  });
-}
 };  // namespace mite

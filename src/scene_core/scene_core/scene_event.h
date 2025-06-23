@@ -3,7 +3,6 @@
 
 #include "component_id.h"
 #include "entity.h"
-#include "headers/headers.h"
 
 namespace mite {
 // 1. 场景事件	=====================================================
@@ -77,18 +76,33 @@ class EntityCreatedEvent : public EntityEvent {
   }
 };
 /**
- * @class EntityDestroyedEvent
- * @brief 销毁实体事件
+ * @class EntityPreDestroyedEvent
+ * @brief 销毁实体事件（实体销毁之前）
  */
-class EntityDestroyedEvent : public EntityEvent {
+class EntityPreDestroyedEvent : public EntityEvent {
  public:
-  EntityDestroyedEvent(Entity entity) : EntityEvent(entity) {}
+  EntityPreDestroyedEvent(Entity entity) : EntityEvent(entity) {}
 
   EVENT_CLASS_TYPE(ENTITY_DESTROYED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new EntityDestroyedEvent(entity);
+    return new EntityPreDestroyedEvent(entity);
+  }
+};
+/**
+ * @class EntityPostDestroyedEvent
+ * @brief 销毁实体事件（实体销毁之后）
+ */
+class EntityPostDestroyedEvent : public EntityEvent {
+ public:
+  EntityPostDestroyedEvent(Entity entity) : EntityEvent(entity) {}
+
+  EVENT_CLASS_TYPE(ENTITY_DESTROYED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new EntityPostDestroyedEvent(entity);
   }
 };
 /**
@@ -129,10 +143,17 @@ class EntityTagChangedEvent : public EntityEvent {
  */
 template<typename T> class ComponentEvent : public Event {
  public:
-  ComponentEvent(Entity entity) : entity(entity), id(ComponentID::Get<T>()) {}
+  ComponentEvent(Entity entity, T &component)
+      : entity(entity), component(component), id(ComponentID::Get<T>())
+  {
+  }
   Entity GetEntity()
   {
     return entity;
+  }
+  T &GetComponent()
+  {
+    return component;
   }
 
   virtual EventType GetEventType() const = 0;
@@ -141,6 +162,7 @@ template<typename T> class ComponentEvent : public Event {
 
  protected:
   Entity entity;   // 关联的实体
+  T &component;    // 组件
   ComponentID id;  // 组件类型标识符
 };
 
@@ -150,13 +172,13 @@ template<typename T> class ComponentEvent : public Event {
  */
 template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
  public:
-  ComponentAddedEvent(Entity entity) : ComponentEvent<T>(entity) {}
+  ComponentAddedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
 
   EVENT_CLASS_TYPE(COMPONENT_ADDED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new ComponentAddedEvent<T>(entity);
+    return new ComponentAddedEvent<T>(entity, component);
   }
 };
 
@@ -166,15 +188,14 @@ template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
  */
 template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
  public:
-  ComponentRemovedEvent(Entity entity) : ComponentEvent<T>(entity) {}
+  ComponentRemovedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
 
   EVENT_CLASS_TYPE(COMPONENT_REMOVED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new ComponentRemovedEvent<T>(entity);
+    return new ComponentRemovedEvent<T>(entity, component);
   }
-
 };
 /**
  * @class ComponentChangedEvent
@@ -182,16 +203,15 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
  */
 template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
  public:
-  ComponentChangedEvent(Entity entity) : ComponentEvent<T>(entity) {}
+  ComponentChangedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
 
   EVENT_CLASS_TYPE(COMPONENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new ComponentChangedEvent<T>(entity);
+    return new ComponentChangedEvent<T>(entity, component);
   }
 };
-
 };  // namespace mite
 
 #endif

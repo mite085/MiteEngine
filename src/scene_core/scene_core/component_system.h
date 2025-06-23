@@ -1,9 +1,8 @@
 #ifndef MITE_SCENE_COMPONENT_SYSTEM
 #define MITE_SCENE_COMPONENT_SYSTEM
 
-#include "component.h"
 #include "scene_registry.h"
-
+#include "scene_event.h"
 namespace mite {
 /**
  * @brief 组件系统基类，管理特定类型组件的更新逻辑
@@ -56,31 +55,6 @@ class ComponentSystem {
    */
   virtual std::vector<std::type_index> GetSystemDependencies() const = 0;
 
-  /**
-   * @brief 当组件被添加时的回调
-   * @param entity 实体
-   * @param component 组件
-   */
-  virtual void OnComponentAdded(Entity entity, Component &component) = 0;
-
-  /**
-   * @brief 当组件被替换时的回调
-   * @param entity 实体
-   * @param component 组件
-   *
-   * 注意：
-   * 仅当调用registry.replace<T>(entity, ...)
-   * 或registry.patch<T>(entity, ...)，修改现有组件时触发，
-   * 故基本无需考虑在子类override该方法。
-   */
-  virtual void OnComponentUpdated(Entity entity, Component &component){};
-
-  /**
-   * @brief 当组件被移除时的回调
-   * @param entity 实体
-   * @param component 组件
-   */
-  virtual void OnComponentRemoved(Entity entity, Component &component) = 0;
 
  protected:
   // 保护构造函数，确保只能通过派生类实例化
@@ -89,6 +63,11 @@ class ComponentSystem {
   // 禁用拷贝
   ComponentSystem(const ComponentSystem &) = delete;
   ComponentSystem &operator=(const ComponentSystem &) = delete;
+
+  // 日志系统
+  Logger m_Logger;
+  // 订阅事件集合
+  SubscriptionGroup m_EventSubscriptions;
 };
 
 /**
@@ -120,6 +99,17 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
  public:
   // 暴露组件类型
   using ComponentType = T;
+
+  DirtyComponentSystem() : ComponentSystem() {
+    // 创建日志系统
+    m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Component System: {" + type_name<T>() +
+                                                      "}");
+    m_Logger->trace("Created component system: {}", type_name<T>());
+    // 通过事件总线，订阅组件添加/改变/移除事件
+    m_EventSubscriptions.Subscribe<ComponentAddedEvent<T>>(BIND_DISPATCH_FN(OnComponentAdded));
+    m_EventSubscriptions.Subscribe<ComponentChangedEvent<T>>(BIND_DISPATCH_FN(OnComponentUpdated));
+    m_EventSubscriptions.Subscribe<ComponentRemovedEvent<T>>(BIND_DISPATCH_FN(OnComponentRemoved));
+  }
 
   /**
    * @brief 将组件注册进维护列表
@@ -180,23 +170,30 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
   }
 
   /**
-   * @brief 当组件被添加时的回调
-   * @param entity 实体
-   * @param component 组件
+   * @brief 处理组件添加事件
+   * @param e 事件
    */
-  void OnComponentAdded(Entity entity, Component &component) override
+  void OnComponentAdded(ComponentAddedEvent<T> &e) 
   {
-    Register(static_cast<T *>(&component));
+    Register(&e.GetComponent());
   }
 
   /**
-   * @brief 当组件被移除时的回调
-   * @param entity 实体
-   * @param component 组件
+   * @brief 处理组件替换事件
+   *
+   * 注意：
+   * 仅当调用registry.replace<T>(entity, ...)
+   * 或registry.patch<T>(entity, ...)，修改现有组件时触发，
+   * 故基本无需考虑在子类override该方法。
    */
-  void OnComponentRemoved(Entity entity, Component &component) override
+  virtual void OnComponentUpdated(ComponentChangedEvent<T> &e) {}
+
+  /**
+   * @brief 处理组件移除事件
+   */
+  void OnComponentRemoved(ComponentRemovedEvent<T> &e) 
   {
-    Unregister(static_cast<T *>(&component));
+    Unregister(&e.GetComponent());
   }
 
  protected:

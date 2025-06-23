@@ -1,7 +1,7 @@
 #include "entity.h"
 #include "scene.h"
-#include "scene_registry.h"
 #include "scene_core_components/component_headers.h"
+#include "scene_registry.h"
 
 namespace mite {
 Entity::Entity(std::weak_ptr<Scene> scene, entt::entity handle) : m_Scene(scene), m_Handle(handle)
@@ -56,8 +56,8 @@ Entity::operator bool() const
   return IsValid();
 }
 
-//std::shared_ptr<Scene> Entity::GetScene() const
+// std::shared_ptr<Scene> Entity::GetScene() const
 //{
-//  return m_Scene.lock();
-//}
+//   return m_Scene.lock();
+// }
 };  // namespace mite

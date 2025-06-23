@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE
 #define MITE_SCENE
 
-#include "scene_registry.h"
+#include "scene_event_callback_adapter.h"
 #include "component_system_manager.h"
 
 namespace mite {
@@ -9,6 +9,7 @@ namespace mite {
 class SceneGraph;
 class SceneObserver;
 class SceneSerializer;
+class SceneEventCallbackAdapter;
 
 /**
  * @brief 场景类 - 管理所有实体、组件和系统的主容器
@@ -141,6 +142,9 @@ class Scene : public std::enable_shared_from_this<Scene> {
   // 避免unique_ptr不必要的堆分配，
   // 并方便其他模块直接引用m_Registry(可能存在风险？)
   SceneRegistry m_Registry;  
+
+  // 场景事件回调适配器 - 将EnTT原生事件转换为自定义事件
+  SceneEventCallbackAdapter m_EventCallbackAdapter;
 
   // 场景系统
   std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统

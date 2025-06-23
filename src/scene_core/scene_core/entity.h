@@ -115,11 +115,13 @@ template<> struct hash<mite::Entity> {
 };
 }  // namespace std
 
-// 将 Entity 用作 EnTT 的标识类型,特化entt_traits
-// （暂时不需要，自定义的注册组件已完成对其功能的替代）
-//namespace entt {
-//template<> struct entt_traits<mite::Entity> : entt_traits<entt::entity> {};
-
-//}  // namespace entt
+namespace entt {
+template<> struct entt_traits<mite::Entity> : entt_traits<entt::entity> {
+  // 确保使用底层 entt::entity 的特性
+  using value_type = mite::Entity;
+  using entity_type = uint32_t;
+  using version_type = uint16_t;
+};
+}  // namespace entt
 
 #endif

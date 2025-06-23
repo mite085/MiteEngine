@@ -1,7 +1,9 @@
 #include "component_system_manager.h"
 
 namespace mite {
-ComponentSystemManager::ComponentSystemManager(SceneRegistry &registry) : m_Registry(registry)
+ComponentSystemManager::ComponentSystemManager(SceneRegistry &registry,
+                                               SceneEventCallbackAdapter &adapter)
+    : m_Registry(registry), m_Adapter(adapter)
 {
 }
 ComponentSystemManager::~ComponentSystemManager()

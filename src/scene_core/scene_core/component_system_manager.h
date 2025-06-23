@@ -2,7 +2,8 @@
 #define MITE_SCENE_COMPONENT_SYSTEM_MANAGER
 
 #include "component_system.h"
-
+#include "scene_event.h"
+#include "scene_event_callback_adapter.h"
 namespace mite {
 /**
  * @brief 组件系统管理器，集中管理所有组件系统
@@ -24,7 +25,7 @@ namespace mite {
  */
 class ComponentSystemManager {
  public:
-  ComponentSystemManager(SceneRegistry &registry);
+  ComponentSystemManager(SceneRegistry &registry, SceneEventCallbackAdapter& adapter);
   ~ComponentSystemManager();
 
   /**
@@ -40,33 +41,28 @@ class ComponentSystemManager {
   {
     static_assert(std::is_base_of<ComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
-    using U = typename T::ComponentType;
-    static_assert(std::is_base_of<Component, U>::value,
-                  "Registered component must inherit from class component");
 
     const std::type_index type = typeid(T);
 
-    // 检查是否已注册，若已注册则直接返回已有的系统
+    // 1. 检查是否已注册，若已注册则直接返回已有的系统
     if (m_SystemMap.find(type) != m_SystemMap.end()) {
       return static_cast<T *>(m_SystemMap[type]);
     }
 
-    // 创建新系统
+    // 2. 创建新系统
     auto system = std::make_unique<T>(std::forward<Args>(args)...);
     T *rawPtr = system.get();
 
-    // 存入管理结构
+    // 3. 存入管理结构
     m_SystemMap[type] = rawPtr;
     m_Systems.push_back(std::move(system)); // 注意此处的system为临时变量，未能正确move会提前触发组件系统的析构函数
     m_SystemsSorted = false;
 
-    // 注册组件事件回调
-    m_Registry.RegisterCallbackComponentConstruct<U>(
-        [this](Entity e, Component &c) { OnComponentAdded<U>(e, static_cast<U &>(c)); });
-    m_Registry.RegisterCallbackComponentUpdate<U>(
-        [this](Entity e, Component &c) { OnComponentUpdated<U>(e, static_cast<U &>(c)); });
-    m_Registry.RegisterCallbackComponentDestroy<U>(
-        [this](Entity e, Component &c) { OnComponentRemoved<U>(e, static_cast<U &>(c)); });
+    // 4. 注册通用组件回调
+    using U = typename T::ComponentType;
+    static_assert(std::is_base_of<Component, U>::value,
+                  "Registered component must inherit from class component");
+    //m_Adapter.RegisterComponentCallbacks<U>();
 
     int a = 1;
     return rawPtr;
@@ -124,83 +120,93 @@ class ComponentSystemManager {
   void ShutdownAll();
 
  private:
-  /**
-   * @brief 当组件被添加时的处理
-   *
-   * @param entity 实体
-   * @param component 组件
-   */
-  template<typename T> void OnComponentAdded(Entity entity, T &component)
-  {
-    static_assert(std::is_base_of<Component, T>::value,
-                  "Registered component must inherit from class component");
+  ///**
+  // * @brief 当组件被添加时的处理
+  // *
+  // * @param entity 实体
+  // * @param component 组件
+  // */
+  //template<typename T> void OnComponentAdded(ComponentAddedEvent<T>& e)
+  //{
+  //  static_assert(std::is_base_of<Component, T>::value,
+  //                "Registered component must inherit from class component");
 
-    const auto componentType = component.GetType();
+  //  Entity entity = e.GetEntity();
+  //  T &component = m_Registry.GetComponent<T>(entity);
 
-    for (auto &system : m_Systems) {
-      // 检查系统是否管理此组件类型
-      for (const auto &managedType : system->GetComponentTypes()) {
-        if (managedType == componentType) {
-          system->OnComponentAdded(entity, component);
-          break;
-        }
-      }
-    }
-  }
+  //  const auto componentType = component.GetType();
 
-  /**
-   * @brief 当组件被更新时的处理
-   *
-   * @param entity 实体
-   * @param component 组件
-   */
-  template<typename T> void OnComponentUpdated(Entity entity, T &component)
-  {
-    static_assert(std::is_base_of<Component, T>::value,
-                  "Registered component must inherit from class component");
+  //  for (auto &system : m_Systems) {
+  //    // 检查系统是否管理此组件类型
+  //    for (const auto &managedType : system->GetComponentTypes()) {
+  //      if (managedType == componentType) {
+  //        system->OnComponentAdded(entity, component);
+  //        break;
+  //      }
+  //    }
+  //  }
+  //}
 
-    const auto componentType = component.GetType();
+  ///**
+  // * @brief 当组件被更新时的处理
+  // *
+  // * @param entity 实体
+  // * @param component 组件
+  // */
+  //template<typename T> void OnComponentUpdated(ComponentChangedEvent<T> &e)
+  //{
+  //  static_assert(std::is_base_of<Component, T>::value,
+  //                "Registered component must inherit from class component");
 
-    for (auto &system : m_Systems) {
-      // 检查系统是否管理此组件类型
-      for (const auto &managedType : system->GetComponentTypes()) {
-        if (managedType == componentType) {
-          system->OnComponentUpdated(entity, component);
-          break;
-        }
-      }
-    }
-  }
+  //  Entity entity = e.GetEntity();
+  //  T &component = m_Registry.GetComponent<T>(entity);
 
-  /**
-   * @brief 当组件被移除时的处理
-   *
-   * @param entity 实体
-   * @param component 组件
-   */
-  template<typename T> void OnComponentRemoved(Entity entity, T &component)
-  {
-    static_assert(std::is_base_of<Component, T>::value,
-                  "Registered component must inherit from class component");
+  //  const auto componentType = component.GetType();
 
-    const auto componentType = component.GetType();
+  //  for (auto &system : m_Systems) {
+  //    // 检查系统是否管理此组件类型
+  //    for (const auto &managedType : system->GetComponentTypes()) {
+  //      if (managedType == componentType) {
+  //        system->OnComponentUpdated(entity, component);
+  //        break;
+  //      }
+  //    }
+  //  }
+  //}
 
-    for (auto &system : m_Systems) {
-      // 检查系统是否管理此组件类型
-      for (const auto &managedType : system->GetComponentTypes()) {
-        if (managedType == componentType) {
-          system->OnComponentRemoved(entity, component);
-          break;
-        }
-      }
-    }
-  }
+  ///**
+  // * @brief 当组件被移除时的处理
+  // *
+  // * @param entity 实体
+  // * @param component 组件
+  // */
+  //template<typename T> void OnComponentRemoved(ComponentRemovedEvent<T> &e)
+  //{
+  //  static_assert(std::is_base_of<Component, T>::value,
+  //                "Registered component must inherit from class component");
+
+  //  Entity entity = e.GetEntity();
+  //  T &component = m_Registry.GetComponent<T>(entity);
+
+  //  const auto componentType = component.GetType();
+
+  //  for (auto &system : m_Systems) {
+  //    // 检查系统是否管理此组件类型
+  //    for (const auto &managedType : system->GetComponentTypes()) {
+  //      if (managedType == componentType) {
+  //        system->OnComponentRemoved(entity, component);
+  //        break;
+  //      }
+  //    }
+  //  }
+  //}
 
   // 系统执行顺序排序
   void SortSystems();
 
  private:
   SceneRegistry &m_Registry;
+  SceneEventCallbackAdapter &m_Adapter;
 
   std::vector<std::unique_ptr<ComponentSystem>> m_Systems;       // 用于遍历
   std::unordered_map<std::type_index, ComponentSystem *> m_SystemMap;  // 用于查找
