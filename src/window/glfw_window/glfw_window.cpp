@@ -4,17 +4,11 @@ namespace mite {
 // 静态成员初始化
 uint32_t GLFWWindow::s_GLFWWindowCount = 0;
 
-GLFWWindow::GLFWWindow()
+GLFWWindow::GLFWWindow() : m_CallbackAdapter()
 {
   // 初始化日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite GLFW Window");
   m_Logger->trace("GLFW Window constructor called");
-
-  // 初始化输入状态
-  m_InputState.x = 0.0;
-  m_InputState.y = 0.0;
-  std::fill(std::begin(m_InputState.buttons), std::end(m_InputState.buttons), false);
-  std::fill(std::begin(m_InputState.keys), std::end(m_InputState.keys), false);
 }
 GLFWWindow::~GLFWWindow()
 {
@@ -32,8 +26,6 @@ void GLFWWindow::Initialize(const WindowConfig &config)
       InitGLFW();
     }
 
-    // 初始化window data
-    InitWindowData(config);
     m_Logger->info("Creating GLFW window: {} ({}x{}), VSync: {}",
                    config.title,
                    config.width,
@@ -58,15 +50,9 @@ void GLFWWindow::Initialize(const WindowConfig &config)
       throw;
     }
 
-    // 设置窗口用户指针以存储回调数据
-    glfwSetWindowUserPointer(m_Window, &m_WindowData);
-
-    // 设置回调函数
-    glfwSetWindowCloseCallback(m_Window, WindowCloseCallback);
-    glfwSetFramebufferSizeCallback(m_Window, FramebufferSizeCallback);
-    glfwSetKeyCallback(m_Window, KeyCallback);
-    glfwSetMouseButtonCallback(m_Window, MouseButtonCallback);
-    glfwSetCursorPosCallback(m_Window, CursorPosCallback);
+    // GLFW回调适配器注册回调函数
+    // TODO：为防止重复注册，是否应当在每次注册之前执行一次UnRegister?
+    m_CallbackAdapter.RegisterCallbacks(m_Window);
 
     // 设置当前上下文
     MakeContextCurrent();
@@ -245,12 +231,6 @@ void GLFWWindow::WaitEvents()
   if (m_ShouldClose) {
     m_Logger->info("Window close requested during wait: {}", m_WindowData.title);
   }
-
-  // 如果有事件回调函数，处理积压的事件
-  if (m_WindowData.callback) {
-    m_Logger->trace("Processing pending events after wait");
-    glfwPollEvents();
-  }
 }
 bool GLFWWindow::IsKeyPressed(int keycode) const
 {
@@ -260,8 +240,12 @@ bool GLFWWindow::IsKeyPressed(int keycode) const
     return false;
   }
 
-  // 返回缓存的按键状态
-  return m_InputState.keys[keycode];
+  // 查询并返回按键状态
+  int state = glfwGetKey(m_Window, keycode);
+  if (state == GLFW_PRESS)
+    return true;
+  else
+    return false;
 }
 bool GLFWWindow::IsMouseButtonPressed(int button) const
 {
@@ -271,13 +255,19 @@ bool GLFWWindow::IsMouseButtonPressed(int button) const
     return false;
   }
 
-  // 返回缓存的鼠标按钮状态
-  return m_InputState.buttons[button];
+  // 查询并返回鼠标按钮状态
+  int state = glfwGetKey(m_Window, button);
+  if (state == GLFW_PRESS)
+    return true;
+  else
+    return false;
 }
-std::pair<float, float> GLFWWindow::GetMousePosition() const
+std::pair<double, double> GLFWWindow::GetMousePosition() const
 {
-  // 返回缓存的鼠标位置
-  return {static_cast<float>(m_InputState.x), static_cast<float>(m_InputState.y)};
+  double xpos, ypos;
+  // 查询并返回鼠标位置
+  glfwGetCursorPos(m_Window, &xpos, &ypos);
+  return {xpos, ypos};
 }
 void GLFWWindow::MakeContextCurrent()
 {
@@ -315,10 +305,7 @@ const uint32_t GLFWWindow::GLFWWindowCount()
 {
   return s_GLFWWindowCount;
 }
-//void GLFWWindow::SetEventCallback(const EventCallbackFn& callback)
-//{
-//    m_WindowData.callback = callback;
-//}
+
 void GLFWWindow::InitWindowData(const WindowConfig &config) {
   m_WindowData.title      = config.title;
   m_WindowData.width      = config.width;
@@ -326,7 +313,6 @@ void GLFWWindow::InitWindowData(const WindowConfig &config) {
   m_WindowData.vsync      = config.vsync;
   m_WindowData.fullscreen = config.fullscreen;
   m_WindowData.resizable  = config.resizable;
-  m_WindowData.instance   = this;
 }
 void GLFWWindow::InitGLFW()
 {
@@ -335,7 +321,7 @@ void GLFWWindow::InitGLFW()
     throw std::runtime_error("Failed to initialize GLFW");
   }
 
-  glfwSetErrorCallback(ErrorCallback);
+  glfwSetErrorCallback(GLFWWindowCallbackAdapter::ErrorCallback);
 
   // 配置GLFW
   glfwWindowHint(GLFW_SAMPLES, 4);  // 4x MSAA
@@ -348,117 +334,5 @@ void GLFWWindow::ShutdownGLFW()
   LOG_INFO("Terminating GLFW");
   glfwTerminate();
 }
-void GLFWWindow::ErrorCallback(int error, const char *description) {
-  LOG_ERROR("GLFW Error ({}): {}", error, description);
-}
-void GLFWWindow::FramebufferSizeCallback(GLFWwindow *window, int width, int height)
-{  // 从窗口用户指针获取WindowData
-  auto *data = static_cast<GLFWWindowData *>(glfwGetWindowUserPointer(window));
-  if (!data) {
-    LOG_WARN("Framebuffer resize callback received with null user pointer");
-    return;
-  }
-  // 更新窗口尺寸
-  data->width = width;
-  data->height = height;
 
-  // 如果有事件回调，触发它
-  if (data->callback) {
-    WindowResizeEvent event{static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-    data->callback(&event);
-  }
-
-  LOG_DEBUG("Framebuffer resized to {}x{}", width, height);
-}
-void GLFWWindow::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-  auto *data = static_cast<GLFWWindowData *>(glfwGetWindowUserPointer(window));
-  if (!data)
-    return;
-
-  // 更新按键状态
-  if (key >= 0 && key < GLFW_KEY_LAST) {
-    auto *instance = static_cast<GLFWWindow *>(data->instance);
-    if (instance) {
-      instance->m_InputState.keys[key] = (action != GLFW_RELEASE);
-    }
-  }
-
-  // 触发事件回调
-  if (data->callback) {
-    KeyEvent event{key, scancode, action, mods};
-    data->callback(&event);
-  }
-
-  // 调试日志
-  if (action == GLFW_PRESS) {
-    LOG_TRACE("Key pressed: {} (scancode: {}, mods: {})", key, scancode, mods);
-  }
-}
-void GLFWWindow::MouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
-  auto *data = static_cast<GLFWWindowData *>(glfwGetWindowUserPointer(window));
-  if (!data)
-    return;
-
-  // 更新鼠标按钮状态
-  if (button >= 0 && button < GLFW_MOUSE_BUTTON_LAST) {
-    auto *instance = static_cast<GLFWWindow *>(data->instance);
-    if (instance) {
-      instance->m_InputState.buttons[button] = (action != GLFW_RELEASE);
-    }
-  }
-
-  // 触发事件回调
-  if (data->callback) {
-    double x, y;
-    glfwGetCursorPos(window, &x, &y);
-
-    MouseButtonEvent event{button, action, mods, x, y};
-    data->callback(&event);
-  }
-
-  LOG_TRACE("Mouse button {} {}", button, (action == GLFW_PRESS) ? "pressed" : "released");
-}
-void GLFWWindow::CursorPosCallback(GLFWwindow *window, double xpos, double ypos)
-{
-  auto *data = static_cast<GLFWWindowData *>(glfwGetWindowUserPointer(window));
-  if (!data)
-    return;
-
-  // 更新鼠标位置
-  auto *instance = static_cast<GLFWWindow *>(data->instance);
-  if (instance) {
-    instance->m_InputState.x = xpos;
-    instance->m_InputState.y = ypos;
-  }
-
-  // 触发事件回调
-  if (data->callback) {
-    MouseMoveEvent event{xpos, ypos};
-    data->callback(&event);
-  }
-
-  // 避免过多的鼠标移动日志，在调试时启用
-  // LOG_TRACE("Mouse moved to ({}, {})", xpos, ypos);
-}
-void GLFWWindow::WindowCloseCallback(GLFWwindow *window)
-{
-  auto *data = static_cast<GLFWWindowData *>(glfwGetWindowUserPointer(window));
-  if (!data)
-    return;
-
-  // 标记窗口应该关闭
-  auto *instance = static_cast<GLFWWindow *>(data->instance);
-  if (instance) {
-    instance->Close();
-  }
-
-  // 触发事件回调
-  if (data->callback) {
-    WindowCloseEvent event;
-    EventBus::Get().Post(event);
-  }
-
-  LOG_INFO("Window close requested");
-}
 }  // namespace mite

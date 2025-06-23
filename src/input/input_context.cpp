@@ -7,8 +7,9 @@ InputContext::InputContext(const std::string &name) : m_Name(name)
   m_Logger->trace("Created input context: {}", name);
 
   // ¶©ÔÄÊÂ¼þ
-  EventBus::Get().Subscribe<KeyEvent>(BIND_DISPATCH_FN(_ProcessKeyEvent));
-  EventBus::Get().Subscribe<MouseButtonEvent>(BIND_DISPATCH_FN(_ProcessMouseButtonEvent));
+  EventBus::Get().Subscribe<KeyPressedEvent>(BIND_DISPATCH_FN(_ProcessKeyPressedEvent));
+  EventBus::Get().Subscribe<MouseButtonPressedEvent>(
+      BIND_DISPATCH_FN(_ProcessMouseButtonPressedEvent));
   EventBus::Get().Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(_ProcessMouseMoveEvent));
 }
 
@@ -93,7 +94,7 @@ float InputContext::GetActionValue(const std::string &name) const
   return it != m_Actions.end() ? it->second.value : 0.0f;
 }
 
-bool InputContext::_ProcessKeyEvent(const KeyEvent &e)
+bool InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
 {
   bool consumed = false;
 
@@ -119,7 +120,7 @@ bool InputContext::_ProcessKeyEvent(const KeyEvent &e)
   return consumed;
 }
 
-bool InputContext::_ProcessMouseButtonEvent(const MouseButtonEvent &e)
+bool InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e)
 {
   bool consumed = false;
 

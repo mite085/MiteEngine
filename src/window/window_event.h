@@ -55,13 +55,16 @@ class WindowLostFocusEvent : public Event {
 
 class WindowMovedEvent : public Event {
  public:
-  WindowMovedEvent() = default;
+  WindowMovedEvent(int xpos, int ypos) : xpos(xpos), ypos(ypos) {}
   EVENT_CLASS_TYPE(WINDOW_MOVED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
   Event *Clone() const override
   {
-    return new WindowMovedEvent();
+    return new WindowMovedEvent(xpos, ypos);
   }
+
+ private:
+  int xpos, ypos;
 };
 
 };

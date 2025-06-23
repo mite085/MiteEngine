@@ -5,13 +5,13 @@ PropertyPanelProcessor::PropertyPanelProcessor(PropertyPanel *panel)
     : InputProcessor(), m_Panel(panel)
 {
   // 订阅事件
-  EventBus::Get().Subscribe<MouseButtonEvent>(BIND_DISPATCH_FN(_HandleMouseClick));
+  EventBus::Get().Subscribe<MouseButtonPressedEvent>(BIND_DISPATCH_FN(_HandleMouseClick));
   EventBus::Get().Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(_HandleMouseDrag));
-  EventBus::Get().Subscribe<KeyEvent>(BIND_DISPATCH_FN(_HandleKeyPress));
+  EventBus::Get().Subscribe<KeyPressedEvent>(BIND_DISPATCH_FN(_HandleKeyPress));
 }
 
 //--- 鼠标点击处理 ---
-bool PropertyPanelProcessor::_HandleMouseClick(MouseButtonEvent &e)
+bool PropertyPanelProcessor::_HandleMouseClick(MouseButtonPressedEvent &e)
 {
   if (!_IsMouseInPanel())
     return false;
@@ -49,7 +49,7 @@ bool PropertyPanelProcessor::_HandleMouseDrag(MouseMoveEvent &e)
 }
 
 //--- 键盘快捷键处理 ---
-bool PropertyPanelProcessor::_HandleKeyPress(KeyEvent &e)
+bool PropertyPanelProcessor::_HandleKeyPress(KeyPressedEvent &e)
 {
   if (!m_HotkeysEnabled)
     return false;

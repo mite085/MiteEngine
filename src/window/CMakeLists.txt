@@ -15,6 +15,9 @@ source_group("interface" FILES ${WINDOW_LIB_SRCS})
 set(OPENGL_WINDOW_SRCS
     glfw_window/glfw_window.h
     glfw_window/glfw_window.cpp
+    glfw_window/glfw_window_callback_adapter.h
+    glfw_window/glfw_window_callback_adapter.cpp
+    
     ../../thirdparty/glad/glad.c
 )
 source_group("opengl window" FILES ${OPENGL_WINDOW_SRCS})

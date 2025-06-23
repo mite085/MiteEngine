@@ -4,13 +4,29 @@
 #include "headers/headers.h"
 
 namespace mite {
-
+/**
+ * @brief 鼠标移动事件
+ */
 class MouseMoveEvent : public Event {
  public:
-  MouseMoveEvent(double xpos, double ypos) : xpos(xpos), ypos(ypos) {}
-  glm::vec2 GetPosition() const;
-  double GetXPos() const;
-  double GetYPos() const;
+  /**
+   * @brief 鼠标移动事件构造函数
+   * @param xpos 移动后的位置X
+   * @param ypos 移动后的位置Y
+   */
+  explicit MouseMoveEvent(double xpos, double ypos) : xpos(xpos), ypos(ypos) {}
+  glm::vec2 GetPosition() const
+  {
+    return glm::vec2(xpos, ypos);
+  }
+  double GetXPos() const
+  {
+    return xpos;
+  }
+  double GetYPos() const
+  {
+    return ypos;
+  }
 
   EVENT_CLASS_TYPE(MOUSE_POSITION_MOVED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
@@ -18,53 +34,197 @@ class MouseMoveEvent : public Event {
   {
     return new MouseMoveEvent(xpos, ypos);
   }
+
  private:
   double xpos, ypos;
 };
-
-class MouseButtonEvent : public Event {
+/**
+ * @brief 鼠标按键按下事件
+ */
+class MouseButtonPressedEvent : public Event {
  public:
-  MouseButtonEvent(int button, int action, int mods, double xpos, double ypos)
-      : button(button), action(action), mods(mods), xpos(xpos), ypos(ypos)
+  /**
+   * @brief 鼠标按键按下事件构造函数
+   * @param button 按键的标志，有GLFW_MOUSE_BUTTON_1到8
+   * @param mods 按下时配合的修饰键，如GLFW_MOD_SHIFT、GLFW_MOD_CONTROL
+   * @param xpos 按下时的位置X
+   * @param ypos 按下时的位置Y
+   */
+  explicit MouseButtonPressedEvent(int button, int mods, double xpos, double ypos)
+      : button(button), mods(mods), xpos(xpos), ypos(ypos)
   {
   }
-  int GetButton() const;
-  int GetAction() const;
-  int GetMods() const;
-  double GetXPos() const;
-  double GetYPos() const;
+  int GetButton() const
+  {
+    return button;
+  }
+  int GetMods() const
+  {
+    return mods;
+  }
+  double GetXPos() const
+  {
+    return xpos;
+  }
+  double GetYPos() const
+  {
+    return ypos;
+  }
+
+  EVENT_CLASS_TYPE(MOUSE_BUTTON_PRESSED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
+  Event *Clone() const override
+  {
+    return new MouseButtonPressedEvent(button, mods, xpos, ypos);
+  }
+
+ private:
+  int button, mods;
+  double xpos, ypos;
+};
+/**
+ * @brief 鼠标按键释放事件
+ */
+class MouseButtonReleasedEvent : public Event {
+ public:
+  /**
+   * @brief 鼠标按键释放事件构造函数
+   * @param button 释放按键的标志，有GLFW_MOUSE_BUTTON_1到8
+   * @param xpos 释放时的位置X
+   * @param ypos 释放时的位置Y
+   */
+  explicit MouseButtonReleasedEvent(int button, double xpos, double ypos)
+      : button(button), xpos(xpos), ypos(ypos)
+  {
+  }
+  int GetButton() const
+  {
+    return button;
+  }
+  double GetXPos() const
+  {
+    return xpos;
+  }
+  double GetYPos() const
+  {
+    return ypos;
+  }
 
   EVENT_CLASS_TYPE(MOUSE_BUTTON_RELEASED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
   Event *Clone() const override
   {
-    return new MouseButtonEvent(button, action, mods, xpos, ypos);
+    return new MouseButtonReleasedEvent(button, xpos, ypos);
   }
+
  private:
-  int button, action, mods;
+  int button;
   double xpos, ypos;
 };
-
-class KeyEvent : public Event {
+/**
+ * @brief 键盘按键按下事件
+ */
+class KeyPressedEvent : public Event {
  public:
-  KeyEvent(int key, int scancode, int action, int mods)
-      : key(key), scancode(scancode), action(action), mods(mods)
+  /**
+   * @brief 键盘按键按下事件构造函数
+   * @param key 按键的标志，以GLFW_KEY_开头的flag
+   * @param mods 按下时配合的修饰键，如GLFW_MOD_SHIFT、GLFW_MOD_CONTROL
+   * @param isRepeated 是否重复按下的flag
+   */
+  explicit KeyPressedEvent(int key, int mods, bool isRepeated)
+      : key(key), mods(mods), isRepeated(isRepeated)
   {
   }
-  int GetKey() const;
-  int GetScancode() const;
-  int GetAction() const;
-  int GetMods() const;
+  int GetKey() const
+  {
+    return key;
+  }
+  int GetMods() const
+  {
+    return mods;
+  }
+  bool IsRepeated() const
+  {
+    return isRepeated;
+  }
+
+  EVENT_CLASS_TYPE(KEY_PRESSED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
+  Event *Clone() const override
+  {
+    return new KeyPressedEvent(key, mods, isRepeated);
+  }
+
+ private:
+  int key, mods;
+  bool isRepeated;
+};
+/**
+ * @brief 键盘按键释放事件
+ */
+class KeyReleasedEvent : public Event {
+ public:
+  /**
+   * @brief 键盘按键释放事件构造函数
+   * @param key 按键的标志，以GLFW_KEY_开头的flag
+   */
+  explicit KeyReleasedEvent(int key) : key(key) {}
+
+  int GetKey() const
+  {
+    return key;
+  }
 
   EVENT_CLASS_TYPE(KEY_RELEASED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
   Event *Clone() const override
   {
-    return new KeyEvent(key, scancode, action, mods);
+    return new KeyReleasedEvent(key);
   }
+
  private:
-  int key, scancode, action /*GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT*/, mods /*修饰键状态*/;
+  int key;
 };
+
+/**
+ * @brief 字符输入事件
+ *
+ * 当用户输入Unicode字符时触发（考虑组合键、IME输入等情况）
+ * 与KeyPressedEvent不同，此事件表示实际输入的字符
+ */
+class KeyTypedEvent : public Event {
+ public:
+  /**
+   * @brief 字符输入事件构造函数
+   * @param codepoint UTF-32编码的字符
+   */
+  explicit KeyTypedEvent(unsigned int codepoint) : m_Codepoint(codepoint) {}
+  /**
+   * @brief 获取字符的UTF-32编码
+   */
+  unsigned int GetCodepoint() const
+  {
+    return m_Codepoint;
+  }
+  /**
+   * @brief 尝试转换为ASCII字符（如果是可打印ASCII）
+   * @return 如果可转换返回char，否则返回0
+   */
+  char GetAsciiChar() const
+  {
+    return (m_Codepoint < 128) ? static_cast<char>(m_Codepoint) : '\0';
+  }
+  EVENT_CLASS_TYPE(KEY_TYPED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD)
+  Event *Clone() const override
+  {
+    return new KeyTypedEvent(m_Codepoint);
+  }
+
+ private:
+  unsigned int m_Codepoint;  // UTF-32编码的字符
 };
+};  // namespace mite
 
 #endif

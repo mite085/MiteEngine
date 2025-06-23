@@ -4,6 +4,7 @@
 #include "glad.h"
 #include "GLFW/glfw3.h"  // 必须在GLAD加载库之后
 #include "window.h"
+#include "glfw_window_callback_adapter.h"
 
 namespace mite {
 
@@ -46,7 +47,7 @@ class GLFWWindow : public Window {
   // 输入处理
   bool IsKeyPressed(int keycode) const override;
   bool IsMouseButtonPressed(int button) const override;
-  std::pair<float, float> GetMousePosition() const override;
+  std::pair<double, double> GetMousePosition() const override;
 
   // 渲染上下文
   void MakeContextCurrent() override;
@@ -66,14 +67,6 @@ private:
   static void ShutdownGLFW();
   static uint32_t s_GLFWWindowCount; // 跟踪创建的GLFW窗口数量
 
-  // GLFW回调函数（静态）
-  static void ErrorCallback(int error, const char *description);
-  static void FramebufferSizeCallback(GLFWwindow *window, int width, int height);
-  static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
-  static void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-  static void CursorPosCallback(GLFWwindow *window, double xpos, double ypos);
-  static void WindowCloseCallback(GLFWwindow *window);
-
 private:
   // GLFW窗口句柄
   GLFWwindow *m_Window = nullptr;
@@ -85,18 +78,13 @@ private:
     bool vsync = false;                 // 垂直同步
     bool fullscreen = false;            // 全屏显示
     bool resizable = true;              // 可拉伸
-    GLFWWindow *instance;               // 指向窗口实例
-    Window::EventCallbackFn callback;
   } m_WindowData;                       // 窗口回调数据
 
   // 使用config数据初始化window data
   void InitWindowData(const WindowConfig &config);
 
-  struct {
-    double x, y;                           // 鼠标位置
-    bool buttons[GLFW_MOUSE_BUTTON_LAST];  // 鼠标按钮状态
-    bool keys[GLFW_KEY_LAST];              // 键盘按键状态
-  } m_InputState;                          // 输入状态跟踪
+  // GLFW回调适配器 - 将GLFW原生事件转换为自定义事件
+  GLFWWindowCallbackAdapter m_CallbackAdapter;
 };
 
 }  // namespace mite

@@ -58,7 +58,7 @@ class Window {
   // 键盘鼠标输入相关
   virtual bool IsKeyPressed(int keycode) const = 0;
   virtual bool IsMouseButtonPressed(int button) const = 0;
-  virtual std::pair<float, float> GetMousePosition() const = 0;
+  virtual std::pair<double, double> GetMousePosition() const = 0;
 
   // 渲染上下文
   virtual void MakeContextCurrent() = 0;
