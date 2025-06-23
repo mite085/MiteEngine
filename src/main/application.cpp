@@ -18,8 +18,9 @@ void MiteApplication::run()
     // Time系统更新时间
     Time::Update();
 
-    // 1、处理窗口事件
+    // 1、处理事件
     m_Window->PollEvents();
+    EventBus::Get().ProcessQueue();
 
     // 2、更新输入系统
     // m_InputSystem->Update();
@@ -37,10 +38,8 @@ void MiteApplication::run()
     EndFrame();
   }
 
-  Cleanup();
+  CleanUp();
 }
-
-void MiteApplication::close() {}
 
 void MiteApplication::NewScene() {}
 
@@ -50,22 +49,18 @@ void MiteApplication::SaveScene(const std::string &filepath) {}
 
 void MiteApplication::Initialize()
 {
-  // 订阅事件
-  EventBus::Get().Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
+  m_logger->info("Initialize application");
+
+  // 订阅事件，并管理订阅句柄
+  m_HandlerIDs.push_back(
+      EventBus::Get().Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose)));
 
   InitializeInputSystem();
-
-  // 目前仅实现OpenGL模式，预留添加新模式接口
   InitializeWindowWithOpenGL();
-
   InitializeRenderWithOpenGL();
-
   InitializeUI();
-
   InitializeAssertManager();
-
   InitializeMaterialSystem();
-
   InitializeScene();
 
   // 加载默认场景
@@ -80,7 +75,7 @@ void MiteApplication::InitializeWindowWithOpenGL()
   m_Config = WindowConfig();
   m_Window = Window::Create();
   m_Window->Initialize(m_Config);
-  //m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+  // m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 }
 
 void MiteApplication::InitializeRenderWithOpenGL()
@@ -122,16 +117,10 @@ void MiteApplication::InitializeMaterialSystem()
   // TODO：初始化材质系统
 }
 
-void MiteApplication::Cleanup()
-{
-  m_logger->info("Cleaning up application");
-  m_Window->Shutdown();
-}
-
 void MiteApplication::InitializeInputSystem()
 {
   m_logger->info("Initializing input system");
- 
+
   // 创建输入上下文栈ContextStack
   m_InputContextStack = std::make_shared<InputContextStack>();
 
@@ -154,11 +143,51 @@ void MiteApplication::LoadDefaultScene()
 
   // TODO：协调各模块，加载初始场景
   // m_AssetManager->LoadDefaultAssets();
-  //m_Scene->LoadDefaultScene();
+  // m_Scene->LoadDefaultScene();
   // m_MaterialSystem->CreateDefaultMaterials();
 
   // 更新场景视图
   m_SceneView->SyncFromSceneCore();
+}
+
+void MiteApplication::CleanUp()
+{
+  m_logger->info("Cleaning up application");
+
+  // 取消事件订阅
+  for (auto handlerID : m_HandlerIDs)
+    EventBus::Get().Unsubscribe(handlerID);
+
+  CleanUpInputSystem();
+  CleanUpWindow();
+  CleanUpRenderWithOpenGL();
+  CleanUpUI();
+  CleanUpAssertManager();
+  CleanUpMaterialSystem();
+  CleanUpScene();
+}
+
+void MiteApplication::CleanUpInputSystem()
+{
+  Input::Shutdown();
+}
+
+void MiteApplication::CleanUpWindow()
+{
+  m_Window->Shutdown();
+}
+
+void MiteApplication::CleanUpRenderWithOpenGL() {}
+
+void MiteApplication::CleanUpUI() {}
+
+void MiteApplication::CleanUpAssertManager() {}
+
+void MiteApplication::CleanUpMaterialSystem() {}
+
+void MiteApplication::CleanUpScene()
+{
+  m_Scene->Clear();
 }
 
 void MiteApplication::BeginFrame()

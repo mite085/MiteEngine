@@ -10,15 +10,13 @@ namespace mite {
 
 class GLFWWindow : public Window {
  public:
-  // 构造函数/析构函数
-  explicit GLFWWindow();
+  GLFWWindow();
   virtual ~GLFWWindow() override;
 
   // 禁用拷贝和移动
   GLFWWindow(const GLFWWindow &) = delete;
   GLFWWindow &operator=(const GLFWWindow &) = delete;
 
-  // 用于主循环,检测Window关闭标志
   const bool WindowShouldClose() override;
 
   // 生命周期管理

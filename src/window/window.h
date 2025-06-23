@@ -10,7 +10,7 @@ enum WindowType {
   GLFWWINDOW,
 };
 
-// Window基本配置
+// Window配置
 // 注意，config仅在构造Window时使用一次，
 // 并不用于实时存储Window的信息。
 struct WindowConfig {
@@ -29,30 +29,83 @@ class Window {
   // 构造函数与析构函数
   virtual ~Window() = default;
 
-  // 用于主循环,检测Window关闭标志
+  /**
+   * @brief 用于主循环,检测Window关闭标志
+   * @return 
+   */
   virtual const bool WindowShouldClose() = 0;
 
-  // Window生命周期管理
+  // Window生命周期管理 ==============================================
+  /**
+   * @brief 使用Window配置初始化Window对象
+   * @param config Window配置
+   */
   virtual void Initialize(const WindowConfig &config) = 0;
+  /**
+   * @brief 关闭窗口
+   */
   virtual void Shutdown() = 0;
 
-  // Window属性
+  // Window属性 ==============================================
+  /**
+   * @brief 获取窗口宽度
+   * @return 宽度
+   */
   virtual uint32_t GetWidth() const = 0;
+  /**
+   * @brief 获取窗口高度
+   * @return 高度
+   */
   virtual uint32_t GetHeight() const = 0;
+  /**
+   * @brief 获取活动窗口
+   * @return 窗口句柄
+   */
   virtual void *GetNativeWindow() const = 0;
+  /**
+   * @brief 检测垂直同步
+   * @return 
+   */
   virtual bool IsVSync() const = 0;
 
-  // Window操作
-  virtual void SetVSync(bool enabled) = 0;                   // 控制垂直同步
-  virtual void SetTitle(const std::string &title) = 0;       // 设置窗口标题
-  virtual void Resize(uint32_t width, uint32_t height) = 0;  // 调整窗口大小
-  virtual void Maximize() = 0;                               // 最大化窗口
-  virtual void Minimize() = 0;                               // 最小化窗口
-  virtual void Restore() = 0;                                // 恢复窗口
-  virtual void Close() = 0;                                  // 关闭窗口
+  // Window操作 ==============================================
+  /**
+   * @brief 检测垂直同步
+   */
+  virtual void SetVSync(bool enabled) = 0;
+  /**
+   * @brief 设置窗口标题.
+   */
+  virtual void SetTitle(const std::string &title) = 0; 
+  /**
+   * @brief 调整窗口大小
+   */
+  virtual void Resize(uint32_t width, uint32_t height) = 0;
+  /**
+   * @brief 最大化窗口
+   */
+  virtual void Maximize() = 0;
+  /**
+   * @brief 最小化窗口
+   */
+  virtual void Minimize() = 0;
+  /**
+   * @brief 恢复窗口
+   */
+  virtual void Restore() = 0;
+  /**
+   * @brief 关闭窗口
+   */
+  virtual void Close() = 0;
 
-  // Window事件处理
+  // Window事件处理 ==============================================
+  /**
+   * @brief 处理所有挂起的事件
+   */
   virtual void PollEvents() = 0;
+  /**
+   * @brief 
+   */
   virtual void WaitEvents() = 0;
 
   // 键盘鼠标输入相关

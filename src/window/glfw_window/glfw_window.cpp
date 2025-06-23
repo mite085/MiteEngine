@@ -75,6 +75,8 @@ void GLFWWindow::Shutdown()
 {
   m_Logger->info("Shutting down GLFW window: {}", m_WindowData.title);
   if (m_Window) {
+    // 卸载回调函数
+    m_CallbackAdapter.UnregisterCallbacks();
     // 关闭当前窗口
     glfwDestroyWindow(m_Window);
     m_Window = nullptr;

@@ -83,10 +83,10 @@ void Scene::Clear(bool keepSystems)
   // 3. 重置主相机引用
   m_MainCamera = Entity(weak_from_this(), entt::null);
 
-  // 4. TODO: 重置场景图状态
-  //if (m_SceneGraph) {
-  //  m_SceneGraph->Clear();
-  //}
+  // 4. 重置场景图状态
+  if (m_SceneGraph) {
+    m_SceneGraph->Clear();
+  }
 
   // 5. 重置场景观察者状态
   if (m_SceneObserver) {

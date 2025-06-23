@@ -38,6 +38,13 @@ class SceneGraph {
   SceneGraph &operator=(const SceneGraph &) = delete;
 
   /**
+   * @brief 重置场景图状态
+   * 
+   * TODO: 目前场景图未存储任何状态，没有什么需要清理
+   */
+  void Clear() {}
+
+  /**
    * @brief 设置实体父节点
    * @param entity 目标实体
    * @param newParent 新父实体(Entity()表示设为根节点)

@@ -42,7 +42,6 @@ class MiteApplication {
 
   // 主循环控制
   void run();
-  void close();
 
   // 场景管理
   void NewScene();
@@ -60,7 +59,6 @@ class MiteApplication {
  private:
   // 初始化与清理
   void Initialize();
-  void Cleanup();
   void InitializeInputSystem();
   void InitializeWindowWithOpenGL();
   void InitializeRenderWithOpenGL();
@@ -69,7 +67,14 @@ class MiteApplication {
   void InitializeMaterialSystem();
   void InitializeScene();
   void LoadDefaultScene();
-  //void InitializeSubsystems();
+  void CleanUp();
+  void CleanUpInputSystem();
+  void CleanUpWindow();
+  void CleanUpRenderWithOpenGL();
+  void CleanUpUI();
+  void CleanUpAssertManager();
+  void CleanUpMaterialSystem();
+  void CleanUpScene();
 
   // 帧循环相关
   void BeginFrame();
@@ -124,6 +129,9 @@ class MiteApplication {
 
   // 日志系统
   Logger m_logger;
+
+  // 订阅事件集合
+  std::vector<EventBus::HandlerID> m_HandlerIDs;
 };
 
 
