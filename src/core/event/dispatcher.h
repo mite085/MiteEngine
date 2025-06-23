@@ -1,5 +1,5 @@
-#ifndef MITE_EVENT_DISPATCHER
-#define MITE_EVENT_DISPATCHER
+#ifndef MITE_CORE_EVENT_DISPATCHER
+#define MITE_CORE_EVENT_DISPATCHER
 
 #include <functional>
 #include "event/event.h"

@@ -42,5 +42,6 @@
 
 // 事件系统
 #include "event/event_bus.h"
+#include "event/callback_adapter.h"
 
 #endif

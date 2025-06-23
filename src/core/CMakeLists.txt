@@ -46,12 +46,14 @@ set(LOGGER_SRCS
 source_group("logger" FILES ${LOGGER_SRCS})
 
 set(EVENT_SRCS
+    event/callback_adapter.h
+    event/callback_adapter.cpp
+    event/dispatcher.h
+    event/dispatcher.cpp
     event/event.h
     event/event.cpp
     event/event_bus.h
     event/event_bus.cpp
-    event/dispatcher.h
-    event/dispatcher.cpp
     event/event_types.h
 )
 source_group("event" FILES ${EVENT_SRCS})
