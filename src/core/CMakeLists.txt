@@ -55,6 +55,8 @@ set(EVENT_SRCS
     event/event_bus.h
     event/event_bus.cpp
     event/event_types.h
+    event/subscription_group.h
+    event/subscription_group.cpp
 )
 source_group("event" FILES ${EVENT_SRCS})
 

@@ -41,7 +41,7 @@
 #include "time/time.h"
 
 // 事件系统
-#include "event/event_bus.h"
+#include "event/subscription_group.h"
 #include "event/callback_adapter.h"
 
 #endif

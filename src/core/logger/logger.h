@@ -110,5 +110,11 @@ class LoggerSystem {
 #define LOG_ERROR_TAG(tag, ...) ::mite::LoggerSystem::ErrorTag(tag, __VA_ARGS__)
 #define LOG_CRITICAL_TAG(tag, ...) ::mite::LoggerSystem::CriticalTag(tag, __VA_ARGS__)
 
+// 获取类型名的方法
+template<typename U> std::string type_name()
+{
+  return typeid(U).name();
+}
+
 }  // namespace mite
 #endif
