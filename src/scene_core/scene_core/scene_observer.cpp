@@ -11,7 +11,7 @@ SceneObserver::SceneObserver(SceneRegistry &registry) : m_Registry(registry)
   // ¶©ÔÄÊÂ¼þ
   m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
   m_EventSubscriptions.Subscribe<EntityParentChangedEvent>(BIND_DISPATCH_FN(MarkEntityModified));
-  m_EventSubscriptions.Subscribe<EntityPreDestroyedEvent>(BIND_DISPATCH_FN(OnEntityPreDestroyed));
+  m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
 }
 
 SceneObserver::~SceneObserver()
@@ -83,7 +83,7 @@ void SceneObserver::OnEntityCreated(EntityCreatedEvent &e)
     m_CreatedEntities.push_back(e.GetEntity());
 }
 
-void SceneObserver::OnEntityPreDestroyed(EntityPreDestroyedEvent &e)
+void SceneObserver::OnEntityDestroyed(EntityDestroyedEvent &e)
 {
   if (!m_IsObserving)
     m_DestroyedEntities.push_back(e.GetEntity());

@@ -116,6 +116,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
       callback(entity, static_cast<T &>(comp));
     };
 
+    // 连接到EnTT的回调系统
     m_Registry->GetUnderlyingRegistry()
         .on_update<T>()
         .template connect<&SceneEventCallbackAdapter::InvokeUpdate<T>>(this);
@@ -136,6 +137,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
       callback(entity, static_cast<T &>(comp));
     };
 
+    // 连接到EnTT的回调系统
     m_Registry->GetUnderlyingRegistry()
         .on_destroy<T>()
         .template connect<&SceneEventCallbackAdapter::InvokeDestroy<T>>(this);
@@ -143,7 +145,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
 
  private:
   /**
-   * @brief 触发组件构造事件(RegisterCallbackComponentConstruct使用)
+   * @brief EnTT原生on_construct事件回调（组件专用版）
    *
    * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
    */
@@ -162,9 +164,9 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   }
 
   /**
-   * @brief 触发组件更新事件(内部使用)
+   * @brief EnTT原生on_update事件回调（组件专用版）
    *
-   * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
+   * 注意：on_update的签名必须匹配void(entt::registry&, entt::entity)
    */
   template<typename T> void InvokeUpdate(entt::registry &reg, entt::entity ent)
   {
@@ -180,9 +182,9 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   }
 
   /**
-   * @brief 触发组件销毁事件(内部使用)
+   * @brief EnTT原生on_destroy事件回调（组件专用版）
    *
-   * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
+   * 注意：on_destroy的签名必须匹配void(entt::registry&, entt::entity)
    */
   template<typename T> void InvokeDestroy(entt::registry &reg, entt::entity ent)
   {
@@ -221,7 +223,6 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   // 带优先级的回调包装器
   struct EntityCallbackWrapper {
     EntityCallback callback;
-    int priority = 0;  // 默认优先级，数字越大优先级越高
     size_t id = 0;     // 唯一标识
   };
 
@@ -231,23 +232,30 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
    * @param priority 调用优先级（数值越大越早执行）
    * @return 可用于取消注册的回调ID
    */
-  size_t RegisterCallbackEntityCreated(EntityCallback callback, int priority = 0);
+  size_t RegisterCallbackEntityCreated(EntityCallback callback);
 
   /**
-   * @brief 注册实体销毁回调（在实体实际销毁前调用）
+   * @brief 注册实体销毁回调（在实体实际销毁时调用）
    * @param callback 回调函数
    * @param priority 调用优先级（数值越大越早执行）
    * @return 回调ID
    */
-  size_t RegisterCallbackEntityPreDestroyed(EntityCallback callback, int priority = 0);
+  size_t RegisterCallbackEntityDestroyed(EntityCallback callback);
+
 
   /**
-   * @brief 注册实体销毁回调（在实体实际销毁后调用）
-   * @param callback 回调函数
-   * @param priority 调用优先级（数值越大越早执行）
-   * @return 回调ID
+   * @brief EnTT原生on_construct事件回调（实体专用版）
+   *
+   * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
    */
-  size_t RegisterCallbackEntityPostDestroyed(EntityCallback callback, int priority = 0);
+  void InvokeEntityCreated(entt::registry &registry, entt::entity entity);
+
+  /**
+   * @brief EnTT原生on_destroy事件回调（实体专用版）
+   *
+   * 注意：on_destroy的签名必须匹配void(entt::registry&, entt::entity)
+   */
+  void InvokeEntityDestroyed(entt::registry &registry, entt::entity entity);
 
   /**
    * @brief 卸载指定的Entity回调函数
@@ -264,18 +272,12 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   // 回调存储结构
   struct EntityCallbackLists {
     std::vector<EntityCallbackWrapper> createdCallbacks;
-    std::vector<EntityCallbackWrapper> preDestroyCallbacks;
-    std::vector<EntityCallbackWrapper> postDestroyCallbacks;
+    std::vector<EntityCallbackWrapper> destroyCallbacks;
     std::unordered_map<size_t, std::vector<EntityCallbackWrapper> *> entityCallbackMap;
   } m_EntityCallbacks;
 
   size_t m_NextEntityCallbackID = 1;  // 全局的CallBack自增计数器，同时作为ID
 
-  /**
-   * @brief 排序回调列表（按优先级降序）
-   * @param callbacks 一般为EntityCallbackLists中的一个，如createdCallbacks
-   */
-  void SortCallbackList(std::vector<EntityCallbackWrapper> &callbacks);
 };
 };  // namespace mite
 

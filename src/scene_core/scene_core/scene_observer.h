@@ -47,7 +47,7 @@ class SceneObserver {
   /**
    * @brief 处理实体销毁，仅在实体销毁之前处理。
    */
-  void OnEntityPreDestroyed(EntityPreDestroyedEvent &e);
+  void OnEntityDestroyed(EntityDestroyedEvent &e);
 
 
  private:

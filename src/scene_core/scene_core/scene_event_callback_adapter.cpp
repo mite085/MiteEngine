@@ -43,12 +43,8 @@ void SceneEventCallbackAdapter::RegisterEntityCallbacks()
   });
 
   // 实体销毁事件
-  RegisterCallbackEntityPreDestroyed([this](Entity entity) {
-    EntityPreDestroyedEvent event(entity);
-    EventBus::Get().Post(event);
-  });
-  RegisterCallbackEntityPostDestroyed([this](Entity entity) {
-    EntityPostDestroyedEvent event(entity);
+  RegisterCallbackEntityDestroyed([this](Entity entity) {
+    EntityDestroyedEvent event(entity);
     EventBus::Get().Post(event);
   });
 }
@@ -64,34 +60,53 @@ void SceneEventCallbackAdapter::UnregisterCallbackComponent()
 
 // 3. 实体事件回调相关 ===============================================
 
-size_t SceneEventCallbackAdapter::RegisterCallbackEntityCreated(EntityCallback callback,
-                                                                int priority)
+size_t SceneEventCallbackAdapter::RegisterCallbackEntityCreated(EntityCallback callback)
 {
+  // 连接到EnTT的回调系统
+  m_Registry->GetUnderlyingRegistry()
+      .on_construct<entt::entity>()
+      .connect<&SceneEventCallbackAdapter::InvokeEntityCreated>(
+      this);
+
   const size_t id = m_NextEntityCallbackID++;
-  m_EntityCallbacks.createdCallbacks.push_back({std::move(callback), priority, id});
+  m_EntityCallbacks.createdCallbacks.push_back({std::move(callback), id});
   m_EntityCallbacks.entityCallbackMap[id] = &m_EntityCallbacks.createdCallbacks;
-  SortCallbackList(m_EntityCallbacks.createdCallbacks);
   return id;
 }
 
-size_t SceneEventCallbackAdapter::RegisterCallbackEntityPreDestroyed(EntityCallback callback,
-                                                                     int priority)
+size_t SceneEventCallbackAdapter::RegisterCallbackEntityDestroyed(EntityCallback callback)
 {
+  // 连接到EnTT的回调系统
+  m_Registry->GetUnderlyingRegistry()
+      .on_destroy<entt::entity>()
+      .connect<&SceneEventCallbackAdapter::InvokeEntityDestroyed>(this);
   const size_t id = m_NextEntityCallbackID++;
-  m_EntityCallbacks.preDestroyCallbacks.push_back({std::move(callback), priority, id});
-  m_EntityCallbacks.entityCallbackMap[id] = &m_EntityCallbacks.preDestroyCallbacks;
-  SortCallbackList(m_EntityCallbacks.preDestroyCallbacks);
+  m_EntityCallbacks.destroyCallbacks.push_back({std::move(callback), id});
+  m_EntityCallbacks.entityCallbackMap[id] = &m_EntityCallbacks.destroyCallbacks;
   return id;
 }
 
-size_t SceneEventCallbackAdapter::RegisterCallbackEntityPostDestroyed(EntityCallback callback,
-                                                                      int priority)
+void SceneEventCallbackAdapter::InvokeEntityCreated(entt::registry &registry, entt::entity entity)
 {
-  const size_t id = m_NextEntityCallbackID++;
-  m_EntityCallbacks.postDestroyCallbacks.push_back({std::move(callback), priority, id});
-  m_EntityCallbacks.entityCallbackMap[id] = &m_EntityCallbacks.postDestroyCallbacks;
-  SortCallbackList(m_EntityCallbacks.postDestroyCallbacks);
-  return id;
+  // 构造Entity对象
+  Entity userEntity(m_Registry->m_Scene, entity);
+
+  // 按顺序触发回调
+  for (auto wrapper : m_EntityCallbacks.createdCallbacks) {
+    wrapper.callback(userEntity);
+  }
+}
+
+void SceneEventCallbackAdapter::InvokeEntityDestroyed(entt::registry &registry,
+                                                      entt::entity entity)
+{
+  // 构造Entity对象
+  Entity userEntity(m_Registry->m_Scene, entity);
+
+  // 按顺序触发回调
+  for (auto wrapper : m_EntityCallbacks.destroyCallbacks) {
+    wrapper.callback(userEntity);
+  }
 }
 
 void SceneEventCallbackAdapter::UnregisterCallbackEntity(size_t callbackId)
@@ -114,16 +129,8 @@ void SceneEventCallbackAdapter::UnregisterCallbackEntity(size_t callbackId)
 void SceneEventCallbackAdapter::UnregisterCallbackEntity()
 {
   m_EntityCallbacks.createdCallbacks.clear();
-  m_EntityCallbacks.preDestroyCallbacks.clear();
-  m_EntityCallbacks.postDestroyCallbacks.clear();
+  m_EntityCallbacks.destroyCallbacks.clear();
   m_EntityCallbacks.entityCallbackMap.clear();
-}
-
-void SceneEventCallbackAdapter::SortCallbackList(std::vector<EntityCallbackWrapper> &callbacks)
-{
-  std::sort(callbacks.begin(), callbacks.end(), [](const auto &a, const auto &b) {
-    return a.priority > b.priority;
-  });
 }
 
 };  // namespace mite

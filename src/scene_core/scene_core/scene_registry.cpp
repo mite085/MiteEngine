@@ -36,22 +36,7 @@ Entity SceneRegistry::CreateEntity(const std::string name)
 void SceneRegistry::DestroyEntity(Entity entity)
 {
   if (IsValid(entity)) {
-    // 1. 创建PreDestroyed事件并发布（立即执行）
-    EntityPreDestroyedEvent event(entity);
-    EventBus::Get().Post(event);
-
-    // 2. 使用entt::registry::destroy销毁实体
-    //
-    // 注意：
-    // 若该entity存在任何已经被
-    // RegisterCallbackComponentDestroy
-    // 注册的Component，会在这里触发回调，
-    // 运行各个被注册的callback函数
     m_Registry.destroy(entity.GetHandle());
-
-    // 3. 创建PostDestroyed事件并发布（可延后执行）
-    EntityPostDestroyedEvent event2(entity);
-    EventBus::Get().Post(event2);
   }
 }
 

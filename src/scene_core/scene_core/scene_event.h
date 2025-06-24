@@ -77,34 +77,20 @@ class EntityCreatedEvent : public EntityEvent {
 };
 /**
  * @class EntityPreDestroyedEvent
- * @brief 销毁实体事件（实体销毁之前）
+ * @brief 销毁实体事件
  */
-class EntityPreDestroyedEvent : public EntityEvent {
+class EntityDestroyedEvent : public EntityEvent {
  public:
-  EntityPreDestroyedEvent(Entity entity) : EntityEvent(entity) {}
+  EntityDestroyedEvent(Entity entity) : EntityEvent(entity) {}
 
   EVENT_CLASS_TYPE(ENTITY_DESTROYED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new EntityPreDestroyedEvent(entity);
+    return new EntityDestroyedEvent(entity);
   }
 };
-/**
- * @class EntityPostDestroyedEvent
- * @brief 销毁实体事件（实体销毁之后）
- */
-class EntityPostDestroyedEvent : public EntityEvent {
- public:
-  EntityPostDestroyedEvent(Entity entity) : EntityEvent(entity) {}
 
-  EVENT_CLASS_TYPE(ENTITY_DESTROYED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new EntityPostDestroyedEvent(entity);
-  }
-};
 /**
  * @class EntityParentChangedEvent
  * @brief 实体Parent修改事件
