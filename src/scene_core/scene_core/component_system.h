@@ -55,6 +55,13 @@ class ComponentSystem {
    */
   virtual std::vector<std::type_index> GetSystemDependencies() const = 0;
 
+  /**
+   * @brief 获取Register的引用
+   */
+  SceneRegistry &GetRegistry()
+  {
+    return m_Registry.value();
+  }
 
  protected:
   // 保护构造函数，确保只能通过派生类实例化
@@ -63,6 +70,17 @@ class ComponentSystem {
   // 禁用拷贝
   ComponentSystem(const ComponentSystem &) = delete;
   ComponentSystem &operator=(const ComponentSystem &) = delete;
+
+  // Register的引用
+  //
+  // 作用：
+  // 在批量处理Event(entity, component)时，需要利用Register查询其他相关组件
+  //
+  // 注意：
+  // 此处使用optional包装的reference_wrapper，
+  // 以实现延时引用的功能，目的是将ComponentSystem的
+  // 构造和利用SceneRegistry&执行的初始化隔离开。
+  std::optional<std::reference_wrapper<SceneRegistry>> m_Registry;
 
   // 日志系统
   Logger m_Logger;
@@ -87,6 +105,11 @@ class ComponentSystem {
 /**
  * @brief 基于Dirty Flag驱动的组件系统模板类
  *
+ * 作用：
+ * 所有具体的Component均应当继承自此类，
+ * 具有自脏特性的可以直接继承自
+ * DirtyComponentSystem<T, SelfDirtyPolicy>
+ * 
  * 基本实现原理
  * 1. 标记为脏（Dirty）：当组件的状态发生变化时，将 m_Dirty 设为 true
  * 2. 处理脏状态：在适当的时机（如每帧更新时）检查并处理脏状态
@@ -105,6 +128,17 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
     m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Component System: {" + type_name<T>() +
                                                       "}");
     m_Logger->trace("Created component system: {}", type_name<T>());
+  }
+
+  /**
+   * @brief 初始化操作
+   * @param registry
+   */
+  virtual void Initialize(SceneRegistry &registry) override
+  {
+    // 添加对Registry的引用
+    m_Registry = registry;
+
     // 通过事件总线，订阅组件添加/改变/移除事件
     m_EventSubscriptions.Subscribe<ComponentAddedEvent<T>>(BIND_DISPATCH_FN(OnComponentAdded));
     m_EventSubscriptions.Subscribe<ComponentChangedEvent<T>>(BIND_DISPATCH_FN(OnComponentUpdated));
@@ -112,24 +146,14 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
   }
 
   /**
-   * @brief 将组件注册进维护列表
-   * @param component 组件指针
+   * @brief 清理操作
+   * @param registry
    */
-  void Register(T *component)
+  virtual void Shutdown(SceneRegistry &registry) override
   {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_AllComponents.push_back(component);
-  }
-
-  /**
-   * @brief 将组件从维护列表移除
-   * @param component 组件指针
-   */
-  void Unregister(T *component)
-  {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_AllComponents.erase(std::remove(m_AllComponents.begin(), m_AllComponents.end(), component),
-                          m_AllComponents.end());
+    m_EventSubscriptions.UnsubscribeAll();
+    m_AllComponents.clear();
+    m_DirtyComponents.clear();
   }
 
   /**
@@ -197,6 +221,26 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
   }
 
  protected:
+  /**
+   * @brief 将组件注册进维护列表
+   * @param component 组件指针
+   */
+  void Register(T *component)
+  {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_AllComponents.push_back(component);
+  }
+
+  /**
+   * @brief 将组件从维护列表移除
+   * @param component 组件指针
+   */
+  void Unregister(T *component)
+  {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_AllComponents.erase(std::remove(m_AllComponents.begin(), m_AllComponents.end(), component),
+                          m_AllComponents.end());
+  }
   /**
    * @brief 获取脏组件列表
    */
