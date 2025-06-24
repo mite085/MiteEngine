@@ -51,7 +51,12 @@ void GLFWWindow::Initialize(const WindowConfig &config)
     }
 
     // GLFW回调适配器注册回调函数
-    // TODO：为防止重复注册，是否应当在每次注册之前执行一次UnRegister?
+    // 
+    // 注意：
+    // GLFW内部没有"重复注册"的概念，
+    // 设置新的回调会覆盖旧的，
+    // 所以无需为防止重复注册，
+    // 在每次注册之前执行一次UnregisterCallbacks
     m_CallbackAdapter.RegisterCallbacks(m_Window);
 
     // 设置当前上下文
