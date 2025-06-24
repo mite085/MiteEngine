@@ -11,7 +11,6 @@ Scene::Scene(const std::string &name)
       m_EventCallbackAdapter(&m_Registry),
       m_SystemManager(m_Registry, m_EventCallbackAdapter)
 {
-  m_EventCallbackAdapter.RegisterComponentCallbacks<TransformComponent>();
   // 初始化核心系统
   InitSystems();
 
