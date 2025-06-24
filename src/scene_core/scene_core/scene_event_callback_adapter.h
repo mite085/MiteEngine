@@ -8,6 +8,9 @@ namespace mite {
 /**
  * @brief 场景事件回调适配器（模板增强版）
  *
+ * 目的：
+ * 将EnTT的事件转换成自定义事件，并经由EventBus发布
+ * 
  * 通过模板方法自动注册各类组件事件回调，避免重复代码
  */
 class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
@@ -151,9 +154,9 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
     // 以typeid作为key查表
     const std::type_index type = typeid(T);
     if (auto it = m_ConstructCallbacks.find(type); it != m_ConstructCallbacks.end()) {
-      // it->second类型为函数指针
-      // std::function<void(Entity, Component &)>
-      // 此处可以直接运行该函数
+      // 此处将会触发
+      // PostComponentEvent<ComponentAddedEvent<T>, T>(entity, component)
+      // 的运行，发布ComponentAddedEvent事件。
       it->second(entity, component);
     }
   }
@@ -169,6 +172,9 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
     T &component = reg.get<T>(ent);
     const std::type_index type = typeid(T);
     if (auto it = m_UpdateCallbacks.find(type); it != m_UpdateCallbacks.end()) {
+      // 此处将会触发
+      // PostComponentEvent<ComponentChangedEvent<T>, T>(entity, component);
+      // 的运行，发布ComponentChangedEvent事件。
       it->second(entity, component);
     }
   }
@@ -184,6 +190,9 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
     T &component = reg.get<T>(ent);
     const std::type_index type = typeid(T);
     if (auto it = m_DestroyCallbacks.find(type); it != m_DestroyCallbacks.end()) {
+      // 此处将会触发
+      // PostComponentEvent<ComponentRemovedEvent<T>, T>(entity, component);
+      // 的运行，发布ComponentRemovedEvent事件。
       it->second(entity, component);
     }
   }
@@ -194,6 +203,13 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   void UnregisterCallbackComponent();
 
   // 存储所有组件类型的回调(同一组件类型仅存放一个回调函数)
+  //
+  // 存储内容：不同模板T下的
+  // [this](Entity entity, T &component) {
+  //    PostComponentEvent<ComponentAddedEvent<T>, T>(entity, component);}
+  //
+  // 作用：
+  // 当Invoke函数触发，准备发布事件时，提供查表操作。
   std::unordered_map<std::type_index, ComponentCallback> m_ConstructCallbacks;
   std::unordered_map<std::type_index, ComponentCallback> m_UpdateCallbacks;
   std::unordered_map<std::type_index, ComponentCallback> m_DestroyCallbacks;
