@@ -43,9 +43,9 @@ class Scene : public std::enable_shared_from_this<Scene> {
 
   /**
    * @brief 清空场景中的所有内容，重置为初始状态
-   * @param keepSystems 是否保留已注册的系统（默认false，完全重置）
+   * @param keepSystems 是否保留已注册的系统（仅当Scene析构时不保留）
    */
-  void Clear(bool keepSystems = false);
+  void Clear(bool keepSystems = true);
 
   // ------------------------ 实体管理 ------------------------
   /**
@@ -129,9 +129,13 @@ class Scene : public std::enable_shared_from_this<Scene> {
   // 初始化默认系统
   void InitSystems();
   /**
-   * @brief 初始化组件事件监听
+   * @brief 初始化组件系统
    */
   void InitComponentSystems();
+  /**
+   * @brief 关闭组件系统
+   */
+  void ShutDownComponentSystems();
 
  private:
   // 场景名称

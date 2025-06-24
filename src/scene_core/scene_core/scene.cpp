@@ -23,8 +23,7 @@ Scene::Scene(const std::string &name)
 
 Scene::~Scene()
 {
-  // 确保所有系统按正确顺序销毁
-  m_SystemManager.ShutdownAll();
+  Clear(false);
 }
 
 void Scene::InitSystems()
@@ -40,13 +39,23 @@ void Scene::InitSystems()
 
 void Scene::InitComponentSystems()
 {  
-  // 注册组件系统
+  // TODO：逐个注册组件系统
   m_SystemManager.RegisterSystem<TransformSystem>();
   //m_SystemManager.RegisterSystem<ID>();
   //m_SystemManager.RegisterSystem<RenderSystem>();
 
   // 初始化所有组件系统
   m_SystemManager.InitializeAll();
+}
+
+void Scene::ShutDownComponentSystems() {
+  // 销毁所有组件系统
+  m_SystemManager.ShutdownAll();
+
+  // TODO：逐个注销组件系统
+  m_SystemManager.UnregisterSystem<TransformSystem>();
+  // m_SystemManager.RegisterSystem<ID>();
+  // m_SystemManager.RegisterSystem<RenderSystem>();
 }
 
 void Scene::OnUpdate(float timestep)
@@ -98,12 +107,15 @@ void Scene::Clear(bool keepSystems)
   }
 
   // 6. 根据参数决定是否重置系统
+  // TODO：重置其他系统
   if (!keepSystems) {
-    // 销毁所有系统
-    m_SystemManager.ShutdownAll();
+    ShutDownComponentSystems();
   }
 
-  // 7. TODO: 重新创建默认环境实体(是否存在重新创建的必要？)
+  // 7. TODO: 系统保留则重新创建默认环境实体（避免与析构函数的Clear冲突）
+  if (keepSystems) {
+
+  }
 }
 
 Entity Scene::CreateEntity(const std::string &name)
