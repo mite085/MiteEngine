@@ -143,6 +143,8 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
         .template connect<&SceneEventCallbackAdapter::InvokeDestroy<T>>(this);
   }
 
+  
+
  private:
   /**
    * @brief EnTT原生on_construct事件回调（组件专用版）
@@ -200,9 +202,20 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   }
 
   /**
-   * @brief 卸载全部Component回调函数
+   * @brief 注销Component回调函数
    */
-  void UnregisterCallbackComponent();
+  template<typename T> void UnregisterComponentCallbacks()
+  {
+    m_Registry->GetUnderlyingRegistry()
+        .on_update<T>()
+        .template disconnect<&SceneEventCallbackAdapter::InvokeUpdate<T>>(this);
+    m_Registry->GetUnderlyingRegistry()
+        .on_update<T>()
+        .template disconnect<&SceneEventCallbackAdapter::InvokeUpdate<T>>(this);
+    m_Registry->GetUnderlyingRegistry()
+        .on_destroy<T>()
+        .template disconnect<&SceneEventCallbackAdapter::InvokeDestroy<T>>(this);
+  }
 
   // 存储所有组件类型的回调(同一组件类型仅存放一个回调函数)
   //
@@ -232,7 +245,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
    * @param priority 调用优先级（数值越大越早执行）
    * @return 可用于取消注册的回调ID
    */
-  size_t RegisterCallbackEntityCreated(EntityCallback callback);
+  void RegisterCallbackEntityCreated(EntityCallback callback);
 
   /**
    * @brief 注册实体销毁回调（在实体实际销毁时调用）
@@ -240,7 +253,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
    * @param priority 调用优先级（数值越大越早执行）
    * @return 回调ID
    */
-  size_t RegisterCallbackEntityDestroyed(EntityCallback callback);
+  void RegisterCallbackEntityDestroyed(EntityCallback callback);
 
 
   /**
@@ -258,23 +271,14 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   void InvokeEntityDestroyed(entt::registry &registry, entt::entity entity);
 
   /**
-   * @brief 卸载指定的Entity回调函数
-   * @param callbackId 由注册函数返回的ID
-   */
-  void UnregisterCallbackEntity(size_t callbackId);
-
-  /**
-   * @brief 卸载全部Entity回调函数
+   * @brief 注销全部Entity回调函数
    */
   void UnregisterCallbackEntity();
 
  private:
   // 回调存储结构
-  struct EntityCallbackLists {
-    std::vector<EntityCallbackWrapper> createdCallbacks;
-    std::vector<EntityCallbackWrapper> destroyCallbacks;
-    std::unordered_map<size_t, std::vector<EntityCallbackWrapper> *> entityCallbackMap;
-  } m_EntityCallbacks;
+  EntityCallback m_CreateEntityCallback;
+  EntityCallback m_DestroyEntityCallback;
 
   size_t m_NextEntityCallbackID = 1;  // 全局的CallBack自增计数器，同时作为ID
 

@@ -18,8 +18,7 @@ namespace mite {
  * 4. Scene运行阶段--每帧调用UpdateAll(deltaTime)，更新所有系统
  * 5. Scene运行阶段--视情况调用GetSystem()，针对某一系统进行处理
  *
- * 6.
- * Scene运行阶段--每当新的Component创建/更新/移除，触发对应ComponentSystem的回调函数OnComponentAdded等
+ * 6. Scene运行阶段--每当新的Component创建/更新/移除，触发对应ComponentSystem的回调函数OnComponentAdded等
  *
  * 7. Scene销毁阶段--调用ShutdownAll()，关闭所有系统
  */
@@ -64,8 +63,50 @@ class ComponentSystemManager {
                   "Registered component must inherit from class component");
     m_Adapter.RegisterComponentCallbacks<U>();
 
-    int a = 1;
     return rawPtr;
+  }
+
+  /**
+   * @brief 注销组件系统
+   * @tparam T 系统类型
+   * @tparam U 组件类型
+   */
+  template<typename T> void UnregisterSystem() {
+    static_assert(std::is_base_of<ComponentSystem, T>::value,
+                  "Registered system must inherit from ComponentSystem");
+
+    // 1. 检查是否已注销，若已注销则直接返回
+    auto mapIt = m_SystemMap.find(type);
+    if (mapIt == m_SystemMap.end()) {
+      return;
+    }
+
+    // 2. 从unordered_map中删除
+    ComponentSystem *systemPtr = mapIt->second;
+    m_SystemMap.erase(mapIt);
+
+    // 3. 从vector中移除对应的unique_ptr
+    auto vecIt = std::find_if(m_Systems.begin(),
+                              m_Systems.end(),
+                              [systemPtr](const std::unique_ptr<ComponentSystem> &ptr) {
+                                return ptr.get() == systemPtr;
+                              });
+
+    if (vecIt != m_Systems.end()) {
+      m_Systems.erase(vecIt);  // 这会删除unique_ptr，从而释放内存
+    }
+    else {
+      // 仅当map和vector双重存储结构出现问题时触发：map中
+      // 能查找到并且正常删除，但vector未能查找到对应的unique_ptr
+      assert(false && "Inconsistent state: system found in map but not in vector");
+      return;
+    }
+
+    // 4. 注销通用组件回调
+    using U = typename T::ComponentType;
+    static_assert(std::is_base_of<Component, U>::value,
+                  "Registered component must inherit from class component");
+    m_Adapter.UnregisterComponentCallbacks<U>();
   }
 
   /**
