@@ -24,9 +24,8 @@ class SceneObserver {
 
   /**
    * @brief 结束观察并处理所有待处理变更
-   * @param dispatcher 事件分发器，用于发送实体级变更事件
    */
-  void EndObservationAndEmitEvents(EventDispatcher &dispatcher);
+  void EndObservation();
 
   /**
    * @brief 停止观察并清空缓存

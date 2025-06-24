@@ -28,7 +28,7 @@ void SceneObserver::BeginObservation()
   m_ModifiedEntities.clear();
 }
 
-void SceneObserver::EndObservationAndEmitEvents(EventDispatcher &dispatcher)
+void SceneObserver::EndObservation()
 {
   if (!m_IsObserving)
     return;
