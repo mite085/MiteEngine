@@ -101,5 +101,4 @@ bool Input::IsCurrentContext(const std::string &contextName)
   return current && current->GetName() == contextName;
 }
 
-void Input::OnEvent(Event &event) {}
 }  // namespace mite

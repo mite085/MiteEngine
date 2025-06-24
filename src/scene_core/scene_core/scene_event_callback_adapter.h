@@ -61,6 +61,22 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
     });
   }
 
+  /**
+   * @brief 注销Component回调函数
+   */
+  template<typename T> void UnregisterComponentCallbacks()
+  {
+    m_Registry->GetUnderlyingRegistry()
+        .on_update<T>()
+        .template disconnect<&SceneEventCallbackAdapter::InvokeUpdate<T>>(this);
+    m_Registry->GetUnderlyingRegistry()
+        .on_update<T>()
+        .template disconnect<&SceneEventCallbackAdapter::InvokeUpdate<T>>(this);
+    m_Registry->GetUnderlyingRegistry()
+        .on_destroy<T>()
+        .template disconnect<&SceneEventCallbackAdapter::InvokeDestroy<T>>(this);
+  }
+
  private:
   SceneRegistry *m_Registry = nullptr;  // RegisterCallbacks时更新的注册对象
 
@@ -143,8 +159,6 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
         .template connect<&SceneEventCallbackAdapter::InvokeDestroy<T>>(this);
   }
 
-  
-
  private:
   /**
    * @brief EnTT原生on_construct事件回调（组件专用版）
@@ -201,21 +215,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
     }
   }
 
-  /**
-   * @brief 注销Component回调函数
-   */
-  template<typename T> void UnregisterComponentCallbacks()
-  {
-    m_Registry->GetUnderlyingRegistry()
-        .on_update<T>()
-        .template disconnect<&SceneEventCallbackAdapter::InvokeUpdate<T>>(this);
-    m_Registry->GetUnderlyingRegistry()
-        .on_update<T>()
-        .template disconnect<&SceneEventCallbackAdapter::InvokeUpdate<T>>(this);
-    m_Registry->GetUnderlyingRegistry()
-        .on_destroy<T>()
-        .template disconnect<&SceneEventCallbackAdapter::InvokeDestroy<T>>(this);
-  }
+
 
   // 存储所有组件类型的回调(同一组件类型仅存放一个回调函数)
   //

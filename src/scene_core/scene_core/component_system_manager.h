@@ -74,7 +74,7 @@ class ComponentSystemManager {
   template<typename T> void UnregisterSystem() {
     static_assert(std::is_base_of<ComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
-
+    const std::type_index type = typeid(T);
     // 1. 检查是否已注销，若已注销则直接返回
     auto mapIt = m_SystemMap.find(type);
     if (mapIt == m_SystemMap.end()) {

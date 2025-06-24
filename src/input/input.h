@@ -31,8 +31,6 @@ class Input {
   static void PopContext();
   static bool IsCurrentContext(const std::string &contextName);
 
-  // TODO: 事件回调
-  static void OnEvent(Event &event);
 };
 
 
