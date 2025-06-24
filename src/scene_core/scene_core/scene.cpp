@@ -29,22 +29,24 @@ Scene::~Scene()
 
 void Scene::InitSystems()
 {
-  // 注册核心系统
+  // 创建核心系统
   m_SceneGraph = std::make_unique<SceneGraph>(GetRegistry());
   m_SceneObserver = std::make_unique<SceneObserver>(GetRegistry());
   m_Serializer = std::make_unique<SceneSerializer>(*this);
 
-  // 注册组件系统
-  RegisterComponentSystems();
+  // 初始化组件系统
+  InitComponentSystems();
 }
 
-void Scene::RegisterComponentSystems()
+void Scene::InitComponentSystems()
 {  
-  // 注册核心系统（按执行顺序）
+  // 注册组件系统
   m_SystemManager.RegisterSystem<TransformSystem>();
   //m_SystemManager.RegisterSystem<ID>();
   //m_SystemManager.RegisterSystem<RenderSystem>();
 
+  // 初始化所有组件系统
+  m_SystemManager.InitializeAll();
 }
 
 void Scene::OnUpdate(float timestep)
@@ -64,9 +66,8 @@ void Scene::OnUpdate(float timestep)
     m_Registry.DestroyEntity(entity);
   }
 
-  // 结束观察并分发事件
-  EventDispatcher dispatcher;
-  m_SceneObserver->EndObservationAndEmitEvents(dispatcher);
+  // 结束观察
+  m_SceneObserver->EndObservation();
 }
 
 void Scene::OnRenderPrepare()
