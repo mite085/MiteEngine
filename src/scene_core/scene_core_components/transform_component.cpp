@@ -3,18 +3,17 @@
 #include "scene_core/entity.h"
 
 namespace mite {
-TransformComponent::TransformComponent() : ComponentTraits() {}
+TransformComponent::TransformComponent() : ComponentTraits(), dirtyFlags(0) {}
 
 TransformComponent::TransformComponent(const glm::vec3 &position,
                                        const glm::quat &rotation,
                                        const glm::vec3 &scale)
-    : ComponentTraits(), m_Position(position), m_Rotation(rotation), m_Scale(scale)
+    : ComponentTraits(), m_Position(position), m_Rotation(rotation), m_Scale(scale), dirtyFlags(0)
 {
   UpdateLocalMatrix();
 }
 
-TransformComponent::TransformComponent( const glm::mat4 &matrix)
-    : ComponentTraits()
+TransformComponent::TransformComponent(const glm::mat4 &matrix) : ComponentTraits()
 {
   SetLocalMatrix(matrix);
 }
@@ -116,7 +115,6 @@ void TransformComponent::SetWorldPosition(SceneRegistry &reg, const glm::vec3 &p
       SetLocalPosition(glm::vec3(localPos));
       return;
     }
-    
   }
   // 无父节点，或父节点不可用，即此节点为根节点
   SetLocalPosition(position);
@@ -218,7 +216,7 @@ void TransformComponent::RotateAround(SceneRegistry &reg,
   const glm::vec3 toObject = worldPos - point;
   const glm::vec3 rotatedVec = rotation * toObject;
   const glm::vec3 newWorldPos = point + rotatedVec;
-  
+
   // 计算新的世界旋转
   glm::quat newWorldRot = rotation * GetWorldRotation(reg);
 
@@ -392,13 +390,13 @@ bool TransformComponent::Serialize(std::ostream &output) const
   Component::Serialize(output);  // 序列化基类数据
 
   //// 序列化位置
-  //output.write(reinterpret_cast<const char *>(&m_Position), sizeof(m_Position));
+  // output.write(reinterpret_cast<const char *>(&m_Position), sizeof(m_Position));
 
   //// 序列化旋转
-  //output.write(reinterpret_cast<const char *>(&m_Rotation), sizeof(m_Rotation));
+  // output.write(reinterpret_cast<const char *>(&m_Rotation), sizeof(m_Rotation));
 
   //// 序列化缩放
-  //output.write(reinterpret_cast<const char *>(&m_Scale), sizeof(m_Scale));
+  // output.write(reinterpret_cast<const char *>(&m_Scale), sizeof(m_Scale));
 
   return !output.fail();
 }
@@ -408,17 +406,17 @@ bool TransformComponent::Deserialize(std::istream &input)
   Component::Deserialize(input);  // 反序列化基类数据
 
   //// 反序列化位置
-  //input.read(reinterpret_cast<char *>(&m_Position), sizeof(m_Position));
+  // input.read(reinterpret_cast<char *>(&m_Position), sizeof(m_Position));
 
   //// 反序列化旋转
-  //input.read(reinterpret_cast<char *>(&m_Rotation), sizeof(m_Rotation));
+  // input.read(reinterpret_cast<char *>(&m_Rotation), sizeof(m_Rotation));
 
   //// 反序列化缩放
-  //input.read(reinterpret_cast<char *>(&m_Scale), sizeof(m_Scale));
+  // input.read(reinterpret_cast<char *>(&m_Scale), sizeof(m_Scale));
 
   //// 标记矩阵需要更新
-  //m_LocalMatrixDirty = true;
-  //m_WorldMatrixDirty = true;
+  // m_LocalMatrixDirty = true;
+  // m_WorldMatrixDirty = true;
 
   return !input.fail();
 }
@@ -427,7 +425,6 @@ bool TransformComponent::Deserialize(std::istream &input)
 
 void TransformComponent::UpdateLocalMatrix() const
 {
-
   m_LocalMatrix = glm::mat4(1.0f);
   m_LocalMatrix = glm::translate(m_LocalMatrix, m_Position);
   m_LocalMatrix *= glm::mat4_cast(m_Rotation);
@@ -494,5 +491,4 @@ void TransformSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &reg
   //
   // reg.view<TransformComponent>(entt::exclude<HierarchyComponent>)
 }
-
 };  // namespace mite
