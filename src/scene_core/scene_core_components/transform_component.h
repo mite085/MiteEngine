@@ -73,19 +73,6 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    */
   void SetWorldPosition(SceneRegistry &reg, const glm::vec3 &position);
 
-  /**
-   * @brief 相对移动
-   * @param translation 局部空间移动量
-   */
-  void Translate(const glm::vec3 &translation);
-  /**
-   * @brief 相对移动
-   * @param x 局部空间移动x分量
-   * @param y 局部空间移动y分量
-   * @param z 局部空间移动z分量
-   */
-  void Translate(float x, float y, float z);
-
   // 旋转操作 ==============================================
   /**
    * @brief 获取局部空间旋转(四元数)
@@ -99,20 +86,20 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   void SetLocalRotation(const glm::quat &rotation);
 
   /**
-   * @brief 获取局部空间旋转(欧拉角)
-   * @return 局部空间旋转欧拉角(弧度制)
+   * @brief 获取局部空间旋转(欧拉角)(弧度制)
+   * @return 局部空间旋转(欧拉角)(弧度制)
    */
   glm::vec3 GetLocalEulerAngles() const;
   /**
-   * @brief 设定局部空间旋转(欧拉角)
-   * @param eulerAngles 局部空间旋转欧拉角
+   * @brief 设定局部空间旋转(欧拉角)(弧度制)
+   * @param eulerAngles 局部空间旋转(欧拉角)(弧度制)
    */
   void SetLocalEulerAngles(const glm::vec3 &eulerAngles);
   /**
-   * @brief 设定局部空间旋转(欧拉角)
-   * @param x 局部空间旋转欧拉角x分量
-   * @param y 局部空间旋转欧拉角y分量
-   * @param z 局部空间旋转欧拉角z分量
+   * @brief 设定局部空间旋转(欧拉角)(弧度制)
+   * @param x 局部空间旋转欧拉角x分量(弧度制)
+   * @param y 局部空间旋转欧拉角y分量(弧度制)
+   * @param z 局部空间旋转欧拉角z分量(弧度制)
    */
   void SetLocalEulerAngles(float x, float y, float z);
 
@@ -136,7 +123,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   /**
    * @brief 绕指定轴旋转实体
    * @param axis 旋转轴（单位向量）
-   * @param angle 旋转角度（弧度）
+   * @param angle 旋转角度(弧度制)
    *
    * 注意：
    * - 会自动标准化旋转轴
@@ -168,7 +155,8 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @param target 目标的世界空间三维位置坐标
    * @param up 观察的Up方向
    */
-  void LookAt(SceneRegistry &reg, const glm::vec3 &target,
+  void LookAt(SceneRegistry &reg,
+              const glm::vec3 &target,
               const glm::vec3 &up = glm::vec3(0.0f, 1.0f, 0.0f));
 
   // 缩放操作 ==============================================
@@ -229,29 +217,32 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
    * @return {typeid(HierarchyComponent)}
    */
   std::vector<std::type_index> GetDependencies() const override;
+  /**
+   * @brief TODO：序列化与反序列化
+   * @param output
+   * @return
+   */
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
+
+  /**
+   * @brief 获取TransformComponent专属的脏标记
+   * 标记位使用uint8_t节省内存
+   */
+  mutable uint8_t dirtyFlags : 3;
+  static constexpr uint8_t LOCAL_DIRTY = 0x1;
+  static constexpr uint8_t WORLD_DIRTY = 0x2;
+  static constexpr uint8_t HIERARCHY_DIRTY = 0x4;
 
  private:
   /**
    * @brief 计算局部变换矩阵
    */
-  void CalculateLocalMatrix() const;
+  void UpdateLocalMatrix() const;
   /**
    * @brief 计算世界变换矩阵(递归)
    */
-  void CalculateWorldMatrix(SceneRegistry &reg) const;
-
-  /**
-   * @brief 将矩阵分解成变换，更新position、rotation以及scale
-   * @param matrix
-   * 
-   * 注意：
-   * 该步骤不直接更新LocalMatrix和WorldMatrix，
-   * 而是设定MatrixDirty，由SceneGraph的
-   * UpdateWorldTransformsAndVisibility函数进行统一更新
-   */
-  void DecomposeMatrix(const glm::mat4 &matrix);
+  void UpdateWorldMatrix(SceneRegistry &reg) const;
 
  private:
   // 局部空间变换属性
@@ -262,11 +253,9 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   // 矩阵缓存
   mutable glm::mat4 m_LocalMatrix = glm::mat4(1.0f);
   mutable glm::mat4 m_WorldMatrix = glm::mat4(1.0f);
-
-  // 脏标记
-  mutable bool m_LocalMatrixDirty = true;
-  mutable bool m_WorldMatrixDirty = true;
 };
+
+// Transform组件系统--用于批量处理脏数据 =====================================================
 
 class TransformSystem : public DirtyComponentSystem<TransformComponent> {
   DECLARE_COMPONENT_SYSTEM(TransformSystem)
@@ -276,6 +265,136 @@ class TransformSystem : public DirtyComponentSystem<TransformComponent> {
 
  private:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
+};
+
+// Transform组件事件--用于在数据变更时发布事件
+// =====================================================
+
+/**
+ * @class TransformUpdatedEvent
+ * @brief 变换更新事件
+ */
+class TransformUpdatedEvent : public ComponentEvent<TransformComponent> {
+ public:
+  TransformUpdatedEvent(Entity entity, TransformComponent &component)
+      : ComponentEvent<TransformComponent>(entity, component)
+  {
+  }
+
+  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new TransformUpdatedEvent(entity, component);
+  }
+};
+/**
+ * @class PositionChangedEvent
+ * @brief 位置改变事件
+ */
+class PositionChangedEvent : public ComponentEvent<TransformComponent> {
+ public:
+  PositionChangedEvent(Entity entity,
+                       TransformComponent &component,
+                       glm::vec3 newPosition,
+                       bool isWorldSpace)
+      : ComponentEvent<TransformComponent>(entity, component),
+        newPosition(newPosition),
+        isWorldSpace(isWorldSpace)
+  {
+  }
+
+  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new PositionChangedEvent(entity, component, newPosition, isWorldSpace);
+  }
+
+ private:
+  glm::vec3 newPosition;
+  bool isWorldSpace;
+};
+/**
+ * @class RotationChangedEvent
+ * @brief 旋转改变事件
+ */
+class RotationChangedEvent : public ComponentEvent<TransformComponent> {
+ public:
+  RotationChangedEvent(Entity entity,
+                       TransformComponent &component,
+                       glm::quat newRotation,
+                       bool isWorldSpace)
+      : ComponentEvent<TransformComponent>(entity, component),
+        newRotation(newRotation),
+        isWorldSpace(isWorldSpace)
+  {
+  }
+
+  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new RotationChangedEvent(entity, component, newRotation, isWorldSpace);
+  }
+
+ private:
+  glm::quat newRotation;
+  bool isWorldSpace;
+};
+/**
+ * @class ScaleChangedEvent
+ * @brief 缩放改变事件
+ */
+class ScaleChangedEvent : public ComponentEvent<TransformComponent> {
+ public:
+  ScaleChangedEvent(Entity entity,
+                    TransformComponent &component,
+                    glm::vec3 newPosition,
+                    bool isWorldSpace)
+      : ComponentEvent<TransformComponent>(entity, component),
+        newScale(newPosition),
+        isWorldSpace(isWorldSpace)
+  {
+  }
+
+  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new ScaleChangedEvent(entity, component, newScale, isWorldSpace);
+  }
+
+ private:
+  glm::vec3 newScale;
+  bool isWorldSpace;
+};
+/**
+ * @class TransformChangedEvent
+ * @brief 变换改变事件
+ */
+class TransformChangedEvent : public ComponentEvent<TransformComponent> {
+ public:
+  TransformChangedEvent(Entity entity,
+                        TransformComponent &component,
+                        glm::mat4 newMatrix,
+                        bool isWorldSpace)
+      : ComponentEvent<TransformComponent>(entity, component),
+        newMatrix(newMatrix),
+        isWorldSpace(isWorldSpace)
+  {
+  }
+
+  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new TransformChangedEvent(entity, component, newMatrix, isWorldSpace);
+  }
+
+ private:
+  glm::mat4 newMatrix;
+  bool isWorldSpace;
 };
 };  // namespace mite
 

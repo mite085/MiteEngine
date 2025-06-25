@@ -27,7 +27,13 @@ class Event {
    * @brief 克隆事件对象(用于事件队列)
    * @return Event* 新的事件对象指针
    *
-   * 使用示例：
+   * 使用场景：
+   * 若事件需要异步处理，为防止作为局部变量
+   * 创建的事件临时变量，生命周期随着事件
+   * 发布函数的完成而结束，将其克隆并存储，
+   * 留待后续处理。
+   * 
+   * 子类继承示例：
    * 以class WindowResizeEvent: public Event为例
    *
    * WindowResizeEvent(int width, int height)
