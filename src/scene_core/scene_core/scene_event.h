@@ -189,14 +189,20 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
  */
 template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
  public:
-  ComponentChangedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
+  ComponentChangedEvent(Entity entity, T &newComponent, T &oldComponent)
+      : ComponentEvent<T>(entity, newComponent), oldComponent(oldComponent)
+  {
+  }
 
   EVENT_CLASS_TYPE(COMPONENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new ComponentChangedEvent<T>(entity, component);
+    return new ComponentChangedEvent<T>(entity, component, oldComponent);
   }
+
+ private:
+  T &oldComponent;  // ×é¼þ
 };
 };  // namespace mite
 

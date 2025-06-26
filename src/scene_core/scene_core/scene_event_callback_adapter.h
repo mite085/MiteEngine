@@ -6,6 +6,105 @@
 
 namespace mite {
 /**
+ * @brief ComponentUpdate专用的,非模板化的组件状态缓存管理器
+ * 
+ * EnTT原生的on_update仅支持查询更新后的newComponent，所以
+ * 需要一个缓存已构建的<entity, component>列表，以确保在发布
+ * ComponentChangedEvent事件时，能查询到oldComponent。
+ * 
+ */
+class ComponentStateCache {
+ public:
+  ~ComponentStateCache()
+  {
+    // 清理所有缓存
+    for (auto &pair : m_Caches) {
+      delete pair.second;
+    }
+  }
+
+  /**
+   * @brief 捕获指定类型组件的当前状态
+   */
+  template<typename T> void Capture(entt::registry &reg, entt::entity entity)
+  {
+    static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+    const std::type_index type = typeid(T);
+    auto it = m_Caches.find(type);
+    if (it == m_Caches.end()) {
+      // 为新类型创建缓存
+      auto *cache = new TypedCache<T>();
+      m_Caches[type] = cache;
+      it = m_Caches.find(type);
+    }
+
+    // 捕获状态
+    static_cast<TypedCache<T> *>(it->second)->Capture(reg, entity);
+  }
+
+  /**
+   * @brief 获取指定类型组件的旧状态
+   */
+  template<typename T> const T *GetOldState(entt::entity entity) const
+  {
+    const std::type_index type = typeid(T);
+    auto it = m_Caches.find(type);
+    if (it != m_Caches.end()) {
+      return static_cast<const TypedCache<T> *>(it->second)->GetOldState(entity);
+    }
+    return nullptr;
+  }
+
+  /**
+   * @brief 清除指定实体的缓存
+   */
+  void Clear(entt::entity entity)
+  {
+    for (auto &pair : m_Caches) {
+      pair.second->Clear(entity);
+    }
+  }
+
+ private:
+  // 类型擦除基类
+  struct CacheBase {
+    virtual ~CacheBase() = default;
+    virtual void Clear(entt::entity entity) = 0;
+  };
+
+  // 具体类型的缓存实现
+  template<typename T> struct TypedCache : CacheBase {
+    std::unordered_map<entt::entity, T*> cache;
+
+    void Capture(entt::registry &reg, entt::entity entity)
+    {
+      if (reg.valid(entity) && reg.all_of<T>(entity)) {
+        cache[entity] = &reg.get<T>(entity);
+      }
+    }
+
+    const T *GetOldState(entt::entity entity) const
+    {
+      auto it = cache.find(entity);
+      return it != cache.end() ? it->second : nullptr;
+    }
+
+    void Clear(entt::entity entity) override
+    {
+      // 注意：
+      // Clear在entity销毁时触发，
+      // 此entity未必注册所有component，
+      // 所以cache有可能不包含本entity。
+      if (cache.find(entity) != cache.end())
+        cache.erase(entity);
+    }
+  };
+
+  std::unordered_map<std::type_index, CacheBase *> m_Caches;
+};
+
+/**
  * @brief 场景事件回调适配器（模板增强版）
  *
  * 目的：
@@ -20,6 +119,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   ~SceneEventCallbackAdapter() override;
   // 组件回调函数类型
   using ComponentCallback = std::function<void(Entity, Component &)>;
+  using ComponentUpdateCallback = std::function<void(Entity, Component &, Component &)>;
   // 1. 实体与组件注册接口 =============================================
   /**
    * @brief 注册所有回调到原始系统
@@ -56,8 +156,8 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
     });
 
     // 组件变更事件
-    RegisterCallbackComponentUpdate<T>([this](Entity entity, T &component) {
-      PostComponentEvent<ComponentChangedEvent<T>, T>(entity, component);
+    RegisterCallbackComponentUpdate<T>([this](Entity entity, T &component, T &oldComponent) {
+      PostComponentEvent<ComponentChangedEvent<T>, T>(entity, component, oldComponent);
     });
   }
 
@@ -94,6 +194,13 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
     E_T event(entity, component);
     EventBus::Get().Post(event);
   }
+  template<typename E_T, typename T>
+  void PostComponentEvent(Entity entity, T &component, T &oldComponent)
+  {
+    // ComponentChangedEvent专用（或许没必要封装成函数）
+    E_T event(entity, component, oldComponent);
+    EventBus::Get().Post(event);
+  }
   /**
    * @brief 注册组件构造回调
    * @tparam T 组件类型
@@ -123,13 +230,13 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
    * @param callback 回调函数
    */
   template<typename T>
-  void RegisterCallbackComponentUpdate(std::function<void(Entity, T &)> callback)
+  void RegisterCallbackComponentUpdate(std::function<void(Entity, T &, T &)> callback)
   {
     static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
 
     const std::type_index type = typeid(T);
-    m_UpdateCallbacks[type] = [callback](Entity entity, Component &comp) {
-      callback(entity, static_cast<T &>(comp));
+    m_UpdateCallbacks[type] = [callback](Entity entity, Component &comp, Component &oldComp) {
+      callback(entity, static_cast<T &>(comp), static_cast<T &>(oldComp));
     };
 
     // 连接到EnTT的回调系统
@@ -177,6 +284,9 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
       // 的运行，发布ComponentAddedEvent事件。
       it->second(entity, component);
     }
+
+    // 构造时，缓存初始状态
+    m_ComponentStateCache.Capture<T>(reg, ent);
   }
 
   /**
@@ -188,13 +298,29 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   {
     Entity entity{m_Registry->m_Scene, ent};
     T &component = reg.get<T>(ent);
-    const std::type_index type = typeid(T);
-    if (auto it = m_UpdateCallbacks.find(type); it != m_UpdateCallbacks.end()) {
-      // 此处将会触发
-      // PostComponentEvent<ComponentChangedEvent<T>, T>(entity, component);
-      // 的运行，发布ComponentChangedEvent事件。
-      it->second(entity, component);
+
+    // 需要检查旧Component是否为空
+    auto oldComponentPtr = m_ComponentStateCache.GetOldState<T>(ent);
+    if (oldComponentPtr != nullptr) {
+      // 不空才能安全解引用
+      T &oldComponent = *const_cast<T *>(oldComponentPtr);
+      const std::type_index type = typeid(T);
+      if (auto it = m_UpdateCallbacks.find(type); it != m_UpdateCallbacks.end()) {
+        // 此处将会触发
+        // PostComponentEvent<ComponentChangedEvent<T>, T>(entity, component);
+        // 的运行，发布ComponentChangedEvent事件。
+        it->second(entity, component, oldComponent);
+      }
     }
+    else {
+      // 如果空则顺势执行ConstructCallbacks
+      const std::type_index type = typeid(T);
+      if (auto it = m_ConstructCallbacks.find(type); it != m_ConstructCallbacks.end()) {
+        it->second(entity, component);
+      }
+    }
+    // 完成update，更新缓存
+    m_ComponentStateCache.Capture<T>(reg, ent);
   }
 
   /**
@@ -226,8 +352,11 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   // 作用：
   // 当Invoke函数触发，准备发布事件时，提供查表操作。
   std::unordered_map<std::type_index, ComponentCallback> m_ConstructCallbacks;
-  std::unordered_map<std::type_index, ComponentCallback> m_UpdateCallbacks;
+  std::unordered_map<std::type_index, ComponentUpdateCallback> m_UpdateCallbacks;
   std::unordered_map<std::type_index, ComponentCallback> m_DestroyCallbacks;
+
+  // ComponentUpdate专用的组件状态缓存
+  ComponentStateCache m_ComponentStateCache;
 
   // 3. 实体事件回调相关(由SceneObserver全权管理) ===================================
  private:

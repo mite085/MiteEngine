@@ -206,9 +206,8 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
    * @brief 处理组件替换事件
    *
    * 注意：
-   * 仅当调用registry.replace<T>(entity, ...)
-   * 或registry.patch<T>(entity, ...)，修改现有组件时触发，
-   * 故基本无需考虑在子类override该方法。
+   * 仅当调用SceneRegistry的ReplaceComponent
+   * 或PatchComponent，修改现有组件时触发。
    */
   virtual void OnComponentUpdated(ComponentChangedEvent<T> &e) {}
 

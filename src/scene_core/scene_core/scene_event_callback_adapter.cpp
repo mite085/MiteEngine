@@ -98,6 +98,9 @@ void SceneEventCallbackAdapter::InvokeEntityDestroyed(entt::registry &registry,
 
   // 触发回调
   m_DestroyEntityCallback(userEntity);
+
+  // 清空缓存
+  m_ComponentStateCache.Clear(userEntity);
 }
 
 void SceneEventCallbackAdapter::UnregisterCallbackEntity()

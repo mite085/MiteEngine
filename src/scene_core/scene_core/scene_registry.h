@@ -107,6 +107,46 @@ class SceneRegistry {
   }
 
   /**
+   * @brief 替换组件
+   * @param entity 实体对象
+   * @param ...args 新组件的构造函数参数包
+   * @return 新组件的引用
+   */
+  template<typename T, typename... Args> T &ReplaceComponent(Entity entity, Args &&...args)
+  {
+    // 获取旧组件
+    T &oldComponent = GetComponent<T>(entity);
+
+    // 执行实际替换
+    T &newComponent = m_Registry.replace<T>(entity, std::forward<Args>(args)...);
+
+    // 发布变更事件（包含新旧组件）
+    EventBus::Get().Post(ComponentChangedEvent<T>(entity, newComponent, oldComponent));
+
+    return newComponent;
+  }
+
+  /**
+   * @brief 组件的部分更新
+   * @param entity 实体对象
+   * @param ...args 新组件的构造函数参数包
+   * @return 新组件的引用
+   */
+  template<typename T, typename... Args> T &PatchComponent(Entity entity, Args &&...args)
+  {
+    // 获取旧组件
+    T &oldComponent = GetComponent<T>(entity);
+
+    // 执行部分更新
+    T &component = m_Registry.patch<T>(entity, std::forward<Args>(args)...);
+
+    // 发布变更事件（包含新旧组件）
+    EventBus::Get().Post(ComponentChangedEvent<T>(entity, component, oldComponent));
+
+    return component;
+  }
+
+  /**
    * @brief 检查实体是否拥有组件
    * @tparam T 组件类型
    * @param entity 目标实体
