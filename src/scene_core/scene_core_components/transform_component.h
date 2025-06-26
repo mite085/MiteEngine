@@ -273,6 +273,9 @@ class TransformSystem : public DirtyComponentSystem<TransformComponent> {
 /**
  * @class TransformUpdatedEvent
  * @brief 变换更新事件
+ * 
+ * TransformComponent::ProcessDirty负责发布，
+ * SceneGraph负责接收，并标记所有子节点Dirty
  */
 class TransformUpdatedEvent : public ComponentEvent<TransformComponent> {
  public:
@@ -310,7 +313,10 @@ class PositionChangedEvent : public ComponentEvent<TransformComponent> {
   {
     return new PositionChangedEvent(entity, component, newPosition, isWorldSpace);
   }
-
+  bool IsWorldSpace()
+  {
+    return isWorldSpace;
+  }
  private:
   glm::vec3 newPosition;
   bool isWorldSpace;
@@ -330,7 +336,10 @@ class RotationChangedEvent : public ComponentEvent<TransformComponent> {
         isWorldSpace(isWorldSpace)
   {
   }
-
+  bool IsWorldSpace()
+  {
+    return isWorldSpace;
+  }
   EVENT_CLASS_TYPE(COMPONENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
@@ -357,7 +366,10 @@ class ScaleChangedEvent : public ComponentEvent<TransformComponent> {
         isWorldSpace(isWorldSpace)
   {
   }
-
+  bool IsWorldSpace()
+  {
+    return isWorldSpace;
+  }
   EVENT_CLASS_TYPE(COMPONENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
@@ -384,7 +396,10 @@ class TransformChangedEvent : public ComponentEvent<TransformComponent> {
         isWorldSpace(isWorldSpace)
   {
   }
-
+  bool IsWorldSpace()
+  {
+    return isWorldSpace;
+  }
   EVENT_CLASS_TYPE(COMPONENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override

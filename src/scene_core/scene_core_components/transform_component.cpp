@@ -29,44 +29,28 @@ void TransformComponent::ProcessDirty(SceneRegistry &reg)
     UpdateWorldMatrix(reg);
   }
 
-  // 计算世界矩阵
-  glm::mat4 parentMatrix = glm::mat4(1.0f);
-  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
-    if (hierarchy.GetParent().IsValid()) {
-      const auto &parentTransform = reg.GetComponent<TransformComponent>(hierarchy.GetParent());
-      // 如果ProcessDirty是由ComponentSystem
-      // 从root节点逐个向下传播的，那此处调用
-      // 递归逻辑将会在递归的第一层检查dirtyFlags
-      // 后判定为false终止递归，不会出现额外的开销，
-      //
-      // 但如果ComponentSystem的传播逻辑出现问题，
-      // 此处的递归又可以作为一层冗余的保险措施。
-      parentMatrix = parentTransform.GetWorldMatrix(reg);
-    }
-  }
-  const glm::mat4 newWorldMatrix = parentMatrix * m_LocalMatrix;
-
-  // 检查世界矩阵是否实际变化
-  if (newWorldMatrix != m_WorldMatrix) {
-    m_WorldMatrix = newWorldMatrix;
-    dirtyFlags |= WORLD_DIRTY;  // 标记世界矩阵变化
-
-    // 通知子节点需要更新
+  // 仅计算自己的世界矩阵，不处理子节点
+  if (dirtyFlags & (LOCAL_DIRTY | HIERARCHY_DIRTY)) {
+    const glm::mat4 localMat = GetLocalMatrix();
     if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
       auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
-      for (Entity child : hierarchy.GetChildren()) {
-        if (reg.IsValid(child)) {
-          auto &childTransform = reg.GetComponent<TransformComponent>(child);
-          // 仅仅更新子节点脏标记，确保向下传播
-          childTransform.dirtyFlags |= HIERARCHY_DIRTY;
-          childTransform.MarkDirty();
-        }
+      if (hierarchy.GetParent().IsValid()) {
+        m_WorldMatrix =
+            reg.GetComponent<TransformComponent>(hierarchy.GetParent()).GetWorldMatrix(reg) *
+            localMat;
+      }
+      else {
+        m_WorldMatrix = localMat;
       }
     }
-    // 发布更新事件
+    else {
+      m_WorldMatrix = localMat;
+    }
+
+    // 发布事件通知SceneGraph处理子节点更新
     EventBus::Get().Post(TransformUpdatedEvent(GetOwnerEntity(), *this));
   }
+
   // 清除标记（保留HIERARCHY_DIRTY供子节点处理）
   dirtyFlags &= ~(LOCAL_DIRTY | WORLD_DIRTY);
   m_Dirty = false;
@@ -137,7 +121,7 @@ void TransformComponent::SetLocalRotation(const glm::quat &rotation)
     dirtyFlags |= HIERARCHY_DIRTY;
     MarkDirty();
 
-    // 发布事件
+    // 发布事件通知SceneGraph处理子节点更新
     EventBus::Get().Post(RotationChangedEvent(GetOwnerEntity(), *this, m_Rotation, false));
   }
 }
@@ -276,7 +260,7 @@ void TransformComponent::SetLocalScale(const glm::vec3 &scale)
     dirtyFlags |= HIERARCHY_DIRTY;
     MarkDirty();
 
-    // 发布缩放变更事件
+    // 发布事件通知SceneGraph处理子节点更新
     EventBus::Get().Post(ScaleChangedEvent(GetOwnerEntity(), *this, m_Scale, false));
   }
 }
@@ -339,7 +323,7 @@ void TransformComponent::SetLocalMatrix(const glm::mat4 &matrix)
   // 直接更新缓存矩阵（避免下次Get时重复计算）
   m_LocalMatrix = matrix;
 
-  // 通知变更事件
+  // 发布事件通知SceneGraph处理子节点更新
   EventBus::Get().Post(TransformChangedEvent(GetOwnerEntity(), *this, m_LocalMatrix, false));
 }
 
@@ -444,6 +428,7 @@ void TransformComponent::UpdateWorldMatrix(SceneRegistry &reg) const
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
       // GetWorldMatrix递归计算确保最新
+      // 这里确保向上传递正确，SceneGraph确保向下传递正确。
       m_WorldMatrix = parentTransform.GetWorldMatrix(reg) * localMat;
     }
     else {

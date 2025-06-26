@@ -246,6 +246,9 @@ class SceneRegistry {
   /**
    * @brief 获取当前registry中所有有效的Entity集合
    * @return 包含所有有效Entity的vector（按创建顺序）
+   * 
+   * 这个函数应当是const成员函数，但entt::registry
+   * 的storge未提供const方法，所以无法置为const
    */
   std::vector<Entity> GetAllEntities();
 
