@@ -1,8 +1,7 @@
 #ifndef MITE_SCENE_HIERACHY_COMPONENT
 #define MITE_SCENE_HIERACHY_COMPONENT
 
-#include "scene_core/component.h"
-#include "scene_core/scene_registry.h"
+#include "scene_core/component_system.h"
 
 namespace mite {
 // 前向声明
@@ -115,11 +114,68 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
    */
   void SetParent(Entity parent);
 
+ public:
+  size_t m_DepthCache = 0;  // 深度缓存（非持久化）
+
  private:
   Entity m_Parent;                 // 父实体句柄
   std::vector<Entity> m_Children;  // 子实体列表
-  size_t m_DepthCache = 0;         // 深度缓存（非持久化）
+
+  friend class HierarchySystem;
 };
+
+// Hierarchy组件系统--用于批量处理脏数据 =====================================================
+
+class HierarchySystem : public DirtyComponentSystem<HierarchyComponent> {
+  DECLARE_COMPONENT_SYSTEM(HierarchySystem)
+ public:
+  /**
+   * @brief 初始化系统
+   */
+  void Initialize(SceneRegistry &registry) override;
+
+  /**
+   * @brief 清理系统
+   */
+  void Shutdown(SceneRegistry &registry) override;
+
+  /**
+   * @brief 获取系统执行优先级
+   * @note 需要在TransformSystem之前执行
+   */
+  Component::Family GetExecutionOrder() const override
+  {
+    return Component::Family::Core;
+  }
+
+ private:
+  /**
+   * @brief 处理脏组件
+   */
+  void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
+
+  /**
+   * @brief 处理组件更新事件
+   */
+  void OnComponentUpdated(ComponentChangedEvent<HierarchyComponent> &e) override;
+
+  /**
+   * @brief 验证层次结构，防止循环依赖
+   * @param entity 要检查的实体
+   * @param newParent 新的父实体
+   * @return 是否允许建立此父子关系
+   */
+  bool ValidateHierarchy(Entity entity, Entity newParent, SceneRegistry &registry);
+
+  /**
+   * @brief 递归更新子实体的深度缓存
+   * @param entity 起始实体
+   * @param registry 场景注册表
+   */
+  void UpdateChildrenDepthCache(Entity entity, SceneRegistry &registry);
+};
+
+
 };  // namespace mite
 
 #endif

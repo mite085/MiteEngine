@@ -193,7 +193,10 @@ template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
       : ComponentEvent<T>(entity, newComponent), oldComponent(oldComponent)
   {
   }
-
+  T &GetOldComponent()
+  {
+    return oldComponent;
+  }
   EVENT_CLASS_TYPE(COMPONENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override

@@ -139,11 +139,14 @@ class Component {
    */
   Entity GetParent(SceneRegistry &reg);
 
+  /**
+   * @brief 获取组件绑定的实体
+   */
+  Entity GetOwnerEntity() const;
+
  protected:
   // 保护构造函数，确保只能通过子类实例化，
   explicit Component() = default;
-
-  Entity GetOwnerEntity() const;
 
   Entity m_OwnerEntity;
 
