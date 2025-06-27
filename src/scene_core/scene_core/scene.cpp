@@ -1,6 +1,5 @@
 #include "scene.h"
 #include "scene_graph.h"
-#include "scene_observer.h"
 #include "scene_serializer.h"
 #include "scene_core_components/component_headers.h"
 
@@ -31,8 +30,6 @@ void Scene::InitSystems()
   // 创建核心系统
   m_SceneGraph = std::make_unique<SceneGraph>();
   m_SceneGraph->Initialize(GetRegistry());
-
-  m_SceneObserver = std::make_unique<SceneObserver>(GetRegistry());
   m_Serializer = std::make_unique<SceneSerializer>(*this);
 
   // 初始化组件系统
@@ -62,8 +59,6 @@ void Scene::ShutDownComponentSystems() {
 
 void Scene::OnUpdate(float timestep)
 {
-  // 开始记录本帧的变更
-  m_SceneObserver->BeginObservation();
 
   // 更新所有注册的系统
   m_SystemManager.UpdateAll(timestep);
@@ -77,8 +72,6 @@ void Scene::OnUpdate(float timestep)
     m_Registry.DestroyEntity(entity);
   }
 
-  // 结束观察
-  m_SceneObserver->EndObservation();
 }
 
 void Scene::OnRenderPrepare()
@@ -101,11 +94,6 @@ void Scene::Clear(bool keepSystems)
   // 4. 重置场景图状态
   if (m_SceneGraph) {
     m_SceneGraph->Clear();
-  }
-
-  // 5. 重置场景观察者状态
-  if (m_SceneObserver) {
-    m_SceneObserver->Clear();
   }
 
   // 6. 根据参数决定是否重置系统

@@ -7,7 +7,6 @@
 namespace mite {
 // 前向声明
 class SceneGraph;
-class SceneObserver;
 class SceneSerializer;
 class SceneEventCallbackAdapter;
 
@@ -152,7 +151,6 @@ class Scene : public std::enable_shared_from_this<Scene> {
 
   // 场景系统
   std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统
-  std::unique_ptr<SceneObserver> m_SceneObserver;  // 场景变更观察者
   std::unique_ptr<SceneSerializer> m_Serializer;   // 序列化系统
 
   // 场景状态

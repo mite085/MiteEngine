@@ -23,8 +23,6 @@ set(SCENE_CORE_SRCS
     scene_core/scene_event_callback_adapter.cpp
     scene_core/scene_graph.h
     scene_core/scene_graph.cpp
-    scene_core/scene_observer.h
-    scene_core/scene_observer.cpp
     scene_core/scene_registry.h
     scene_core/scene_registry.cpp
     scene_core/scene_serializer.h
