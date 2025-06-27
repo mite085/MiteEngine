@@ -1,123 +1,243 @@
 #include "visibility_component.h"
+#include "transform_component.h"
 
 namespace mite {
-// 静态断言确保枚举大小
-static_assert(sizeof(VisibilityComponent::State) == sizeof(uint8_t),
-              "VisibilityComponent::State size mismatch");
+VisibilityComponent::VisibilityComponent() : ComponentTraits() {}
 
-VisibilityComponent::VisibilityComponent()
-    : ComponentTraits(),
-      m_VisibilityState(State::FullyVisible),
-      m_TargetVisibilityState(State::FullyVisible),
-      m_CurrentOpacity(1.0f),
-      m_TargetOpacity(1.0f),
-      m_VisibilityTransitionTime(0.0f),
-      m_OpacityTransitionTime(0.0f),
-      m_OpacityTransitionSpeed(0.0f)
+// 基础可见性控制 ======================================
+void VisibilityComponent::SetVisible(bool visible)
 {
-  // 确保初始状态一致
-  assert(m_CurrentOpacity >= 0.0f && m_CurrentOpacity <= 1.0f);
-}
-
-VisibilityComponent::VisibilityComponent(State initialVisibility, float initialOpacity)
-    : ComponentTraits(),
-      m_VisibilityState(initialVisibility),
-      m_TargetVisibilityState(initialVisibility),
-      m_CurrentOpacity(initialOpacity),
-      m_TargetOpacity(initialOpacity),
-      m_VisibilityTransitionTime(0.0f),
-      m_OpacityTransitionTime(0.0f),
-      m_OpacityTransitionSpeed(0.0f)
-{
-  assert(initialOpacity >= 0.0f && initialOpacity <= 1.0f);
-}
-
-void VisibilityComponent::SetVisibilityState(State state, float transitionTime)
-{
-  if (m_VisibilityState == state && m_VisibilityTransitionTime <= 0.0f) {
-    return;  // 状态未改变且没有进行中的过渡
-  }
-
-  m_TargetVisibilityState = state;
-  m_VisibilityTransitionTime = transitionTime;
-
-  // 立即切换条件
-  if (transitionTime <= 0.0f) {
-    m_VisibilityState = state;
-    m_VisibilityTransitionTime = 0.0f;
-  }
-}
-
-void VisibilityComponent::SetOpacity(float opacity, float transitionTime)
-{
-  assert(opacity >= 0.0f && opacity <= 1.0f);
-
-  if (std::abs(m_TargetOpacity - opacity) < FLT_EPSILON && m_OpacityTransitionTime <= 0.0f) {
-    return;  // 目标值未改变且没有进行中的过渡
-  }
-
-  m_TargetOpacity = opacity;
-  m_OpacityTransitionTime = transitionTime;
-
-  // 计算过渡速度
-  if (transitionTime > 0.0f) {
-    m_OpacityTransitionSpeed = std::abs(m_TargetOpacity - m_CurrentOpacity) / transitionTime;
-  }
-  else {
-    m_CurrentOpacity = opacity;
-    m_OpacityTransitionSpeed = 0.0f;
+  if (m_IsVisible != visible) {
+    m_IsVisible = visible;
+    EventBus::Get().Post(VisibilityChangedEvent(GetOwnerEntity(), *this, visible));
   }
 }
 
 bool VisibilityComponent::IsVisible() const
 {
-  return m_VisibilityState != State::Hidden && m_VisibilityState != State::Culled;
+  return m_IsVisible && !m_AlwaysVisible;
 }
 
-bool VisibilityComponent::IsFullyVisible() const
+void VisibilityComponent::ToggleVisible()
 {
-  return m_VisibilityState == State::FullyVisible &&
-         std::abs(m_CurrentOpacity - 1.0f) < FLT_EPSILON;
+  SetVisible(!m_IsVisible);
 }
 
-void VisibilityComponent::Update(float deltaTime)
+// 视锥体裁剪 ==========================================
+void VisibilityComponent::SetFrustumCulling(bool cull)
 {
-  // 更新可见性状态过渡
-  if (m_VisibilityTransitionTime > 0.0f) {
-    m_VisibilityTransitionTime -= deltaTime;
-    if (m_VisibilityTransitionTime <= 0.0f) {
-      m_VisibilityState = m_TargetVisibilityState;
-      m_VisibilityTransitionTime = 0.0f;
-    }
+  m_FrustumCulling = cull;
+}
+
+bool VisibilityComponent::GetFrustumCulling() const
+{
+  return m_FrustumCulling;
+}
+
+bool VisibilityComponent::WasInFrustum() const
+{
+  return m_WasInFrustum;
+}
+
+void VisibilityComponent::SetCustomBounds(const AABB &aabb)
+{
+  m_CustomBounds = aabb;
+}
+
+AABB VisibilityComponent::GetCustomBounds() const
+{
+  return m_CustomBounds;
+}
+
+// 距离剔除 ============================================
+void VisibilityComponent::SetMaxVisibleDistance(float distance)
+{
+  m_MaxVisibleDistance = std::max(0.0f, distance);
+}
+
+float VisibilityComponent::GetMaxVisibleDistance() const
+{
+  return m_MaxVisibleDistance;
+}
+
+bool VisibilityComponent::WasInDistance() const
+{
+  return m_WasInDistance;
+}
+
+// 层级可见性 ==========================================
+void VisibilityComponent::SetLayerMask(uint32_t mask)
+{
+  m_LayerMask = mask;
+}
+
+uint32_t VisibilityComponent::GetLayerMask() const
+{
+  return m_LayerMask;
+}
+
+// 调试功能 ============================================
+void VisibilityComponent::SetAlwaysVisible(bool always)
+{
+  m_AlwaysVisible = always;
+}
+
+bool VisibilityComponent::IsAlwaysVisible() const
+{
+  return m_AlwaysVisible;
+}
+
+void VisibilityComponent::SetShowBounds(bool show)
+{
+  m_ShowBounds = show;
+}
+
+bool VisibilityComponent::GetShowBounds() const
+{
+  return m_ShowBounds;
+}
+
+// 组件接口实现 ========================================
+std::vector<std::type_index> VisibilityComponent::GetDependencies() const
+{
+  return {typeid(TransformComponent)};
+}
+
+bool VisibilityComponent::Serialize(std::ostream &output) const
+{
+  Component::Serialize(output);  // 序列化基类数据
+
+  // 序列化可见性设置
+  output.write(reinterpret_cast<const char *>(&m_IsVisible), sizeof(m_IsVisible));
+  output.write(reinterpret_cast<const char *>(&m_FrustumCulling), sizeof(m_FrustumCulling));
+  output.write(reinterpret_cast<const char *>(&m_MaxVisibleDistance),
+               sizeof(m_MaxVisibleDistance));
+  output.write(reinterpret_cast<const char *>(&m_LayerMask), sizeof(m_LayerMask));
+
+  // 序列化自定义包围盒
+  if (!m_CustomBounds.Serialize(output)) {
+    return false;
   }
 
-  // 更新透明度过渡
-  if (m_OpacityTransitionTime > 0.0f) {
-    const float deltaOpacity = m_OpacityTransitionSpeed * deltaTime;
+  return !output.fail();
+}
 
-    if (m_TargetOpacity > m_CurrentOpacity) {
-      m_CurrentOpacity = std::min(m_CurrentOpacity + deltaOpacity, m_TargetOpacity);
-    }
-    else {
-      m_CurrentOpacity = std::max(m_CurrentOpacity - deltaOpacity, m_TargetOpacity);
+bool VisibilityComponent::Deserialize(std::istream &input)
+{
+  Component::Deserialize(input);  // 反序列化基类数据
+
+  // 反序列化可见性设置
+  input.read(reinterpret_cast<char *>(&m_IsVisible), sizeof(m_IsVisible));
+  input.read(reinterpret_cast<char *>(&m_FrustumCulling), sizeof(m_FrustumCulling));
+  input.read(reinterpret_cast<char *>(&m_MaxVisibleDistance), sizeof(m_MaxVisibleDistance));
+  input.read(reinterpret_cast<char *>(&m_LayerMask), sizeof(m_LayerMask));
+
+  // 反序列化自定义包围盒
+  if (!m_CustomBounds.Deserialize(input)) {
+    return false;
+  }
+
+  return !input.fail();
+}
+
+// Visibility组件系统实现 ==================================
+void VisibilitySystem::Initialize(SceneRegistry &registry)
+{
+  // 初始化系统资源
+}
+
+void VisibilitySystem::Shutdown(SceneRegistry &registry)
+{
+  // 清理系统资源
+}
+
+void VisibilitySystem::Update(float deltaTime, SceneRegistry &registry)
+{
+  // TODO: 调试绘制
+  //if (DebugDraw::IsEnabled()) {
+  //  DebugDrawBounds(registry);
+  //}
+}
+
+void VisibilitySystem::PerformFrustumCulling(const Frustum &frustum, SceneRegistry &registry)
+{
+  auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
+
+  for (auto entity : view) {
+    auto &visibility = registry.GetComponent<VisibilityComponent>(entity);
+    auto &transform = registry.GetComponent<TransformComponent>(entity);
+
+    // 跳过不进行裁剪测试的对象
+    if (!visibility.GetFrustumCulling() || visibility.IsAlwaysVisible()) {
+      visibility.m_WasInFrustum = true;
+      continue;
     }
 
-    m_OpacityTransitionTime -= deltaTime;
-    if (m_OpacityTransitionTime <= 0.0f) {
-      m_CurrentOpacity = m_TargetOpacity;
-      m_OpacityTransitionTime = 0.0f;
-      m_OpacityTransitionSpeed = 0.0f;
+    // 获取包围盒(优先使用自定义包围盒)
+    AABB bounds = visibility.GetCustomBounds();
+    if (bounds.IsEmpty()) {
+      // TODO: 从MeshComponent获取包围盒
+      bounds = AABB(glm::vec3(-0.5f), glm::vec3(0.5f));  // 默认单位包围盒
     }
+
+    // 变换到世界空间
+    bounds.Transform(transform.GetWorldMatrix(registry));
+
+    // 执行视锥体测试
+    visibility.m_WasInFrustum = frustum.Intersects(bounds);
   }
 }
 
-void VisibilityComponent::CompleteTransitions()
+void VisibilitySystem::PerformDistanceCulling(const glm::vec3 &cameraPosition,
+                                              SceneRegistry &registry)
 {
-  m_VisibilityState = m_TargetVisibilityState;
-  m_VisibilityTransitionTime = 0.0f;
+  auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
 
-  m_CurrentOpacity = m_TargetOpacity;
-  m_OpacityTransitionTime = 0.0f;
-  m_OpacityTransitionSpeed = 0.0f;
+  for (auto entity : view) {
+    auto &visibility = registry.GetComponent<VisibilityComponent>(entity);
+    auto &transform = registry.GetComponent<TransformComponent>(entity);
+
+    // 跳过无限距离或总是可见的对象
+    if (visibility.GetMaxVisibleDistance() <= 0.0f || visibility.IsAlwaysVisible()) {
+      visibility.m_WasInDistance = true;
+      continue;
+    }
+
+    // 计算距离
+        float distance = glm::distance((transform.GetWorldPosition(registry)), cameraPosition);
+        visibility.m_WasInDistance = (distance <= visibility.GetMaxVisibleDistance());
+  }
+}
+
+void VisibilitySystem::DebugDrawBounds(SceneRegistry &registry)
+{
+  auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
+
+  for (auto entity : view) {
+    auto &visibility = registry.GetComponent<VisibilityComponent>(entity);
+    auto &transform = registry.GetComponent<TransformComponent>(entity);
+
+    if (!visibility.GetShowBounds())
+      continue;
+
+    // 获取包围盒(优先使用自定义包围盒)
+    AABB bounds = visibility.GetCustomBounds();
+    if (bounds.IsEmpty()) {
+      // TODO: 从MeshComponent获取包围盒
+      bounds = AABB(glm::vec3(-0.5f), glm::vec3(0.5f));  // 默认单位包围盒
+    }
+
+    // 变换到世界空间
+    bounds.Transform(transform.GetWorldMatrix(registry));
+
+    // 根据可见性状态选择颜色
+    glm::vec4 color = visibility.IsVisible() ?
+                          (visibility.WasInFrustum() ? glm::vec4(0, 1, 0, 0.2f) :
+                                                       glm::vec4(1, 1, 0, 0.1f)) :
+                          glm::vec4(1, 0, 0, 0.1f);
+
+    // TODO: 绘制包围盒
+    //DebugDraw::DrawAABB(bounds, color);
+  }
 }
 };  // namespace mite
