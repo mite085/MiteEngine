@@ -1,56 +1,116 @@
 #include "scene_view.h"
 
-
 namespace mite {
-SceneView::SceneView(const Scene &scene) {}
-void SceneView::UpDate() {
-  m_RenderData.Clear();
-
-  // TODO：收集相机数据
-  CameraData camera;
-  //camera.viewMatrix = m_ActiveCamera->GetViewMatrix();
-  //camera.projectionMatrix = m_ActiveCamera->GetProjectionMatrix();
-  //camera.position = m_ActiveCamera->GetPosition();
-  // ... 设置其他相机参数
-  m_RenderData.SetCameraData(camera);
-
-  // TODO：遍历场景实体
-  //m_Scene->GetRegistry().view<TransformComponent, MeshComponent>().each(
-  //    [this](auto entity, TransformComponent &transform, MeshComponent &mesh) {
-  //      RenderItem item;
-  //      item.transform = transform.GetWorldMatrix();
-  //      item.mesh = mesh.mesh;
-  //      item.material = mesh.material;
-  //      item.submeshIndex = 0;  // 假设使用第一个子网格
-
-  //      // 根据材质属性决定渲染通道
-  //      bool isTransparent = mesh.material->IsTransparent();
-  //      m_RenderData.AddRenderItem(isTransparent ? RenderPass::Transparent : RenderPass::Opaque,
-  //                                 item);
-
-  //      // 如果物体投射阴影
-  //      if (mesh.castShadow) {
-  //        m_RenderData.AddRenderItem(RenderPass::Shadow, item);
-  //      }
-  //    });
-
-  // TODO: 收集光照数据
-  //m_Scene->GetRegistry().view<DirectionalLightComponent>().each(
-  //    [this](auto entity, DirectionalLightComponent &light) {
-  //      DirectionalLight renderLight;
-  //      renderLight.direction = light.direction;
-  //      renderLight.color = light.color;
-  //      renderLight.intensity = light.intensity;
-  //      m_RenderData.AddDirectionalLight(renderLight);
-  //    });
-
-  // 准备渲染数据
-  m_RenderData.Prepare();
-}
-void SceneView::SyncFromSceneCore() {}
-
-RenderData &SceneView::GetRenderData()
+SceneView::SceneView(SceneRegistry &registry) : m_Registry(registry)
 {
-  return m_RenderData;
+
+  // 订阅SceneCore发出的四类核心事件
+  m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
+  m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
+  m_EventSubscriptions.Subscribe<TransformChangedEvent>(BIND_DISPATCH_FN(OnTransformChanged));
+  m_EventSubscriptions.Subscribe<MaterialChangedEvent>(BIND_DISPATCH_FN(OnMaterialChanged));
+}
+
+SceneView::~SceneView()
+{
+  // 析构时自动通过SubscriptionGroup取消所有事件订阅
+}
+
+void SceneView::Update()
+{
+  // 当前最小化实现无需每帧主动处理数据（完全事件驱动）
+  // 未来可在此添加帧级批量优化（如脏标记合并）
+}
+
+const std::vector<RenderableEntity> &SceneView::GetRenderQueue() const
+{
+  return m_RenderQueue;
+}
+
+//=== 私有事件处理函数 ===//
+void SceneView::OnEntityCreated(EntityCreatedEvent &event)
+{
+  Entity entity = event.GetEntity();
+
+  // 只有同时拥有Transform、Mesh、Material的实体才加入渲染队列
+  if (m_Registry.HasComponent<TransformComponent, MeshComponent, MaterialComponent>(entity)) {
+    AddToRenderQueue(entity);
+  }
+}
+
+void SceneView::OnEntityDestroyed(EntityDestroyedEvent &event)
+{
+  RemoveFromRenderQueue(event.GetEntity());
+}
+
+void SceneView::OnTransformChanged(TransformChangedEvent &event)
+{
+  auto it = m_EntityToIndexMap.find(event.GetEntity());
+  if (it != m_EntityToIndexMap.end()) {
+    // 更新现有渲染实体的变换矩阵
+    m_RenderQueue[it->second].worldTransform =
+        m_Registry.GetComponent<TransformComponent>(event.GetEntity()).GetWorldMatrix(m_Registry);
+  }
+}
+
+void SceneView::OnMaterialChanged(MaterialChangedEvent &event)
+{
+  auto it = m_EntityToIndexMap.find(event.GetEntity());
+  if (it != m_EntityToIndexMap.end()) {
+    // 更新现有渲染实体的材质引用
+    m_RenderQueue[it->second].materialID =
+        m_Registry.GetComponent<MaterialComponent>(event.GetEntity()).assetID;
+  }
+}
+
+//=== 私有工具函数 ===//
+void SceneView::AddToRenderQueue(Entity entity)
+{
+  // 防止重复添加
+  if (m_EntityToIndexMap.count(entity) > 0)
+    return;
+
+  // 构造RenderableEntity
+  RenderableEntity renderable;
+  renderable.entity = entity;
+  renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
+      m_Registry);
+  renderable.meshID = m_Registry.GetComponent<MeshComponent>(entity).assetID;
+  renderable.materialID = m_Registry.GetComponent<MaterialComponent>(entity).assetID;
+
+  // 加入队列并记录索引
+  m_EntityToIndexMap[entity] = m_RenderQueue.size();
+  m_RenderQueue.push_back(std::move(renderable));
+}
+
+void SceneView::RemoveFromRenderQueue(Entity entity)
+{
+  auto it = m_EntityToIndexMap.find(entity);
+  if (it == m_EntityToIndexMap.end())
+    return;
+
+  // 将末尾元素移动到被删除元素的位置（保持内存连续）
+  size_t index = it->second;
+  if (index != m_RenderQueue.size() - 1) {
+    m_RenderQueue[index] = std::move(m_RenderQueue.back());
+    m_EntityToIndexMap[m_RenderQueue.back().entity] = index;
+  }
+
+  // 移除末尾元素
+  m_RenderQueue.pop_back();
+  m_EntityToIndexMap.erase(entity);
+}
+
+void SceneView::UpdateRenderableEntity(Entity entity)
+{
+  // 综合更新（供未来扩展使用）
+  auto it = m_EntityToIndexMap.find(entity);
+  if (it == m_EntityToIndexMap.end())
+    return;
+
+  RenderableEntity &renderable = m_RenderQueue[it->second];
+  renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
+      m_Registry);
+  renderable.materialID = m_Registry.GetComponent<MaterialComponent>(entity).assetID;
 }
 }  // namespace mite

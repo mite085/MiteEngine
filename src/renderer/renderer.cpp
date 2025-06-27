@@ -13,7 +13,7 @@ VertexArray *VertexArray::Create()
 {
   return nullptr;
 }
-Shader *Shader::Create(const std::string &vsPath, const std::string &fsPath)
+ShaderBuffer *ShaderBuffer::Create(const std::string &vsPath, const std::string &fsPath)
 {
   return nullptr;
 }

@@ -17,6 +17,7 @@ enum EventCategory {
   EVENT_CATEGORY_CUSTOM = 1 << 5,			// 用户自定义事件分类
 
   EVENT_CATEGORY_SCENE_CHANGE = 1 << 6,	// 场景变更事件分类
+  EVENT_CATEGORY_RENDER = 1 << 7
 };
 
 // 事件类型

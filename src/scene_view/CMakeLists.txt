@@ -7,10 +7,10 @@ set(SCENE_VIEW_LIB_NAME MiteEngine_Scene_View)
 set(SCENE_VIEW_INTERFACE_SRCS
     scene_view.h
     scene_view.cpp
-    scene_data.h
-    scene_data.cpp
+    renderable_entity.h
+    renderable_entity.cpp
 )
-source_group("scene core" FILES ${SCENE_VIEW_INTERFACE_SRCS})
+source_group("scene view" FILES ${SCENE_VIEW_INTERFACE_SRCS})
 
 # 创建静态库
 add_library(${SCENE_VIEW_LIB_NAME}  STATIC  ${SCENE_VIEW_INTERFACE_SRCS})

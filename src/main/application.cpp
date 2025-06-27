@@ -99,7 +99,7 @@ void MiteApplication::InitializeScene()
 
   // 初始化场景系统
   m_Scene = std::make_unique<Scene>();
-  m_SceneView = std::make_unique<SceneView>(*m_Scene.get());
+  m_SceneView = std::make_unique<SceneView>(m_Scene->GetRegistry());
 }
 
 void MiteApplication::InitializeAssertManager()
@@ -146,7 +146,7 @@ void MiteApplication::LoadDefaultScene()
   // m_MaterialSystem->CreateDefaultMaterials();
 
   // 更新场景视图
-  m_SceneView->SyncFromSceneCore();
+  //m_SceneView->SyncFromSceneCore();
 }
 
 void MiteApplication::CleanUp()
@@ -197,7 +197,7 @@ void MiteApplication::BeginFrame()
   // m_UIManager->BeginFrame()
 
   // TODO：更新场景视图(将ECS数据转换为渲染友好格式)
-  m_SceneView->UpDate();
+  m_SceneView->Update();
 
   // 更新帧统计信息
   UpdateFrameStats();
@@ -223,7 +223,7 @@ void MiteApplication::Render()
   // 主场景渲染
   if (m_ShowMainViewport) {
     // 渲染场景
-    m_Renderer->RenderScene(m_SceneView->GetRenderData());
+    //m_Renderer->RenderScene(m_SceneView->GetRenderData());
 
     // TODO：渲染调试信息
     // if (m_ShowDebug) {

@@ -4,14 +4,13 @@
 #include "headers/headers.h"
 #include "glm/glm.hpp"
 #include "window.h"
-#include "scene_data.h"
 
 namespace mite {
 
 class VertexBuffer;
 class IndexBuffer;
 class VertexArray;
-class Shader;
+class ShaderBuffer;
 
 class Renderer {
  public:
@@ -37,13 +36,14 @@ class Renderer {
 
   virtual VertexBuffer *CreateVertexBuffer(float *vertices, uint32_t size) = 0;
   virtual IndexBuffer *CreateIndexBuffer(uint32_t *indices, uint32_t count) = 0;
-  virtual Shader *CreateShader(const std::string &vsPath, const std::string &fsPath) = 0;
+  virtual ShaderBuffer *CreateShader(const std::string &vsPath, const std::string &fsPath) = 0;
 
+  // 核心方法
   // 接受Scene提供的渲染友好数据执行绘制
   // TODO: RenderScene可以考虑拆分成BeginScene、
   // RenderBatches、RenderSkybox、RenderDebug、
   // EndScene等多个函数，由调用方控制渲染顺序
-  virtual void RenderScene(const RenderData &render_data) = 0;
+  //virtual void RenderScene(const RenderData &render_data) = 0;
 
   // 交换缓冲
   virtual void SwapBuffers() = 0;
@@ -82,9 +82,9 @@ class VertexArray {
   static VertexArray *Create();
 };
 
-class Shader {
+class ShaderBuffer {
  public:
-  virtual ~Shader() = default;
+  virtual ~ShaderBuffer() = default;
 
   virtual void Bind() = 0;
 
@@ -100,7 +100,7 @@ class Shader {
   virtual void SetUniformImpl(const std::string &name, const glm::vec4 &value) = 0;
   virtual void SetUniformImpl(const std::string &name, const glm::mat4 &value) = 0;
 
-  static Shader *Create(const std::string &vsPath, const std::string &fsPath);
+  static ShaderBuffer *Create(const std::string &vsPath, const std::string &fsPath);
 };
 
 }  // namespace mite

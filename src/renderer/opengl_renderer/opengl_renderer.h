@@ -20,11 +20,11 @@ class OpenGLRenderer : public Renderer {
 
   VertexBuffer *CreateVertexBuffer(float *vertices, uint32_t size) override;
   IndexBuffer *CreateIndexBuffer(uint32_t *indices, uint32_t count) override;
-  Shader *CreateShader(const std::string &vsPath, const std::string &fsPath) override;
+  ShaderBuffer *CreateShader(const std::string &vsPath, const std::string &fsPath) override;
 
   void SwapBuffers() override;
 
-  void RenderScene(const RenderData &render_data) override;
+  //void RenderScene(const RenderData &render_data) override;
 };
 
 

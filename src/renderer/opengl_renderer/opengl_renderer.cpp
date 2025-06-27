@@ -58,13 +58,13 @@ IndexBuffer *OpenGLRenderer::CreateIndexBuffer(uint32_t *indices, uint32_t count
   return nullptr;
 }
 
-Shader *OpenGLRenderer::CreateShader(const std::string &vsPath, const std::string &fsPath)
+ShaderBuffer *OpenGLRenderer::CreateShader(const std::string &vsPath, const std::string &fsPath)
 {
   return nullptr;
 }
 void OpenGLRenderer::SwapBuffers() {}
 
-void OpenGLRenderer::RenderScene(const RenderData &render_data) {
+//void OpenGLRenderer::RenderScene(const RenderData &render_data) {
   //// TODO: …Ë÷√œ‡ª˙UBO
   //SetCameraUniforms(renderData.GetCameraData());
 
@@ -85,5 +85,5 @@ void OpenGLRenderer::RenderScene(const RenderData &render_data) {
   //    DrawMesh(item.mesh, item.submeshIndex);
   //  }
   //}
-}
+//}
 }  // namespace mite
