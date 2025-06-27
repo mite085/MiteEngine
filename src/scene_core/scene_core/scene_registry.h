@@ -152,9 +152,9 @@ class SceneRegistry {
    * @param entity 目标实体
    * @return 是否拥有该组件
    */
-  template<typename T> bool HasComponent(Entity entity) const
+  template<typename... T> bool HasComponent(Entity entity) const
   {
-    return IsValid(entity) && m_Registry.all_of<T>(entity.GetHandle());
+    return IsValid(entity) && m_Registry.all_of<T...>(entity.GetHandle());
   }
 
   // 3. 组件操作 - 获取 ============================================
