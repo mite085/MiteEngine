@@ -22,11 +22,11 @@ void Component::CleanDirty()
   m_Dirty = false;
 }
 
-void Component::Update(SceneRegistry &reg)
+void Component::Update(float deltaTime, SceneRegistry &reg)
 {
   if (IsDirty()) {
     // 执行必要的更新或重新计算
-    ProcessDirty(reg);
+    ProcessDirty(deltaTime, reg);
 
     // 清除脏标记
     CleanDirty();

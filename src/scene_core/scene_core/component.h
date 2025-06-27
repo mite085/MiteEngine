@@ -21,11 +21,12 @@ class Component {
  public:
   // 组件家族类型标识，用于组件分类，以及优先级判断
   enum class Family : uint8_t {
-    Core = 0,      // 核心组件(Transform等)
-    Render = 1,    // 渲染相关组件
-    Geometry = 2,  // 几何相关组件
-    Logic = 3,     // 逻辑/行为组件
-    Custom = 100   // 自定义组件起始值
+    Core = 0,           // 核心组件(Transform等)
+    Render = 1,         // 渲染相关组件
+    Geometry = 2,       // 几何相关组件
+    Logic = 3,          // 逻辑/行为组件
+    Custom = 100,       // 自定义组件起始值
+    PostUpdate = 255    // 确保最后更新的组件
   };
 
   virtual ~Component() = default;
@@ -55,11 +56,11 @@ class Component {
   /**
    * @brief 更新方法，通常每帧调用
    */
-  void Update(SceneRegistry &reg);
+  void Update(float deltaTime, SceneRegistry &reg);
   /**
    * @brief 针对dirty对象进行处理
    */
-  virtual void ProcessDirty(SceneRegistry &reg) = 0;
+  virtual void ProcessDirty(float deltaTime, SceneRegistry &reg) = 0;
 
   /**
    * @brief 组件启用状态
