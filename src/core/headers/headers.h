@@ -37,6 +37,9 @@
 // 日志系统
 #include "logger/logger.h"
 
+// UUID系统
+#include "uuid/mite_uuid.h"
+
 // 时间系统
 #include "time/time.h"
 

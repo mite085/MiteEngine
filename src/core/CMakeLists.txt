@@ -32,6 +32,12 @@ set(CORE_LIB_NAME MiteEngine_Core)
 set(HEADERS_SRCS
     headers/headers.h
 )
+source_group("header" FILES ${HEADERS_SRCS})
+
+set(UUID_SRCS
+    uuid/mite_uuid.h
+)
+source_group("uuid" FILES ${UUID_SRCS})
 
 set(CORE_SRCS
     core/core_functions.h
@@ -82,6 +88,7 @@ add_library(${CORE_LIB_NAME}
     ${EVENT_SRCS}
     ${TIME_SRCS}
     ${TIMER_SRCS}
+    ${UUID_SRCS}
 )
 
 # 设置头文件路径（供其他项目包含）
