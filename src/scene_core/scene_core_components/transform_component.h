@@ -48,7 +48,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty(SceneRegistry &reg) override;
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
   // 位置操作 ==============================================
   /**
@@ -259,10 +259,7 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
 
 class TransformSystem : public DirtyComponentSystem<TransformComponent> {
   DECLARE_COMPONENT_SYSTEM(TransformSystem)
- public:
-  void Initialize(SceneRegistry &registry) override {}
-  void Shutdown(SceneRegistry &registry) override {}
-
+ 
  private:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
 };

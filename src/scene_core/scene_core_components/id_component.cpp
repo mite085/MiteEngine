@@ -1,4 +1,5 @@
 #include "id_component.h"
+#define UUID_SYSTEM_GENERATOR
 
 namespace mite {
 // UUID字符串转换的本地辅助函数
@@ -8,9 +9,7 @@ std::string UUIDToString(const uuids::uuid &id)
 }
 
 IDComponent::IDComponent()
-    : ComponentTraits(),
-      m_UUID(uuids::uuid_system_generator{}()),
-      m_UUIDString(UUIDToString(m_UUID))
+    : ComponentTraits(), m_UUID(UUIDGenerator::Generate()), m_UUIDString(UUIDToString(m_UUID))
 {
   // 确保生成的UUID有效
   if (m_UUID.is_nil()) {

@@ -38,10 +38,16 @@ void Scene::InitSystems()
 
 void Scene::InitComponentSystems()
 {  
-  // TODO：逐个注册组件系统
+  // 逐个注册组件系统
+  m_SystemManager.RegisterSystem<DestroySystem>();
+  m_SystemManager.RegisterSystem<IDSystem>();
+  m_SystemManager.RegisterSystem<HierarchySystem>();
+  m_SystemManager.RegisterSystem<MaterialSystem>();
+  m_SystemManager.RegisterSystem<MeshSystem>();
+  m_SystemManager.RegisterSystem<TagSystem>();
   m_SystemManager.RegisterSystem<TransformSystem>();
-  //m_SystemManager.RegisterSystem<ID>();
-  //m_SystemManager.RegisterSystem<RenderSystem>();
+  m_SystemManager.RegisterSystem<VisibilitySystem>();
+
 
   // 初始化所有组件系统
   m_SystemManager.InitializeAll();
@@ -51,10 +57,15 @@ void Scene::ShutDownComponentSystems() {
   // 销毁所有组件系统
   m_SystemManager.ShutdownAll();
 
-  // TODO：逐个注销组件系统
+  // 逐个注销组件系统
+  m_SystemManager.UnregisterSystem<DestroySystem>();
+  m_SystemManager.UnregisterSystem<IDSystem>();
+  m_SystemManager.UnregisterSystem<HierarchySystem>();
+  m_SystemManager.UnregisterSystem<MaterialSystem>();
+  m_SystemManager.UnregisterSystem<MeshSystem>();
+  m_SystemManager.UnregisterSystem<TagSystem>();
   m_SystemManager.UnregisterSystem<TransformSystem>();
-  // m_SystemManager.RegisterSystem<ID>();
-  // m_SystemManager.RegisterSystem<RenderSystem>();
+  m_SystemManager.UnregisterSystem<VisibilitySystem>();
 }
 
 void Scene::OnUpdate(float timestep)

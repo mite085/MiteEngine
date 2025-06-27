@@ -115,7 +115,7 @@ class ComponentSystem {
  * 2. 处理脏状态：在适当的时机（如每帧更新时）检查并处理脏状态
  * 3. 清除脏标记：处理完成后将 m_Dirty 设为 false
  */
-template<typename T, typename Policy = void> class DirtyComponentSystem : public ComponentSystem {
+template<typename T> class DirtyComponentSystem : public ComponentSystem {
   // 限制模板T必须继承自Component类型
   static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
 
@@ -160,7 +160,7 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
    * @brief 按照脏标记更新组件(逐帧调用)
    * @param deltaTime 帧与帧时间间隔
    */
-  void Update(float deltaTime, SceneRegistry &registry) override
+  virtual void Update(float deltaTime, SceneRegistry &registry) override
   {
     // 阶段1：收集脏组件
     CollectDirtyComponents();
@@ -197,7 +197,7 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
    * @brief 处理组件添加事件
    * @param e 事件
    */
-  void OnComponentAdded(ComponentAddedEvent<T> &e) 
+  virtual void OnComponentAdded(ComponentAddedEvent<T> &e) 
   {
     Register(&e.GetComponent());
   }
@@ -214,7 +214,7 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
   /**
    * @brief 处理组件移除事件
    */
-  void OnComponentRemoved(ComponentRemovedEvent<T> &e) 
+  virtual void OnComponentRemoved(ComponentRemovedEvent<T> &e) 
   {
     Unregister(&e.GetComponent());
   }
@@ -264,37 +264,9 @@ template<typename T, typename Policy = void> class DirtyComponentSystem : public
   }
 
   /**
-   * @brief 处理脏组件，派生类必须重写该方法
-   * 
-   * 注意：
-   * 如果是Self_Dirty的组件，可以直接继承自
-   * DirtyComponentSystem<T, SelfDirtyPolicy>，
-   * 自动实现并行处理脏组件，无需重写该方法，
-   * （详见下文）
-   */
-  virtual void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) = 0;
-
-  std::vector<T *> m_AllComponents;
-  std::vector<T *> m_DirtyComponents;
-  std::mutex m_Mutex;
-};
-
-/**
- * @brief 特化自脏策略版本的 组件系统模板类（继承自主模板）.
- * 
- * 注意：
- * 该类型仅适用于Self_Dirty的组件，
- * 即不受Hierarchy层次关系影响，且
- * 不受Dependencies依赖项影响的组件
- */
-struct SelfDirtyPolicy {};  // 自脏策略标签
-template<typename T>
-class DirtyComponentSystem<T, SelfDirtyPolicy> : public DirtyComponentSystem<T, void> {
- protected:
-  /**
    * @brief 并行执行脏组件的Update
    */
-  void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override
+  virtual void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
   {
     // 并行处理优化
     std::for_each(std::execution::par,
@@ -302,6 +274,10 @@ class DirtyComponentSystem<T, SelfDirtyPolicy> : public DirtyComponentSystem<T, 
                   m_DirtyComponents.end(),
                   [&](T *comp) { static_cast<Component *>(comp)->Update(deltaTime, registry); });
   }
+
+  std::vector<T *> m_AllComponents;
+  std::vector<T *> m_DirtyComponents;
+  std::mutex m_Mutex;
 };
 
 };  // namespace mite

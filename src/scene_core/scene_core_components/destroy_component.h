@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_DESTROY_COMPONENT
 #define MITE_SCENE_DESTROY_COMPONENT
 
-#include "scene_core/component.h"
+#include "scene_core/component_system.h"
 
 namespace mite {
 // 前向声明
@@ -25,7 +25,7 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty(SceneRegistry &reg) override {}
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
   /**
    * @brief 用于调试的字符串表示
@@ -43,6 +43,24 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
    */
   template<typename Archive> void serialize(Archive &) {}  // 无数据需要序列化
 };
+
+// Destroy组件系统 =====================================================
+class DestroySystem : public DirtyComponentSystem<DestroyComponent> {
+  DECLARE_COMPONENT_SYSTEM(DestroySystem)
+ public:
+
+  /**
+   * @brief 获取系统执行优先级
+   * @note 应该在所有其他系统之后执行
+   */
+  Component::Family GetExecutionOrder() const override
+  {
+    return Component::Family::PostUpdate;
+  }
+
+};
+// Destroy组件事件：由EntityDestroyEvent代行 =====================================================
+
 };
 
 #endif

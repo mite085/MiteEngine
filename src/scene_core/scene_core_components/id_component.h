@@ -1,10 +1,7 @@
 #ifndef MITE_SCENE_ID_COMPONENT
 #define MITE_SCENE_ID_COMPONENT
 
-#include "scene_core/component.h"
-
-#define UUID_SYSTEM_GENERATOR
-#include <uuid.h>
+#include "scene_core/component_system.h"
 
 namespace mite {
 // 前向声明
@@ -49,7 +46,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty(SceneRegistry &reg) override {}
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
   /**
    * @brief 获取UUID字符串表示（RFC4122格式）
@@ -91,6 +88,12 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   uuids::uuid m_UUID;        // 二进制格式UUID
   std::string m_UUIDString;  // 字符串缓存（优化频繁访问）
 };
+// ID组件系统 =====================================================
+class IDSystem : public DirtyComponentSystem<IDComponent> {
+  DECLARE_COMPONENT_SYSTEM(IDSystem)
+};
+
+
 };  // namespace mite
 
 #endif

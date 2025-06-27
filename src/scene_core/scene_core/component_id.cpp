@@ -68,6 +68,8 @@ bool ComponentID::IsValid() const
 template ComponentID ComponentID::Get<DestroyComponent>();
 template ComponentID ComponentID::Get<HierarchyComponent>();
 template ComponentID ComponentID::Get<IDComponent>();
+template ComponentID ComponentID::Get<MaterialComponent>();
+template ComponentID ComponentID::Get<MeshComponent>();
 template ComponentID ComponentID::Get<TagComponent>();
 template ComponentID ComponentID::Get<TransformComponent>();
 template ComponentID ComponentID::Get<VisibilityComponent>();

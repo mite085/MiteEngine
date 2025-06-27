@@ -18,7 +18,7 @@ TransformComponent::TransformComponent(const glm::mat4 &matrix) : ComponentTrait
   SetLocalMatrix(matrix);
 }
 
-void TransformComponent::ProcessDirty(SceneRegistry &reg)
+void TransformComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 {
   // 无需处理的情况快速返回
   if (!(m_Dirty || dirtyFlags))
@@ -456,7 +456,7 @@ void TransformSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &reg
     HierarchyComponent &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
     // 筛选根实体
     if (!hierarchy.GetParent().IsValid() && (transform.IsDirty() || transform.dirtyFlags)) {
-      transform.ProcessDirty(registry);
+      transform.ProcessDirty(deltaTime, registry);
     }
   }
 
@@ -466,7 +466,7 @@ void TransformSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &reg
     HierarchyComponent &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
     // 筛选子实体
     if (hierarchy.GetParent().IsValid() && (transform.IsDirty() || transform.dirtyFlags)) {
-      transform.ProcessDirty(registry);
+      transform.ProcessDirty(deltaTime, registry);
     }
   }
 

@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_TAG_COMPONENT
 #define MITE_SCENE_TAG_COMPONENT
 
-#include "scene_core/component.h"
+#include "scene_core/component_system.h"
 
 namespace mite {
 // 前向声明
@@ -35,7 +35,7 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty(SceneRegistry &reg) override {}
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
   // 序列化支持
   template<typename Archive> void serialize(Archive &archive);
@@ -91,6 +91,11 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
    */
   void UpdateSubTagsCache() const;
 };
+// Tag组件系统 =====================================================
+class TagSystem : public DirtyComponentSystem<TagComponent> {
+  DECLARE_COMPONENT_SYSTEM(TagSystem)
+};
+
 };  // namespace mite
 
 #endif

@@ -4,8 +4,6 @@
 #include "scene_core/component_system.h"
 
 namespace mite {
-// 前向声明
-class SceneRegistry;
 /**
  * @brief 实体层次结构组件，
  * 管理实体间的父子关系，构成场景树的基础结构
@@ -32,7 +30,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
   /**
    * @brief 针对dirty对象进行处理
    */
-  void ProcessDirty(SceneRegistry &reg) override {}
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
   /**
    * @brief 获取父实体句柄
@@ -129,14 +127,7 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
 class HierarchySystem : public DirtyComponentSystem<HierarchyComponent> {
   DECLARE_COMPONENT_SYSTEM(HierarchySystem)
  public:
-  /**
-   * @brief 初始化系统
-   */
   void Initialize(SceneRegistry &registry) override;
-
-  /**
-   * @brief 清理系统
-   */
   void Shutdown(SceneRegistry &registry) override;
 
   /**
@@ -149,15 +140,9 @@ class HierarchySystem : public DirtyComponentSystem<HierarchyComponent> {
   }
 
  private:
-  /**
-   * @brief 处理脏组件
-   */
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
-
-  /**
-   * @brief 处理组件更新事件
-   */
   void OnComponentUpdated(ComponentChangedEvent<HierarchyComponent> &e) override;
+  void OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) override;
 
   /**
    * @brief 验证层次结构，防止循环依赖
@@ -174,7 +159,97 @@ class HierarchySystem : public DirtyComponentSystem<HierarchyComponent> {
    */
   void UpdateChildrenDepthCache(Entity entity, SceneRegistry &registry);
 };
+// Hierarchy组件事件 =====================================================
+/**
+ * @class ParentChangedEvent
+ * @brief 父节点改变事件
+ */
+class ParentChangedEvent : public ComponentEvent<HierarchyComponent> {
+ public:
+  ParentChangedEvent(Entity entity,
+                     HierarchyComponent &component,
+                     Entity oldParent,
+                     Entity newParent)
+      : ComponentEvent<HierarchyComponent>(entity, component),
+        m_OldParent(oldParent),
+        m_NewParent(newParent)
+  {
+  }
 
+  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new ParentChangedEvent(entity, component, m_OldParent, m_NewParent);
+  }
+
+  Entity GetOldParent() const
+  {
+    return m_OldParent;
+  }
+  Entity GetNewParent() const
+  {
+    return m_NewParent;
+  }
+
+ private:
+  Entity m_OldParent;
+  Entity m_NewParent;
+};
+
+/**
+ * @class ChildAddedEvent
+ * @brief 子节点添加事件
+ */
+class ChildAddedEvent : public ComponentEvent<HierarchyComponent> {
+ public:
+  ChildAddedEvent(Entity entity, HierarchyComponent &component, Entity child)
+      : ComponentEvent<HierarchyComponent>(entity, component), m_Child(child)
+  {
+  }
+
+  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new ChildAddedEvent(entity, component, m_Child);
+  }
+
+  Entity GetChild() const
+  {
+    return m_Child;
+  }
+
+ private:
+  Entity m_Child;
+};
+
+/**
+ * @class ChildRemovedEvent
+ * @brief 子节点移除事件
+ */
+class ChildRemovedEvent : public ComponentEvent<HierarchyComponent> {
+ public:
+  ChildRemovedEvent(Entity entity, HierarchyComponent &component, Entity child)
+      : ComponentEvent<HierarchyComponent>(entity, component), m_Child(child)
+  {
+  }
+
+  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new ChildRemovedEvent(entity, component, m_Child);
+  }
+
+  Entity GetChild() const
+  {
+    return m_Child;
+  }
+
+ private:
+  Entity m_Child;
+};
 
 };  // namespace mite
 
