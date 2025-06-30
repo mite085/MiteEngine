@@ -19,11 +19,15 @@ add_library(${ASSERT_LIB_NAME}
 
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${ASSERT_LIB_NAME}
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
+    PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/assimp/include
+    ${CMAKE_BINARY_DIR}/thirdparty/assimp/include   # Assimp 生成的头文件（config.h）
 )
 
 target_link_libraries(${ASSERT_LIB_NAME}
     PRIVATE 
     spdlog::spdlog
+    assimp
     MiteEngine_Core
 )

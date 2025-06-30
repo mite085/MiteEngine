@@ -12,15 +12,11 @@ project(MiteEngine
 # 全局编译设置
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  # 可选，生成编译数据库
 
 
-# Visual Studio编译spdlog时出现编码问题。
+# Visual Studio编译spdlog时出现编码Warning。
 if(MSVC)
-    add_compile_options(/utf-8)  # MSVC专用选项，强制MSVC编译器使用UTF-8编码（无效）
-    add_compile_options(/wd4828)  # 禁用MSVC的字符集警告（并非正规解决方案，后续需要整改）
-else()
-    add_compile_options(-finput-charset=UTF-8 -fexec-charset=UTF-8)  # GCC/Clang
+    add_compile_options(/wd4828)  # 禁用MSVC的字符集警告
 endif()
 
 
@@ -39,10 +35,24 @@ include_directories(thirdparty/entt/single_include)
 include_directories(thirdparty/stduuid)
 include_directories(thirdparty/stduuid/include)
 include_directories(thirdparty/cereal/include)
+include_directories(thirdparty/stbimg)
+add_subdirectory(thirdparty/assimp)
 
 # 为第三方库设置文件夹属性
 if(TARGET spdlog)
     set_target_properties(spdlog PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
+endif()
+if(TARGET assimp)
+    set_target_properties(assimp PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
+endif()
+if(TARGET unit)
+    set_target_properties(unit PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
+endif()
+if(TARGET UpdateAssimpLibsDebugSymbolsAndDLLs)
+    set_target_properties(UpdateAssimpLibsDebugSymbolsAndDLLs PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
+endif()
+if(TARGET zlibstatic)
+    set_target_properties(zlibstatic PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
 endif()
 
 
