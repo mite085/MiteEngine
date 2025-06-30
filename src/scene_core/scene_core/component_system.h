@@ -180,7 +180,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   /**
    * @brief 获取该系统依赖的其他系统类型
    */
-  std::vector<std::type_index> GetSystemDependencies() const override
+  virtual std::vector<std::type_index> GetSystemDependencies() const override
   {
     return {};
   }

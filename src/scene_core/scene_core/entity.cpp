@@ -20,10 +20,8 @@ bool Entity::IsValid() const
 {
   if (m_Handle == entt::null)
     return false;
-  if (auto scenePtr = m_Scene.lock()) {
-    return scenePtr->IsValid(*this);
-  }
-  return false;
+  else
+    return true;
 }
 
 void Entity::Destroy()
