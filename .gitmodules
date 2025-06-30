@@ -22,3 +22,6 @@
 [submodule "thirdparty/cereal"]
 	path = thirdparty/cereal
 	url = https://github.com/USCiLab/cereal.git
+[submodule "thirdyparty/stbimg"]
+	path = thirdyparty/stbimg
+	url = https://github.com/nothings/stb.git
