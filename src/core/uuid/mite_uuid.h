@@ -11,6 +11,7 @@ namespace mite {
  */
 class UUIDGenerator {
  public:
+  // 生成完全随机的UUID
   static uuids::uuid Generate()
   {
     std::random_device rd;
@@ -21,6 +22,24 @@ class UUIDGenerator {
     uuids::uuid_random_generator gen{generator};
 
     return gen();
+  }
+  // 根据索引生成伪随机的UUID
+  static uuids::uuid Generate(size_t index)
+  {
+    // 使用固定种子加上索引作为随机源
+    constexpr size_t fixed_seed = 0x123456789ABCDEF0;
+    std::mt19937 generator(unsigned int(fixed_seed + index));
+    uuids::uuid_random_generator gen{generator};
+
+    return gen();
+  }
+  // 根据字符串索引生成伪随机的UUID
+  static uuids::uuid Generate(const char *str)
+  {
+    // 使用字符串哈希作为种子
+    std::hash<std::string> hasher;
+    size_t hash = hasher(std::string(str));
+    return Generate(hash);
   }
 };
 
