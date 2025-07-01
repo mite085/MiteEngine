@@ -5,7 +5,105 @@
 #include "scene_registry.h"
 
 namespace mite {
-class ComponentStateCache;
+
+/**
+ * @brief ComponentUpdate专用的,非模板化的组件状态缓存管理器
+ *
+ * EnTT原生的on_update仅支持查询更新后的newComponent，所以
+ * 需要一个缓存已构建的<entity, component>列表，以确保在发布
+ * ComponentChangedEvent事件时，能查询到oldComponent。
+ *
+ */
+class ComponentStateCache {
+ public:
+  ~ComponentStateCache()
+  {
+    // 清理所有缓存
+    for (auto &pair : m_Caches) {
+      delete pair.second;
+    }
+  }
+
+  /**
+   * @brief 捕获指定类型组件的当前状态
+   */
+  template<typename T> void Capture(entt::registry &reg, entt::entity entity)
+  {
+    static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+    const std::type_index type = typeid(T);
+    auto it = m_Caches.find(type);
+    if (it == m_Caches.end()) {
+      // 为新类型创建缓存
+      auto *cache = new TypedCache<T>();
+      m_Caches[type] = cache;
+      it = m_Caches.find(type);
+    }
+
+    // 捕获状态
+    static_cast<TypedCache<T> *>(it->second)->Capture(reg, entity);
+  }
+
+  /**
+   * @brief 获取指定类型组件的旧状态
+   */
+  template<typename T> const T *GetOldState(entt::entity entity) const
+  {
+    const std::type_index type = typeid(T);
+    auto it = m_Caches.find(type);
+    if (it != m_Caches.end()) {
+      return static_cast<const TypedCache<T> *>(it->second)->GetOldState(entity);
+    }
+    return nullptr;
+  }
+
+  /**
+   * @brief 清除指定实体的缓存
+   */
+  void Clear(entt::entity entity)
+  {
+    for (auto &pair : m_Caches) {
+      pair.second->Clear(entity);
+    }
+  }
+
+ private:
+  // 类型擦除基类
+  struct CacheBase {
+    virtual ~CacheBase() = default;
+    virtual void Clear(entt::entity entity) = 0;
+  };
+
+  // 具体类型的缓存实现
+  template<typename T> struct TypedCache : CacheBase {
+    std::unordered_map<entt::entity, T *> cache;
+
+    void Capture(entt::registry &reg, entt::entity entity)
+    {
+      if (reg.valid(entity) && reg.all_of<T>(entity)) {
+        cache[entity] = &reg.get<T>(entity);
+      }
+    }
+
+    const T *GetOldState(entt::entity entity) const
+    {
+      auto it = cache.find(entity);
+      return it != cache.end() ? it->second : nullptr;
+    }
+
+    void Clear(entt::entity entity) override
+    {
+      // 注意：
+      // Clear在entity销毁时触发，
+      // 此entity未必注册所有component，
+      // 所以cache有可能不包含本entity。
+      if (cache.find(entity) != cache.end())
+        cache.erase(entity);
+    }
+  };
+
+  std::unordered_map<std::type_index, CacheBase *> m_Caches;
+};
 /**
  * @brief 场景事件回调适配器（模板增强版）
  *
@@ -315,104 +413,6 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
 
 };
 
-/**
- * @brief ComponentUpdate专用的,非模板化的组件状态缓存管理器
- *
- * EnTT原生的on_update仅支持查询更新后的newComponent，所以
- * 需要一个缓存已构建的<entity, component>列表，以确保在发布
- * ComponentChangedEvent事件时，能查询到oldComponent。
- *
- */
-class ComponentStateCache {
- public:
-  ~ComponentStateCache()
-  {
-    // 清理所有缓存
-    for (auto &pair : m_Caches) {
-      delete pair.second;
-    }
-  }
-
-  /**
-   * @brief 捕获指定类型组件的当前状态
-   */
-  template<typename T> void Capture(entt::registry &reg, entt::entity entity)
-  {
-    static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
-
-    const std::type_index type = typeid(T);
-    auto it = m_Caches.find(type);
-    if (it == m_Caches.end()) {
-      // 为新类型创建缓存
-      auto *cache = new TypedCache<T>();
-      m_Caches[type] = cache;
-      it = m_Caches.find(type);
-    }
-
-    // 捕获状态
-    static_cast<TypedCache<T> *>(it->second)->Capture(reg, entity);
-  }
-
-  /**
-   * @brief 获取指定类型组件的旧状态
-   */
-  template<typename T> const T *GetOldState(entt::entity entity) const
-  {
-    const std::type_index type = typeid(T);
-    auto it = m_Caches.find(type);
-    if (it != m_Caches.end()) {
-      return static_cast<const TypedCache<T> *>(it->second)->GetOldState(entity);
-    }
-    return nullptr;
-  }
-
-  /**
-   * @brief 清除指定实体的缓存
-   */
-  void Clear(entt::entity entity)
-  {
-    for (auto &pair : m_Caches) {
-      pair.second->Clear(entity);
-    }
-  }
-
- private:
-  // 类型擦除基类
-  struct CacheBase {
-    virtual ~CacheBase() = default;
-    virtual void Clear(entt::entity entity) = 0;
-  };
-
-  // 具体类型的缓存实现
-  template<typename T> struct TypedCache : CacheBase {
-    std::unordered_map<entt::entity, T *> cache;
-
-    void Capture(entt::registry &reg, entt::entity entity)
-    {
-      if (reg.valid(entity) && reg.all_of<T>(entity)) {
-        cache[entity] = &reg.get<T>(entity);
-      }
-    }
-
-    const T *GetOldState(entt::entity entity) const
-    {
-      auto it = cache.find(entity);
-      return it != cache.end() ? it->second : nullptr;
-    }
-
-    void Clear(entt::entity entity) override
-    {
-      // 注意：
-      // Clear在entity销毁时触发，
-      // 此entity未必注册所有component，
-      // 所以cache有可能不包含本entity。
-      if (cache.find(entity) != cache.end())
-        cache.erase(entity);
-    }
-  };
-
-  std::unordered_map<std::type_index, CacheBase *> m_Caches;
-};
 
 };  // namespace mite
 
