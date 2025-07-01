@@ -11,10 +11,14 @@ set(RENDERER_INTERFACE_SRCS
     texture.cpp
     buffer.h
     buffer.cpp
+    mesh.h
+    mesh.cpp
 )
 source_group("interface" FILES ${RENDERER_INTERFACE_SRCS})
 
 set(OPENGL_RENDERER_SRCS
+    opengl_renderer/opegl_device.h
+    opengl_renderer/opegl_device.cpp
     opengl_renderer/opengl_renderer.h
     opengl_renderer/opengl_renderer.cpp
 )
@@ -36,5 +40,5 @@ target_link_libraries(${RENDERER_LIB_NAME}
     MiteEngine_Core
     MiteEngine_Window
     MiteEngine_Input
-    MiteEngine_Scene_View
+    MiteEngine_Asset
 )

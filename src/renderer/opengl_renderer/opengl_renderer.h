@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "glad.h"
 #include "GLFW/glfw3.h"// 必须在GLAD加载库之后
+#include "opengl_renderer/opegl_device.h"
 
 namespace mite {
 
