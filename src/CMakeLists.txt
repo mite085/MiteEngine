@@ -1,5 +1,5 @@
 # 创建可执行目标，添加其他源文件
-add_subdirectory(assert)
+add_subdirectory(asset)
 add_subdirectory(core)
 add_subdirectory(input)
 add_subdirectory(window)

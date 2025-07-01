@@ -33,7 +33,7 @@ target_link_libraries(${PROJECT_NAME}
     spdlog::spdlog
 
     # 各模块库依赖
-    MiteEngine_Assert
+    MiteEngine_Asset
     MiteEngine_Core
     MiteEngine_Input
     
