@@ -10,14 +10,16 @@ int main(int argc, char **argv)
   // 在Windows平台上启用内存泄漏检测
   // 调试模式下检查内存泄漏
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+  // 调适界面出现内存泄露时，使用该宏，按照泄漏分配号填写参数
+  // 例如出现 {694} normal block at 0x00……,则填写694
+  // 这会在分配这块内存时触发断点
+  // 
+  // _CrtSetBreakAlloc(694);
 #endif
 
   // 初始化日志系统
   mite::LoggerSystem::Init();
   LOG_INFO("Starting Mite Engine");
-
-  // TODO: 处理命令行参数
-
 
   // 运行程序
   try {

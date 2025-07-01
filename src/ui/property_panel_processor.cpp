@@ -1,8 +1,8 @@
 #include "property_panel_processor.h"
 
 namespace mite {
-PropertyPanelProcessor::PropertyPanelProcessor(PropertyPanel *panel)
-    : InputProcessor(), m_Panel(panel)
+PropertyPanelProcessor::PropertyPanelProcessor(std::shared_ptr<PropertyPanel> panel)
+    : InputProcessor(), m_Panel(std::move(panel))
 {
   // ¶©ÔÄÊÂ¼þ
   EventBus::Get().Subscribe<MouseButtonPressedEvent>(BIND_DISPATCH_FN(_HandleMouseClick));

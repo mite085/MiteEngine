@@ -5,7 +5,6 @@
 #include "input_processor.h"
 
 namespace mite {
-
 // TODO: 为了暂时编译成功，编写一个假想的PropertyPanel
 class ScreenRect {
  public:
@@ -34,7 +33,7 @@ class PropertyPanel {
 
 class PropertyPanelProcessor : public InputProcessor {
  public:
-  explicit PropertyPanelProcessor(PropertyPanel *panel);
+  explicit PropertyPanelProcessor(std::shared_ptr<PropertyPanel> panel);
 
   // IInputProcessor接口实现
   int GetPriority() const override
@@ -62,14 +61,14 @@ class PropertyPanelProcessor : public InputProcessor {
   void _HandleMouseDrag(MouseMoveEvent &e);
   void _HandleKeyPress(KeyPressedEvent &e);
   // TODO: 添加MouseScrolledEvent事件后补全
-  //bool _HandleMouseScroll(MouseScrolledEvent &e);
+  // bool _HandleMouseScroll(MouseScrolledEvent &e);
 
   // 辅助方法
   bool _IsMouseInPanel() const;
   bool _IsFocused() const;
   glm::vec2 _ToPanelSpace(const glm::vec2 &screenPos) const;
 
-  PropertyPanel *m_Panel;  // 所属属性面板
+  std::shared_ptr<PropertyPanel> m_Panel;  // 所属属性面板
   const std::string m_ID = "PropertyPanel";
 
   // 状态跟踪
@@ -81,6 +80,6 @@ class PropertyPanelProcessor : public InputProcessor {
   // 配置参数
   float m_DragThreshold = 5.0f;  // 像素拖动阈值
 };
-};
+};  // namespace mite
 
 #endif
