@@ -130,7 +130,8 @@ void MiteApplication::InitializeInputSystem()
   auto editorContext = std::make_shared<ModularInputContext>("Editor");
 
   // TODO: 为编辑器上下文装配处理器，以PropertyPanelProcessor为例
-  editorContext->AddProcessor(std::make_shared<PropertyPanelProcessor>(new PropertyPanel()));
+  std::shared_ptr<PropertyPanel> panel = std::make_shared<PropertyPanel>();
+  editorContext->AddProcessor(std::make_shared<PropertyPanelProcessor>(panel));
 
   // 将编辑器上下文推入全局栈
   Input::PushContext(editorContext);

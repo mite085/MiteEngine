@@ -1,7 +1,7 @@
 #ifndef MITE_APPLICATION
 #define MITE_APPLICATION
 
-#include "assert_manager.h"
+#include "asset_manager.h"
 #include "input.h"
 #include "modular_input_context.h"
 #include "material_system.h"
@@ -9,7 +9,6 @@
 #include "scene_core/scene.h"
 #include "scene_view.h"
 #include "glfw_window/glfw_window.h"
-#include "assert_manager.h"
 // TODO: 确保编译通过，仅include panel组件，后续重新整理include层级
 #include "property_panel_processor.h"
 
