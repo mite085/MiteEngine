@@ -62,6 +62,13 @@ void GLFWWindow::Initialize(const WindowConfig &config)
     // 设置当前上下文
     MakeContextCurrent();
 
+    // 加载 Glad 的函数指针（必须在上下文激活后调用）
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+      m_Logger->critical("Failed to initialize Glad");
+      glfwTerminate();
+      throw;
+    }
+
     // 设置VSync
     SetVSync(m_WindowData.vsync);
 

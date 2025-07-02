@@ -5,7 +5,7 @@
 
 namespace mite {
 // TODO: 占位符，后续完善了基本逻辑后替换
-class Mesh {
+class FakeMesh {
 
 };
 class Material;
@@ -37,7 +37,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
    * @param mesh 网格数据
    * @param material 材质数据
    */
-  explicit MeshComponent(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material = nullptr);
+  explicit MeshComponent(std::shared_ptr<FakeMesh> mesh, std::shared_ptr<Material> material = nullptr);
 
   ~MeshComponent() override = default;
 
@@ -46,13 +46,13 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
    * @brief 获取网格数据
    * @return 共享指针指向的网格数据
    */
-  std::shared_ptr<Mesh> GetMesh() const;
+  std::shared_ptr<FakeMesh> GetMesh() const;
 
   /**
    * @brief 设置网格数据
    * @param mesh 新的网格数据
    */
-  void SetMesh(std::shared_ptr<Mesh> mesh);
+  void SetMesh(std::shared_ptr<FakeMesh> mesh);
 
   /**
    * @brief 检查是否有有效网格数据
@@ -105,7 +105,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
   bool Deserialize(std::istream &input) override;
 
  private:
-  std::shared_ptr<Mesh> m_Mesh;          // 网格数据
+  std::shared_ptr<FakeMesh> m_Mesh;          // 网格数据
   std::shared_ptr<Material> m_Material;  // 材质数据
 
   bool m_IsVisible = true;       // 可见性标志

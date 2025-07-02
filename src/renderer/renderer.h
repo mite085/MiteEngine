@@ -19,6 +19,7 @@ class Renderer {
  public:
   explicit Renderer(std::shared_ptr<AssetManager> assetManager);
   virtual ~Renderer() = default;
+  virtual void Initialize() = 0;
 
   // ---- 资源管理 ----
   virtual void LoadTexture(AssetID id) = 0;

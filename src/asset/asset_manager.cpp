@@ -77,7 +77,7 @@ std::shared_ptr<ModelAsset> AssetManager::LoadModel(const std::string &path)
 
 std::shared_ptr<ModelAsset> AssetManager::GetModel(AssetID id) const
 {
-  m_ModelCache.Get(id);
+  return m_ModelCache.Get(id);
 }
 
 void AssetManager::LoadModelInternalToCache(const std::string &path)

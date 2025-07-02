@@ -13,6 +13,8 @@ set(RENDERER_INTERFACE_SRCS
     buffer.cpp
     mesh.h
     mesh.cpp
+    model.h
+    model.cpp
 )
 source_group("interface" FILES ${RENDERER_INTERFACE_SRCS})
 

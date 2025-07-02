@@ -6,27 +6,41 @@
 #include "glfw/glfw3.h"// 必须在GLAD加载库之后
 #include "opengl_renderer/opegl_device.h"
 
+#include "texture.h"
+#include "model.h"
+
 namespace mite {
 
+	/**
+ * OpenGL渲染器实现
+ * 职责：
+ * 1. 实现基类定义的渲染接口
+ * 2. 管理OpenGL专属状态（如VAO、Shader Program）
+ */
 class OpenGLRenderer : public Renderer {
  public:
-  OpenGLRenderer() = default;
-  bool Init() override;
-  void ShutDown() override;
+  explicit OpenGLRenderer(std::shared_ptr<AssetManager> assetManager);
+  ~OpenGLRenderer() override;
+  void Initialize() override;
+  // ---- 资源管理 ----
+  void LoadTexture(AssetID id) override;
+  void UnloadTexture(AssetID id) override;
+  void LoadModel(AssetID id) override;
+  void UnloadModel(AssetID id) override;
 
-  void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
-  void SetDepthTesting(bool enabled) override;
-  void SetClearColor(const glm::vec4 &color) override;
-  void Clear() override;
-  void DrawIndexed(VertexArray *vertexArray, uint32_t indexCount = 0) override;
+  // ---- 渲染指令 ----
+  void BeginFrame() override;
+  void EndFrame() override;
+  void DrawModel(AssetID modelId, const glm::mat4 &transform) override;
 
-  VertexBuffer *CreateVertexBuffer(float *vertices, uint32_t size) override;
-  IndexBuffer *CreateIndexBuffer(uint32_t *indices, uint32_t count) override;
-  ShaderBuffer *CreateShader(const std::string &vsPath, const std::string &fsPath) override;
+ private:
+  // ---- 内部资源存储 ----
+  std::unordered_map<AssetID, std::unique_ptr<Texture>> textures_;
+  std::unordered_map<AssetID, std::unique_ptr<Model>> models_;
 
-  void SwapBuffers() override;
-
-  //void RenderScene(const RenderData &render_data) override;
+  // ---- OpenGL专属状态 ----
+  GLuint defaultFBO_ = 0;
+  GLuint currentShader_ = 0;
 };
 
 

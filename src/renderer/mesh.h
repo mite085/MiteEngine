@@ -1,26 +1,28 @@
-#ifndef MITE_RENDERER_TEXTURE
-#define MITE_RENDERER_TEXTURE
+#ifndef MITE_RENDERER_MESH
+#define MITE_RENDERER_MESH
 
 #include "asset_type.h"
 #include "render_device.h"
 
 namespace mite {
+/**
+ * 子网格运行时封装
+ * 职责：
+ * - 维护单个子网格的GPU资源
+ * - 提供最小化绘制接口
+ */
 class Mesh {
  public:
-  explicit Mesh(const MeshData &subMesh);
-  ~Mesh();
+  Mesh(const MeshGPUHandle &handle);
 
-  // 渲染网格（绑定VAO并调用glDrawElements）
   void Draw() const;
-
-  // 获取顶点布局（供Shader使用）
-  const VertexLayout &GetLayout() const
+  uint32_t GetIndexCount() const
   {
-    return m_Layout;
+    return handle_.indexCount;
   }
 
  private:
-  VertexLayout m_Layout;
+  MeshGPUHandle handle_;
 };
 };  // namespace mite
 

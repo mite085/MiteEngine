@@ -91,7 +91,7 @@ void MiteApplication::InitializeRenderWithOpenGL()
   // 注意：
   // 要确保m_Renderer在m_AssetManager之后创建
   m_Renderer = std::make_unique<OpenGLRenderer>(m_AssetManager);
-  //m_Renderer->Init();
+  m_Renderer->Initialize();
 }
 
 void MiteApplication::InitializeUI()

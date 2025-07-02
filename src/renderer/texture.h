@@ -5,30 +5,43 @@
 #include "render_device.h"
 
 namespace mite {
+/**
+ * GPU纹理运行时封装
+ * 职责：
+ * - 维护纹理采样状态（Wrap/Filter等）
+ * - 提供类型安全的绑定接口
+ * - 不管理生命周期（由Renderer负责）
+ */
 class Texture {
  public:
-  // 从TextureAsset创建纹理（由AssetManager调用）
-  explicit Texture(TextureGPUHandle handle, TextureWrapMode wrap, TextureFilterMode filter);
-  ~Texture();
+  Texture(const TextureGPUHandle &handle, const TextureMetadata &meta);
 
-  // 绑定到指定纹理单元
+  // ---- 核心接口 ----
   void Bind(uint32_t slot) const;
+  //void Unbind() const;
 
-  // 获取元数据
-  const TextureMetadata &GetMetadata() const
+  // ---- 状态设置 ----
+  void SetWrapMode(TextureWrapMode mode);
+  void SetFilterMode(TextureFilterMode mode);
+  //void GenerateMipmaps();
+
+  // ---- 元数据访问 ----
+  TextureGPUHandle GetHandle() const
   {
-    return m_Metadata;
+    return handle_;
+  }
+  glm::ivec2 GetSize() const
+  {
+    return {meta_.width, meta_.height};
+  }
+  bool IsHDR() const
+  {
+    return meta_.isHDR;
   }
 
-  //// 获取API句柄（供其他渲染操作使用）
-  //TextureGPUHandle GetHandle() const
-  //{
-  //  return m_Handle;
-  //}
-
  private:
-  TextureMetadata m_Metadata;
-  //TextureGPUHandle m_Handle;
+  TextureGPUHandle handle_;
+  TextureMetadata meta_;
 };
 
 };  // namespace mite

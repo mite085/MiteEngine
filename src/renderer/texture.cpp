@@ -3,20 +3,32 @@
 #include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 
 namespace mite {
-Texture::Texture(const TextureAsset &asset)
-    : m_Metadata(asset.metadata)
+Texture::Texture(const TextureGPUHandle &handle, const TextureMetadata &meta)
+    : handle_(handle), meta_(meta)
 {
-  // 实际创建由IRenderDevice完成
-}
-
-Texture::~Texture()
-{
-  // 析构时无需操作，由AssetManager统一管理生命周期
+  // 初始状态设置
+  SetWrapMode(TextureWrapMode::Repeat);
+  SetFilterMode(TextureFilterMode::Linear);
 }
 
 void Texture::Bind(uint32_t slot) const
 {
-  //glActiveTexture(GL_TEXTURE0 + slot);
-  //glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(m_Handle.apiHandle));
+  IRenderDevice::Current().BindTexture(handle_, slot);
 }
+
+void Texture::SetWrapMode(TextureWrapMode mode)
+{
+  IRenderDevice::Current().SetTextureWrapMode(handle_, mode);
+}
+
+void Texture::SetFilterMode(TextureFilterMode mode) {
+  IRenderDevice::Current().SetTextureFilterMode(handle_, mode);
+}
+
+//void Texture::GenerateMipmaps()
+//{
+//  if (meta_.format == TextureFormat::RGB16F || meta_.format == TextureFormat::RGBA16F) {
+//    IRenderDevice::Current().GenerateMipmaps(handle_);
+//  }
+//}
 };  // namespace mite
