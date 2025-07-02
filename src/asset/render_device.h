@@ -28,7 +28,7 @@ class IRenderDevice {
 
   // 静态当前设备管理
   static IRenderDevice &Current();
-  static void SetCurrent(IRenderDevice *device);
+  static void SetCurrent(std::unique_ptr<IRenderDevice> device);
 };
 };  // namespace mite
 

@@ -1,8 +1,6 @@
 #include "opengl_renderer.h"
 
 namespace mite {
-OpenGLRenderer::OpenGLRenderer(OpenGLDevice &device) : m_Device(device) {}
-
 bool OpenGLRenderer::Init()
 {
   // OpenGL的初始化由Window负责。而非renderer

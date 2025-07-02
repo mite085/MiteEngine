@@ -103,7 +103,6 @@ class MiteApplication {
  private:
   // всо╣мЁ
   std::unique_ptr<Window> m_Window;
-  std::unique_ptr<IRenderDevice> m_RendererDevice;
   std::unique_ptr<Renderer> m_Renderer;
   std::unique_ptr<Scene> m_Scene;
   std::unique_ptr<SceneView> m_SceneView;

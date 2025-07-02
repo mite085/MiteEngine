@@ -8,10 +8,10 @@ std::mutex &GetDeviceMutex()
   return mutex;
 }
 
-mite::IRenderDevice *&GetCurrentDevice()
+std::unique_ptr<mite::IRenderDevice> &GetCurrentDevice()
 {
-  static mite::IRenderDevice *device = nullptr;
-  return device;
+  static std::unique_ptr<mite::IRenderDevice> instance = nullptr;
+  return instance;
 }
 }  // namespace
 
@@ -27,9 +27,9 @@ IRenderDevice &IRenderDevice::Current()
   return *GetCurrentDevice();
 }
 
-void IRenderDevice::SetCurrent(IRenderDevice *device)
+void IRenderDevice::SetCurrent(std::unique_ptr<IRenderDevice> device)
 {
   std::lock_guard<std::mutex> lock(GetDeviceMutex());
-  GetCurrentDevice() = device;
+  GetCurrentDevice() = std::move(device);
 }
 };

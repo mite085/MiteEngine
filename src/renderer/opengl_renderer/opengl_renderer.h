@@ -10,7 +10,7 @@ namespace mite {
 
 class OpenGLRenderer : public Renderer {
  public:
-  explicit OpenGLRenderer(OpenGLDevice &device);
+  OpenGLRenderer() = default;
   bool Init() override;
   void ShutDown() override;
 
@@ -27,15 +27,6 @@ class OpenGLRenderer : public Renderer {
   void SwapBuffers() override;
 
   //void RenderScene(const RenderData &render_data) override;
-
-  
-  OpenGLDevice &GetRenderDevice()
-  {
-    return m_Device;
-  }
-
- protected:
-  OpenGLDevice &m_Device;
 };
 
 
