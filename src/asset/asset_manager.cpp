@@ -28,6 +28,11 @@ std::shared_ptr<TextureAsset> AssetManager::LoadTexture(const std::string &path)
   
 }
 
+std::shared_ptr<TextureAsset> AssetManager::GetTexture(AssetID id) const
+{
+  return m_TextureCache.Get(id);
+}
+
 void AssetManager::LoadTextureInternalToCache(const std::string &path)
 {
   try {
@@ -68,6 +73,11 @@ std::shared_ptr<ModelAsset> AssetManager::LoadModel(const std::string &path)
 
   m_ModelCache.AddRefCount(id);  // 增加引用计数
   return cachedModel;
+}
+
+std::shared_ptr<ModelAsset> AssetManager::GetModel(AssetID id) const
+{
+  m_ModelCache.Get(id);
 }
 
 void AssetManager::LoadModelInternalToCache(const std::string &path)

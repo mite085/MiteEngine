@@ -102,14 +102,15 @@ class MiteApplication {
 
  private:
   // 子系统
+  std::shared_ptr<InputContextStack> m_InputContextStack;
+  std::shared_ptr<AssetManager> m_AssetManager;
+
   std::unique_ptr<Window> m_Window;
   std::unique_ptr<Renderer> m_Renderer;
   std::unique_ptr<Scene> m_Scene;
   std::unique_ptr<SceneView> m_SceneView;
   //std::unique_ptr<UIManager> m_UIManager;
-  std::unique_ptr<AssetManager> m_AssetManager;
   //std::unique_ptr<MaterialSystem> m_MaterialSystem;
-  std::shared_ptr<InputContextStack> m_InputContextStack;
 
   // 状态信息
   WindowConfig m_Config;
@@ -122,7 +123,7 @@ class MiteApplication {
   bool m_IsInitialized = false;
   float m_TargetFrameRate = 60.0f;
 
-  // 待处理操作队列
+  // TODO: 待处理操作队列
   std::vector<std::function<void()>> m_PendingOperations;
   std::mutex m_PendingOperationsMutex;
 

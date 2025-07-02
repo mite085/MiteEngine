@@ -3,106 +3,42 @@
 
 #include "headers/headers.h"
 #include "glm/glm.hpp"
-#include "window.h"
 #include "render_device.h"
+#include "asset_manager.h"
 
 namespace mite {
 
-class VertexBuffer;
-class IndexBuffer;
-class VertexArray;
-class ShaderBuffer;
-
+/**
+ * 渲染器抽象基类（多后端兼容）
+ * 职责：
+ * 1. 管理渲染管线状态（Shader、FBO等）
+ * 2. 协调AssetManager与IRenderDevice的交互
+ * 3. 提供高层渲染接口（不直接接触OpenGL/Vulkan API）
+ */
 class Renderer {
  public:
-  enum class API {
-    None = 0,
-    OpenGL = 1,
-  };
+  explicit Renderer(std::shared_ptr<AssetManager> assetManager);
+  virtual ~Renderer() = default;
 
-  Renderer() = default;
-  // 基本状态管理
-  virtual bool Init() = 0;
-  virtual void ShutDown() = 0;
+  // ---- 资源管理 ----
+  virtual void LoadTexture(AssetID id) = 0;
+  virtual void UnloadTexture(AssetID id) = 0;
+  virtual void LoadModel(AssetID id) = 0;
+  virtual void UnloadModel(AssetID id) = 0;
 
-  virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
-  virtual void SetDepthTesting(bool enabled) = 0;
-  //virtual void SetBlendFunction(BlendFunc src, BlendFunc dst) = 0;
-  //virtual void SetFaceCulling(bool enabled, CullFace face = CullFace::Back) = 0;
-  //virtual void SetWireframeMode(bool enabled) = 0;
+  // ---- 渲染指令 ----
+  virtual void BeginFrame() = 0;
+  virtual void EndFrame() = 0;
+  virtual void DrawModel(AssetID modelId, const glm::mat4 &transform) = 0;
 
-  // 清除操作
-  virtual void SetClearColor(const glm::vec4 &color) = 0;
-  virtual void Clear() = 0;
-  virtual void DrawIndexed(VertexArray *vertexArray, uint32_t indexCount = 0) = 0;
-
-  virtual VertexBuffer *CreateVertexBuffer(float *vertices, uint32_t size) = 0;
-  virtual IndexBuffer *CreateIndexBuffer(uint32_t *indices, uint32_t count) = 0;
-  virtual ShaderBuffer *CreateShader(const std::string &vsPath, const std::string &fsPath) = 0;
-
-  // 核心方法
-  // 接受Scene提供的渲染友好数据执行绘制
-  // TODO: RenderScene可以考虑拆分成BeginScene、
-  // RenderBatches、RenderSkybox、RenderDebug、
-  // EndScene等多个函数，由调用方控制渲染顺序
-  //virtual void RenderScene(const RenderData &render_data) = 0;
-
-  // 交换缓冲
-  virtual void SwapBuffers() = 0;
-};
-
-class VertexBuffer {
- public:
-  virtual ~VertexBuffer() = default;
-
-  virtual void Bind() = 0;
-  virtual void Unbind() = 0;
-
-  static VertexBuffer *Create(float *vertices, uint32_t size);
-};
-
-class IndexBuffer {
- public:
-  virtual ~IndexBuffer() = default;
-
-  virtual void Bind() = 0;
-  virtual void Unbind() = 0;
-
-  virtual uint32_t GetCount() const = 0;
-
-  static IndexBuffer *Create(uint32_t *indices, uint32_t count);
-};
-
-class VertexArray {
- public:
-  virtual ~VertexArray() = default;
-
-  virtual void AddVertexBuffer(VertexBuffer *vb) = 0;
-  virtual void SetIndexBuffer(IndexBuffer *ib) = 0;
-  virtual void Bind() = 0;
-
-  static VertexArray *Create();
-};
-
-class ShaderBuffer {
- public:
-  virtual ~ShaderBuffer() = default;
-
-  virtual void Bind() = 0;
-
-  template<typename T> void SetUniform(const std::string &name, const T &value)
-  {
-    SetUniformImpl(name, value);
-  }
+  // ---- 状态设置 ----
+  void SetClearColor(const glm::vec4 &color);
+  void SetViewport(uint32_t width, uint32_t height);
 
  protected:
-  virtual void SetUniformImpl(const std::string &name, const int &value) = 0;
-  virtual void SetUniformImpl(const std::string &name, const float &value) = 0;
-  virtual void SetUniformImpl(const std::string &name, const glm::vec3 &value) = 0;
-  virtual void SetUniformImpl(const std::string &name, const glm::vec4 &value) = 0;
-  virtual void SetUniformImpl(const std::string &name, const glm::mat4 &value) = 0;
-
-  static ShaderBuffer *Create(const std::string &vsPath, const std::string &fsPath);
+  std::shared_ptr<AssetManager> assetManager_;
+  glm::vec4 clearColor_ = {0.1f, 0.1f, 0.1f, 1.0f};
+  glm::ivec2 viewportSize_ = {1280, 720};
 };
 
 }  // namespace mite

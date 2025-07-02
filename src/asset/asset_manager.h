@@ -20,9 +20,11 @@ class AssetManager {
 
   // ---- 核心接口 ----
   std::shared_ptr<TextureAsset> LoadTexture(const std::string &path);
+  std::shared_ptr<TextureAsset> GetTexture(AssetID id) const;
   void ReleaseTexture(AssetID id);
 
   std::shared_ptr<ModelAsset> LoadModel(const std::string &path);
+  std::shared_ptr<ModelAsset> GetModel(AssetID id) const;
   void ReleaseModel(AssetID id);
 
   // ---- 禁用拷贝 ----

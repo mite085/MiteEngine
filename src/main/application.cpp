@@ -54,11 +54,14 @@ void MiteApplication::Initialize()
   // 订阅事件，并管理订阅句柄
   m_EventSubscriptions.Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
 
+  // 先初始化shared模块
   InitializeInputSystem();
+  InitializeAssertManager();
+
+  // 再初始化unique模块
   InitializeWindowWithOpenGL();
   InitializeRenderWithOpenGL();
   InitializeUI();
-  InitializeAssertManager();
   InitializeMaterialSystem();
   InitializeScene();
 
@@ -85,8 +88,10 @@ void MiteApplication::InitializeRenderWithOpenGL()
   IRenderDevice::SetCurrent(std::make_unique<OpenGLDevice>());
 
   // 初始化OpenGL渲染器
-  m_Renderer = std::make_unique<OpenGLRenderer>();
-  m_Renderer->Init();
+  // 注意：
+  // 要确保m_Renderer在m_AssetManager之后创建
+  m_Renderer = std::make_unique<OpenGLRenderer>(m_AssetManager);
+  //m_Renderer->Init();
 }
 
 void MiteApplication::InitializeUI()
@@ -110,7 +115,7 @@ void MiteApplication::InitializeAssertManager()
   m_logger->info("Initializing assert manager");
 
   // 初始化资产管理器
-  m_AssetManager = std::make_unique<AssetManager>();
+  m_AssetManager = std::make_shared<AssetManager>();
 }
 
 void MiteApplication::InitializeMaterialSystem()
@@ -196,7 +201,7 @@ void MiteApplication::CleanUpScene()
 void MiteApplication::BeginFrame()
 {
   // 清除缓冲
-  m_Renderer->Clear();
+  //m_Renderer->Clear();
 
   // TODO：开始UI帧
   // m_UIManager->BeginFrame()
@@ -247,8 +252,8 @@ void MiteApplication::Render()
 
 void MiteApplication::EndFrame()
 {
-  // 交换缓冲
-  m_Renderer->SwapBuffers();
+  // TODO: 交换缓冲
+  //m_Renderer->SwapBuffers();
 
   // TODO: 处理延迟释放的资源
   // m_AssetManager->ProcessDeletionQueue();
