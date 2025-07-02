@@ -1,7 +1,7 @@
 #include "asset_manager.h"
 
 namespace mite {
-AssetManager::AssetManager(IRenderDevice &renderDevice) : m_RenderDevice(renderDevice) {}
+
 AssetManager::~AssetManager()
 {
   // 析构时自动清理所有缓存资源
@@ -34,12 +34,9 @@ void AssetManager::LoadTextureInternalToCache(const std::string &path)
     // 1. 使用TextureLoader加载原始数据
     auto [metadata, pixelData] = TextureLoader::LoadTextureData(path);
 
-    // 2. 委托IRenderDevice创建GPU资源
-    TextureGPUHandle gpuHandle = m_RenderDevice.CreateTexture(metadata, pixelData.get());
-
-    // 3. 缓存资源
+    // 2. 缓存资源
     AssetID id = UUIDGenerator::Generate(path.c_str());
-    auto tex = std::make_shared<TextureAsset>(TextureAsset{id, metadata, gpuHandle});
+    auto tex = std::make_shared<TextureAsset>(TextureAsset{id, metadata});
     m_TextureCache.Store(tex);
   }
   catch (const std::exception &e) {
@@ -51,10 +48,6 @@ void AssetManager::ReleaseTexture(TextureAsset handle)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   if (m_TextureCache.Release(handle.id) <= 0) {
-    // 如果引用归零，通知RenderDevice释放GPU资源
-    if (auto tex = m_TextureCache.Get(handle.id)) {
-      m_RenderDevice.DestroyTexture(tex->gpuHandle);
-    }
     m_TextureCache.ForceRemove(handle.id);
   }
 }
@@ -81,15 +74,11 @@ void AssetManager::LoadModelInternalToCache(const std::string &path)
 {
   try {
     // 1. 使用ModelLoader加载模型数据
-    ModelMetadata metadata = ModelLoader::LoadModel(path);
+   std::shared_ptr<ModelAsset> model = ModelLoader::LoadModel(path);
 
-    // 2. 委托IRenderDevice创建GPU资源
-    ModelGPUHandle gpuHandle = m_RenderDevice.CreateModel(metadata);
-
-    // 3. 缓存资源
+    // 2. 缓存资源
     AssetID id = UUIDGenerator::Generate(path.c_str());
-    auto modelMeta = std::make_shared<ModelAsset>(ModelAsset{id, metadata, gpuHandle});
-    m_ModelCache.Store(modelMeta);
+    m_ModelCache.Store(model);
   }
   catch (const std::exception &e) {
     LOG_ERROR("[AssetManager] Model load failed: {}", e.what());
@@ -100,9 +89,6 @@ void AssetManager::ReleaseModel(ModelAsset handle)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   if (m_ModelCache.Release(handle.id) <= 0) {
-    if (auto model = m_ModelCache.Get(handle.id)) {
-      m_RenderDevice.DestroyModel(model->gpuHandle);
-    }
     m_ModelCache.ForceRemove(handle.id);
   }
 }

@@ -2,41 +2,46 @@
 
 namespace mite {
 // ------------------------ 构造函数/析构函数 ------------------------
-OpenGLDevice::OpenGLDevice()
-{
-  // 初始化OpenGL扩展（不由此处负责）
-  // if (glfwInit() != GLFW_TRUE) {
-  //  LOG_ERROR("Failed to initialize GLFW");
-  //  throw std::runtime_error("GLFW init failed");
-  //}
-  // LOG_INFO("OpenGL device initialized.");
-}
+OpenGLDevice::OpenGLDevice() {}
 
 OpenGLDevice::~OpenGLDevice()
 {
   // 防御性检查：确保所有资源已释放
   if (!activeTextures_.empty()) {
     LOG_WARN("{} textures not released on shutdown", activeTextures_.size());
-    for (auto &[id, _] : activeTextures_) {
-      glDeleteTextures(1, &id);
+    for (GLuint handle : activeTextures_) {
+      glDeleteTextures(1, &handle);
     }
   }
-  if (!activeModels_.empty()) {
-    LOG_WARN("{} models not released on shutdown", activeModels_.size());
-    for (auto &[id, _] : activeModels_) {
-      glDeleteBuffers(1, &id);
+  if (!activeMeshsVAO_.empty()) {
+    LOG_WARN("{} meshes vao not released on shutdown", activeMeshsVAO_.size());
+    for (GLuint vao : activeMeshsVAO_) {
+      glDeleteVertexArrays(1, &vao);
+    }
+  }
+  if (!activeMeshsVBO_.empty()) {
+    LOG_WARN("{} meshes vbo not released on shutdown", activeMeshsVBO_.size());
+    for (GLuint vbo : activeMeshsVBO_) {
+      glDeleteBuffers(1, &vbo);
+    }
+  }
+  if (!activeMeshsEBO_.empty()) {
+    LOG_WARN("{} meshes ebo not released on shutdown", activeMeshsEBO_.size());
+    for (GLuint ebo : activeMeshsEBO_) {
+      glDeleteBuffers(1, &ebo);
     }
   }
 }
 
 // ------------------------ 纹理操作 ------------------------
-TextureGPUHandle OpenGLDevice::CreateTexture(const TextureMetadata &meta, const void *data)
+TextureGPUHandle OpenGLDevice::CreateTexture(const TextureAsset &texture, const void *data)
 {
+  auto meta = texture.metadata;
   GLuint textureID;
   glGenTextures(1, &textureID);
   glBindTexture(GL_TEXTURE_2D, textureID);
 
-  // 设置纹理参数（TODO: 可根据meta扩展）
+  // 设置纹理参数
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -56,8 +61,8 @@ TextureGPUHandle OpenGLDevice::CreateTexture(const TextureMetadata &meta, const 
                data);
   glGenerateMipmap(GL_TEXTURE_2D);
 
-  // 记录活动纹理（调试用）
-  activeTextures_[textureID] = meta;
+  // 记录活动纹理
+  activeTextures_.insert(textureID);
 
   return {static_cast<uintptr_t>(textureID)};
 }
@@ -73,17 +78,22 @@ void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
 }
 
 // ------------------------ 模型操作 ------------------------
-ModelGPUHandle OpenGLDevice::CreateModel(const ModelMetadata &meta)
+ModelGPUHandle OpenGLDevice::CreateModel(const ModelAsset &model)
 {
-  if (meta.subMeshes.empty()) {
-    LOG_ERROR("Model has no submeshes");
-    return {};
+  ModelGPUHandle modelHandle;
+
+  // 处理所有子网格
+  for (auto &subMesh : model.subMeshes) {
+    MeshGPUHandle subMeshHandle = CreateSubMesh(subMesh);
+    modelHandle.subMeshes.push_back(subMeshHandle);
   }
 
-  // TODO：只处理第一个子网格（多子网格需扩展）
-  const SubMeshData &subMesh = meta.subMeshes[0];
+  return modelHandle;
+}
 
-  ModelGPUHandle handle;
+MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshData &subMesh)
+{
+  MeshGPUHandle handle;
   GLuint VBO, EBO, VAO;
 
   // 1. 创建VAO
@@ -104,7 +114,7 @@ ModelGPUHandle OpenGLDevice::CreateModel(const ModelMetadata &meta)
                subMesh.indices.data(),
                GL_STATIC_DRAW);
 
-  // 4. 设置顶点属性指针（基于layout描述）
+  // 4. 设置顶点属性指针
   size_t offset = 0;
   for (uint32_t i = 0; i < subMesh.layout.attributes.size(); ++i) {
     auto attr = subMesh.layout.attributes[i];
@@ -126,38 +136,56 @@ ModelGPUHandle OpenGLDevice::CreateModel(const ModelMetadata &meta)
             i, 2, GL_FLOAT, GL_FALSE, subMesh.layout.stride, reinterpret_cast<void *>(offset));
         offset += sizeof(glm::vec2);
         break;
-        // 其他属性处理...
+      case VertexAttribute::Tangent:
+        glVertexAttribPointer(
+            i, 3, GL_FLOAT, GL_FALSE, subMesh.layout.stride, reinterpret_cast<void *>(offset));
+        offset += sizeof(glm::vec3);
+        break;
+      case VertexAttribute::Bitangent:
+        glVertexAttribPointer(
+            i, 3, GL_FLOAT, GL_FALSE, subMesh.layout.stride, reinterpret_cast<void *>(offset));
+        offset += sizeof(glm::vec3);
+        break;
     }
   }
 
-  // 解绑VAO（安全做法）
+  // 解绑VAO
   glBindVertexArray(0);
 
-  // 记录GPU资源
+  // 填充GPU句柄
+  handle.vertexArray = static_cast<uintptr_t>(VAO);
   handle.vertexBuffer = static_cast<uintptr_t>(VBO);
   handle.indexBuffer = static_cast<uintptr_t>(EBO);
-  handle.vertexCount = uint32_t(subMesh.vertexData.size()) / subMesh.layout.stride;
-  handle.indexCount = uint32_t(subMesh.indices.size());
+  handle.vertexCount = static_cast<uint32_t>(subMesh.vertexData.size()) / subMesh.layout.stride;
+  handle.indexCount = static_cast<uint32_t>(subMesh.indices.size());
 
-  // 调试追踪
-  activeModels_[VAO] = meta;
+  // 记录活动网格（调试用）
+  activeMeshsVAO_.insert(VAO);
+  activeMeshsVBO_.insert(VBO);
+  activeMeshsEBO_.insert(EBO);
 
   return handle;
 }
 
 void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
 {
-  if (!handle.vertexBuffer || !handle.indexBuffer)
+  if (handle.subMeshes.empty())
     return;
 
-  GLuint vbo = static_cast<GLuint>(handle.vertexBuffer);
-  GLuint ebo = static_cast<GLuint>(handle.indexBuffer);
+  for (auto &subMeshHandle : handle.subMeshes) {
+    GLuint vao = static_cast<GLuint>(subMeshHandle.vertexArray);
+    GLuint vbo = static_cast<GLuint>(subMeshHandle.vertexBuffer);
+    GLuint ebo = static_cast<GLuint>(subMeshHandle.indexBuffer);
 
-  glDeleteBuffers(1, &vbo);
-  glDeleteBuffers(1, &ebo);
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ebo);
 
-  // TODO：实际项目中需要同时删除关联的VAO
-  // 此处简化处理，需根据实际架构调整
+    // 从活动模型中移除
+    activeMeshsVAO_.erase(vao);
+    activeMeshsVBO_.erase(vbo);
+    activeMeshsEBO_.erase(ebo);
+  }
 }
 
 // ------------------------ 辅助方法 ------------------------

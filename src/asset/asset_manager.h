@@ -11,12 +11,11 @@ namespace mite {
  * 资产管理器（资源加载与生命周期管理）
  * 职责：
  * 1. 加载磁盘资源并转换为引擎中间格式
- * 2. 通过IRenderDevice委托GPU资源创建
- * 3. 维护资源缓存和引用计数
+ * 2. 维护资源缓存和引用计数
  */
 class AssetManager {
  public:
-  explicit AssetManager(IRenderDevice &renderDevice);
+  AssetManager() = default;
   ~AssetManager();
 
   // ---- 核心接口 ----
@@ -36,7 +35,6 @@ class AssetManager {
   void LoadModelInternalToCache(const std::string &path);
 
   // ---- 成员变量 ----
-  IRenderDevice &m_RenderDevice;  // 渲染设备抽象接口
   TextureCache m_TextureCache;    // 纹理资源缓存
   ModelCache m_ModelCache;        // 模型资源缓存
   mutable std::mutex mutex_;     // 线程安全锁

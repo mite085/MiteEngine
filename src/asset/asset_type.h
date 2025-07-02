@@ -39,12 +39,6 @@ struct TextureMetadata {
   int channels = 4;                             // 颜色通道数（RGB=3, RGBA=4）
   bool isHDR = false;                           // 是否是HDR纹理
 };
-
-// GPU纹理句柄（抽象层）
-struct TextureGPUHandle {
-  uintptr_t apiHandle = 0;  // 底层驱动句柄（OpenGL的GLuint或Vulkan的VkImage）
-};
-
 // ------------------------ 模型/网格相关 ------------------------
 // 顶点属性标志（描述顶点结构）
 enum class VertexAttribute {
@@ -61,41 +55,53 @@ struct VertexLayout {
   uint32_t stride = 0;  // 顶点总字节数
 };
 
+// 子网格GPU模型句柄
+struct MeshGPUHandle {
+  uintptr_t vertexArray = 0;   // 顶点数组索引
+  uintptr_t vertexBuffer = 0;  // 顶点缓冲区
+  uintptr_t indexBuffer = 0;   // 索引缓冲区
+  uint32_t vertexCount = 0;    // 顶点数量
+  uint32_t indexCount = 0;     // 索引数量
+};
+
 // 子网格数据（API无关的几何数据）
-struct SubMeshData {
+struct MeshData {
   std::vector<uint8_t> vertexData;  // 原始顶点字节流
   std::vector<uint32_t> indices;    // 索引数据
   VertexLayout layout;              // 顶点结构描述
   uint32_t materialIndex = 0;       // 关联的材质索引
+
+  glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // 子网格局部包围盒
+  glm::vec3 boundingBoxMax = glm::vec3(-FLT_MAX);
 };
 
 // 模型元数据
 struct ModelMetadata {
   std::string path;
-  std::vector<SubMeshData> subMeshes;
+  std::vector<std::string> materialPaths;         // 材质路径引用
   glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // 模型包围盒
   glm::vec3 boundingBoxMax = glm::vec3(-FLT_MAX);
 };
 
-// GPU模型句柄
-struct ModelGPUHandle {
-  uintptr_t vertexBuffer = 0;  // 顶点缓冲区
-  uintptr_t indexBuffer = 0;   // 索引缓冲区
-  uint32_t vertexCount = 0;
-  uint32_t indexCount = 0;
-};
-
-// ------------------------ 资源句柄（逻辑层）--------------------
-// 纹理逻辑句柄（对外暴露的类型）
+// ------------------------ 资源句柄 --------------------
+// 纹理逻辑句柄
 struct TextureAsset {
   AssetID id;  // 唯一标识符
   TextureMetadata metadata;
-  TextureGPUHandle gpuHandle;
 };
+// 纹理GPU句柄
+struct TextureGPUHandle {
+  uintptr_t apiHandle = 0;  // 底层驱动句柄（OpenGL的GLuint或Vulkan的VkImage）
+};
+// 模型逻辑句柄
 struct ModelAsset {
   AssetID id;
   ModelMetadata metadata;
-  ModelGPUHandle gpuHandle;
+  std::vector<MeshData> subMeshes;  // 包含GPU资源的子网格集合
+};
+// 模型GPU句柄
+struct ModelGPUHandle {
+  std::vector<MeshGPUHandle> subMeshes;  // 每个子网格的GPU资源
 };
 };  // namespace mite
 

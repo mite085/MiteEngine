@@ -21,20 +21,22 @@ class ModelLoader {
    * @return 包含模型元数据和所有子网格数据的结构体
    * @throws std::runtime_error 当模型加载失败时抛出异常
    */
-  static ModelMetadata LoadModel(const std::string &path, bool flipUVs = true);
+  static std::shared_ptr<ModelAsset> LoadModel(const std::string &path, bool flipUVs = true);
 
  private:
   // 处理Assimp的Mesh数据
-  static SubMeshData ProcessMesh(const aiMesh *aiMesh, const aiScene *scene);
+  static MeshData ProcessMesh(const aiMesh *aiMesh, const aiScene *scene);
 
   // 处理顶点布局描述（供Renderer模块使用）
   static VertexLayout GenerateVertexLayout(const aiMesh *aiMesh);
 
   // 计算模型的包围盒
-  static void CalculateBoundingBox(const std::vector<SubMeshData> &subMeshes,
+  static void CalculateBoundingBox(const std::vector<MeshData> &subMeshes,
                                    glm::vec3 &outMin,
                                    glm::vec3 &outMax);
+  // 提取材质路径列表
+  static std::vector<std::string> ExtractMaterialPaths(const aiScene *scene);
 };
-};
+};  // namespace mite
 
 #endif

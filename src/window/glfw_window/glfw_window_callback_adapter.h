@@ -1,10 +1,9 @@
 #ifndef MITE_GLFW_WINDOW_CALLBACK_ADAPTER
 #define MITE_GLFW_WINDOW_CALLBACK_ADAPTER
 
-
-#include "headers/headers.h"
 #include "glad.h"
-#include "GLFW/glfw3.h"
+#include "glfw/glfw3.h"  // 必须在GLAD加载库之后
+#include "headers/headers.h"
 
 namespace mite {
 /**
@@ -109,6 +108,6 @@ class GLFWWindowCallbackAdapter : public CallbackAdapter<GLFWwindow *> {
   // GLFW窗口句柄
   GLFWwindow *m_Window = nullptr;
 };
-};
+};  // namespace mite
 
 #endif

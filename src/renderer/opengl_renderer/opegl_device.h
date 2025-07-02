@@ -3,7 +3,7 @@
 
 #include "render_device.h"
 #include "glad.h"
-#include "GLFW/glfw3.h"// 必须在GLAD加载库之后
+#include "glfw/glfw3.h"// 必须在GLAD加载库之后
 
 namespace mite {
 /**
@@ -19,21 +19,24 @@ class OpenGLDevice : public IRenderDevice {
   ~OpenGLDevice() override;
 
   // ---- 纹理操作 ----
-  TextureGPUHandle CreateTexture(const TextureMetadata &meta, const void *data) override;
+  TextureGPUHandle CreateTexture(const TextureAsset &texture, const void *data) override;
   void DestroyTexture(TextureGPUHandle handle) override;
 
   // ---- 模型操作 ----
-  ModelGPUHandle CreateModel(const ModelMetadata &meta) override;
-  void DestroyModel(ModelGPUHandle handle) override;
+  ModelGPUHandle CreateModel(const ModelAsset &model) override;
+  void DestroyModel(ModelGPUHandle model) override;
 
+ private:
   // ---- 辅助方法 ----
   static GLenum TranslateTextureFormat(TextureFormat format);
 
- private:
+  // 创建单个SubMesh的GPU资源
+  MeshGPUHandle CreateSubMesh(const MeshData &subMesh);
+
   // 资源追踪（用于调试和泄漏检测）
-  std::unordered_map<GLuint, TextureMetadata> activeTextures_;
-  std::unordered_map<GLuint, ModelMetadata> activeModels_;
-};
+  std::unordered_set<GLuint> activeTextures_;
+  std::unordered_set<GLuint> activeMeshsVAO_, activeMeshsVBO_, activeMeshsEBO_;
+  };
 };
 
 #endif

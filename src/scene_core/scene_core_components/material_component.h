@@ -5,7 +5,7 @@
 
 namespace mite {
 // TODO: 占位符，后续完善了基本逻辑后替换
-class Texture {};
+class FakeTexture {};
 class Shader {};
 enum class BlendMode { Opaque };
 class Material {
@@ -49,14 +49,14 @@ class Material {
   {
     return m_Emissive;
   }
-  void SetBaseColorTexture(std::shared_ptr<Texture> texture) {
+  void SetBaseColorTexture(std::shared_ptr<FakeTexture> texture) {
     m_BaseColorTexture = texture;
   }
-  void SetNormalTexture(std::shared_ptr<Texture> texture)
+  void SetNormalTexture(std::shared_ptr<FakeTexture> texture)
   {
     m_NormalTexture = texture;
   }
-  void SetMetallicRoughnessTexture(std::shared_ptr<Texture> texture)
+  void SetMetallicRoughnessTexture(std::shared_ptr<FakeTexture> texture)
   {
     m_MetallicRoughnessTexture = texture;
   }
@@ -81,7 +81,7 @@ class Material {
   glm::vec4 m_BaseColor;
   float m_Metallic, m_Roughness;
   glm::vec3 m_Emissive;
-  std::shared_ptr<Texture> m_BaseColorTexture, m_NormalTexture, m_MetallicRoughnessTexture;
+  std::shared_ptr<FakeTexture> m_BaseColorTexture, m_NormalTexture, m_MetallicRoughnessTexture;
   BlendMode m_BlendMode;
   bool m_DoubleSided;
 };
@@ -203,19 +203,19 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
    * @brief 设置基础颜色贴图
    * @param texture 纹理对象
    */
-  void SetBaseColorTexture(std::shared_ptr<Texture> texture);
+  void SetBaseColorTexture(std::shared_ptr<FakeTexture> texture);
 
   /**
    * @brief 设置法线贴图
    * @param texture 纹理对象
    */
-  void SetNormalTexture(std::shared_ptr<Texture> texture);
+  void SetNormalTexture(std::shared_ptr<FakeTexture> texture);
 
   /**
    * @brief 设置金属粗糙度贴图
    * @param texture 纹理对象
    */
-  void SetMetallicRoughnessTexture(std::shared_ptr<Texture> texture);
+  void SetMetallicRoughnessTexture(std::shared_ptr<FakeTexture> texture);
 
   // 渲染状态控制 ========================================
   /**

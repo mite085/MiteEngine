@@ -16,6 +16,7 @@
 #include <sstream>
 #include <string>
 #include <typeindex>
+#include <unordered_set>
 #include <unordered_map>
 #include <vector>
 

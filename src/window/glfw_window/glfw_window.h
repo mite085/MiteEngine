@@ -2,12 +2,11 @@
 #define MITE_GLFW_WINDOW
 
 #include "glad.h"
-#include "GLFW/glfw3.h"  // 必须在GLAD加载库之后
-#include "window.h"
+#include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 #include "glfw_window_callback_adapter.h"
+#include "window.h"
 
 namespace mite {
-
 class GLFWWindow : public Window {
  public:
   GLFWWindow();
@@ -54,14 +53,13 @@ class GLFWWindow : public Window {
   // 窗口数量计数
   static const uint32_t GLFWWindowCount();
 
-private:
-
+ private:
   // 初始化GLFW库（静态）
   static void InitGLFW();
   static void ShutdownGLFW();
-  static uint32_t s_GLFWWindowCount; // 跟踪创建的GLFW窗口数量
+  static uint32_t s_GLFWWindowCount;  // 跟踪创建的GLFW窗口数量
 
-private:
+ private:
   // GLFW窗口句柄
   GLFWwindow *m_Window = nullptr;
 
@@ -80,7 +78,6 @@ private:
   // GLFW回调适配器 - 将GLFW原生事件转换为自定义事件
   GLFWWindowCallbackAdapter m_CallbackAdapter;
 };
-
 }  // namespace mite
 
 #endif

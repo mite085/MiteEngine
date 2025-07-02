@@ -116,7 +116,7 @@ void MiteApplication::InitializeAssertManager()
   m_logger->info("Initializing assert manager");
 
   // 初始化资产管理器
-  m_AssetManager = std::make_unique<AssetManager>(*m_RendererDevice);
+  m_AssetManager = std::make_unique<AssetManager>();
 }
 
 void MiteApplication::InitializeMaterialSystem()

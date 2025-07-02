@@ -91,21 +91,21 @@ glm::vec3 MaterialComponent::GetEmissive() const
 }
 
 // ÎÆÀí¿ØÖÆ ============================================
-void MaterialComponent::SetBaseColorTexture(std::shared_ptr<Texture> texture)
+void MaterialComponent::SetBaseColorTexture(std::shared_ptr<FakeTexture> texture)
 {
   if (m_Material) {
     m_Material->SetBaseColorTexture(texture);
   }
 }
 
-void MaterialComponent::SetNormalTexture(std::shared_ptr<Texture> texture)
+void MaterialComponent::SetNormalTexture(std::shared_ptr<FakeTexture> texture)
 {
   if (m_Material) {
     m_Material->SetNormalTexture(texture);
   }
 }
 
-void MaterialComponent::SetMetallicRoughnessTexture(std::shared_ptr<Texture> texture)
+void MaterialComponent::SetMetallicRoughnessTexture(std::shared_ptr<FakeTexture> texture)
 {
   if (m_Material) {
     m_Material->SetMetallicRoughnessTexture(texture);
