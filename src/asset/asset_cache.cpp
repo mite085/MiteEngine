@@ -2,9 +2,11 @@
 
 namespace mite {
 // ------------------------ 模板特化实现 ------------------------
-template<typename AssetType> bool AssetCache<AssetType>::Store(AssetID id, AssetPtr asset)
+template<typename AssetType> bool AssetCache<AssetType>::Store(AssetPtr asset)
 {
   std::lock_guard<std::mutex> lock(mutex_);
+
+  AssetID id = asset.id;
 
   // 检查是否已存在
   if (cache_.find(id) != cache_.end()) {
@@ -34,7 +36,7 @@ template<typename AssetType> bool AssetCache<AssetType>::Store(AssetID id, Asset
 }
 
 template<typename AssetType>
-typename AssetCache<AssetType>::AssetPtr AssetCache<AssetType>::Get(AssetID id)
+typename AssetCache<AssetType>::AssetPtr AssetCache<AssetType>::Get(AssetID id) const
 {
   std::lock_guard<std::mutex> lock(mutex_);
   auto it = cache_.find(id);
@@ -58,7 +60,7 @@ template<typename AssetType> int AssetCache<AssetType>::Release(AssetID id)
     return -1;  // 资源不存在
   }
 
-  // 减少引用计数（但不立即删除，等待PurgeUnused）
+  // 减少引用计数（但不立即删除，等待PurgeUnused()）
   int newCount = --(it->second.refCount);
   if (newCount <= 0 && maxSize_ == 0) {
     // 如果未启用LRU且引用归零，立即删除
@@ -73,6 +75,14 @@ template<typename AssetType> int AssetCache<AssetType>::GetRefCount(AssetID id) 
   std::lock_guard<std::mutex> lock(mutex_);
   auto it = cache_.find(id);
   return it != cache_.end() ? it->second.refCount : -1;
+}
+
+template<typename AssetType> void AssetCache<AssetType>::AddRefCount(AssetID id)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  auto it = cache_.find(id);
+  if (it != cache_.end())
+    it->second.refCount++;
 }
 
 template<typename AssetType> size_t AssetCache<AssetType>::PurgeUnused()

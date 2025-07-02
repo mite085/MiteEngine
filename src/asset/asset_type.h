@@ -90,15 +90,13 @@ struct ModelGPUHandle {
 // 纹理逻辑句柄（对外暴露的类型）
 struct TextureAsset {
   AssetID id;  // 唯一标识符
-  std::shared_ptr<TextureMetadata> metadata;
+  TextureMetadata metadata;
   TextureGPUHandle gpuHandle;
-  int refCount = 0;
 };
 struct ModelAsset {
   AssetID id;
-  std::shared_ptr<ModelMetadata> metadata;
+  ModelMetadata metadata;
   ModelGPUHandle gpuHandle;
-  int refCount = 0;
 };
 
 };  // namespace mite
