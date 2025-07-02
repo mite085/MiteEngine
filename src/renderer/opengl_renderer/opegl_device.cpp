@@ -44,7 +44,7 @@ TextureGPUHandle OpenGLDevice::CreateTexture(const TextureAsset &texture)
     return {static_cast<uintptr_t>(0)};
   }
   auto data = texture.textureData.textureData.get();
-  
+
   GLuint textureID;
   glGenTextures(1, &textureID);
   glBindTexture(GL_TEXTURE_2D, textureID);
@@ -67,12 +67,17 @@ TextureGPUHandle OpenGLDevice::CreateTexture(const TextureAsset &texture)
                format,
                GL_UNSIGNED_BYTE,
                data);
+
   glGenerateMipmap(GL_TEXTURE_2D);
 
   // 记录活动纹理
   activeTextures_.insert(textureID);
 
-  return {static_cast<uintptr_t>(textureID)};
+  TextureGPUHandle handle = {static_cast<uintptr_t>(textureID)};
+  SetTextureWrapMode(handle, TextureWrapMode::Repeat);
+  SetTextureFilterMode(handle, TextureFilterMode::Linear);
+
+  return handle;
 }
 
 void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
@@ -83,6 +88,35 @@ void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
   GLuint textureID = static_cast<GLuint>(handle.apiHandle);
   glDeleteTextures(1, &textureID);
   activeTextures_.erase(textureID);
+}
+
+void OpenGLDevice::BindTexture(TextureGPUHandle handle, uint32_t slot) const
+{
+  glActiveTexture(GL_TEXTURE0 + slot);
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(handle.apiHandle));
+}
+void OpenGLDevice::SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode)
+{
+  GLuint glTexture = static_cast<GLuint>(handle.apiHandle);
+  glBindTexture(GL_TEXTURE_2D, glTexture);
+
+  GLenum glWrapMode = ConvertWrapMode(mode);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode);
+
+  // 如果是3D纹理则需要设置R轴
+  // glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, glWrapMode);
+}
+void OpenGLDevice::SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode)
+{
+  GLuint glTexture = static_cast<GLuint>(handle.apiHandle);
+  glBindTexture(GL_TEXTURE_2D, glTexture);
+
+  GLenum minFilter, magFilter;
+  ConvertFilterMode(mode, minFilter, magFilter);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 }
 
 // ------------------------ 模型操作 ------------------------
@@ -196,6 +230,41 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
   }
 }
 
+void OpenGLDevice::BindMesh(MeshGPUHandle handle) const
+{
+  if (handle.vertexArray == 0) {
+    LOG_WARN("Attempted to bind invalid mesh (VAO=0)");
+    return;
+  }
+
+  // 绑定顶点数组对象（VAO）
+  GLuint vao = static_cast<GLuint>(handle.vertexArray);
+  glBindVertexArray(vao);
+
+  // 注：VAO已包含VBO/EBO的绑定信息，无需重复绑定
+}
+
+void OpenGLDevice::DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const
+{
+  if (indexCount == 0) {
+    LOG_WARN("Attempted to draw with indexCount=0");
+    return;
+  }
+
+  // 执行索引绘制
+  glDrawElements(GL_TRIANGLES,                                             // 绘制模式
+                 indexCount,                                               // 索引数量
+                 GL_UNSIGNED_INT,                                          // 索引类型
+                 reinterpret_cast<void *>(indexOffset * sizeof(uint32_t))  // 偏移量
+  );
+
+  // 调试用：检查OpenGL错误
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    LOG_ERROR("OpenGL draw error: {}", static_cast<int>(err));
+  }
+}
+
 // ------------------------ 辅助方法 ------------------------
 GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
 {
@@ -211,6 +280,54 @@ GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
     default:
       LOG_WARN("Unsupported texture format: {}", static_cast<int>(format));
       return GL_RGBA;  // 默认回退
+  }
+}
+
+GLenum OpenGLDevice::ConvertWrapMode(TextureWrapMode mode) const
+{
+  switch (mode) {
+    case TextureWrapMode::Repeat:
+      return GL_REPEAT;
+    case TextureWrapMode::ClampToEdge:
+      return GL_CLAMP_TO_EDGE;
+    case TextureWrapMode::MirroredRepeat:
+      return GL_MIRRORED_REPEAT;
+    default:
+      assert(false && "Unknown wrap mode");
+      return GL_REPEAT;
+  }
+}
+void OpenGLDevice::ConvertFilterMode(TextureFilterMode mode,
+                                     GLenum &outMinFilter,
+                                     GLenum &outMagFilter) const
+{
+  switch (mode) {
+    case TextureFilterMode::Nearest:
+      outMinFilter = GL_NEAREST;
+      outMagFilter = GL_NEAREST;
+      break;
+
+    case TextureFilterMode::Linear:
+      outMinFilter = GL_LINEAR;
+      outMagFilter = GL_LINEAR;
+      break;
+
+    case TextureFilterMode::Anisotropic:
+      outMinFilter = GL_LINEAR_MIPMAP_LINEAR;  // 需要mipmap
+      outMagFilter = GL_LINEAR;
+
+      // 设置各向异性过滤（需检查扩展支持）
+      if (GL_EXT_texture_filter_anisotropic) {
+        float maxAniso = 0.0f;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
+      }
+      break;
+
+    default:
+      assert(false && "Unknown filter mode");
+      outMinFilter = GL_LINEAR;
+      outMagFilter = GL_LINEAR;
   }
 }
 };  // namespace mite

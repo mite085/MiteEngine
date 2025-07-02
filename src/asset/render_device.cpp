@@ -1,5 +1,35 @@
 #include "render_device.h"
 
+namespace {
+// 静态变量隐藏在匿名namespace中
+std::mutex &GetDeviceMutex()
+{
+  static std::mutex mutex;
+  return mutex;
+}
+
+mite::IRenderDevice *&GetCurrentDevice()
+{
+  static mite::IRenderDevice *device = nullptr;
+  return device;
+}
+}  // namespace
+
 namespace mite {
 
+// ---- 实现静态方法 ----
+IRenderDevice &IRenderDevice::Current()
+{
+  std::lock_guard<std::mutex> lock(GetDeviceMutex());
+  if (!GetCurrentDevice()) {
+    throw std::runtime_error("No active render device set!");
+  }
+  return *GetCurrentDevice();
+}
+
+void IRenderDevice::SetCurrent(IRenderDevice *device)
+{
+  std::lock_guard<std::mutex> lock(GetDeviceMutex());
+  GetCurrentDevice() = device;
+}
 };

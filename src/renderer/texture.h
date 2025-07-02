@@ -8,7 +8,7 @@ namespace mite {
 class Texture {
  public:
   // 从TextureAsset创建纹理（由AssetManager调用）
-  explicit Texture(const TextureAsset &asset);
+  explicit Texture(TextureGPUHandle handle, TextureWrapMode wrap, TextureFilterMode filter);
   ~Texture();
 
   // 绑定到指定纹理单元
