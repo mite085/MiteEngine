@@ -12,7 +12,7 @@ class IRenderDevice {
   virtual ~IRenderDevice() = default;
 
   // 纹理操作
-  virtual TextureGPUHandle CreateTexture(const TextureAsset &texture, const void *data) = 0;
+  virtual TextureGPUHandle CreateTexture(const TextureAsset &texture) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
 
   // 模型操作

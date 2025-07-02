@@ -34,9 +34,9 @@ void AssetManager::LoadTextureInternalToCache(const std::string &path)
     // 1. 使用TextureLoader加载原始数据
     auto [metadata, pixelData] = TextureLoader::LoadTextureData(path);
 
-    // 2. 缓存资源
+    // 2. 缓存资源（pixeldata的所有权转让给TextureAsset）
     AssetID id = UUIDGenerator::Generate(path.c_str());
-    auto tex = std::make_shared<TextureAsset>(TextureAsset{id, metadata});
+    auto tex = std::make_shared<TextureAsset>(TextureAsset{id, metadata, {std::move(pixelData)}});
     m_TextureCache.Store(tex);
   }
   catch (const std::exception &e) {
@@ -44,11 +44,11 @@ void AssetManager::LoadTextureInternalToCache(const std::string &path)
   }
 }
 
-void AssetManager::ReleaseTexture(TextureAsset handle)
+void AssetManager::ReleaseTexture(AssetID id)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  if (m_TextureCache.Release(handle.id) <= 0) {
-    m_TextureCache.ForceRemove(handle.id);
+  if (m_TextureCache.Release(id) <= 0) {
+    m_TextureCache.ForceRemove(id);
   }
 }
 
@@ -85,11 +85,11 @@ void AssetManager::LoadModelInternalToCache(const std::string &path)
   }
 }
 
-void AssetManager::ReleaseModel(ModelAsset handle)
+void AssetManager::ReleaseModel(AssetID id)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  if (m_ModelCache.Release(handle.id) <= 0) {
-    m_ModelCache.ForceRemove(handle.id);
+  if (m_ModelCache.Release(id) <= 0) {
+    m_ModelCache.ForceRemove(id);
   }
 }
 

@@ -39,6 +39,12 @@ struct TextureMetadata {
   int channels = 4;                             // 颜色通道数（RGB=3, RGBA=4）
   bool isHDR = false;                           // 是否是HDR纹理
 };
+
+// 纹理数据
+// 存储内容为：uint8_t[]纹理数组，void (*)(uint8_t *)析构方法
+struct TetxureData {
+  std::unique_ptr<uint8_t[], void (*)(uint8_t *)> textureData;
+};
 // ------------------------ 模型/网格相关 ------------------------
 // 顶点属性标志（描述顶点结构）
 enum class VertexAttribute {
@@ -88,6 +94,7 @@ struct ModelMetadata {
 struct TextureAsset {
   AssetID id;  // 唯一标识符
   TextureMetadata metadata;
+  TetxureData textureData;
 };
 // 纹理GPU句柄
 struct TextureGPUHandle {

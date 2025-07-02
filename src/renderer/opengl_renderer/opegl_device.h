@@ -19,7 +19,7 @@ class OpenGLDevice : public IRenderDevice {
   ~OpenGLDevice() override;
 
   // ---- 纹理操作 ----
-  TextureGPUHandle CreateTexture(const TextureAsset &texture, const void *data) override;
+  TextureGPUHandle CreateTexture(const TextureAsset &texture) override;
   void DestroyTexture(TextureGPUHandle handle) override;
 
   // ---- 模型操作 ----

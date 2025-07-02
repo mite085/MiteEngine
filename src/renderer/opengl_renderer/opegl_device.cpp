@@ -34,9 +34,17 @@ OpenGLDevice::~OpenGLDevice()
 }
 
 // ------------------------ 纹理操作 ------------------------
-TextureGPUHandle OpenGLDevice::CreateTexture(const TextureAsset &texture, const void *data)
+TextureGPUHandle OpenGLDevice::CreateTexture(const TextureAsset &texture)
 {
   auto meta = texture.metadata;
+
+  // 检查是否可用
+  if (texture.textureData.textureData == nullptr) {
+    LOG_ERROR("Invalid texture: {}", meta.path);
+    return {static_cast<uintptr_t>(0)};
+  }
+  auto data = texture.textureData.textureData.get();
+  
   GLuint textureID;
   glGenTextures(1, &textureID);
   glBindTexture(GL_TEXTURE_2D, textureID);

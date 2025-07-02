@@ -10,6 +10,12 @@ namespace mite {
  * 1. 管理所有已加载资源的生命周期（模型/纹理等）
  * 2. 实现引用计数自动释放
  * 3. 支持LRU缓存淘汰策略
+ * 
+ * 注意：
+ * AssetCache缓存的对象均为shared_ptr，其他任何
+ * 模块均将AssetPtr作为临时变量调用，所以当cache_
+ * 哈希表线程安全的删除AssetPtr时，外部不可能存在
+ * 其他AssetPtr，所以会触发shared_ptr自动释放资源。
  */
 template<typename AssetType> class AssetCache {
  public:
