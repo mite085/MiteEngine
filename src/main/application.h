@@ -103,11 +103,12 @@ class MiteApplication {
  private:
   // ×ÓÏµÍ³
   std::unique_ptr<Window> m_Window;
+  std::unique_ptr<IRenderDevice> m_RendererDevice;
   std::unique_ptr<Renderer> m_Renderer;
   std::unique_ptr<Scene> m_Scene;
   std::unique_ptr<SceneView> m_SceneView;
   //std::unique_ptr<UIManager> m_UIManager;
-  //std::unique_ptr<AssetManager> m_AssetManager;
+  std::unique_ptr<AssetManager> m_AssetManager;
   //std::unique_ptr<MaterialSystem> m_MaterialSystem;
   std::shared_ptr<InputContextStack> m_InputContextStack;
 

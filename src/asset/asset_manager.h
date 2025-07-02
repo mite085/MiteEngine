@@ -16,7 +16,7 @@ namespace mite {
  */
 class AssetManager {
  public:
-  explicit AssetManager(IRenderDevice *renderDevice);
+  explicit AssetManager(IRenderDevice &renderDevice);
   ~AssetManager();
 
   // ---- 核心接口 ----
@@ -36,9 +36,9 @@ class AssetManager {
   void LoadModelInternalToCache(const std::string &path);
 
   // ---- 成员变量 ----
-  IRenderDevice *renderDevice_;  // 渲染设备抽象接口
-  TextureCache textureCache_;    // 纹理资源缓存
-  ModelCache modelCache_;        // 模型资源缓存
+  IRenderDevice &m_RenderDevice;  // 渲染设备抽象接口
+  TextureCache m_TextureCache;    // 纹理资源缓存
+  ModelCache m_ModelCache;        // 模型资源缓存
   mutable std::mutex mutex_;     // 线程安全锁
 };
 };  // namespace mite

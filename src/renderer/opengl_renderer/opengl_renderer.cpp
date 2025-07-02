@@ -1,41 +1,40 @@
 #include "opengl_renderer.h"
 
 namespace mite {
+OpenGLRenderer::OpenGLRenderer(OpenGLDevice &device) : m_Device(device) {}
 
-// GLFW报错回调函数
-static void glfw_error_callback(int error, const char *description)
+bool OpenGLRenderer::Init()
 {
-  fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
-
-bool OpenGLRenderer::Init(Window *window)
-{
-  // 启用自定义错误回调函数
-  glfwSetErrorCallback(glfw_error_callback);
-
-  // 初始化glfw
-  if (!glfwInit())
+  // OpenGL的初始化由Window负责。而非renderer
+  //
+  // 1. 检查上下文是否已存在（通过 GLAD）
+  if (!gladLoadGL()) {
+    LOG_ERROR("Failed to initialize OpenGL loader (GLAD)");
     return false;
+  }
 
-  // 配置glfw
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+  // 2. 设置默认渲染状态
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  // 启用 OpenGL Core Profile，而不是 Compatibility Profile（兼容模式）
-  // 注意：仅OpenGL3.2以上版本支持Core Profile
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-  // macOS 只支持 Core Profile，且必须显式启用 Forward Compatibility（向前兼容）
-#ifndef __APPLE__
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif  // !__APPLE__
+  // 3. 初始化内置资源（如默认着色器）
+  // if (!LoadDefaultShader()) {
+  //  return false;
+  //}
 
   return true;
 }
 
-bool OpenGLRenderer::ShutDown()
+void OpenGLRenderer::ShutDown()
 {
-  return false;
+  // 1. 释放所有 GPU 资源
+  // ReleaseDefaultShader();
+  // ClearAllBuffers();  // 清理 VertexBuffer/IndexBuffer 等
+
+  // 2. 重置 OpenGL 状态
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
 }
 
 void OpenGLRenderer::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {}
@@ -64,26 +63,26 @@ ShaderBuffer *OpenGLRenderer::CreateShader(const std::string &vsPath, const std:
 }
 void OpenGLRenderer::SwapBuffers() {}
 
-//void OpenGLRenderer::RenderScene(const RenderData &render_data) {
-  //// TODO: 设置相机UBO
-  //SetCameraUniforms(renderData.GetCameraData());
+// void OpenGLRenderer::RenderScene(const RenderData &render_data) {
+//// TODO: 设置相机UBO
+// SetCameraUniforms(renderData.GetCameraData());
 
-  //// 渲染不透明物体
-  //for (const auto &batch : renderData.GetBatches(RenderPass::Opaque)) {
-  //  BindMaterial(batch.material);
-  //  for (const auto &item : batch.items) {
-  //    SetObjectUniforms(item.transform);
-  //    DrawMesh(item.mesh, item.submeshIndex);
-  //  }
-  //}
+//// 渲染不透明物体
+// for (const auto &batch : renderData.GetBatches(RenderPass::Opaque)) {
+//   BindMaterial(batch.material);
+//   for (const auto &item : batch.items) {
+//     SetObjectUniforms(item.transform);
+//     DrawMesh(item.mesh, item.submeshIndex);
+//   }
+// }
 
-  //// 渲染透明物体（已排序）
-  //for (const auto &batch : renderData.GetBatches(RenderPass::Transparent)) {
-  //  BindMaterial(batch.material);
-  //  for (const auto &item : batch.items) {
-  //    SetObjectUniforms(item.transform);
-  //    DrawMesh(item.mesh, item.submeshIndex);
-  //  }
-  //}
+//// 渲染透明物体（已排序）
+// for (const auto &batch : renderData.GetBatches(RenderPass::Transparent)) {
+//   BindMaterial(batch.material);
+//   for (const auto &item : batch.items) {
+//     SetObjectUniforms(item.transform);
+//     DrawMesh(item.mesh, item.submeshIndex);
+//   }
+// }
 //}
 }  // namespace mite

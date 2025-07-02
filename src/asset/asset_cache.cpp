@@ -6,7 +6,7 @@ template<typename AssetType> bool AssetCache<AssetType>::Store(AssetPtr asset)
 {
   std::lock_guard<std::mutex> lock(mutex_);
 
-  AssetID id = asset.id;
+  AssetID id = asset->id;
 
   // 检查是否已存在
   if (cache_.find(id) != cache_.end()) {
@@ -122,6 +122,6 @@ template<typename AssetType> bool AssetCache<AssetType>::ForceRemove(AssetID id)
 }
 
 // 显式实例化模板（确保链接器能找到实现）
-template class AssetCache<TextureMetadata>;
-template class AssetCache<ModelMetadata>;
+template class AssetCache<TextureAsset>;
+template class AssetCache<ModelAsset>;
 };  // namespace mite

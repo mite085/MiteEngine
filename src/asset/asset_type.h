@@ -7,7 +7,6 @@ namespace mite {
 // --- 基础类型别名 ---
 using AssetID = uuids::uuid;  // 资源唯一标识符（用UUID生成）
 
-
 // ------------------------ 纹理相关 ------------------------
 // 纹理格式枚举
 enum class TextureFormat {
@@ -98,7 +97,6 @@ struct ModelAsset {
   ModelMetadata metadata;
   ModelGPUHandle gpuHandle;
 };
-
 };  // namespace mite
 
 #endif

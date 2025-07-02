@@ -4,6 +4,7 @@
 #include "headers/headers.h"
 #include "glm/glm.hpp"
 #include "window.h"
+#include "render_device.h"
 
 namespace mite {
 
@@ -19,9 +20,10 @@ class Renderer {
     OpenGL = 1,
   };
 
+  Renderer() = default;
   // 基本状态管理
-  virtual bool Init(Window* window) = 0;
-  virtual bool ShutDown() = 0;
+  virtual bool Init() = 0;
+  virtual void ShutDown() = 0;
 
   virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
   virtual void SetDepthTesting(bool enabled) = 0;

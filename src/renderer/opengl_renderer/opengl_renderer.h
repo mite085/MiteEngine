@@ -10,8 +10,9 @@ namespace mite {
 
 class OpenGLRenderer : public Renderer {
  public:
-  bool Init(Window *window) override;
-  bool ShutDown() override;
+  explicit OpenGLRenderer(OpenGLDevice &device);
+  bool Init() override;
+  void ShutDown() override;
 
   void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
   void SetDepthTesting(bool enabled) override;
@@ -26,6 +27,15 @@ class OpenGLRenderer : public Renderer {
   void SwapBuffers() override;
 
   //void RenderScene(const RenderData &render_data) override;
+
+  
+  OpenGLDevice &GetRenderDevice()
+  {
+    return m_Device;
+  }
+
+ protected:
+  OpenGLDevice &m_Device;
 };
 
 

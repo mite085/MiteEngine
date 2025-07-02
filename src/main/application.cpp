@@ -81,9 +81,18 @@ void MiteApplication::InitializeRenderWithOpenGL()
 {
   m_logger->info("Initializing renderer with OpenGL mode");
 
+  // 初始化 OpenGL 设备
+  m_RendererDevice = std::make_unique<OpenGLDevice>();
+
+  // 动态转换并注入依赖
+  auto *openglDevice = dynamic_cast<OpenGLDevice *>(m_RendererDevice.get());
+  if (!openglDevice) {
+    throw std::runtime_error("Failed to cast IRenderDevice to OpenGLDevice");
+  }
+
   // 初始化OpenGL渲染器
-  m_Renderer = std::make_unique<OpenGLRenderer>();
-  m_Renderer->Init(GetWindow());
+  m_Renderer = std::make_unique<OpenGLRenderer>(*openglDevice);
+  m_Renderer->Init();
 }
 
 void MiteApplication::InitializeUI()
@@ -106,7 +115,8 @@ void MiteApplication::InitializeAssertManager()
 {
   m_logger->info("Initializing assert manager");
 
-  // TODO：初始化资产管理系统
+  // 初始化资产管理器
+  m_AssetManager = std::make_unique<AssetManager>(*m_RendererDevice);
 }
 
 void MiteApplication::InitializeMaterialSystem()
