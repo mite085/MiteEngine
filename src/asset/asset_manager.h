@@ -3,7 +3,6 @@
 
 #include "asset_cache.h"
 #include "model_loader.h"
-#include "render_device.h"
 #include "texture_loader.h"
 
 namespace mite {

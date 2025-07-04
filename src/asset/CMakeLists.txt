@@ -15,8 +15,6 @@ set(ASSET_SRCS
     asset_utils.cpp
     model_loader.h
     model_loader.cpp
-    render_device.h
-    render_device.cpp
     texture_loader.h
     texture_loader.cpp
 )
