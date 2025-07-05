@@ -15,6 +15,8 @@ set(RENDERER_INTERFACE_SRCS
     shader.cpp
     shader_cache.h
     shader_cache.cpp
+    material_instance.h
+    material_instance.cpp
     mesh.h
     mesh.cpp
     model.h

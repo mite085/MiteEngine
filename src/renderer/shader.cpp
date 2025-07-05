@@ -115,6 +115,11 @@ void Shader::SetFloat(const std::string &name, float value)
   glUniform1f(GetUniformLocation(name), value);
 }
 
+void Shader::SetVec2(const std::string &name, const glm::vec2 &value)
+{
+  glUniform2fv(GetUniformLocation(name), 1, &value[0]);
+}
+
 void Shader::SetVec3(const std::string &name, const glm::vec3 &value)
 {
   glUniform3fv(GetUniformLocation(name), 1, &value[0]);
@@ -133,6 +138,26 @@ void Shader::SetMat3(const std::string &name, const glm::mat3 &mat)
 void Shader::SetMat4(const std::string &name, const glm::mat4 &mat)
 {
   glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+}
+
+void Shader::SetIntArray(const std::string &name, const int *values, uint32_t count)
+{
+  if (count == 0 || values == nullptr) {
+    LOG_WARN("Attempting to set empty int array for uniform: {}", name);
+    return;
+  }
+
+  const int location = GetUniformLocation(name);
+  if (location == -1)
+    return;  // 已通过GetUniformLocation输出警告
+
+  glUniform1iv(location, static_cast<GLsizei>(count), values);
+
+  // OpenGL错误检查（调试用）
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    LOG_ERROR("OpenGL error in SetIntArray({}): {}", name, err);
+  }
 }
 
 // =============== 私有工具方法 ===============

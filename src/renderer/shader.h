@@ -41,10 +41,18 @@ class Shader {
   void SetBool(const std::string &name, bool value);
   void SetInt(const std::string &name, int value);
   void SetFloat(const std::string &name, float value);
+  void SetVec2(const std::string &name, const glm::vec2 &value);
   void SetVec3(const std::string &name, const glm::vec3 &value);
   void SetVec4(const std::string &name, const glm::vec4 &value);
   void SetMat3(const std::string &name, const glm::mat3 &mat);
   void SetMat4(const std::string &name, const glm::mat4 &mat);
+  /**
+   * @brief 设置整型数组Uniform
+   * @param name   Uniform变量名
+   * @param values 数组指针
+   * @param count  数组元素数量
+   */
+  void SetIntArray(const std::string &name, const int *values, uint32_t count);
 
   // ---- 状态控制 ----
   void Bind() const;    // 绑定当前Shader为激活状态
