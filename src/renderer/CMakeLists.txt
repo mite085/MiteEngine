@@ -13,6 +13,8 @@ set(RENDERER_INTERFACE_SRCS
     texture.cpp
     shader.h
     shader.cpp
+    shader_cache.h
+    shader_cache.cpp
     mesh.h
     mesh.cpp
     model.h
