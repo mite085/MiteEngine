@@ -11,8 +11,8 @@ set(RENDERER_INTERFACE_SRCS
     render_device.cpp
     texture.h
     texture.cpp
-    buffer.h
-    buffer.cpp
+    shader.h
+    shader.cpp
     mesh.h
     mesh.cpp
     model.h
