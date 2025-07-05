@@ -95,6 +95,9 @@ void MaterialInstance::Apply(Shader *overrideShader) const
       case UniformValue::Type::Matrix4:
         targetShader->SetMat4(name, value.asMat4);
         break;
+      default:
+        LOG_ERROR("Invalid OpenGL uniform item: {};", name);
+        break;
     }
   }
 
@@ -117,4 +120,4 @@ void MaterialInstance::Apply(Shader *overrideShader) const
     targetShader->SetIntArray(name, slots.data(), static_cast<int>(slots.size()));
   }
 }
-};
+};  // namespace mite

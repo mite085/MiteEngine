@@ -9,6 +9,9 @@ namespace mite {
  * 职责：
  * - 管理模型所有子网格的生命周期
  * - 提供层级化绘制接口
+ * 
+ * TODO: Draw和DrawSubMesh修改为
+ * 向RenderCommand发送Submit命令
  */
 class Model {
  public:

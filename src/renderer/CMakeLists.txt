@@ -7,6 +7,8 @@ set(RENDERER_LIB_NAME MiteEngine_Renderer)
 set(RENDERER_INTERFACE_SRCS
     renderer.h
     renderer.cpp
+    render_command.h
+    render_command.cpp
     render_device.h
     render_device.cpp
     texture.h

@@ -49,7 +49,7 @@ class MaterialInstance {
  private:
   // Uniform值类型擦除存储
   struct UniformValue {
-    enum class Type { Float, Int, Vector2, Vector3, Vector4, Matrix4 };
+    enum class Type { None, Float, Int, Vector2, Vector3, Vector4, Matrix4 };
     Type type;
     union {
       float asFloat;
@@ -59,14 +59,14 @@ class MaterialInstance {
       glm::vec4 asVec4;
       glm::mat4 asMat4;
     };
+    UniformValue() : type(Type::None), asFloat(0.0) {}
     UniformValue(float v) : type(Type::Float), asFloat(v) {}
     UniformValue(int v) : type(Type::Int), asInt(v) {}
-    UniformValue(glm::vec2 v) : type(Type::Vector2), asVec2(v) {}
-    UniformValue(glm::vec3 v) : type(Type::Vector3), asVec3(v) {}
-    UniformValue(glm::vec4 v) : type(Type::Vector4), asVec4(v) {}
-    UniformValue(glm::mat4 v) : type(Type::Matrix4), asMat4(v) {}
+    UniformValue(const glm::vec2 &v) : type(Type::Vector2), asVec2(v) {}
+    UniformValue(const glm::vec3 &v) : type(Type::Vector3), asVec3(v) {}
+    UniformValue(const glm::vec4 &v) : type(Type::Vector4), asVec4(v) {}
+    UniformValue(const glm::mat4 &v) : type(Type::Matrix4), asMat4(v) {}
   };
-
 
   std::shared_ptr<Shader> m_Shader;                                      // 关联的Shader程序
   std::unordered_map<std::string, UniformValue> m_Uniforms;              // Uniform值存储
@@ -74,6 +74,6 @@ class MaterialInstance {
   std::unordered_map<std::string, std::vector<std::shared_ptr<Texture>>>
       m_TextureArrays;  // 纹理数组
 };
-};
+};  // namespace mite
 
 #endif
