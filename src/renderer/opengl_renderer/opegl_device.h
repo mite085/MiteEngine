@@ -19,14 +19,15 @@ class OpenGLDevice : public IRenderDevice {
   ~OpenGLDevice() override;
 
   // ---- 纹理操作 ----
-  TextureGPUHandle CreateTexture(const TextureAsset &texture) override;
+  TextureGPUHandle CreateTexture(const TextureSourceData &data) override;
   void DestroyTexture(TextureGPUHandle handle) override;
   void BindTexture(TextureGPUHandle handle, uint32_t slot) const override;
   void SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode) override;
   void SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode) override;
+  void GenerateMipmaps(TextureGPUHandle handle) override;
 
   // ---- 模型操作 ----
-  ModelGPUHandle CreateModel(const ModelAsset &model) override;
+  ModelGPUHandle CreateModel(const ModelSourceData &data) override;
   void DestroyModel(ModelGPUHandle model) override;
   // 注意：
   // 由于Asset仅维护Model，由Model维护Mesh，
@@ -43,7 +44,7 @@ class OpenGLDevice : public IRenderDevice {
   static GLenum TranslateTextureFormat(TextureFormat format);
 
   // 创建单个SubMesh的GPU资源
-  MeshGPUHandle CreateSubMesh(const MeshData &subMesh);
+  MeshGPUHandle CreateSubMesh(const MeshSourceData &subMesh);
 
   // 资源追踪（用于调试和泄漏检测）
   std::unordered_set<GLuint> activeTextures_;

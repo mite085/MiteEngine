@@ -1,8 +1,8 @@
 #include "model.h"
 
 namespace mite {
-Model::Model(const ModelGPUHandle &handle, const ModelMetadata &metadata)
-    : handle_(handle), metadata_(metadata)
+Model::Model(const ModelGPUHandle &handle)
+    : handle_(handle)
 {
   // 为每个子网格创建Mesh对象
   for (size_t i = 0; i < handle.subMeshes.size(); ++i) {

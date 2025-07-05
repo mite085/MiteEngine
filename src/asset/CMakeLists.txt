@@ -40,4 +40,5 @@ target_link_libraries(${ASSET_LIB_NAME}
     spdlog::spdlog
     assimp
     MiteEngine_Core
+    MiteEngine_Renderer
 )

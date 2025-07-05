@@ -34,17 +34,8 @@ OpenGLDevice::~OpenGLDevice()
 }
 
 // ------------------------ 纹理操作 ------------------------
-TextureGPUHandle OpenGLDevice::CreateTexture(const TextureAsset &texture)
+TextureGPUHandle OpenGLDevice::CreateTexture(const TextureSourceData &data)
 {
-  auto meta = texture.metadata;
-
-  // 检查是否可用
-  if (texture.textureData.textureData == nullptr) {
-    LOG_ERROR("Invalid texture: {}", meta.path);
-    return {static_cast<uintptr_t>(0)};
-  }
-  auto data = texture.textureData.textureData.get();
-
   GLuint textureID;
   glGenTextures(1, &textureID);
   glBindTexture(GL_TEXTURE_2D, textureID);
@@ -56,26 +47,29 @@ TextureGPUHandle OpenGLDevice::CreateTexture(const TextureAsset &texture)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   // 上传纹理数据
-  GLenum format = TranslateTextureFormat(meta.format);
-  GLenum internalFormat = !meta.isHDR ? GL_SRGB8_ALPHA8 : format;
+  GLenum format = TranslateTextureFormat(data.format);
+  GLenum internalFormat = /*!isHDR ? GL_SRGB8_ALPHA8 :*/ format;
   glTexImage2D(GL_TEXTURE_2D,
-               0,
-               internalFormat,
-               meta.width,
-               meta.height,
-               0,
-               format,
-               GL_UNSIGNED_BYTE,
-               data);
+               0,               // Mipmap级别
+               internalFormat,  // 内部格式
+               data.width,
+               data.height,
+               0,                 // 历史遗留参数
+               internalFormat,    // 像素数据格式
+               GL_UNSIGNED_BYTE,  // 数据类型（HDR需改为GL_FLOAT）
+               data.pixelData     // 原始数据指针
+  );
 
-  glGenerateMipmap(GL_TEXTURE_2D);
+  if (data.generateMipmaps) {
+    glGenerateMipmap(GL_TEXTURE_2D);
+  }
 
   // 记录活动纹理
   activeTextures_.insert(textureID);
 
   TextureGPUHandle handle = {static_cast<uintptr_t>(textureID)};
-  SetTextureWrapMode(handle, TextureWrapMode::Repeat);
-  SetTextureFilterMode(handle, TextureFilterMode::Linear);
+  SetTextureWrapMode(handle, data.wrapMode);
+  SetTextureFilterMode(handle, data.filterMode);
 
   return handle;
 }
@@ -119,13 +113,21 @@ void OpenGLDevice::SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMo
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 }
 
+void OpenGLDevice::GenerateMipmaps(TextureGPUHandle handle)
+{
+  GLuint glTexture = static_cast<GLuint>(handle.apiHandle);
+  glBindTexture(GL_TEXTURE_2D, glTexture);
+
+  glGenerateMipmap(GL_TEXTURE_2D);
+}
+
 // ------------------------ 模型操作 ------------------------
-ModelGPUHandle OpenGLDevice::CreateModel(const ModelAsset &model)
+ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
 {
   ModelGPUHandle modelHandle;
 
   // 处理所有子网格
-  for (auto &subMesh : model.subMeshes) {
+  for (auto &subMesh : data.subMeshes) {
     MeshGPUHandle subMeshHandle = CreateSubMesh(subMesh);
     modelHandle.subMeshes.push_back(subMeshHandle);
   }
@@ -133,7 +135,7 @@ ModelGPUHandle OpenGLDevice::CreateModel(const ModelAsset &model)
   return modelHandle;
 }
 
-MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshData &subMesh)
+MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshSourceData &subMesh)
 {
   MeshGPUHandle handle;
   GLuint VBO, EBO, VAO;
@@ -145,15 +147,17 @@ MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshData &subMesh)
   // 2. 创建VBO并上传数据
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(
-      GL_ARRAY_BUFFER, subMesh.vertexData.size(), subMesh.vertexData.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,
+               subMesh.vertexCount * subMesh.layout.stride,
+               subMesh.vertexData,
+               GL_STATIC_DRAW);
 
   // 3. 创建EBO并上传数据
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               subMesh.indices.size() * sizeof(uint32_t),
-               subMesh.indices.data(),
+               subMesh.indexCount * sizeof(uint32_t),
+               subMesh.indices,
                GL_STATIC_DRAW);
 
   // 4. 设置顶点属性指针
@@ -198,8 +202,8 @@ MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshData &subMesh)
   handle.vertexArray = static_cast<uintptr_t>(VAO);
   handle.vertexBuffer = static_cast<uintptr_t>(VBO);
   handle.indexBuffer = static_cast<uintptr_t>(EBO);
-  handle.vertexCount = static_cast<uint32_t>(subMesh.vertexData.size()) / subMesh.layout.stride;
-  handle.indexCount = static_cast<uint32_t>(subMesh.indices.size());
+  handle.vertexCount = subMesh.vertexCount;
+  handle.indexCount = subMesh.indexCount;
 
   // 记录活动网格（调试用）
   activeMeshsVAO_.insert(VAO);

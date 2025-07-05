@@ -88,9 +88,7 @@ void MiteApplication::InitializeRenderWithOpenGL()
   IRenderDevice::SetCurrent(std::make_unique<OpenGLDevice>());
 
   // 初始化OpenGL渲染器
-  // 注意：
-  // 要确保m_Renderer在m_AssetManager之后创建
-  m_Renderer = std::make_unique<OpenGLRenderer>(m_AssetManager);
+  m_Renderer = std::make_unique<OpenGLRenderer>();
   m_Renderer->Initialize();
 }
 

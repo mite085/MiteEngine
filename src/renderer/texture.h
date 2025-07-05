@@ -1,7 +1,6 @@
 #ifndef MITE_RENDERER_TEXTURE
 #define MITE_RENDERER_TEXTURE
 
-#include "asset_type.h"
 #include "render_device.h"
 
 namespace mite {
@@ -14,7 +13,7 @@ namespace mite {
  */
 class Texture {
  public:
-  Texture(const TextureGPUHandle &handle, const TextureMetadata &meta);
+  Texture(const TextureGPUHandle &handle);
 
   // ---- 核心接口 ----
   void Bind(uint32_t slot) const;
@@ -23,25 +22,16 @@ class Texture {
   // ---- 状态设置 ----
   void SetWrapMode(TextureWrapMode mode);
   void SetFilterMode(TextureFilterMode mode);
-  //void GenerateMipmaps();
+  void GenerateMipmaps();
 
   // ---- 元数据访问 ----
   TextureGPUHandle GetHandle() const
   {
     return handle_;
   }
-  glm::ivec2 GetSize() const
-  {
-    return {meta_.width, meta_.height};
-  }
-  bool IsHDR() const
-  {
-    return meta_.isHDR;
-  }
 
  private:
   TextureGPUHandle handle_;
-  TextureMetadata meta_;
 };
 
 };  // namespace mite

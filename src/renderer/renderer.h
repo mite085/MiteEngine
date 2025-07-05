@@ -1,13 +1,9 @@
 #ifndef MITE_RENDERER_API
 #define MITE_RENDERER_API
 
-#include "headers/headers.h"
-#include "glm/glm.hpp"
-#include "render_device.h"
-#include "asset_manager.h"
+#include "model.h"
 
 namespace mite {
-
 /**
  * 渲染器抽象基类（多后端兼容）
  * 职责：
@@ -17,31 +13,23 @@ namespace mite {
  */
 class Renderer {
  public:
-  explicit Renderer(std::shared_ptr<AssetManager> assetManager);
+  explicit Renderer();
   virtual ~Renderer() = default;
   virtual void Initialize() = 0;
-
-  // ---- 资源管理 ----
-  virtual void LoadTexture(AssetID id) = 0;
-  virtual void UnloadTexture(AssetID id) = 0;
-  virtual void LoadModel(AssetID id) = 0;
-  virtual void UnloadModel(AssetID id) = 0;
 
   // ---- 渲染指令 ----
   virtual void BeginFrame() = 0;
   virtual void EndFrame() = 0;
-  virtual void DrawModel(AssetID modelId, const glm::mat4 &transform) = 0;
+  virtual void DrawModel(const Model &model, const glm::mat4 &transform) = 0;
 
   // ---- 状态设置 ----
   void SetClearColor(const glm::vec4 &color);
   void SetViewport(uint32_t width, uint32_t height);
 
  protected:
-  std::shared_ptr<AssetManager> assetManager_;
   glm::vec4 clearColor_ = {0.1f, 0.1f, 0.1f, 1.0f};
   glm::ivec2 viewportSize_ = {1280, 720};
 };
-
 }  // namespace mite
 
 #endif

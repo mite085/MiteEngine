@@ -37,12 +37,10 @@ void AssetManager::LoadTextureInternalToCache(const std::string &path)
 {
   try {
     // 1. 使用TextureLoader加载原始数据
-    auto [metadata, pixelData] = TextureLoader::LoadTextureData(path);
+    std::shared_ptr<TextureAsset> textureAsset = TextureLoader::LoadTextureData(path);
 
-    // 2. 缓存资源（pixeldata的所有权转让给TextureAsset）
-    AssetID id = UUIDGenerator::Generate(path.c_str());
-    auto tex = std::make_shared<TextureAsset>(TextureAsset{id, metadata, {std::move(pixelData)}});
-    m_TextureCache.Store(tex);
+    // 2. 缓存资源（textureAsset的所有权转让给TextureAsset）
+    m_TextureCache.Store(textureAsset);
   }
   catch (const std::exception &e) {
     LOG_ERROR("[AssetManager] Texture load failed: {}", e.what());

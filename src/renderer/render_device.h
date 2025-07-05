@@ -1,17 +1,18 @@
 #ifndef MITE_RENDER_DEVICE
 #define MITE_RENDER_DEVICE
 
-#include "asset_type.h"
+#include "handle_types.h"
 
 namespace mite {
+
 /**
  * 渲染设备抽象接口
- * 
+ *
  * 单例模式：
  * 使用单例模式的目的是方便Texture和Mesh每次创建时可以不通过对IRenderDevice的
  * 依赖注入，且可独立实现Draw方法，确保代码的简洁性。
- * 
- * 
+ *
+ *
  * 但存在风险：
  * 1. 如果渲染指令需在多个线程提交（如渲染线程 vs. 资源加载线程），
  *	  单例的全局锁可能成为性能瓶颈。此时需设计无锁队列或线程局部存储（TLS）。
@@ -24,14 +25,15 @@ class IRenderDevice {
   virtual ~IRenderDevice() = default;
 
   // 纹理操作
-  virtual TextureGPUHandle CreateTexture(const TextureAsset &texture) = 0;
+  virtual TextureGPUHandle CreateTexture(const TextureSourceData &data) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
   virtual void BindTexture(TextureGPUHandle handle, uint32_t slot) const = 0;
   virtual void SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode) = 0;
   virtual void SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode) = 0;
+  virtual void GenerateMipmaps(TextureGPUHandle handle) = 0;
 
   // 模型/网格体操作
-  virtual ModelGPUHandle CreateModel(const ModelAsset &meta) = 0;
+  virtual ModelGPUHandle CreateModel(const ModelSourceData &data) = 0;
   virtual void DestroyModel(ModelGPUHandle handle) = 0;
   virtual void BindMesh(MeshGPUHandle handle) const = 0;
   virtual void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const = 0;

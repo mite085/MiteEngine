@@ -15,7 +15,7 @@ namespace mite {
  */
 class Model {
  public:
-  explicit Model(const ModelGPUHandle &handle, const ModelMetadata &asset);
+  explicit Model(const ModelGPUHandle &handle);
 
   void Draw() const;
   void DrawSubMesh(size_t index) const;
@@ -28,18 +28,9 @@ class Model {
   {
     return handle_;
   }
-  const glm::vec3 &GetBoundsMin() const
-  {
-    return metadata_.boundingBoxMin;
-  }
-  const glm::vec3 &GetBoundsMax() const
-  {
-    return metadata_.boundingBoxMax;
-  }
 
  private:
   ModelGPUHandle handle_;
-  ModelMetadata metadata_;
   std::vector<std::unique_ptr<Mesh>> subMeshes_;
 };
 };  // namespace mite

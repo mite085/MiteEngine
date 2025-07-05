@@ -1,7 +1,6 @@
 #ifndef MITE_RENDERER_MESH
 #define MITE_RENDERER_MESH
 
-#include "asset_type.h"
 #include "render_device.h"
 
 namespace mite {
