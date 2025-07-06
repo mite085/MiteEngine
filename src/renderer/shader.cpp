@@ -140,7 +140,7 @@ void Shader::SetMat4(const std::string &name, const glm::mat4 &mat)
   glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::SetIntArray(const std::string &name, const int *values, uint32_t count)
+void Shader::SetIntArray(const std::string &name, const int *values, size_t count)
 {
   if (count == 0 || values == nullptr) {
     LOG_WARN("Attempting to set empty int array for uniform: {}", name);
@@ -153,11 +153,80 @@ void Shader::SetIntArray(const std::string &name, const int *values, uint32_t co
 
   glUniform1iv(location, static_cast<GLsizei>(count), values);
 
-  // OpenGL错误检查（调试用）
+// 4. OpenGL错误检查（调试模式）
+#ifdef _DEBUG
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     LOG_ERROR("OpenGL error in SetIntArray({}): {}", name, err);
   }
+#endif
+}
+
+void Shader::SetFloatArray(const std::string &name, const float *values, size_t count)
+{
+  // 1. 参数校验
+  if (count == 0 || values == nullptr) {
+    LOG_WARN("Attempting to set empty float array for uniform: {}", name);
+    return;
+  }
+
+  // 2. 获取Uniform位置
+  const int location = GetUniformLocation(name);
+  if (location == -1) {
+    return;  // 已通过GetUniformLocation输出警告
+  }
+
+  // 3. 调用OpenGL接口
+  glUniform1fv(location, static_cast<GLsizei>(count), values);
+
+// 4. OpenGL错误检查（调试模式）
+#ifdef _DEBUG
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    LOG_ERROR("[OpenGL] SetFloatArray({}) failed with error 0x{:X}", name, err);
+    // 附加错误解释
+    switch (err) {
+      case GL_INVALID_OPERATION:
+        LOG_ERROR("  - Shader program not linked or not a valid program");
+        break;
+      case GL_INVALID_VALUE:
+        LOG_ERROR("  - Location {} is invalid", location);
+        break;
+    }
+  }
+#endif
+}
+
+void Shader::SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count)
+{
+  // 1. 参数校验
+  if (count == 0 || values == nullptr) {
+    LOG_WARN("Attempting to set empty vec3 array for uniform: {}", name);
+    return;
+  }
+
+  // 2. 获取Uniform位置
+  const int location = GetUniformLocation(name);
+  if (location == -1) {
+    return;  // 已通过GetUniformLocation输出警告
+  }
+
+  // 3. 调用OpenGL接口
+  glUniform3fv(location, static_cast<GLsizei>(count), glm::value_ptr(values[0]));
+
+// 4. OpenGL错误检查（调试模式）
+#ifdef _DEBUG
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    LOG_ERROR("[OpenGL] SetVector3Array({}) failed with error 0x{:X}", name, err);
+    // 附加调试信息
+    LOG_DEBUG("  - Array count: {}, First element: ({}, {}, {})",
+              count,
+              values[0].x,
+              values[0].y,
+              values[0].z);
+  }
+#endif
 }
 
 // =============== 私有工具方法 ===============

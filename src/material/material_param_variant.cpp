@@ -76,42 +76,43 @@ std::string MaterialParameterVariant::GetTypeName() const
 
 std::string MaterialParameterVariant::ToShaderString() const
 {
-  return std::visit(
-      [](auto &&arg) -> std::string {
-        using T = std::decay_t<decltype(arg)>;
+  // 定义一个局部辅助函数来处理递归调用
+  auto ToStringHelper = [](const auto &arg) -> std::string {
+    using T = std::decay_t<decltype(arg)>;
 
-        if constexpr (std::is_same_v<T, bool>) {
-          return arg ? "true" : "false";
-        }
-        else if constexpr (std::is_same_v<T, int> || std::is_same_v<T, unsigned int>) {
-          return std::to_string(arg);
-        }
-        else if constexpr (std::is_same_v<T, float>) {
-          // 保留3位小数
-          std::string s = std::to_string(arg);
-          s.erase(s.find_last_not_of('0') + 1, std::string::npos);
-          if (s.back() == '.')
-            s += "0";
-          return s;
-        }
-        else if constexpr (std::is_same_v<T, glm::vec2>) {
-          return "vec2(" + ToShaderString(arg.x) + ", " + ToShaderString(arg.y) + ")";
-        }
-        else if constexpr (std::is_same_v<T, glm::vec3>) {
-          return "vec3(" + ToShaderString(arg.x) + ", " + ToShaderString(arg.y) + ", " +
-                 ToShaderString(arg.z) + ")";
-        }
-        else if constexpr (std::is_same_v<T, glm::vec4>) {
-          return "vec4(" + ToShaderString(arg.x) + ", " + ToShaderString(arg.y) + ", " +
-                 ToShaderString(arg.z) + ", " + ToShaderString(arg.w) + ")";
-        }
-        else if constexpr (std::is_same_v<T, std::string>) {
-          return "\"" + arg + "\"";  // 纹理路径特殊处理
-        }
-        else {
-          throw std::runtime_error("Unsupported type for shader string conversion");
-        }
-      },
-      m_data);
+    if constexpr (std::is_same_v<T, bool>) {
+      return arg ? "true" : "false";
+    }
+    else if constexpr (std::is_same_v<T, int> || std::is_same_v<T, unsigned int>) {
+      return std::to_string(arg);
+    }
+    else if constexpr (std::is_same_v<T, float>) {
+      // 保留3位小数
+      std::string s = std::to_string(arg);
+      s.erase(s.find_last_not_of('0') + 1, std::string::npos);
+      if (s.back() == '.')
+        s += "0";
+      return s;
+    }
+    else if constexpr (std::is_same_v<T, glm::vec2>) {
+      return "vec2(" + std::to_string(arg.x) + ", " + std::to_string(arg.y) + ")";
+    }
+    else if constexpr (std::is_same_v<T, glm::vec3>) {
+      return "vec3(" + std::to_string(arg.x) + ", " + std::to_string(arg.y) + ", " +
+             std::to_string(arg.z) + ")";
+    }
+    else if constexpr (std::is_same_v<T, glm::vec4>) {
+      return "vec4(" + std::to_string(arg.x) + ", " + std::to_string(arg.y) + ", " +
+             std::to_string(arg.z) + ", " + std::to_string(arg.w) + ")";
+    }
+    else if constexpr (std::is_same_v<T, std::string>) {
+      return "\"" + arg + "\"";  // TODO: 纹理路径特殊处理
+    }
+    else {
+      throw std::runtime_error("Unsupported type for shader string conversion");
+    }
+  };
+
+  return std::visit(ToStringHelper, m_data);
 }
 };

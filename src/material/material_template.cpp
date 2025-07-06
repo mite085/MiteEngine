@@ -52,7 +52,7 @@ TransparentMaterialTemplate::TransparentMaterialTemplate(std::shared_ptr<Shader>
                                                          float defaultAlpha)
     : PBRMaterialTemplate(std::move(shader)), m_DefaultAlpha(defaultAlpha)
 {
-  assert((defaultAlpha >= 0.0f && defaultAlpha <= 1.0f), "Alpha must be in range ");
+  assert((defaultAlpha >= 0.0f && defaultAlpha <= 1.0f) && "Alpha must be in range ");
 }
 
 std::shared_ptr<MaterialInstance> TransparentMaterialTemplate::CreateInstance() const

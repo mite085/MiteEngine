@@ -1,4 +1,5 @@
 #include "material_system.h"
+#include "asset_manager.h"
 
 namespace mite {
 // 静态单例初始化
@@ -11,16 +12,19 @@ MaterialSystem &MaterialSystem::Get()
 void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<Material> material)
 {
   if (name.empty()) {
-    throw std::invalid_argument("材质模板名称不能为空");
+    // 材质模板名称不能为空
+    LOG_ERROR("Material template name cannot be empty");
+    throw std::invalid_argument("Material template name cannot be empty");
   }
 
   auto it = m_templates.find(name);
   if (it != m_templates.end()) {
-    LOG_ERROR("材质模板已存在: {}", name);
-    throw std::invalid_argument("材质模板已存在: " + name);
+    // 材质模板已存在，跳过注册步骤。
+    LOG_ERROR("Existing material template: {}, registing failed", name);
+    return;
   }
-
-  LOG_DEBUG("注册材质模板: {}", name);
+  // 注册材质模板
+  LOG_DEBUG("Register material template: {}", name);
   m_templates.emplace(name, std::move(material));
 }
 
@@ -34,9 +38,12 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::stri
   // 1. 查找模板
   auto it = m_templates.find(templateName);
   if (it == m_templates.end()) {
-    LOG_WARN("材质模板不存在: {}, 使用回退材质", templateName);
+    // 材质模板不存在, 使用回退材质
+    LOG_WARN("Invalid material template: {}, trying to use fallback material.", templateName);
     if (!m_fallbackMaterial) {
-      throw std::out_of_range("无可用回退材质");
+      // 无可用回退材质
+      LOG_ERROR("There has not any fallback material to use.");
+      throw std::out_of_range("There has not any fallback material to use.");
     }
     return m_fallbackMaterial->CreateInstance();
   }
@@ -52,7 +59,8 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
   // 1. 创建基础材质实例（复用已有逻辑）
   auto instance = CreateInstance(templateName);
   if (!instance) {
-    LOG_ERROR("无法创建材质实例: {}", templateName);
+    // 无法创建材质实例
+    LOG_ERROR("Cannot create material instance: {}", templateName);
     return nullptr;
   }
 
@@ -88,7 +96,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
               instance->SetVector4(paramName, arg);
             }
             else if constexpr (std::is_same_v<T, glm::mat3>) {
-              instance->SetMatrix3(paramName, arg);  // 需在MaterialInstance中添加该方法
+              instance->SetMatrix3(paramName, arg);
             }
             else if constexpr (std::is_same_v<T, glm::mat4>) {
               instance->SetMatrix4(paramName, arg);
@@ -98,21 +106,19 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
               instance->SetIntArray(paramName, arg.data(), arg.size());
             }
             else if constexpr (std::is_same_v<T, std::vector<float>>) {
-              // 需要MaterialInstance支持float数组
               instance->SetFloatArray(paramName, arg.data(), arg.size());
             }
             else if constexpr (std::is_same_v<T, std::vector<glm::vec3>>) {
-              // 需要MaterialInstance支持vec3数组
               instance->SetVector3Array(paramName, arg.data(), arg.size());
             }
             // 纹理路径特殊处理
             else if constexpr (std::is_same_v<T, std::string>) {
               auto texture = AssetManager::Get().LoadTexture(arg);
               if (texture) {
-                instance->SetTexture(paramName, texture);
+                instance->SetTexture(paramName, std::make_shared<Texture>(texture->handle));
               }
               else {
-                LOG_WARN("无法加载纹理: {}", arg);
+                LOG_WARN("Cannot load texture: {}", arg);
               }
             }
             else {
@@ -126,12 +132,6 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
           "材质参数类型不匹配: {} ({}), 错误: {}", paramName, variant.GetTypeName(), e.what());
     }
   }
-
-// 3. 验证参数是否全部应用成功
-#ifdef _DEBUG
-  ValidateMaterialInstance(*instance, templateName);
-#endif
-
   return instance;
 }
 
@@ -150,16 +150,19 @@ void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Mat
 
   // 2. 替换模板
   it->second = std::move(newMaterial);
-  LOG_INFO("材质模板已重载: {}", name);
+  // 材质模板已重载
+  LOG_INFO("Material template has been reloaded: {}", name);
 }
 
 void MaterialSystem::SetFallbackMaterial(std::unique_ptr<Material> material)
 {
   if (!material) {
-    LOG_ERROR("回退材质不能为空");
+    // 回退材质不能为空
+    LOG_ERROR("Fallback material cannot be nullptr.");
     return;
   }
   m_fallbackMaterial = std::move(material);
-  LOG_DEBUG("设置回退材质: {}", m_fallbackMaterial->GetName());
+  // 设置回退材质
+  LOG_DEBUG("Setting fallback material: {}", m_fallbackMaterial->GetName());
 }
-};
+};  // namespace mite

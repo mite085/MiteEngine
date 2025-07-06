@@ -91,6 +91,10 @@ class MaterialParameterVariant {
   {
     return std::get<T>(m_data);
   }
+  const VariantType &Get() const
+  {
+    return m_data;
+  }
 
   // ---- ¸¨Öú·½·¨ ----
   /**
