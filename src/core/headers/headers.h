@@ -18,6 +18,7 @@
 #include <typeindex>
 #include <unordered_set>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 // C++17 ±ê×¼¿â
