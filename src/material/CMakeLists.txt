@@ -35,4 +35,5 @@ target_link_libraries(${MATERIAL_LIB_NAME}
     spdlog::spdlog
     MiteEngine_Core
     MiteEngine_Renderer
+    MiteEngine_Asset
 )

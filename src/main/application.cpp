@@ -56,7 +56,7 @@ void MiteApplication::Initialize()
 
   // 先初始化shared模块
   InitializeInputSystem();
-  InitializeAssertManager();
+  //InitializeAssertManager();
 
   // 再初始化unique模块
   InitializeWindowWithOpenGL();
@@ -108,13 +108,13 @@ void MiteApplication::InitializeScene()
   m_SceneView = std::make_unique<SceneView>(m_Scene->GetRegistry());
 }
 
-void MiteApplication::InitializeAssertManager()
-{
-  m_logger->info("Initializing assert manager");
-
-  // 初始化资产管理器
-  m_AssetManager = std::make_shared<AssetManager>();
-}
+//void MiteApplication::InitializeAssertManager()
+//{
+//  m_logger->info("Initializing assert manager");
+//
+//  // 初始化资产管理器
+//  m_AssetManager = std::make_shared<AssetManager>();
+//}
 
 void MiteApplication::InitializeMaterialSystem()
 {

@@ -14,8 +14,14 @@ namespace mite {
  */
 class AssetManager {
  public:
-  AssetManager() = default;
   ~AssetManager();
+
+  // ---- 单例模式：全局仅维护单一的资产管理器 ----
+  static AssetManager &Get()
+  {
+    static AssetManager manager;
+    return manager;
+  }
 
   // ---- 核心接口 ----
   std::shared_ptr<TextureAsset> LoadTexture(const std::string &path);
@@ -31,14 +37,17 @@ class AssetManager {
   AssetManager &operator=(const AssetManager &) = delete;
 
  private:
+  //  ---- 全局单例的内部构造函数 ----
+  AssetManager() = default;
+
   // ---- 内部方法 ----
   void LoadTextureInternalToCache(const std::string &path);
   void LoadModelInternalToCache(const std::string &path);
 
   // ---- 成员变量 ----
-  TextureCache m_TextureCache;    // 纹理资源缓存
-  ModelCache m_ModelCache;        // 模型资源缓存
-  mutable std::mutex mutex_;     // 线程安全锁
+  TextureCache m_TextureCache;  // 纹理资源缓存
+  ModelCache m_ModelCache;      // 模型资源缓存
+  mutable std::mutex mutex_;    // 线程安全锁
 };
 };  // namespace mite
 
