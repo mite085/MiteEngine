@@ -4,7 +4,6 @@
 #include "asset_manager.h"
 #include "input.h"
 #include "modular_input_context.h"
-#include "material_system.h"
 #include "opengl_renderer/opengl_renderer.h"
 #include "scene_core/scene.h"
 #include "scene_view.h"
@@ -51,7 +50,7 @@ class MiteApplication {
   Window* GetWindow() const { return m_Window.get(); }
   Renderer* GetRenderer() const { return m_Renderer.get(); }
   Scene* GetScene() const { return m_Scene.get(); }
-  //AssetManager* GetAssetManager() const { return m_AssetManager.get(); }
+  AssetManager* GetAssetManager() const { return m_AssetManager.get(); }
   //MaterialSystem* GetMaterialSystem() const { return m_MaterialSystem.get(); }
 
 
