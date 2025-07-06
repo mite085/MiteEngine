@@ -1,5 +1,5 @@
-#ifndef MITE_RENDERER_MATERIAL_INSTANCE
-#define MITE_RENDERER_MATERIAL_INSTANCE
+#ifndef MITE_MATERIAL_INSTANCE
+#define MITE_MATERIAL_INSTANCE
 
 #include "shader.h"
 #include "texture.h"
