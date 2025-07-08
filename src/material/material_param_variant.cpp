@@ -1,80 +1,61 @@
 #include "material_param_variant.h"
 
 namespace mite {
-MaterialParameterVariant::Type MaterialParameterVariant::GetType() const
+UniformVariant::Type UniformVariant::GetType() const
 {
-  if (m_data.valueless_by_exception())
-    return Type::Empty;
-
-  // 类型映射表
-  switch (m_data.index()) {
-    case 0:
-      return Type::Bool;
-    case 1:
-      return Type::Int;
-    case 2:
-      return Type::UInt;
-    case 3:
-      return Type::Float;
-    case 4:
-      return Type::Vec2;
-    case 5:
-      return Type::Vec3;
-    case 6:
-      return Type::Vec4;
-    case 7:
-      return Type::Mat3;
-    case 8:
-      return Type::Mat4;
-    case 9:
-      return Type::IntArray;
-    case 10:
-      return Type::FloatArray;
-    case 11:
-      return Type::Vec3Array;
-    case 12:
-      return Type::String;
-    default:
-      return Type::Empty;
-  }
+  static const std::array<Type, 13> typeMap = {
+      Type::None,         // monostate
+      Type::Bool,         // bool
+      Type::Int,          // int
+      Type::UInt,         // uint
+      Type::Float,        // float
+      Type::Vector2,      // vec2
+      Type::Vector3,      // vec3
+      Type::Vector4,      // vec4
+      Type::Matrix3,      // mat3
+      Type::Matrix4,      // mat4
+      Type::IntArray,     // int[]
+      Type::FloatArray,   // float[]
+      Type::Vector3Array  // vec3[]
+  };
+  return typeMap[m_data.index()];
 }
-
-std::string MaterialParameterVariant::GetTypeName() const
+float UniformVariant::GetFloat(float defaultValue) const
 {
-  // 类型名称映射表
-  switch (GetType()) {
-    case Type::Bool:
-      return "bool";
-    case Type::Int:
-      return "int";
-    case Type::UInt:
-      return "uint";
-    case Type::Float:
-      return "float";
-    case Type::Vec2:
-      return "vec2";
-    case Type::Vec3:
-      return "vec3";
-    case Type::Vec4:
-      return "vec4";
-    case Type::Mat3:
-      return "mat3";
-    case Type::Mat4:
-      return "mat4";
-    case Type::IntArray:
-      return "int[]";
-    case Type::FloatArray:
-      return "float[]";
-    case Type::Vec3Array:
-      return "vec3[]";
-    case Type::String:
-      return "string";
-    default:
-      return "empty";
-  }
+  if (Is<float>())
+    return Get<float>();
+  if (Is<int>())
+    return static_cast<float>(Get<int>());
+  return defaultValue;
 }
+int UniformVariant::GetInt(int defaultValue) const
+{
+  if (Is<int>())
+    return Get<int>();
+  if (Is<bool>())
+    return Get<bool>() ? 1 : 0;
+  return defaultValue;
+}
+std::string UniformVariant::GetTypeName() const
 
-std::string MaterialParameterVariant::ToShaderString() const
+{
+  static const char *typeNames[] = {"None",
+                                    "Bool",
+                                    "Int",
+                                    "UInt",
+                                    "Float",
+                                    "Vector2",
+                                    "Vector3",
+                                    "Vector4",
+                                    "Matrix3",
+                                    "Matrix4",
+                                    "IntArray",
+                                    "FloatArray",
+                                    "Vector3Array",
+                                    "String"};
+  return typeNames[static_cast<int>(GetType())];
+}
+std::string UniformVariant::ToShaderString() const
 {
   // 定义一个局部辅助函数来处理递归调用
   auto ToStringHelper = [](const auto &arg) -> std::string {
@@ -115,4 +96,4 @@ std::string MaterialParameterVariant::ToShaderString() const
 
   return std::visit(ToStringHelper, m_data);
 }
-};
+};  // namespace mite

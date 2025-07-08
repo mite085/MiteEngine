@@ -5,16 +5,18 @@
 
 namespace mite {
 /**
- * @brief 材质参数变体类型（支持所有Shader可用的Uniform类型）
- * @职责：
- * 1. 类型安全地存储材质参数值
- * 2. 提供便捷的类型检查和访问接口
- * 3. 支持GLSL标准Uniform类型
+ * @brief 统一材质参数变体类型
+ * @特点：
+ * 1. 使用std::variant实现类型安全存储
+ * 2. 支持所有GLSL标准Uniform类型
+ * 3. 自动内存管理（特别是数组类型）
+ * 4. 提供便捷的类型检查和访问接口
  */
-class MaterialParameterVariant {
+class UniformVariant {
  public:
   // ---- 支持的参数类型 ----
-  using VariantType = std::variant<bool,                    // bool (自动转换为int)
+  using VariantType = std::variant<std::monostate,          // 空状态（替代None）
+                                   bool,                    // bool (自动转换为int)
                                    int,                     // int
                                    unsigned int,            // uint
                                    float,                   // float
@@ -29,50 +31,43 @@ class MaterialParameterVariant {
                                    std::string              // 纹理路径（特殊处理）
                                    >;
 
-  // ---- 构造函数（支持隐式转换）----
-  MaterialParameterVariant() = default;
-
-  template<typename T> MaterialParameterVariant(T &&value) : m_data(std::forward<T>(value))
-  {
-    static_assert(std::is_constructible_v<VariantType, T>, "Invalid param type");
-  }
-
-
-
-  // ---- 类型查询 ----
-  /**
-   * @brief 获取当前存储的类型枚举
-   */
+  // ---- 类型枚举 ----
   enum class Type {
+    None,
     Bool,
     Int,
     UInt,
     Float,
-    Vec2,
-    Vec3,
-    Vec4,
-    Mat3,
-    Mat4,
+    Vector2,
+    Vector3,
+    Vector4,
+    Matrix3,
+    Matrix4,
     IntArray,
     FloatArray,
-    Vec3Array,
-    String,
-    Empty
+    Vector3Array,
+    String
   };
+
+  // ---- 构造函数 ----
+  UniformVariant() = default;
+
+  // 通用构造函数（支持所有variant类型）
+  template<typename T> UniformVariant(T &&value) : m_data(std::forward<T>(value))
+  {
+    static_assert(std::is_constructible_v<VariantType, T>, "Invalid uniform type");
+  }
+
+  // ---- 类型查询 ----
   Type GetType() const;
 
-  /**
-   * @brief 检查是否持有特定类型
-   */
+  // 类型检查
   template<typename T> bool Is() const
   {
     return std::holds_alternative<T>(m_data);
   }
 
   // ---- 值获取（安全版）----
-  /**
-   * @brief 尝试获取值（失败返回false）
-   */
   template<typename T> bool TryGet(T &out) const
   {
     if (const T *ptr = std::get_if<T>(&m_data)) {
@@ -83,27 +78,38 @@ class MaterialParameterVariant {
   }
 
   // ---- 值获取（非安全版）----
-  /**
-   * @brief 强制获取值（类型不匹配时抛出异常）
-   * @throws std::bad_variant_access
-   */
   template<typename T> const T &Get() const
   {
     return std::get<T>(m_data);
   }
-  const VariantType &Get() const
+
+  const VariantType &GetVariant() const
   {
     return m_data;
   }
 
+  // ---- 转换为旧UniformValue兼容接口 ----
+  // 用于MaterialInstance的调用
+
+  // 获取float值（失败返回默认值）
+  float GetFloat(float defaultValue = 0.0f) const;
+
+  // 获取int值（失败返回默认值）
+  int GetInt(int defaultValue = 0) const;
+
+  // 获取数组指针和长度（兼容旧接口）
+  template<typename T> std::pair<const T *, size_t> GetArray() const;
+
   // ---- 辅助方法 ----
-  /**
-   * @brief 获取类型名称（调试用）
-   */
   std::string GetTypeName() const;
 
   /**
-   * @brief 转换为Shader兼容的字符串表示（如"vec3(1.0, 0.0, 0.0)"）
+   * @brief 变量转换为Shader的string工具
+   * 
+   * 注意：
+   * 原则上这个方法应当由Renderer模块负责，Material模块
+   * 使用该方法可以更方便的从MaterialTemplate材质模板中
+   * 派生新的材质。
    */
   std::string ToShaderString() const;
 
@@ -111,6 +117,29 @@ class MaterialParameterVariant {
   VariantType m_data;
 };
 
-};
+template<typename T> inline std::pair<const T *, size_t> UniformVariant::GetArray() const
+{
+  if constexpr (std::is_same_v<T, int>) {
+    if (Is<std::vector<int>>()) {
+      const auto &vec = Get<std::vector<int>>();
+      return {vec.data(), vec.size()};
+    }
+  }
+  else if constexpr (std::is_same_v<T, float>) {
+    if (Is<std::vector<float>>()) {
+      const auto &vec = Get<std::vector<float>>();
+      return {vec.data(), vec.size()};
+    }
+  }
+  else if constexpr (std::is_same_v<T, glm::vec3>) {
+    if (Is<std::vector<glm::vec3>>()) {
+      const auto &vec = Get<std::vector<glm::vec3>>();
+      return {vec.data(), vec.size()};
+    }
+  }
+  return {nullptr, 0};
+}
+
+};  // namespace mite
 
 #endif

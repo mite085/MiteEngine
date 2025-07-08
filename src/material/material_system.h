@@ -49,7 +49,7 @@ class MaterialSystem {
    */
   std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
       const std::string &templateName,
-      const std::unordered_map<std::string, MaterialParameterVariant> &overrides);
+      const std::unordered_map<std::string, UniformVariant> &overrides);
 
   // ---- 热重载支持 ----
   /**

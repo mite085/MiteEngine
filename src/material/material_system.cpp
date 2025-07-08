@@ -54,7 +54,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::stri
 
 std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
     const std::string &templateName,
-    const std::unordered_map<std::string, MaterialParameterVariant> &overrides)
+    const std::unordered_map<std::string, UniformVariant> &overrides)
 {
   // 1. 创建基础材质实例（复用已有逻辑）
   auto instance = CreateInstance(templateName);
@@ -65,73 +65,61 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
   }
 
   // 2. 应用覆盖参数（类型安全处理）
-  for (const auto &[paramName, variant] : overrides) {
-    try {
-      // 使用visit自动匹配类型
-      std::visit(
-          [&](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-
-            // 基础类型处理
-            if constexpr (std::is_same_v<T, bool>) {
-              instance->SetInt(paramName, arg ? 1 : 0);  // GLSL中bool用int表示
-            }
-            else if constexpr (std::is_same_v<T, int>) {
-              instance->SetInt(paramName, arg);
-            }
-            else if constexpr (std::is_same_v<T, unsigned int>) {
-              instance->SetInt(paramName, static_cast<int>(arg));  // 降级处理
-            }
-            else if constexpr (std::is_same_v<T, float>) {
-              instance->SetFloat(paramName, arg);
-            }
-            // 向量/矩阵类型
-            else if constexpr (std::is_same_v<T, glm::vec2>) {
-              instance->SetVector2(paramName, arg);
-            }
-            else if constexpr (std::is_same_v<T, glm::vec3>) {
-              instance->SetVector3(paramName, arg);
-            }
-            else if constexpr (std::is_same_v<T, glm::vec4>) {
-              instance->SetVector4(paramName, arg);
-            }
-            else if constexpr (std::is_same_v<T, glm::mat3>) {
-              instance->SetMatrix3(paramName, arg);
-            }
-            else if constexpr (std::is_same_v<T, glm::mat4>) {
-              instance->SetMatrix4(paramName, arg);
-            }
-            // 数组类型
-            else if constexpr (std::is_same_v<T, std::vector<int>>) {
-              instance->SetIntArray(paramName, arg.data(), arg.size());
-            }
-            else if constexpr (std::is_same_v<T, std::vector<float>>) {
-              instance->SetFloatArray(paramName, arg.data(), arg.size());
-            }
-            else if constexpr (std::is_same_v<T, std::vector<glm::vec3>>) {
-              instance->SetVector3Array(paramName, arg.data(), arg.size());
-            }
-            // 纹理路径特殊处理
-            else if constexpr (std::is_same_v<T, std::string>) {
-              auto texture = AssetManager::Get().LoadTexture(arg);
-              if (texture) {
-                instance->SetTexture(paramName, std::make_shared<Texture>(texture->handle));
-              }
-              else {
-                LOG_WARN("Cannot load texture: {}", arg);
-              }
-            }
-            else {
-              static_assert(always_false_v<T>, "非支持的材质参数类型");
-            }
-          },
-          variant.Get());
-    }
-    catch (const std::bad_variant_access &e) {
-      LOG_ERROR(
-          "材质参数类型不匹配: {} ({}), 错误: {}", paramName, variant.GetTypeName(), e.what());
+  for (const auto &[name, value] : overrides) {
+    switch (value.GetType()) {
+      case UniformVariant::Type::Float:
+        instance->SetFloat(name, value.Get<float>());
+        break;
+      case UniformVariant::Type::Int:
+        instance->SetInt(name, value.Get<int>());
+        break;
+      case UniformVariant::Type::Vector2:
+        instance->SetVector2(name, value.Get<glm::vec2>());
+        break;
+      case UniformVariant::Type::Vector3:
+        instance->SetVector3(name, value.Get<glm::vec3>());
+        break;
+      case UniformVariant::Type::Vector4:
+        instance->SetVector4(name, value.Get<glm::vec4>());
+        break;
+      case UniformVariant::Type::Matrix3:
+        instance->SetMatrix3(name, value.Get<glm::mat3>());
+        break;
+      case UniformVariant::Type::Matrix4:
+        instance->SetMatrix4(name, value.Get<glm::mat4>());
+        break;
+      case UniformVariant::Type::IntArray: {
+        auto [ptr, count] = value.GetArray<int>();
+        instance->SetIntArray(name, ptr, count);
+        break;
+      }
+      case UniformVariant::Type::FloatArray: {
+        auto [ptr, count] = value.GetArray<float>();
+        instance->SetFloatArray(name, ptr, count);
+        break;
+      }
+      case UniformVariant::Type::Vector3Array: {
+        auto [ptr, count] = value.GetArray<glm::vec3>();
+        instance->SetVector3Array(name, ptr, count);
+        break;
+      }
+      case UniformVariant::Type::String: {
+        // 纹理路径特殊处理
+        auto texture = AssetManager::Get().LoadTexture(name);
+        if (texture) {
+          instance->SetTexture(name, std::make_shared<Texture>(texture->handle));
+        }
+        else {
+          LOG_WARN("Cannot load texture: {}", name);
+        }
+        break;
+      }
+      default:
+        LOG_ERROR("Invalid OpenGL uniform item: {};", name);
+        break;
     }
   }
+
   return instance;
 }
 

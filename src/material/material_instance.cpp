@@ -1,67 +1,6 @@
 #include "material_instance.h"
 
 namespace mite {
-UniformValue::UniformValue(const std::pair<int *, size_t> &v) : type(Type::IntArray)
-{
-  asIntArray.second = v.second;
-  asIntArray.first = new int[v.second];
-  std::memcpy(asIntArray.first, v.first, v.second * sizeof(int));
-}
-
-UniformValue::UniformValue(const std::pair<float *, size_t> &v) : type(Type::FloatArray)
-{
-  asFloatArray.second = v.second;
-  asFloatArray.first = new float[v.second];
-  std::memcpy(asFloatArray.first, v.first, v.second * sizeof(float));
-}
-
-UniformValue::UniformValue(const std::pair<glm::vec3 *, size_t> &v) : type(Type::Vector3Array)
-{
-  asVec3Array.second = v.second;
-  asVec3Array.first = new glm::vec3[v.second];
-  std::memcpy(asVec3Array.first, v.first, v.second * sizeof(glm::vec3));
-}
-
-UniformValue::~UniformValue()
-{
-  if (type == Type::IntArray)
-    delete[] asIntArray.first;
-  else if (type == Type::FloatArray)
-    delete[] asFloatArray.first;
-  else if (type == Type::Vector3Array)
-    delete[] asVec3Array.first;
-}
-
-UniformValue::UniformValue(UniformValue &&other) noexcept
-{
-  *this = std::move(other);
-}
-
-UniformValue &UniformValue::operator=(UniformValue &&other) noexcept
-{
-  if (this != &other) {
-    this->~UniformValue();  // 清理现有资源
-
-    type = other.type;
-    switch (type) {
-      case Type::IntArray:
-        asIntArray = other.asIntArray;
-        break;
-      case Type::FloatArray:
-        asFloatArray = other.asFloatArray;
-        break;
-      case Type::Vector3Array:
-        asVec3Array = other.asVec3Array;
-        break;
-      default:
-        std::memcpy(this, &other, sizeof(UniformValue));
-        break;
-    }
-    other.type = Type::None;  // 置空原对象
-  }
-  return *this;
-}
-
 MaterialInstance::MaterialInstance(std::shared_ptr<Shader> shader) : m_Shader(std::move(shader))
 {
   if (!m_Shader) {
@@ -72,56 +11,56 @@ MaterialInstance::MaterialInstance(std::shared_ptr<Shader> shader) : m_Shader(st
 // ===================== 参数设置方法 =====================
 void MaterialInstance::SetFloat(const std::string &name, float value)
 {
-  m_Uniforms[name] = UniformValue(value);
+  m_Uniforms[name] = value;
 }
 
 void MaterialInstance::SetInt(const std::string &name, int value)
 {
-  m_Uniforms[name] = UniformValue(value);
+  m_Uniforms[name] = value;
 }
 
 void MaterialInstance::SetVector2(const std::string &name, const glm::vec2 &value)
 {
-  m_Uniforms[name] = UniformValue(value);
+  m_Uniforms[name] = value;
 }
 
 void MaterialInstance::SetVector3(const std::string &name, const glm::vec3 &value)
 {
-  m_Uniforms[name] = UniformValue(value);
+  m_Uniforms[name] = value;
 }
 
 void MaterialInstance::SetVector4(const std::string &name, const glm::vec4 &value)
 {
-  m_Uniforms[name] = UniformValue(value);
+  m_Uniforms[name] = value;
 }
 
-void MaterialInstance::SetMatrix3(const std::string &name, const glm::mat3 &matrix)
+void MaterialInstance::SetMatrix3(const std::string &name, const glm::mat3 &value)
 {
-  m_Uniforms[name] = UniformValue(matrix);
+  m_Uniforms[name] = value;
 }
 
 void MaterialInstance::SetMatrix4(const std::string &name, const glm::mat4 &value)
 {
-  m_Uniforms[name] = UniformValue(value);
+  m_Uniforms[name] = value;
 }
 
 // ===================== 参数数组设置方法 =====================
 
 void MaterialInstance::SetIntArray(const std::string &name, const int *values, size_t count)
 {
-  m_Uniforms[name] = UniformValue(std::make_pair(const_cast<int *>(values), count));
+  m_Uniforms[name] = std::vector<int>(values, values + count);
 }
 
 void MaterialInstance::SetFloatArray(const std::string &name, const float *values, size_t count)
 {
-  m_Uniforms[name] = UniformValue(std::make_pair(const_cast<float *>(values), count));
+  m_Uniforms[name] = std::vector<float>(values, values + count);
 }
 
 void MaterialInstance::SetVector3Array(const std::string &name,
                                        const glm::vec3 *values,
                                        size_t count)
 {
-  m_Uniforms[name] = UniformValue(std::make_pair(const_cast<glm::vec3 *>(values), count));
+  m_Uniforms[name] = std::vector<glm::vec3>(values, values + count);
 }
 
 // ===================== 纹理设置方法 =====================
@@ -161,37 +100,43 @@ void MaterialInstance::Apply(Shader *overrideShader) const
 
   // ---- 上传Uniform值 ----
   for (const auto &[name, value] : m_Uniforms) {
-    switch (value.type) {
-      case UniformValue::Type::Float:
-        targetShader->SetFloat(name, value.asFloat);
+    switch (value.GetType()) {
+      case UniformVariant::Type::Float:
+        targetShader->SetFloat(name, value.Get<float>());
         break;
-      case UniformValue::Type::Int:
-        targetShader->SetInt(name, value.asInt);
+      case UniformVariant::Type::Int:
+        targetShader->SetInt(name, value.Get<int>());
         break;
-      case UniformValue::Type::Vector2:
-        targetShader->SetVec2(name, value.asVec2);
+      case UniformVariant::Type::Vector2:
+        targetShader->SetVec2(name, value.Get<glm::vec2>());
         break;
-      case UniformValue::Type::Vector3:
-        targetShader->SetVec3(name, value.asVec3);
+      case UniformVariant::Type::Vector3:
+        targetShader->SetVec3(name, value.Get<glm::vec3>());
         break;
-      case UniformValue::Type::Vector4:
-        targetShader->SetVec4(name, value.asVec4);
+      case UniformVariant::Type::Vector4:
+        targetShader->SetVec4(name, value.Get<glm::vec4>());
         break;
-      case UniformValue::Type::Matrix3:
-        targetShader->SetMat3(name, value.asMat3);
+      case UniformVariant::Type::Matrix3:
+        targetShader->SetMat3(name, value.Get<glm::mat3>());
         break;
-      case UniformValue::Type::Matrix4:
-        targetShader->SetMat4(name, value.asMat4);
+      case UniformVariant::Type::Matrix4:
+        targetShader->SetMat4(name, value.Get<glm::mat4>());
         break;
-      case UniformValue::Type::IntArray:
-        targetShader->SetIntArray(name, value.asIntArray.first, value.asIntArray.second);
+      case UniformVariant::Type::IntArray: {
+        auto [ptr, count] = value.GetArray<int>();
+        targetShader->SetIntArray(name, ptr, count);
         break;
-      case UniformValue::Type::FloatArray:
-        targetShader->SetFloatArray(name, value.asFloatArray.first, value.asFloatArray.second);
+      }
+      case UniformVariant::Type::FloatArray: {
+        auto [ptr, count] = value.GetArray<float>();
+        targetShader->SetFloatArray(name, ptr, count);
         break;
-      case UniformValue::Type::Vector3Array:
-        targetShader->SetVector3Array(name, value.asVec3Array.first, value.asVec3Array.second);
+      }
+      case UniformVariant::Type::Vector3Array: {
+        auto [ptr, count] = value.GetArray<glm::vec3>();
+        targetShader->SetVector3Array(name, ptr, count);
         break;
+      }
       default:
         LOG_ERROR("Invalid OpenGL uniform item: {};", name);
         break;
