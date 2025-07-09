@@ -127,7 +127,8 @@ void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Mat
 {
   auto it = m_templates.find(name);
   if (it == m_templates.end()) {
-    LOG_ERROR("Reload failed，material invalid: {}", name);
+    // 未能在注册列表中寻找到需要被reload的material
+    LOG_ERROR("Reload failed，reloaded material name invalid: {}", name);
     return;
   }
 
