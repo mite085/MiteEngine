@@ -3,7 +3,7 @@
 namespace mite {
 UniformVariant::Type UniformVariant::GetType() const
 {
-  static const std::array<Type, 13> typeMap = {
+  static const std::array<Type, 14> typeMap = {
       Type::None,         // monostate
       Type::Bool,         // bool
       Type::Int,          // int
@@ -16,7 +16,8 @@ UniformVariant::Type UniformVariant::GetType() const
       Type::Matrix4,      // mat4
       Type::IntArray,     // int[]
       Type::FloatArray,   // float[]
-      Type::Vector3Array  // vec3[]
+      Type::Vector3Array, // vec3[]
+      Type::String,
   };
   return typeMap[m_data.index()];
 }
