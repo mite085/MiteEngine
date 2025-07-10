@@ -98,7 +98,7 @@ void MaterialInstance::Apply(Shader *overrideShader) const
 
   targetShader->Bind();
 
-  // ---- 上传Uniform值 ----
+  // ---- 上传Uniform值（不包含纹理，纹理单独处理） ----
   for (const auto &[name, value] : m_Uniforms) {
     switch (value.GetType()) {
       case UniformVariant::Type::Float:
@@ -143,7 +143,7 @@ void MaterialInstance::Apply(Shader *overrideShader) const
     }
   }
 
-  // ---- 绑定纹理 ----
+  // ---- 绑定纹理（纹理单独处理部分） ----
   uint32_t textureSlot = 0;
   for (const auto &[name, texture] : m_Textures) {
     texture->Bind(textureSlot);

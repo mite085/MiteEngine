@@ -15,7 +15,7 @@ namespace mite {
  */
 class MaterialSystem {
  public:
-  // ---- 单例模式（可选）----
+  // ---- 单例模式----
   static MaterialSystem &Get();
 
   // ---- 模板管理 ----
