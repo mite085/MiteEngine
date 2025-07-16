@@ -1,13 +1,24 @@
 cmake_minimum_required(VERSION 3.10)
 
+# 版本组件
+set(MiteEngine_VERSION_MAJOR 0)
+set(MiteEngine_VERSION_MINOR 1)
+set(MiteEngine_VERSION_PATCH 0)
+set(MiteEngine_VERSION "${MiteEngine_VERSION_MAJOR}.${MiteEngine_VERSION_MINOR}.${MiteEngine_VERSION_PATCH}")
+
 # 项目基本属性
 project(MiteEngine
-  DESCRIPTION
-    "MiteEngine"
-  LANGUAGES
-    CXX C
+  VERSION ${MiteEngine_VERSION}
+  DESCRIPTION "3D Scene Editor based on OpenGL"
+  LANGUAGES CXX C
+  HOMEPAGE_URL "https://github.com/mite085/MiteEngine"
 )
 
+# 打印Make信息
+message(STATUS "Building Project name: ${PROJECT_NAME}")
+message(STATUS "Project version: ${PROJECT_VERSION}")
+message(STATUS "Major version: ${MiteEngine_VERSION_MAJOR}")
+message(STATUS "Minor version: ${MiteEngine_VERSION_MINOR}")
 
 # 全局编译设置
 set(CMAKE_CXX_STANDARD 17)
@@ -55,7 +66,8 @@ if(TARGET zlibstatic)
     set_target_properties(zlibstatic PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
 endif()
 
-
+# 添加子目录（配置代码）
+add_subdirectory(config)
 
 # 添加子目录（核心代码）
 add_subdirectory(src)
