@@ -37,6 +37,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
+// 文件系统
+#include "filesystem/filesystem.h"
+
 // 日志系统
 #include "logger/logger.h"
 

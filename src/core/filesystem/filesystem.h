@@ -1,0 +1,51 @@
+#ifndef MITE_CORE_FILESYSTEM
+#define MITE_CORE_FILESYSTEM
+
+#include <fstream> 
+#include <filesystem>
+#include <string>
+#include <vector>
+
+// 通过CmakeLists的target_include_directories(PRIVATE ${CMAKE_BINARY_DIR}/src/core/filesystem)
+// 检索到build/src/core/filesystem/filesystem_config.h文件
+#include "filesystem_config.h"
+
+namespace mite {
+/**
+ * @brief 文件管理函数
+ * 
+ */
+class FileSystem {
+ public:
+  // 初始化文件系统(必须在程序启动时调用)
+  static void Init(int argc = 0, char **argv = nullptr);
+
+  // 获取资源完整路径
+  static std::filesystem::path GetAssetPath(const std::string &relativePath);
+
+  // 获取所有可能的资源根目录(按搜索优先级排序)
+  static const std::vector<std::filesystem::path> &GetAssetRoots();
+
+  // 检查文件是否存在
+  static bool Exists(const std::filesystem::path &path);
+
+  // 读取文件内容
+  static std::string ReadFileToString(const std::filesystem::path &path);
+
+  // 写入文件内容
+  static bool WriteStringToFile(const std::filesystem::path &path, const std::string &content);
+
+ private:
+  // 获取可执行文件路径
+  static std::filesystem::path GetExecutablePath();
+
+  // 初始化资源搜索路径
+  static void InitializeAssetRoots();
+
+  static std::filesystem::path s_executablePath;
+  static std::vector<std::filesystem::path> s_assetRoots;
+  static bool s_initialized;
+};
+};
+
+#endif

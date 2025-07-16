@@ -29,21 +29,23 @@ cmake_minimum_required(VERSION 3.10)
 set(CORE_LIB_NAME MiteEngine_Core)
 
 # 创建源代码组(筛选器)
-set(HEADERS_SRCS
-    headers/headers.h
-)
-source_group("header" FILES ${HEADERS_SRCS})
-
-set(UUID_SRCS
-    uuid/mite_uuid.h
-)
-source_group("uuid" FILES ${UUID_SRCS})
-
 set(CORE_SRCS
     core/core_functions.h
     core/core_functions.cpp
 )
 source_group("core" FILES ${CORE_SRCS})
+
+set(FILESYSTEM_SRCS
+    filesystem/filesystem.h
+    filesystem/filesystem.cpp
+    filesystem/filesystem_config.h
+)
+source_group("filesystem" FILES ${FILESYSTEM_SRCS})
+
+set(HEADERS_SRCS
+    headers/headers.h
+)
+source_group("header" FILES ${HEADERS_SRCS})
 
 set(LOGGER_SRCS
     logger/logger.h
@@ -78,13 +80,18 @@ set(TIMER_SRCS
 )
 source_group("timer" FILES ${TIMER_SRCS})
 
+set(UUID_SRCS
+    uuid/mite_uuid.h
+)
+source_group("uuid" FILES ${UUID_SRCS})
 
 # 创建静态库
-add_library(${CORE_LIB_NAME}  
-    STATIC  
+add_library(${CORE_LIB_NAME}
+    STATIC
     ${CORE_SRCS}
-    ${HEADERS_SRCS}  
-    ${LOGGER_SRCS} 
+    ${FILESYSTEM_SRCS}
+    ${HEADERS_SRCS}
+    ${LOGGER_SRCS}
     ${EVENT_SRCS}
     ${TIME_SRCS}
     ${TIMER_SRCS}
@@ -94,6 +101,7 @@ add_library(${CORE_LIB_NAME}
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${CORE_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
+    PUBLIC ${CMAKE_BINARY_DIR}/src/core/filesystem # 检索配置文件
 )
 
 target_link_libraries(${CORE_LIB_NAME}
