@@ -135,21 +135,18 @@ void FileSystem::InitializeAssetRoots()
   // 2. 可执行文件父目录
   s_assetRoots.push_back(s_executablePath.parent_path() / "assets");
 
-  // 3. 构建目录 (来自CMake配置)
-  s_assetRoots.push_back(fs::path(ASSETS_BUILD_DIR));
-
-  // 4. 源代码目录
+  // 3. 源代码目录
   s_assetRoots.push_back(fs::path(ASSETS_SOURCE_DIR));
 
-  // 5. 安装目录
+  // 4. 安装目录
   s_assetRoots.push_back(fs::path(ASSETS_INSTALL_DIR));
 
-  // 6. 环境变量目录
+  // 5. 环境变量目录
   if (const char *envPath = std::getenv("ASSETS_PATH")) {
     s_assetRoots.push_back(fs::path(envPath));
   }
 
-  // 7. 当前工作目录
+  // 6. 当前工作目录
   s_assetRoots.push_back(fs::current_path() / "assets");
 }
 };
