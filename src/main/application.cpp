@@ -199,7 +199,7 @@ void MiteApplication::CleanUpScene()
 void MiteApplication::BeginFrame()
 {
   // 清除缓冲
-  //m_Renderer->Clear();
+  m_Renderer->BeginFrame();
 
   // TODO：开始UI帧
   // m_UIManager->BeginFrame()
@@ -231,7 +231,7 @@ void MiteApplication::Render()
   // 主场景渲染
   if (m_ShowMainViewport) {
     // 渲染场景
-    //m_Renderer->RenderScene(m_SceneView->GetRenderData());
+    m_Renderer->RenderScene(m_SceneView->GetRenderData());
 
     // TODO：渲染调试信息
     // if (m_ShowDebug) {
@@ -250,8 +250,11 @@ void MiteApplication::Render()
 
 void MiteApplication::EndFrame()
 {
-  // TODO: 交换缓冲
-  //m_Renderer->SwapBuffers();
+  
+  m_Renderer->EndFrame();
+
+  // TODO: 窗口负责交换缓冲
+  m_Window->SwapBuffers();
 
   // TODO: 处理延迟释放的资源
   // m_AssetManager->ProcessDeletionQueue();
