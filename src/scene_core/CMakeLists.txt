@@ -5,6 +5,8 @@ set(SCENE_CORE_LIB_NAME MiteEngine_Scene_Core)
 
 # 创建源代码组(筛选器)
 set(SCENE_CORE_SRCS
+    scene_core/camera.h
+    scene_core/camera.cpp
     scene_core/component.h
     scene_core/component.cpp
     scene_core/component_id.h
@@ -33,6 +35,8 @@ source_group("core" FILES ${SCENE_CORE_SRCS})
 
 set(SCENE_COMPONENTS_SRCS
     scene_core_components/component_headers.h
+    scene_core_components/camera_component.h
+    scene_core_components/camera_component.cpp
     scene_core_components/hierarchy_component.h
     scene_core_components/hierarchy_component.cpp
     scene_core_components/id_component.h

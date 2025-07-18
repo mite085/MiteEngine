@@ -231,7 +231,7 @@ void MiteApplication::Render()
   // 主场景渲染
   if (m_ShowMainViewport) {
     // 渲染场景
-    m_Renderer->RenderScene(m_SceneView->GetRenderData());
+    m_Renderer->RenderScene(m_SceneView->GetRenderQueue());
 
     // TODO：渲染调试信息
     // if (m_ShowDebug) {

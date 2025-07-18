@@ -48,5 +48,7 @@ target_link_libraries(${RENDERER_LIB_NAME}
     glfw
     spdlog::spdlog
     MiteEngine_Core
+    MiteEngine_Scene_Core
+    MiteEngine_Scene_View
     MiteEngine_Window
 )
