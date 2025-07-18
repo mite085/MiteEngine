@@ -1,5 +1,4 @@
 #include "texture_loader.h"
-#include "render_device.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_STATIC
@@ -41,18 +40,21 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureData(const std::string &
   textureAsset->metadata = metadata;
   textureAsset->textureData.textureData = std::move(managedData);
 
-  // 7. 转换为Renderer模块的TextureSourceData
-  TextureSourceData rendererData;
-  rendererData.pixelData = pixelData;
-  rendererData.width = metadata.width;
-  rendererData.height = metadata.height;
-  rendererData.format = metadata.format;
-  rendererData.wrapMode = TextureWrapMode::Repeat;  // 默认值或从配置读取
-  rendererData.filterMode = TextureFilterMode::Linear;
-  rendererData.generateMipmaps = true;
+  // 7. (该步骤移交给RendererDevice处理)
+  //    转换为Renderer模块的TextureSourceData
+  //TextureSourceData rendererData;
+  //rendererData.pixelData = pixelData;
+  //rendererData.width = metadata.width;
+  //rendererData.height = metadata.height;
+  //rendererData.format = metadata.format;
+  //rendererData.wrapMode = TextureWrapMode::Repeat;  // 默认值或从配置读取
+  //rendererData.filterMode = TextureFilterMode::Linear;
+  //rendererData.generateMipmaps = true;
 
-  // 8. 委托RendererDevice创建GPU资源
-  textureAsset->handle = IRenderDevice::Current().CreateTexture(rendererData);
+  // 8. 发布事件，委托RendererDevice创建GPU资源
+  TextureLoadEvent event(textureAsset);
+  EventBus::Get().Post(event);
+  //textureAsset->handle = IRenderDevice::Current().CreateTexture(rendererData);
 
   return textureAsset;
 }

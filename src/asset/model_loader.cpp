@@ -1,5 +1,4 @@
 #include "model_loader.h"
-#include "render_device.h"
 #include <assimp/Importer.hpp>   // Assimp模型导入器
 #include <assimp/postprocess.h>  // Assimp后处理标志
 namespace mite {
@@ -31,24 +30,27 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path, bool
   CalculateBoundingBox(
       model->subMeshes, model->metadata.boundingBoxMin, model->metadata.boundingBoxMax);
 
-  // 5. 转换 Asset 模块数据为 Renderer 模块的 ModelSourceData
-  ModelSourceData rendererData;
-  rendererData.modelBboxMin = model->metadata.boundingBoxMin;
-  rendererData.modelBboxMax = model->metadata.boundingBoxMax;
+  // 5. (该步骤移交给RendererDevice处理)
+  //    转换 Asset 模块数据为 Renderer 模块的 ModelSourceData
+  //ModelSourceData rendererData;
+  //rendererData.modelBboxMin = model->metadata.boundingBoxMin;
+  //rendererData.modelBboxMax = model->metadata.boundingBoxMax;
 
-  for (const auto &subMesh : model->subMeshes) {
-    rendererData.subMeshes.push_back(
-        {subMesh.vertexData.data(),
-         subMesh.indices.data(),
-         static_cast<uint32_t>(subMesh.vertexData.size() / subMesh.layout.stride),
-         static_cast<uint32_t>(subMesh.indices.size()),
-         subMesh.layout,
-         subMesh.boundingBoxMin,
-         subMesh.boundingBoxMax});
-  }
+  //for (const auto &subMesh : model->subMeshes) {
+  //  rendererData.subMeshes.push_back(
+  //      {subMesh.vertexData.data(),
+  //       subMesh.indices.data(),
+  //       static_cast<uint32_t>(subMesh.vertexData.size() / subMesh.layout.stride),
+  //       static_cast<uint32_t>(subMesh.indices.size()),
+  //       subMesh.layout,
+  //       subMesh.boundingBoxMin,
+  //       subMesh.boundingBoxMax});
+  //}
 
-  // 6. 委托RendererDevice创建GPU资源
-  model->handle = IRenderDevice::Current().CreateModel(rendererData);
+  // 6. 发布事件，委托RendererDevice创建GPU资源
+  ModelLoadEvent event(model);
+  EventBus::Get().Post(event);
+  // model->handle = IRenderDevice::Current().CreateModel(rendererData);
 
   return model;
 }

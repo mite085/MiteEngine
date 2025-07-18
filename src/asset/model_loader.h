@@ -37,6 +37,30 @@ class ModelLoader {
   // 提取材质路径列表
   static std::vector<std::string> ExtractMaterialPaths(const aiScene *scene);
 };
+
+/**
+ * 模型创建事件
+ * 职责：委托RendererDevice创建GPU资源
+ */
+class ModelLoadEvent : public Event {
+ public:
+  ModelLoadEvent(std::shared_ptr<ModelAsset> asset) {}
+
+  std::shared_ptr<ModelAsset> GetModelAsset()
+  {
+    return m_Asset;
+  }
+
+  EVENT_CLASS_TYPE(SCENE_LOADED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new ModelLoadEvent(m_Asset);
+  }
+
+ private:
+  std::shared_ptr<ModelAsset> m_Asset;
+};
 };  // namespace mite
 
 #endif
