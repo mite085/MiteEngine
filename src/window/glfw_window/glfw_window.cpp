@@ -306,7 +306,8 @@ void GLFWWindow::SwapBuffers()
     return;  // 这里选择不抛出异常，因为可能在关闭过程中调用
   }
 
-  m_Logger->trace("Swapping buffers for window: {}", m_WindowData.title);
+  // 可记录性能调试信息
+  // m_Logger->trace("Swapping buffers for window: {}", m_WindowData.title);
   glfwSwapBuffers(m_Window);
 
   // 检查OpenGL错误

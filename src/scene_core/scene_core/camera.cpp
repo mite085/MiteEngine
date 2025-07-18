@@ -49,7 +49,7 @@ void Camera::RecalculateProjection()
     m_ProjectionMatrix = glm::ortho(-width / 2, width / 2, -height / 2, height / 2, m_Near, m_Far);
   }
   else {
-    LOG_ERROR("Invalid camera projection type: {}", m_ProjectionType);
+    LOG_ERROR("Invalid camera projection type");
   }
 }
 

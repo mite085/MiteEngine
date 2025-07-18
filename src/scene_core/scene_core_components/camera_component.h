@@ -46,10 +46,7 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
-  std::vector<std::type_index> GetDependencies() const override
-  {
-    return {typeid(TransformComponent)};
-  }
+  std::vector<std::type_index> GetDependencies() const override;
 
  private:
   Camera m_Camera;

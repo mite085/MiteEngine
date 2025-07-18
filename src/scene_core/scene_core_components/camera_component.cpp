@@ -60,6 +60,11 @@ bool CameraComponent::Deserialize(std::istream &input)
   return !input.fail();
 }
 
+std::vector<std::type_index> CameraComponent::GetDependencies() const
+{
+  return {typeid(TransformComponent)};
+}
+
 void CameraSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
   // 处理视口变化等逻辑
