@@ -2,6 +2,7 @@
 #define MITE_RENDERER_API
 
 #include "model.h"
+#include "renderable_entity.h"
 
 namespace mite {
 /**
@@ -21,6 +22,12 @@ class Renderer {
   virtual void BeginFrame() = 0;
   virtual void EndFrame() = 0;
   virtual void DrawModel(const Model &model, const glm::mat4 &transform) = 0;
+
+  /**
+   * 渲染场景的核心接口
+   * @param renderQueue 从SceneView获取的可渲染实体列表
+   */
+  virtual void RenderScene(const std::vector<RenderableEntity> &renderQueue) = 0;
 
   // ---- 状态设置 ----
   void SetClearColor(const glm::vec4 &color);

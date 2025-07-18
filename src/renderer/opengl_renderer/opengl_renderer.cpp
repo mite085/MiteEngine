@@ -1,4 +1,5 @@
 #include "opengl_renderer.h"
+#include "asset_manager.h"
 
 namespace mite {
 OpenGLRenderer::OpenGLRenderer() {}
@@ -49,4 +50,29 @@ void OpenGLRenderer::DrawModel(const Model &model, const glm::mat4 &transform)
     model.DrawSubMesh(i);
   }
 }
+void OpenGLRenderer::RenderScene(const std::vector<RenderableEntity> &renderQueue)
+{  
+  // 1. 遍历渲染队列
+  for (const auto &entity : renderQueue) {
+    // 2. TODO: 从Asset和Material模块获取网格和材质资源
+    //auto mesh = AssetManager::Get().GetMesh(entity.meshID);
+    //auto material = MaterialSystem::GetMaterial(entity.materialID);
+
+    //if (!mesh || !material) {
+    //  continue;  // 资源加载失败时跳过
+    //}
+
+    //// 3. 绑定材质（Shader、Uniform、Texture等）
+    //material->Bind();
+    //material->SetUniform("u_ModelMatrix", entity.worldTransform);
+
+    //// 4. 绑定网格数据
+    //glBindVertexArray(mesh->VAO);
+    //glDrawElements(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, nullptr);
+
+    //// 5. 解绑（可选，减少状态切换）
+    //glBindVertexArray(0);
+  }
+}
+
 }  // namespace mite

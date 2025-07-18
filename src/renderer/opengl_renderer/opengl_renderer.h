@@ -1,13 +1,12 @@
 #ifndef MITE_OPENGL_RENDERER
 #define MITE_OPENGL_RENDERER
 
-#include "glad.h"
-#include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 #include "opengl_renderer/opegl_device.h"
 #include "renderer.h"
 
 #include "model.h"
 #include "texture.h"
+#include "renderable_entity.h"
 
 namespace mite {
 /**
@@ -26,6 +25,12 @@ class OpenGLRenderer : public Renderer {
   void BeginFrame() override;
   void EndFrame() override;
   void DrawModel(const Model &model, const glm::mat4 &transform) override;
+
+  /**
+   * 渲染场景的核心接口
+   * @param renderQueue 从SceneView获取的可渲染实体列表
+   */
+  void RenderScene(const std::vector<RenderableEntity> &renderQueue) override;
 
  private:
   // ---- OpenGL专属状态 ----
