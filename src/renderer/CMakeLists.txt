@@ -21,8 +21,6 @@ set(RENDERER_INTERFACE_SRCS
     mesh.cpp
     model.h
     model.cpp
-    handle_types.h
-    handle_types.cpp
 )
 source_group("interface" FILES ${RENDERER_INTERFACE_SRCS})
 
@@ -47,6 +45,7 @@ target_link_libraries(${RENDERER_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
+    MiteEngine_Asset
     MiteEngine_Core
     MiteEngine_Scene_Core
     MiteEngine_Scene_View
