@@ -2,7 +2,16 @@
 
 namespace mite {
 // ------------------------ 构造函数/析构函数 ------------------------
-OpenGLDevice::OpenGLDevice() {}
+OpenGLDevice::OpenGLDevice()
+{  
+  // 创建日志系统
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Device");
+  m_Logger->trace("Created OpenGL Device");
+
+  // 订阅事件
+  m_EventSubscriptions.Subscribe<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded));
+  m_EventSubscriptions.Subscribe<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded));
+}
 
 OpenGLDevice::~OpenGLDevice()
 {
@@ -285,6 +294,45 @@ GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
       LOG_WARN("Unsupported texture format: {}", static_cast<int>(format));
       return GL_RGBA;  // 默认回退
   }
+}
+
+void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e) {
+  std::shared_ptr<ModelAsset> model = e.GetModelAsset();
+
+  // 转换 Asset 模块数据为 Renderer 模块的 ModelSourceData
+  ModelSourceData rendererData;
+  rendererData.modelBboxMin = model->metadata.boundingBoxMin;
+  rendererData.modelBboxMax = model->metadata.boundingBoxMax;
+
+  for (const auto &subMesh : model->subMeshes) {
+    rendererData.subMeshes.push_back(
+        {subMesh.vertexData.data(),
+         subMesh.indices.data(),
+         static_cast<uint32_t>(subMesh.vertexData.size() / subMesh.layout.stride),
+         static_cast<uint32_t>(subMesh.indices.size()),
+         subMesh.layout,
+         subMesh.boundingBoxMin,
+         subMesh.boundingBoxMax});
+  }
+
+  // 创建model的GPU资源
+  model->handle = CreateModel(rendererData);
+}
+
+void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e) {
+  std::shared_ptr<TextureAsset> textureAsset = e.GetTextureAsset();
+
+  // 转换 Asset 模块数据为 Renderer 模块的 ModelSourceData
+  TextureSourceData rendererData;
+  rendererData.pixelData = textureAsset->textureData.textureData.get();
+  rendererData.width = textureAsset->metadata.width;
+  rendererData.height = textureAsset->metadata.height;
+  rendererData.format = textureAsset->metadata.format;
+  rendererData.wrapMode = TextureWrapMode::Repeat;  // 默认值或从配置读取
+  rendererData.filterMode = TextureFilterMode::Linear;
+  rendererData.generateMipmaps = true;
+
+  textureAsset->handle = CreateTexture(rendererData);
 }
 
 GLenum OpenGLDevice::ConvertWrapMode(TextureWrapMode mode) const

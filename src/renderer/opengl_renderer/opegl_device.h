@@ -4,6 +4,8 @@
 #include "glad.h"
 #include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 #include "render_device.h"
+#include "model_loader.h"
+#include "texture_loader.h"
 
 namespace mite {
 /**
@@ -38,6 +40,10 @@ class OpenGLDevice : public IRenderDevice {
   void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const override;
 
  private:
+  // ---- 事件响应函数 ----
+  void OnModelLoaded(ModelLoadEvent &e);
+  void OnTextureLoaded(TextureLoadEvent &e);
+
   // ---- 辅助方法 ----
   GLenum ConvertWrapMode(TextureWrapMode mode) const;
   void ConvertFilterMode(TextureFilterMode mode, GLenum &outMinFilter, GLenum &outMagFilter) const;
@@ -49,6 +55,12 @@ class OpenGLDevice : public IRenderDevice {
   // 资源追踪（用于调试和泄漏检测）
   std::unordered_set<GLuint> activeTextures_;
   std::unordered_set<GLuint> activeMeshsVAO_, activeMeshsVBO_, activeMeshsEBO_;
+
+  // 日志系统
+  Logger m_Logger;
+
+  // 订阅事件集合
+  SubscriptionGroup m_EventSubscriptions;
 };
 };  // namespace mite
 
