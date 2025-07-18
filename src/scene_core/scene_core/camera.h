@@ -26,6 +26,7 @@ class Camera {
   void SetPerspective(float fov, float aspect, float near, float far);
   void SetOrthographic(float size, float aspect, float near, float far);
   void SetProjectionType(ProjectionType type);
+  void SetAspectRatio(float aspect);
 
   //  ”Õºøÿ÷∆
   void LookAt(const glm::vec3 &position,
@@ -84,6 +85,6 @@ class Camera {
   glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
   glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 };
-};
+};  // namespace mite
 
 #endif

@@ -32,6 +32,12 @@ void Camera::SetProjectionType(ProjectionType type)
   RecalculateProjection();
 }
 
+void Camera::SetAspectRatio(float aspect)
+{
+  m_Aspect = aspect;
+  RecalculateProjection();
+}
+
 void Camera::RecalculateProjection()
 {
   if (m_ProjectionType == ProjectionType::Perspective) {
