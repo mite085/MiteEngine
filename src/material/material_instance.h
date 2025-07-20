@@ -2,7 +2,7 @@
 #define MITE_MATERIAL_INSTANCE
 
 #include "shader.h"
-#include "texture.h"
+#include "basic_type/texture.h"
 #include "material_param_variant.h"
 
 namespace mite {

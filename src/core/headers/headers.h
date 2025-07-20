@@ -53,4 +53,7 @@
 #include "event/subscription_group.h"
 #include "event/callback_adapter.h"
 
+// 基础数据格式
+#include "basic_type/asset_type.h"
+
 #endif

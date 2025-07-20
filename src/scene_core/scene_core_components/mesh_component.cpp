@@ -4,18 +4,18 @@
 namespace mite {
 MeshComponent::MeshComponent() : ComponentTraits() {}
 
-MeshComponent::MeshComponent(std::shared_ptr<FakeMesh> mesh, std::shared_ptr<Material> material)
+MeshComponent::MeshComponent(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material)
     : ComponentTraits(), m_Mesh(mesh), m_Material(material)
 {
 }
 
 // Íø¸ñ²Ù×÷ ==============================================
-std::shared_ptr<FakeMesh> MeshComponent::GetMesh() const
+std::shared_ptr<Mesh> MeshComponent::GetMesh() const
 {
   return m_Mesh;
 }
 
-void MeshComponent::SetMesh(std::shared_ptr<FakeMesh> mesh)
+void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
 {
   if (m_Mesh != mesh) {
     m_Mesh = mesh;

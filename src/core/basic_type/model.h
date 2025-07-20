@@ -17,6 +17,7 @@ class Model {
  public:
   explicit Model(const ModelGPUHandle &handle);
 
+  // TODO: Draw操作全权交付给渲染队列进行，此处不应当持有Draw方法。
   void Draw() const;
   void DrawSubMesh(size_t index) const;
 

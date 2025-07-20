@@ -1,7 +1,7 @@
 #ifndef MITE_ASSET_CACHE
 #define MITE_ASSET_CACHE
 
-#include "asset_type.h"
+#include "headers/headers.h"
 
 namespace mite {
 /**

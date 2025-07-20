@@ -1,7 +1,7 @@
-#ifndef MITE_RENDERER_TEXTURE
-#define MITE_RENDERER_TEXTURE
+#ifndef MITE_BASIC_TYPE_TEXTURE
+#define MITE_BASIC_TYPE_TEXTURE
 
-#include "handle_types.h"
+#include "headers/headers.h"
 
 namespace mite {
 /**
@@ -16,6 +16,8 @@ class Texture {
   Texture(const TextureGPUHandle &handle);
 
   // ---- 核心接口 ----
+  // TODO: Bind操作全权交付给渲染队列进行，此处不应当持有Bind和Set方法。
+
   void Bind(uint32_t slot) const;
   //void Unbind() const;
 

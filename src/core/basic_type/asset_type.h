@@ -1,7 +1,9 @@
 #ifndef MITE_ASSET_TYPE
 #define MITE_ASSET_TYPE
 
-#include "handle_types.h"
+#include "handle_type.h"
+#include "uuid/mite_uuid.h"
+#include <glm/glm.hpp>
 
 namespace mite {
 // --- 基础类型别名 ---

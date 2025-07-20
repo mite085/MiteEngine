@@ -1,12 +1,11 @@
 #ifndef MITE_RENDER_DEVICE
 #define MITE_RENDER_DEVICE
 
-#include "handle_types.h"
 #include "model_loader.h"
 #include "texture_loader.h"
-#include "model.h"
-#include "mesh.h"
-#include "texture.h"
+#include "basic_type/model.h"
+#include "basic_type/mesh.h"
+#include "basic_type/texture.h"
 
 namespace mite {
 

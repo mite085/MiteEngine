@@ -1,7 +1,7 @@
 #ifndef MITE_ASSET_MODEL_LOADER
 #define MITE_ASSET_MODEL_LOADER
 
-#include "asset_type.h"
+#include "headers/headers.h"
 #include "assimp/scene.h"
 
 namespace mite {

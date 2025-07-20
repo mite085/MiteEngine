@@ -1,5 +1,5 @@
-#ifndef MITE_CORE_CAMERA
-#define MITE_CORE_CAMERA
+#ifndef MITE_BASIC_TYPE_CAMERA
+#define MITE_BASIC_TYPE_CAMERA
 
 #include "headers/headers.h"
 

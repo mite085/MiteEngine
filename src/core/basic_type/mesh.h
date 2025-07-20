@@ -1,7 +1,7 @@
-#ifndef MITE_RENDERER_MESH
-#define MITE_RENDERER_MESH
+#ifndef MITE_BASIC_TYPE_MESH
+#define MITE_BASIC_TYPE_MESH
 
-#include "handle_types.h"
+#include "headers/headers.h"
 
 namespace mite {
 /**
@@ -14,6 +14,7 @@ class Mesh {
  public:
   Mesh(const MeshGPUHandle &handle);
 
+  // TODO: Draw操作全权交付给渲染队列进行，此处不应当持有Draw方法。
   void Draw() const;
   uint32_t GetIndexCount() const
   {

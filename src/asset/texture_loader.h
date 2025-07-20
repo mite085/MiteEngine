@@ -1,7 +1,7 @@
 #ifndef MITE_ASSET_TEXTURE_LOADER
 #define MITE_ASSET_TEXTURE_LOADER
 
-#include "asset_type.h"
+#include "headers/headers.h"
 
 namespace mite {
 class TextureLoader {

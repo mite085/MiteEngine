@@ -5,8 +5,7 @@ set(SCENE_CORE_LIB_NAME MiteEngine_Scene_Core)
 
 # 创建源代码组(筛选器)
 set(SCENE_CORE_SRCS
-    scene_core/camera.h
-    scene_core/camera.cpp
+
     scene_core/component.h
     scene_core/component.cpp
     scene_core/component_id.h
@@ -75,4 +74,5 @@ target_link_libraries(${SCENE_CORE_LIB_NAME}
     PRIVATE 
     spdlog::spdlog
     MiteEngine_Core
+    MiteEngine_Asset
 )

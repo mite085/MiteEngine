@@ -4,8 +4,8 @@
 #include "opengl_renderer/opegl_device.h"
 #include "renderer.h"
 
-#include "model.h"
-#include "texture.h"
+#include "basic_type/model.h"
+#include "basic_type/texture.h"
 #include "renderable_entity.h"
 
 namespace mite {
@@ -24,6 +24,8 @@ class OpenGLRenderer : public Renderer {
   // ---- 渲染指令 ----
   void BeginFrame() override;
   void EndFrame() override;
+
+  // TODO: Draw操作全权交付给渲染队列进行，此处不应当单独执行Draw方法。
   void DrawModel(const Model &model, const glm::mat4 &transform) override;
 
   /**

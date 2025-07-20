@@ -9,20 +9,10 @@ set(ASSET_SRCS
     asset_cache.cpp
     asset_manager.h
     asset_manager.cpp
-    asset_type.h
-    asset_type.cpp
     asset_utils.h
     asset_utils.cpp
-    handle_types.h
-    handle_types.cpp
-    mesh.h
-    mesh.cpp
-    model.h
-    model.cpp
     model_loader.h
     model_loader.cpp
-    texture.h
-    texture.cpp
     texture_loader.h
     texture_loader.cpp
 )

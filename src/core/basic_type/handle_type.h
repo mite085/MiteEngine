@@ -1,7 +1,9 @@
-#ifndef MITE_RENDER_HANDLE_TYPES
-#define MITE_RENDER_HANDLE_TYPES
+#ifndef MITE_HANDLE_TYPE
+#define MITE_HANDLE_TYPE
 
-#include "headers/headers.h"
+#include <variant>
+#include <vector>
+#include <glm/glm.hpp>
 
 namespace mite {
 // ------------------------ Œ∆¿Ìœ‡πÿ ------------------------
