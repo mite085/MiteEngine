@@ -15,8 +15,14 @@ set(ASSET_SRCS
     asset_utils.cpp
     handle_types.h
     handle_types.cpp
+    mesh.h
+    mesh.cpp
+    model.h
+    model.cpp
     model_loader.h
     model_loader.cpp
+    texture.h
+    texture.cpp
     texture_loader.h
     texture_loader.cpp
 )

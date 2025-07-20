@@ -11,16 +11,10 @@ set(RENDERER_INTERFACE_SRCS
     render_command.cpp
     render_device.h
     render_device.cpp
-    texture.h
-    texture.cpp
     shader.h
     shader.cpp
     shader_cache.h
     shader_cache.cpp
-    mesh.h
-    mesh.cpp
-    model.h
-    model.cpp
 )
 source_group("interface" FILES ${RENDERER_INTERFACE_SRCS})
 
