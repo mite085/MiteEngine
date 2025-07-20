@@ -1,5 +1,5 @@
-#ifndef MITE_BASIC_TYPE_TEXTURE
-#define MITE_BASIC_TYPE_TEXTURE
+#ifndef MITE_DATA_TEXTURE
+#define MITE_DATA_TEXTURE
 
 #include "headers/headers.h"
 #include "basic_type/handle_type.h"

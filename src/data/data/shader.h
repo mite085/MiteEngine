@@ -1,5 +1,5 @@
-#ifndef MITE_RENDERER_SHADER
-#define MITE_RENDERER_SHADER
+#ifndef MITE_DATA_SHADER
+#define MITE_DATA_SHADER
 
 #include "headers/headers.h"
 

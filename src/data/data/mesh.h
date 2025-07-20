@@ -1,5 +1,5 @@
-#ifndef MITE_BASIC_TYPE_MESH
-#define MITE_BASIC_TYPE_MESH
+#ifndef MITE_DATA_MESH
+#define MITE_DATA_MESH
 
 #include "headers/headers.h"
 #include "basic_type/handle_type.h"

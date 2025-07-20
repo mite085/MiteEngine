@@ -19,6 +19,10 @@ set(DATA_SRCS
     data/mesh.cpp
     data/model.h
     data/model.cpp
+    data/shader.h
+    data/shader.cpp
+    data/shader_cache.h
+    data/shader_cache.cpp
     data/texture.h
     data/texture.cpp
 )
@@ -38,6 +42,7 @@ target_include_directories(${DATA_LIB_NAME}
 
 target_link_libraries(${DATA_LIB_NAME}
     PRIVATE 
+    glfw
     spdlog::spdlog
     MiteEngine_Core
 )

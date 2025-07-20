@@ -1,5 +1,5 @@
-#ifndef MITE_RENDERER_SHADER_CACHE
-#define MITE_RENDERER_SHADER_CACHE
+#ifndef MITE_DATA_SHADER_CACHE
+#define MITE_DATA_SHADER_CACHE
 
 #include "shader.h"
 

@@ -105,6 +105,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
       }
       case UniformVariant::Type::String: {
         // 纹理路径特殊处理
+        // TODO: 评估是否有必要仅仅为了一个SetTexture，而添加对Asset模块的依赖
         auto texture = AssetManager::Get().LoadTexture(name);
         if (texture) {
           instance->SetTexture(name, std::make_shared<Texture>(texture->handle));

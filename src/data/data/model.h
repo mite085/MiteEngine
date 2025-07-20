@@ -1,5 +1,5 @@
-#ifndef MITE_RENDERER_MODEL
-#define MITE_RENDERER_MODEL
+#ifndef MITE_DATA_MODEL
+#define MITE_DATA_MODEL
 
 #include "mesh.h"
 
