@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_CAMERA_COMPONENT
 #define MITE_SCENE_CAMERA_COMPONENT
 
-#include "basic_type/camera.h"
+#include "data/camera.h"
 #include "scene_core/component_system.h"
 
 namespace mite {

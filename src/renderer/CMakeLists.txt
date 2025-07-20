@@ -41,6 +41,7 @@ target_link_libraries(${RENDERER_LIB_NAME}
     spdlog::spdlog
     MiteEngine_Asset
     MiteEngine_Core
+    MiteEngine_Data
     MiteEngine_Scene_Core
     MiteEngine_Scene_View
     MiteEngine_Window

@@ -3,6 +3,7 @@
 
 #include "headers/headers.h"
 #include "assimp/scene.h"
+#include "basic_type/asset_type.h"
 
 namespace mite {
 /**

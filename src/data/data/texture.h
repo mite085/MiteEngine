@@ -2,6 +2,7 @@
 #define MITE_BASIC_TYPE_TEXTURE
 
 #include "headers/headers.h"
+#include "basic_type/handle_type.h"
 
 namespace mite {
 /**

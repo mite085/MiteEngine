@@ -35,6 +35,7 @@ target_link_libraries(${PROJECT_NAME}
     # 各模块库依赖
     MiteEngine_Asset
     MiteEngine_Core
+    MiteEngine_Data
     MiteEngine_Input
     
     MiteEngine_Material

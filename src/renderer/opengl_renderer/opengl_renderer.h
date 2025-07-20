@@ -4,8 +4,8 @@
 #include "opengl_renderer/opegl_device.h"
 #include "renderer.h"
 
-#include "basic_type/model.h"
-#include "basic_type/texture.h"
+#include "data/model.h"
+#include "data/texture.h"
 #include "renderable_entity.h"
 
 namespace mite {

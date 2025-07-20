@@ -3,9 +3,9 @@
 
 #include "model_loader.h"
 #include "texture_loader.h"
-#include "basic_type/model.h"
-#include "basic_type/mesh.h"
-#include "basic_type/texture.h"
+#include "data/model.h"
+#include "data/mesh.h"
+#include "data/texture.h"
 
 namespace mite {
 

@@ -2,8 +2,8 @@
 #define MITE_RENDERER_COMMAND
 
 #include "shader.h"
-#include "basic_type/texture.h"
-#include "basic_type/mesh.h"
+#include "data/texture.h"
+#include "data/mesh.h"
 
 namespace mite {
 /**

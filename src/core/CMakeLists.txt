@@ -35,22 +35,6 @@ set(CORE_SRCS
 )
 source_group("core" FILES ${CORE_SRCS})
 
-set(BASIC_TYPE_SRCS
-    basic_type/asset_type.h
-    basic_type/asset_type.cpp
-    basic_type/camera.h
-    basic_type/camera.cpp
-    basic_type/handle_type.h
-    basic_type/handle_type.cpp
-    basic_type/mesh.h
-    basic_type/mesh.cpp
-    basic_type/model.h
-    basic_type/model.cpp
-    basic_type/texture.h
-    basic_type/texture.cpp
-)
-source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
-
 set(FILESYSTEM_SRCS
     filesystem/filesystem.h
     filesystem/filesystem.cpp
@@ -105,7 +89,6 @@ source_group("uuid" FILES ${UUID_SRCS})
 add_library(${CORE_LIB_NAME}
     STATIC
     ${CORE_SRCS}
-    ${BASIC_TYPE_SRCS}
     ${FILESYSTEM_SRCS}
     ${HEADERS_SRCS}
     ${LOGGER_SRCS}
