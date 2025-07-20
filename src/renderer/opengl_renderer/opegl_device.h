@@ -4,8 +4,6 @@
 #include "glad.h"
 #include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 #include "render_device.h"
-#include "model_loader.h"
-#include "texture_loader.h"
 
 namespace mite {
 /**
@@ -41,8 +39,8 @@ class OpenGLDevice : public IRenderDevice {
 
  private:
   // ---- 事件响应函数 ----
-  void OnModelLoaded(ModelLoadEvent &e);
-  void OnTextureLoaded(TextureLoadEvent &e);
+  void OnModelLoaded(ModelLoadEvent &e) override;
+  void OnTextureLoaded(TextureLoadEvent &e) override;
 
   // ---- 辅助方法 ----
   GLenum ConvertWrapMode(TextureWrapMode mode) const;

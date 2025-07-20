@@ -2,6 +2,8 @@
 #define MITE_RENDER_DEVICE
 
 #include "handle_types.h"
+#include "model_loader.h"
+#include "texture_loader.h"
 
 namespace mite {
 
@@ -41,6 +43,17 @@ class IRenderDevice {
   // 静态当前设备管理
   static IRenderDevice &Current();
   static void SetCurrent(std::unique_ptr<IRenderDevice> device);
+
+ private:
+  // 私有构造函数
+  IRenderDevice();
+
+  // ---- 事件响应函数 ----
+  virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
+  virtual void OnTextureLoaded(TextureLoadEvent &e) = 0;
+  virtual void OnModelDrawed(ModelDrawEvent &e) = 0;
+  virtual void OnMeshDrawed(MeshDrawEvent &e) = 0;
+
 };
 };  // namespace mite
 
