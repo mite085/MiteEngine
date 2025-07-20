@@ -41,7 +41,11 @@ class OpenGLDevice : public IRenderDevice {
   // ---- 事件响应函数 ----
   void OnModelLoaded(ModelLoadEvent &e) override;
   void OnTextureLoaded(TextureLoadEvent &e) override;
-  void OnMeshDrawed(MeshDrawEvent &e) override;
+  void OnMeshDraw(MeshDrawEvent &e) override;
+  void OnTextureBind(TextureBindEvent &e) override;
+  void OnTextureSetWrapMode(TextureWrapModeEvent &e) override;
+  void OnTextureSetFilterMode(TextureFilterModeEvent &e) override;
+  void OnTextureGenerateMipmaps(TextureGenerateMipmapsEvent &e) override;
 
   // ---- 辅助方法 ----
   GLenum ConvertWrapMode(TextureWrapMode mode) const;

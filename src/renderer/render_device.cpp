@@ -16,7 +16,6 @@ std::unique_ptr<mite::IRenderDevice> &GetCurrentDevice()
 }  // namespace
 
 namespace mite {
-
 // ---- 实现静态方法 ----
 IRenderDevice &IRenderDevice::Current()
 {
@@ -32,10 +31,16 @@ void IRenderDevice::SetCurrent(std::unique_ptr<IRenderDevice> device)
   std::lock_guard<std::mutex> lock(GetDeviceMutex());
   GetCurrentDevice() = std::move(device);
 }
-IRenderDevice::IRenderDevice() {
+IRenderDevice::IRenderDevice()
+{
   // 订阅事件
   m_EventSubscriptions.Subscribe<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded));
-  m_EventSubscriptions.Subscribe<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded)); 
-  m_EventSubscriptions.Subscribe<MeshDrawEvent>(BIND_DISPATCH_FN(OnMeshDrawed));
+  m_EventSubscriptions.Subscribe<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded));
+  m_EventSubscriptions.Subscribe<MeshDrawEvent>(BIND_DISPATCH_FN(OnMeshDraw));
+  m_EventSubscriptions.Subscribe<TextureBindEvent>(BIND_DISPATCH_FN(OnTextureBind));
+  m_EventSubscriptions.Subscribe<TextureWrapModeEvent>(BIND_DISPATCH_FN(OnTextureSetWrapMode));
+  m_EventSubscriptions.Subscribe<TextureFilterModeEvent>(BIND_DISPATCH_FN(OnTextureSetFilterMode));
+  m_EventSubscriptions.Subscribe<TextureGenerateMipmapsEvent>(
+      BIND_DISPATCH_FN(OnTextureGenerateMipmaps));
 }
-};
+};  // namespace mite

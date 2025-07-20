@@ -30,7 +30,7 @@ class Mesh {
 
 /**
  * 模型绘制事件
- * 职责：委托RendererDevice绘制Model
+ * 职责：委托RendererDevice绘制Mesh
  */
 class MeshDrawEvent : public Event {
  public:

@@ -93,11 +93,13 @@ void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
 
 void OpenGLDevice::BindTexture(TextureGPUHandle handle, uint32_t slot) const
 {
+  // 渲染时，才需要激活纹理单元
   glActiveTexture(GL_TEXTURE0 + slot);
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(handle.apiHandle));
 }
 void OpenGLDevice::SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode)
 {
+  // 初始化纹理时，不需要激活纹理单元
   GLuint glTexture = static_cast<GLuint>(handle.apiHandle);
   glBindTexture(GL_TEXTURE_2D, glTexture);
 
@@ -338,11 +340,31 @@ void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e) {
   textureAsset->handle = CreateTexture(rendererData);
 }
 
-void OpenGLDevice::OnMeshDrawed(MeshDrawEvent &e) {
+void OpenGLDevice::OnMeshDraw(MeshDrawEvent &e) {
   MeshGPUHandle handle = e.GetHandle();
 
   BindMesh(handle);
   DrawIndexed(handle.indexCount, 0);  // 从索引0开始绘制（由于当前Mesh的VAO创建是独立的，所以Model的每个子Mesh都是从0开始）
+}
+
+void OpenGLDevice::OnTextureBind(TextureBindEvent &e)
+{
+  BindTexture(e.GetHandle(), e.GetSlot());
+}
+
+void OpenGLDevice::OnTextureSetWrapMode(TextureWrapModeEvent &e)
+{
+  SetTextureWrapMode(e.GetHandle(), e.GetMode());
+}
+
+void OpenGLDevice::OnTextureSetFilterMode(TextureFilterModeEvent &e)
+{
+  SetTextureFilterMode(e.GetHandle(), e.GetMode());
+}
+
+void OpenGLDevice::OnTextureGenerateMipmaps(TextureGenerateMipmapsEvent &e)
+{
+  GenerateMipmaps(e.GetHandle());
 }
 
 GLenum OpenGLDevice::ConvertWrapMode(TextureWrapMode mode) const
