@@ -31,7 +31,7 @@ class TextureLoader {
  */
 class TextureLoadEvent : public Event {
  public:
-  TextureLoadEvent(std::shared_ptr<TextureAsset> asset) {}
+  TextureLoadEvent(std::shared_ptr<TextureAsset> asset) : m_Asset(asset) {}
 
   std::shared_ptr<TextureAsset> GetTextureAsset()
   {
@@ -48,7 +48,6 @@ class TextureLoadEvent : public Event {
  private:
   std::shared_ptr<TextureAsset> m_Asset;
 };
-
 };  // namespace mite
 
 #endif

@@ -44,7 +44,7 @@ class ModelLoader {
  */
 class ModelLoadEvent : public Event {
  public:
-  ModelLoadEvent(std::shared_ptr<ModelAsset> asset) {}
+  ModelLoadEvent(std::shared_ptr<ModelAsset> asset) : m_Asset(asset) {}
 
   std::shared_ptr<ModelAsset> GetModelAsset()
   {
