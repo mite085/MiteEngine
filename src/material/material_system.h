@@ -12,6 +12,18 @@ namespace mite {
  * 2. 材质实例的创建与缓存
  * 3. 材质热重载支持（通过文件监视或手动触发）
  * 4. 错误材质回退机制
+ * 
+ * @使用示例：
+ * 
+ * // 初始化阶段
+ * auto pbrTemplate = std::make_unique<PBRMaterialTemplate>(shader);
+ * MaterialSystem::Get().RegisterTemplate("DefaultPBR", std::move(pbrTemplate));
+
+ * // 运行时创建实例
+ * auto material = MaterialSystem::Get().CreateInstanceWithOverrides(
+ *     "DefaultPBR",
+ *     {{"u_Albedo", glm::vec3(1.0, 0.0, 0.0)}, {"u_Roughness", 0.8f}}
+ * );
  */
 class MaterialSystem {
  public:
