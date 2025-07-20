@@ -41,6 +41,7 @@ class OpenGLDevice : public IRenderDevice {
   // ---- 事件响应函数 ----
   void OnModelLoaded(ModelLoadEvent &e) override;
   void OnTextureLoaded(TextureLoadEvent &e) override;
+  void OnMeshDrawed(MeshDrawEvent &e) override;
 
   // ---- 辅助方法 ----
   GLenum ConvertWrapMode(TextureWrapMode mode) const;
@@ -56,9 +57,6 @@ class OpenGLDevice : public IRenderDevice {
 
   // 日志系统
   Logger m_Logger;
-
-  // 订阅事件集合
-  SubscriptionGroup m_EventSubscriptions;
 };
 };  // namespace mite
 

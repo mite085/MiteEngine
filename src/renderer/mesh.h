@@ -1,7 +1,7 @@
 #ifndef MITE_RENDERER_MESH
 #define MITE_RENDERER_MESH
 
-#include "render_device.h"
+#include "handle_types.h"
 
 namespace mite {
 /**
@@ -19,9 +19,37 @@ class Mesh {
   {
     return handle_.indexCount;
   }
+  MeshGPUHandle GetHandle() const
+  {
+    return handle_;
+  }
 
  private:
   MeshGPUHandle handle_;
+};
+
+/**
+ * 模型绘制事件
+ * 职责：委托RendererDevice绘制Model
+ */
+class MeshDrawEvent : public Event {
+ public:
+  MeshDrawEvent(MeshGPUHandle mesh) : m_Mesh(mesh) {}
+
+  MeshGPUHandle GetHandle()
+  {
+    return m_Mesh;
+  }
+
+  EVENT_CLASS_TYPE(SCENE_LOADED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new MeshDrawEvent(m_Mesh);
+  }
+
+ private:
+  MeshGPUHandle m_Mesh;
 };
 };  // namespace mite
 

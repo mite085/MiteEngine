@@ -2,15 +2,13 @@
 
 namespace mite {
 // ------------------------ 构造函数/析构函数 ------------------------
-OpenGLDevice::OpenGLDevice()
+OpenGLDevice::OpenGLDevice() : IRenderDevice()
 {  
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Device");
   m_Logger->trace("Created OpenGL Device");
 
-  // 订阅事件
-  m_EventSubscriptions.Subscribe<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded));
-  m_EventSubscriptions.Subscribe<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded));
+
 }
 
 OpenGLDevice::~OpenGLDevice()
@@ -148,6 +146,11 @@ MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshSourceData &subMesh)
 {
   MeshGPUHandle handle;
   GLuint VBO, EBO, VAO;
+
+  // TODO: 
+  // 为了减少GPU内存碎片，应当为Model创建统一的VAO内存，
+  // 各个MeshGPUHandle通过存放Model的VAO和各自的Offset，
+  // 在DrawIndexed函数内通过Offset索引进行绘制。
 
   // 1. 创建VAO
   glGenVertexArrays(1, &VAO);
@@ -333,6 +336,13 @@ void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e) {
   rendererData.generateMipmaps = true;
 
   textureAsset->handle = CreateTexture(rendererData);
+}
+
+void OpenGLDevice::OnMeshDrawed(MeshDrawEvent &e) {
+  MeshGPUHandle handle = e.GetHandle();
+
+  BindMesh(handle);
+  DrawIndexed(handle.indexCount, 0);  // 从索引0开始绘制（由于当前Mesh的VAO创建是独立的，所以Model的每个子Mesh都是从0开始）
 }
 
 GLenum OpenGLDevice::ConvertWrapMode(TextureWrapMode mode) const
