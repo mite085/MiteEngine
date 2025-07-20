@@ -4,6 +4,8 @@
 #include "handle_types.h"
 #include "model_loader.h"
 #include "texture_loader.h"
+#include "model.h"
+#include "mesh.h"
 
 namespace mite {
 
@@ -44,16 +46,17 @@ class IRenderDevice {
   static IRenderDevice &Current();
   static void SetCurrent(std::unique_ptr<IRenderDevice> device);
 
- private:
+ protected:
   // 私有构造函数
   IRenderDevice();
 
   // ---- 事件响应函数 ----
   virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
   virtual void OnTextureLoaded(TextureLoadEvent &e) = 0;
-  virtual void OnModelDrawed(ModelDrawEvent &e) = 0;
   virtual void OnMeshDrawed(MeshDrawEvent &e) = 0;
 
+  // 订阅事件集合
+  SubscriptionGroup m_EventSubscriptions;
 };
 };  // namespace mite
 

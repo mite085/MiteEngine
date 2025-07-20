@@ -32,4 +32,10 @@ void IRenderDevice::SetCurrent(std::unique_ptr<IRenderDevice> device)
   std::lock_guard<std::mutex> lock(GetDeviceMutex());
   GetCurrentDevice() = std::move(device);
 }
+IRenderDevice::IRenderDevice() {
+  // ¶©ÔÄÊÂ¼þ
+  m_EventSubscriptions.Subscribe<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded));
+  m_EventSubscriptions.Subscribe<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded)); 
+  m_EventSubscriptions.Subscribe<MeshDrawEvent>(BIND_DISPATCH_FN(OnMeshDrawed));
+}
 };
