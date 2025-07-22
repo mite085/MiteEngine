@@ -9,17 +9,10 @@ namespace mite {
  * 职责：
  * - 管理模型所有子网格的生命周期
  * - 提供层级化绘制接口
- * 
- * TODO: Draw和DrawSubMesh修改为
- * 向RenderCommand发送Submit命令
  */
 class Model {
  public:
   explicit Model(const ModelGPUHandle &handle);
-
-  // TODO: Draw操作全权交付给渲染队列进行，此处不应当持有Draw方法。
-  void Draw() const;
-  void DrawSubMesh(size_t index) const;
 
   const size_t GetSubMeshCount() const
   {

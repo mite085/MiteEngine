@@ -36,20 +36,20 @@ void OpenGLRenderer::EndFrame()
   // 注意：不包含交换缓冲区的操作，由窗口系统负责
 }
 
-void OpenGLRenderer::DrawModel(const Model &model, const glm::mat4 &transform)
-{
-  // TODO: 绑定Shader/Uniforms (伪代码)
-  // shader_->SetMat4("u_model", transform);
-
-  // 绘制所有子网格
-  for (size_t i = 0; i < model.GetSubMeshCount(); ++i) {
-    // TODO: 绑定材质（关联的纹理等）
-    // BindMaterial(modelId, i);
-
-    // 绘制子网格
-    model.DrawSubMesh(i);
-  }
-}
+//void OpenGLRenderer::DrawModel(const Model &model, const glm::mat4 &transform)
+//{
+//  // TODO: 绑定Shader/Uniforms (伪代码)
+//  // shader_->SetMat4("u_model", transform);
+//
+//  // 绘制所有子网格
+//  for (size_t i = 0; i < model.GetSubMeshCount(); ++i) {
+//    // TODO: 绑定材质（关联的纹理等）
+//    // BindMaterial(modelId, i);
+//
+//    // 绘制子网格
+//    model.DrawSubMesh(i);
+//  }
+//}
 void OpenGLRenderer::RenderScene(const std::vector<RenderableEntity> &renderQueue)
 {  
   // 1. 遍历渲染队列

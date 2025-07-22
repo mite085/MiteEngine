@@ -15,8 +15,6 @@ class Mesh {
  public:
   Mesh(const MeshGPUHandle &handle);
 
-  // TODO: Draw操作全权交付给渲染队列进行，此处不应当持有Draw方法。
-  void Draw() const;
   uint32_t GetIndexCount() const
   {
     return handle_.indexCount;
@@ -30,29 +28,6 @@ class Mesh {
   MeshGPUHandle handle_;
 };
 
-/**
- * 模型绘制事件
- * 职责：委托RendererDevice绘制Mesh
- */
-class MeshDrawEvent : public Event {
- public:
-  MeshDrawEvent(MeshGPUHandle mesh) : m_Mesh(mesh) {}
-
-  MeshGPUHandle GetHandle()
-  {
-    return m_Mesh;
-  }
-
-  EVENT_CLASS_TYPE(SCENE_LOADED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new MeshDrawEvent(m_Mesh);
-  }
-
- private:
-  MeshGPUHandle m_Mesh;
-};
 };  // namespace mite
 
 #endif

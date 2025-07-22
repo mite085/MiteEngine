@@ -10,17 +10,17 @@ Model::Model(const ModelGPUHandle &handle)
   }
 }
 
-void Model::Draw() const
-{
-  for (const auto &subMesh : subMeshes_) {
-    subMesh->Draw();
-  }
-}
-
-void Model::DrawSubMesh(size_t index) const
-{
-  if (index < subMeshes_.size()) {
-    subMeshes_[index]->Draw();
-  }
-}
+//void Model::Draw() const
+//{
+//  for (const auto &subMesh : subMeshes_) {
+//    subMesh->Draw();
+//  }
+//}
+//
+//void Model::DrawSubMesh(size_t index) const
+//{
+//  if (index < subMeshes_.size()) {
+//    subMeshes_[index]->Draw();
+//  }
+//}
 };
