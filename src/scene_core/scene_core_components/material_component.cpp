@@ -1,24 +1,35 @@
 #include "material_component.h"
 
 namespace mite {
-MaterialComponent::MaterialComponent() : ComponentTraits() {}
-
-MaterialComponent::MaterialComponent(std::shared_ptr<Material> material)
-    : ComponentTraits(), m_Material(material ? material : std::make_shared<Material>())
+MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> material)
+    : ComponentTraits(), m_Material(std::move(material))
 {
 }
 
 // 材质基础操作 ========================================
-std::shared_ptr<Material> MaterialComponent::GetMaterial() const
+std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterial() const
 {
   return m_Material;
 }
 
-void MaterialComponent::SetMaterial(std::shared_ptr<Material> material)
+void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
 {
   if (m_Material != material) {
-    m_Material = material ? material : std::make_shared<Material>();
+    m_Material = material;
     EventBus::Get().Post(MaterialChangedEvent(GetOwnerEntity(), *this));
+    MarkDirty();
+  }
+}
+
+void MaterialComponent::SetMaterialFromTemplate(const std::string &templateName)
+{
+  try {
+    auto newMaterial = MaterialSystem::Get().CreateInstance(templateName);
+    SetMaterial(newMaterial);
+  }
+  catch (const std::exception &e) {
+    LOG_ERROR("Failed to create material from template '{}': {}", templateName, e.what());
+    throw;
   }
 }
 
@@ -33,108 +44,32 @@ std::shared_ptr<Shader> MaterialComponent::GetShader() const
   return m_Material ? m_Material->GetShader() : nullptr;
 }
 
-void MaterialComponent::SetShader(std::shared_ptr<Shader> shader)
-{
-  if (m_Material && m_Material->GetShader() != shader) {
-    m_Material->SetShader(shader);
-    EventBus::Get().Post(ShaderChangedEvent(GetOwnerEntity(), *this));
-  }
-}
-
 // 材质参数控制 ========================================
-void MaterialComponent::SetBaseColor(const glm::vec4 &color)
+
+void MaterialComponent::SetFloatParam(const std::string &name, float value)
 {
-  if (m_Material) {
-    m_Material->SetBaseColor(color);
+  if (!m_Material) {
+    LOG_WARN("Attempt to set param on null material");
+    return;
   }
+  m_Material->SetFloat(name, value);
+  MarkDirty();
 }
 
-glm::vec4 MaterialComponent::GetBaseColor() const
+void MaterialComponent::SetColorParam(const std::string &name, const glm::vec3 &color)
 {
-  return m_Material ? m_Material->GetBaseColor() : glm::vec4(1.0f);
+  if (!m_Material)
+    return;
+  m_Material->SetVector3(name, color);
+  MarkDirty();
 }
 
-void MaterialComponent::SetMetallic(float metallic)
+void MaterialComponent::SetTextureParam(const std::string &name, std::shared_ptr<Texture> texture)
 {
-  if (m_Material) {
-    m_Material->SetMetallic(metallic);
-  }
-}
-
-float MaterialComponent::GetMetallic() const
-{
-  return m_Material ? m_Material->GetMetallic() : 0.0f;
-}
-
-void MaterialComponent::SetRoughness(float roughness)
-{
-  if (m_Material) {
-    m_Material->SetRoughness(roughness);
-  }
-}
-
-float MaterialComponent::GetRoughness() const
-{
-  return m_Material ? m_Material->GetRoughness() : 0.5f;
-}
-
-void MaterialComponent::SetEmissive(const glm::vec3 &emissive)
-{
-  if (m_Material) {
-    m_Material->SetEmissive(emissive);
-  }
-}
-
-glm::vec3 MaterialComponent::GetEmissive() const
-{
-  return m_Material ? m_Material->GetEmissive() : glm::vec3(0.0f);
-}
-
-// 纹理控制 ============================================
-void MaterialComponent::SetBaseColorTexture(std::shared_ptr<FakeTexture> texture)
-{
-  if (m_Material) {
-    m_Material->SetBaseColorTexture(texture);
-  }
-}
-
-void MaterialComponent::SetNormalTexture(std::shared_ptr<FakeTexture> texture)
-{
-  if (m_Material) {
-    m_Material->SetNormalTexture(texture);
-  }
-}
-
-void MaterialComponent::SetMetallicRoughnessTexture(std::shared_ptr<FakeTexture> texture)
-{
-  if (m_Material) {
-    m_Material->SetMetallicRoughnessTexture(texture);
-  }
-}
-
-// 渲染状态控制 ========================================
-void MaterialComponent::SetBlendMode(BlendMode blendMode)
-{
-  if (m_Material) {
-    m_Material->SetBlendMode(blendMode);
-  }
-}
-
-BlendMode MaterialComponent::GetBlendMode() const
-{
-  return m_Material ? m_Material->GetBlendMode() : BlendMode::Opaque;
-}
-
-void MaterialComponent::SetDoubleSided(bool doubleSided)
-{
-  if (m_Material) {
-    m_Material->SetDoubleSided(doubleSided);
-  }
-}
-
-bool MaterialComponent::IsDoubleSided() const
-{
-  return m_Material ? m_Material->IsDoubleSided() : false;
+  if (!m_Material)
+    return;
+  m_Material->SetTexture(name, std::move(texture));
+  MarkDirty();
 }
 
 // 组件接口实现 ========================================
@@ -163,26 +98,44 @@ bool MaterialComponent::Deserialize(std::istream &input)
 }
 
 // Material组件系统实现 ==================================
-void MaterialSystem::Initialize(SceneRegistry &registry)
+void MaterialComponentSystem::Initialize(SceneRegistry &registry)
 {
   DirtyComponentSystem<MaterialComponent>::Initialize(registry);
   // 初始化材质系统资源
 }
 
-void MaterialSystem::Shutdown(SceneRegistry &registry)
+void MaterialComponentSystem::Shutdown(SceneRegistry &registry)
 {
   DirtyComponentSystem<MaterialComponent>::Shutdown(registry);
   // 清理材质系统资源
 }
 
-void MaterialSystem::Update(float deltaTime, SceneRegistry &registry)
+void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
 {
   // 处理材质参数动画等每帧更新
   auto view = registry.GetEntitiesWith<MaterialComponent>();
 
+  // 按材质分组以减少状态切换
+  std::unordered_map<MaterialInstance *, std::vector<Entity>> materialGroups;
   for (auto entity : view) {
-    auto &material = registry.GetComponent<MaterialComponent>(entity);
-    // 可以在这里处理材质动画等逻辑
+    auto &matComp = registry.GetComponent<MaterialComponent>(entity);
+    if (matComp.HasMaterial()) {
+      materialGroups[matComp.GetMaterial().get()].push_back(entity);
+    }
   }
-}
+
+  // 批量提交到渲染器
+  for (const auto &[material, entities] : materialGroups) {
+    // 绑定材质状态
+    material->Apply();
+
+    // 提交关联实体
+    for (Entity entity : entities) {
+      // 示例：基于实体位置，修改u_Model材质参数，（可用于实现不同海拔高度下不同色彩表现）
+      //if (registry.HasComponent<TransformComponent>(entity)) {
+      //  const auto &transform = registry.GetComponent<TransformComponent>(entity);
+      //  material->GetShader()->SetMat4("u_Model", transform.GetWorldMatrix(registry));
+      //}
+    }
+  }
 };

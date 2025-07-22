@@ -76,4 +76,5 @@ target_link_libraries(${SCENE_CORE_LIB_NAME}
     MiteEngine_Asset
     MiteEngine_Core
     MiteEngine_Data
+    MiteEngine_Material
 )
