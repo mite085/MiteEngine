@@ -88,7 +88,7 @@ void MaterialInstance::SetTextureArray(const std::string &name,
 }
 
 // ===================== 核心Apply方法 =====================
-void MaterialInstance::Apply(Shader *overrideShader) const
+void MaterialInstance::Apply(TextureBindFunc textureBindFunc, Shader *overrideShader) const
 {
   Shader *targetShader = overrideShader ? overrideShader : m_Shader.get();
   if (!targetShader) {
@@ -146,7 +146,8 @@ void MaterialInstance::Apply(Shader *overrideShader) const
   // ---- 绑定纹理（纹理单独处理部分） ----
   uint32_t textureSlot = 0;
   for (const auto &[name, texture] : m_Textures) {
-    texture->Bind(textureSlot);
+    // 使用传入的纹理绑定函数进行纹理绑定
+    textureBindFunc(texture->GetHandle(), textureSlot);
     targetShader->SetInt(name, static_cast<int>(textureSlot));
     textureSlot++;
   }
@@ -155,7 +156,8 @@ void MaterialInstance::Apply(Shader *overrideShader) const
   for (const auto &[name, textures] : m_TextureArrays) {
     std::vector<int> slots;
     for (const auto &texture : textures) {
-      texture->Bind(textureSlot);
+      // 使用传入的纹理绑定函数进行纹理绑定
+      textureBindFunc(texture->GetHandle(), textureSlot);
       slots.push_back(static_cast<int>(textureSlot));
       textureSlot++;
     }

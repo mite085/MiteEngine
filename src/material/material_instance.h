@@ -6,6 +6,10 @@
 #include "material_param_variant.h"
 
 namespace mite {
+
+// 定义纹理绑定函数类型
+using TextureBindFunc = std::function<void(TextureGPUHandle, uint32_t)>;
+
 /**
  * @brief 材质实例（运行时绑定具体Shader和参数）
  * @note 职责：
@@ -39,9 +43,10 @@ class MaterialInstance {
   // ---- 状态控制 ----
   /**
    * @brief 应用材质到渲染管线（绑定Shader+上传Uniforms+绑定纹理）
+   * @param textureBindFunc 纹理绑定函数（与Render device相关）
    * @param overrideShader 可选覆盖Shader（用于特殊渲染效果）
    */
-  void Apply(Shader *overrideShader = nullptr) const;
+  void Apply(TextureBindFunc textureBindFunc, Shader *overrideShader = nullptr) const;
 
   // ---- 属性访问 ----
   std::shared_ptr<Shader> GetShader() const
