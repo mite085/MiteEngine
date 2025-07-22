@@ -257,8 +257,8 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
 
 // Transform组件系统--用于批量处理脏数据 =====================================================
 
-class TransformSystem : public DirtyComponentSystem<TransformComponent> {
-  DECLARE_COMPONENT_SYSTEM(TransformSystem)
+class TransformComponentSystem : public DirtyComponentSystem<TransformComponent> {
+  DECLARE_COMPONENT_SYSTEM(TransformComponentSystem)
  
  private:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;

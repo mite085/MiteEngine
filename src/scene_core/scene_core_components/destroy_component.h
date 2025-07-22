@@ -45,8 +45,8 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
 };
 
 // Destroy组件系统 =====================================================
-class DestroySystem : public DirtyComponentSystem<DestroyComponent> {
-  DECLARE_COMPONENT_SYSTEM(DestroySystem)
+class DestroyComponentSystem : public DirtyComponentSystem<DestroyComponent> {
+  DECLARE_COMPONENT_SYSTEM(DestroyComponentSystem)
  public:
 
   /**

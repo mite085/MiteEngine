@@ -119,13 +119,13 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
   Entity m_Parent;                 // 父实体句柄
   std::vector<Entity> m_Children;  // 子实体列表
 
-  friend class HierarchySystem;
+  friend class HierarchyComponentSystem;
 };
 
 // Hierarchy组件系统--用于批量处理脏数据 =====================================================
 
-class HierarchySystem : public DirtyComponentSystem<HierarchyComponent> {
-  DECLARE_COMPONENT_SYSTEM(HierarchySystem)
+class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent> {
+  DECLARE_COMPONENT_SYSTEM(HierarchyComponentSystem)
  public:
   void Initialize(SceneRegistry &registry) override;
   void Shutdown(SceneRegistry &registry) override;

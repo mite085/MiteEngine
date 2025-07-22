@@ -141,19 +141,19 @@ bool VisibilityComponent::Deserialize(std::istream &input)
 }
 
 // Visibility组件系统实现 ==================================
-void VisibilitySystem::Initialize(SceneRegistry &registry)
+void VisibilityComponentSystem::Initialize(SceneRegistry &registry)
 {
   DirtyComponentSystem<VisibilityComponent>::Initialize(registry);
   // 初始化系统资源
 }
 
-void VisibilitySystem::Shutdown(SceneRegistry &registry)
+void VisibilityComponentSystem::Shutdown(SceneRegistry &registry)
 {
   DirtyComponentSystem<VisibilityComponent>::Shutdown(registry);
   // 清理系统资源
 }
 
-void VisibilitySystem::Update(float deltaTime, SceneRegistry &registry)
+void VisibilityComponentSystem::Update(float deltaTime, SceneRegistry &registry)
 {
   // TODO: 调试绘制
   //if (DebugDraw::IsEnabled()) {
@@ -161,7 +161,7 @@ void VisibilitySystem::Update(float deltaTime, SceneRegistry &registry)
   //}
 }
 
-void VisibilitySystem::PerformFrustumCulling(const Frustum &frustum, SceneRegistry &registry)
+void VisibilityComponentSystem::PerformFrustumCulling(const Frustum &frustum, SceneRegistry &registry)
 {
   auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
 
@@ -190,7 +190,7 @@ void VisibilitySystem::PerformFrustumCulling(const Frustum &frustum, SceneRegist
   }
 }
 
-void VisibilitySystem::PerformDistanceCulling(const glm::vec3 &cameraPosition,
+void VisibilityComponentSystem::PerformDistanceCulling(const glm::vec3 &cameraPosition,
                                               SceneRegistry &registry)
 {
   auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
@@ -211,7 +211,7 @@ void VisibilitySystem::PerformDistanceCulling(const glm::vec3 &cameraPosition,
   }
 }
 
-void VisibilitySystem::DebugDrawBounds(SceneRegistry &registry)
+void VisibilityComponentSystem::DebugDrawBounds(SceneRegistry &registry)
 {
   auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
 

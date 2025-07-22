@@ -178,12 +178,12 @@ class VisibilityComponent
   float m_MaxVisibleDistance = 0.0f;  // 最大可见距离(0=无限)
   uint32_t m_LayerMask = 0xFFFFFFFF;  // 层级可见性掩码
 
-  friend class VisibilitySystem;
+  friend class VisibilityComponentSystem;
 };
 
 // Visibility组件系统 =========================================
-class VisibilitySystem : public DirtyComponentSystem<VisibilityComponent> {
-  DECLARE_COMPONENT_SYSTEM(VisibilitySystem)
+class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponent> {
+  DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
  public:
   void Initialize(SceneRegistry &registry) override;
   void Shutdown(SceneRegistry &registry) override;

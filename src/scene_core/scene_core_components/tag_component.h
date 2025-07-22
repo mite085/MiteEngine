@@ -92,8 +92,8 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
   void UpdateSubTagsCache() const;
 };
 // Tag组件系统 =====================================================
-class TagSystem : public DirtyComponentSystem<TagComponent> {
-  DECLARE_COMPONENT_SYSTEM(TagSystem)
+class TagComponentSystem : public DirtyComponentSystem<TagComponent> {
+  DECLARE_COMPONENT_SYSTEM(TagComponentSystem)
 };
 
 };  // namespace mite

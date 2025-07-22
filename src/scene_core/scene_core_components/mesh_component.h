@@ -3,9 +3,9 @@
 
 #include "scene_core/component_system.h"
 #include "data/mesh.h"
+#include "material_instance.h"
 
 namespace mite {
-class Material;
 /**
  * @brief 网格组件，管理实体的网格渲染数据
  *
@@ -112,8 +112,8 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
 };
 
 // Mesh组件系统 =====================================================
-class MeshSystem : public DirtyComponentSystem<MeshComponent> {
-  DECLARE_COMPONENT_SYSTEM(MeshSystem)
+class MeshComponentSystem : public DirtyComponentSystem<MeshComponent> {
+  DECLARE_COMPONENT_SYSTEM(MeshComponentSystem)
  public:
   void Initialize(SceneRegistry &registry) override;
   void Shutdown(SceneRegistry &registry) override;

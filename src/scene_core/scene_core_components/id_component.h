@@ -89,8 +89,8 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   std::string m_UUIDString;  // 字符串缓存（优化频繁访问）
 };
 // ID组件系统 =====================================================
-class IDSystem : public DirtyComponentSystem<IDComponent> {
-  DECLARE_COMPONENT_SYSTEM(IDSystem)
+class IDComponentSystem : public DirtyComponentSystem<IDComponent> {
+  DECLARE_COMPONENT_SYSTEM(IDComponentSystem)
 };
 
 

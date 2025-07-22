@@ -39,14 +39,14 @@ void Scene::InitSystems()
 void Scene::InitComponentSystems()
 {  
   // 逐个注册组件系统
-  m_SystemManager.RegisterSystem<DestroySystem>();
-  m_SystemManager.RegisterSystem<IDSystem>();
-  m_SystemManager.RegisterSystem<HierarchySystem>();
-  m_SystemManager.RegisterSystem<MaterialSystem>();
-  m_SystemManager.RegisterSystem<MeshSystem>();
-  m_SystemManager.RegisterSystem<TagSystem>();
-  m_SystemManager.RegisterSystem<TransformSystem>();
-  m_SystemManager.RegisterSystem<VisibilitySystem>();
+  m_SystemManager.RegisterSystem<DestroyComponentSystem>();
+  m_SystemManager.RegisterSystem<IDComponentSystem>();
+  m_SystemManager.RegisterSystem<HierarchyComponentSystem>();
+  m_SystemManager.RegisterSystem<MaterialComponentSystem>();
+  m_SystemManager.RegisterSystem<MeshComponentSystem>();
+  m_SystemManager.RegisterSystem<TagComponentSystem>();
+  m_SystemManager.RegisterSystem<TransformComponentSystem>();
+  m_SystemManager.RegisterSystem<VisibilityComponentSystem>();
 
 
   // 初始化所有组件系统
@@ -58,14 +58,14 @@ void Scene::ShutDownComponentSystems() {
   m_SystemManager.ShutdownAll();
 
   // 逐个注销组件系统
-  m_SystemManager.UnregisterSystem<DestroySystem>();
-  m_SystemManager.UnregisterSystem<IDSystem>();
-  m_SystemManager.UnregisterSystem<HierarchySystem>();
-  m_SystemManager.UnregisterSystem<MaterialSystem>();
-  m_SystemManager.UnregisterSystem<MeshSystem>();
-  m_SystemManager.UnregisterSystem<TagSystem>();
-  m_SystemManager.UnregisterSystem<TransformSystem>();
-  m_SystemManager.UnregisterSystem<VisibilitySystem>();
+  m_SystemManager.UnregisterSystem<DestroyComponentSystem>();
+  m_SystemManager.UnregisterSystem<IDComponentSystem>();
+  m_SystemManager.UnregisterSystem<HierarchyComponentSystem>();
+  m_SystemManager.UnregisterSystem<MaterialComponentSystem>();
+  m_SystemManager.UnregisterSystem<MeshComponentSystem>();
+  m_SystemManager.UnregisterSystem<TagComponentSystem>();
+  m_SystemManager.UnregisterSystem<TransformComponentSystem>();
+  m_SystemManager.UnregisterSystem<VisibilityComponentSystem>();
 }
 
 void Scene::OnUpdate(float timestep)

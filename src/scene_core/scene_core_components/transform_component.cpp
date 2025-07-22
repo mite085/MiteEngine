@@ -445,7 +445,7 @@ void TransformComponent::UpdateWorldMatrix(SceneRegistry &reg) const
   dirtyFlags &= ~(LOCAL_DIRTY | WORLD_DIRTY);
 }
 
-void TransformSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
+void TransformComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
   // 获取所有对象
   auto view = registry.GetEntitiesWith<TransformComponent, HierarchyComponent>();

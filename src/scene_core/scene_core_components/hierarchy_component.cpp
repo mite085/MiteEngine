@@ -75,17 +75,17 @@ void HierarchyComponent::SetParent(Entity parent)
   m_DepthCache = 0;  // 使深度缓存失效
 }
 
-void HierarchySystem::Initialize(SceneRegistry &registry)
+void HierarchyComponentSystem::Initialize(SceneRegistry &registry)
 {
   DirtyComponentSystem<HierarchyComponent>::Initialize(registry);
 }
 
-void HierarchySystem::Shutdown(SceneRegistry &registry)
+void HierarchyComponentSystem::Shutdown(SceneRegistry &registry)
 {
   DirtyComponentSystem<HierarchyComponent>::Shutdown(registry);
 }
 
-void HierarchySystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
+void HierarchyComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
   // 处理所有脏组件
   for (auto *comp : m_DirtyComponents) {
@@ -105,7 +105,7 @@ void HierarchySystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &reg
   m_DirtyComponents.clear();
 }
 
-void HierarchySystem::OnComponentUpdated(ComponentChangedEvent<HierarchyComponent> &e)
+void HierarchyComponentSystem::OnComponentUpdated(ComponentChangedEvent<HierarchyComponent> &e)
 {
   auto &hierarchy = e.GetComponent();
   Entity entity = e.GetEntity();
@@ -149,7 +149,7 @@ void HierarchySystem::OnComponentUpdated(ComponentChangedEvent<HierarchyComponen
   hierarchy.MarkDirty();
 }
 
-void HierarchySystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) {
+void HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) {
   auto &oldComponent = e.GetComponent();
   Unregister(&oldComponent);
 
@@ -180,7 +180,7 @@ void HierarchySystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponen
   }
 }
 
-bool HierarchySystem::ValidateHierarchy(Entity entity, Entity newParent, SceneRegistry &registry)
+bool HierarchyComponentSystem::ValidateHierarchy(Entity entity, Entity newParent, SceneRegistry &registry)
 {
   // 不允许设置自己为自己的父节点
   if (entity == newParent) {
@@ -206,7 +206,7 @@ bool HierarchySystem::ValidateHierarchy(Entity entity, Entity newParent, SceneRe
   return true;
 }
 
-void HierarchySystem::UpdateChildrenDepthCache(Entity entity, SceneRegistry &registry)
+void HierarchyComponentSystem::UpdateChildrenDepthCache(Entity entity, SceneRegistry &registry)
 {
   if (!registry.IsValid(entity) || !registry.HasComponent<HierarchyComponent>(entity)) {
     return;

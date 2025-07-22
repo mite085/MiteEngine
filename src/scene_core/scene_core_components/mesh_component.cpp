@@ -87,19 +87,19 @@ bool MeshComponent::Deserialize(std::istream &input)
 }
 
 // Mesh组件系统实现 ======================================
-void MeshSystem::Initialize(SceneRegistry &registry)
+void MeshComponentSystem::Initialize(SceneRegistry &registry)
 {
   DirtyComponentSystem<MeshComponent>::Initialize(registry);
   // 初始化系统资源
 }
 
-void MeshSystem::Shutdown(SceneRegistry &registry)
+void MeshComponentSystem::Shutdown(SceneRegistry &registry)
 {
   DirtyComponentSystem<MeshComponent>::Shutdown(registry);
   // 清理系统资源
 }
 
-void MeshSystem::Update(float deltaTime, SceneRegistry &registry)
+void MeshComponentSystem::Update(float deltaTime, SceneRegistry &registry)
 {
   // 处理每帧更新，如LOD计算等
   auto view = registry.GetEntitiesWith<MeshComponent, TransformComponent>();
