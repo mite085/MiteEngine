@@ -7,8 +7,6 @@ OpenGLDevice::OpenGLDevice() : IRenderDevice()
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Device");
   m_Logger->trace("Created OpenGL Device");
-
-
 }
 
 OpenGLDevice::~OpenGLDevice()

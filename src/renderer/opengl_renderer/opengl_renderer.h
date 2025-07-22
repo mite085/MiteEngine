@@ -14,6 +14,8 @@ namespace mite {
  * 职责：
  * 1. 实现基类定义的渲染接口
  * 2. 管理OpenGL专属状态（如VAO、Shader Program）
+ * 
+ * TODO: 启用RenderCommand进行渲染
  */
 class OpenGLRenderer : public Renderer {
  public:
@@ -25,9 +27,6 @@ class OpenGLRenderer : public Renderer {
   void BeginFrame() override;
   void EndFrame() override;
 
-  // TODO: Draw操作全权交付给渲染队列进行，此处不应当单独执行Draw方法。
-  void DrawModel(const Model &model, const glm::mat4 &transform) override;
-
   /**
    * 渲染场景的核心接口
    * @param renderQueue 从SceneView获取的可渲染实体列表
@@ -36,8 +35,9 @@ class OpenGLRenderer : public Renderer {
 
  private:
   // ---- OpenGL专属状态 ----
-  GLuint defaultFBO_ = 0;
-  GLuint currentShader_ = 0;
+  // TODO: 目前未实现，可用于FBO管理
+  //GLuint defaultFBO_ = 0;
+  //GLuint currentShader_ = 0;
 };
 }  // namespace mite
 

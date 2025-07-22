@@ -12,6 +12,8 @@ namespace mite {
  * 1. 提供线程安全的渲染命令提交接口
  * 2. 管理渲染状态（深度测试/混合等）
  * 3. 执行实际渲染操作（在渲染线程调用）
+ * 
+ * TODO: 目前Renderer未启用RenderCommand。
  */
 class RenderCommand {
  public:

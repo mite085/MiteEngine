@@ -21,7 +21,6 @@ class Renderer {
   // ---- 渲染指令 ----
   virtual void BeginFrame() = 0;
   virtual void EndFrame() = 0;
-  virtual void DrawModel(const Model &model, const glm::mat4 &transform) = 0;
 
   /**
    * 渲染场景的核心接口

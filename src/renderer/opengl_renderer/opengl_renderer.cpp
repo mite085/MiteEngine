@@ -9,9 +9,10 @@ OpenGLRenderer::~OpenGLRenderer() {}
 void OpenGLRenderer::Initialize()
 {
   // 初始化OpenGL默认状态
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  defaultFBO_ = 0;  // 默认帧缓冲
+  glEnable(GL_DEPTH_TEST);  // 深度测试
+  glEnable(GL_CULL_FACE);   // 面剔除
+  glCullFace(GL_BACK);      // 剔除背面
+  glFrontFace(GL_CCW);      // 逆时针为正面
 }
 
 // ===================== 渲染指令 =====================
@@ -19,7 +20,7 @@ void OpenGLRenderer::BeginFrame()
 {
   glClearColor(clearColor_.r, clearColor_.g, clearColor_.b, clearColor_.a);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glViewport(0, 0, viewportSize_.x, viewportSize_.y);
+  glViewport(0, 0, viewportSize_.x, viewportSize_.y); // TODO: 无需每帧执行glViewport
 }
 
 void OpenGLRenderer::EndFrame()
@@ -36,43 +37,46 @@ void OpenGLRenderer::EndFrame()
   // 注意：不包含交换缓冲区的操作，由窗口系统负责
 }
 
-//void OpenGLRenderer::DrawModel(const Model &model, const glm::mat4 &transform)
-//{
-//  // TODO: 绑定Shader/Uniforms (伪代码)
-//  // shader_->SetMat4("u_model", transform);
-//
-//  // 绘制所有子网格
-//  for (size_t i = 0; i < model.GetSubMeshCount(); ++i) {
-//    // TODO: 绑定材质（关联的纹理等）
-//    // BindMaterial(modelId, i);
-//
-//    // 绘制子网格
-//    model.DrawSubMesh(i);
-//  }
-//}
 void OpenGLRenderer::RenderScene(const std::vector<RenderableEntity> &renderQueue)
-{  
-  // 1. 遍历渲染队列
-  for (const auto &entity : renderQueue) {
-    // 2. TODO: 从Asset和Material模块获取网格和材质资源
-    //auto mesh = AssetManager::Get().GetMesh(entity.meshID);
-    //auto material = MaterialSystem::GetMaterial(entity.materialID);
+{
+  // 定义纹理绑定lambda函数
+  auto bindTextureFunc = [](TextureGPUHandle handle, uint32_t slot) {
+    IRenderDevice::Current().BindTexture(handle, slot);
+  };
 
-    //if (!mesh || !material) {
-    //  continue;  // 资源加载失败时跳过
-    //}
+  // 遍历渲染队列
+  for (const auto &entity : renderQueue) {  
+    // 0. 检查渲染实体是否有效
+    if (!entity.materialInstance || entity.meshHandle.vertexArray == 0) {
+      LOG_WARN("Invalid renderable entity - missing material or mesh");
+      continue;
+    }
 
-    //// 3. 绑定材质（Shader、Uniform、Texture等）
-    //material->Bind();
-    //material->SetUniform("u_ModelMatrix", entity.worldTransform);
+    // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
+    entity.materialInstance->Apply(bindTextureFunc);
 
-    //// 4. 绑定网格数据
-    //glBindVertexArray(mesh->VAO);
-    //glDrawElements(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, nullptr);
+    // 2. 设置模型矩阵（从世界变换获取）
+    auto shader = entity.materialInstance->GetShader();
+    if (shader) {
+      shader->SetMat4("u_Model", entity.worldTransform);
+    }
 
-    //// 5. 解绑（可选，减少状态切换）
-    //glBindVertexArray(0);
+    // 3. 绑定网格VAO
+    MeshGPUHandle handle = entity.meshHandle;
+    IRenderDevice::Current().BindMesh(handle);
+
+    // 4. 绘制网格
+    IRenderDevice::Current().DrawIndexed(handle.indexCount, 0);
+
+    // 5. 解绑（可选，减少状态切换）
+    glBindVertexArray(0);
   }
-}
 
+  // 检查OpenGL错误
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    LOG_ERROR("OpenGL error after rendering: {}", static_cast<int>(err));
+  }
+
+}
 }  // namespace mite

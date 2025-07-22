@@ -53,11 +53,6 @@ class IRenderDevice {
   // ---- 事件响应函数 ----
   virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
   virtual void OnTextureLoaded(TextureLoadEvent &e) = 0;
-  virtual void OnMeshDraw(MeshDrawEvent &e) = 0;
-  virtual void OnTextureBind(TextureBindEvent &e) = 0;
-  virtual void OnTextureSetWrapMode(TextureWrapModeEvent &e) = 0;
-  virtual void OnTextureSetFilterMode(TextureFilterModeEvent &e) = 0;
-  virtual void OnTextureGenerateMipmaps(TextureGenerateMipmapsEvent &e) = 0;
 
   // 订阅事件集合
   SubscriptionGroup m_EventSubscriptions;

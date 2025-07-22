@@ -1,6 +1,7 @@
 #include "render_command.h"
 #include "glad.h"
 #include "glfw/glfw3.h"  // 必须在GLAD加载库之后
+#include "render_device.h"
 
 namespace mite {
 RenderCommand &RenderCommand::Get()
@@ -47,7 +48,9 @@ void RenderCommand::Submit(const std::shared_ptr<Shader> &shader,
   instance.m_CommandQueue.push({CommandType::DrawIndexed, [=]() {
                                   shader->Bind();
                                   shader->SetMat4("u_Model", transform);
-                                  mesh->Draw();
+                                  IRenderDevice::Current().BindMesh(mesh->GetHandle());
+                                  IRenderDevice::Current().DrawIndexed(
+                                      mesh->GetHandle().indexCount, 0);
                                 }});
 }
 

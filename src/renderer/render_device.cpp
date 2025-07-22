@@ -36,11 +36,5 @@ IRenderDevice::IRenderDevice()
   // ¶©ÔÄÊÂ¼þ
   m_EventSubscriptions.Subscribe<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded));
   m_EventSubscriptions.Subscribe<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded));
-  m_EventSubscriptions.Subscribe<MeshDrawEvent>(BIND_DISPATCH_FN(OnMeshDraw));
-  m_EventSubscriptions.Subscribe<TextureBindEvent>(BIND_DISPATCH_FN(OnTextureBind));
-  m_EventSubscriptions.Subscribe<TextureWrapModeEvent>(BIND_DISPATCH_FN(OnTextureSetWrapMode));
-  m_EventSubscriptions.Subscribe<TextureFilterModeEvent>(BIND_DISPATCH_FN(OnTextureSetFilterMode));
-  m_EventSubscriptions.Subscribe<TextureGenerateMipmapsEvent>(
-      BIND_DISPATCH_FN(OnTextureGenerateMipmaps));
 }
 };  // namespace mite

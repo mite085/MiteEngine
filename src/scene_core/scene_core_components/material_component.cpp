@@ -127,7 +127,7 @@ void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
   // 批量提交到渲染器
   for (const auto &[material, entities] : materialGroups) {
     // 绑定材质状态
-    material->Apply();
+    //material->Apply();
 
     // 提交关联实体
     for (Entity entity : entities) {
