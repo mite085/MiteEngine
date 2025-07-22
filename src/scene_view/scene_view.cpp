@@ -58,8 +58,8 @@ void SceneView::OnMaterialChanged(MaterialChangedEvent &event)
   auto it = m_EntityToIndexMap.find(event.GetEntity());
   if (it != m_EntityToIndexMap.end()) {
     // 更新现有渲染实体的材质引用
-    m_RenderQueue[it->second].materialID =
-        m_Registry.GetComponent<MaterialComponent>(event.GetEntity()).assetID;
+    m_RenderQueue[it->second].materialInstance =
+        m_Registry.GetComponent<MaterialComponent>(event.GetEntity()).GetMaterial();
   }
 }
 
@@ -75,8 +75,8 @@ void SceneView::AddToRenderQueue(Entity entity)
   renderable.entity = entity;
   renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
       m_Registry);
-  renderable.meshID = m_Registry.GetComponent<MeshComponent>(entity).assetID;
-  renderable.materialID = m_Registry.GetComponent<MaterialComponent>(entity).assetID;
+  renderable.meshHandle = m_Registry.GetComponent<MeshComponent>(entity).GetMesh()->GetHandle();
+  renderable.materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
 
   // 加入队列并记录索引
   m_EntityToIndexMap[entity] = m_RenderQueue.size();
@@ -103,14 +103,14 @@ void SceneView::RemoveFromRenderQueue(Entity entity)
 
 void SceneView::UpdateRenderableEntity(Entity entity)
 {
-  // 综合更新（供未来扩展使用）
   auto it = m_EntityToIndexMap.find(entity);
   if (it == m_EntityToIndexMap.end())
     return;
 
+  // 从队列中获取到eitity，进行综合更新（供未来扩展使用）
   RenderableEntity &renderable = m_RenderQueue[it->second];
   renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
       m_Registry);
-  renderable.materialID = m_Registry.GetComponent<MaterialComponent>(entity).assetID;
+  renderable.materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
 }
 }  // namespace mite

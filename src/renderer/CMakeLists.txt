@@ -39,6 +39,7 @@ target_link_libraries(${RENDERER_LIB_NAME}
     MiteEngine_Asset
     MiteEngine_Core
     MiteEngine_Data
+    MiteEngine_Material
     MiteEngine_Scene_Core
     MiteEngine_Scene_View
     MiteEngine_Window

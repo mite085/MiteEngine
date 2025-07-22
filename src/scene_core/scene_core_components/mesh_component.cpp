@@ -4,8 +4,8 @@
 namespace mite {
 MeshComponent::MeshComponent() : ComponentTraits() {}
 
-MeshComponent::MeshComponent(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material)
-    : ComponentTraits(), m_Mesh(mesh), m_Material(material)
+MeshComponent::MeshComponent(std::shared_ptr<Mesh> mesh)
+    : ComponentTraits(), m_Mesh(mesh)
 {
 }
 
@@ -101,21 +101,13 @@ void MeshComponentSystem::Shutdown(SceneRegistry &registry)
 
 void MeshComponentSystem::Update(float deltaTime, SceneRegistry &registry)
 {
-  // 处理每帧更新，如LOD计算等
   auto view = registry.GetEntitiesWith<MeshComponent, TransformComponent>();
 
   for (auto entity : view) {
     auto &mesh = registry.GetComponent<MeshComponent>(entity);
     auto &transform = registry.GetComponent<TransformComponent>(entity);
 
-    //if (visibillity.IsVisible()) {
-      // TODO: 提交渲染任务
-      //Renderer::Get().SubmitMesh(mesh.GetMesh(),
-      //                           mesh.GetMaterial(),
-      //                           transform.GetWorldMatrix(registry),
-      //                           mesh.CastsShadows(),
-      //                           mesh.ReceivesShadows());
-    //}
+    // TODO: 处理每帧更新，如LOD计算等
   }
 }
 };

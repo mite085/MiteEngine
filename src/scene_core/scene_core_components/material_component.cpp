@@ -132,10 +132,12 @@ void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
     // 提交关联实体
     for (Entity entity : entities) {
       // 示例：基于实体位置，修改u_Model材质参数，（可用于实现不同海拔高度下不同色彩表现）
-      //if (registry.HasComponent<TransformComponent>(entity)) {
+      // if (registry.HasComponent<TransformComponent>(entity)) {
       //  const auto &transform = registry.GetComponent<TransformComponent>(entity);
       //  material->GetShader()->SetMat4("u_Model", transform.GetWorldMatrix(registry));
       //}
     }
   }
-};
+}
+
+};  // namespace mite

@@ -26,5 +26,6 @@ target_link_libraries(${SCENE_VIEW_LIB_NAME}
     spdlog::spdlog
     MiteEngine_Core
     MiteEngine_Data
+    MiteEngine_Material
     MiteEngine_Scene_Core
 )

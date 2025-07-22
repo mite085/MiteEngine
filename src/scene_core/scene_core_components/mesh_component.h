@@ -3,7 +3,6 @@
 
 #include "scene_core/component_system.h"
 #include "data/mesh.h"
-#include "material_instance.h"
 
 namespace mite {
 /**
@@ -22,8 +21,7 @@ namespace mite {
  */
 class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::Render> {
  public:
-  // TODO: 为兼容最小RenderableEntity的ID，后续完善了基本逻辑后替换
-  uint32_t assetID = 0;
+
   /**
    * @brief 默认构造函数
    */
@@ -34,7 +32,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
    * @param mesh 网格数据
    * @param material 材质数据
    */
-  explicit MeshComponent(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material = nullptr);
+  explicit MeshComponent(std::shared_ptr<Mesh> mesh);
 
   ~MeshComponent() override = default;
 
@@ -103,7 +101,6 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
 
  private:
   std::shared_ptr<Mesh> m_Mesh;          // 网格数据
-  std::shared_ptr<Material> m_Material;  // 材质数据
 
   bool m_IsVisible = true;       // 可见性标志
   bool m_CastShadows = true;     // 是否投射阴影
