@@ -1,4 +1,4 @@
-#include "code.h"
+#include "ui_panel.h"
 
 namespace mite {
 
