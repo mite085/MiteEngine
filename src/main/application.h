@@ -8,8 +8,6 @@
 #include "scene_core/scene.h"
 #include "scene_view.h"
 #include "glfw_window/glfw_window.h"
-// TODO: 确保编译通过，仅include panel组件，后续重新整理include层级
-#include "property_panel_processor.h"
 
 namespace mite {
 

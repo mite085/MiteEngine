@@ -4,16 +4,43 @@ cmake_minimum_required(VERSION 3.10)
 set(UI_LIB_NAME MiteEngine_Ui)
 
 # 创建源代码组(筛选器)
-set(UI_SRCS
-    main_window.h
-    main_window.cpp
-    property_panel_processor.h
-    property_panel_processor.cpp
+set(UI_CORE_SRCS
+    ui_core/ui_module.h
+    ui_core/ui_panel.h
+    ui_core/ui_panel.cpp
+    ui_core/ui_system.h
+    ui_core/ui_system.cpp
 )
-source_group("UI" FILES ${UI_SRCS})
+source_group("ui_core" FILES ${UI_CORE_SRCS})
+
+set(UI_PANELS_SRCS
+    ui_panels/viewport_panel.h
+    ui_panels/viewport_panel.cpp
+)
+source_group("ui_panels" FILES ${UI_PANELS_SRCS})
+
+set(UI_WIDGETS_SRCS
+    ui_widgets/component_widget.h
+    ui_widgets/component_widget.cpp
+)
+source_group("ui_widgets" FILES ${UI_WIDGETS_SRCS})
+
+set(UI_RESOURCES_SRCS
+    ui_resources/icon.h
+    ui_resources/icon.cpp
+    ui_resources/imgui_style.h
+    ui_resources/imgui_style.cpp
+)
+source_group("ui_resources" FILES ${UI_RESOURCES_SRCS})
 
 # 创建静态库，添加源代码组
-add_library(${UI_LIB_NAME} STATIC ${UI_SRCS})
+add_library(${UI_LIB_NAME}
+    STATIC
+    ${UI_CORE_SRCS}
+    ${UI_PANELS_SRCS}
+    ${UI_WIDGETS_SRCS}
+    ${UI_RESOURCES_SRCS}
+)
 
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${UI_LIB_NAME}
