@@ -14,6 +14,8 @@ set(UI_CORE_SRCS
 source_group("ui_core" FILES ${UI_CORE_SRCS})
 
 set(UI_PANELS_SRCS
+    ui_panels/inspector_panel.h
+    ui_panels/inspector_panel.cpp
     ui_panels/viewport_panel.h
     ui_panels/viewport_panel.cpp
 )
@@ -52,6 +54,11 @@ target_link_libraries(${UI_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
+    MiteEngine_Asset
     MiteEngine_Core
     MiteEngine_Input
+
+    MiteEngine_Renderer
+    MiteEngine_Scene_Core
+    MiteEngine_Scene_View
 )
