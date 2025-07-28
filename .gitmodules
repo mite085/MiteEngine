@@ -25,3 +25,6 @@
 [submodule "thirdparty/stbimg"]
 	path = thirdparty/stbimg
 	url = https://github.com/nothings/stb.git
+[submodule "thirdparty/imguizmo"]
+	path = thirdparty/imguizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
