@@ -13,20 +13,20 @@ set(BASIC_TYPE_SRCS
 source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 
 set(DATA_SRCS
-    data/camera.h
-    data/camera.cpp
-    data/mesh.h
-    data/mesh.cpp
-    data/model.h
-    data/model.cpp
-    data/shader.h
-    data/shader.cpp
-    data/shader_cache.h
-    data/shader_cache.cpp
-    data/texture.h
-    data/texture.cpp
+    basic_data/camera.h
+    basic_data/camera.cpp
+    basic_data/mesh.h
+    basic_data/mesh.cpp
+    basic_data/model.h
+    basic_data/model.cpp
+    basic_data/shader.h
+    basic_data/shader.cpp
+    basic_data/shader_cache.h
+    basic_data/shader_cache.cpp
+    basic_data/texture.h
+    basic_data/texture.cpp
 )
-source_group("data" FILES ${DATA_SRCS})
+source_group("basic_data" FILES ${DATA_SRCS})
 
 # 创建静态库
 add_library(${DATA_LIB_NAME}  

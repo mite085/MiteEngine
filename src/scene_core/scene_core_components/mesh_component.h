@@ -2,7 +2,7 @@
 #define MITE_SCENE_MESH_COMPONENT
 
 #include "scene_core/component_system.h"
-#include "data/mesh.h"
+#include "basic_data/mesh.h"
 
 namespace mite {
 /**

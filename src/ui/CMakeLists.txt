@@ -56,6 +56,8 @@ target_link_libraries(${UI_LIB_NAME}
     spdlog::spdlog
     MiteEngine_Asset
     MiteEngine_Core
+    MiteEngine_Data
+    MiteEngine_Material
     MiteEngine_Input
 
     MiteEngine_Renderer

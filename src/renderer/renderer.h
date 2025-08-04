@@ -1,7 +1,7 @@
 #ifndef MITE_RENDERER_API
 #define MITE_RENDERER_API
 
-#include "data/model.h"
+#include "basic_data/model.h"
 #include "renderable_entity.h"
 
 namespace mite {

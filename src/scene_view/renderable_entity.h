@@ -1,7 +1,7 @@
 #ifndef MITE_RENDERABLE_ENTITY
 #define MITE_RENDERABLE_ENTITY
 
-#include "data/mesh.h"
+#include "basic_data/mesh.h"
 #include "scene_core/entity.h"
 #include "material_instance.h"
 
