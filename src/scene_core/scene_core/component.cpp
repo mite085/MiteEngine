@@ -57,11 +57,6 @@ bool Component::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-void Component::SetOwnerEntity(Entity entity)
-{
-  m_OwnerEntity = entity;
-}
-
 bool Component::HasParent(SceneRegistry &reg)
 {
   if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity()))
