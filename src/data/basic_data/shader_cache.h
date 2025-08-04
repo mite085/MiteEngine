@@ -19,7 +19,7 @@ class ShaderCache {
   ShaderCache &operator=(const ShaderCache &) = delete;
 
   // 获取单例实例
-  static ShaderCache &GetInstance();
+  static ShaderCache &Get();
 
   /**
    * @brief 获取或创建Shader
@@ -29,7 +29,7 @@ class ShaderCache {
    * @return std::shared_ptr<Shader> 缓存的Shader智能指针
    * @throws std::runtime_error 着色器编译失败时抛出
    */
-  std::shared_ptr<Shader> Get(const std::string &vertexPath,
+  std::shared_ptr<OpenGLShader> GetOpenGLShader(const std::string &vertexPath,
                               const std::string &fragmentPath,
                               const std::string &geometryPath = "");
 
@@ -48,7 +48,7 @@ class ShaderCache {
                                const std::string &geometryPath) const;
 
   std::mutex m_Mutex;
-  std::unordered_map<std::string, std::weak_ptr<Shader>> m_Cache;
+  std::unordered_map<std::string, std::weak_ptr<OpenGLShader>> m_Cache;
 };
 
 }  // namespace mite

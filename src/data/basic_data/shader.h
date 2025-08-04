@@ -9,10 +9,10 @@ namespace mite {
  * @brief Shader程序封装类（管理顶点/片段/几何着色器的编译、链接和Uniform操作）
  * @note 线程安全性：Shader对象应在渲染线程创建和使用
  */
-class Shader {
+class OpenGLShader {
  public:
-  Shader();
-  ~Shader();
+  OpenGLShader();
+  ~OpenGLShader();
 
   // ---- 生命周期 ----
   /**

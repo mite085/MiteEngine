@@ -7,7 +7,7 @@ ShaderCache &ShaderCache::GetInstance()
   return instance;
 }
 
-std::shared_ptr<Shader> ShaderCache::Get(const std::string &vertexPath,
+std::shared_ptr<OpenGLShader> ShaderCache::Get(const std::string &vertexPath,
                                          const std::string &fragmentPath,
                                          const std::string &geometryPath)
 {
@@ -27,7 +27,7 @@ std::shared_ptr<Shader> ShaderCache::Get(const std::string &vertexPath,
   }
 
   // 4. 创建新Shader并加入缓存
-  auto shader = std::make_shared<Shader>();
+  auto shader = std::make_shared<OpenGLShader>();
   try {
     if (geometryPath.empty()) {
       shader->LoadFromFile(vertexPath.c_str(), fragmentPath.c_str());

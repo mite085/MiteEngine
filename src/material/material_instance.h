@@ -19,7 +19,7 @@ using TextureBindFunc = std::function<void(TextureGPUHandle, uint32_t)>;
  */
 class MaterialInstance {
  public:
-  explicit MaterialInstance(std::shared_ptr<Shader> shader);
+  explicit MaterialInstance(std::shared_ptr<OpenGLShader> shader);
 
   // ---- 参数设置 ----
   void SetFloat(const std::string &name, float value);
@@ -46,10 +46,10 @@ class MaterialInstance {
    * @param textureBindFunc 纹理绑定函数（与Render device相关）
    * @param overrideShader 可选覆盖Shader（用于特殊渲染效果）
    */
-  void Apply(TextureBindFunc textureBindFunc, Shader *overrideShader = nullptr) const;
+  void Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader = nullptr) const;
 
   // ---- 属性访问 ----
-  std::shared_ptr<Shader> GetShader() const
+  std::shared_ptr<OpenGLShader> GetShader() const
   {
     return m_Shader;
   }
@@ -59,7 +59,7 @@ class MaterialInstance {
   }
 
  private:
-  std::shared_ptr<Shader> m_Shader;                                      // 关联的Shader程序
+  std::shared_ptr<OpenGLShader> m_Shader;                                      // 关联的Shader程序
   std::unordered_map<std::string, UniformVariant> m_Uniforms;            // Uniform值存储
   std::unordered_map<std::string, std::shared_ptr<Texture>> m_Textures;  // 纹理绑定
   std::unordered_map<std::string, std::vector<std::shared_ptr<Texture>>>

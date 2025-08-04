@@ -3,14 +3,14 @@
 #include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 
 namespace mite {
-Shader::Shader() : m_RendererID(0) {}
+OpenGLShader::OpenGLShader() : m_RendererID(0) {}
 
-Shader::~Shader()
+OpenGLShader::~OpenGLShader()
 {
   Destroy();
 }
 
-void Shader::LoadFromFile(const char *vertexPath,
+void OpenGLShader::LoadFromFile(const char *vertexPath,
                           const char *fragmentPath,
                           const char *geometryPath)
 {
@@ -56,7 +56,7 @@ void Shader::LoadFromFile(const char *vertexPath,
   LoadFromSource(vertexCode, fragmentCode, geometryCode);
 }
 
-void Shader::LoadFromSource(const std::string &vertexSrc,
+void OpenGLShader::LoadFromSource(const std::string &vertexSrc,
                             const std::string &fragmentSrc,
                             const std::string &geometrySrc)
 {
@@ -90,7 +90,7 @@ void Shader::LoadFromSource(const std::string &vertexSrc,
   }
 }
 
-void Shader::Destroy()
+void OpenGLShader::Destroy()
 {
   if (m_RendererID != 0) {
     glDeleteProgram(m_RendererID);
@@ -100,47 +100,47 @@ void Shader::Destroy()
 }
 
 // =============== Uniform设置方法 ===============
-void Shader::SetBool(const std::string &name, bool value)
+void OpenGLShader::SetBool(const std::string &name, bool value)
 {
   glUniform1i(GetUniformLocation(name), (int)value);
 }
 
-void Shader::SetInt(const std::string &name, int value)
+void OpenGLShader::SetInt(const std::string &name, int value)
 {
   glUniform1i(GetUniformLocation(name), value);
 }
 
-void Shader::SetFloat(const std::string &name, float value)
+void OpenGLShader::SetFloat(const std::string &name, float value)
 {
   glUniform1f(GetUniformLocation(name), value);
 }
 
-void Shader::SetVec2(const std::string &name, const glm::vec2 &value)
+void OpenGLShader::SetVec2(const std::string &name, const glm::vec2 &value)
 {
   glUniform2fv(GetUniformLocation(name), 1, &value[0]);
 }
 
-void Shader::SetVec3(const std::string &name, const glm::vec3 &value)
+void OpenGLShader::SetVec3(const std::string &name, const glm::vec3 &value)
 {
   glUniform3fv(GetUniformLocation(name), 1, &value[0]);
 }
 
-void Shader::SetVec4(const std::string &name, const glm::vec4 &value)
+void OpenGLShader::SetVec4(const std::string &name, const glm::vec4 &value)
 {
   glUniform4fv(GetUniformLocation(name), 1, &value[0]);
 }
 
-void Shader::SetMat3(const std::string &name, const glm::mat3 &mat)
+void OpenGLShader::SetMat3(const std::string &name, const glm::mat3 &mat)
 {
   glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::SetMat4(const std::string &name, const glm::mat4 &mat)
+void OpenGLShader::SetMat4(const std::string &name, const glm::mat4 &mat)
 {
   glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::SetIntArray(const std::string &name, const int *values, size_t count)
+void OpenGLShader::SetIntArray(const std::string &name, const int *values, size_t count)
 {
   if (count == 0 || values == nullptr) {
     LOG_WARN("Attempting to set empty int array for uniform: {}", name);
@@ -162,7 +162,7 @@ void Shader::SetIntArray(const std::string &name, const int *values, size_t coun
 #endif
 }
 
-void Shader::SetFloatArray(const std::string &name, const float *values, size_t count)
+void OpenGLShader::SetFloatArray(const std::string &name, const float *values, size_t count)
 {
   // 1. 参数校验
   if (count == 0 || values == nullptr) {
@@ -197,7 +197,7 @@ void Shader::SetFloatArray(const std::string &name, const float *values, size_t 
 #endif
 }
 
-void Shader::SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count)
+void OpenGLShader::SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count)
 {
   // 1. 参数校验
   if (count == 0 || values == nullptr) {
@@ -230,7 +230,7 @@ void Shader::SetVector3Array(const std::string &name, const glm::vec3 *values, s
 }
 
 // =============== 私有工具方法 ===============
-uint32_t Shader::CompileShader(const std::string &source, uint32_t type)
+uint32_t OpenGLShader::CompileShader(const std::string &source, uint32_t type)
 {
   uint32_t id = glCreateShader(type);
   const char *src = source.c_str();
@@ -240,7 +240,7 @@ uint32_t Shader::CompileShader(const std::string &source, uint32_t type)
   return id;
 }
 
-void Shader::CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram)
+void OpenGLShader::CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram)
 {
   int success;
   char infoLog[1024];
@@ -261,7 +261,7 @@ void Shader::CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram)
   }
 }
 
-int Shader::GetUniformLocation(const std::string &name)
+int OpenGLShader::GetUniformLocation(const std::string &name)
 {
   // 检查缓存
   if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end()) {
@@ -277,12 +277,12 @@ int Shader::GetUniformLocation(const std::string &name)
   return location;
 }
 
-void Shader::Bind() const
+void OpenGLShader::Bind() const
 {
   glUseProgram(m_RendererID);
 }
 
-void Shader::Unbind() const
+void OpenGLShader::Unbind() const
 {
   glUseProgram(0);
 }
