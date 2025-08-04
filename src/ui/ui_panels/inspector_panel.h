@@ -14,7 +14,6 @@ class InspectorPanel : public UIPanel<InspectorPanel> {
  public:
   InspectorPanel(SceneRegistry & registry);
 
- protected:
   void DrawContent() override;
   void OnEntitySelected(Entity entity);  // 事件回调
 

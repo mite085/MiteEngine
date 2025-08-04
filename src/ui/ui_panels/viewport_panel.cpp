@@ -60,23 +60,23 @@ void ViewportPanel::DrawGizmoToolbar()
 
   // 第一组：变换模式
   ImGui::BeginGroup();
-  if (ImGui::RadioButton("移动", m_gizmoOp == ImGuizmo::TRANSLATE))
+  if (ImGui::RadioButton("Translate", m_gizmoOp == ImGuizmo::TRANSLATE))
     m_gizmoOp = ImGuizmo::TRANSLATE;
   ImGui::SameLine();
-  if (ImGui::RadioButton("旋转", m_gizmoOp == ImGuizmo::ROTATE))
+  if (ImGui::RadioButton("Rotate", m_gizmoOp == ImGuizmo::ROTATE))
     m_gizmoOp = ImGuizmo::ROTATE;
   ImGui::SameLine();
-  if (ImGui::RadioButton("缩放", m_gizmoOp == ImGuizmo::SCALE))
+  if (ImGui::RadioButton("Scale", m_gizmoOp == ImGuizmo::SCALE))
     m_gizmoOp = ImGuizmo::SCALE;
   ImGui::EndGroup();
 
   // 第二组：坐标系模式（与第一组保持间距）
   ImGui::SameLine(0, 20);
   ImGui::BeginGroup();
-  if (ImGui::RadioButton("全局", m_gizmoMode == ImGuizmo::WORLD))
+  if (ImGui::RadioButton("World", m_gizmoMode == ImGuizmo::WORLD))
     m_gizmoMode = ImGuizmo::WORLD;
   ImGui::SameLine();
-  if (ImGui::RadioButton("局部", m_gizmoMode == ImGuizmo::LOCAL))
+  if (ImGui::RadioButton("Local", m_gizmoMode == ImGuizmo::LOCAL))
     m_gizmoMode = ImGuizmo::LOCAL;
   ImGui::EndGroup();
 

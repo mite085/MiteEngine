@@ -21,7 +21,6 @@ class ViewportPanel : public UIPanel<ViewportPanel> {
     m_selectedEntity = entity;
   }
 
- protected:
   void DrawContent() override;
   void OnAttach() override;
   void OnUpdate(float dt) override;

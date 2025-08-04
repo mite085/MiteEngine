@@ -13,22 +13,22 @@ InspectorPanel::InspectorPanel(SceneRegistry &registry)
 
 void InspectorPanel::DrawContent()
 {
-  if (m_currentEntity == entt::null) {
-    ImGui::Text("未选择任何实体");
+  if (!m_currentEntity.IsValid()) {
+    ImGui::Text("No selected entity");
     return;
   }
 
   if (!m_registry.IsValid(m_currentEntity)) {
-    m_currentEntity = entt::null;
+    m_currentEntity = Entity();
     return;
   }
 
   // 1. 显示实体基本信息
-  ImGui::Text("实体ID: %d", static_cast<int>(m_currentEntity.GetHandle()));
+  ImGui::Text("Entity ID: %d", static_cast<int>(m_currentEntity.GetHandle()));
   ImGui::SameLine();
-  if (ImGui::Button("删除实体")) {
+  if (ImGui::Button("Destroy Entity")) {
     m_registry.DestroyEntity(m_currentEntity);
-    m_currentEntity = entt::null;
+    m_currentEntity = Entity();
     return;
   }
 
@@ -40,7 +40,7 @@ void InspectorPanel::DrawContent()
 
   // 3. 添加组件按钮
   ImGui::Separator();
-  if (ImGui::Button("+ 添加组件")) {
+  if (ImGui::Button("Add Component")) {
     ImGui::OpenPopup("AddComponentPopup");
   }
   if (ImGui::BeginPopup("AddComponentPopup")) {
@@ -51,14 +51,14 @@ void InspectorPanel::DrawContent()
 
 void InspectorPanel::DrawTransformComponent()
 {
-  if (ImGui::CollapsingHeader("变换", ImGuiTreeNodeFlags_DefaultOpen)) {
+  if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
     auto &transform = m_registry.GetComponent<TransformComponent>(m_currentEntity);
 
     //ImGui::DragFloat3("位置", transform.GetLocalPosition().x, 0.1f);
     //ImGui::DragFloat3("旋转", transform.GetLocalPosition().x, 1.0f);
     //ImGui::DragFloat3("缩放", transform.GetLocalPosition().x, 0.1f, 0.01f);
 
-    if (ImGui::Button("重置")) {
+    if (ImGui::Button("Reset")) {
       //transform = TransformComponent();
     }
   }
@@ -66,7 +66,7 @@ void InspectorPanel::DrawTransformComponent()
 
 void InspectorPanel::DrawMeshComponent()
 {
-  if (ImGui::CollapsingHeader("网格")) {
+  if (ImGui::CollapsingHeader("Mesh")) {
     auto &mesh = m_registry.GetComponent<MeshComponent>(m_currentEntity);
 
     // TODO:显示网格资产信息

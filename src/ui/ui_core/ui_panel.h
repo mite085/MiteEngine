@@ -26,10 +26,10 @@ public:
     virtual void OnDetach() {}    // 面板注销时调用
     virtual void OnUpdate(float deltaTime) {}  // 每帧更新逻辑
 
-protected:
     //=== 子类需实现的接口 ===//
     virtual void DrawContent() = 0;  // 实际面板内容绘制
 
+protected:
     //=== 工具方法 ===//
     void BeginWindowStyle();  // 应用预设窗口样式
     void EndWindowStyle();    // 恢复样式
