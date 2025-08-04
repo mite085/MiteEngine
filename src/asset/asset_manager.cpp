@@ -10,7 +10,7 @@ AssetManager::~AssetManager()
 }
 
 // ===================== 纹理管理 =====================
-std::shared_ptr<TextureAsset> AssetManager::LoadTexture(const std::string &path)
+AssetID AssetManager::LoadTexture(const std::string &path)
 {
   AssetID id = UUIDGenerator::Generate(path.c_str());
   std::lock_guard<std::mutex> lock(mutex_);
@@ -24,7 +24,7 @@ std::shared_ptr<TextureAsset> AssetManager::LoadTexture(const std::string &path)
   }
 
   m_TextureCache.AddRefCount(id);  // 增加引用计数
-  return cachedTex;
+  return cachedTex->id;
   
 }
 
@@ -56,7 +56,7 @@ void AssetManager::ReleaseTexture(AssetID id)
 }
 
 // ===================== 模型管理 =====================
-std::shared_ptr<ModelAsset> AssetManager::LoadModel(const std::string &path)
+AssetID AssetManager::LoadModel(const std::string &path)
 {
   AssetID id = UUIDGenerator::Generate(path.c_str());
   std::lock_guard<std::mutex> lock(mutex_);
@@ -70,7 +70,7 @@ std::shared_ptr<ModelAsset> AssetManager::LoadModel(const std::string &path)
   }
 
   m_ModelCache.AddRefCount(id);  // 增加引用计数
-  return cachedModel;
+  return cachedModel->id;
 }
 
 std::shared_ptr<ModelAsset> AssetManager::GetModel(AssetID id) const
