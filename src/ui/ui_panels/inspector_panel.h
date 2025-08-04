@@ -3,6 +3,7 @@
 
 #include "ui_core/ui_panel.h"
 #include "scene_core/entity.h"
+#include "scene_core/scene_registry.h"
 
 namespace mite {
 /**
@@ -11,19 +12,23 @@ namespace mite {
  */
 class InspectorPanel : public UIPanel<InspectorPanel> {
  public:
-  InspectorPanel();
+  InspectorPanel(SceneRegistry & registry);
 
  protected:
   void DrawContent() override;
-  void OnEntitySelected(entt::entity entity);  // 事件回调
+  void OnEntitySelected(Entity entity);  // 事件回调
 
  private:
-  // 组件绘制工具函数
-  void DrawTransformComponent(entt::registry &registry, entt::entity entity);
-  void DrawMeshComponent(entt::registry &registry, entt::entity entity);
+  // ---- 组件绘制工具函数 ----
+  void DrawTransformComponent();
+  void DrawMeshComponent();
   void DrawAddComponentMenu();
 
-  entt::entity m_currentEntity = entt::null;  // 当前选中实体
+  // ---- SceneRegistry依赖注入 ----
+  SceneRegistry &m_registry;
+
+  // ---- 当前选中实体 ----
+  Entity m_currentEntity;
 };
 };
 

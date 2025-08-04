@@ -2,6 +2,7 @@
 #define MITE_UI_PANEL
 
 #include "headers/headers.h"
+#include "imgui.h"
 
 namespace mite {
 /**

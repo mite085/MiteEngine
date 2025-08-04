@@ -3,15 +3,23 @@
 
 #include "ui_core/ui_panel.h"
 #include "scene_core/entity.h"
+#include "ImGuizmo.h"
+#include "renderer.h"
 
 namespace mite {
 /**
- * @brief 3D场景视口渲染与交互面板
- * @note 负责处理相机控制、Gizmo操作等核心交互逻辑
+ * @brief 3D视口面板，支持场景导航和Gizmo操作
+ * @note 依赖ImGuizmo库实现变换工具
  */
 class ViewportPanel : public UIPanel<ViewportPanel> {
  public:
-  ViewportPanel();
+  ViewportPanel(Renderer &renderer);
+
+  // 设置当前选中实体（供InspectorPanel调用）
+  void SetSelectedEntity(entt::entity entity)
+  {
+    m_selectedEntity = entity;
+  }
 
  protected:
   void DrawContent() override;
@@ -19,22 +27,30 @@ class ViewportPanel : public UIPanel<ViewportPanel> {
   void OnUpdate(float dt) override;
 
  private:
-  //=== 视口状态 ===//
-  void HandleCameraControl();             // 鼠标相机控制
-  void DrawGizmo(Entity selected);  // 绘制变换Gizmo
-  void ProcessViewportResize();           // 处理视口尺寸变化
+  // ---- Renderer依赖注入 ----
+  Renderer &m_renderer;
 
-  //=== 渲染资源 ===//
-  struct {
-    uint32_t width = 0;
-    uint32_t height = 0;
-    Renderer::Framebuffer fbo;  // 关联Renderer模块的FBO
-  } m_viewport;
+  // ---- Gizmo操作 ----
+  void DrawGizmoToolbar();  // 绘制Gizmo模式选择工具栏
+  void HandleGizmo();       // 处理Gizmo变换操作
 
-  //=== 交互状态 ===//
-  float m_cameraYaw = -90.0f;  // 相机欧拉角
-  float m_cameraPitch = 0.0f;
-  bool m_isViewportHovered = false;
+  // ---- 视口控制 ----
+  void UpdateCamera(float dt);  // 相机控制逻辑
+  void CalculateViewMatrix();   // 计算视图矩阵
+
+  // ---- 状态 ----
+  entt::entity m_selectedEntity{entt::null};           // 当前选中的ECS实体
+  ImGuizmo::OPERATION m_gizmoOp{ImGuizmo::TRANSLATE};  // 当前Gizmo操作模式
+  ImGuizmo::MODE m_gizmoMode{ImGuizmo::LOCAL};         // 坐标系模式
+
+  // 相机参数
+  glm::vec3 m_cameraPos{0, 0, 5};
+  glm::vec3 m_cameraFront{0, 0, -1};
+  float m_cameraSpeed{2.5f};
+
+  // 矩阵缓存
+  glm::mat4 m_viewMatrix;
+  glm::mat4 m_projMatrix;
 };
 };
 
