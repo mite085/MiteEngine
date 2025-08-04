@@ -33,11 +33,16 @@ class OpenGLRenderer : public Renderer {
    */
   void RenderScene(const std::vector<RenderableEntity> &renderQueue) override;
 
+  // ---- 状态设置 ----
+  void SetClearColor(const glm::vec4 &color) override;
+  void SetViewport(uint32_t width, uint32_t height) override;
+
+  // ---- 供Window调用的接口 ----
+  intptr_t GetViewportFramebuffer() override;
+
  private:
   // ---- OpenGL专属状态 ----
-  // TODO: 目前未实现，可用于FBO管理
-  //GLuint defaultFBO_ = 0;
-  //GLuint currentShader_ = 0;
+  GLuint m_viewportFBO = 0;	// 默认帧缓冲（渲染到屏幕），OpenGL 规定其ID为0
 };
 }  // namespace mite
 

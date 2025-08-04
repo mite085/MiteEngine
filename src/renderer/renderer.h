@@ -29,8 +29,11 @@ class Renderer {
   virtual void RenderScene(const std::vector<RenderableEntity> &renderQueue) = 0;
 
   // ---- 状态设置 ----
-  void SetClearColor(const glm::vec4 &color);
-  void SetViewport(uint32_t width, uint32_t height);
+  virtual void SetClearColor(const glm::vec4 &color) = 0;
+  virtual void SetViewport(uint32_t width, uint32_t height) = 0;
+
+  // ---- 供Window调用的接口 ----
+  virtual intptr_t GetViewportFramebuffer() = 0;
 
  protected:
   glm::vec4 clearColor_ = {0.1f, 0.1f, 0.1f, 1.0f};

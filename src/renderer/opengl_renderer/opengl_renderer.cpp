@@ -18,9 +18,8 @@ void OpenGLRenderer::Initialize()
 // ===================== 渲染指令 =====================
 void OpenGLRenderer::BeginFrame()
 {
-  glClearColor(clearColor_.r, clearColor_.g, clearColor_.b, clearColor_.a);
+  SetClearColor(clearColor_);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glViewport(0, 0, viewportSize_.x, viewportSize_.y); // TODO: 无需每帧执行glViewport
 }
 
 void OpenGLRenderer::EndFrame()
@@ -77,6 +76,20 @@ void OpenGLRenderer::RenderScene(const std::vector<RenderableEntity> &renderQueu
   if (err != GL_NO_ERROR) {
     LOG_ERROR("OpenGL error after rendering: {}", static_cast<int>(err));
   }
-
 }
+
+void OpenGLRenderer::SetClearColor(const glm::vec4 &color)
+{
+  glClearColor(color.r, color.g, color.b, color.a);
+}
+void OpenGLRenderer::SetViewport(uint32_t width, uint32_t height)
+{
+  glViewport(0, 0, viewportSize_.x, viewportSize_.y);
+}
+
+intptr_t OpenGLRenderer::GetViewportFramebuffer()
+{
+  return static_cast<intptr_t>(m_viewportFBO);
+}
+
 }  // namespace mite
