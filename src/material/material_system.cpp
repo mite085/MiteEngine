@@ -1,5 +1,7 @@
 #include "material_system.h"
 #include "asset_manager.h"
+#include "material_template.h"
+#include "basic_data/shader_cache.h"
 
 namespace mite {
 // 静态单例初始化
@@ -7,6 +9,20 @@ MaterialSystem &MaterialSystem::Get()
 {
   static MaterialSystem instance;
   return instance;
+}
+
+void MaterialSystem::Initialize()
+{  
+  // 注册基础材质
+  // TODO: shader的创建放在此处是否合理？待后续调整
+  auto basicShader = ShaderCache::Get().GetOpenGLShader("shader/basic.vert", "shader/basic.frag");
+  auto basicTemplate = std::make_unique<BasicMaterialTemplate>(basicShader);
+  MaterialSystem::Get().RegisterTemplate("BasicMaterial", std::move(basicTemplate));
+
+  // 注册PBR材质
+  auto pbrShader = ShaderCache::Get().GetOpenGLShader("shader/pbr.vert", "shader/pbr.frag");
+  auto pbrTemplate = std::make_unique<PBRMaterialTemplate>(pbrShader);
+  MaterialSystem::Get().RegisterTemplate("DefaultPBR", std::move(pbrTemplate));
 }
 
 void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<Material> material)
@@ -105,8 +121,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
       }
       case UniformVariant::Type::String: {
         // 纹理路径特殊处理
-        // TODO: 评估是否有必要仅仅为了一个SetTexture，而添加对Asset模块的依赖
-        auto texture = AssetManager::Get().LoadTexture(name);
+        auto texture = AssetManager::Get().GetTexture(AssetManager::Get().LoadTexture(name));
         if (texture) {
           instance->SetTexture(name, std::make_shared<Texture>(texture->handle));
         }

@@ -30,6 +30,9 @@ class MaterialSystem {
   // ---- 单例模式----
   static MaterialSystem &Get();
 
+  // ---- 初始化：注册材质----
+  static void Initialize();
+
   // ---- 模板管理 ----
   /**
    * @brief 注册材质模板到系统

@@ -1,9 +1,41 @@
 #include "material_template.h"
 
 namespace mite {
-// ---- PBRMaterialTemplate 实现 ----
+// ---- BasicMaterialTemplate 实现 ----
+BasicMaterialTemplate::BasicMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
+                                             const glm::vec3 &basicColor)
+    : m_Shader(std::move(shader)), m_BasicColor(basicColor)
+{
+}
 
-PBRMaterialTemplate::PBRMaterialTemplate(std::shared_ptr<Shader> shader,
+std::shared_ptr<MaterialInstance> BasicMaterialTemplate::CreateInstance() const
+{
+  // 创建材质实例并应用默认参数
+  auto instance = std::make_shared<MaterialInstance>(m_Shader);
+  ApplyParameters(*instance);
+  return instance;
+}
+
+void BasicMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
+{
+  // 设置基础颜色参数("u_Color")
+  instance.SetVector3("u_Color", m_BasicColor);
+
+  // 绑定默认纹理("u_Texture")
+  for (const auto &[paramName, texture] : m_DefaultTextures) {
+    instance.SetTexture(paramName, texture);
+  }
+}
+
+void BasicMaterialTemplate::SetDefaultTexture(const std::string &paramName,
+                                              std::shared_ptr<Texture> texture)
+{
+  assert(!paramName.empty() && "Texture name should not be empty");
+  m_DefaultTextures[paramName] = std::move(texture);
+}
+
+// ---- PBRMaterialTemplate 实现 ----
+PBRMaterialTemplate::PBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
                                          const glm::vec3 &defaultAlbedo,
                                          float defaultRoughness,
                                          float defaultMetallic)
@@ -14,11 +46,13 @@ PBRMaterialTemplate::PBRMaterialTemplate(std::shared_ptr<Shader> shader,
 {
   // 参数合法性校验
   assert(m_Shader != nullptr && "PBRMaterialTemplate: Shader cannot be nullptr");
-  assert((defaultRoughness >= 0.0f && defaultRoughness <= 1.0f) && "Roughness must be in range [0,1]");
-  assert((defaultMetallic >= 0.0f && defaultMetallic <= 1.0f) && "Metallic must be in range [0,1]");
+  assert((defaultRoughness >= 0.0f && defaultRoughness <= 1.0f) &&
+         "Roughness must be in range [0,1]");
+  assert((defaultMetallic >= 0.0f && defaultMetallic <= 1.0f) &&
+         "Metallic must be in range [0,1]");
 }
 
-std::shared_ptr<MaterialInstance> PBRMaterialTemplate::CreateInstance() const 
+std::shared_ptr<MaterialInstance> PBRMaterialTemplate::CreateInstance() const
 {
   // 创建材质实例并应用默认参数
   auto instance = std::make_shared<MaterialInstance>(m_Shader);
@@ -48,7 +82,7 @@ void PBRMaterialTemplate::SetDefaultTexture(const std::string &paramName,
 
 // ---- TransparentMaterialTemplate 实现 ----
 
-TransparentMaterialTemplate::TransparentMaterialTemplate(std::shared_ptr<Shader> shader,
+TransparentMaterialTemplate::TransparentMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
                                                          float defaultAlpha)
     : PBRMaterialTemplate(std::move(shader)), m_DefaultAlpha(defaultAlpha)
 {
@@ -71,4 +105,4 @@ void TransparentMaterialTemplate::ApplyParameters(MaterialInstance &instance) co
   instance.SetFloat("u_Alpha", m_DefaultAlpha);
   instance.SetInt("u_EnableBlend", 1);  // 启用混合
 }
-};
+};  // namespace mite
