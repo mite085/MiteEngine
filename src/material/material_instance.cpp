@@ -1,7 +1,7 @@
 #include "material_instance.h"
 
 namespace mite {
-MaterialInstance::MaterialInstance(std::shared_ptr<Shader> shader) : m_Shader(std::move(shader))
+MaterialInstance::MaterialInstance(std::shared_ptr<OpenGLShader> shader) : m_Shader(std::move(shader))
 {
   if (!m_Shader) {
     LOG_ERROR("MaterialInstance created with null shader!");
@@ -88,9 +88,9 @@ void MaterialInstance::SetTextureArray(const std::string &name,
 }
 
 // ===================== ºËÐÄApply·½·¨ =====================
-void MaterialInstance::Apply(TextureBindFunc textureBindFunc, Shader *overrideShader) const
+void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader) const
 {
-  Shader *targetShader = overrideShader ? overrideShader : m_Shader.get();
+  OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
   if (!targetShader) {
     LOG_ERROR("MaterialInstance has no valid shader to apply!");
     return;

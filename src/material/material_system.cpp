@@ -15,14 +15,20 @@ void MaterialSystem::Initialize()
 {  
   // 注册基础材质
   // TODO: shader的创建放在此处是否合理？待后续调整
-  auto basicShader = ShaderCache::Get().GetOpenGLShader("shader/basic.vert", "shader/basic.frag");
+  auto basicShader = ShaderCache::Get().GetOpenGLShader(
+      FileSystem::GetAssetPath("shaders/basic.vert").string(),
+      FileSystem::GetAssetPath("shaders/basic.frag").string());
   auto basicTemplate = std::make_unique<BasicMaterialTemplate>(basicShader);
-  MaterialSystem::Get().RegisterTemplate("BasicMaterial", std::move(basicTemplate));
+  std::string basicType = basicTemplate->GetMaterialType();
+  MaterialSystem::Get().RegisterTemplate(basicType, std::move(basicTemplate));
 
   // 注册PBR材质
-  auto pbrShader = ShaderCache::Get().GetOpenGLShader("shader/pbr.vert", "shader/pbr.frag");
+  auto pbrShader = ShaderCache::Get().GetOpenGLShader(
+      FileSystem::GetAssetPath("shaders/pbr.vert").string(),
+      FileSystem::GetAssetPath("shaders/pbr.frag").string());
   auto pbrTemplate = std::make_unique<PBRMaterialTemplate>(pbrShader);
-  MaterialSystem::Get().RegisterTemplate("DefaultPBR", std::move(pbrTemplate));
+  std::string pbrType = pbrTemplate->GetMaterialType();
+  MaterialSystem::Get().RegisterTemplate(pbrType, std::move(pbrTemplate));
 }
 
 void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<Material> material)

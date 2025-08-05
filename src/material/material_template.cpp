@@ -27,6 +27,11 @@ void BasicMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
   }
 }
 
+std::string BasicMaterialTemplate::GetMaterialType() const
+{
+  return "BasicMaterial";
+}
+
 void BasicMaterialTemplate::SetDefaultTexture(const std::string &paramName,
                                               std::shared_ptr<Texture> texture)
 {
@@ -73,6 +78,11 @@ void PBRMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
   }
 }
 
+std::string PBRMaterialTemplate::GetMaterialType() const
+{
+  return "DefaultPBR";
+}
+
 void PBRMaterialTemplate::SetDefaultTexture(const std::string &paramName,
                                             std::shared_ptr<Texture> texture)
 {
@@ -104,5 +114,9 @@ void TransparentMaterialTemplate::ApplyParameters(MaterialInstance &instance) co
   // 设置透明相关参数
   instance.SetFloat("u_Alpha", m_DefaultAlpha);
   instance.SetInt("u_EnableBlend", 1);  // 启用混合
+}
+std::string TransparentMaterialTemplate::GetMaterialType() const
+{
+  return "TransparentPBR";
 }
 };  // namespace mite

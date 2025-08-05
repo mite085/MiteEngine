@@ -23,6 +23,7 @@ class BasicMaterialTemplate : public Material {
   // ---- 核心接口 ----
   std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
+  std::string GetMaterialType() const override;
 
   // ---- 参数设置 ----
   void SetBasicColor(const glm::vec3 &color)
@@ -62,6 +63,7 @@ class PBRMaterialTemplate : public Material {
   // ---- 核心接口 ----
   std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
+  std::string GetMaterialType() const override;
 
   // ---- 参数设置 ----
   void SetDefaultAlbedo(const glm::vec3 &albedo)
@@ -97,6 +99,7 @@ class TransparentMaterialTemplate : public PBRMaterialTemplate {
 
   std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
+  std::string GetMaterialType() const override;
 
   void SetDefaultAlpha(float alpha)
   {
