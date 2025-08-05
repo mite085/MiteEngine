@@ -48,7 +48,6 @@ class MiteApplication {
   Window* GetWindow() const { return m_Window.get(); }
   Renderer* GetRenderer() const { return m_Renderer.get(); }
   Scene* GetScene() const { return m_Scene.get(); }
-  //AssetManager* GetAssetManager() const { return m_AssetManager.get(); }
   //MaterialSystem* GetMaterialSystem() const { return m_MaterialSystem.get(); }
 
 
@@ -59,7 +58,7 @@ class MiteApplication {
   void InitializeWindowWithOpenGL();
   void InitializeRenderWithOpenGL();
   void InitializeUI();
-  //void InitializeAssertManager();
+  void InitializeAssertManager();
   void InitializeMaterialSystem();
   void InitializeScene();
   void LoadDefaultScene();

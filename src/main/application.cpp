@@ -23,7 +23,7 @@ void MiteApplication::run()
     EventBus::Get().ProcessQueue();
 
     // 2、更新输入系统
-    // m_InputSystem->Update();
+    Input::Update();
 
     // 3、开始新的一帧
     BeginFrame();
@@ -56,7 +56,7 @@ void MiteApplication::Initialize()
 
   // 先初始化shared模块
   InitializeInputSystem();
-  //InitializeAssertManager();
+  InitializeAssertManager();
 
   // 再初始化unique模块
   InitializeWindowWithOpenGL();
@@ -77,7 +77,6 @@ void MiteApplication::InitializeWindowWithOpenGL()
   m_Config = WindowConfig();
   m_Window = Window::Create();
   m_Window->Initialize(m_Config);
-  // m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 }
 
 void MiteApplication::InitializeRenderWithOpenGL()
@@ -99,6 +98,14 @@ void MiteApplication::InitializeUI()
   // TODO：初始化UI
 }
 
+void MiteApplication::InitializeAssertManager()
+{
+  m_logger->info("Initializing asset manager");
+
+  // 目前AssetManager并不包含需要Init的内容
+  AssetManager::Get();
+}
+
 void MiteApplication::InitializeScene()
 {
   m_logger->info("Initializing scene");
@@ -108,19 +115,11 @@ void MiteApplication::InitializeScene()
   m_SceneView = std::make_unique<SceneView>(m_Scene->GetRegistry());
 }
 
-//void MiteApplication::InitializeAssertManager()
-//{
-//  m_logger->info("Initializing assert manager");
-//
-//  // 初始化资产管理器
-//  m_AssetManager = std::make_shared<AssetManager>();
-//}
-
 void MiteApplication::InitializeMaterialSystem()
 {
   m_logger->info("Initializing material system");
 
-  // TODO：初始化材质系统
+  MaterialSystem::Initialize();
 }
 
 void MiteApplication::InitializeInputSystem()
@@ -137,8 +136,8 @@ void MiteApplication::InitializeInputSystem()
   auto editorContext = std::make_shared<ModularInputContext>("Editor");
 
   //// TODO: 为编辑器上下文装配处理器，以PropertyPanelProcessor为例
-  //std::shared_ptr<PropertyPanel> panel = std::make_shared<PropertyPanel>();
-  //editorContext->AddProcessor(std::make_shared<PropertyPanelProcessor>(panel));
+  // std::shared_ptr<PropertyPanel> panel = std::make_shared<PropertyPanel>();
+  // editorContext->AddProcessor(std::make_shared<PropertyPanelProcessor>(panel));
 
   // 将编辑器上下文推入全局栈
   Input::PushContext(editorContext);
@@ -148,13 +147,43 @@ void MiteApplication::LoadDefaultScene()
 {
   m_logger->info("Loading default scene");
 
-  // TODO：协调各模块，加载初始场景
-  // m_AssetManager->LoadDefaultAssets();
-  // m_Scene->LoadDefaultScene();
-  // m_MaterialSystem->CreateDefaultMaterials();
+  // 协调各模块，加载初始场景
 
+  // 0. 创建模型Entity
+  Entity plane = m_Scene->CreateEntity("plane");
+  
+
+  // 1. 加载模型
+  AssetID plane_model_asset_id = AssetManager::Get().LoadModel(
+      FileSystem::GetAssetPath("models/plane.obj").string());
+  Model plane_model = Model(AssetManager::Get().GetModel(plane_model_asset_id)->handle);
+
+  // 2. 创建网格实体，挂载组件
+  std::vector<Entity> plane_submesh_list;
+  for (auto &mesh_handle : plane_model.GetHandle().subMeshes) {
+    Entity plane_submesh = m_Scene->CreateEntity("plane_submesh");
+    MeshComponent &plane_mesh_component = m_Scene->GetRegistry().AddComponent<MeshComponent>(
+        plane_submesh);
+    plane_mesh_component.SetMesh(Mesh(mesh_handle));
+    plane_submesh_list.push_back(plane_submesh);
+  }
+
+  // 3. 创建材质实例
+  std::shared_ptr<MaterialInstance> plane_material = MaterialSystem::Get().CreateInstance(
+      "BasicMaterial");
+
+  // 4. 创建材质组件
+  MaterialComponent &plane_material_component =
+      m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane, plane_material);
+  plane_material_component.SetMaterial(plane_material);
+
+  // 5. 推入渲染队列
+  for (Entity submesh : plane_submesh_list) {
+    m_SceneView->AddToRenderQueue(submesh);
+  }
+  
   // 更新场景视图
-  //m_SceneView->SyncFromSceneCore();
+  // m_SceneView->SyncFromSceneCore();
 }
 
 void MiteApplication::CleanUp()
@@ -204,9 +233,6 @@ void MiteApplication::BeginFrame()
   // TODO：开始UI帧
   // m_UIManager->BeginFrame()
 
-  // TODO：更新场景视图(将ECS数据转换为渲染友好格式)
-  m_SceneView->Update();
-
   // 更新帧统计信息
   UpdateFrameStats();
 }
@@ -224,6 +250,9 @@ void MiteApplication::Update()
 
   // TODO：处理资源加载队列
   // m_AssetManager->ProcessLoadingQueue();
+
+  // TODO：更新场景视图(将ECS数据转换为渲染友好格式)
+  m_SceneView->Update();
 }
 
 void MiteApplication::Render()
@@ -250,7 +279,6 @@ void MiteApplication::Render()
 
 void MiteApplication::EndFrame()
 {
-  
   m_Renderer->EndFrame();
 
   // TODO: 窗口负责交换缓冲
