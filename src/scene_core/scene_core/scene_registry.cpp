@@ -2,22 +2,24 @@
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
-SceneRegistry::SceneRegistry(std::weak_ptr<Scene> scene) : m_Scene(scene) {}
+SceneRegistry::SceneRegistry() : m_EventCallbackAdapter() {}
 
 SceneRegistry::~SceneRegistry()
-{  
-  // 断开所有回调
-  m_Registry.on_construct<Component>().disconnect(this);
-  m_Registry.on_update<Component>().disconnect(this);
-  m_Registry.on_destroy<Component>().disconnect(this);
+{
+  Clear();
+}
+
+SceneEventCallbackAdapter &SceneRegistry::GetEventCallbackAdapter()
+{
+  return m_EventCallbackAdapter;
 }
 
 // 1. 实体管理 ===================================================
 
-Entity SceneRegistry::CreateEntity(const std::string name)
+Entity SceneRegistry::CreateEntity(const std::string& name)
 {
-  // 使用entt::registry::create()创建实体
-  Entity entity {m_Registry.create()};
+  // 创建实体
+  Entity entity;
 
   // 添加ID组件，自动生成唯一ID
   auto &id = AddComponent<IDComponent>(entity);
@@ -39,37 +41,47 @@ Entity SceneRegistry::CreateEntity(const std::string name)
 
 void SceneRegistry::DestroyEntity(Entity entity)
 {
-  if (IsValid(entity)) {
-    m_Registry.destroy(entity.GetHandle());
+  if (!IsValid(entity)) {
+    return;
   }
+
+  // 移除所有组件
+  std::unique_lock lock(m_ComponentMutex);
+  for (auto &pair : m_Components) {
+    pair.second.erase(entity);
+  }
+
+  // 标记实体为无效
+  entity.Destroy();
 }
 
 bool SceneRegistry::IsValid(Entity entity) const
 {
-  return entity.IsValid() && m_Registry.valid(entity.GetHandle());
+  return entity.IsValid();
 }
 
 void SceneRegistry::Clear()
 {
-  m_Registry.clear();
+  std::unique_lock lock(m_ComponentMutex);
+  m_Components.clear();
 }
-
-// 4. 视图和查询 ============================================
 
 std::vector<Entity> SceneRegistry::GetAllEntities()
 {
+  std::shared_lock lock(m_ComponentMutex);
+
   std::vector<Entity> entities;
+  if (!m_Components.empty()) {
+    // 使用第一个组件类型的实体列表作为基准
+    auto &firstComponentMap = m_Components.begin()->second;
+    entities.reserve(firstComponentMap.size());
 
-  // 预留空间提高效率
-  entities.reserve(m_Registry.storage<entt::entity>().size());
-
-  // 遍历视图中的所有实体
-  for (auto entity : m_Registry.storage<entt::entity>()) {
-    if (m_Registry.valid(entity)) {
-      entities.emplace_back(entity);
+    for (const auto &pair : firstComponentMap) {
+      if (IsValid(pair.first)) {
+        entities.push_back(pair.first);
+      }
     }
   }
-
   return entities;
 }
 

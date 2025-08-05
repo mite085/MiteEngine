@@ -1,41 +1,41 @@
 #ifndef MITE_SCENE_REGISTRY
 #define MITE_SCENE_REGISTRY
 
-#include "entity.h"
 #include "component.h"
+#include "entity.h"
+#include "scene_event_callback_adapter.h"
 
 namespace mite {
-// 前向声明
-class Scene;
 /**
- * @brief 对entt::registry的安全封装
+ * @brief 组件与实体注册表
  *
- * 提供类型安全的实体和组件操作，避免直接暴露entt::entity
+ * 负责存储已注册的组件与实体，
+ * 并提供类型安全与线程安全的实体和组件操作
  */
 class SceneRegistry {
  public:
-  SceneRegistry(std::weak_ptr<Scene> scene);
+  SceneRegistry();
   ~SceneRegistry();
 
-  // 1. 实体管理 ===================================================
- public:
-  /**
-   * @brief 创建新实体
-   * @param name 新实体的名字
-   * @return 新创建的实体
-   */
-  Entity CreateEntity(const std::string name = "");
+  SceneEventCallbackAdapter &GetEventCallbackAdapter();
+
+  // 1. 实体管理 ============================================
 
   /**
-   * @brief 销毁实体
+   * @brief 创建新实体
+   * @param name 实体名称
+   * @return 新创建的实体
+   */
+  Entity CreateEntity(const std::string &name = "");
+
+  /**
+   * @brief 销毁实体及其所有组件
    * @param entity 要销毁的实体
    */
   void DestroyEntity(Entity entity);
 
   /**
    * @brief 检查实体是否有效
-   * @param entity 要检查的实体
-   * @return 是否有效
    */
   bool IsValid(Entity entity) const;
 
@@ -44,269 +44,268 @@ class SceneRegistry {
    */
   void Clear();
 
-  // 2. 组件操作 - 基础 ============================================
- public:
+  // 2. 组件操作 ============================================
+
   /**
-   * @brief 添加组件（构造新组件）
-   * @tparam T 组件类型
-   * @tparam Args 构造参数类型
-   * @param entity 目标实体
-   * @param args 组件构造参数
-   * @return 新添加的组件引用
+   * @brief 添加组件
    */
   template<typename T, typename... Args> T &AddComponent(Entity entity, Args &&...args)
   {
-    // 使用Assert断言，确保entity有效
-    assert(IsValid(entity));
+    // 先检查实体有效性（不需要锁）
+    if (!IsValid(entity)) {
+      throw std::runtime_error("Cannot add component to invalid entity");
+    }
 
-    // 若该实体已经挂载了和当前添加组件
-    // 同类型的组件，则移除原组件，
-    // 以确保新组件正常添加
+    // 如果已有同类型组件，先移除
     if (HasComponent<T>(entity)) {
       RemoveComponent<T>(entity);
     }
 
-    // 注意：若T已经被RegisterCallbackComponentConstruct注册，
-    // 这里会触发entt内部的回调，运行被注册的callback函数
-    T &component = m_Registry.emplace<T>(entity.GetHandle(), std::forward<Args>(args)...);
-    component.SetOwnerEntity(entity);
-    return component;
+    std::unique_lock lock(m_ComponentMutex);
+
+    // 创建组件并设置所有者
+    auto component = std::make_shared<T>(std::forward<Args>(args)...);
+    component->SetOwnerEntity(entity);
+
+    // 存储组件
+    auto &componentMap = m_Components[typeid(T)];
+    componentMap[entity] = component;
+
+    // 触发构造事件
+    m_EventCallbackAdapter.OnComponentConstructed<T>(entity, *component);
+
+    return *component;
   }
 
   /**
    * @brief 获取或添加组件
-   * @tparam T 组件类型
-   * @param entity 目标实体
-   * @return 组件引用
    */
   template<typename T> T &GetOrAddComponent(Entity entity)
   {
-    assert(IsValid(entity));
+    std::shared_lock lock(m_ComponentMutex);
 
-    // 破坏性低于AddComponent的用法，
-    // 原组件存在时不移除，直接返回原组件
-    T &component = m_Registry.get_or_emplace<T>(entity.GetHandle());
-    component.SetOwnerEntity(entity);
-    return component;
+    if (HasComponent<T>(entity)) {
+      return GetComponent<T>(entity);
+    }
+
+    lock.unlock();
+    return AddComponent<T>(entity);
   }
 
   /**
    * @brief 移除组件
-   * @tparam T 组件类型
-   * @param entity 目标实体
    */
   template<typename T> void RemoveComponent(Entity entity)
   {
-    // 销毁组件时，无需使用assert断言确保entity有效。
-    if (IsValid(entity) && m_Registry.all_of<T>(entity.GetHandle())) {
+    std::unique_lock lock(m_ComponentMutex);
 
-      // 注意：若T已经被RegisterCallbackComponentDestroy注册，
-      // 这里会触发回调，运行被注册的callback函数
-      m_Registry.remove<T>(entity.GetHandle());
+    // 先确保ComponentTypeMap中存在该类型的ComponentMap
+    auto it = m_Components.find(typeid(T));
+    if (it != m_Components.end()) {
+      // 再确保ComponentMap中，使用该entity可查询到Component
+      auto componentIt = it->second.find(entity);
+      if (componentIt != it->second.end()) {
+        // 触发移除事件
+        m_EventCallbackAdapter.OnComponentDestroyed<T>(
+            entity, *static_cast<T *>(componentIt->second.get()));
+
+        // 最后移除
+        it->second.erase(entity);
+      }
     }
-  }
-
-  /**
-   * @brief 替换组件
-   * @param entity 实体对象
-   * @param ...args 新组件的构造函数参数包
-   * @return 新组件的引用
-   */
-  template<typename T, typename... Args> T &ReplaceComponent(Entity entity, Args &&...args)
-  {
-    // 获取旧组件
-    T &oldComponent = GetComponent<T>(entity);
-
-    // 执行实际替换
-    T &newComponent = m_Registry.replace<T>(entity, std::forward<Args>(args)...);
-
-    // 发布变更事件（包含新旧组件）
-    EventBus::Get().Post(ComponentChangedEvent<T>(entity, newComponent, oldComponent));
-
-    return newComponent;
-  }
-
-  /**
-   * @brief 组件的部分更新
-   * @param entity 实体对象
-   * @param ...args 新组件的构造函数参数包
-   * @return 新组件的引用
-   */
-  template<typename T, typename... Args> T &PatchComponent(Entity entity, Args &&...args)
-  {
-    // 获取旧组件
-    T &oldComponent = GetComponent<T>(entity);
-
-    // 执行部分更新
-    T &component = m_Registry.patch<T>(entity, std::forward<Args>(args)...);
-
-    // 发布变更事件（包含新旧组件）
-    EventBus::Get().Post(ComponentChangedEvent<T>(entity, component, oldComponent));
-
-    return component;
   }
 
   /**
    * @brief 检查实体是否拥有组件
-   * @tparam T 组件类型
-   * @param entity 目标实体
-   * @return 是否拥有该组件
    */
-  template<typename... T> bool HasComponent(Entity entity) const
+  template<typename T> bool HasComponent(Entity entity) const
   {
-    return IsValid(entity) && m_Registry.all_of<T...>(entity.GetHandle());
+    std::shared_lock lock(m_ComponentMutex);
+
+    auto it = m_Components.find(typeid(T));
+    if (it != m_Components.end()) {
+      return it->second.find(entity) != it->second.end();
+    }
+    return false;
   }
 
-  // 3. 组件操作 - 获取 ============================================
- public:
   /**
-   * @brief 获取组件（非const版本）
-   * @tparam T 组件类型
-   * @param entity 目标实体
-   * @return 组件引用
-   * @throws std::runtime_error 当组件不存在时抛出异常
+   * @brief 检查实体是否同时拥有所有指定组件
+   * @tparam Components 要检查的组件类型列表
+   * @param entity 要检查的实体
+   * @return 如果实体拥有所有指定组件返回true，否则false
+   */
+  template<typename... Components> bool HasComponentWithAllOf(Entity entity) const
+  {
+    static_assert(sizeof...(Components) > 0, "At least one component type must be specified");
+
+    std::shared_lock lock(m_ComponentMutex);
+
+    // 检查实体有效性
+    if (!IsValid(entity)) {
+      return false;
+    }
+
+    // 使用折叠表达式检查所有组件
+    bool hasAll = true;
+    ((hasAll = hasAll && (m_Components.find(typeid(Components)) != m_Components.end() &&
+                          m_Components.at(typeid(Components)).find(entity) !=
+                              m_Components.at(typeid(Components)).end())),
+     ...);
+
+    return hasAll;
+  }
+
+  /**
+   * @brief 获取组件
    */
   template<typename T> T &GetComponent(Entity entity)
   {
-    // 使用Assert断言，确保entity具有该组件。
-    // 若无法确定，则应当使用TryGetComponent
-    assert(HasComponent<T>(entity));
-    return m_Registry.get<T>(entity.GetHandle());
-  }
+    std::shared_lock lock(m_ComponentMutex);
 
+    auto it = m_Components.find(typeid(T));
+    if (it != m_Components.end()) {
+      auto componentIt = it->second.find(entity);
+      if (componentIt != it->second.end()) {
+        return *static_cast<T *>(componentIt->second.get());
+      }
+    }
+    LOG_CRITICAL("Component not found");
+    throw std::runtime_error("Component not found");
+  }
   /**
-   * @brief 获取组件（const版本）
-   * @tparam T 组件类型
-   * @param entity 目标实体
-   * @return 组件const引用
-   * @throws std::runtime_error 当组件不存在时抛出异常
+   * @brief 获取组件 const版本
    */
-  template<typename T> const T &GetComponent(Entity entity) const
+  template<typename T> T &GetComponent(Entity entity) const
   {
-    assert(HasComponent<T>(entity));
-    return m_Registry.get<T>(entity.GetHandle());
+    std::shared_lock lock(m_ComponentMutex);
+
+    auto it = m_Components.find(typeid(T));
+    if (it != m_Components.end()) {
+      auto componentIt = it->second.find(entity);
+      if (componentIt != it->second.end()) {
+        return *static_cast<T *>(componentIt->second.get());
+      }
+    }
+    LOG_CRITICAL("Component not found");
+    throw std::runtime_error("Component not found");
   }
 
   /**
-   * @brief 尝试获取组件（非const版本）
-   * @tparam T 组件类型
-   * @param entity 目标实体
-   * @return 组件指针（不存在时返回nullptr）
+   * @brief 尝试获取组件
    */
   template<typename T> T *TryGetComponent(Entity entity)
   {
-    if (!IsValid(entity))
-      return nullptr;
-    return m_Registry.try_get<T>(entity.GetHandle());
-  }
+    std::shared_lock lock(m_ComponentMutex);
 
+    auto it = m_Components.find(typeid(T));
+    if (it != m_Components.end()) {
+      auto componentIt = it->second.find(entity);
+      if (componentIt != it->second.end()) {
+        return static_cast<T *>(componentIt->second.get());
+      }
+    }
+    return nullptr;
+  }
   /**
-   * @brief 尝试获取组件（const版本）
-   * @tparam T 组件类型
-   * @param entity 目标实体
-   * @return 组件const指针（不存在时返回nullptr）
+   * @brief 尝试获取组件 const版本
    */
-  template<typename T> const T *TryGetComponent(Entity entity) const
+  template<typename T> T *TryGetComponent(Entity entity) const
   {
-    if (!IsValid(entity))
-      return nullptr;
-    return m_Registry.try_get<T>(entity.GetHandle());
+    std::shared_lock lock(m_ComponentMutex);
+
+    auto it = m_Components.find(typeid(T));
+    if (it != m_Components.end()) {
+      auto componentIt = it->second.find(entity);
+      if (componentIt != it->second.end()) {
+        return static_cast<T *>(componentIt->second.get());
+      }
+    }
+    return nullptr;
   }
 
-  // 4. 视图和查询 =================================================
- public:
-  /**
-   * @brief 检查实体是否拥有任何指定的组件
-   * @tparam Component 要检查的组件类型(支持多个组件)
-   * @param entity 目标实体
-   * @return 是否拥有任意一个指定组件
-   *
-   * 使用示例: 检查某个entity是否具有变换组件、可见性组件和层次结构组件中的任意一种
-   * if(m_Registry.AnyOf<TransformComponent, VisibilityComponent, HierarchyComponent>(entity))
-   */
-  template<typename... Component> bool AnyOf(Entity entity) const
-  {
-    return IsValid(entity) && m_Registry.any_of<Component...>(entity.GetHandle());
-  }
+  // 3. 查询操作 ============================================
 
   /**
-   * @brief 检查实体是否拥有所有指定的组件
-   * @tparam Component 要检查的组件类型(支持多个组件)
-   * @param entity 目标实体
-   * @return 是否拥有所有指定组件
-   *
-   * 使用示例: 检查某个entity是否同时具有变换组件、可见性组件和层次结构组件
-   * if(m_Registry.AllOf<TransformComponent, VisibilityComponent, HierarchyComponent>(entity))
-   */
-  template<typename... Component> bool AllOf(Entity entity) const
-  {
-    return IsValid(entity) && m_Registry.all_of<Component...>(entity.GetHandle());
-  }
-
-  /**
-   * @brief 获取当前registry中所有有效的Entity集合
-   * @return 包含所有有效Entity的vector（按创建顺序）
-   * 
-   * 这个函数应当是const成员函数，但entt::registry
-   * 的storge未提供const方法，所以无法置为const
+   * @brief 获取所有实体
    */
   std::vector<Entity> GetAllEntities();
 
   /**
-   * @brief 获取当前registry中所有拥有指定组件的Entity集合
-   * @tparam Component 要筛选的组件类型
-   * @tparam Exclude 要从视图中排除的组件类型
-   * @return 包含所有符合条件的Entity的vector（按创建顺序）
-   *
-   * 使用示例：获取所有同时具备变换组件、可见性组件的实体
-   * m_Registry.GetEntitiesWith<TransformComponent, VisibilityComponent>()
+   * @brief 获取拥有指定组件的所有实体
    */
-  template<typename... Component> std::vector<Entity> GetEntitiesWith()
+  template<typename T> std::vector<Entity> GetEntitiesWith()
   {
+    std::shared_lock lock(m_ComponentMutex);
+
     std::vector<Entity> entities;
+    auto it = m_Components.find(typeid(T));
+    if (it != m_Components.end()) {
+      for (const auto &pair : it->second) {
+        if (IsValid(pair.first)) {
+          entities.push_back(pair.first);
+        }
+      }
+    }
+    return entities;
+  }
+  /**
+   * @brief 获取拥有所有指定组件的实体
+   * @tparam Components 要查询的组件类型列表
+   * @return 拥有所有指定组件的实体列表
+   */
+  template<typename... Components> std::vector<Entity> GetEntitiesWithAllOf()
+  {
+    static_assert(sizeof...(Components) > 0, "At least one component type must be specified");
 
-    // 使用entt::registry::view方法，
-    // 获取符合类型要求的Component列表
-    auto view = m_Registry.view<Component...>();
+    std::shared_lock lock(m_ComponentMutex);
 
-    for (auto entity : view) {
-      if (m_Registry.valid(entity)) {
-        entities.emplace_back(m_Scene, entity);
+    // 如果没有实体，直接返回空列表
+    if (m_Components.empty()) {
+      return {};
+    }
+
+    // 获取第一个组件类型的实体列表作为基准
+    const std::type_index firstType = typeid(
+        typename std::tuple_element<0, std::tuple<Components...>>::type);
+    auto firstIt = m_Components.find(firstType);
+    if (firstIt == m_Components.end()) {
+      return {};
+    }
+
+    std::vector<Entity> result;
+
+    // 预分配空间
+    result.reserve(firstIt->second.size());
+
+    // 遍历第一个组件类型的实体列表，
+    // 检查每个实体是否拥有所有指定组件
+    for (const auto &pair : firstIt->second) {
+      Entity entity = pair.first;
+      if (!IsValid(entity)) {
+        continue;
+      }
+
+      // 检查是否拥有所有组件
+      bool hasAllComponents = true;
+      ((hasAllComponents = hasAllComponents && HasComponent<Components>(entity)), ...);
+
+      if (hasAllComponents) {
+        result.push_back(entity);
       }
     }
 
-    return entities;
+    return result;
   }
-
-  // 5. 原生访问（禁止外部调用） ========================================
  private:
-  /**
-   * @brief 获取底层registry（谨慎使用）
-   * @return 底层entt::registry引用
-   */
-  entt::registry &GetUnderlyingRegistry()
-  {
-    return m_Registry;
-  }
+  // 组件存储结构
+  using ComponentMap = std::unordered_map<Entity, std::shared_ptr<Component>>;
+  using ComponentTypeMap = std::unordered_map<std::type_index, ComponentMap>;
 
-  /**
-   * @brief 获取底层registry（const版本，谨慎使用）
-   * @return 底层entt::registry const引用
-   */
-  const entt::registry &GetUnderlyingRegistry() const
-  {
-    return m_Registry;
-  }
+  mutable std::shared_mutex m_ComponentMutex;  // 组件操作的读写锁
+  ComponentTypeMap m_Components;               // 组件存储
 
-
-
-  // 8. 基本数据存储 ===============================================
- private:
-  entt::registry m_Registry;     // 底层EnTT registry
-  std::weak_ptr<Scene> m_Scene;  // 场景引用
-
-  // 将SceneEventCallbackAdapter设为友元，允许直接访问底层registry（用于注册回调）
-  friend class SceneEventCallbackAdapter;
+  SceneEventCallbackAdapter m_EventCallbackAdapter;
 };
 };  // namespace mite
 
