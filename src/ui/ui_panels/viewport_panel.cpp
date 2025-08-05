@@ -4,7 +4,8 @@
 
 namespace mite {
 // 初始化视口面板
-ViewportPanel::ViewportPanel(Renderer &renderer) : m_renderer(renderer), UIPanel("Viewport")
+ViewportPanel::ViewportPanel(Renderer &renderer)
+    : m_renderer(renderer), m_selectedEntity(Entity()), UIPanel("Viewport")
 {
   // 视口特有样式设置
   m_windowFlags |= ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -46,7 +47,7 @@ void ViewportPanel::DrawContent()
     DrawGizmoToolbar();
 
     // 如果有选中实体则绘制Gizmo
-    if (m_selectedEntity != entt::null) {
+    if (m_selectedEntity.IsValid()) {
       HandleGizmo();
     }
   }

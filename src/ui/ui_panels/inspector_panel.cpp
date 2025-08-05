@@ -24,7 +24,7 @@ void InspectorPanel::DrawContent()
   }
 
   // 1. 显示实体基本信息
-  ImGui::Text("Entity ID: %d", static_cast<int>(m_currentEntity.GetHandle()));
+  ImGui::Text("Entity ID: %s", m_currentEntity.GetUUIDString().c_str());
   ImGui::SameLine();
   if (ImGui::Button("Destroy Entity")) {
     m_registry.DestroyEntity(m_currentEntity);

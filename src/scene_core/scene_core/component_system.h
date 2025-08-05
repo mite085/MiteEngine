@@ -141,7 +141,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
 
     // 通过事件总线，订阅组件添加/改变/移除事件
     m_EventSubscriptions.Subscribe<ComponentAddedEvent<T>>(BIND_DISPATCH_FN(OnComponentAdded));
-    m_EventSubscriptions.Subscribe<ComponentChangedEvent<T>>(BIND_DISPATCH_FN(OnComponentUpdated));
+    //m_EventSubscriptions.Subscribe<ComponentChangedEvent<T>>(BIND_DISPATCH_FN(OnComponentUpdated));
     m_EventSubscriptions.Subscribe<ComponentRemovedEvent<T>>(BIND_DISPATCH_FN(OnComponentRemoved));
   }
 
@@ -209,7 +209,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
    * 仅当调用SceneRegistry的ReplaceComponent
    * 或PatchComponent，修改现有组件时触发。
    */
-  virtual void OnComponentUpdated(ComponentChangedEvent<T> &e) {}
+  //virtual void OnComponentUpdated(ComponentChangedEvent<T> &e) {}
 
   /**
    * @brief 处理组件移除事件

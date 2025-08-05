@@ -448,7 +448,7 @@ void TransformComponent::UpdateWorldMatrix(SceneRegistry &reg) const
 void TransformComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
   // 获取所有对象
-  auto view = registry.GetEntitiesWith<TransformComponent, HierarchyComponent>();
+  auto view = registry.GetEntitiesWithAllOf<TransformComponent, HierarchyComponent>();
 
   // 第一阶段：处理根实体
   for (auto entity : view) {

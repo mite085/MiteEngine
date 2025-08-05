@@ -24,7 +24,7 @@ namespace mite {
  */
 class ComponentSystemManager {
  public:
-  ComponentSystemManager(SceneRegistry &registry, SceneEventCallbackAdapter& adapter);
+  ComponentSystemManager(SceneRegistry &registry);
   ~ComponentSystemManager();
 
   /**
@@ -61,7 +61,7 @@ class ComponentSystemManager {
     using U = typename T::ComponentType;
     static_assert(std::is_base_of<Component, U>::value,
                   "Registered component must inherit from class component");
-    m_Adapter.RegisterComponentCallbacks<U>();
+    m_Registry.GetEventCallbackAdapter().RegisterComponentCallbacks<U>();
 
     return rawPtr;
   }
@@ -106,7 +106,7 @@ class ComponentSystemManager {
     using U = typename T::ComponentType;
     static_assert(std::is_base_of<Component, U>::value,
                   "Registered component must inherit from class component");
-    m_Adapter.UnregisterComponentCallbacks<U>();
+    m_Registry.GetEventCallbackAdapter().UnregisterComponentCallbacks<U>();
   }
 
   /**
@@ -166,7 +166,6 @@ class ComponentSystemManager {
 
  private:
   SceneRegistry &m_Registry;
-  SceneEventCallbackAdapter &m_Adapter;
 
   std::vector<std::unique_ptr<ComponentSystem>> m_Systems;       // 用于遍历
   std::unordered_map<std::type_index, ComponentSystem *> m_SystemMap;  // 用于查找

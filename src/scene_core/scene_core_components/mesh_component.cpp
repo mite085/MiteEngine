@@ -96,9 +96,9 @@ void MeshComponentSystem::Shutdown(SceneRegistry &registry)
 
 void MeshComponentSystem::Update(float deltaTime, SceneRegistry &registry)
 {
-  auto view = registry.GetEntitiesWith<MeshComponent, TransformComponent>();
+  std::vector<Entity> view = registry.GetEntitiesWithAllOf<MeshComponent, TransformComponent>();
 
-  for (auto entity : view) {
+  for (Entity entity : view) {
     auto &mesh = registry.GetComponent<MeshComponent>(entity);
     auto &transform = registry.GetComponent<TransformComponent>(entity);
 

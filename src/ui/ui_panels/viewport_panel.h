@@ -16,7 +16,7 @@ class ViewportPanel : public UIPanel<ViewportPanel> {
   ViewportPanel(Renderer &renderer);
 
   // 设置当前选中实体（供InspectorPanel调用）
-  void SetSelectedEntity(entt::entity entity)
+  void SetSelectedEntity(Entity entity)
   {
     m_selectedEntity = entity;
   }
@@ -38,7 +38,7 @@ class ViewportPanel : public UIPanel<ViewportPanel> {
   void CalculateViewMatrix();   // 计算视图矩阵
 
   // ---- 状态 ----
-  entt::entity m_selectedEntity{entt::null};           // 当前选中的ECS实体
+  Entity m_selectedEntity;           // 当前选中的ECS实体
   ImGuizmo::OPERATION m_gizmoOp{ImGuizmo::TRANSLATE};  // 当前Gizmo操作模式
   ImGuizmo::MODE m_gizmoMode{ImGuizmo::LOCAL};         // 坐标系模式
 
@@ -48,8 +48,8 @@ class ViewportPanel : public UIPanel<ViewportPanel> {
   float m_cameraSpeed{2.5f};
 
   // 矩阵缓存
-  glm::mat4 m_viewMatrix;
-  glm::mat4 m_projMatrix;
+  glm::mat4 m_viewMatrix = glm::mat4();
+  glm::mat4 m_projMatrix = glm::mat4();
 };
 };
 

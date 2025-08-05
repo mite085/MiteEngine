@@ -1,6 +1,7 @@
 #ifndef MITE_SCENE_EVENT
 #define MITE_SCENE_EVENT
 
+#include "component.h"
 #include "component_id.h"
 #include "entity.h"
 
@@ -183,30 +184,30 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
     return new ComponentRemovedEvent<T>(entity, component);
   }
 };
-/**
- * @class ComponentChangedEvent
- * @brief 组件替换事件
- */
-template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
- public:
-  ComponentChangedEvent(Entity entity, T &newComponent, T &oldComponent)
-      : ComponentEvent<T>(entity, newComponent), oldComponent(oldComponent)
-  {
-  }
-  T &GetOldComponent()
-  {
-    return oldComponent;
-  }
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new ComponentChangedEvent<T>(entity, component, oldComponent);
-  }
-
- private:
-  T &oldComponent;  // 组件
-};
+///**
+// * @class ComponentChangedEvent
+// * @brief 组件替换事件
+// */
+//template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
+// public:
+//  ComponentChangedEvent(Entity entity, T &newComponent, T &oldComponent)
+//      : ComponentEvent<T>(entity, newComponent), oldComponent(oldComponent)
+//  {
+//  }
+//  T &GetOldComponent()
+//  {
+//    return oldComponent;
+//  }
+//  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+//  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+//  Event *Clone() const override
+//  {
+//    return new ComponentChangedEvent<T>(entity, component, oldComponent);
+//  }
+//
+// private:
+//  T &oldComponent;  // 组件
+//};
 };  // namespace mite
 
 #endif

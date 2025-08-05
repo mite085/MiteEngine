@@ -163,7 +163,7 @@ void VisibilityComponentSystem::Update(float deltaTime, SceneRegistry &registry)
 
 void VisibilityComponentSystem::PerformFrustumCulling(const Frustum &frustum, SceneRegistry &registry)
 {
-  auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
+  auto view = registry.GetEntitiesWithAllOf<VisibilityComponent, TransformComponent>();
 
   for (auto entity : view) {
     auto &visibility = registry.GetComponent<VisibilityComponent>(entity);
@@ -193,7 +193,7 @@ void VisibilityComponentSystem::PerformFrustumCulling(const Frustum &frustum, Sc
 void VisibilityComponentSystem::PerformDistanceCulling(const glm::vec3 &cameraPosition,
                                               SceneRegistry &registry)
 {
-  auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
+  auto view = registry.GetEntitiesWithAllOf<VisibilityComponent, TransformComponent>();
 
   for (auto entity : view) {
     auto &visibility = registry.GetComponent<VisibilityComponent>(entity);
@@ -213,7 +213,7 @@ void VisibilityComponentSystem::PerformDistanceCulling(const glm::vec3 &cameraPo
 
 void VisibilityComponentSystem::DebugDrawBounds(SceneRegistry &registry)
 {
-  auto view = registry.GetEntitiesWith<VisibilityComponent, TransformComponent>();
+  auto view = registry.GetEntitiesWithAllOf<VisibilityComponent, TransformComponent>();
 
   for (auto entity : view) {
     auto &visibility = registry.GetComponent<VisibilityComponent>(entity);

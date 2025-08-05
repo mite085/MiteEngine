@@ -6,9 +6,8 @@
 namespace mite {
 Scene::Scene(const std::string &name)
     : m_Name(name),
-      m_Registry(weak_from_this()),
-      m_EventCallbackAdapter(&m_Registry),
-      m_SystemManager(m_Registry, m_EventCallbackAdapter)
+      m_Registry(),
+      m_SystemManager(m_Registry)
 {
   // 初始化核心系统
   InitSystems();

@@ -64,7 +64,9 @@ void SceneView::AddToRenderQueue(Entity entity)
     return;
 
   // 只有同时拥有Transform、Mesh、Material的实体才加入渲染队列
-  if (m_Registry.HasComponent<TransformComponent, MeshComponent, MaterialComponent>(entity)) {
+  if (m_Registry.HasComponentWithAllOf<TransformComponent, MeshComponent, MaterialComponent>(
+          entity))
+  {
 
     // 构造RenderableEntity
     RenderableEntity renderable;

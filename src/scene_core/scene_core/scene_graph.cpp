@@ -20,8 +20,8 @@ void SceneGraph::Initialize(SceneRegistry &registry)
   m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
   m_EventSubscriptions.Subscribe<ComponentAddedEvent<HierarchyComponent>>(
       BIND_DISPATCH_FN(OnHierarchyAdded));
-  m_EventSubscriptions.Subscribe<ComponentChangedEvent<HierarchyComponent>>(
-      BIND_DISPATCH_FN(OnHierarchyChanged));
+  //m_EventSubscriptions.Subscribe<ComponentChangedEvent<HierarchyComponent>>(
+  //    BIND_DISPATCH_FN(OnHierarchyChanged));
   m_EventSubscriptions.Subscribe<ComponentRemovedEvent<HierarchyComponent>>(
       BIND_DISPATCH_FN(OnHierarchyRemoved));
   m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(BIND_DISPATCH_FN(OnTransformChanged));
@@ -359,50 +359,50 @@ void SceneGraph::OnHierarchyAdded(ComponentAddedEvent<HierarchyComponent> &e)
   // 可以在这里添加默认子节点或执行其他初始化逻辑
 }
 
-void SceneGraph::OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e)
-{
-  Entity entity = e.GetEntity();
-  auto &newHierarchy = e.GetComponent();
-  auto& oldHierarchy = e.GetOldComponent(); // 需要适配器支持获取旧组件
-
-  // 1. 验证新父子关系是否有效
-  if (!ValidateHierarchy(entity, newHierarchy.GetParent())) {
-    // 如果无效，恢复原来的父节点
-     newHierarchy.SetParent(oldHierarchy.GetParent());
-    return;
-  }
-
-  // 2. 从旧父节点移除当前实体
-  if (oldHierarchy.GetParent().IsValid()) {
-    if (GetRegistry().HasComponent<HierarchyComponent>(oldHierarchy.GetParent())) {
-      auto &oldParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
-          oldHierarchy.GetParent());
-      oldParentHierarchy.RemoveChild(entity);
-    }
-  }
-
-  // 3. 添加到新父节点
-  if (newHierarchy.GetParent().IsValid()) {
-    if (GetRegistry().HasComponent<HierarchyComponent>(newHierarchy.GetParent())) {
-      auto &newParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
-          newHierarchy.GetParent());
-      newParentHierarchy.AddChild(entity);
-    }
-  }
-
-  // 4. 更新深度缓存
-  UpdateDepthCacheRecursive(entity);
-
-  // 5. 标记变换为脏，需要重新计算世界变换
-  if (GetRegistry().HasComponent<TransformComponent>(entity)) {
-    auto &transform = GetRegistry().GetComponent<TransformComponent>(entity);
-    transform.dirtyFlags |= TransformComponent::HIERARCHY_DIRTY;
-    transform.MarkDirty();
-  }
-
-  // 6. 发布层次变更事件
-  EventBus::Get().Post(EntityParentChangedEvent(entity));
-}
+//void SceneGraph::OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e)
+//{
+//  Entity entity = e.GetEntity();
+//  auto &newHierarchy = e.GetComponent();
+//  auto& oldHierarchy = e.GetOldComponent(); // 需要适配器支持获取旧组件
+//
+//  // 1. 验证新父子关系是否有效
+//  if (!ValidateHierarchy(entity, newHierarchy.GetParent())) {
+//    // 如果无效，恢复原来的父节点
+//     newHierarchy.SetParent(oldHierarchy.GetParent());
+//    return;
+//  }
+//
+//  // 2. 从旧父节点移除当前实体
+//  if (oldHierarchy.GetParent().IsValid()) {
+//    if (GetRegistry().HasComponent<HierarchyComponent>(oldHierarchy.GetParent())) {
+//      auto &oldParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
+//          oldHierarchy.GetParent());
+//      oldParentHierarchy.RemoveChild(entity);
+//    }
+//  }
+//
+//  // 3. 添加到新父节点
+//  if (newHierarchy.GetParent().IsValid()) {
+//    if (GetRegistry().HasComponent<HierarchyComponent>(newHierarchy.GetParent())) {
+//      auto &newParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
+//          newHierarchy.GetParent());
+//      newParentHierarchy.AddChild(entity);
+//    }
+//  }
+//
+//  // 4. 更新深度缓存
+//  UpdateDepthCacheRecursive(entity);
+//
+//  // 5. 标记变换为脏，需要重新计算世界变换
+//  if (GetRegistry().HasComponent<TransformComponent>(entity)) {
+//    auto &transform = GetRegistry().GetComponent<TransformComponent>(entity);
+//    transform.dirtyFlags |= TransformComponent::HIERARCHY_DIRTY;
+//    transform.MarkDirty();
+//  }
+//
+//  // 6. 发布层次变更事件
+//  EventBus::Get().Post(EntityParentChangedEvent(entity));
+//}
 
 void SceneGraph::OnHierarchyRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
 {

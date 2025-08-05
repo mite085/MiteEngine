@@ -223,7 +223,7 @@ class SceneGraph {
   /**
    * @brief 处理层次组件变更事件
    */
-  void OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e);
+  //void OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e);
 
   /**
    * @brief 处理层次组件移除事件
