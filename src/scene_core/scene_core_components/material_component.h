@@ -29,6 +29,11 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
 
   ~MaterialComponent() override = default;
 
+  /**
+   * @brief 针对dirty对象进行处理
+   */
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
+
   // 材质基础操作 ========================================
   /**
    * @brief 获取材质数据
@@ -60,7 +65,7 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
    * @brief 获取关联的着色器
    * @return 着色器指针
    */
-  std::shared_ptr<Shader> GetShader() const;
+  std::shared_ptr<OpenGLShader> GetShader() const;
 
   // 材质参数快捷设置 ========================================
   void SetFloatParam(const std::string &name, float value);

@@ -2,6 +2,22 @@
 
 namespace mite {
 HierarchyComponent::HierarchyComponent() : ComponentTraits() {}
+
+HierarchyComponent::HierarchyComponent(const HierarchyComponent &other) noexcept
+    : m_Parent(other.m_Parent),
+      m_Children(other.m_Children),
+      m_DepthCache(0)  // 深度缓存重置（需要重新计算）
+{
+}
+HierarchyComponent &HierarchyComponent::operator=(const HierarchyComponent &other) noexcept
+{
+  if (this != &other) {
+    m_Parent = other.m_Parent;
+    m_Children = other.m_Children;
+    m_DepthCache = 0;  // 深度缓存失效
+  }
+  return *this;
+}
 size_t HierarchyComponent::GetDepth(SceneRegistry &registry)
 {
   // 如果已经是根节点，深度为0
@@ -71,8 +87,14 @@ void HierarchyComponent::ClearChildren()
 
 void HierarchyComponent::SetParent(Entity parent)
 {
-  m_Parent = parent;
-  m_DepthCache = 0;  // 使深度缓存失效
+  if (parent.IsValid()) {
+    m_Parent = parent;  // 有效parent，正常赋值
+    m_DepthCache = 0;   // 使深度缓存失效
+  }
+  else {
+    m_Parent.Destroy();  // 无效parent，将parent置空
+    m_DepthCache = 0;    // 使深度缓存失效
+  }
 }
 
 void HierarchyComponentSystem::Initialize(SceneRegistry &registry)
@@ -149,7 +171,8 @@ void HierarchyComponentSystem::OnComponentUpdated(ComponentChangedEvent<Hierarch
   hierarchy.MarkDirty();
 }
 
-void HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) {
+void HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
+{
   auto &oldComponent = e.GetComponent();
   Unregister(&oldComponent);
 
@@ -180,7 +203,9 @@ void HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<Hierarch
   }
 }
 
-bool HierarchyComponentSystem::ValidateHierarchy(Entity entity, Entity newParent, SceneRegistry &registry)
+bool HierarchyComponentSystem::ValidateHierarchy(Entity entity,
+                                                 Entity newParent,
+                                                 SceneRegistry &registry)
 {
   // 不允许设置自己为自己的父节点
   if (entity == newParent) {
@@ -224,5 +249,4 @@ void HierarchyComponentSystem::UpdateChildrenDepthCache(Entity entity, SceneRegi
     }
   }
 }
-
-};
+};  // namespace mite

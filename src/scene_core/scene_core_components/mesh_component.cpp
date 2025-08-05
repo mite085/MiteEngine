@@ -1,31 +1,26 @@
 #include "mesh_component.h"
-#include "transform_component.h"
 #include "material_component.h"
+#include "transform_component.h"
 namespace mite {
-MeshComponent::MeshComponent() : ComponentTraits() {}
+MeshComponent::MeshComponent() : ComponentTraits(), m_Mesh(Mesh(MeshGPUHandle())) {}
 
-MeshComponent::MeshComponent(std::shared_ptr<Mesh> mesh)
-    : ComponentTraits(), m_Mesh(mesh)
-{
-}
+MeshComponent::MeshComponent(Mesh mesh) : ComponentTraits(), m_Mesh(mesh) {}
 
 // 网格操作 ==============================================
-std::shared_ptr<Mesh> MeshComponent::GetMesh() const
+Mesh MeshComponent::GetMesh() const
 {
   return m_Mesh;
 }
 
-void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
+void MeshComponent::SetMesh(Mesh mesh)
 {
-  if (m_Mesh != mesh) {
-    m_Mesh = mesh;
-    EventBus::Get().Post(MeshChangedEvent(GetOwnerEntity(), *this));
-  }
+  m_Mesh = mesh;
+  EventBus::Get().Post(MeshChangedEvent(GetOwnerEntity(), *this));
 }
 
 bool MeshComponent::HasMesh() const
 {
-  return m_Mesh != nullptr;
+  return m_Mesh.GetHandle().indexCount != 0 && m_Mesh.GetHandle().vertexCount != 0;
 }
 
 // 渲染属性控制 ==========================================
@@ -110,4 +105,4 @@ void MeshComponentSystem::Update(float deltaTime, SceneRegistry &registry)
     // TODO: 处理每帧更新，如LOD计算等
   }
 }
-};
+};  // namespace mite

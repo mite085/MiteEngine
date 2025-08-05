@@ -19,9 +19,9 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
    */
   HierarchyComponent();
 
-  // 禁止拷贝（层次关系应唯一）
-  HierarchyComponent(const HierarchyComponent &) = delete;
-  HierarchyComponent &operator=(const HierarchyComponent &) = delete;
+  // 显示拷贝
+  HierarchyComponent(const HierarchyComponent &) noexcept;
+  HierarchyComponent &operator=(const HierarchyComponent &) noexcept;
 
   // 允许移动
   HierarchyComponent(HierarchyComponent &&) noexcept = default;

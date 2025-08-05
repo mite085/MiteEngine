@@ -39,7 +39,7 @@ bool MaterialComponent::HasMaterial() const
 }
 
 // ×ÅÉ«Æ÷¿ØÖÆ ==========================================
-std::shared_ptr<Shader> MaterialComponent::GetShader() const
+std::shared_ptr<OpenGLShader> MaterialComponent::GetShader() const
 {
   return m_Material ? m_Material->GetShader() : nullptr;
 }
