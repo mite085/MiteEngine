@@ -44,23 +44,13 @@ class UUIDGenerator {
    * @brief 根据索引生成伪随机的UUID
    * @param index 生成UUID的索引值
    * @return uuids::uuid 生成的UUID
-   * 复杂度: O(1) 平均时间复杂度
    */
   static uuids::uuid Generate(size_t index)
   {
-    // 使用固定种子加上索引作为随机源
     constexpr size_t fixed_seed = 0x123456789ABCDEF0;
-    thread_local std::mt19937 generator;  // 延迟初始化
-    thread_local size_t last_index = 0;
-
-    // 只有当索引变化时才重新初始化生成器
-    if (index != last_index) {
-      generator.seed(unsigned int(fixed_seed + index));
-      last_index = index;
-    }
-
-    thread_local uuids::uuid_random_generator gen{generator};
-    return gen();
+    std::mt19937 generator(unsigned int(fixed_seed + index));   // 每次重新构造
+    uuids::uuid_random_generator gen(generator);  // 局部变量，不复用
+    return gen();                                 // 确保每次调用都从初始状态开始
   }
 
   /**

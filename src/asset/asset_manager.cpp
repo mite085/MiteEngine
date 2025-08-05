@@ -58,9 +58,10 @@ void AssetManager::ReleaseTexture(AssetID id)
 // ===================== 模型管理 =====================
 AssetID AssetManager::LoadModel(const std::string &path)
 {
-  AssetID id = UUIDGenerator::Generate(path.c_str());
+  
   std::lock_guard<std::mutex> lock(mutex_);
 
+  AssetID id = UUIDGenerator::Generate(path.c_str());
   auto cachedModel = m_ModelCache.Get(id);
 
   // 缓存不存在则执行加载
