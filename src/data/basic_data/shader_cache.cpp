@@ -1,13 +1,13 @@
 #include "shader_cache.h"
 
 namespace mite {
-ShaderCache &ShaderCache::GetInstance()
+ShaderCache &ShaderCache::Get()
 {
   static ShaderCache instance;  // 线程安全的单例（C++11保证）
   return instance;
 }
 
-std::shared_ptr<OpenGLShader> ShaderCache::Get(const std::string &vertexPath,
+std::shared_ptr<OpenGLShader> ShaderCache::GetOpenGLShader(const std::string &vertexPath,
                                          const std::string &fragmentPath,
                                          const std::string &geometryPath)
 {

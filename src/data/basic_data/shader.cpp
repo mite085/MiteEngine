@@ -25,6 +25,7 @@ void OpenGLShader::LoadFromFile(const char *vertexPath,
 
   try {
     // 打开文件并读取到字符串流
+    
     vShaderFile.open(vertexPath);
     fShaderFile.open(fragmentPath);
     std::stringstream vShaderStream, fShaderStream;

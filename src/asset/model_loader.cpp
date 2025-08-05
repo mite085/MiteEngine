@@ -16,7 +16,7 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path, bool
     return {};
   }
 
-  std::shared_ptr<ModelAsset> model;
+  std::shared_ptr<ModelAsset> model = std::make_shared<ModelAsset>();
   model->id = UUIDGenerator::Generate(path.c_str());  // Éú³ÉÎ¨Ò»ID
   model->metadata.path = path;
   model->metadata.materialPaths = ExtractMaterialPaths(scene);
