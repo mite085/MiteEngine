@@ -33,7 +33,7 @@ void RenderCommand::Clear(const glm::vec4 &clearColor)
   instance.m_CommandQueue.push({CommandType::Clear, [] { /* 执行在Flush时处理 */ }});
 }
 
-void RenderCommand::Submit(const std::shared_ptr<Shader> &shader,
+void RenderCommand::Submit(const std::shared_ptr<OpenGLShader> &shader,
                            const std::shared_ptr<Mesh> &mesh,
                            const glm::mat4 &transform)
 {

@@ -49,7 +49,7 @@ class RenderCommand {
    * @param vertexArray 顶点数组对象
    * @param transform   模型变换矩阵
    */
-  static void Submit(const std::shared_ptr<Shader> &shader,
+  static void Submit(const std::shared_ptr<OpenGLShader> &shader,
                      const std::shared_ptr<Mesh> &mesh,
                      const glm::mat4 &transform = glm::mat4(1.0f));
 

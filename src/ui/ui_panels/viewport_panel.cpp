@@ -34,7 +34,7 @@ void ViewportPanel::DrawContent()
   auto viewportSize = ImGui::GetContentRegionAvail();
 
   // 2. 通知Renderer更新视口尺寸
-  m_renderer.SetViewport(viewportSize.x, viewportSize.y);
+  m_renderer.SetViewport(uint32_t(viewportSize.x), uint32_t(viewportSize.y));
 
   // 3. 获取场景FBO并绘制到ImGui
   intptr_t fbo = m_renderer.GetViewportFramebuffer();

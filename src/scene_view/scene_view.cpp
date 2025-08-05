@@ -3,7 +3,6 @@
 namespace mite {
 SceneView::SceneView(SceneRegistry &registry) : m_Registry(registry)
 {
-
   // 订阅SceneCore发出的四类核心事件
   m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
   m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
@@ -31,11 +30,6 @@ const std::vector<RenderableEntity> &SceneView::GetRenderQueue() const
 void SceneView::OnEntityCreated(EntityCreatedEvent &event)
 {
   Entity entity = event.GetEntity();
-
-  // 只有同时拥有Transform、Mesh、Material的实体才加入渲染队列
-  if (m_Registry.HasComponent<TransformComponent, MeshComponent, MaterialComponent>(entity)) {
-    AddToRenderQueue(entity);
-  }
 }
 
 void SceneView::OnEntityDestroyed(EntityDestroyedEvent &event)
@@ -63,24 +57,27 @@ void SceneView::OnMaterialChanged(MaterialChangedEvent &event)
   }
 }
 
-//=== 私有工具函数 ===//
 void SceneView::AddToRenderQueue(Entity entity)
 {
   // 防止重复添加
   if (m_EntityToIndexMap.count(entity) > 0)
     return;
 
-  // 构造RenderableEntity
-  RenderableEntity renderable;
-  renderable.entity = entity;
-  renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
-      m_Registry);
-  renderable.meshHandle = m_Registry.GetComponent<MeshComponent>(entity).GetMesh()->GetHandle();
-  renderable.materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
+  // 只有同时拥有Transform、Mesh、Material的实体才加入渲染队列
+  if (m_Registry.HasComponent<TransformComponent, MeshComponent, MaterialComponent>(entity)) {
 
-  // 加入队列并记录索引
-  m_EntityToIndexMap[entity] = m_RenderQueue.size();
-  m_RenderQueue.push_back(std::move(renderable));
+    // 构造RenderableEntity
+    RenderableEntity renderable;
+    renderable.entity = entity;
+    renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
+        m_Registry);
+    renderable.meshHandle = m_Registry.GetComponent<MeshComponent>(entity).GetMesh().GetHandle();
+    renderable.materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
+
+    // 加入队列并记录索引
+    m_EntityToIndexMap[entity] = m_RenderQueue.size();
+    m_RenderQueue.push_back(std::move(renderable));
+  }
 }
 
 void SceneView::RemoveFromRenderQueue(Entity entity)
@@ -100,6 +97,8 @@ void SceneView::RemoveFromRenderQueue(Entity entity)
   m_RenderQueue.pop_back();
   m_EntityToIndexMap.erase(entity);
 }
+
+//=== 私有工具函数 ===//
 
 void SceneView::UpdateRenderableEntity(Entity entity)
 {

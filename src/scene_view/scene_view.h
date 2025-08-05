@@ -31,6 +31,18 @@ class SceneView {
    */
   const std::vector<RenderableEntity> &GetRenderQueue() const;
 
+  /**
+   * 将ECS实体转换为RenderableEntity并加入渲染队列
+   * @param entity 需要添加的ECS实体
+   */
+  void AddToRenderQueue(Entity entity);
+
+  /**
+   * 从渲染队列移除实体
+   * @param entity 需要移除的ECS实体
+   */
+  void RemoveFromRenderQueue(Entity entity);
+
  private:
   //=== 事件处理函数（订阅SceneCore的事件） ===//
   void OnEntityCreated(EntityCreatedEvent &event);
@@ -38,17 +50,7 @@ class SceneView {
   void OnTransformChanged(TransformChangedEvent &event);
   void OnMaterialChanged(MaterialChangedEvent &event);
 
-  /**
-   * 内部方法：将ECS实体转换为RenderableEntity并加入渲染队列
-   * @param entity 需要添加的ECS实体
-   */
-  void AddToRenderQueue(Entity entity);
 
-  /**
-   * 内部方法：从渲染队列移除实体
-   * @param entity 需要移除的ECS实体
-   */
-  void RemoveFromRenderQueue(Entity entity);
 
   /**
    * 内部方法：更新实体在渲染队列中的变换或材质
