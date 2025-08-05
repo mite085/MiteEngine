@@ -17,7 +17,7 @@ Scene::Scene(const std::string &name)
   // auto env = CreateEntity("Environment");
   // env.AddComponent<EnvironmentComponent>();
 
-  m_MainCamera = Entity(weak_from_this(), entt::null);
+  m_MainCamera = Entity();
 }
 
 Scene::~Scene()
@@ -100,7 +100,7 @@ void Scene::Clear(bool keepSystems)
   m_EntityCounter = 0;
 
   // 3. 重置主相机引用
-  m_MainCamera = Entity(weak_from_this(), entt::null);
+  m_MainCamera = Entity(/*weak_from_this(), entt::null*/);
 
   // 4. 重置场景图状态
   if (m_SceneGraph) {

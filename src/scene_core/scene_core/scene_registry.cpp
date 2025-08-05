@@ -17,14 +17,18 @@ SceneRegistry::~SceneRegistry()
 Entity SceneRegistry::CreateEntity(const std::string name)
 {
   // 使用entt::registry::create()创建实体
-  Entity entity {m_Scene, m_Registry.create()};
+  Entity entity {m_Registry.create()};
 
-  // 添加基本组件，自动生成唯一ID
+  // 添加ID组件，自动生成唯一ID
   auto &id = AddComponent<IDComponent>(entity);
 
-  // 添加Tag系统，用于实体搜索和筛选
+  // 添加Tag组件，用于实体搜索和筛选
   auto &tag = AddComponent<TagComponent>(entity);
   tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
+
+  // 添加Hierachy组件，用于层次结构创建
+  auto hierachy = AddComponent<HierarchyComponent>(entity);
+
 
   // 创建事件并发布
   EntityCreatedEvent event(entity);
@@ -62,7 +66,7 @@ std::vector<Entity> SceneRegistry::GetAllEntities()
   // 遍历视图中的所有实体
   for (auto entity : m_Registry.storage<entt::entity>()) {
     if (m_Registry.valid(entity)) {
-      entities.emplace_back(m_Scene, entity);
+      entities.emplace_back(entity);
     }
   }
 

@@ -38,14 +38,14 @@ class Entity {
    * 
    * TODO：潜在风险：智能指针weak_ptr未正常初始化，可能导致逻辑错误
    */
-  Entity() = default;
+  Entity() : m_Handle(entt::null) {}
 
   /**
    * @brief 从场景和EnTT实体构造
    * @param scene 所属场景的弱引用
    * @param handle 底层EnTT实体句柄
    */
-  explicit Entity(std::weak_ptr<Scene> scene, entt::entity handle);
+  explicit Entity(/*std::weak_ptr<Scene> scene, */entt::entity handle);
 
   /**
    * @brief 拷贝构造函数
@@ -100,7 +100,7 @@ class Entity {
   explicit operator bool() const;
 
  private:
-  std::weak_ptr<Scene> m_Scene;       // 所属场景的弱引用（避免循环引用）
+  //std::weak_ptr<Scene> m_Scene;       // 所属场景的弱引用（避免循环引用）
   entt::entity m_Handle{entt::null};  // 底层EnTT实体句柄
 };
 };  // namespace mite

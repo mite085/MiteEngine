@@ -4,13 +4,12 @@
 #include "scene_registry.h"
 
 namespace mite {
-Entity::Entity(std::weak_ptr<Scene> scene, entt::entity handle) : m_Scene(scene), m_Handle(handle)
+Entity::Entity(entt::entity handle) :m_Handle(handle)
 {
 }
 
 Entity::Entity(const Entity &other)
-    : m_Scene(other.m_Scene),   // weak_ptr拷贝是安全的
-      m_Handle(other.m_Handle)  // entt::entity可以直接拷贝
+    : m_Handle(other.m_Handle)  // entt::entity可以直接拷贝
 {
 }
 
@@ -41,7 +40,7 @@ entt::entity Entity::GetHandle() const
 
 bool Entity::operator==(const Entity &other) const
 {
-  return m_Handle == other.m_Handle && m_Scene.lock() == other.m_Scene.lock();
+  return m_Handle == other.m_Handle;
 }
 
 bool Entity::operator!=(const Entity &other) const

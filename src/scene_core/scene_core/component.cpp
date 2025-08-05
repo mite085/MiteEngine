@@ -71,6 +71,11 @@ Entity Component::GetParent(SceneRegistry &reg)
   return reg.GetComponent<HierarchyComponent>(GetOwnerEntity()).GetParent();
 }
 
+void Component::SetOwnerEntity(Entity entity)
+{
+  m_OwnerEntity = entity;
+}
+
 Entity Component::GetOwnerEntity() const
 {
   return m_OwnerEntity;

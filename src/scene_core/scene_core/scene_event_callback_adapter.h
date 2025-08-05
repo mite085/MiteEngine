@@ -133,10 +133,10 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   void UnregisterCallbacks();
 
  public:
-  /**
-   * @brief 注册实体生命周期回调
-   */
-  void RegisterEntityCallbacks();
+  ///**
+  // * @brief 注册实体生命周期回调
+  // */
+  //void RegisterEntityCallbacks();
   /**
    * @brief 模板方法：注册组件相关回调
    * @tparam Component 组件类型
@@ -274,7 +274,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
    */
   template<typename T> void InvokeConstruct(entt::registry &reg, entt::entity ent)
   {
-    Entity entity{m_Registry->m_Scene, ent};
+    Entity entity{ent};
     T &component = reg.get<T>(ent);
     // 以typeid作为key查表
     const std::type_index type = typeid(T);
@@ -296,7 +296,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
    */
   template<typename T> void InvokeUpdate(entt::registry &reg, entt::entity ent)
   {
-    Entity entity{m_Registry->m_Scene, ent};
+    Entity entity{ent};
     T &component = reg.get<T>(ent);
 
     // 需要检查旧Component是否为空
@@ -330,7 +330,7 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
    */
   template<typename T> void InvokeDestroy(entt::registry &reg, entt::entity ent)
   {
-    Entity entity{m_Registry->m_Scene, ent};
+    Entity entity{ent};
     T &component = reg.get<T>(ent);
     const std::type_index type = typeid(T);
     if (auto it = m_DestroyCallbacks.find(type); it != m_DestroyCallbacks.end()) {
@@ -358,58 +358,58 @@ class SceneEventCallbackAdapter : public CallbackAdapter<SceneRegistry *> {
   // ComponentUpdate专用的组件状态缓存
   ComponentStateCache m_ComponentStateCache;
 
-  // 3. 实体事件回调相关(由SceneObserver全权管理) ===================================
- private:
-  // 实体生命周期回调类型
-  using EntityCallback = std::function<void(Entity)>;
-  // 带优先级的回调包装器
-  struct EntityCallbackWrapper {
-    EntityCallback callback;
-    size_t id = 0;     // 唯一标识
-  };
+ // // 3. 实体事件回调相关(由SceneObserver全权管理) ===================================
+ //private:
+ // // 实体生命周期回调类型
+ // using EntityCallback = std::function<void(Entity)>;
+ // // 带优先级的回调包装器
+ // struct EntityCallbackWrapper {
+ //   EntityCallback callback;
+ //   size_t id = 0;     // 唯一标识
+ // };
 
-  /**
-   * @brief 注册实体创建回调
-   * @param callback 回调函数
-   * @param priority 调用优先级（数值越大越早执行）
-   * @return 可用于取消注册的回调ID
-   */
-  void RegisterCallbackEntityCreated(EntityCallback callback);
+ // /**
+ //  * @brief 注册实体创建回调
+ //  * @param callback 回调函数
+ //  * @param priority 调用优先级（数值越大越早执行）
+ //  * @return 可用于取消注册的回调ID
+ //  */
+ // void RegisterCallbackEntityCreated(EntityCallback callback);
 
-  /**
-   * @brief 注册实体销毁回调（在实体实际销毁时调用）
-   * @param callback 回调函数
-   * @param priority 调用优先级（数值越大越早执行）
-   * @return 回调ID
-   */
-  void RegisterCallbackEntityDestroyed(EntityCallback callback);
+ // /**
+ //  * @brief 注册实体销毁回调（在实体实际销毁时调用）
+ //  * @param callback 回调函数
+ //  * @param priority 调用优先级（数值越大越早执行）
+ //  * @return 回调ID
+ //  */
+ // void RegisterCallbackEntityDestroyed(EntityCallback callback);
 
 
-  /**
-   * @brief EnTT原生on_construct事件回调（实体专用版）
-   *
-   * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
-   */
-  void InvokeEntityCreated(entt::registry &registry, entt::entity entity);
+ // /**
+ //  * @brief EnTT原生on_construct事件回调（实体专用版）
+ //  *
+ //  * 注意：on_construct的签名必须匹配void(entt::registry&, entt::entity)
+ //  */
+ // void InvokeEntityCreated(entt::registry &registry, entt::entity entity);
 
-  /**
-   * @brief EnTT原生on_destroy事件回调（实体专用版）
-   *
-   * 注意：on_destroy的签名必须匹配void(entt::registry&, entt::entity)
-   */
-  void InvokeEntityDestroyed(entt::registry &registry, entt::entity entity);
+ // /**
+ //  * @brief EnTT原生on_destroy事件回调（实体专用版）
+ //  *
+ //  * 注意：on_destroy的签名必须匹配void(entt::registry&, entt::entity)
+ //  */
+ // void InvokeEntityDestroyed(entt::registry &registry, entt::entity entity);
 
-  /**
-   * @brief 注销全部Entity回调函数
-   */
-  void UnregisterCallbackEntity();
+ // /**
+ //  * @brief 注销全部Entity回调函数
+ //  */
+ // void UnregisterCallbackEntity();
 
- private:
-  // 回调存储结构
-  EntityCallback m_CreateEntityCallback;
-  EntityCallback m_DestroyEntityCallback;
+ //private:
+ // // 回调存储结构
+ // EntityCallback m_CreateEntityCallback;
+ // EntityCallback m_DestroyEntityCallback;
 
-  size_t m_NextEntityCallbackID = 1;  // 全局的CallBack自增计数器，同时作为ID
+ // size_t m_NextEntityCallbackID = 1;  // 全局的CallBack自增计数器，同时作为ID
 
 };
 

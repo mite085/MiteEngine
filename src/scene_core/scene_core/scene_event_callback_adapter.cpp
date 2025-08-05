@@ -15,7 +15,7 @@ void SceneEventCallbackAdapter::RegisterCallbacks(SceneRegistry *registry)
   m_Registry = registry;
 
   // 此处仅注册实体回调
-  RegisterEntityCallbacks();
+  //RegisterEntityCallbacks();
 
   // 组件回调由ComponentSystemManager的
   // RegisterSystem方法负责注册：
@@ -35,7 +35,7 @@ void SceneEventCallbackAdapter::UnregisterCallbacks()
 {
   // 此处仅注销实体回调，
   
-  UnregisterCallbackEntity();
+  //UnregisterCallbackEntity();
 
   // 组件回调由ComponentSystemManager的
   // RegisterSystem方法负责注销：
@@ -47,70 +47,70 @@ void SceneEventCallbackAdapter::UnregisterCallbacks()
   m_DestroyCallbacks.clear();
 }
 
-void SceneEventCallbackAdapter::RegisterEntityCallbacks()
-{
-  // 实体创建事件
-  RegisterCallbackEntityCreated([this](Entity entity) {
-    EntityCreatedEvent event(entity);
-    EventBus::Get().Post(event);
-  });
+//void SceneEventCallbackAdapter::RegisterEntityCallbacks()
+//{
+  //// 实体创建事件
+  //RegisterCallbackEntityCreated([this](Entity entity) {
+  //  EntityCreatedEvent event(entity);
+  //  EventBus::Get().Post(event);
+  //});
 
-  // 实体销毁事件
-  RegisterCallbackEntityDestroyed([this](Entity entity) {
-    EntityDestroyedEvent event(entity);
-    EventBus::Get().Post(event);
-  });
-}
+  //// 实体销毁事件
+  //RegisterCallbackEntityDestroyed([this](Entity entity) {
+  //  EntityDestroyedEvent event(entity);
+  //  EventBus::Get().Post(event);
+  //});
+//}
 
-// 3. 实体事件回调相关 ===============================================
-
-void SceneEventCallbackAdapter::RegisterCallbackEntityCreated(EntityCallback callback)
-{
-  // 连接到EnTT的回调系统
-  m_Registry->GetUnderlyingRegistry()
-      .on_construct<entt::entity>()
-      .connect<&SceneEventCallbackAdapter::InvokeEntityCreated>(
-      this);
-}
-
-void SceneEventCallbackAdapter::RegisterCallbackEntityDestroyed(EntityCallback callback)
-{
-  // 连接到EnTT的回调系统
-  m_Registry->GetUnderlyingRegistry()
-      .on_destroy<entt::entity>()
-      .connect<&SceneEventCallbackAdapter::InvokeEntityDestroyed>(this);
-}
-
-void SceneEventCallbackAdapter::InvokeEntityCreated(entt::registry &registry, entt::entity entity)
-{
-  // 构造Entity对象
-  Entity userEntity(m_Registry->m_Scene, entity);
-
-  // 触发回调
-  m_CreateEntityCallback(userEntity);
-}
-
-void SceneEventCallbackAdapter::InvokeEntityDestroyed(entt::registry &registry,
-                                                      entt::entity entity)
-{
-  // 构造Entity对象
-  Entity userEntity(m_Registry->m_Scene, entity);
-
-  // 触发回调
-  m_DestroyEntityCallback(userEntity);
-
-  // 清空缓存
-  m_ComponentStateCache.Clear(userEntity);
-}
-
-void SceneEventCallbackAdapter::UnregisterCallbackEntity()
-{
-  m_Registry->GetUnderlyingRegistry()
-      .on_construct<entt::entity>()
-      .disconnect<&SceneEventCallbackAdapter::InvokeEntityCreated>(this);
-  m_Registry->GetUnderlyingRegistry()
-      .on_destroy<entt::entity>()
-      .disconnect<&SceneEventCallbackAdapter::InvokeEntityDestroyed>(this);
-}
+//// 3. 实体事件回调相关 ===============================================
+//
+//void SceneEventCallbackAdapter::RegisterCallbackEntityCreated(EntityCallback callback)
+//{
+//  // 连接到EnTT的回调系统
+//  m_Registry->GetUnderlyingRegistry()
+//      .on_construct<entt::entity>()
+//      .connect<&SceneEventCallbackAdapter::InvokeEntityCreated>(
+//      this);
+//}
+//
+//void SceneEventCallbackAdapter::RegisterCallbackEntityDestroyed(EntityCallback callback)
+//{
+//  // 连接到EnTT的回调系统
+//  m_Registry->GetUnderlyingRegistry()
+//      .on_destroy<entt::entity>()
+//      .connect<&SceneEventCallbackAdapter::InvokeEntityDestroyed>(this);
+//}
+//
+//void SceneEventCallbackAdapter::InvokeEntityCreated(entt::registry &registry, entt::entity entity)
+//{
+//  // 构造Entity对象
+//  Entity userEntity(m_Registry->m_Scene, entity);
+//
+//  // 触发回调
+//  m_CreateEntityCallback(userEntity);
+//}
+//
+//void SceneEventCallbackAdapter::InvokeEntityDestroyed(entt::registry &registry,
+//                                                      entt::entity entity)
+//{
+//  // 构造Entity对象
+//  Entity userEntity(m_Registry->m_Scene, entity);
+//
+//  // 触发回调
+//  m_DestroyEntityCallback(userEntity);
+//
+//  // 清空缓存
+//  m_ComponentStateCache.Clear(userEntity);
+//}
+//
+//void SceneEventCallbackAdapter::UnregisterCallbackEntity()
+//{
+//  m_Registry->GetUnderlyingRegistry()
+//      .on_construct<entt::entity>()
+//      .disconnect<&SceneEventCallbackAdapter::InvokeEntityCreated>(this);
+//  m_Registry->GetUnderlyingRegistry()
+//      .on_destroy<entt::entity>()
+//      .disconnect<&SceneEventCallbackAdapter::InvokeEntityDestroyed>(this);
+//}
 
 };  // namespace mite
