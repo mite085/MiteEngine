@@ -2,9 +2,6 @@
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
-// UUID名称空间生成器
-constexpr uuids::uuid COMPONENT_NS_UUID =
-    uuids::uuid::from_string("6ba7b810-9dad-11d1-80b4-00c04fd430c8").value();
 
 ComponentID::ComponentID(uuids::uuid id) : m_ID(std::move(id)) {}
 
@@ -14,8 +11,7 @@ template<typename T> uuids::uuid ComponentID::GenerateTypeUUID()
   const std::type_index typeIdx(typeid(T));
   const size_t hash = typeIdx.hash_code();
 
-  // 使用类型哈希和命名空间UUID生成版本5 UUID
-  return uuids::uuid_name_generator(COMPONENT_NS_UUID)(std::to_string(hash));
+  return UUIDGenerator::Generate(hash);
 }
 
 template<typename T> ComponentID ComponentID::Get()
