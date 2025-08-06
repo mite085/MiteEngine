@@ -151,37 +151,40 @@ void MiteApplication::LoadDefaultScene()
 
   // 0. 创建模型Entity
   Entity plane = m_Scene->CreateEntity("plane");
-  
 
   // 1. 加载模型
   AssetID plane_model_asset_id = AssetManager::Get().LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string());
   Model plane_model = Model(AssetManager::Get().GetModel(plane_model_asset_id)->handle);
 
-  // 2. 创建网格实体，挂载组件
   std::vector<Entity> plane_submesh_list;
-  for (auto &mesh_handle : plane_model.GetHandle().subMeshes) {
+  for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
+    // 2. 创建网格实体，挂载组件
     Entity plane_submesh = m_Scene->CreateEntity("plane_submesh");
     MeshComponent &plane_mesh_component = m_Scene->GetRegistry().AddComponent<MeshComponent>(
         plane_submesh);
-    plane_mesh_component.SetMesh(Mesh(mesh_handle));
+    plane_mesh_component.SetMesh(plane_model.GetMeshes(i));
+
+    // 3. 创建材质实例
+    std::shared_ptr<MaterialInstance> plane_material = MaterialSystem::Get().CreateInstance(
+        "BasicMaterial");
+    // 4. 创建材质组件
+    MaterialComponent &plane_material_component =
+        m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh);
+    plane_material_component.SetMaterial(plane_material.get());
+
+    // 5. 创建变换组件
+    TransformComponent &plane_transform_component =
+        m_Scene->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
+
     plane_submesh_list.push_back(plane_submesh);
   }
 
-  // 3. 创建材质实例
-  std::shared_ptr<MaterialInstance> plane_material = MaterialSystem::Get().CreateInstance(
-      "BasicMaterial");
-
-  // 4. 创建材质组件
-  MaterialComponent &plane_material_component =
-      m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane, plane_material);
-  plane_material_component.SetMaterial(plane_material);
-
-  // 5. 推入渲染队列
+  // 6. 推入渲染队列
   for (Entity submesh : plane_submesh_list) {
     m_SceneView->AddToRenderQueue(submesh);
   }
-  
+
   // 更新场景视图
   // m_SceneView->SyncFromSceneCore();
 }
