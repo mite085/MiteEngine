@@ -29,7 +29,7 @@ class MouseMoveEvent : public Event {
   }
 
   EVENT_CLASS_TYPE(MOUSE_POSITION_MOVED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD)
   Event *Clone() const override
   {
     return new MouseMoveEvent(xpos, ypos);
@@ -72,7 +72,7 @@ class MouseButtonPressedEvent : public Event {
   }
 
   EVENT_CLASS_TYPE(MOUSE_BUTTON_PRESSED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_MOUSE)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
     return new MouseButtonPressedEvent(button, mods, xpos, ypos);
