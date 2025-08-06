@@ -39,8 +39,8 @@ class TextureLoadEvent : public Event {
     return m_Asset;
   }
 
-  EVENT_CLASS_TYPE(SCENE_LOADED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  EVENT_CLASS_TYPE(TEXTURE_LOADED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_ASSET)
   Event *Clone() const override
   {
     return new TextureLoadEvent(m_Asset);

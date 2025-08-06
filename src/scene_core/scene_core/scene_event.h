@@ -100,7 +100,7 @@ class EntityParentChangedEvent : public EntityEvent {
  public:
   EntityParentChangedEvent(Entity entity) : EntityEvent(entity) {}
 
-  EVENT_CLASS_TYPE(PARENT_CHANGED)
+  EVENT_CLASS_TYPE(HIERACHY_COMPONENT_PARENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {

@@ -176,7 +176,7 @@ class ParentChangedEvent : public ComponentEvent<HierarchyComponent> {
   {
   }
 
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(HIERACHY_COMPONENT_PARENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -208,7 +208,7 @@ class ChildAddedEvent : public ComponentEvent<HierarchyComponent> {
   {
   }
 
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(HIERACHY_COMPONENT_CHILD_ADDED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -235,7 +235,7 @@ class ChildRemovedEvent : public ComponentEvent<HierarchyComponent> {
   {
   }
 
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(HIERACHY_COMPONENT_CHILD_REMOVE)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {

@@ -269,7 +269,7 @@ class TransformComponentSystem : public DirtyComponentSystem<TransformComponent>
 
 /**
  * @class TransformUpdatedEvent
- * @brief 变换更新事件
+ * @brief 旋转矩阵组件替换事件
  * 
  * TransformComponent::ProcessDirty负责发布，
  * SceneGraph负责接收，并标记所有子节点Dirty
@@ -281,7 +281,7 @@ class TransformUpdatedEvent : public ComponentEvent<TransformComponent> {
   {
   }
 
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(TRANSFORM_COMPONENT_UPDATE)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -304,7 +304,7 @@ class PositionChangedEvent : public ComponentEvent<TransformComponent> {
   {
   }
 
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(TRANSFORM_COMPONENT_POSITION_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -337,7 +337,7 @@ class RotationChangedEvent : public ComponentEvent<TransformComponent> {
   {
     return isWorldSpace;
   }
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(TRANSFORM_COMPONENT_ROTATION_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -367,7 +367,7 @@ class ScaleChangedEvent : public ComponentEvent<TransformComponent> {
   {
     return isWorldSpace;
   }
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(TRANSFORM_COMPONENT_SCALE_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -397,7 +397,7 @@ class TransformChangedEvent : public ComponentEvent<TransformComponent> {
   {
     return isWorldSpace;
   }
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(TRANSFORM_COMPONENT_TRANSFORM_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {

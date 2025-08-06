@@ -220,8 +220,8 @@ class VisibilityChangedEvent : public ComponentEvent<VisibilityComponent> {
   {
   }
 
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
+  EVENT_CLASS_TYPE(VISIBILITY_COMPONENT_CHANGED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
     return new VisibilityChangedEvent(entity, component, m_IsVisible);

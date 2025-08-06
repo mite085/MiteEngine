@@ -134,7 +134,7 @@ class MeshChangedEvent : public ComponentEvent<MeshComponent> {
   {
   }
 
-  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
+  EVENT_CLASS_TYPE(MESH_COMPONENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
   Event *Clone() const override
   {

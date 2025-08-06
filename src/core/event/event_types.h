@@ -9,16 +9,16 @@ namespace mite {
 // （一般来说，键盘输入和鼠标输入事件触发频率极高，分开处理可以降低处理压力）
 enum EventCategory {
   None = 0,
-  EVENT_CATEGORY_WINDOW = 1 << 0,  // 窗口事件
-  EVENT_CATEGORY_INPUT = 1 << 1,   // 输入事件
+  EVENT_CATEGORY_WINDOW = 1 << 0,    // 窗口事件
+  EVENT_CATEGORY_INPUT = 1 << 1,     // 输入事件
   EVENT_CATEGORY_KEYBOARD = 1 << 2,  // 键盘输入事件
   EVENT_CATEGORY_MOUSE = 1 << 3,     // 鼠标输入事件
-  EVENT_CATEGORY_EDITOR = 1 << 4,  // 编辑器特定事件
-  EVENT_CATEGORY_CUSTOM = 1 << 5,  // 用户自定义事件
+  EVENT_CATEGORY_EDITOR = 1 << 4,    // 编辑器特定事件
+  EVENT_CATEGORY_CUSTOM = 1 << 5,    // 用户自定义事件
 
   EVENT_CATEGORY_SCENE_CHANGE = 1 << 6,  // 场景变更事件
-  EVENT_CATEGORY_RENDER = 1 << 7,   // 渲染事件
-  EVENT_CATEGORY_ASSET = 1 << 8,	// 资产事件
+  EVENT_CATEGORY_RENDER = 1 << 7,        // 渲染事件
+  EVENT_CATEGORY_ASSET = 1 << 8,         // 资产事件
 };
 
 // 事件类型
@@ -57,11 +57,13 @@ enum class EventType {
   SCENE_LOADED,   // 场景加载
   SCENE_CLEARED,  // 场景清空
 
-  MODEL_LOADED,  // 模型加载
+  MODEL_LOADED,    // 模型加载
   TEXTURE_LOADED,  // 贴图加载
 
-  MATERIAL_COMPONENT_CHANGED,         // 材质组件修改
-  MESH_COMPONENT_CHANGED,             // 网格组件修改
+  VISIBILITY_COMPONENT_CHANGED,  // 可见性组件修改
+
+  MATERIAL_COMPONENT_CHANGED,  // 材质组件修改
+  MESH_COMPONENT_CHANGED,      // 网格组件修改
 
   HIERACHY_COMPONENT_PARENT_CHANGED,  // 父节点变化
   HIERACHY_COMPONENT_CHILD_ADDED,     // 子节点添加
@@ -72,8 +74,6 @@ enum class EventType {
   TRANSFORM_COMPONENT_ROTATION_CHANGED,   // 旋转变换
   TRANSFORM_COMPONENT_SCALE_CHANGED,      // 缩放变换
   TRANSFORM_COMPONENT_TRANSFORM_CHANGED,  // 矩阵变换
-
-
 
   CustomEvent  // 用户自定义事件
 };

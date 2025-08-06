@@ -157,7 +157,6 @@ void MiteApplication::LoadDefaultScene()
       FileSystem::GetAssetPath("models/plane.obj").string());
   Model plane_model = Model(AssetManager::Get().GetModel(plane_model_asset_id)->handle);
 
-  std::vector<Entity> plane_submesh_list;
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件
     Entity plane_submesh = m_Scene->CreateEntity("plane_submesh");
@@ -173,18 +172,19 @@ void MiteApplication::LoadDefaultScene()
         m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh);
     plane_material_component.SetMaterial(plane_material.get());
 
+    auto material_ins =
+        m_Scene->GetRegistry().GetComponent<MaterialComponent>(plane_submesh).GetMaterial();
+
     // 5. 创建变换组件
     TransformComponent &plane_transform_component =
         m_Scene->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
 
-    plane_submesh_list.push_back(plane_submesh);
+    // 6. 推入渲染队列
+    m_SceneView->AddToRenderQueue(plane_submesh);
+
   }
 
-  // 6. 推入渲染队列
-  for (Entity submesh : plane_submesh_list) {
-    m_SceneView->AddToRenderQueue(submesh);
-  }
-
+  
   // 更新场景视图
   // m_SceneView->SyncFromSceneCore();
 }

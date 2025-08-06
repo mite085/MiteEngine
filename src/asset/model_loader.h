@@ -52,7 +52,7 @@ class ModelLoadEvent : public Event {
     return m_Asset;
   }
 
-  EVENT_CLASS_TYPE(SCENE_LOADED)
+  EVENT_CLASS_TYPE(MODEL_LOADED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
