@@ -6,6 +6,11 @@ MaterialInstance::MaterialInstance(std::shared_ptr<OpenGLShader> shader) : m_Sha
   if (!m_Shader) {
     LOG_ERROR("MaterialInstance created with null shader!");
   }
+  LOG_INFO("MaterialInstance created!");
+}
+
+MaterialInstance::~MaterialInstance() {
+  LOG_INFO("MaterialInstance destroyed!");
 }
 
 // ===================== 参数设置方法 =====================

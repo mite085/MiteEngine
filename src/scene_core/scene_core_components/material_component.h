@@ -29,7 +29,7 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
    * @brief 带初始值的构造函数
    * @param material 材质实例
    */
-  explicit MaterialComponent(MaterialInstance* material);
+  explicit MaterialComponent(std::shared_ptr<MaterialInstance> material);
 
   ~MaterialComponent() override = default;
 
@@ -43,13 +43,13 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
    * @brief 获取材质数据
    * @return 共享指针指向的材质数据
    */
-  MaterialInstance *GetMaterial() const;
+  std::shared_ptr<MaterialInstance> GetMaterial() const;
 
   /**
    * @brief 设置材质数据
    * @param material 新的材质数据
    */
-  void SetMaterial(MaterialInstance *material);
+  void SetMaterial(std::shared_ptr<MaterialInstance> material);
 
   /**
    * @brief 通过材质模板名称创建实例
@@ -82,7 +82,7 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
   bool Deserialize(std::istream &input) override;
 
  private:
-  MaterialInstance *m_Material;  // 材质数据
+  std::shared_ptr<MaterialInstance> m_Material;  // 材质数据
 };
 
 // Material组件系统 ==============================================

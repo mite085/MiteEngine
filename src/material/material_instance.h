@@ -19,6 +19,7 @@ using TextureBindFunc = std::function<void(TextureGPUHandle, uint32_t)>;
 class MaterialInstance {
  public:
   explicit MaterialInstance(std::shared_ptr<OpenGLShader> shader);
+  ~MaterialInstance();
 
   // ---- ²ÎÊıÉèÖÃ ----
   void SetFloat(const std::string &name, float value);

@@ -3,18 +3,18 @@
 namespace mite {
 MaterialComponent::MaterialComponent() : ComponentTraits(), m_Material(nullptr) {}
 
-MaterialComponent::MaterialComponent(MaterialInstance *material)
+MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> material)
     : ComponentTraits(), m_Material(material)
 {
 }
 
 // 材质基础操作 ========================================
-MaterialInstance *MaterialComponent::GetMaterial() const
+std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterial() const
 {
   return m_Material;
 }
 
-void MaterialComponent::SetMaterial(MaterialInstance *material)
+void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
 {
   if (m_Material != material) {
     m_Material = material;
@@ -29,7 +29,7 @@ void MaterialComponent::SetMaterialFromTemplate(const std::string &templateName)
     // TODO: 创建出的newMaterial智能指针没有后续维护，不推荐使用
     std::shared_ptr<MaterialInstance> newMaterial = MaterialSystem::Get().CreateInstance(
         templateName);
-    SetMaterial(newMaterial.get());
+    SetMaterial(newMaterial);
   }
   catch (const std::exception &e) {
     LOG_ERROR("Failed to create material from template '{}': {}", templateName, e.what());
@@ -124,7 +124,7 @@ void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
   for (auto entity : view) {
     auto &matComp = registry.GetComponent<MaterialComponent>(entity);
     if (matComp.HasMaterial()) {
-      materialGroups[matComp.GetMaterial()].push_back(entity);
+      materialGroups[matComp.GetMaterial().get()].push_back(entity);
     }
   }
 
