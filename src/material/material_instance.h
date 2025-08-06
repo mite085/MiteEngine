@@ -6,7 +6,6 @@
 #include "material_param_variant.h"
 
 namespace mite {
-
 // 定义纹理绑定函数类型
 using TextureBindFunc = std::function<void(TextureGPUHandle, uint32_t)>;
 
@@ -59,7 +58,7 @@ class MaterialInstance {
   }
 
  private:
-  std::shared_ptr<OpenGLShader> m_Shader;                                      // 关联的Shader程序
+  std::shared_ptr<OpenGLShader> m_Shader;                                // 关联的Shader程序
   std::unordered_map<std::string, UniformVariant> m_Uniforms;            // Uniform值存储
   std::unordered_map<std::string, std::shared_ptr<Texture>> m_Textures;  // 纹理绑定
   std::unordered_map<std::string, std::vector<std::shared_ptr<Texture>>>

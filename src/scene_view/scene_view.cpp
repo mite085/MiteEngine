@@ -21,7 +21,7 @@ void SceneView::Update()
   // 未来可在此添加帧级批量优化（如脏标记合并）
 }
 
-const std::vector<RenderableEntity> &SceneView::GetRenderQueue() const
+const std::vector<std::shared_ptr<RenderableEntity>> &SceneView::GetRenderQueue() const
 {
   return m_RenderQueue;
 }
@@ -42,7 +42,7 @@ void SceneView::OnTransformChanged(TransformChangedEvent &event)
   auto it = m_EntityToIndexMap.find(event.GetEntity());
   if (it != m_EntityToIndexMap.end()) {
     // 更新现有渲染实体的变换矩阵
-    m_RenderQueue[it->second].worldTransform =
+    m_RenderQueue[it->second]->worldTransform =
         m_Registry.GetComponent<TransformComponent>(event.GetEntity()).GetWorldMatrix(m_Registry);
   }
 }
@@ -52,7 +52,7 @@ void SceneView::OnMaterialChanged(MaterialChangedEvent &event)
   auto it = m_EntityToIndexMap.find(event.GetEntity());
   if (it != m_EntityToIndexMap.end()) {
     // 更新现有渲染实体的材质引用
-    m_RenderQueue[it->second].materialInstance =
+    m_RenderQueue[it->second]->materialInstance =
         m_Registry.GetComponent<MaterialComponent>(event.GetEntity()).GetMaterial();
   }
 }
@@ -69,12 +69,14 @@ void SceneView::AddToRenderQueue(Entity entity)
   {
 
     // 构造RenderableEntity
-    RenderableEntity renderable;
-    renderable.entity = entity;
-    renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
+    std::shared_ptr<RenderableEntity> renderable = std::make_shared<RenderableEntity>();
+    renderable->entity = entity;
+    renderable->worldTransform =
+        m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
         m_Registry);
-    renderable.meshHandle = m_Registry.GetComponent<MeshComponent>(entity).GetMesh()->GetHandle();
-    renderable.materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
+    renderable->meshHandle = m_Registry.GetComponent<MeshComponent>(entity).GetMesh()->GetHandle();
+    renderable->materialInstance =
+        m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
 
     // 加入队列并记录索引
     m_EntityToIndexMap[entity] = m_RenderQueue.size();
@@ -92,7 +94,7 @@ void SceneView::RemoveFromRenderQueue(Entity entity)
   size_t index = it->second;
   if (index != m_RenderQueue.size() - 1) {
     m_RenderQueue[index] = std::move(m_RenderQueue.back());
-    m_EntityToIndexMap[m_RenderQueue.back().entity] = index;
+    m_EntityToIndexMap[m_RenderQueue.back()->entity] = index;
   }
 
   // 移除末尾元素
@@ -109,9 +111,9 @@ void SceneView::UpdateRenderableEntity(Entity entity)
     return;
 
   // 从队列中获取到eitity，进行综合更新（供未来扩展使用）
-  RenderableEntity &renderable = m_RenderQueue[it->second];
-  renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
+  std::shared_ptr<RenderableEntity> &renderable = m_RenderQueue[it->second];
+  renderable->worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
       m_Registry);
-  renderable.materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
+  renderable->materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
 }
 }  // namespace mite

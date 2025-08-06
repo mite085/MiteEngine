@@ -29,7 +29,7 @@ class SceneView {
    * 获取当前帧的可渲染实体列表（供Renderer模块调用）
    * @return 只读的渲染队列引用，避免数据拷贝
    */
-  const std::vector<RenderableEntity> &GetRenderQueue() const;
+  const std::vector<std::shared_ptr<RenderableEntity>> &GetRenderQueue() const;
 
   /**
    * 将ECS实体转换为RenderableEntity并加入渲染队列
@@ -61,7 +61,7 @@ class SceneView {
  private:
   //=== 数据成员 ===//
   SceneRegistry &m_Registry;                    // SceneCore的ECS注册表引用
-  std::vector<RenderableEntity> m_RenderQueue;  // 当前帧的渲染队列
+  std::vector<std::shared_ptr<RenderableEntity>> m_RenderQueue;  // 当前帧的渲染队列
 
   // 事件订阅集合（通过RAII自动取消订阅）
   SubscriptionGroup m_EventSubscriptions;
