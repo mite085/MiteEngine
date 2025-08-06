@@ -50,8 +50,9 @@ enum class EventType {
   // EventCategorySceneChange 场景变更事件 =========================
   ENTITY_CREATED,     // 实体创建
   ENTITY_DESTROYED,   // 实体销毁
-  COMPONENT_ADDED,    // 组件添加
-  COMPONENT_REMOVED,  // 组件移除
+
+  COMPONENT_ADDED_EVENT_BASE = 0x10000,  // 组件添加事件区间（自动生成，预留高位区间）
+  COMPONENT_REMOVED_EVENT_BASE = 0x20000,  // 组件移除事件区间（自动生成，预留高位区间）
 
   TAG_CHANGED,    // 标签变化
   SCENE_LOADED,   // 场景加载

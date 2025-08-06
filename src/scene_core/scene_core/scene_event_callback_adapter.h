@@ -4,11 +4,10 @@
 #include "scene_event.h"
 
 namespace mite {
-
 ///**
 // * @brief 组件状态缓存管理器
 // */
-//class ComponentStateCache {
+// class ComponentStateCache {
 // public:
 //  ~ComponentStateCache()
 //  {
@@ -98,14 +97,14 @@ namespace mite {
 
 /**
  * @brief 场景事件回调适配器
- * 
+ *
  * TODO：
  * 原则上应当继承自public CallbackAdapter<SceneRegistry*>
  * 但现在RegisterCallbacks()由SceneRegistry触发，
  * 所以此处依赖关系修改为SceneRegistry依赖Adapter，
  * 所以无法使用原先的继承模式
- * 
- * TODO: 
+ *
+ * TODO:
  * 确认ComponentChangedEvent是否有必要
  */
 class SceneEventCallbackAdapter {
@@ -115,7 +114,7 @@ class SceneEventCallbackAdapter {
 
   // 组件回调函数类型
   using ComponentCallback = std::function<void(Entity, Component &)>;
-  //using ComponentUpdateCallback = std::function<void(Entity, Component &, Component &)>;
+  // using ComponentUpdateCallback = std::function<void(Entity, Component &, Component &)>;
 
   /**
    * @brief 注册所有回调
@@ -136,18 +135,20 @@ class SceneEventCallbackAdapter {
 
     // 组件添加事件
     RegisterCallbackComponentConstruct<T>([this](Entity entity, T &component) {
-      PostComponentEvent<ComponentAddedEvent<T>, T>(entity, component);
+      ComponentAddedEvent<T> event(entity, component);
+      EventBus::Get().Post(event);
     });
 
     // 组件删除事件
     RegisterCallbackComponentDestroy<T>([this](Entity entity, T &component) {
-      PostComponentEvent<ComponentRemovedEvent<T>, T>(entity, component);
+      ComponentRemovedEvent<T> event(entity, component);
+      EventBus::Get().Post(event);
     });
 
     //// 组件变更事件
-    //RegisterCallbackComponentUpdate<T>([this](Entity entity, T &component, T &oldComponent) {
-    //  PostComponentEvent<ComponentChangedEvent<T>, T>(entity, component, oldComponent);
-    //});
+    // RegisterCallbackComponentUpdate<T>([this](Entity entity, T &component, T &oldComponent) {
+    //   PostComponentEvent<ComponentChangedEvent<T>, T>(entity, component, oldComponent);
+    // });
   }
 
   /**
@@ -158,7 +159,7 @@ class SceneEventCallbackAdapter {
     std::unique_lock lock(m_CallbackMutex);
     const std::type_index type = typeid(T);
     m_ConstructCallbacks.erase(type);
-    //m_UpdateCallbacks.erase(type);
+    // m_UpdateCallbacks.erase(type);
     m_DestroyCallbacks.erase(type);
   }
 
@@ -174,12 +175,12 @@ class SceneEventCallbackAdapter {
     }
 
     //// 缓存初始状态
-    //m_ComponentStateCache.Capture(entity, &component);
+    // m_ComponentStateCache.Capture(entity, &component);
   }
-  //template<typename T> void OnComponentUpdated(Entity entity, Component &component)
+  // template<typename T> void OnComponentUpdated(Entity entity, Component &component)
   //{
-  //  std::shared_lock lock(m_CallbackMutex);
-  //  const std::type_index type = typeid(component);
+  //   std::shared_lock lock(m_CallbackMutex);
+  //   const std::type_index type = typeid(component);
 
   //  // 获取旧状态
   //  auto oldComponentPtr = m_ComponentStateCache.GetOldState(entity);
@@ -211,22 +212,22 @@ class SceneEventCallbackAdapter {
     }
 
     //// 清除缓存
-    //m_ComponentStateCache.Clear(entity);
+    // m_ComponentStateCache.Clear(entity);
   }
 
  private:
-  template<typename E_T, typename T> void PostComponentEvent(Entity entity, T &component)
-  {
-    E_T event(entity, component);
-    EventBus::Get().Post(event);
-  }
-
-  //template<typename E_T, typename T>
-  //void PostComponentEvent(Entity entity, T &component, T &oldComponent)
+  // template<typename E_T, typename T> void PostComponentEvent(Entity entity, T &component)
   //{
-  //  E_T event(entity, component, oldComponent);
-  //  EventBus::Get().Post(event);
-  //}
+  //   E_T event(entity, component);
+  //   EventBus::Get().Post(event);
+  // }
+
+  // template<typename E_T, typename T>
+  // void PostComponentEvent(Entity entity, T &component, T &oldComponent)
+  //{
+  //   E_T event(entity, component, oldComponent);
+  //   EventBus::Get().Post(event);
+  // }
 
   template<typename T>
   void RegisterCallbackComponentConstruct(std::function<void(Entity, T &)> callback)
@@ -238,15 +239,15 @@ class SceneEventCallbackAdapter {
     };
   }
 
-  //template<typename T>
-  //void RegisterCallbackComponentUpdate(std::function<void(Entity, T &, T &)> callback)
+  // template<typename T>
+  // void RegisterCallbackComponentUpdate(std::function<void(Entity, T &, T &)> callback)
   //{
-  //  std::unique_lock lock(m_CallbackMutex);
-  //  const std::type_index type = typeid(T);
-  //  m_UpdateCallbacks[type] = [callback](Entity entity, Component &comp, Component &oldComp) {
-  //    callback(entity, static_cast<T &>(comp), static_cast<T &>(oldComp));
-  //  };
-  //}
+  //   std::unique_lock lock(m_CallbackMutex);
+  //   const std::type_index type = typeid(T);
+  //   m_UpdateCallbacks[type] = [callback](Entity entity, Component &comp, Component &oldComp) {
+  //     callback(entity, static_cast<T &>(comp), static_cast<T &>(oldComp));
+  //   };
+  // }
 
   template<typename T>
   void RegisterCallbackComponentDestroy(std::function<void(Entity, T &)> callback)
@@ -262,11 +263,10 @@ class SceneEventCallbackAdapter {
   mutable std::shared_mutex m_CallbackMutex;
 
   std::unordered_map<std::type_index, ComponentCallback> m_ConstructCallbacks;
-  //std::unordered_map<std::type_index, ComponentUpdateCallback> m_UpdateCallbacks;
+  // std::unordered_map<std::type_index, ComponentUpdateCallback> m_UpdateCallbacks;
   std::unordered_map<std::type_index, ComponentCallback> m_DestroyCallbacks;
 
-  //ComponentStateCache m_ComponentStateCache;
+  // ComponentStateCache m_ComponentStateCache;
 };
-
 }  // namespace mite
 #endif

@@ -161,8 +161,33 @@ template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
  public:
   ComponentAddedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
 
-  EVENT_CLASS_TYPE(COMPONENT_ADDED)
+  // EVENT_CLASS_TYPE(COMPONENT_ADDED)
+  // 
+  // 无法使用宏的原因：
+  // 负责注册事件接收函数的ComponentSystem是模板类，
+  // adapter的RegisterCallbackComponentConstruct也是模板函数，
+  // 但不同模板不能使用同一个EventType，否则分发器会分发给所有
+  // 订阅任意模板的ComponentAddedEvent的类。
+  //
+  // 使用 ComponentID 的哈希值作为 EventType，可以避免这个问题
+  static EventType GetStaticType()
+  {
+    return static_cast<EventType>(static_cast<uint32_t>(EventType::COMPONENT_ADDED_EVENT_BASE) +
+                                  ComponentID::Get<T>().Hash());
+  }
+  virtual EventType GetEventType() const override
+  {
+    return GetStaticType();
+  }
+  // 动态生成事件名称
+  virtual const char *GetName() const override
+  {
+    static std::string name = std::string("ComponentAddedEvent_") + typeid(T).name();
+    return name.c_str();
+  }
+
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+
   Event *Clone() const override
   {
     return new ComponentAddedEvent<T>(entity, component);
@@ -177,7 +202,24 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
  public:
   ComponentRemovedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
 
-  EVENT_CLASS_TYPE(COMPONENT_REMOVED)
+  // EVENT_CLASS_TYPE(COMPONENT_REMOVED)
+  // 使用 ComponentID 的哈希值作为 EventType
+  static EventType GetStaticType()
+  {
+    return static_cast<EventType>(static_cast<uint32_t>(EventType::COMPONENT_REMOVED_EVENT_BASE) +
+                                  ComponentID::Get<T>().Hash());
+  }
+  virtual EventType GetEventType() const override
+  {
+    return GetStaticType();
+  }
+  // 动态生成事件名称
+  virtual const char *GetName() const override
+  {
+    static std::string name = std::string("ComponentRemovedEvent_") + typeid(T).name();
+    return name.c_str();
+  }
+
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -188,7 +230,7 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
 // * @class ComponentChangedEvent
 // * @brief 组件替换事件
 // */
-//template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
+// template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
 // public:
 //  ComponentChangedEvent(Entity entity, T &newComponent, T &oldComponent)
 //      : ComponentEvent<T>(entity, newComponent), oldComponent(oldComponent)
