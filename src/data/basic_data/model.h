@@ -22,6 +22,14 @@ class Model {
   {
     return handle_;
   }
+  Mesh* GetMeshes(size_t count) const
+  {
+    if (count >= subMeshes_.size()) {
+      LOG_ERROR("Invalid mesh count: {}", count);
+      return nullptr;
+    }
+    return subMeshes_[count].get();
+  }
 
  private:
   ModelGPUHandle handle_;

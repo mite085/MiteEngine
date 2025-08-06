@@ -73,7 +73,7 @@ void SceneView::AddToRenderQueue(Entity entity)
     renderable.entity = entity;
     renderable.worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
         m_Registry);
-    renderable.meshHandle = m_Registry.GetComponent<MeshComponent>(entity).GetMesh().GetHandle();
+    renderable.meshHandle = m_Registry.GetComponent<MeshComponent>(entity).GetMesh()->GetHandle();
     renderable.materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
 
     // 加入队列并记录索引

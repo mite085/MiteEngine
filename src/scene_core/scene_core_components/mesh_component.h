@@ -32,7 +32,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
    * @param mesh 网格数据
    * @param material 材质数据
    */
-  explicit MeshComponent(Mesh mesh);
+  explicit MeshComponent(Mesh* mesh);
 
   ~MeshComponent() override = default;
 
@@ -46,13 +46,13 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
    * @brief 获取网格数据
    * @return 共享指针指向的网格数据
    */
-  Mesh GetMesh() const;
+  Mesh *GetMesh() const;
 
   /**
    * @brief 设置网格数据
    * @param mesh 新的网格数据
    */
-  void SetMesh(Mesh mesh);
+  void SetMesh(Mesh *mesh);
 
   /**
    * @brief 检查是否有有效网格数据
@@ -105,7 +105,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
   bool Deserialize(std::istream &input) override;
 
  private:
-  Mesh m_Mesh;          // 网格数据
+  Mesh *m_Mesh;  // 网格数据
 
   bool m_IsVisible = true;       // 可见性标志
   bool m_CastShadows = true;     // 是否投射阴影

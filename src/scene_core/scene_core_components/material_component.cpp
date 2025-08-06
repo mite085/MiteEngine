@@ -1,18 +1,20 @@
 #include "material_component.h"
 
 namespace mite {
-MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> material)
-    : ComponentTraits(), m_Material(std::move(material))
+MaterialComponent::MaterialComponent() : ComponentTraits(), m_Material(nullptr) {}
+
+MaterialComponent::MaterialComponent(MaterialInstance *material)
+    : ComponentTraits(), m_Material(material)
 {
 }
 
 // 材质基础操作 ========================================
-std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterial() const
+MaterialInstance *MaterialComponent::GetMaterial() const
 {
   return m_Material;
 }
 
-void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
+void MaterialComponent::SetMaterial(MaterialInstance *material)
 {
   if (m_Material != material) {
     m_Material = material;
@@ -24,8 +26,10 @@ void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
 void MaterialComponent::SetMaterialFromTemplate(const std::string &templateName)
 {
   try {
-    auto newMaterial = MaterialSystem::Get().CreateInstance(templateName);
-    SetMaterial(newMaterial);
+    // TODO: 创建出的newMaterial智能指针没有后续维护，不推荐使用
+    std::shared_ptr<MaterialInstance> newMaterial = MaterialSystem::Get().CreateInstance(
+        templateName);
+    SetMaterial(newMaterial.get());
   }
   catch (const std::exception &e) {
     LOG_ERROR("Failed to create material from template '{}': {}", templateName, e.what());
@@ -120,14 +124,14 @@ void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
   for (auto entity : view) {
     auto &matComp = registry.GetComponent<MaterialComponent>(entity);
     if (matComp.HasMaterial()) {
-      materialGroups[matComp.GetMaterial().get()].push_back(entity);
+      materialGroups[matComp.GetMaterial()].push_back(entity);
     }
   }
 
   // 批量提交到渲染器
   for (const auto &[material, entities] : materialGroups) {
     // 绑定材质状态
-    //material->Apply();
+    // material->Apply();
 
     // 提交关联实体
     for (Entity entity : entities) {
@@ -139,5 +143,4 @@ void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
     }
   }
 }
-
 };  // namespace mite
