@@ -161,7 +161,14 @@ class ComponentSystemManager {
   void ShutdownAll();
 
  private:
-  // 系统执行顺序排序
+  /**
+   * @brief 系统执行顺序排序
+   * 
+   * 通过获取当前系统依赖的其他系统类型，
+   * 使用拓扑排序算法，确保被依赖的系统排序在前。
+   * 在系统更新阶段，优先更新被依赖的系统，
+   * 后更新依赖其他系统的系统
+   */
   void SortSystems();
 
  private:
