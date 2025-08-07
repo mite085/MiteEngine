@@ -25,7 +25,7 @@ class Mesh {
   }
 
  private:
-  std::shared_ptr<MeshGPUHandle> handle_;
+  std::unique_ptr<MeshGPUHandle> handle_;
 };
 
 };  // namespace mite

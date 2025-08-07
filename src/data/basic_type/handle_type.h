@@ -85,10 +85,6 @@ struct MeshSourceData {
 
 // ------------------------ 模型相关 ------------------------
 
-// 模型GPU句柄
-struct ModelGPUHandle {
-  std::vector<MeshGPUHandle> subMeshes;  // 每个子网格的GPU资源
-};
 
 // 模型数据来源（Renderer模块专用）
 struct ModelSourceData {
