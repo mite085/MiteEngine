@@ -1,13 +1,12 @@
 #ifndef MITE_SCENE_VIEW
 #define MITE_SCENE_VIEW
 
-#include "scene_core/scene_registry.h"
-#include "scene_core/scene_event.h"
-#include "scene_core_components/component_headers.h"
 #include "renderable_entity.h"
+#include "scene_core/scene_event.h"
+#include "scene_core/scene_registry.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
-
 class SceneView {
  public:
   /**
@@ -31,18 +30,6 @@ class SceneView {
    */
   const std::vector<std::shared_ptr<RenderableEntity>> &GetRenderQueue() const;
 
-  /**
-   * 将ECS实体转换为RenderableEntity并加入渲染队列
-   * @param entity 需要添加的ECS实体
-   */
-  void AddToRenderQueue(Entity entity);
-
-  /**
-   * 从渲染队列移除实体
-   * @param entity 需要移除的ECS实体
-   */
-  void RemoveFromRenderQueue(Entity entity);
-
  private:
   //=== 事件处理函数（订阅SceneCore的事件） ===//
   void OnEntityCreated(EntityCreatedEvent &event);
@@ -50,7 +37,17 @@ class SceneView {
   void OnTransformChanged(TransformChangedEvent &event);
   void OnMaterialChanged(MaterialChangedEvent &event);
 
+  /**
+   * 将ECS实体转换为RenderableEntity并加入渲染队列
+   * @param entity 需要添加的ECS实体
+   */
+  bool AddToRenderQueue(Entity entity);
 
+  /**
+   * 从渲染队列移除实体
+   * @param entity 需要移除的ECS实体
+   */
+  void RemoveFromRenderQueue(Entity entity);
 
   /**
    * 内部方法：更新实体在渲染队列中的变换或材质
@@ -60,7 +57,8 @@ class SceneView {
 
  private:
   //=== 数据成员 ===//
-  SceneRegistry &m_Registry;                    // SceneCore的ECS注册表引用
+  SceneRegistry &m_Registry;                     // SceneCore的ECS注册表引用
+  std::unordered_set<Entity> m_PendingEntities;  // 当前帧新创建的实体列表，下一帧AddToRenderQueue
   std::vector<std::shared_ptr<RenderableEntity>> m_RenderQueue;  // 当前帧的渲染队列
 
   // 事件订阅集合（通过RAII自动取消订阅）

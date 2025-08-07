@@ -67,6 +67,7 @@ void MiteApplication::Initialize()
 
   // 加载默认场景
   LoadDefaultScene();
+
 }
 
 void MiteApplication::InitializeWindowWithOpenGL()
@@ -170,18 +171,13 @@ void MiteApplication::LoadDefaultScene()
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
         m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh);
-    plane_material_component.SetMaterial(plane_material.get());
-
-    auto material_ins =
-        m_Scene->GetRegistry().GetComponent<MaterialComponent>(plane_submesh).GetMaterial();
+    plane_material_component.SetMaterial(plane_material);
 
     // 5. 创建变换组件
     TransformComponent &plane_transform_component =
         m_Scene->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
 
-    // 6. 推入渲染队列
-    m_SceneView->AddToRenderQueue(plane_submesh);
-
+    // 6. 由SceneView自动推入渲染队列（EntityCreatedEvent事件驱动+PendingEntities延迟处理）
   }
 
   

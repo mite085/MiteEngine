@@ -17,8 +17,22 @@ SceneView::~SceneView()
 
 void SceneView::Update()
 {
-  // 当前最小化实现无需每帧主动处理数据（完全事件驱动）
-  // 未来可在此添加帧级批量优化（如脏标记合并）
+  // 每帧处理PendingEntities列表，
+  // 将当前帧（和之前帧）新创建的实体加入到渲染队列
+  // 
+  // 注意：
+  // 此处没有主动清理未能加入渲染队列的Entity，
+  // 是因为遍历成本不高，且考虑到异步加载
+  // Mesh和Material未必能在当前帧内完成，
+  // 甚至无法给出几帧之后移除的判定依据。
+  for (auto it = m_PendingEntities.begin(); it != m_PendingEntities.end();) {
+    if (AddToRenderQueue(*it)) {
+      it = m_PendingEntities.erase(it);  // 成功加入队列后移除
+    }
+    else {
+      ++it;
+    }
+  }
 }
 
 const std::vector<std::shared_ptr<RenderableEntity>> &SceneView::GetRenderQueue() const
@@ -29,12 +43,18 @@ const std::vector<std::shared_ptr<RenderableEntity>> &SceneView::GetRenderQueue(
 //=== 私有事件处理函数 ===//
 void SceneView::OnEntityCreated(EntityCreatedEvent &event)
 {
-  Entity entity = event.GetEntity();
+  // 加入延迟处理列表
+  m_PendingEntities.insert(event.GetEntity());
 }
 
 void SceneView::OnEntityDestroyed(EntityDestroyedEvent &event)
 {
   RemoveFromRenderQueue(event.GetEntity());
+
+  // 维护延迟处理列表
+  if (m_PendingEntities.find(event.GetEntity()) != m_PendingEntities.end()) {
+    m_PendingEntities.erase(m_PendingEntities.find(event.GetEntity()));
+  }
 }
 
 void SceneView::OnTransformChanged(TransformChangedEvent &event)
@@ -57,11 +77,11 @@ void SceneView::OnMaterialChanged(MaterialChangedEvent &event)
   }
 }
 
-void SceneView::AddToRenderQueue(Entity entity)
+bool SceneView::AddToRenderQueue(Entity entity)
 {
   // 防止重复添加
   if (m_EntityToIndexMap.count(entity) > 0)
-    return;
+    return true;
 
   // 只有同时拥有Transform、Mesh、Material的实体才加入渲染队列
   if (m_Registry.HasComponentWithAllOf<TransformComponent, MeshComponent, MaterialComponent>(
@@ -81,6 +101,11 @@ void SceneView::AddToRenderQueue(Entity entity)
     // 加入队列并记录索引
     m_EntityToIndexMap[entity] = m_RenderQueue.size();
     m_RenderQueue.push_back(std::move(renderable));
+
+    return true;
+  }
+  else {
+    return false;
   }
 }
 
