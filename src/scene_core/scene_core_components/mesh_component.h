@@ -23,11 +23,6 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
  public:
 
   /**
-   * @brief 默认构造函数
-   */
-  MeshComponent();
-
-  /**
    * @brief 带初始值的构造函数
    * @param mesh 网格数据
    * @param material 材质数据

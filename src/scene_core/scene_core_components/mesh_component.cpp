@@ -2,9 +2,6 @@
 #include "material_component.h"
 #include "transform_component.h"
 namespace mite {
-
-MeshComponent::MeshComponent() : ComponentTraits(), m_Mesh(nullptr) {}
-
 MeshComponent::MeshComponent(Mesh *mesh) : ComponentTraits(), m_Mesh(mesh) {}
 
 // Íø¸ñ²Ù×÷ ==============================================

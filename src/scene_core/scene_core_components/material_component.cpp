@@ -1,8 +1,6 @@
 #include "material_component.h"
 
 namespace mite {
-MaterialComponent::MaterialComponent() : ComponentTraits(), m_Material(nullptr) {}
-
 MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> material)
     : ComponentTraits(), m_Material(material)
 {

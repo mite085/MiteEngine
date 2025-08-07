@@ -162,16 +162,14 @@ void MiteApplication::LoadDefaultScene()
     // 2. 创建网格实体，挂载组件
     Entity plane_submesh = m_Scene->CreateEntity("plane_submesh");
     MeshComponent &plane_mesh_component = m_Scene->GetRegistry().AddComponent<MeshComponent>(
-        plane_submesh);
-    plane_mesh_component.SetMesh(plane_model.GetMeshes(i));
+        plane_submesh, plane_model.GetMeshes(i));
 
     // 3. 创建材质实例
     std::shared_ptr<MaterialInstance> plane_material = MaterialSystem::Get().CreateInstance(
         "BasicMaterial");
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
-        m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh);
-    plane_material_component.SetMaterial(plane_material);
+        m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh, plane_material);
 
     // 5. 创建变换组件
     TransformComponent &plane_transform_component =

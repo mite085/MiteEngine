@@ -22,10 +22,6 @@ namespace mite {
 class MaterialComponent : public ComponentTraits<MaterialComponent, Component::Family::Render> {
  public:
   /**
-   * @brief 默认构造函数
-   */
-  MaterialComponent();
-  /**
    * @brief 带初始值的构造函数
    * @param material 材质实例
    */
