@@ -13,19 +13,19 @@ namespace mite {
  */
 class Mesh {
  public:
-  Mesh(const MeshGPUHandle &handle);
+  Mesh(const std::shared_ptr<MeshGPUHandle> handle);
 
   uint32_t GetIndexCount() const
   {
-    return handle_.indexCount;
+    return handle_->indexCount;
   }
-  MeshGPUHandle GetHandle() const
+  std::shared_ptr<MeshGPUHandle> GetHandle() const
   {
     return handle_;
   }
 
  private:
-  MeshGPUHandle handle_;
+  std::shared_ptr<MeshGPUHandle> handle_;
 };
 
 };  // namespace mite

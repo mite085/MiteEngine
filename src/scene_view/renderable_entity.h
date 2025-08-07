@@ -13,7 +13,7 @@ namespace mite {
 struct RenderableEntity {
   Entity entity;                       // 对应的ECS实体ID
   glm::mat4 worldTransform;            // 世界空间变换矩阵（从Transform组件计算）
-  MeshGPUHandle meshHandle;            // 网格GPU句柄（从Mesh组件获取）
+  std::shared_ptr<MeshGPUHandle> meshHandle;           // 网格GPU句柄（从Mesh组件获取）
   std::shared_ptr<MaterialInstance> materialInstance;  // 材质实例（从Material组件获取）
 
   // 注：可在此添加渲染排序所需的附加字段（如与摄像机的距离）

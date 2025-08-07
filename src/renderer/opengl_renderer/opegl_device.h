@@ -34,7 +34,7 @@ class OpenGLDevice : public IRenderDevice {
   // 所以Create和Destroy接收的是Model数据。
   // 但Bind和Draw的操作是和Mesh强相关，
   // 所以这里实现Bind Mesh而非Bind Model
-  void BindMesh(MeshGPUHandle handle) const override;
+  void BindMesh(std::shared_ptr<MeshGPUHandle> handle) const override;
   void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const override;
 
  private:

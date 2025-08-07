@@ -12,28 +12,28 @@ namespace mite {
  */
 class Model {
  public:
-  explicit Model(const ModelGPUHandle &handle);
+  explicit Model(const std::shared_ptr<ModelGPUHandle> handle);
 
   const size_t GetSubMeshCount() const
   {
     return subMeshes_.size();
   }
-  const ModelGPUHandle &GetHandle() const
+  const std::shared_ptr<ModelGPUHandle> GetHandle() const
   {
     return handle_;
   }
-  Mesh* GetMeshes(size_t count) const
+  std::shared_ptr<Mesh> GetMeshes(size_t count) const
   {
     if (count >= subMeshes_.size()) {
       LOG_ERROR("Invalid mesh count: {}", count);
       return nullptr;
     }
-    return subMeshes_[count].get();
+    return subMeshes_[count];
   }
 
  private:
-  ModelGPUHandle handle_;
-  std::vector<std::unique_ptr<Mesh>> subMeshes_;
+  std::shared_ptr<ModelGPUHandle> handle_;
+  std::vector<std::shared_ptr<Mesh>> subMeshes_;
 };
 };  // namespace mite
 

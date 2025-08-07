@@ -246,15 +246,15 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
   }
 }
 
-void OpenGLDevice::BindMesh(MeshGPUHandle handle) const
+void OpenGLDevice::BindMesh(std::shared_ptr<MeshGPUHandle> handle) const
 {
-  if (handle.vertexArray == 0) {
+  if (handle->vertexArray == 0) {
     LOG_WARN("Attempted to bind invalid mesh (VAO=0)");
     return;
   }
 
   // 绑定顶点数组对象（VAO）
-  GLuint vao = static_cast<GLuint>(handle.vertexArray);
+  GLuint vao = static_cast<GLuint>(handle->vertexArray);
   glBindVertexArray(vao);
 
   // 注：VAO已包含VBO/EBO的绑定信息，无需重复绑定

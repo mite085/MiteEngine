@@ -46,7 +46,7 @@ void OpenGLRenderer::RenderScene(const std::vector<std::shared_ptr<RenderableEnt
   // 遍历渲染队列
   for (const auto &entity : renderQueue) {  
     // 0. 检查渲染实体是否有效
-    if (!entity->materialInstance || entity->meshHandle.vertexArray == 0) {
+    if (!entity->materialInstance || entity->meshHandle->vertexArray == 0) {
       LOG_WARN("Invalid renderable entity - missing material or mesh");
       continue;
     }
@@ -61,11 +61,11 @@ void OpenGLRenderer::RenderScene(const std::vector<std::shared_ptr<RenderableEnt
     }
 
     // 3. 绑定网格VAO
-    MeshGPUHandle handle = entity->meshHandle;
+    std::shared_ptr<MeshGPUHandle> handle = entity->meshHandle;
     IRenderDevice::Current().BindMesh(handle);
 
     // 4. 绘制网格
-    IRenderDevice::Current().DrawIndexed(handle.indexCount, 0);
+    IRenderDevice::Current().DrawIndexed(handle->indexCount, 0);
 
     // 5. 解绑（可选，减少状态切换）
     glBindVertexArray(0);

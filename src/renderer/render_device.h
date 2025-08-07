@@ -39,7 +39,7 @@ class IRenderDevice {
   // 模型/网格体操作
   virtual ModelGPUHandle CreateModel(const ModelSourceData &data) = 0;
   virtual void DestroyModel(ModelGPUHandle handle) = 0;
-  virtual void BindMesh(MeshGPUHandle handle) const = 0;
+  virtual void BindMesh(std::shared_ptr<MeshGPUHandle> handle) const = 0;
   virtual void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const = 0;
 
   // 静态当前设备管理

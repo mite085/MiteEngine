@@ -2,15 +2,17 @@
 #include "material_component.h"
 #include "transform_component.h"
 namespace mite {
-MeshComponent::MeshComponent(Mesh *mesh) : ComponentTraits(), m_Mesh(mesh) {}
+MeshComponent::MeshComponent(std::shared_ptr<Mesh> mesh) : ComponentTraits(), m_Mesh(mesh)
+{
+}
 
 // 网格操作 ==============================================
-Mesh *MeshComponent::GetMesh() const
+std::shared_ptr<Mesh> MeshComponent::GetMesh() const
 {
   return m_Mesh;
 }
 
-void MeshComponent::SetMesh(Mesh *mesh)
+void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
 {
   m_Mesh = mesh;
   EventBus::Get().Post(MeshChangedEvent(GetOwnerEntity(), *this));
@@ -18,7 +20,8 @@ void MeshComponent::SetMesh(Mesh *mesh)
 
 bool MeshComponent::HasMesh() const
 {
-  return m_Mesh->GetHandle().indexCount != 0 && m_Mesh->GetHandle().vertexCount != 0;
+  return m_Mesh && m_Mesh->GetHandle() && m_Mesh->GetHandle()->indexCount != 0 &&
+         m_Mesh->GetHandle()->vertexCount != 0;
 }
 
 // 渲染属性控制 ==========================================
