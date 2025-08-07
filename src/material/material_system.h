@@ -86,6 +86,9 @@ class MaterialSystem {
   // 私有构造（强制单例）
   MaterialSystem() = default;
 
+  // 日志系统
+  Logger m_logger;
+
   // ---- 成员变量 ----
   std::unordered_map<std::string, std::unique_ptr<Material>> m_templates;  // 模板存储
   std::unique_ptr<Material> m_fallbackMaterial;                            // 错误回退材质
