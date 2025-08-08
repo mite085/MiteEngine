@@ -1,4 +1,4 @@
-#include "renderable_entity.h"
+#include "renderable_item.h"
 
 namespace mite {
 

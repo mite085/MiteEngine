@@ -2,7 +2,7 @@
 #define MITE_RENDERER_API
 
 #include "basic_data/model.h"
-#include "renderable_entity.h"
+#include "renderable_item.h"
 
 namespace mite {
 /**
