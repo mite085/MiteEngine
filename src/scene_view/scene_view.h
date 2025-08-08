@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_VIEW
 #define MITE_SCENE_VIEW
 
-#include "renderable_entity.h"
+#include "renderable_item.h"
 #include "scene_core/scene_event.h"
 #include "scene_core/scene_registry.h"
 #include "scene_core_components/component_headers.h"
@@ -28,7 +28,7 @@ class SceneView {
    * 获取当前帧的可渲染实体列表（供Renderer模块调用）
    * @return 只读的渲染队列引用，避免数据拷贝
    */
-  const std::vector<std::shared_ptr<RenderableEntity>> &GetRenderQueue() const;
+  const std::vector<std::shared_ptr<RenderableItem>> &GetRenderQueue() const;
 
  private:
   //=== 事件处理函数（订阅SceneCore的事件） ===//
@@ -59,7 +59,7 @@ class SceneView {
   //=== 数据成员 ===//
   SceneRegistry &m_Registry;                     // SceneCore的ECS注册表引用
   std::unordered_set<Entity> m_PendingEntities;  // 当前帧新创建的实体列表，下一帧AddToRenderQueue
-  std::vector<std::shared_ptr<RenderableEntity>> m_RenderQueue;  // 当前帧的渲染队列
+  std::vector<std::shared_ptr<RenderableItem>> m_RenderQueue;  // 当前帧的渲染队列
 
   // 事件订阅集合（通过RAII自动取消订阅）
   SubscriptionGroup m_EventSubscriptions;

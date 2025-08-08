@@ -35,7 +35,7 @@ void SceneView::Update()
   }
 }
 
-const std::vector<std::shared_ptr<RenderableEntity>> &SceneView::GetRenderQueue() const
+const std::vector<std::shared_ptr<RenderableItem>> &SceneView::GetRenderQueue() const
 {
   return m_RenderQueue;
 }
@@ -89,7 +89,7 @@ bool SceneView::AddToRenderQueue(Entity entity)
   {
 
     // 构造RenderableEntity
-    std::shared_ptr<RenderableEntity> renderable = std::make_shared<RenderableEntity>();
+    std::shared_ptr<RenderableItem> renderable = std::make_shared<RenderableItem>();
     renderable->entity = entity;
     renderable->worldTransform =
         m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
@@ -136,7 +136,7 @@ void SceneView::UpdateRenderableEntity(Entity entity)
     return;
 
   // 从队列中获取到eitity，进行综合更新（供未来扩展使用）
-  std::shared_ptr<RenderableEntity> &renderable = m_RenderQueue[it->second];
+  std::shared_ptr<RenderableItem> &renderable = m_RenderQueue[it->second];
   renderable->worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
       m_Registry);
   renderable->materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
