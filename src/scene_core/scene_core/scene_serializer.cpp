@@ -3,7 +3,6 @@
 #include <cereal/cereal.hpp>
 #include "scene_serializer.h"
 #include "scene.h"
-#include "scene_core_components/component_headers.h"
 
 namespace mite {
 SceneSerializer::SceneSerializer(Scene &scene) : m_scene(scene) {}

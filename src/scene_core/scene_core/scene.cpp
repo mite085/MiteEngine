@@ -38,6 +38,7 @@ void Scene::InitSystems()
 void Scene::InitComponentSystems()
 {  
   // 逐个注册组件系统
+  m_SystemManager.RegisterSystem<CameraComponentSystem>();
   m_SystemManager.RegisterSystem<DestroyComponentSystem>();
   m_SystemManager.RegisterSystem<IDComponentSystem>();
   m_SystemManager.RegisterSystem<HierarchyComponentSystem>();
@@ -57,6 +58,7 @@ void Scene::ShutDownComponentSystems() {
   m_SystemManager.ShutdownAll();
 
   // 逐个注销组件系统
+  m_SystemManager.UnregisterSystem<CameraComponentSystem>();
   m_SystemManager.UnregisterSystem<DestroyComponentSystem>();
   m_SystemManager.UnregisterSystem<IDComponentSystem>();
   m_SystemManager.UnregisterSystem<HierarchyComponentSystem>();

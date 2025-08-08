@@ -1,5 +1,7 @@
 #include "scene_registry.h"
-#include "scene_core_components/component_headers.h"
+#include "scene_core_components/id_component.h"
+#include "scene_core_components/tag_component.h"
+#include "scene_core_components/hierarchy_component.h"
 
 namespace mite {
 SceneRegistry::SceneRegistry() : m_EventCallbackAdapter() {}

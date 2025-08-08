@@ -1,5 +1,4 @@
 #include "scene_event_callback_adapter.h"
-#include "scene_core_components/component_headers.h"
 namespace mite {
 SceneEventCallbackAdapter::SceneEventCallbackAdapter()
 {

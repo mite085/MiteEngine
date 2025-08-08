@@ -54,7 +54,7 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
 };
 
 // 摄像机组件系统
-class CameraSystem : public DirtyComponentSystem<CameraComponent> {
+class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
   DECLARE_COMPONENT_SYSTEM(CameraSystem)
  protected:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;

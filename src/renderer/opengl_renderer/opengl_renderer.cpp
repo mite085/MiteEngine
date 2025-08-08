@@ -63,7 +63,10 @@ void OpenGLRenderer::RenderScene(const std::vector<std::shared_ptr<RenderableEnt
     // 3. 绑定网格VAO
     IRenderDevice::Current().BindMesh(entity->meshHandle);
 
-    // 4. 绘制网格
+    // 4. 绘制网格:
+    // TODO: 
+    // 目前Model拆分成多个mesh逐个绘制，无需计算偏移量,
+    // 但这样做会导致较为严重的碎片化，后续需要合并MeshGPUHandle，使用统一的ModelHandle
     IRenderDevice::Current().DrawIndexed(entity->meshHandle.indexCount, 0);
 
     // 5. 解绑（可选，减少状态切换）

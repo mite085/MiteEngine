@@ -61,6 +61,7 @@ bool ComponentID::IsValid() const
 }
 
 // 显式实例化常用组件类型的ID
+template ComponentID ComponentID::Get<CameraComponent>();
 template ComponentID ComponentID::Get<DestroyComponent>();
 template ComponentID ComponentID::Get<HierarchyComponent>();
 template ComponentID ComponentID::Get<IDComponent>();

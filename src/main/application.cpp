@@ -67,7 +67,6 @@ void MiteApplication::Initialize()
 
   // 加载默认场景
   LoadDefaultScene();
-
 }
 
 void MiteApplication::InitializeWindowWithOpenGL()
@@ -150,13 +149,16 @@ void MiteApplication::LoadDefaultScene()
 
   // 协调各模块，加载初始场景
 
-  // 0. 创建模型Entity
-  Entity plane = m_Scene->CreateEntity("plane");
+  // 0. 创建主相机
+  Camera main_camera;
+  Entity main_camera_entity = m_Scene->CreateEntity("plane_submesh");
+  CameraComponent &main_camera_component = m_Scene->GetRegistry().AddComponent<CameraComponent>(
+      main_camera_entity);
 
   // 1. 加载模型
   AssetID plane_model_asset_id = AssetManager::Get().LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string());
-  Model plane_model (AssetManager::Get().GetModel(plane_model_asset_id)->subMeshHandles);
+  Model plane_model(AssetManager::Get().GetModel(plane_model_asset_id)->subMeshHandles);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件
@@ -165,8 +167,10 @@ void MiteApplication::LoadDefaultScene()
         plane_submesh, plane_model.GetMeshes(i));
 
     // 3. 创建材质实例
-    std::shared_ptr<MaterialInstance> plane_material = MaterialSystem::Get().CreateInstance(
-        "BasicMaterial");
+    std::shared_ptr<MaterialInstance> plane_material =
+        MaterialSystem::Get().CreateInstanceWithOverrides("BasicMaterial",
+                                                          {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
+
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
         m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh, plane_material);
@@ -178,7 +182,6 @@ void MiteApplication::LoadDefaultScene()
     // 6. 由SceneView自动推入渲染队列（EntityCreatedEvent事件驱动+PendingEntities延迟处理）
   }
 
-  
   // 更新场景视图
   // m_SceneView->SyncFromSceneCore();
 }
