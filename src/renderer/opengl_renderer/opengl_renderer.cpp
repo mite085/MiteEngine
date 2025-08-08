@@ -36,7 +36,7 @@ void OpenGLRenderer::EndFrame()
   // 注意：不包含交换缓冲区的操作，由窗口系统负责
 }
 
-void OpenGLRenderer::RenderScene(const std::vector<std::shared_ptr<RenderableEntity>> &renderQueue)
+void OpenGLRenderer::RenderScene(const std::vector<std::shared_ptr<RenderableItem>> &renderQueue)
 {
   // 定义纹理绑定lambda函数
   auto bindTextureFunc = [](TextureGPUHandle handle, uint32_t slot) {
@@ -44,30 +44,30 @@ void OpenGLRenderer::RenderScene(const std::vector<std::shared_ptr<RenderableEnt
   };
 
   // 遍历渲染队列
-  for (const auto &entity : renderQueue) {  
+  for (const auto &item : renderQueue) {  
     // 0. 检查渲染实体是否有效
-    if (!entity->materialInstance || entity->meshHandle.vertexArray == 0) {
-      LOG_WARN("Invalid renderable entity - missing material or mesh");
+    if (!item->materialInstance || item->meshHandle.vertexArray == 0) {
+      LOG_WARN("Invalid renderable item - missing material or mesh");
       continue;
     }
 
     // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
-    entity->materialInstance->Apply(bindTextureFunc);
+    item->materialInstance->Apply(bindTextureFunc);
 
     // 2. 设置模型矩阵（从世界变换获取）
-    auto shader = entity->materialInstance->GetShader();
+    auto shader = item->materialInstance->GetShader();
     if (shader) {
-      shader->SetMat4("u_Model", entity->worldTransform);
+      shader->SetMat4("u_Model", item->worldTransform);
     }
 
     // 3. 绑定网格VAO
-    IRenderDevice::Current().BindMesh(entity->meshHandle);
+    IRenderDevice::Current().BindMesh(item->meshHandle);
 
     // 4. 绘制网格:
     // TODO: 
     // 目前Model拆分成多个mesh逐个绘制，无需计算偏移量,
     // 但这样做会导致较为严重的碎片化，后续需要合并MeshGPUHandle，使用统一的ModelHandle
-    IRenderDevice::Current().DrawIndexed(entity->meshHandle.indexCount, 0);
+    IRenderDevice::Current().DrawIndexed(item->meshHandle.indexCount, 0);
 
     // 5. 解绑（可选，减少状态切换）
     glBindVertexArray(0);

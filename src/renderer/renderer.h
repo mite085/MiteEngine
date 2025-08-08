@@ -26,7 +26,7 @@ class Renderer {
    * 渲染场景的核心接口
    * @param renderQueue 从SceneView获取的可渲染实体列表
    */
-  virtual void RenderScene(const std::vector<std::shared_ptr<RenderableEntity>> &renderQueue) = 0;
+  virtual void RenderScene(const std::vector<std::shared_ptr<RenderableItem>> &renderQueue) = 0;
 
   // ---- 状态设置 ----
   virtual void SetClearColor(const glm::vec4 &color) = 0;

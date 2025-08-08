@@ -10,7 +10,7 @@ namespace mite {
  * 可渲染实体的数据结构，用于SceneView向Renderer传递渲染数据
  * 注：仅包含渲染所需的最小字段，未来可扩展（如LOD、骨骼动画等）
  */
-struct RenderableEntity {
+struct RenderableItem {
   Entity entity;                       // 对应的ECS实体ID
   glm::mat4 worldTransform;            // 世界空间变换矩阵（从Transform组件计算）
   MeshGPUHandle meshHandle;           // 网格GPU句柄（从Mesh组件获取）

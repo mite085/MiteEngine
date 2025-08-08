@@ -7,8 +7,8 @@ set(SCENE_VIEW_LIB_NAME MiteEngine_Scene_View)
 set(SCENE_VIEW_INTERFACE_SRCS
     scene_view.h
     scene_view.cpp
-    renderable_entity.h
-    renderable_entity.cpp
+    renderable_item.h
+    renderable_item.cpp
 )
 source_group("scene view" FILES ${SCENE_VIEW_INTERFACE_SRCS})
 
