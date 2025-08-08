@@ -23,12 +23,12 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path, bool
 
   // 3. 处理所有子网格
   for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-    model->subMeshes.push_back(ProcessMesh(scene->mMeshes[i], scene));
+    model->subMeshData.push_back(ProcessMesh(scene->mMeshes[i], scene));
   }
 
   // 4. 计算模型包围盒
   CalculateBoundingBox(
-      model->subMeshes, model->metadata.boundingBoxMin, model->metadata.boundingBoxMax);
+      model->subMeshData, model->metadata.boundingBoxMin, model->metadata.boundingBoxMax);
 
   // 5. (该步骤移交给RendererDevice处理)
   //    转换 Asset 模块数据为 Renderer 模块的 ModelSourceData

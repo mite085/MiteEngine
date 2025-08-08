@@ -129,14 +129,14 @@ void OpenGLDevice::GenerateMipmaps(TextureGPUHandle handle)
 }
 
 // ------------------------ 模型操作 ------------------------
-ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
+std::vector<MeshGPUHandle> OpenGLDevice::CreateModel(const ModelSourceData &data)
 {
-  ModelGPUHandle modelHandle;
+  std::vector<MeshGPUHandle> modelHandle;
 
   // 处理所有子网格
   for (auto &subMesh : data.subMeshes) {
     MeshGPUHandle subMeshHandle = CreateSubMesh(subMesh);
-    modelHandle.subMeshes.push_back(subMeshHandle);
+    modelHandle.push_back(subMeshHandle);
   }
 
   return modelHandle;
@@ -225,12 +225,12 @@ MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshSourceData &subMesh)
   return handle;
 }
 
-void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
+void OpenGLDevice::DestroyModel(std::vector<MeshGPUHandle> handle)
 {
-  if (handle.subMeshes.empty())
+  if (handle.empty())
     return;
 
-  for (auto &subMeshHandle : handle.subMeshes) {
+  for (auto &subMeshHandle : handle) {
     GLuint vao = static_cast<GLuint>(subMeshHandle.vertexArray);
     GLuint vbo = static_cast<GLuint>(subMeshHandle.vertexBuffer);
     GLuint ebo = static_cast<GLuint>(subMeshHandle.indexBuffer);
@@ -246,15 +246,15 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
   }
 }
 
-void OpenGLDevice::BindMesh(std::shared_ptr<MeshGPUHandle> handle) const
+void OpenGLDevice::BindMesh(MeshGPUHandle handle) const
 {
-  if (handle->vertexArray == 0) {
+  if (handle.vertexArray == 0) {
     LOG_WARN("Attempted to bind invalid mesh (VAO=0)");
     return;
   }
 
   // 绑定顶点数组对象（VAO）
-  GLuint vao = static_cast<GLuint>(handle->vertexArray);
+  GLuint vao = static_cast<GLuint>(handle.vertexArray);
   glBindVertexArray(vao);
 
   // 注：VAO已包含VBO/EBO的绑定信息，无需重复绑定
@@ -307,7 +307,7 @@ void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e) {
   rendererData.modelBboxMin = model->metadata.boundingBoxMin;
   rendererData.modelBboxMax = model->metadata.boundingBoxMax;
 
-  for (const auto &subMesh : model->subMeshes) {
+  for (const auto &subMesh : model->subMeshData) {
     rendererData.subMeshes.push_back(
         {subMesh.vertexData.data(),
          subMesh.indices.data(),
@@ -319,7 +319,7 @@ void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e) {
   }
 
   // 创建model的GPU资源
-  model->handle = CreateModel(rendererData);
+  model->subMeshHandles = CreateModel(rendererData);
 }
 
 void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e) {

@@ -50,7 +50,7 @@ void RenderCommand::Submit(const std::shared_ptr<OpenGLShader> &shader,
                                   shader->SetMat4("u_Model", transform);
                                   IRenderDevice::Current().BindMesh(mesh->GetHandle());
                                   IRenderDevice::Current().DrawIndexed(
-                                      mesh->GetHandle()->indexCount, 0);
+                                      mesh->GetHandle().indexCount, 0);
                                 }});
 }
 

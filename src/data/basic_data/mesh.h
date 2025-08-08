@@ -19,13 +19,13 @@ class Mesh {
   {
     return handle_->indexCount;
   }
-  std::shared_ptr<MeshGPUHandle> GetHandle() const
+  MeshGPUHandle GetHandle() const
   {
-    return handle_;
+    return *handle_;
   }
 
  private:
-  std::unique_ptr<MeshGPUHandle> handle_;
+  std::shared_ptr<MeshGPUHandle> handle_;
 };
 
 };  // namespace mite

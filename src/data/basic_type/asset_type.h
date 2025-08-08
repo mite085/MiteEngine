@@ -53,6 +53,7 @@ struct TextureAsset {
   AssetID id;  // 唯一标识符
   TextureMetadata metadata;
   TetxureData textureData;
+
   TextureGPUHandle handle;
 };
 
@@ -60,9 +61,9 @@ struct TextureAsset {
 struct ModelAsset {
   AssetID id;
   ModelMetadata metadata;
-  std::vector<MeshData> subMeshes;  // 包含GPU资源的子网格集合
+  std::vector<MeshData> subMeshData;  // 子网格集合
 
-  ModelGPUHandle handle;
+  std::vector<MeshGPUHandle> subMeshHandles; // 子网格GPU句柄
 };
 
 };  // namespace mite

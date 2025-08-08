@@ -27,14 +27,14 @@ class OpenGLDevice : public IRenderDevice {
   void GenerateMipmaps(TextureGPUHandle handle) override;
 
   // ---- 模型操作 ----
-  ModelGPUHandle CreateModel(const ModelSourceData &data) override;
-  void DestroyModel(ModelGPUHandle model) override;
+  std::vector<MeshGPUHandle> CreateModel(const ModelSourceData &data) override;
+  void DestroyModel(std::vector<MeshGPUHandle> model) override;
   // 注意：
   // 由于Asset仅维护Model，由Model维护Mesh，
   // 所以Create和Destroy接收的是Model数据。
   // 但Bind和Draw的操作是和Mesh强相关，
   // 所以这里实现Bind Mesh而非Bind Model
-  void BindMesh(std::shared_ptr<MeshGPUHandle> handle) const override;
+  void BindMesh(MeshGPUHandle handle) const override;
   void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const override;
 
  private:

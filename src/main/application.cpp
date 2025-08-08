@@ -156,7 +156,7 @@ void MiteApplication::LoadDefaultScene()
   // 1. 加载模型
   AssetID plane_model_asset_id = AssetManager::Get().LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string());
-  Model plane_model (std::make_shared<ModelGPUHandle>(AssetManager::Get().GetModel(plane_model_asset_id)->handle));
+  Model plane_model (AssetManager::Get().GetModel(plane_model_asset_id)->subMeshHandles);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件

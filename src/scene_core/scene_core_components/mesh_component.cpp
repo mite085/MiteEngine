@@ -20,8 +20,8 @@ void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
 
 bool MeshComponent::HasMesh() const
 {
-  return m_Mesh && m_Mesh->GetHandle() && m_Mesh->GetHandle()->indexCount != 0 &&
-         m_Mesh->GetHandle()->vertexCount != 0;
+  return m_Mesh  && m_Mesh->GetHandle().indexCount != 0 &&
+         m_Mesh->GetHandle().vertexCount != 0;
 }
 
 // äÖÈ¾ÊôĞÔ¿ØÖÆ ==========================================

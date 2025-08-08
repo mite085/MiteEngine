@@ -1,12 +1,11 @@
 #include "model.h"
 
 namespace mite {
-Model::Model(const std::shared_ptr<ModelGPUHandle> handle)
-    : handle_(handle)
+Model::Model(const std::vector<MeshGPUHandle> &handle)
 {
   // 为每个子网格创建Mesh对象
-  for (size_t i = 0; i < handle->subMeshes.size(); ++i) {
-    subMeshes_.emplace_back(std::make_shared<Mesh>(std::make_shared<MeshGPUHandle>(handle->subMeshes[i])));
+  for (size_t i = 0; i < handle.size(); ++i) {
+    subMeshes_.emplace_back(std::make_shared<Mesh>(std::make_shared<MeshGPUHandle>(handle[i])));
   }
 }
 
