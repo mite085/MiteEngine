@@ -119,7 +119,7 @@ class ComponentSystemManager {
   {
     const std::type_index type = typeid(T);
     auto it = m_SystemMap.find(type);
-    if (it != m_SystemMap.end() && it->second.enabled) {
+    if (it != m_SystemMap.end() && it->second) {
       return true;
     }
     return false;
@@ -137,8 +137,8 @@ class ComponentSystemManager {
     assert(HasSystem<T>());
     const std::type_index type = typeid(T);
     auto it = m_SystemMap.find(type);
-    if (it != m_SystemMap.end() && it->second.enabled) {
-      return static_cast<T *>(it->second.system.get());
+    if (it != m_SystemMap.end()) {
+      return static_cast<T *>(it->second);
     }
     return nullptr;
   }

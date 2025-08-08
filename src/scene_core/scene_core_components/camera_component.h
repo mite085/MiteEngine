@@ -6,6 +6,22 @@
 
 namespace mite {
 /**
+ * @brief 相机用途标签
+ *
+ * 后续可以添加：
+ *
+ * Player1View,  // 分屏玩家1
+ * Player2View,  // 分屏玩家2
+ * ShadowMap,    // 阴影贴图
+ * UI,           // UI相机
+ * Debug         // 调试视图
+ */
+enum class CameraUsage {
+  FreeView,  // 闲置相机
+  MainView,  // 主视图
+};
+
+/**
  * @brief 摄像机组件，将Camera与ECS集成
  *
  * 职责：
@@ -19,20 +35,24 @@ namespace mite {
  */
 class CameraComponent : public ComponentTraits<CameraComponent, Component::Family::Core> {
  public:
-  CameraComponent();
+  CameraComponent(std::shared_ptr<Camera> camera);
+
+  // TODO: Camera如何处理脏标记?
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
   // 基础参数控制
   void SetPerspective(float fov, float near, float far);
   void SetOrthographic(float size, float near, float far);
 
   // 主摄像机标记
-  bool IsMain() const
+  CameraUsage GetUsage() const
   {
-    return m_IsMain;
+    return m_Usage;
   }
-  void SetMain(bool isMain)
+  void SetUsage(CameraUsage usage)
   {
-    m_IsMain = isMain;
+    m_Usage = usage;
+    MarkDirty();
   }
 
   // 矩阵获取（需结合Transform）
@@ -49,17 +69,23 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
   std::vector<std::type_index> GetDependencies() const override;
 
  private:
-  Camera m_Camera;
-  bool m_IsMain = false;  // 是否为主摄像机
+  std::shared_ptr<Camera> m_Camera;
+  CameraUsage m_Usage = CameraUsage::FreeView;
 };
 
 // 摄像机组件系统
 class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
-  DECLARE_COMPONENT_SYSTEM(CameraSystem)
+  DECLARE_COMPONENT_SYSTEM(CameraComponentSystem)
+
+  // 获取指定用途的相机实体
+  std::optional<Entity> GetMainCameraEntity() const;
+
+  // 设置主相机实体（确保唯一性）
+  void SetMainCameraEntity(Entity main_camera);
+
  protected:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
 };
-
 };  // namespace mite
 
 #endif

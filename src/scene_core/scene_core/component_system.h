@@ -74,12 +74,18 @@ class ComponentSystem {
   // Register的引用
   //
   // 作用：
-  // 在批量处理Event(entity, component)时，需要利用Register查询其他相关组件
+  // 在HierarchyComponentSystem处理OnComponentRemoved事件时，
+  // 需要利用Register查询其他相关组件
   //
   // 注意：
   // 此处使用optional包装的reference_wrapper，
   // 以实现延时引用的功能，目的是将ComponentSystem的
   // 构造和利用SceneRegistry&执行的初始化隔离开。
+  // 
+  // TODO: 
+  // ComponentSystem不应当维护SceneRegistry，
+  // 后续应当想更好的方法访问，并删除对m_Registry的维护
+  // （目前其他部分均已解耦，仅剩下HierarchyComponentSystem需要处理）
   std::optional<std::reference_wrapper<SceneRegistry>> m_Registry;
 
   // 日志系统
