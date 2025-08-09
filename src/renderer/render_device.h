@@ -39,6 +39,11 @@ class IRenderDevice {
   // 模型/网格体操作
   virtual ModelGPUHandle CreateModel(const ModelSourceData &data) = 0;
   virtual void DestroyModel(ModelGPUHandle handle) = 0;
+  // 注意：
+  // 由于Asset仅维护Model，由Model维护Mesh，
+  // 所以Create和Destroy接收的是Model数据。
+  // 但Bind和Draw的操作是和Mesh强相关，
+  // 所以这里实现Bind Mesh而非Bind Model
   virtual void BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle, MeshSection handle) const = 0;
   virtual void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const = 0;
 

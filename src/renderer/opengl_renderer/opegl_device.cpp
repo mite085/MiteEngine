@@ -3,7 +3,7 @@
 namespace mite {
 // ------------------------ 构造函数/析构函数 ------------------------
 OpenGLDevice::OpenGLDevice() : IRenderDevice()
-{  
+{
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Device");
   m_Logger->trace("Created OpenGL Device");
@@ -13,25 +13,25 @@ OpenGLDevice::~OpenGLDevice()
 {
   // 防御性检查：确保所有资源已释放
   if (!activeTextures_.empty()) {
-    LOG_WARN("{} textures not released on shutdown", activeTextures_.size());
+    m_Logger->warn("{} textures not released on shutdown", activeTextures_.size());
     for (GLuint handle : activeTextures_) {
       glDeleteTextures(1, &handle);
     }
   }
   if (!activeModelsVAO_.empty()) {
-    LOG_WARN("{} meshes vao not released on shutdown", activeModelsVAO_.size());
+    m_Logger->warn("{} meshes vao not released on shutdown", activeModelsVAO_.size());
     for (GLuint vao : activeModelsVAO_) {
       glDeleteVertexArrays(1, &vao);
     }
   }
   if (!activeModelsVBO_.empty()) {
-    LOG_WARN("{} meshes vbo not released on shutdown", activeModelsVBO_.size());
+    m_Logger->warn("{} meshes vbo not released on shutdown", activeModelsVBO_.size());
     for (GLuint vbo : activeModelsVBO_) {
       glDeleteBuffers(1, &vbo);
     }
   }
   if (!activeModelsEBO_.empty()) {
-    LOG_WARN("{} meshes ebo not released on shutdown", activeModelsEBO_.size());
+    m_Logger->warn("{} meshes ebo not released on shutdown", activeModelsEBO_.size());
     for (GLuint ebo : activeModelsEBO_) {
       glDeleteBuffers(1, &ebo);
     }
@@ -131,7 +131,6 @@ void OpenGLDevice::GenerateMipmaps(TextureGPUHandle handle)
 // ------------------------ 模型操作 ------------------------
 ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
 {
-
   ModelGPUHandle handle;
   GLuint VBO, EBO, VAO;
 
@@ -173,15 +172,13 @@ ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
   handle.subMeshes = std::move(data.sections);
 
   return handle;
-
-
 }
 
 void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
 {
   // 防御性检查
   if (handle.vertexArray == 0 && handle.vertexBuffer == 0 && handle.indexBuffer == 0) {
-    LOG_WARN("Attempted to destroy invalid ModelGPUHandle (all handles are 0)");
+    m_Logger->warn("Attempted to destroy invalid ModelGPUHandle (all handles are 0)");
     return;
   }
 
@@ -212,11 +209,11 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
     activeModelsEBO_.erase(ebo);
   }
 
-// 4. 调试日志
-  LOG_DEBUG("Destroyed model resources: VAO={}, VBO={}, EBO={}",
-            handle.vertexArray,
-            handle.vertexBuffer,
-            handle.indexBuffer);
+  // 4. 调试日志
+  m_Logger->debug("Destroyed model resources: VAO={}, VBO={}, EBO={}",
+                  handle.vertexArray,
+                  handle.vertexBuffer,
+                  handle.indexBuffer);
 
   // 5. 清空句柄(防御性编程)
   handle.vertexArray = 0;
@@ -229,19 +226,19 @@ void OpenGLDevice::BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle,
 {
   // 1. 参数有效性检查
   if (!modelHandle) {
-    LOG_WARN("Attempt to bind mesh with null model handle");
+    m_Logger->warn("Attempt to bind mesh with null model handle");
     return;
   }
 
   if (modelHandle->vertexArray == 0) {
-    LOG_WARN("Attempt to bind mesh with invalid VAO (handle=0)");
+    m_Logger->warn("Attempt to bind mesh with invalid VAO (handle=0)");
     return;
   }
 
   if (meshSection.indexCount == 0 || meshSection.vertexCount == 0) {
-    LOG_WARN("Attempt to bind empty mesh section (indices={}, vertices={})",
-             meshSection.indexCount,
-             meshSection.vertexCount);
+    m_Logger->warn("Attempt to bind empty mesh section (indices={}, vertices={})",
+                   meshSection.indexCount,
+                   meshSection.vertexCount);
     return;
   }
 
@@ -249,11 +246,11 @@ void OpenGLDevice::BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle,
   GLuint vao = static_cast<GLuint>(modelHandle->vertexArray);
   glBindVertexArray(vao);
 
-// 3. 验证缓冲区是否有效
+  // 3. 验证缓冲区是否有效
   if (modelHandle->vertexBuffer == 0 || modelHandle->indexBuffer == 0) {
-    LOG_ERROR("Model buffers not initialized (VBO={}, EBO={})",
-              modelHandle->vertexBuffer,
-              modelHandle->indexBuffer);
+    m_Logger->error("Model buffers not initialized (VBO={}, EBO={})",
+                    modelHandle->vertexBuffer,
+                    modelHandle->indexBuffer);
   }
 
   // 4. 绑定缓冲区（VAO已包含这些信息，但显式绑定更安全）
@@ -262,22 +259,22 @@ void OpenGLDevice::BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle,
 
   // 5. 存储当前绑定的MeshSection（供后续Draw调用使用）
   // 注意：这需要OpenGLDevice有成员变量存储当前状态，或者使用其他状态管理机制
-  //m_CurrentMeshSection = &meshSection;
-  //m_CurrentModelHandle = modelHandle;
+  // m_CurrentMeshSection = &meshSection;
+  // m_CurrentModelHandle = modelHandle;
 
-// 6. 调试信息
-  LOG_DEBUG("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
-            vao,
-            modelHandle->vertexBuffer,
-            modelHandle->indexBuffer,
-            meshSection.indexOffset,
-            meshSection.vertexOffset);
+  // 6. 调试信息
+  m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
+                  vao,
+                  modelHandle->vertexBuffer,
+                  modelHandle->indexBuffer,
+                  meshSection.indexOffset,
+                  meshSection.vertexOffset);
 }
 
 void OpenGLDevice::DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const
 {
   if (indexCount == 0) {
-    LOG_WARN("Attempted to draw with indexCount=0");
+    m_Logger->warn("Attempted to draw with indexCount=0");
     return;
   }
 
@@ -291,7 +288,7 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const
   // 调试用：检查OpenGL错误
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
-    LOG_ERROR("OpenGL draw error: {}", static_cast<int>(err));
+    m_Logger->error("OpenGL draw error: {}", static_cast<int>(err));
   }
 }
 
@@ -308,12 +305,13 @@ GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
     case TextureFormat::RGBA16F:
       return GL_RGBA16F;
     default:
-      LOG_WARN("Unsupported texture format: {}", static_cast<int>(format));
+      m_Logger->warn("Unsupported texture format: {}", static_cast<int>(format));
       return GL_RGBA;  // 默认回退
   }
 }
 
-void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e) {
+void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
+{
   std::shared_ptr<ModelAsset> model = e.GetModelAsset();
 
   // 1. 准备合并所有子网格数据
@@ -376,7 +374,8 @@ void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e) {
   model->handle = std::make_shared<ModelGPUHandle>(modelHandle);
 }
 
-void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e) {
+void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
+{
   std::shared_ptr<TextureAsset> textureAsset = e.GetTextureAsset();
 
   // 转换 Asset 模块数据为 Renderer 模块的 ModelSourceData
@@ -402,7 +401,7 @@ GLenum OpenGLDevice::ConvertWrapMode(TextureWrapMode mode) const
     case TextureWrapMode::MirroredRepeat:
       return GL_MIRRORED_REPEAT;
     default:
-      assert(false && "Unknown wrap mode");
+      m_Logger->error("Unknown wrap mode");
       return GL_REPEAT;
   }
 }
@@ -434,7 +433,7 @@ void OpenGLDevice::ConvertFilterMode(TextureFilterMode mode,
       break;
 
     default:
-      assert(false && "Unknown filter mode");
+      m_Logger->error("Unknown filter mode");
       outMinFilter = GL_LINEAR;
       outMagFilter = GL_LINEAR;
   }
@@ -446,14 +445,14 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
   GLint currentVAO;
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &currentVAO);
   if (currentVAO == 0) {
-    LOG_ERROR("No VAO bound when setting vertex attributes");
+    m_Logger->error("No VAO bound when setting vertex attributes");
     return;
   }
 
   // 计算总步长并验证
   const uint32_t stride = layout.stride;
   if (stride == 0) {
-    LOG_ERROR("Invalid vertex layout: stride is zero");
+    m_Logger->error("Invalid vertex layout: stride is zero");
     return;
   }
 
@@ -499,7 +498,7 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
         break;
 
       default:
-        LOG_WARN("Unknown vertex attribute type: {}", static_cast<int>(attr));
+        m_Logger->warn("Unknown vertex attribute type: {}", static_cast<int>(attr));
         break;
     }
 
@@ -509,8 +508,7 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
 
   // 验证偏移量与声明的stride一致
   if (offset != stride) {
-    LOG_ERROR("Vertex attribute offset {} doesn't match layout stride {}", offset, stride);
+    m_Logger->error("Vertex attribute offset {} doesn't match layout stride {}", offset, stride);
   }
 }
-
 };  // namespace mite
