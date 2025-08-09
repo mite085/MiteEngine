@@ -52,7 +52,7 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
    * @param templateName 在MaterialSystem中注册的模板名称
    * @throws std::out_of_range 如果模板不存在
    */
-  void SetMaterialFromTemplate(const std::string &templateName);
+  //void SetMaterialFromTemplate(const std::string &templateName);
 
   /**
    * @brief 检查是否有有效材质数据

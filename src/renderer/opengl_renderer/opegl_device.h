@@ -28,6 +28,16 @@ class OpenGLDevice : public IRenderDevice {
 
   // ---- 模型操作 ----
   ModelGPUHandle CreateModel(const ModelSourceData &data) override;
+  // TODO: 
+  // 应当在哪里调用DestroyModel，以实现Model的
+  // 生命周期结束后，GPU资源的自动释放？
+  // 
+  // 思路：
+  // 构建std::shared_ptr<Model>时，添加删除器，
+  // 引用计数归零时自动调用删除器触发DestroyModel
+  // 
+  // 难点：
+  // 需要整体梳理std::shared_ptr<Model>的生命周期
   void DestroyModel(ModelGPUHandle model) override;
   void BindMesh(std::shared_ptr<Mesh> mesh) const override;
   void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const override;

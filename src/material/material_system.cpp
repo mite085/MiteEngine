@@ -1,21 +1,20 @@
 #include "material_system.h"
 #include "asset_manager.h"
-#include "material_template.h"
 #include "basic_data/shader_cache.h"
+#include "material_template.h"
 
 namespace mite {
-// 静态单例初始化
-MaterialSystem &MaterialSystem::Get()
+MaterialSystem::MaterialSystem()
 {
-  static MaterialSystem instance;
-  return instance;
+  // 初始化LOGGER
+  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
+  m_logger->info("Create logger for material system");
 }
 
 void MaterialSystem::Initialize()
-{  
-  // 初始化LOGGER
-  MaterialSystem::Get().m_logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
-  MaterialSystem::Get().m_logger->info("Create logger for material system");
+{
+  // 注册材质
+  m_logger->info("Registering material templates");
 
   // 注册基础材质
   // TODO: shader的创建放在此处是否合理？待后续调整
@@ -24,7 +23,7 @@ void MaterialSystem::Initialize()
       FileSystem::GetAssetPath("shaders/basic.frag").string());
   auto basicTemplate = std::make_unique<BasicMaterialTemplate>(basicShader);
   std::string basicType = basicTemplate->GetMaterialType();
-  MaterialSystem::Get().RegisterTemplate(basicType, std::move(basicTemplate));
+  RegisterTemplate(basicType, std::move(basicTemplate));
 
   // 注册PBR材质
   auto pbrShader = ShaderCache::Get().GetOpenGLShader(
@@ -32,7 +31,7 @@ void MaterialSystem::Initialize()
       FileSystem::GetAssetPath("shaders/pbr.frag").string());
   auto pbrTemplate = std::make_unique<PBRMaterialTemplate>(pbrShader);
   std::string pbrType = pbrTemplate->GetMaterialType();
-  MaterialSystem::Get().RegisterTemplate(pbrType, std::move(pbrTemplate));
+  RegisterTemplate(pbrType, std::move(pbrTemplate));
 }
 
 void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<Material> material)
@@ -50,7 +49,7 @@ void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<M
     return;
   }
   // 注册材质模板
-  m_logger->debug("Register material template: {}", name);
+  m_logger->info("Register material template: {}", name);
   m_templates.emplace(name, std::move(material));
 }
 
@@ -61,12 +60,13 @@ bool MaterialSystem::HasTemplate(const std::string &name) const
 
 std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::string &templateName)
 {
-  m_logger->info("Creating material instance with material template: {}.", templateName); 
+  m_logger->info("Creating material instance with material template: {}.", templateName);
   // 1. 查找模板
   auto it = m_templates.find(templateName);
   if (it == m_templates.end()) {
     // 材质模板不存在, 使用回退材质
-    m_logger->warn("Invalid material template: {}, trying to use fallback material.", templateName);
+    m_logger->warn("Invalid material template: {}, trying to use fallback material.",
+                   templateName);
     if (!m_fallbackMaterial) {
       // 无可用回退材质
       m_logger->error("There has not any fallback material to use.");

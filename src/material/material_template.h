@@ -7,7 +7,7 @@ namespace mite {
 /**
  * @brief 基础默认材质模板
  * @note 职责：
- * 1. 仅接受一个Texture("u_Texture")和一个Color("u_Color")参数的简单着色模型
+ * 1. 仅接受一个Color("u_Color")参数并将其显示出来的简单着色模型
  * 2. 关联Basic着色器程序
  */
 class BasicMaterialTemplate : public Material {

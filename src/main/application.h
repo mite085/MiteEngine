@@ -106,7 +106,7 @@ class MiteApplication {
   std::unique_ptr<Scene> m_Scene;
   std::unique_ptr<SceneView> m_SceneView;
   //std::unique_ptr<UIManager> m_UIManager;
-  //std::unique_ptr<MaterialSystem> m_MaterialSystem;
+  std::unique_ptr<MaterialSystem> m_MaterialSystem;
 
   // ×´Ì¬ÐÅÏ¢
   WindowConfig m_Config;

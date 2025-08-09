@@ -13,7 +13,7 @@ namespace mite {
  */
 class GLFWWindowCallbackAdapter : public CallbackAdapter<GLFWwindow *> {
  public:
-  explicit GLFWWindowCallbackAdapter() : CallbackAdapter() {}
+  explicit GLFWWindowCallbackAdapter();
 
   ~GLFWWindowCallbackAdapter() override;
 
@@ -107,6 +107,8 @@ class GLFWWindowCallbackAdapter : public CallbackAdapter<GLFWwindow *> {
 
   // GLFW窗口句柄
   GLFWwindow *m_Window = nullptr;
+
+  static Logger s_Logger;  // 静态日志对象
 };
 };  // namespace mite
 

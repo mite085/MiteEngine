@@ -21,19 +21,19 @@ void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
   }
 }
 
-void MaterialComponent::SetMaterialFromTemplate(const std::string &templateName)
-{
-  try {
-    // TODO: 创建出的newMaterial智能指针没有后续维护，不推荐使用
-    std::shared_ptr<MaterialInstance> newMaterial = MaterialSystem::Get().CreateInstance(
-        templateName);
-    SetMaterial(newMaterial);
-  }
-  catch (const std::exception &e) {
-    LOG_ERROR("Failed to create material from template '{}': {}", templateName, e.what());
-    throw;
-  }
-}
+//void MaterialComponent::SetMaterialFromTemplate(const std::string &templateName)
+//{
+//  try {
+//    // TODO: 创建出的newMaterial智能指针没有后续维护，不推荐使用
+//    std::shared_ptr<MaterialInstance> newMaterial = MaterialSystem::Get().CreateInstance(
+//        templateName);
+//    SetMaterial(newMaterial);
+//  }
+//  catch (const std::exception &e) {
+//    LOG_ERROR("Failed to create material from template '{}': {}", templateName, e.what());
+//    throw;
+//  }
+//}
 
 bool MaterialComponent::HasMaterial() const
 {

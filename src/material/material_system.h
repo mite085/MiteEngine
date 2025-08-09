@@ -27,11 +27,11 @@ namespace mite {
  */
 class MaterialSystem {
  public:
-  // ---- 单例模式----
-  static MaterialSystem &Get();
+  // ---- 构造函数 ----
+  MaterialSystem();
 
   // ---- 初始化：注册材质----
-  static void Initialize();
+  void Initialize();
 
   // ---- 模板管理 ----
   /**
@@ -83,8 +83,7 @@ class MaterialSystem {
   void SetFallbackMaterial(std::unique_ptr<Material> material);
 
  private:
-  // 私有构造（强制单例）
-  MaterialSystem() = default;
+
 
   // 日志系统
   Logger m_logger;

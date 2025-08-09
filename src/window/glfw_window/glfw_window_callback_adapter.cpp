@@ -2,6 +2,15 @@
 #include "window_event.h"
 #include "input_event.h"
 namespace mite {
+
+Logger GLFWWindowCallbackAdapter::s_Logger = nullptr;
+
+GLFWWindowCallbackAdapter::GLFWWindowCallbackAdapter() : CallbackAdapter()
+{  // 创建日志系统
+  s_Logger = mite::LoggerSystem::CreateModuleLogger("Mite GLFW Window Callback Adapter");
+  s_Logger->trace("Created GLFW Window Callback Adapter");
+}
+
 GLFWWindowCallbackAdapter::~GLFWWindowCallbackAdapter()
 {
   UnregisterCallbacks();  // 确保注销所有回调
@@ -46,21 +55,21 @@ void GLFWWindowCallbackAdapter::UnregisterCallbacks()
 }
 void GLFWWindowCallbackAdapter::ErrorCallback(int error, const char *description)
 {
-  LOG_ERROR("GLFW Error ({}): {}", error, description);
+  s_Logger->error("GLFW Error ({}): {}", error, description);
 }
 void GLFWWindowCallbackAdapter::HandleWindowClose(GLFWwindow *window)
 {
   auto *adapter = GetAdapter(window);
   WindowCloseEvent event;
   EventBus::Get().Post(event);
-  LOG_INFO("Window close requested");
+  s_Logger->info("Window close requested");
 }
 void GLFWWindowCallbackAdapter::HandleWindowResize(GLFWwindow *window, int width, int height)
 {
   auto *adapter = GetAdapter(window);
   WindowResizeEvent event(width, height);
   EventBus::Get().Post(event);
-  LOG_TRACE("Framebuffer resized to {}x{}", width, height);
+  s_Logger->debug("Framebuffer resized to {}x{}", width, height);
 }
 void GLFWWindowCallbackAdapter::HandleWindowFocus(GLFWwindow *window, int focused)
 {
@@ -68,12 +77,12 @@ void GLFWWindowCallbackAdapter::HandleWindowFocus(GLFWwindow *window, int focuse
   if (focused == GLFW_TRUE) {
     WindowFocusEvent event;
     EventBus::Get().Post(event);
-    LOG_TRACE("Window focus requested");
+    s_Logger->debug("Window focus requested");
   }
   else {
     WindowLostFocusEvent event;
     EventBus::Get().Post(event);
-    LOG_TRACE("Window focus losted");
+    s_Logger->debug("Window focus losted");
   }
 }
 void GLFWWindowCallbackAdapter::HandleWindowMoved(GLFWwindow *window, int xpos, int ypos)
@@ -81,15 +90,15 @@ void GLFWWindowCallbackAdapter::HandleWindowMoved(GLFWwindow *window, int xpos, 
   auto *adapter = GetAdapter(window);
   WindowMovedEvent event(xpos, ypos);
   EventBus::Get().Post(event);
-  LOG_TRACE("Window moved to {}, {}", xpos, ypos);
+  s_Logger->debug("Window moved to {}, {}", xpos, ypos);
 }
 void GLFWWindowCallbackAdapter::HandleMouseMove(GLFWwindow *window, double xpos, double ypos)
 {
   auto *adapter = GetAdapter(window);
   MouseMoveEvent event(static_cast<float>(xpos), static_cast<float>(ypos));
   EventBus::Get().Post(event);
-  // 避免过多的鼠标移动日志，在调试时启用
-  // LOG_TRACE("Mouse moved to ({}, {})", xpos, ypos);
+  // 避免过多的鼠标移动日志，在调试时选择性启用
+  // LOG_DEBUG("Mouse moved to ({}, {})", xpos, ypos);
 }
 void GLFWWindowCallbackAdapter::HandleMouseButton(GLFWwindow *window,
                                                   int button,
@@ -104,12 +113,12 @@ void GLFWWindowCallbackAdapter::HandleMouseButton(GLFWwindow *window,
     MouseButtonPressedEvent event(
         button, mods, static_cast<float>(xpos), static_cast<float>(ypos));
     EventBus::Get().Post(event);
-    LOG_TRACE("Mouse button {} pressed", button);
+    s_Logger->debug("Mouse button {} pressed", button);
   }
   else {
     MouseButtonReleasedEvent event(button, static_cast<float>(xpos), static_cast<float>(ypos));
     EventBus::Get().Post(event);
-    LOG_TRACE("Mouse button {} released", button);
+    s_Logger->debug("Mouse button {} released", button);
   }
 }
 void GLFWWindowCallbackAdapter::HandleMouseScroll(GLFWwindow *window,
@@ -127,19 +136,19 @@ void GLFWWindowCallbackAdapter::HandleKeyEvent(
     case GLFW_PRESS: {
       KeyPressedEvent event(key, mods, false);  // 非重复按键
       EventBus::Get().Post(event);
-      LOG_TRACE("Key pressed: {} (scancode: {}, mods: {})", key, scancode, mods);
+      s_Logger->debug("Key pressed: {} (scancode: {}, mods: {})", key, scancode, mods);
       break;
     }
     case GLFW_RELEASE: {
       KeyReleasedEvent event(key);
       EventBus::Get().Post(event);
-      LOG_TRACE("Key released: {}", key);
+      s_Logger->debug("Key released: {}", key);
       break;
     }
     case GLFW_REPEAT: {
       KeyPressedEvent event(key, mods, true);  // 重复按键
       EventBus::Get().Post(event);
-      LOG_TRACE("Key pressed repeatly: {} (scancode: {}, mods: {})", key, scancode, mods);
+      s_Logger->debug("Key pressed repeatly: {} (scancode: {}, mods: {})", key, scancode, mods);
       break;
     }
   }
@@ -149,7 +158,7 @@ void GLFWWindowCallbackAdapter::HandleCharInput(GLFWwindow *window, unsigned int
   auto *adapter = GetAdapter(window);
   KeyTypedEvent event(static_cast<char>(codepoint));
   EventBus::Get().Post(event);
-  LOG_TRACE("Key typed: {}", static_cast<char>(codepoint));
+  s_Logger->debug("Key typed: {}", static_cast<char>(codepoint));
 }
 GLFWWindowCallbackAdapter *GLFWWindowCallbackAdapter::GetAdapter(GLFWwindow *window)
 {

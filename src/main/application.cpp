@@ -119,7 +119,9 @@ void MiteApplication::InitializeMaterialSystem()
 {
   m_logger->info("Initializing material system");
 
-  MaterialSystem::Initialize();
+  // 初始化材质系统
+  m_MaterialSystem = std::make_unique<MaterialSystem>();
+  m_MaterialSystem->Initialize();
 }
 
 void MiteApplication::InitializeInputSystem()
@@ -170,7 +172,7 @@ void MiteApplication::LoadDefaultScene()
 
     // 3. 创建材质实例
     std::shared_ptr<MaterialInstance> plane_material =
-        MaterialSystem::Get().CreateInstanceWithOverrides("BasicMaterial",
+        m_MaterialSystem->CreateInstanceWithOverrides("BasicMaterial",
                                                           {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
 
     // 4. 创建材质组件
