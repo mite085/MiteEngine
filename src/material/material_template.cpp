@@ -2,13 +2,13 @@
 
 namespace mite {
 // ---- BasicMaterialTemplate 实现 ----
-BasicMaterialTemplate::BasicMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
-                                             const glm::vec3 &basicColor)
-    : m_Shader(std::move(shader)), m_BasicColor(basicColor)
+PureColorMaterialTemplate::PureColorMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
+                                             const glm::vec3 &color)
+    : m_Shader(std::move(shader)), m_Color(color)
 {
 }
 
-std::shared_ptr<MaterialInstance> BasicMaterialTemplate::CreateInstance() const
+std::shared_ptr<MaterialInstance> PureColorMaterialTemplate::CreateInstance() const
 {
   // 创建材质实例并应用默认参数
   auto instance = std::make_shared<MaterialInstance>(m_Shader);
@@ -16,27 +16,10 @@ std::shared_ptr<MaterialInstance> BasicMaterialTemplate::CreateInstance() const
   return instance;
 }
 
-void BasicMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
+void PureColorMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
 {
   // 设置基础颜色参数("u_Color")
-  instance.SetVector3("u_Color", m_BasicColor);
-
-  // 绑定默认纹理("u_Texture")
-  for (const auto &[paramName, texture] : m_DefaultTextures) {
-    instance.SetTexture(paramName, texture);
-  }
-}
-
-std::string BasicMaterialTemplate::GetMaterialType() const
-{
-  return "BasicMaterial";
-}
-
-void BasicMaterialTemplate::SetDefaultTexture(const std::string &paramName,
-                                              std::shared_ptr<Texture> texture)
-{
-  assert(!paramName.empty() && "Texture name should not be empty");
-  m_DefaultTextures[paramName] = std::move(texture);
+  instance.SetVector3("u_Color", m_Color);
 }
 
 // ---- PBRMaterialTemplate 实现 ----
@@ -78,11 +61,6 @@ void PBRMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
   }
 }
 
-std::string PBRMaterialTemplate::GetMaterialType() const
-{
-  return "DefaultPBR";
-}
-
 void PBRMaterialTemplate::SetDefaultTexture(const std::string &paramName,
                                             std::shared_ptr<Texture> texture)
 {
@@ -115,8 +93,5 @@ void TransparentMaterialTemplate::ApplyParameters(MaterialInstance &instance) co
   instance.SetFloat("u_Alpha", m_DefaultAlpha);
   instance.SetInt("u_EnableBlend", 1);  // 启用混合
 }
-std::string TransparentMaterialTemplate::GetMaterialType() const
-{
-  return "TransparentPBR";
-}
+
 };  // namespace mite

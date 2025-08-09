@@ -5,38 +5,45 @@
 
 namespace mite {
 /**
- * @brief 基础默认材质模板
+ * @brief 纯色材质模板（仅用于测试）
  * @note 职责：
  * 1. 仅接受一个Color("u_Color")参数并将其显示出来的简单着色模型
  * 2. 关联Basic着色器程序
  */
-class BasicMaterialTemplate : public Material {
+class PureColorMaterialTemplate : public Material {
  public:
   /**
    * @brief 构造函数（需传入已编译的PBR Shader）
    * @param shader 关联的PBR着色器程序
    * @param defaultAlbedo 默认漫反射颜色（sRGB空间）
    */
-  explicit BasicMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
-                                 const glm::vec3 &basicColor = glm::vec3(0.8f));
+  explicit PureColorMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
+                                 const glm::vec3 &color = glm::vec3(0.8f));
+
+  // ---- 类型声明 ----
+  static std::string StaticType()
+  {
+    return "PureColorMaterial";
+  }
+  std::string GetMaterialType() const override
+  {
+    return StaticType();
+  }
 
   // ---- 核心接口 ----
   std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
-  std::string GetMaterialType() const override;
-
+  
   // ---- 参数设置 ----
-  void SetBasicColor(const glm::vec3 &color)
+  void SetColor(const glm::vec3 &color)
   {
-    m_BasicColor = color;
+    m_Color = color;
   }
-  void SetDefaultTexture(const std::string &paramName, std::shared_ptr<Texture> texture);
 
  protected:
   // ---- 默认参数 ----
   std::shared_ptr<OpenGLShader> m_Shader;  // 关联的PBR着色器程序
-  glm::vec3 m_BasicColor;                  // 默认基础颜色
-  std::unordered_map<std::string, std::shared_ptr<Texture>> m_DefaultTextures;  // 默认纹理绑定
+  glm::vec3 m_Color;                  // 默认基础颜色
 };
 
 /**
@@ -60,10 +67,19 @@ class PBRMaterialTemplate : public Material {
                                float defaultRoughness = 0.5f,
                                float defaultMetallic = 0.0f);
 
+  // ---- 类型声明 ----
+  static std::string StaticType()
+  {
+    return "DefaultPBR";
+  }
+  std::string GetMaterialType() const override
+  {
+    return StaticType();
+  }
+
   // ---- 核心接口 ----
   std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
-  std::string GetMaterialType() const override;
 
   // ---- 参数设置 ----
   void SetDefaultAlbedo(const glm::vec3 &albedo)
@@ -97,9 +113,18 @@ class TransparentMaterialTemplate : public PBRMaterialTemplate {
   explicit TransparentMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
                                        float defaultAlpha = 0.5f);
 
+  // ---- 类型声明 ----
+  static std::string StaticType()
+  {
+    return "TransparentPBR";
+  }
+  std::string GetMaterialType() const override
+  {
+    return StaticType();
+  }
+
   std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
-  std::string GetMaterialType() const override;
 
   void SetDefaultAlpha(float alpha)
   {

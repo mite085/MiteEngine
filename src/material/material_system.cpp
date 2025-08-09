@@ -1,6 +1,5 @@
 #include "material_system.h"
 #include "basic_data/shader_cache.h"
-#include "material_template.h"
 
 namespace mite {
 MaterialSystem::MaterialSystem(AssetManager &assetManager) : m_AssetManager(assetManager)
@@ -17,20 +16,20 @@ void MaterialSystem::Initialize()
 
   // 注册基础材质
   // TODO: shader的创建放在此处是否合理？待后续调整
-  auto basicShader = ShaderCache::Get().GetOpenGLShader(
-      FileSystem::GetAssetPath("shaders/basic.vert").string(),
-      FileSystem::GetAssetPath("shaders/basic.frag").string());
-  auto basicTemplate = std::make_unique<BasicMaterialTemplate>(basicShader);
-  std::string basicType = basicTemplate->GetMaterialType();
-  RegisterTemplate(basicType, std::move(basicTemplate));
+  auto pureColorShader = ShaderCache::Get().GetOpenGLShader(
+      FileSystem::GetAssetPath("shaders/pure_color.vert").string(),
+      FileSystem::GetAssetPath("shaders/pure_color.frag").string());
+  auto pureColorMaterialTemplate = std::make_unique<PureColorMaterialTemplate>(pureColorShader);
+  std::string basicType = pureColorMaterialTemplate->GetMaterialType();
+  RegisterTemplate(basicType, std::move(pureColorMaterialTemplate));
 
   // 注册PBR材质
   auto pbrShader = ShaderCache::Get().GetOpenGLShader(
       FileSystem::GetAssetPath("shaders/pbr.vert").string(),
       FileSystem::GetAssetPath("shaders/pbr.frag").string());
-  auto pbrTemplate = std::make_unique<PBRMaterialTemplate>(pbrShader);
-  std::string pbrType = pbrTemplate->GetMaterialType();
-  RegisterTemplate(pbrType, std::move(pbrTemplate));
+  auto pbrMaterialTemplate = std::make_unique<PBRMaterialTemplate>(pbrShader);
+  std::string pbrType = pbrMaterialTemplate->GetMaterialType();
+  RegisterTemplate(pbrType, std::move(pbrMaterialTemplate));
 }
 
 void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<Material> material)

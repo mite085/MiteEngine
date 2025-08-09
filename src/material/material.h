@@ -46,6 +46,16 @@ class Material {
    */
   virtual std::string GetMaterialType() const = 0;
 
+  /**
+   * @brief 获取材质类型标识--静态模板方法
+   * @return 字符串类型标识
+   */
+  template<typename T> static std::string GetMaterialTypeStatic()
+  {
+    static_assert(std::is_base_of<Material, T>::value, "Must inherit from Material");
+    return T::StaticType();
+  }
+
  protected:
   std::string m_Name = "Unnamed_Material";  // 材质名称（用于调试和UI显示）
 };
