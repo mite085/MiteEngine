@@ -268,12 +268,12 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   // m_CurrentModelHandle = modelHandle;
 
   // 6. µ÷ÊÔÐÅÏ¢
-  m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
-                  vao,
-                  modelHandle->vertexBuffer,
-                  modelHandle->indexBuffer,
-                  meshSection.indexOffset,
-                  meshSection.vertexOffset);
+  //m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
+  //                vao,
+  //                modelHandle->vertexBuffer,
+  //                modelHandle->indexBuffer,
+  //                meshSection.indexOffset,
+  //                meshSection.vertexOffset);
 }
 
 void OpenGLDevice::DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const

@@ -160,13 +160,13 @@ void MiteApplication::LoadDefaultScene()
   // 1. 加载模型
   AssetID plane_model_asset_id = AssetManager::Get().LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string());
-  Model plane_model(AssetManager::Get().GetModel(plane_model_asset_id)->subMeshHandles);
+  Model plane_model(AssetManager::Get().GetModel(plane_model_asset_id)->handle);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件
     Entity plane_submesh = m_Scene->CreateEntity("plane_submesh");
     MeshComponent &plane_mesh_component = m_Scene->GetRegistry().AddComponent<MeshComponent>(
-        plane_submesh, plane_model.GetMeshes(i));
+        plane_submesh, plane_model.GetSubMesh(i));
 
     // 3. 创建材质实例
     std::shared_ptr<MaterialInstance> plane_material =
