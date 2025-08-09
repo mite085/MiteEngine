@@ -31,7 +31,8 @@ class OpenGLRenderer : public Renderer {
    * 渲染场景的核心接口
    * @param renderQueue 从SceneView获取的可渲染实体列表
    */
-  void RenderScene(const std::vector<std::shared_ptr<RenderableItem>> &renderQueue) override;
+  void RenderScene(const std::shared_ptr<Camera> mainCamera,
+                   const std::vector<std::shared_ptr<RenderableItem>> &renderQueue) override;
 
   // ---- 状态设置 ----
   void SetClearColor(const glm::vec4 &color) override;

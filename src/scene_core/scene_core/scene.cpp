@@ -1,13 +1,10 @@
 #include "scene.h"
+#include "scene_core_components/component_headers.h"
 #include "scene_graph.h"
 #include "scene_serializer.h"
-#include "scene_core_components/component_headers.h"
 
 namespace mite {
-Scene::Scene(const std::string &name)
-    : m_Name(name),
-      m_Registry(),
-      m_SystemManager(m_Registry)
+Scene::Scene(const std::string &name) : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
 {
   // 初始化核心系统
   InitSystems();
@@ -15,8 +12,6 @@ Scene::Scene(const std::string &name)
   //// TODO: 创建默认环境实体
   // auto env = CreateEntity("Environment");
   // env.AddComponent<EnvironmentComponent>();
-
-  m_MainCamera = Entity();
 }
 
 Scene::~Scene()
@@ -36,7 +31,7 @@ void Scene::InitSystems()
 }
 
 void Scene::InitComponentSystems()
-{  
+{
   // 逐个注册组件系统
   m_SystemManager.RegisterSystem<CameraComponentSystem>();
   m_SystemManager.RegisterSystem<DestroyComponentSystem>();
@@ -48,12 +43,12 @@ void Scene::InitComponentSystems()
   m_SystemManager.RegisterSystem<TransformComponentSystem>();
   m_SystemManager.RegisterSystem<VisibilityComponentSystem>();
 
-
   // 初始化所有组件系统
   m_SystemManager.InitializeAll();
 }
 
-void Scene::ShutDownComponentSystems() {
+void Scene::ShutDownComponentSystems()
+{
   // 销毁所有组件系统
   m_SystemManager.ShutdownAll();
 
@@ -71,7 +66,6 @@ void Scene::ShutDownComponentSystems() {
 
 void Scene::OnUpdate(float timestep)
 {
-
   // 更新所有注册的系统
   m_SystemManager.UpdateAll(timestep);
 
@@ -83,7 +77,6 @@ void Scene::OnUpdate(float timestep)
   for (auto entity : entities) {
     m_Registry.DestroyEntity(entity);
   }
-
 }
 
 void Scene::OnRenderPrepare()
@@ -100,8 +93,7 @@ void Scene::Clear(bool keepSystems)
   // 2. 重置实体ID计数器
   m_EntityCounter = 0;
 
-  // 3. 重置主相机引用
-  m_MainCamera = Entity(/*weak_from_this(), entt::null*/);
+  // 3. TODO: 重置主相机
 
   // 4. 重置场景图状态
   if (m_SceneGraph) {
@@ -116,7 +108,6 @@ void Scene::Clear(bool keepSystems)
 
   // 7. TODO: 系统保留则重新创建默认环境实体（避免与析构函数的Clear冲突）
   if (keepSystems) {
-
   }
 }
 
@@ -143,6 +134,30 @@ bool Scene::IsValid(Entity entity) const
   return entity && m_Registry.IsValid(entity);
 }
 
+std::shared_ptr<Camera> Scene::GetMainCamera() const
+{
+  // 通过访问Camera组件系统，获取到其维护的主相机实体
+  std::optional<Entity> mainCameraEntity =
+      m_SystemManager.GetSystem<CameraComponentSystem>()->GetMainCameraEntity();
+
+  // 无主相机情况报错，并返回nullptr
+  if (!mainCameraEntity) {
+    LOG_ERROR("Invalid Main Camera in CameraComponentSystem!");
+    return nullptr;
+  }
+
+  // 查询到组件，获取到相机并返回
+  std::shared_ptr<Camera> mainCamera =
+      m_Registry.GetComponent<CameraComponent>(*mainCameraEntity).GetCamera();
+  return mainCamera;
+}
+
+void Scene::SetMainCamera(Entity mainCameraEntity)
+{
+  // 通过访问Camera组件系统，更换其维护的主相机实体
+  m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);
+}
+
 void Scene::Serialize(const std::filesystem::path &filepath)
 {
   const std::string ext = filepath.extension().string();
@@ -159,28 +174,28 @@ void Scene::Serialize(const std::filesystem::path &filepath)
     throw std::runtime_error("Unsupported file extension: " + ext);
   }
 }
-  void Scene::Deserialize(const std::filesystem::path &filepath)
-  {
-    if (!m_Serializer) {
-      throw std::runtime_error("Serializer not initialized");
-    }
-
-    if (!std::filesystem::exists(filepath)) {
-      throw std::runtime_error("File not found: " + filepath.string());
-    }
-
-    const std::string ext = filepath.extension().string();
-
-    if (ext == ".json") {
-      if (!m_Serializer->DeserializeFromJson(filepath.string()))
-        throw std::runtime_error("JSON deserialization failed: " + m_Serializer->GetLastError());
-    }
-    else if (ext == ".bin") {
-      if (!m_Serializer->DeserializeFromBinary(filepath.string()))
-        throw std::runtime_error("Binary deserialization failed: " + m_Serializer->GetLastError());
-    }
-    else {
-      throw std::runtime_error("Unsupported file extension: " + ext);
-    }
+void Scene::Deserialize(const std::filesystem::path &filepath)
+{
+  if (!m_Serializer) {
+    throw std::runtime_error("Serializer not initialized");
   }
+
+  if (!std::filesystem::exists(filepath)) {
+    throw std::runtime_error("File not found: " + filepath.string());
+  }
+
+  const std::string ext = filepath.extension().string();
+
+  if (ext == ".json") {
+    if (!m_Serializer->DeserializeFromJson(filepath.string()))
+      throw std::runtime_error("JSON deserialization failed: " + m_Serializer->GetLastError());
+  }
+  else if (ext == ".bin") {
+    if (!m_Serializer->DeserializeFromBinary(filepath.string()))
+      throw std::runtime_error("Binary deserialization failed: " + m_Serializer->GetLastError());
+  }
+  else {
+    throw std::runtime_error("Unsupported file extension: " + ext);
+  }
+}
 }  // namespace mite

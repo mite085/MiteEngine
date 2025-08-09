@@ -55,6 +55,10 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
     MarkDirty();
   }
 
+  std::shared_ptr<Camera> GetCamera() {
+    return m_Camera;
+  }
+
   // 矩阵获取（需结合Transform）
   glm::mat4 GetViewMatrix(SceneRegistry &reg) const;
   glm::mat4 GetProjectionMatrix() const;

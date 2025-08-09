@@ -2,6 +2,7 @@
 #define MITE_SCENE
 
 #include "component_system_manager.h"
+#include "basic_data/camera.h"
 
 namespace mite {
 // 前向声明
@@ -74,16 +75,10 @@ class Scene{
   }
 
   /**
-   * @brief 获取主相机实体
+   * @brief 获取主相机
    */
-  Entity GetMainCamera() const
-  {
-    return m_MainCamera;
-  }
-  void SetMainCamera(Entity entity)
-  {
-    m_MainCamera = entity;
-  }
+  std::shared_ptr<Camera> GetMainCamera() const;
+  void SetMainCamera(Entity entity);
 
   // ------------------------ 序列化 ------------------------
   /**
@@ -106,18 +101,10 @@ class Scene{
   {
     return m_Registry;
   }
-  const SceneRegistry &GetRegistry() const
-  {
-    return m_Registry;
-  }
   /**
    * @brief 获取ComponentSystemManager
    */
   ComponentSystemManager &GetComponentSystemManager()
-  {
-    return m_SystemManager;
-  }
-  const ComponentSystemManager &GetComponentSystemManager() const
   {
     return m_SystemManager;
   }
@@ -148,8 +135,6 @@ class Scene{
   std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统
   std::unique_ptr<SceneSerializer> m_Serializer;   // 序列化系统
 
-  // 场景状态
-  Entity m_MainCamera;  // 主相机实体
 
   // 系统管理
   ComponentSystemManager m_SystemManager;

@@ -36,12 +36,17 @@ void OpenGLRenderer::EndFrame()
   // 注意：不包含交换缓冲区的操作，由窗口系统负责
 }
 
-void OpenGLRenderer::RenderScene(const std::vector<std::shared_ptr<RenderableItem>> &renderQueue)
+void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
+                                 const std::vector<std::shared_ptr<RenderableItem>> &renderQueue)
 {
   // 定义纹理绑定lambda函数
   auto bindTextureFunc = [](TextureGPUHandle handle, uint32_t slot) {
     IRenderDevice::Current().BindTexture(handle, slot);
   };
+
+  // 获取视图和投影矩阵
+  glm::mat4 viewMatrix = mainCamera->GetViewMatrix();
+  glm::mat4 projectionMatrix = mainCamera->GetProjectionMatrix();
 
   // 遍历渲染队列
   for (const auto &item : renderQueue) {  
@@ -58,6 +63,8 @@ void OpenGLRenderer::RenderScene(const std::vector<std::shared_ptr<RenderableIte
     auto shader = item->materialInstance->GetShader();
     if (shader) {
       shader->SetMat4("u_Model", item->worldTransform);
+      shader->SetMat4("u_View", viewMatrix);
+      shader->SetMat4("u_Projection", projectionMatrix);
     }
 
     // 3. 绑定网格VAO

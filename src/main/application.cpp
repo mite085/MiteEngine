@@ -151,10 +151,11 @@ void MiteApplication::LoadDefaultScene()
 
   // 0. 创建相机，并设定主相机
   Camera main_camera;
+  main_camera.LookAt({10.0, 10.0, 10.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0});
   Entity main_camera_entity = m_Scene->CreateEntity("plane_submesh");
   CameraComponent &main_camera_component = m_Scene->GetRegistry().AddComponent<CameraComponent>(
       main_camera_entity, std::make_shared<Camera>(main_camera));
-  m_Scene->GetComponentSystemManager().GetSystem<CameraComponentSystem>()->SetMainCameraEntity(main_camera_entity);
+  m_Scene->SetMainCamera(main_camera_entity);
 
   // 1. 加载模型
   AssetID plane_model_asset_id = AssetManager::Get().LoadModel(
@@ -260,8 +261,11 @@ void MiteApplication::Render()
 {
   // 主场景渲染
   if (m_ShowMainViewport) {
+    // 获取主相机
+    auto mainCamera = m_Scene->GetMainCamera();
+
     // 渲染场景
-    m_Renderer->RenderScene(m_SceneView->GetRenderQueue());
+    m_Renderer->RenderScene(mainCamera, m_SceneView->GetRenderQueue());
 
     // TODO：渲染调试信息
     // if (m_ShowDebug) {
