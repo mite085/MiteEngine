@@ -27,14 +27,15 @@ class OpenGLDevice : public IRenderDevice {
   void GenerateMipmaps(TextureGPUHandle handle) override;
 
   // ---- 模型操作 ----
-  std::vector<MeshGPUHandle> CreateModel(const ModelSourceData &data) override;
-  void DestroyModel(std::vector<MeshGPUHandle> model) override;
+  ModelGPUHandle CreateModel(const ModelSourceData &data) override;
+  void DestroyModel(ModelGPUHandle model) override;
   // 注意：
   // 由于Asset仅维护Model，由Model维护Mesh，
   // 所以Create和Destroy接收的是Model数据。
   // 但Bind和Draw的操作是和Mesh强相关，
   // 所以这里实现Bind Mesh而非Bind Model
-  void BindMesh(MeshGPUHandle handle) const override;
+  void BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle,
+                MeshSection meshSection) const override;
   void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const override;
 
  private:
@@ -43,16 +44,14 @@ class OpenGLDevice : public IRenderDevice {
   void OnTextureLoaded(TextureLoadEvent &e) override;
 
   // ---- 辅助方法 ----
+  static GLenum TranslateTextureFormat(TextureFormat format);
   GLenum ConvertWrapMode(TextureWrapMode mode) const;
   void ConvertFilterMode(TextureFilterMode mode, GLenum &outMinFilter, GLenum &outMagFilter) const;
-  static GLenum TranslateTextureFormat(TextureFormat format);
-
-  // 创建单个SubMesh的GPU资源
-  MeshGPUHandle CreateSubMesh(const MeshSourceData &subMesh);
+  void SetVertexAttributes(const VertexLayout &layout);
 
   // 资源追踪（用于调试和泄漏检测）
   std::unordered_set<GLuint> activeTextures_;
-  std::unordered_set<GLuint> activeMeshsVAO_, activeMeshsVBO_, activeMeshsEBO_;
+  std::unordered_set<GLuint> activeModelsVAO_, activeModelsVBO_, activeModelsEBO_;
 
   // 日志系统
   Logger m_Logger;

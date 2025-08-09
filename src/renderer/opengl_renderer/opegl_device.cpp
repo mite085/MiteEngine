@@ -18,21 +18,21 @@ OpenGLDevice::~OpenGLDevice()
       glDeleteTextures(1, &handle);
     }
   }
-  if (!activeMeshsVAO_.empty()) {
-    LOG_WARN("{} meshes vao not released on shutdown", activeMeshsVAO_.size());
-    for (GLuint vao : activeMeshsVAO_) {
+  if (!activeModelsVAO_.empty()) {
+    LOG_WARN("{} meshes vao not released on shutdown", activeModelsVAO_.size());
+    for (GLuint vao : activeModelsVAO_) {
       glDeleteVertexArrays(1, &vao);
     }
   }
-  if (!activeMeshsVBO_.empty()) {
-    LOG_WARN("{} meshes vbo not released on shutdown", activeMeshsVBO_.size());
-    for (GLuint vbo : activeMeshsVBO_) {
+  if (!activeModelsVBO_.empty()) {
+    LOG_WARN("{} meshes vbo not released on shutdown", activeModelsVBO_.size());
+    for (GLuint vbo : activeModelsVBO_) {
       glDeleteBuffers(1, &vbo);
     }
   }
-  if (!activeMeshsEBO_.empty()) {
-    LOG_WARN("{} meshes ebo not released on shutdown", activeMeshsEBO_.size());
-    for (GLuint ebo : activeMeshsEBO_) {
+  if (!activeModelsEBO_.empty()) {
+    LOG_WARN("{} meshes ebo not released on shutdown", activeModelsEBO_.size());
+    for (GLuint ebo : activeModelsEBO_) {
       glDeleteBuffers(1, &ebo);
     }
   }
@@ -129,28 +129,11 @@ void OpenGLDevice::GenerateMipmaps(TextureGPUHandle handle)
 }
 
 // ------------------------ 模型操作 ------------------------
-std::vector<MeshGPUHandle> OpenGLDevice::CreateModel(const ModelSourceData &data)
+ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
 {
-  std::vector<MeshGPUHandle> modelHandle;
 
-  // 处理所有子网格
-  for (auto &subMesh : data.subMeshes) {
-    MeshGPUHandle subMeshHandle = CreateSubMesh(subMesh);
-    modelHandle.push_back(subMeshHandle);
-  }
-
-  return modelHandle;
-}
-
-MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshSourceData &subMesh)
-{
-  MeshGPUHandle handle;
+  ModelGPUHandle handle;
   GLuint VBO, EBO, VAO;
-
-  // TODO: 
-  // 为了减少GPU内存碎片，应当为Model创建统一的VAO内存，
-  // 各个MeshGPUHandle通过存放Model的VAO和各自的Offset，
-  // 在DrawIndexed函数内通过Offset索引进行绘制。
 
   // 1. 创建VAO
   glGenVertexArrays(1, &VAO);
@@ -159,105 +142,136 @@ MeshGPUHandle OpenGLDevice::CreateSubMesh(const MeshSourceData &subMesh)
   // 2. 创建VBO并上传数据
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER,
-               subMesh.vertexCount * subMesh.layout.stride,
-               subMesh.vertexData,
-               GL_STATIC_DRAW);
+  glBufferData(
+      GL_ARRAY_BUFFER, data.mergedVertexData.size(), data.mergedVertexData.data(), GL_STATIC_DRAW);
 
   // 3. 创建EBO并上传数据
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               subMesh.indexCount * sizeof(uint32_t),
-               subMesh.indices,
+               data.mergedIndices.size() * sizeof(uint32_t),
+               data.mergedIndices.data(),
                GL_STATIC_DRAW);
 
-  // 4. 设置顶点属性指针
-  size_t offset = 0;
-  for (uint32_t i = 0; i < subMesh.layout.attributes.size(); ++i) {
-    auto attr = subMesh.layout.attributes[i];
-    glEnableVertexAttribArray(i);
+  // 4. 设置顶点属性指针(基于统一的layout)
+  SetVertexAttributes(data.layout);
 
-    switch (attr) {
-      case VertexAttribute::Position:
-        glVertexAttribPointer(
-            i, 3, GL_FLOAT, GL_FALSE, subMesh.layout.stride, reinterpret_cast<void *>(offset));
-        offset += sizeof(glm::vec3);
-        break;
-      case VertexAttribute::Normal:
-        glVertexAttribPointer(
-            i, 3, GL_FLOAT, GL_FALSE, subMesh.layout.stride, reinterpret_cast<void *>(offset));
-        offset += sizeof(glm::vec3);
-        break;
-      case VertexAttribute::TexCoord:
-        glVertexAttribPointer(
-            i, 2, GL_FLOAT, GL_FALSE, subMesh.layout.stride, reinterpret_cast<void *>(offset));
-        offset += sizeof(glm::vec2);
-        break;
-      case VertexAttribute::Tangent:
-        glVertexAttribPointer(
-            i, 3, GL_FLOAT, GL_FALSE, subMesh.layout.stride, reinterpret_cast<void *>(offset));
-        offset += sizeof(glm::vec3);
-        break;
-      case VertexAttribute::Bitangent:
-        glVertexAttribPointer(
-            i, 3, GL_FLOAT, GL_FALSE, subMesh.layout.stride, reinterpret_cast<void *>(offset));
-        offset += sizeof(glm::vec3);
-        break;
-    }
-  }
-
-  // 解绑VAO
+  // 5. 解绑VAO
   glBindVertexArray(0);
 
-  // 填充GPU句柄
+  // 6. 填充GPU句柄
   handle.vertexArray = static_cast<uintptr_t>(VAO);
   handle.vertexBuffer = static_cast<uintptr_t>(VBO);
   handle.indexBuffer = static_cast<uintptr_t>(EBO);
-  handle.vertexCount = subMesh.vertexCount;
-  handle.indexCount = subMesh.indexCount;
 
-  // 记录活动网格（调试用）
-  activeMeshsVAO_.insert(VAO);
-  activeMeshsVBO_.insert(VBO);
-  activeMeshsEBO_.insert(EBO);
+  // 7. 记录活动网格（调试用）
+  activeModelsVAO_.insert(VAO);
+  activeModelsVBO_.insert(VBO);
+  activeModelsEBO_.insert(EBO);
+
+  // 8. 保存ModelSourceData创建时生成的MeshSections
+  handle.subMeshes = std::move(data.sections);
 
   return handle;
+
+
 }
 
-void OpenGLDevice::DestroyModel(std::vector<MeshGPUHandle> handle)
+void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
 {
-  if (handle.empty())
+  // 防御性检查
+  if (handle.vertexArray == 0 && handle.vertexBuffer == 0 && handle.indexBuffer == 0) {
+    LOG_WARN("Attempted to destroy invalid ModelGPUHandle (all handles are 0)");
     return;
+  }
 
-  for (auto &subMeshHandle : handle) {
-    GLuint vao = static_cast<GLuint>(subMeshHandle.vertexArray);
-    GLuint vbo = static_cast<GLuint>(subMeshHandle.vertexBuffer);
-    GLuint ebo = static_cast<GLuint>(subMeshHandle.indexBuffer);
-
+  // 1. 删除顶点数组对象(VAO)
+  if (handle.vertexArray != 0) {
+    GLuint vao = static_cast<GLuint>(handle.vertexArray);
     glDeleteVertexArrays(1, &vao);
+
+    // 从活动资源中移除
+    activeModelsVAO_.erase(vao);
+  }
+
+  // 2. 删除顶点缓冲区(VBO)
+  if (handle.vertexBuffer != 0) {
+    GLuint vbo = static_cast<GLuint>(handle.vertexBuffer);
     glDeleteBuffers(1, &vbo);
+
+    // 从活动资源中移除
+    activeModelsVBO_.erase(vbo);
+  }
+
+  // 3. 删除索引缓冲区(EBO)
+  if (handle.indexBuffer != 0) {
+    GLuint ebo = static_cast<GLuint>(handle.indexBuffer);
     glDeleteBuffers(1, &ebo);
 
-    // 从活动模型中移除
-    activeMeshsVAO_.erase(vao);
-    activeMeshsVBO_.erase(vbo);
-    activeMeshsEBO_.erase(ebo);
+    // 从活动资源中移除
+    activeModelsEBO_.erase(ebo);
   }
+
+// 4. 调试日志
+  LOG_DEBUG("Destroyed model resources: VAO={}, VBO={}, EBO={}",
+            handle.vertexArray,
+            handle.vertexBuffer,
+            handle.indexBuffer);
+
+  // 5. 清空句柄(防御性编程)
+  handle.vertexArray = 0;
+  handle.vertexBuffer = 0;
+  handle.indexBuffer = 0;
 }
 
-void OpenGLDevice::BindMesh(MeshGPUHandle handle) const
+void OpenGLDevice::BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle,
+                            MeshSection meshSection) const
 {
-  if (handle.vertexArray == 0) {
-    LOG_WARN("Attempted to bind invalid mesh (VAO=0)");
+  // 1. 参数有效性检查
+  if (!modelHandle) {
+    LOG_WARN("Attempt to bind mesh with null model handle");
     return;
   }
 
-  // 绑定顶点数组对象（VAO）
-  GLuint vao = static_cast<GLuint>(handle.vertexArray);
+  if (modelHandle->vertexArray == 0) {
+    LOG_WARN("Attempt to bind mesh with invalid VAO (handle=0)");
+    return;
+  }
+
+  if (meshSection.indexCount == 0 || meshSection.vertexCount == 0) {
+    LOG_WARN("Attempt to bind empty mesh section (indices={}, vertices={})",
+             meshSection.indexCount,
+             meshSection.vertexCount);
+    return;
+  }
+
+  // 2. 绑定整个模型的VAO
+  GLuint vao = static_cast<GLuint>(modelHandle->vertexArray);
   glBindVertexArray(vao);
 
-  // 注：VAO已包含VBO/EBO的绑定信息，无需重复绑定
+// 3. 验证缓冲区是否有效
+  if (modelHandle->vertexBuffer == 0 || modelHandle->indexBuffer == 0) {
+    LOG_ERROR("Model buffers not initialized (VBO={}, EBO={})",
+              modelHandle->vertexBuffer,
+              modelHandle->indexBuffer);
+  }
+
+  // 4. 绑定缓冲区（VAO已包含这些信息，但显式绑定更安全）
+  glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(modelHandle->vertexBuffer));
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLuint>(modelHandle->indexBuffer));
+
+  // 5. 存储当前绑定的MeshSection（供后续Draw调用使用）
+  // 注意：这需要OpenGLDevice有成员变量存储当前状态，或者使用其他状态管理机制
+  //m_CurrentMeshSection = &meshSection;
+  //m_CurrentModelHandle = modelHandle;
+
+// 6. 调试信息
+  LOG_DEBUG("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
+            vao,
+            modelHandle->vertexBuffer,
+            modelHandle->indexBuffer,
+            meshSection.indexOffset,
+            meshSection.vertexOffset);
 }
 
 void OpenGLDevice::DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const
@@ -302,24 +316,64 @@ GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
 void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e) {
   std::shared_ptr<ModelAsset> model = e.GetModelAsset();
 
-  // 转换 Asset 模块数据为 Renderer 模块的 ModelSourceData
+  // 1. 准备合并所有子网格数据
   ModelSourceData rendererData;
   rendererData.modelBboxMin = model->metadata.boundingBoxMin;
   rendererData.modelBboxMax = model->metadata.boundingBoxMax;
+  rendererData.layout = model->subMeshData.empty() ? VertexLayout{} : model->subMeshData[0].layout;
 
+  // 2. 合并顶点和索引数据
+  size_t totalVertexBytes = 0;
+  size_t totalIndices = 0;
+
+  // 预计算总大小
   for (const auto &subMesh : model->subMeshData) {
-    rendererData.subMeshes.push_back(
-        {subMesh.vertexData.data(),
-         subMesh.indices.data(),
-         static_cast<uint32_t>(subMesh.vertexData.size() / subMesh.layout.stride),
-         static_cast<uint32_t>(subMesh.indices.size()),
-         subMesh.layout,
-         subMesh.boundingBoxMin,
-         subMesh.boundingBoxMax});
+    totalVertexBytes += subMesh.vertexData.size();
+    totalIndices += subMesh.indices.size();
   }
 
-  // 创建model的GPU资源
-  model->subMeshHandles = CreateModel(rendererData);
+  // 预分配空间
+  rendererData.mergedVertexData.reserve(totalVertexBytes);
+  rendererData.mergedIndices.reserve(totalIndices);
+
+  // 3. 实际合并数据并记录MeshSection
+  uint32_t vertexOffset = 0;
+  uint32_t indexOffset = 0;
+
+  for (const auto &subMesh : model->subMeshData) {
+    // 添加顶点数据
+    size_t prevVertexSize = rendererData.mergedVertexData.size();
+    rendererData.mergedVertexData.insert(
+        rendererData.mergedVertexData.end(), subMesh.vertexData.begin(), subMesh.vertexData.end());
+
+    // 添加索引数据(需要调整偏移)
+    size_t prevIndexSize = rendererData.mergedIndices.size();
+    rendererData.mergedIndices.insert(
+        rendererData.mergedIndices.end(), subMesh.indices.begin(), subMesh.indices.end());
+
+    // 计算顶点数(基于stride)
+    uint32_t vertexCount = static_cast<uint32_t>(subMesh.vertexData.size() /
+                                                 subMesh.layout.stride);
+
+    // 记录并保存MeshSection，由CreateModel步骤交付给ModelGPUHandle
+    rendererData.sections.emplace_back(MeshSection{vertexOffset,
+                                                   indexOffset,
+                                                   vertexCount,
+                                                   static_cast<uint32_t>(subMesh.indices.size()),
+                                                   subMesh.boundingBoxMin,
+                                                   subMesh.boundingBoxMax});
+
+    // 更新偏移量
+    vertexOffset = static_cast<uint32_t>(rendererData.mergedVertexData.size() /
+                                         subMesh.layout.stride);
+    indexOffset = static_cast<uint32_t>(rendererData.mergedIndices.size());
+  }
+
+  // 4. 创建GPU资源
+  ModelGPUHandle modelHandle = CreateModel(rendererData);
+
+  // 5. 更新ModelAsset
+  model->handle = std::make_shared<ModelGPUHandle>(modelHandle);
 }
 
 void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e) {
@@ -385,4 +439,78 @@ void OpenGLDevice::ConvertFilterMode(TextureFilterMode mode,
       outMagFilter = GL_LINEAR;
   }
 }
+
+void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
+{
+  // 确保VAO已绑定
+  GLint currentVAO;
+  glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &currentVAO);
+  if (currentVAO == 0) {
+    LOG_ERROR("No VAO bound when setting vertex attributes");
+    return;
+  }
+
+  // 计算总步长并验证
+  const uint32_t stride = layout.stride;
+  if (stride == 0) {
+    LOG_ERROR("Invalid vertex layout: stride is zero");
+    return;
+  }
+
+  // 设置每个顶点属性
+  uint32_t offset = 0;
+  for (uint32_t i = 0; i < layout.attributes.size(); ++i) {
+    const auto &attr = layout.attributes[i];
+
+    // 启用顶点属性数组
+    glEnableVertexAttribArray(i);
+
+    // 根据属性类型设置指针
+    switch (attr) {
+      case VertexAttribute::Position:
+        glVertexAttribPointer(i,                         // 属性位置
+                              3,                         // 分量数量 (vec3)
+                              GL_FLOAT,                  // 数据类型
+                              GL_FALSE,                  // 是否标准化
+                              stride,                    // 步长
+                              (void *)(uintptr_t)offset  // 偏移量
+        );
+        offset += sizeof(glm::vec3);
+        break;
+
+      case VertexAttribute::Normal:
+        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
+        offset += sizeof(glm::vec3);
+        break;
+
+      case VertexAttribute::TexCoord:
+        glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
+        offset += sizeof(glm::vec2);
+        break;
+
+      case VertexAttribute::Tangent:
+        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
+        offset += sizeof(glm::vec3);
+        break;
+
+      case VertexAttribute::Bitangent:
+        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
+        offset += sizeof(glm::vec3);
+        break;
+
+      default:
+        LOG_WARN("Unknown vertex attribute type: {}", static_cast<int>(attr));
+        break;
+    }
+
+    // 对于Instanced渲染，可以在此设置divisor
+    // glVertexAttribDivisor(i, 0);
+  }
+
+  // 验证偏移量与声明的stride一致
+  if (offset != stride) {
+    LOG_ERROR("Vertex attribute offset {} doesn't match layout stride {}", offset, stride);
+  }
+}
+
 };  // namespace mite

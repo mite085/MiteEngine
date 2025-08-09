@@ -63,7 +63,7 @@ struct ModelAsset {
   ModelMetadata metadata;
   std::vector<MeshData> subMeshData;  // 子网格集合
 
-  std::vector<MeshGPUHandle> subMeshHandles; // 子网格GPU句柄
+  std::shared_ptr<ModelGPUHandle> handle; // 模型GPU句柄
 };
 
 };  // namespace mite
