@@ -1,9 +1,9 @@
 #ifndef MITE_HANDLE_TYPE
 #define MITE_HANDLE_TYPE
 
+#include <glm/glm.hpp>
 #include <variant>
 #include <vector>
-#include <glm/glm.hpp>
 
 namespace mite {
 // ------------------------ 纹理相关 ------------------------
@@ -65,11 +65,11 @@ struct VertexLayout {
 
 // 子网格GPU信息（仅仅包含Offset数据）
 struct MeshSection {
-  uint32_t vertexOffset;
-  uint32_t indexOffset;
-  uint32_t vertexCount;
-  uint32_t indexCount;
-  glm::vec3 bboxMin;
+  uint32_t vertexOffset;  // Mesh在Model的VAO中的偏移量
+  uint32_t indexOffset;   // Mesh在Model的VBO中的偏移量
+  uint32_t vertexCount;   // Mesh的顶点数量
+  uint32_t indexCount;    // Mesh的索引数量
+  glm::vec3 bboxMin;      // 网格级包围盒
   glm::vec3 bboxMax;
 };
 
@@ -79,10 +79,11 @@ struct ModelGPUHandle {
   uintptr_t vertexBuffer;              // 整个Model的VBO
   uintptr_t indexBuffer;               // 整个Model的EBO
   std::vector<MeshSection> subMeshes;  // 子Mesh信息
+  glm::vec3 bboxMin;                   // 模型级包围盒
+  glm::vec3 bboxMax;
 };
 
 // ------------------------ 模型相关 ------------------------
-
 
 // 模型数据来源（Renderer模块专用）
 struct ModelSourceData {
@@ -93,7 +94,6 @@ struct ModelSourceData {
   glm::vec3 modelBboxMin;                 // 模型级包围盒
   glm::vec3 modelBboxMax;
 };
-
 };  // namespace mite
 
 #endif

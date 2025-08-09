@@ -131,7 +131,7 @@ void OpenGLDevice::GenerateMipmaps(TextureGPUHandle handle)
 // ------------------------ 模型操作 ------------------------
 ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
 {
-  ModelGPUHandle handle;
+  // 0. 创建临时VAO等对象
   GLuint VBO, EBO, VAO;
 
   // 1. 创建VAO
@@ -159,6 +159,9 @@ ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
   glBindVertexArray(0);
 
   // 6. 填充GPU句柄
+  ModelGPUHandle handle;
+  handle.bboxMax = data.modelBboxMax;
+  handle.bboxMin = data.modelBboxMin;
   handle.vertexArray = static_cast<uintptr_t>(VAO);
   handle.vertexBuffer = static_cast<uintptr_t>(VBO);
   handle.indexBuffer = static_cast<uintptr_t>(EBO);
