@@ -224,9 +224,11 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
   handle.indexBuffer = 0;
 }
 
-void OpenGLDevice::BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle,
-                            MeshSection meshSection) const
+void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
 {
+  std::shared_ptr<ModelGPUHandle> modelHandle = mesh->GetModelHandle();
+  MeshSection meshSection = mesh->GetSection();
+
   // 1. 参数有效性检查
   if (!modelHandle) {
     m_Logger->warn("Attempt to bind mesh with null model handle");

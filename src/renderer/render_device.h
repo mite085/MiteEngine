@@ -44,7 +44,7 @@ class IRenderDevice {
   // 所以Create和Destroy接收的是Model数据。
   // 但Bind和Draw的操作是和Mesh强相关，
   // 所以这里实现Bind Mesh而非Bind Model
-  virtual void BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle, MeshSection handle) const = 0;
+  virtual void BindMesh(std::shared_ptr<Mesh> mesh) const = 0;
   virtual void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const = 0;
 
   // 静态当前设备管理

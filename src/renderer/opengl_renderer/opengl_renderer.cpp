@@ -2,7 +2,11 @@
 #include "asset_manager.h"
 
 namespace mite {
-OpenGLRenderer::OpenGLRenderer() {}
+OpenGLRenderer::OpenGLRenderer()
+{  // 创建日志系统
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Renderer");
+  m_Logger->trace("Created OpenGL Renderer");
+}
 
 OpenGLRenderer::~OpenGLRenderer() {}
 
@@ -51,8 +55,8 @@ void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
   // 遍历渲染队列
   for (const auto &item : renderQueue) {  
     // 0. 检查渲染实体是否有效
-    if (!item->materialInstance || item->meshHandle.vertexArray == 0) {
-      LOG_WARN("Invalid renderable item - missing material or mesh");
+    if (!item->materialInstance || item->mesh->GetModelHandle()->vertexArray == 0) {
+      m_Logger->warn("Invalid renderable item - missing material or mesh");
       continue;
     }
 
@@ -68,13 +72,11 @@ void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
     }
 
     // 3. 绑定网格VAO
-    IRenderDevice::Current().BindMesh(item->meshHandle);
+    IRenderDevice::Current().BindMesh(item->mesh);
 
     // 4. 绘制网格:
-    // TODO: 
-    // 目前Model拆分成多个mesh逐个绘制，无需计算偏移量,
-    // 但这样做会导致较为严重的碎片化，后续需要合并MeshGPUHandle，使用统一的ModelHandle
-    IRenderDevice::Current().DrawIndexed(item->meshHandle.indexCount, 0);
+    IRenderDevice::Current().DrawIndexed(item->mesh->GetIndexCount(),
+                                         item->mesh->GetIndexOffset());
 
     // 5. 解绑（可选，减少状态切换）
     glBindVertexArray(0);
@@ -83,7 +85,7 @@ void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
   // 检查OpenGL错误
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
-    LOG_ERROR("OpenGL error after rendering: {}", static_cast<int>(err));
+    m_Logger->error("OpenGL error after rendering: {}", static_cast<int>(err));
   }
 }
 

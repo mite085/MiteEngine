@@ -35,6 +35,13 @@ class Mesh {
   {
     return section_.indexCount;
   }
+  /**
+   * 获取索引偏移
+   */
+  uint32_t GetIndexOffset() const
+  {
+    return section_.indexOffset;
+  }
 
   /**
    * 获取子网格数据段信息

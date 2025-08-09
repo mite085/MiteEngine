@@ -29,8 +29,7 @@ class OpenGLDevice : public IRenderDevice {
   // ---- Ä£ÐÍ²Ù×÷ ----
   ModelGPUHandle CreateModel(const ModelSourceData &data) override;
   void DestroyModel(ModelGPUHandle model) override;
-  void BindMesh(std::shared_ptr<ModelGPUHandle> modelHandle,
-                MeshSection meshSection) const override;
+  void BindMesh(std::shared_ptr<Mesh> mesh) const override;
   void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const override;
 
  private:

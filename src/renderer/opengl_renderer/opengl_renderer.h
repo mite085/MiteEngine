@@ -44,6 +44,9 @@ class OpenGLRenderer : public Renderer {
  private:
   // ---- OpenGL专属状态 ----
   GLuint m_viewportFBO = 0;	// 默认帧缓冲（渲染到屏幕），OpenGL 规定其ID为0
+
+  // 日志系统
+  Logger m_Logger;
 };
 }  // namespace mite
 
