@@ -63,24 +63,22 @@ struct VertexLayout {
   uint32_t stride = 0;  // 顶点总字节数
 };
 
-// 子网格GPU模型句柄
-struct MeshGPUHandle {
-  uintptr_t vertexArray = 0;   // 顶点数组索引
-  uintptr_t vertexBuffer = 0;  // 顶点缓冲区
-  uintptr_t indexBuffer = 0;   // 索引缓冲区
-  uint32_t vertexCount = 0;    // 顶点数量
-  uint32_t indexCount = 0;     // 索引数量
+// 子网格GPU信息（仅仅包含Offset数据）
+struct MeshSection {
+  uint32_t vertexOffset;
+  uint32_t indexOffset;
+  uint32_t vertexCount;
+  uint32_t indexCount;
+  glm::vec3 bboxMin;
+  glm::vec3 bboxMax;
 };
 
-// 子网格数据来源（Renderer模块专用）
-struct MeshSourceData {
-  const uint8_t *vertexData;  // 顶点数据指针（只读）
-  const uint32_t *indices;    // 索引数据指针（只读）
-  uint32_t vertexCount;       // 顶点数量
-  uint32_t indexCount;        // 索引数量
-  VertexLayout layout;        // 顶点布局
-  glm::vec3 bboxMin;          // 子网格包围盒
-  glm::vec3 bboxMax;
+// 模型GPU句柄
+struct ModelGPUHandle {
+  uintptr_t vertexArray;               // 整个Model的VAO
+  uintptr_t vertexBuffer;              // 整个Model的VBO
+  uintptr_t indexBuffer;               // 整个Model的EBO
+  std::vector<MeshSection> subMeshes;  // 子Mesh信息
 };
 
 // ------------------------ 模型相关 ------------------------
@@ -88,11 +86,13 @@ struct MeshSourceData {
 
 // 模型数据来源（Renderer模块专用）
 struct ModelSourceData {
-  std::vector<MeshSourceData> subMeshes;  // 子网格集合
+  std::vector<uint8_t> mergedVertexData;  // 合并后的顶点数据
+  std::vector<uint32_t> mergedIndices;    // 合并后的索引数据
+  std::vector<MeshSection> sections;      // 子网格分段信息
+  VertexLayout layout;                    // 顶点布局(所有子网格共享)
   glm::vec3 modelBboxMin;                 // 模型级包围盒
   glm::vec3 modelBboxMax;
 };
-
 
 };  // namespace mite
 
