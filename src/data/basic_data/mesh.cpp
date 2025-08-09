@@ -1,13 +1,15 @@
 #include "mesh.h"
 
 namespace mite {
-Mesh::Mesh(const std::shared_ptr<MeshGPUHandle> handle) : handle_(handle)
+Mesh::Mesh(std::shared_ptr<ModelGPUHandle> modelHandle, const MeshSection &section)
+    : modelHandle_(modelHandle), section_(section)
 {
-  if (handle->vertexArray == 0 || handle->indexBuffer == 0) {
-    throw std::invalid_argument("Invalid MeshGPUHandle: vertexArray or indexBuffer is null");
+  if (!modelHandle_) {
+    throw std::invalid_argument("Model handle cannot be null");
   }
-  if (handle->vertexCount == 0 || handle->indexCount == 0) {
-    throw std::invalid_argument("Invalid MeshGPUHandle: vertexCount or indexCount is zero");
+
+  if (section_.vertexCount == 0 || section_.indexCount == 0) {
+    throw std::invalid_argument("Invalid mesh section: vertex or index count is zero");
   }
 }
 };  // namespace mite

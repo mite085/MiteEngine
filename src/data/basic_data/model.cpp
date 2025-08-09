@@ -1,25 +1,21 @@
 #include "model.h"
 
 namespace mite {
-Model::Model(const std::vector<MeshGPUHandle> &handle)
+Model::Model(std::shared_ptr<ModelGPUHandle> modelHandle)
+    : modelHandle_(modelHandle), boundingBox_(modelHandle->bboxMin, modelHandle->bboxMax)
 {
-  // 为每个子网格创建Mesh对象
-  for (size_t i = 0; i < handle.size(); ++i) {
-    subMeshes_.emplace_back(std::make_shared<Mesh>(std::make_shared<MeshGPUHandle>(handle[i])));
+  // 为每个MeshSection创建对应的Mesh对象
+  for (const auto &section : modelHandle->subMeshes) {
+    subMeshes_.emplace_back(std::make_shared<Mesh>(modelHandle_, section));
   }
 }
 
-//void Model::Draw() const
-//{
-//  for (const auto &subMesh : subMeshes_) {
-//    subMesh->Draw();
-//  }
-//}
-//
-//void Model::DrawSubMesh(size_t index) const
-//{
-//  if (index < subMeshes_.size()) {
-//    subMeshes_[index]->Draw();
-//  }
-//}
+std::shared_ptr<Mesh> Model::GetSubMesh(size_t index) const
+{
+  if (index >= subMeshes_.size()) {
+    LOG_ERROR("Invalid submesh index: {}", index);
+    return nullptr;
+  }
+  return subMeshes_[index];
+}
 };
