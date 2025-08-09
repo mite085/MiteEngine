@@ -60,7 +60,8 @@ class MiteApplication {
   void InitializeUI();
   void InitializeAssertManager();
   void InitializeMaterialSystem();
-  void InitializeScene();
+  void InitializeSceneCore();
+  void InitializeSceneView();
   void LoadDefaultScene();
   void CleanUp();
   void CleanUpInputSystem();
@@ -99,7 +100,7 @@ class MiteApplication {
  private:
   // ×ÓÏµÍ³
   std::shared_ptr<InputContextStack> m_InputContextStack;
-  //std::shared_ptr<AssetManager> m_AssetManager;
+  std::unique_ptr<AssetManager> m_AssetManager;
 
   std::unique_ptr<Window> m_Window;
   std::unique_ptr<Renderer> m_Renderer;

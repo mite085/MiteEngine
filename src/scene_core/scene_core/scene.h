@@ -125,7 +125,7 @@ class Scene{
   // 场景名称
   std::string m_Name;         
 
-  // EnTT实体组件注册表：
+  // 实体组件注册表：
   // 直接值持有,与Scene共享生命周期，
   // 避免unique_ptr不必要的堆分配，
   // 并方便其他模块直接引用m_Registry(可能存在风险？)

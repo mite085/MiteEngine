@@ -1,10 +1,9 @@
 #include "material_system.h"
-#include "asset_manager.h"
 #include "basic_data/shader_cache.h"
 #include "material_template.h"
 
 namespace mite {
-MaterialSystem::MaterialSystem()
+MaterialSystem::MaterialSystem(AssetManager &assetManager) : m_AssetManager(assetManager)
 {
   // 初始化LOGGER
   m_logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
@@ -132,7 +131,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
       }
       case UniformVariant::Type::String: {
         // 纹理路径特殊处理
-        auto texture = AssetManager::Get().GetTexture(AssetManager::Get().LoadTexture(name));
+        auto texture = m_AssetManager.GetTexture(m_AssetManager.LoadTexture(name));
         if (texture) {
           instance->SetTexture(name, std::make_shared<Texture>(texture->handle));
         }

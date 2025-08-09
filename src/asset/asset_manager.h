@@ -14,14 +14,8 @@ namespace mite {
  */
 class AssetManager {
  public:
+  AssetManager() = default;
   ~AssetManager();
-
-  // ---- 单例模式：全局仅维护单一的资产管理器 ----
-  static AssetManager &Get()
-  {
-    static AssetManager manager;
-    return manager;
-  }
 
   // ---- 核心接口 ----
   AssetID LoadTexture(const std::string &path);
@@ -37,9 +31,6 @@ class AssetManager {
   AssetManager &operator=(const AssetManager &) = delete;
 
  private:
-  //  ---- 全局单例的内部构造函数 ----
-  AssetManager() = default;
-
   // ---- 内部方法 ----
   void LoadTextureInternalToCache(const std::string &path);
   void LoadModelInternalToCache(const std::string &path);

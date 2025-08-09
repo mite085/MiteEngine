@@ -54,17 +54,16 @@ void MiteApplication::Initialize()
   // 订阅事件，并管理订阅句柄
   m_EventSubscriptions.Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
 
-  // 先初始化shared模块
+  // 按照依赖关系，先初始化底层模块，后初始化顶层模块
   InitializeInputSystem();
   InitializeAssertManager();
 
-  // 再初始化unique模块
   InitializeWindowWithOpenGL();
   InitializeRenderWithOpenGL();
   InitializeUI();
-  InitializeMaterialSystem();
-  InitializeScene();
-
+  InitializeMaterialSystem();   // 依赖AssertManager
+  InitializeSceneCore();
+  InitializeSceneView();        // 依赖SceneCore
   // 加载默认场景
   LoadDefaultScene();
 }
@@ -102,16 +101,24 @@ void MiteApplication::InitializeAssertManager()
 {
   m_logger->info("Initializing asset manager");
 
-  // 目前AssetManager并不包含需要Init的内容
-  AssetManager::Get();
+  // 初始化资产管理器
+  m_AssetManager = std::make_unique<AssetManager>();
 }
 
-void MiteApplication::InitializeScene()
+void MiteApplication::InitializeSceneCore()
 {
-  m_logger->info("Initializing scene");
+  m_logger->info("Initializing scene core");
 
-  // 初始化场景系统
+  // 初始化场景核心
   m_Scene = std::make_unique<Scene>();
+  
+}
+
+void MiteApplication::InitializeSceneView() 
+{
+  m_logger->info("Initializing scene view");
+
+  // 初始化场景视图
   m_SceneView = std::make_unique<SceneView>(m_Scene->GetRegistry());
 }
 
@@ -120,7 +127,7 @@ void MiteApplication::InitializeMaterialSystem()
   m_logger->info("Initializing material system");
 
   // 初始化材质系统
-  m_MaterialSystem = std::make_unique<MaterialSystem>();
+  m_MaterialSystem = std::make_unique<MaterialSystem>(*m_AssetManager);
   m_MaterialSystem->Initialize();
 }
 
@@ -160,9 +167,9 @@ void MiteApplication::LoadDefaultScene()
   m_Scene->SetMainCamera(main_camera_entity);
 
   // 1. 加载模型
-  AssetID plane_model_asset_id = AssetManager::Get().LoadModel(
+  AssetID plane_model_asset_id = m_AssetManager->LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string());
-  Model plane_model(AssetManager::Get().GetModel(plane_model_asset_id)->handle);
+  Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件
