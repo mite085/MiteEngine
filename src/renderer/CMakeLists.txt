@@ -36,7 +36,6 @@ target_link_libraries(${RENDERER_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
-    MiteEngine_Asset
     MiteEngine_Core
     MiteEngine_Data
     MiteEngine_Material
