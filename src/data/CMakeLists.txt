@@ -12,7 +12,7 @@ set(BASIC_TYPE_SRCS
 )
 source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 
-set(DATA_SRCS
+set(BASIC_DATA_SRCS
     basic_data/camera.h
     basic_data/camera.cpp
     basic_data/mesh.h
@@ -26,13 +26,19 @@ set(DATA_SRCS
     basic_data/texture.h
     basic_data/texture.cpp
 )
-source_group("basic_data" FILES ${DATA_SRCS})
+source_group("basic_data" FILES ${BASIC_DATA_SRCS})
+
+set(BASIC_EVENT_SRCS
+    basic_event/asset_event.h
+)
+source_group("basic_event" FILES ${BASIC_EVENT_SRCS})
 
 # 创建静态库
 add_library(${DATA_LIB_NAME}  
     STATIC  
     ${BASIC_TYPE_SRCS}
-    ${DATA_SRCS}
+    ${BASIC_DATA_SRCS}
+    ${BASIC_EVENT_SRCS}
 )
 
 # 设置头文件路径（供其他项目包含）

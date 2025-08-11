@@ -19,7 +19,7 @@ class OpenGLDevice : public IRenderDevice {
   ~OpenGLDevice() override;
 
   // ---- 纹理操作 ----
-  TextureGPUHandle CreateTexture(const TextureSourceData &data) override;
+  TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) override;
   void DestroyTexture(TextureGPUHandle handle) override;
   void BindTexture(TextureGPUHandle handle, uint32_t slot) const override;
   void SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode) override;
@@ -27,7 +27,7 @@ class OpenGLDevice : public IRenderDevice {
   void GenerateMipmaps(TextureGPUHandle handle) override;
 
   // ---- 模型操作 ----
-  ModelGPUHandle CreateModel(const ModelSourceData &data) override;
+  ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) override;
   // TODO: 
   // 应当在哪里调用DestroyModel，以实现Model的
   // 生命周期结束后，GPU资源的自动释放？

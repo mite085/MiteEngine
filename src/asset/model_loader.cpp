@@ -1,4 +1,5 @@
 #include "model_loader.h"
+#include "basic_event/asset_event.h"
 #include <assimp/Importer.hpp>   // Assimp模型导入器
 #include <assimp/postprocess.h>  // Assimp后处理标志
 namespace mite {
@@ -47,12 +48,74 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path, bool
   //       subMesh.boundingBoxMax});
   //}
 
+  // 5. 构造RendererDevice可接收的ModelSourceData数据
+  std::shared_ptr<ModelSourceData> sourceData = CreateModelSourceData(model);
+
   // 6. 发布事件，委托RendererDevice创建GPU资源
-  ModelLoadEvent event(model);
+  ModelLoadEvent event(sourceData, model->handle);
   EventBus::Get().Post(event);
   // model->handle = IRenderDevice::Current().CreateModel(rendererData);
 
   return model;
+}
+
+std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
+    std::shared_ptr<ModelAsset> model)
+{
+  std::shared_ptr<ModelSourceData> sourceData = std::make_shared<ModelSourceData>();
+
+  // 1. 准备合并所有子网格数据
+  sourceData->modelBboxMin = model->metadata.boundingBoxMin;
+  sourceData->modelBboxMax = model->metadata.boundingBoxMax;
+  sourceData->layout = model->subMeshData.empty() ? VertexLayout{} : model->subMeshData[0].layout;
+
+  // 2. 合并顶点和索引数据
+  size_t totalVertexBytes = 0;
+  size_t totalIndices = 0;
+
+  // 预计算总大小
+  for (const auto &subMesh : model->subMeshData) {
+    totalVertexBytes += subMesh.vertexData.size();
+    totalIndices += subMesh.indices.size();
+  }
+
+  // 预分配空间
+  sourceData->mergedVertexData.reserve(totalVertexBytes);
+  sourceData->mergedIndices.reserve(totalIndices);
+
+  // 3. 实际合并数据并记录MeshSection
+  uint32_t vertexOffset = 0;
+  uint32_t indexOffset = 0;
+
+  for (const auto &subMesh : model->subMeshData) {
+    // 添加顶点数据
+    size_t prevVertexSize = sourceData->mergedVertexData.size();
+    sourceData->mergedVertexData.insert(
+        sourceData->mergedVertexData.end(), subMesh.vertexData.begin(), subMesh.vertexData.end());
+
+    // 添加索引数据(需要调整偏移)
+    size_t prevIndexSize = sourceData->mergedIndices.size();
+    sourceData->mergedIndices.insert(
+        sourceData->mergedIndices.end(), subMesh.indices.begin(), subMesh.indices.end());
+
+    // 计算顶点数(基于stride)
+    uint32_t vertexCount = static_cast<uint32_t>(subMesh.vertexData.size() /
+                                                 subMesh.layout.stride);
+
+    // 记录并保存MeshSection，由CreateModel步骤交付给ModelGPUHandle
+    sourceData->sections.emplace_back(MeshSection{vertexOffset,
+                                                   indexOffset,
+                                                   vertexCount,
+                                                   static_cast<uint32_t>(subMesh.indices.size()),
+                                                   subMesh.boundingBoxMin,
+                                                   subMesh.boundingBoxMax});
+
+    // 更新偏移量
+    vertexOffset = static_cast<uint32_t>(sourceData->mergedVertexData.size() /
+                                         subMesh.layout.stride);
+    indexOffset = static_cast<uint32_t>(sourceData->mergedIndices.size());
+  }
+  return sourceData;
 }
 
 MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)

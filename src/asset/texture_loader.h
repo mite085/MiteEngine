@@ -26,29 +26,7 @@ class TextureLoader {
   static void FreeTextureData(void *data);
 };
 
-/**
- * 纹理创建事件
- * 职责：委托RendererDevice创建GPU资源
- */
-class TextureLoadEvent : public Event {
- public:
-  TextureLoadEvent(std::shared_ptr<TextureAsset> asset) : m_Asset(asset) {}
 
-  std::shared_ptr<TextureAsset> GetTextureAsset()
-  {
-    return m_Asset;
-  }
-
-  EVENT_CLASS_TYPE(TEXTURE_LOADED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_ASSET)
-  Event *Clone() const override
-  {
-    return new TextureLoadEvent(m_Asset);
-  }
-
- private:
-  std::shared_ptr<TextureAsset> m_Asset;
-};
 };  // namespace mite
 
 #endif

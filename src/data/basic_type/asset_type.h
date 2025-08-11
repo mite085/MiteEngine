@@ -54,7 +54,7 @@ struct TextureAsset {
   TextureMetadata metadata;
   TetxureData textureData;
 
-  TextureGPUHandle handle;
+  std::shared_ptr<TextureGPUHandle> handle;
 };
 
 // Ä£ĞÍÂß¼­¾ä±ú

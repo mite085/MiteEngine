@@ -39,7 +39,7 @@ OpenGLDevice::~OpenGLDevice()
 }
 
 // ------------------------ 纹理操作 ------------------------
-TextureGPUHandle OpenGLDevice::CreateTexture(const TextureSourceData &data)
+TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> data)
 {
   GLuint textureID;
   glGenTextures(1, &textureID);
@@ -52,20 +52,20 @@ TextureGPUHandle OpenGLDevice::CreateTexture(const TextureSourceData &data)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   // 上传纹理数据
-  GLenum format = TranslateTextureFormat(data.format);
+  GLenum format = TranslateTextureFormat(data->format);
   GLenum internalFormat = /*!isHDR ? GL_SRGB8_ALPHA8 :*/ format;
   glTexImage2D(GL_TEXTURE_2D,
                0,               // Mipmap级别
                internalFormat,  // 内部格式
-               data.width,
-               data.height,
+               data->width,
+               data->height,
                0,                 // 历史遗留参数
                internalFormat,    // 像素数据格式
                GL_UNSIGNED_BYTE,  // 数据类型（HDR需改为GL_FLOAT）
-               data.pixelData     // 原始数据指针
+               data->pixelData    // 原始数据指针
   );
 
-  if (data.generateMipmaps) {
+  if (data->generateMipmaps) {
     glGenerateMipmap(GL_TEXTURE_2D);
   }
 
@@ -73,8 +73,8 @@ TextureGPUHandle OpenGLDevice::CreateTexture(const TextureSourceData &data)
   activeTextures_.insert(textureID);
 
   TextureGPUHandle handle = {static_cast<uintptr_t>(textureID)};
-  SetTextureWrapMode(handle, data.wrapMode);
-  SetTextureFilterMode(handle, data.filterMode);
+  SetTextureWrapMode(handle, data->wrapMode);
+  SetTextureFilterMode(handle, data->filterMode);
 
   return handle;
 }
@@ -129,7 +129,7 @@ void OpenGLDevice::GenerateMipmaps(TextureGPUHandle handle)
 }
 
 // ------------------------ 模型操作 ------------------------
-ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
+ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
 {
   // 0. 创建临时VAO等对象
   GLuint VBO, EBO, VAO;
@@ -141,27 +141,29 @@ ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
   // 2. 创建VBO并上传数据
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(
-      GL_ARRAY_BUFFER, data.mergedVertexData.size(), data.mergedVertexData.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,
+               data->mergedVertexData.size(),
+               data->mergedVertexData.data(),
+               GL_STATIC_DRAW);
 
   // 3. 创建EBO并上传数据
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               data.mergedIndices.size() * sizeof(uint32_t),
-               data.mergedIndices.data(),
+               data->mergedIndices.size() * sizeof(uint32_t),
+               data->mergedIndices.data(),
                GL_STATIC_DRAW);
 
   // 4. 设置顶点属性指针(基于统一的layout)
-  SetVertexAttributes(data.layout);
+  SetVertexAttributes(data->layout);
 
   // 5. 解绑VAO
   glBindVertexArray(0);
 
   // 6. 填充GPU句柄
   ModelGPUHandle handle;
-  handle.bboxMax = data.modelBboxMax;
-  handle.bboxMin = data.modelBboxMin;
+  handle.bboxMax = data->modelBboxMax;
+  handle.bboxMin = data->modelBboxMin;
   handle.vertexArray = static_cast<uintptr_t>(VAO);
   handle.vertexBuffer = static_cast<uintptr_t>(VBO);
   handle.indexBuffer = static_cast<uintptr_t>(EBO);
@@ -172,7 +174,7 @@ ModelGPUHandle OpenGLDevice::CreateModel(const ModelSourceData &data)
   activeModelsEBO_.insert(EBO);
 
   // 8. 保存ModelSourceData创建时生成的MeshSections
-  handle.subMeshes = std::move(data.sections);
+  handle.subMeshes = std::move(data->sections);
 
   return handle;
 }
@@ -317,83 +319,20 @@ GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
 
 void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
 {
-  std::shared_ptr<ModelAsset> model = e.GetModelAsset();
+  // 1. 创建GPU资源
+  ModelGPUHandle modelHandle = CreateModel(e.GetModelSourceData());
 
-  // 1. 准备合并所有子网格数据
-  ModelSourceData rendererData;
-  rendererData.modelBboxMin = model->metadata.boundingBoxMin;
-  rendererData.modelBboxMax = model->metadata.boundingBoxMax;
-  rendererData.layout = model->subMeshData.empty() ? VertexLayout{} : model->subMeshData[0].layout;
-
-  // 2. 合并顶点和索引数据
-  size_t totalVertexBytes = 0;
-  size_t totalIndices = 0;
-
-  // 预计算总大小
-  for (const auto &subMesh : model->subMeshData) {
-    totalVertexBytes += subMesh.vertexData.size();
-    totalIndices += subMesh.indices.size();
-  }
-
-  // 预分配空间
-  rendererData.mergedVertexData.reserve(totalVertexBytes);
-  rendererData.mergedIndices.reserve(totalIndices);
-
-  // 3. 实际合并数据并记录MeshSection
-  uint32_t vertexOffset = 0;
-  uint32_t indexOffset = 0;
-
-  for (const auto &subMesh : model->subMeshData) {
-    // 添加顶点数据
-    size_t prevVertexSize = rendererData.mergedVertexData.size();
-    rendererData.mergedVertexData.insert(
-        rendererData.mergedVertexData.end(), subMesh.vertexData.begin(), subMesh.vertexData.end());
-
-    // 添加索引数据(需要调整偏移)
-    size_t prevIndexSize = rendererData.mergedIndices.size();
-    rendererData.mergedIndices.insert(
-        rendererData.mergedIndices.end(), subMesh.indices.begin(), subMesh.indices.end());
-
-    // 计算顶点数(基于stride)
-    uint32_t vertexCount = static_cast<uint32_t>(subMesh.vertexData.size() /
-                                                 subMesh.layout.stride);
-
-    // 记录并保存MeshSection，由CreateModel步骤交付给ModelGPUHandle
-    rendererData.sections.emplace_back(MeshSection{vertexOffset,
-                                                   indexOffset,
-                                                   vertexCount,
-                                                   static_cast<uint32_t>(subMesh.indices.size()),
-                                                   subMesh.boundingBoxMin,
-                                                   subMesh.boundingBoxMax});
-
-    // 更新偏移量
-    vertexOffset = static_cast<uint32_t>(rendererData.mergedVertexData.size() /
-                                         subMesh.layout.stride);
-    indexOffset = static_cast<uint32_t>(rendererData.mergedIndices.size());
-  }
-
-  // 4. 创建GPU资源
-  ModelGPUHandle modelHandle = CreateModel(rendererData);
-
-  // 5. 更新ModelAsset
-  model->handle = std::make_shared<ModelGPUHandle>(modelHandle);
+  // 2. 更新ModelAsset
+  e.GetModelGPUHandle() = std::make_shared<ModelGPUHandle>(modelHandle);
 }
 
 void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
 {
-  std::shared_ptr<TextureAsset> textureAsset = e.GetTextureAsset();
+  //  1. 创建GPU资源
+  TextureGPUHandle textureHandle = CreateTexture(e.GetTextureSourceData());
 
-  // 转换 Asset 模块数据为 Renderer 模块的 ModelSourceData
-  TextureSourceData rendererData;
-  rendererData.pixelData = textureAsset->textureData.textureData.get();
-  rendererData.width = textureAsset->metadata.width;
-  rendererData.height = textureAsset->metadata.height;
-  rendererData.format = textureAsset->metadata.format;
-  rendererData.wrapMode = TextureWrapMode::Repeat;  // 默认值或从配置读取
-  rendererData.filterMode = TextureFilterMode::Linear;
-  rendererData.generateMipmaps = true;
-
-  textureAsset->handle = CreateTexture(rendererData);
+  // 2. 更新TextureAsset
+  e.GetTextureHandle() = std::make_shared<TextureGPUHandle>(textureHandle);
 }
 
 GLenum OpenGLDevice::ConvertWrapMode(TextureWrapMode mode) const

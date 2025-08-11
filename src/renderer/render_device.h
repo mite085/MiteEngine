@@ -1,8 +1,7 @@
 #ifndef MITE_RENDER_DEVICE
 #define MITE_RENDER_DEVICE
 
-#include "model_loader.h"
-#include "texture_loader.h"
+#include "basic_event/asset_event.h"
 #include "basic_data/model.h"
 #include "basic_data/mesh.h"
 #include "basic_data/texture.h"
@@ -29,7 +28,7 @@ class IRenderDevice {
   virtual ~IRenderDevice() = default;
 
   // 纹理操作
-  virtual TextureGPUHandle CreateTexture(const TextureSourceData &data) = 0;
+  virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
   virtual void BindTexture(TextureGPUHandle handle, uint32_t slot) const = 0;
   virtual void SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode) = 0;
@@ -37,7 +36,7 @@ class IRenderDevice {
   virtual void GenerateMipmaps(TextureGPUHandle handle) = 0;
 
   // 模型/网格体操作
-  virtual ModelGPUHandle CreateModel(const ModelSourceData &data) = 0;
+  virtual ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) = 0;
   virtual void DestroyModel(ModelGPUHandle handle) = 0;
   // 注意：
   // 由于Asset仅维护Model，由Model维护Mesh，
