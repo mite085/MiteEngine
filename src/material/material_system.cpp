@@ -2,7 +2,7 @@
 #include "basic_data/shader_cache.h"
 
 namespace mite {
-MaterialSystem::MaterialSystem(AssetManager &assetManager) : m_AssetManager(assetManager)
+MaterialSystem::MaterialSystem()
 {
   // 初始化LOGGER
   m_logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
@@ -128,15 +128,8 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
         instance->SetVector3Array(name, ptr, count);
         break;
       }
-      case UniformVariant::Type::String: {
-        // 纹理路径特殊处理
-        auto texture = m_AssetManager.GetTexture(m_AssetManager.LoadTexture(name));
-        if (texture) {
-          instance->SetTexture(name, std::make_shared<Texture>(texture->handle));
-        }
-        else {
-          m_logger->warn("Cannot load texture: {}", name);
-        }
+      case UniformVariant::Type::Texture: {
+        instance->SetTexture(name, value.Get<std::shared_ptr<Texture>>());
         break;
       }
       default:

@@ -17,7 +17,7 @@ UniformVariant::Type UniformVariant::GetType() const
       Type::IntArray,     // int[]
       Type::FloatArray,   // float[]
       Type::Vector3Array, // vec3[]
-      Type::String,
+      Type::Texture,
   };
   return typeMap[m_data.index()];
 }
@@ -53,7 +53,7 @@ std::string UniformVariant::GetTypeName() const
                                     "IntArray",
                                     "FloatArray",
                                     "Vector3Array",
-                                    "String"};
+                                    "Texture"};
   return typeNames[static_cast<int>(GetType())];
 }
 std::string UniformVariant::ToShaderString() const
@@ -86,9 +86,6 @@ std::string UniformVariant::ToShaderString() const
     else if constexpr (std::is_same_v<T, glm::vec4>) {
       return "vec4(" + std::to_string(arg.x) + ", " + std::to_string(arg.y) + ", " +
              std::to_string(arg.z) + ", " + std::to_string(arg.w) + ")";
-    }
-    else if constexpr (std::is_same_v<T, std::string>) {
-      return "\"" + arg + "\"";  // TODO: 纹理路径特殊处理
     }
     else {
       throw std::runtime_error("Unsupported type for shader string conversion");

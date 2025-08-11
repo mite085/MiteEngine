@@ -1,5 +1,4 @@
 #include "opengl_renderer.h"
-#include "asset_manager.h"
 
 namespace mite {
 OpenGLRenderer::OpenGLRenderer()

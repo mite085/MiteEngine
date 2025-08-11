@@ -1,6 +1,7 @@
 #ifndef MITE_MATERIAL_PARAM_VARIANT
 #define MITE_MATERIAL_PARAM_VARIANT
 
+#include "basic_data/texture.h"
 #include "headers/headers.h"
 
 namespace mite {
@@ -15,20 +16,20 @@ namespace mite {
 class UniformVariant {
  public:
   // ---- 支持的参数类型 ----
-  using VariantType = std::variant<std::monostate,          // 空状态（替代None）
-                                   bool,                    // bool (自动转换为int)
-                                   int,                     // int
-                                   unsigned int,            // uint
-                                   float,                   // float
-                                   glm::vec2,               // vec2
-                                   glm::vec3,               // vec3
-                                   glm::vec4,               // vec4
-                                   glm::mat3,               // mat3
-                                   glm::mat4,               // mat4
-                                   std::vector<int>,        // int[]
-                                   std::vector<float>,      // float[]
-                                   std::vector<glm::vec3>,  // vec3[]
-                                   std::string              // 纹理路径（特殊处理）
+  using VariantType = std::variant<std::monostate,            // 空状态（替代None）
+                                   bool,                      // bool (自动转换为int)
+                                   int,                       // int
+                                   unsigned int,              // uint
+                                   float,                     // float
+                                   glm::vec2,                 // vec2
+                                   glm::vec3,                 // vec3
+                                   glm::vec4,                 // vec4
+                                   glm::mat3,                 // mat3
+                                   glm::mat4,                 // mat4
+                                   std::vector<int>,          // int[]
+                                   std::vector<float>,        // float[]
+                                   std::vector<glm::vec3>,    // vec3[]
+                                   std::shared_ptr<Texture>  // 纹理类型
                                    >;
 
   // ---- 类型枚举 ----
@@ -46,7 +47,7 @@ class UniformVariant {
     IntArray,
     FloatArray,
     Vector3Array,
-    String
+    Texture
   };
 
   // ---- 构造函数 ----
@@ -105,7 +106,7 @@ class UniformVariant {
 
   /**
    * @brief 变量转换为Shader的string工具
-   * 
+   *
    * 注意：
    * 原则上这个方法应当由Renderer模块负责，Material模块
    * 使用该方法可以更方便的从MaterialTemplate材质模板中
@@ -139,7 +140,6 @@ template<typename T> inline std::pair<const T *, size_t> UniformVariant::GetArra
   }
   return {nullptr, 0};
 }
-
 };  // namespace mite
 
 #endif

@@ -61,7 +61,7 @@ void MiteApplication::Initialize()
   InitializeWindowWithOpenGL();
   InitializeRenderWithOpenGL();
   InitializeUI();
-  InitializeMaterialSystem();   // 依赖AssertManager
+  InitializeMaterialSystem();
   InitializeSceneCore();
   InitializeSceneView();        // 依赖SceneCore
   // 加载默认场景
@@ -127,7 +127,7 @@ void MiteApplication::InitializeMaterialSystem()
   m_logger->info("Initializing material system");
 
   // 初始化材质系统
-  m_MaterialSystem = std::make_unique<MaterialSystem>(*m_AssetManager);
+  m_MaterialSystem = std::make_unique<MaterialSystem>();
   m_MaterialSystem->Initialize();
 }
 

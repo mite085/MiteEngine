@@ -33,7 +33,6 @@ target_include_directories(${MATERIAL_LIB_NAME}
 target_link_libraries(${MATERIAL_LIB_NAME}
     PRIVATE 
     spdlog::spdlog
-    MiteEngine_Asset
     MiteEngine_Core
     MiteEngine_Data
 )

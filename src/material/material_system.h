@@ -1,7 +1,6 @@
 #ifndef MITE_MATERIAL_SYSTEM
 #define MITE_MATERIAL_SYSTEM
 
-#include "asset_manager.h"
 #include "material.h"
 #include "material_param_variant.h"
 #include "material_template.h"
@@ -30,7 +29,7 @@ namespace mite {
 class MaterialSystem {
  public:
   // ---- 构造函数 ----
-  MaterialSystem(AssetManager &assetManager);
+  MaterialSystem();
 
   // ---- 初始化：注册材质----
   void Initialize();
@@ -112,9 +111,6 @@ class MaterialSystem {
   void SetFallbackMaterial(std::unique_ptr<Material> material);
 
  private:
-  // 资产管理器依赖注入（为了访问纹理资产）
-  AssetManager &m_AssetManager;
-
   // 日志系统
   Logger m_logger;
 
