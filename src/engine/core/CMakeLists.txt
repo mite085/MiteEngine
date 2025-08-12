@@ -26,7 +26,7 @@ cmake_minimum_required(VERSION 3.10)
 # - 异步任务调度
 
 # 设定VCXProject名为MiteEngine_Core
-set(CORE_LIB_NAME MiteEngine_Core)
+set(ENGINE_CORE_LIB_NAME MiteEngine_Engine_Core)
 
 # 创建源代码组(筛选器)
 set(CORE_SRCS
@@ -86,7 +86,7 @@ set(UUID_SRCS
 source_group("uuid" FILES ${UUID_SRCS})
 
 # 创建静态库
-add_library(${CORE_LIB_NAME}
+add_library(${ENGINE_CORE_LIB_NAME}
     STATIC
     ${CORE_SRCS}
     ${FILESYSTEM_SRCS}
@@ -99,12 +99,12 @@ add_library(${CORE_LIB_NAME}
 )
 
 # 设置头文件路径（供其他项目包含）
-target_include_directories(${CORE_LIB_NAME}
+target_include_directories(${ENGINE_CORE_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
     PUBLIC ${CMAKE_BINARY_DIR}/src/core/filesystem # 检索配置文件
 )
 
-target_link_libraries(${CORE_LIB_NAME}
+target_link_libraries(${ENGINE_CORE_LIB_NAME}
     PRIVATE 
     spdlog::spdlog
 )

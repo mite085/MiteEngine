@@ -30,16 +30,18 @@ target_link_libraries(${EDITOR_LIB_NAME}
     glfw
     spdlog::spdlog
 
-    # 各模块库依赖
+    # 资产模块依赖
     MiteEngine_Asset
-    MiteEngine_Core
-    MiteEngine_Data
-    MiteEngine_Input
+
+    # 引擎各模块库依赖
+    MiteEngine_Engine_Core
+    MiteEngine_Engine_Data
+    MiteEngine_Engine_Input
     
-    MiteEngine_Material
-    MiteEngine_Renderer
-    MiteEngine_Scene_Core
-    MiteEngine_Scene_View
-    MiteEngine_Window
-    MiteEngine_Ui
+    MiteEngine_Engine_Material
+    MiteEngine_Engine_Renderer
+    MiteEngine_Engine_Scene_Core
+    MiteEngine_Engine_Scene_View
+    MiteEngine_Engine_Window
+    MiteEngine_Engine_Ui
 )

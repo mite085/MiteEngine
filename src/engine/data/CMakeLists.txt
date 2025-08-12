@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # 设定VCXProject名为MiteEngine_Data
-set(DATA_LIB_NAME MiteEngine_Data)
+set(ENGINE_DATA_LIB_NAME MiteEngine_Engine_Data)
 
 # 创建源代码组(筛选器)
 set(BASIC_TYPE_SRCS
@@ -34,7 +34,7 @@ set(BASIC_EVENT_SRCS
 source_group("basic_event" FILES ${BASIC_EVENT_SRCS})
 
 # 创建静态库
-add_library(${DATA_LIB_NAME}  
+add_library(${ENGINE_DATA_LIB_NAME}  
     STATIC  
     ${BASIC_TYPE_SRCS}
     ${BASIC_DATA_SRCS}
@@ -42,13 +42,13 @@ add_library(${DATA_LIB_NAME}
 )
 
 # 设置头文件路径（供其他项目包含）
-target_include_directories(${DATA_LIB_NAME}
+target_include_directories(${ENGINE_DATA_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
 )
 
-target_link_libraries(${DATA_LIB_NAME}
+target_link_libraries(${ENGINE_DATA_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
-    MiteEngine_Core
+    MiteEngine_Engine_Core
 )
