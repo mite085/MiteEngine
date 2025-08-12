@@ -11,6 +11,7 @@ InputContext::InputContext(const std::string &name) : m_Name(name)
   m_EventSubscriptions.Subscribe<MouseButtonPressedEvent>(
       BIND_DISPATCH_FN(_ProcessMouseButtonPressedEvent));
   m_EventSubscriptions.Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(_ProcessMouseMoveEvent));
+  m_EventSubscriptions.Subscribe<MouseScrollEvent>(BIND_DISPATCH_FN(_ProcessMouseScrollEvent));
 }
 
 InputContext::~InputContext()
@@ -35,7 +36,7 @@ bool InputContext::IsInputBlocked() const
 }
 
 void InputContext::Update(){
-    // TODO: 每帧更新持续动作时间（如长按）
+   // 每帧更新持续动作时间（如长按）
   for (auto &[name, action] : m_Actions) {
     if (action.value > 0.0f) {
       action.hold_time += Time::DeltaTime();
@@ -141,6 +142,22 @@ void InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
       if (binding.device == InputDevice::Mouse) {
           // TODO: 鼠标移动作为超高频事件，是否应当放在这里处理？
         float newValue = (e.GetEventType() == EventType::MOUSE_POSITION_MOVED) ? 1.0f * binding.scale : 0.0f;
+
+        _UpdateActionValue(name, newValue);
+      }
+    }
+  }
+}
+
+void InputContext::_ProcessMouseScrollEvent(const MouseScrollEvent &e)
+{
+  for (auto &[name, action] : m_Actions) {
+    for (const auto &binding : action.bindings) {
+      if (binding.device == InputDevice::Mouse) {
+        // TODO: 鼠标移动作为超高频事件，是否应当放在这里处理？
+        float newValue = (e.GetEventType() == EventType::MOUSE_SCROLLED) ?
+                             1.0f * binding.scale :
+                             0.0f;
 
         _UpdateActionValue(name, newValue);
       }

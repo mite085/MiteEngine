@@ -122,6 +122,59 @@ class MouseButtonReleasedEvent : public Event {
   double xpos, ypos;
 };
 /**
+ * @brief 鼠标滚轮滚动事件
+ *
+ * 当用户滚动鼠标滚轮时触发，包含水平和垂直滚动量
+ */
+class MouseScrollEvent : public Event {
+ public:
+  /**
+   * @brief 鼠标滚轮滚动事件构造函数
+   * @param xoffset 水平滚动量（向右为正）
+   * @param yoffset 垂直滚动量（向上为正）
+   */
+  explicit MouseScrollEvent(double xoffset, double yoffset) : xoffset(xoffset), yoffset(yoffset) {}
+
+  /**
+   * @brief 获取水平滚动量
+   * @return 水平滚动量（向右为正）
+   */
+  double GetXOffset() const
+  {
+    return xoffset;
+  }
+
+  /**
+   * @brief 获取垂直滚动量
+   * @return 垂直滚动量（向上为正）
+   */
+  double GetYOffset() const
+  {
+    return yoffset;
+  }
+
+  /**
+   * @brief 获取滚动量向量
+   * @return 包含水平和垂直滚动量的二维向量
+   */
+  glm::vec2 GetOffset() const
+  {
+    return glm::vec2(xoffset, yoffset);
+  }
+
+  EVENT_CLASS_TYPE(MOUSE_SCROLLED)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_MOUSE)
+
+  Event *Clone() const override
+  {
+    return new MouseScrollEvent(xoffset, yoffset);
+  }
+
+ private:
+  double xoffset, yoffset;
+};
+
+/**
  * @brief 键盘按键按下事件
  */
 class KeyPressedEvent : public Event {

@@ -26,36 +26,6 @@ class InputAction {
   float hold_time = 0.0f;  // 长按计时
 };
 
-// class InputContext {
-//  public:
-//   InputContext(const std::string &name);
-//
-//   const std::string &GetName() const;
-//   bool IsInputBlocked() const;
-//   void BlockInput(bool block);
-//
-//
-//   // 核心事件处理方法
-//   bool ProcessEvent(Event &event);
-//
-//   void AddAction(const InputAction &action);
-//   void RemoveAction(const std::string &actionName);
-//   InputAction *GetAction(const std::string &actionName);
-//
-// private:
-//   // 内部处理方法
-//   bool _ProcessKeyEvent(const KeyEvent &e);
-//   bool _ProcessMouseEvent(const MouseButtonEvent &e);
-//   void _UpdateActionValue(const std::string &actionName, float newValue);
-//
-//  private:
-//   std::string m_Name;
-//   std::unordered_map<std::string, InputAction> m_Actions;
-//   bool m_BlockInput = false;
-//
-//   Logger m_Logger;
-// };
-
 class InputContext {
  public:
   explicit InputContext(const std::string &name);
@@ -72,17 +42,11 @@ class InputContext {
   InputAction *GetAction(const std::string &actionName);
   float GetActionValue(const std::string &name) const;
 
-  // 核心处理流程
+  // 每帧更新
   void Update();
-  // 输入处理
-  // TODO: 按照事件总线重新规划事件相关实现
-  //
-  // 该函数目的：
-  // 按照优先级对事件进行排序，随后按顺序处理
-  //
-  // 事件总线改进方案：
-  // 加入全局的事件排序逻辑，针对不同事件划分优先级
-  // bool ProcessEvent(Event &e) = 0;
+
+  // 输入处理: 按照优先级对事件进行排序，随后按顺序处理
+  virtual bool ProcessEvent(Event &e) = 0;
 
   // 调试工具
   void DebugPrintActions() const;
@@ -92,10 +56,8 @@ class InputContext {
   void _ProcessKeyPressedEvent(const KeyPressedEvent &e);
   void _ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e);
   void _ProcessMouseMoveEvent(const MouseMoveEvent &e);
-  // bool _ProcessMouseScrollEvent(const MouseScrollEvent &e);
+  void _ProcessMouseScrollEvent(const MouseScrollEvent &e);
   void _UpdateActionValue(const std::string &actionName, float newValue);
-
-  //void _SortProcessors();
 
   std::string m_Name;
   bool m_BlockInput = false;
