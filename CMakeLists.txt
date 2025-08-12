@@ -24,18 +24,21 @@ message(STATUS "Minor version: ${MiteEngine_VERSION_MINOR}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
 # Visual Studio编译spdlog时出现编码Warning。
 if(MSVC)
     add_compile_options(/wd4828)  # 禁用MSVC的字符集警告
 endif()
 
+# 查找 OpenGL 库（跨平台）
+find_package(OpenGL REQUIRED)
+if(NOT OpenGL_FOUND)
+    message(FATAL_ERROR "OpenGL not found! Please install OpenGL development libraries.")
+endif()
 
-# 启用文件夹功能
+# 启用文件夹功能（Visual Studio专用？）
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # 定义第三方库的筛选器名称
 set(THIRDPARTY_FOLDER "ThirdParty")
-
 # 添加第三方目录
 add_subdirectory(thirdparty/glfw)
 include_directories(thirdparty/glm)

@@ -36,11 +36,11 @@ void InputManager::Init(const std::shared_ptr<InputContextStack> &stack)
   s_MouseScrollDelta = 0.0f;
   s_PrevMouseScrollDelta = 0.0f;
 
-  // 确保至少有一个默认上下文
-  if (s_ContextStack->IsEmpty()) {
-    auto defaultContext = std::make_shared<InputContext>("Default");
-    s_ContextStack->Push(defaultContext);
-  }
+  // TODO: 确保至少有一个默认上下文
+  //if (s_ContextStack->IsEmpty()) {
+  //  auto defaultContext = std::make_shared<InputContext>("Default");
+  //  s_ContextStack->Push(defaultContext);
+  //}
 }
 void InputManager::Shutdown()
 {  // 清理所有上下文
