@@ -31,7 +31,6 @@ class CameraInputProcessor : public InputProcessor {
   explicit CameraInputProcessor(std::shared_ptr<Camera> camera);
 
   // InputProcessor接口实现
-  bool HandleEvent(Event &e) override;
   int GetPriority() const override
   {
     return InputPriority::CAMERA;
@@ -59,12 +58,12 @@ class CameraInputProcessor : public InputProcessor {
   // 相机控制方法
   void UpdateCameraTransform(float deltaTime);
 
- private:
+ protected:
   // 事件处理辅助方法
-  bool handleMouseMove(MouseMoveEvent &e);
-  bool handleMouseButton(MouseButtonReleasedEvent &e);
-  bool handleMouseScroll(MouseScrollEvent &e);
-  bool handleKeyEvent(KeyReleasedEvent &e);
+  virtual bool handleMouseMove(MouseMoveEvent &e);
+  virtual bool handleMouseButton(MouseButtonReleasedEvent &e);
+  virtual bool handleMouseScroll(MouseScrollEvent &e);
+  virtual bool handleKeyEvent(KeyReleasedEvent &e);
 
   std::shared_ptr<Camera> m_Camera;
   glm::vec2 m_LastMousePos{0.0f, 0.0f};

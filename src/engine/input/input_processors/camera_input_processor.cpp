@@ -7,26 +7,11 @@ namespace mite {
 CameraInputProcessor::CameraInputProcessor(std::shared_ptr<Camera> camera)
     : m_Camera(std::move(camera))
 {
-}
-
-bool CameraInputProcessor::HandleEvent(Event &e)
-{
-  // 按事件类型分发处理
-  switch (e.GetEventType()) {
-    case EventType::MOUSE_POSITION_MOVED:
-      return handleMouseMove(static_cast<MouseMoveEvent &>(e));
-    case EventType::MOUSE_BUTTON_PRESSED:
-      
-    case EventType::MOUSE_BUTTON_RELEASED:
-      return handleMouseButton(static_cast<MouseButtonReleasedEvent &>(e));
-    case EventType::MOUSE_SCROLLED:
-      return handleMouseScroll(static_cast<MouseScrollEvent &>(e));
-    case EventType::KEY_PRESSED:
-    case EventType::KEY_RELEASED:
-      return handleKeyEvent(static_cast<KeyReleasedEvent &>(e));
-    default:
-      return false;
-  }
+  // 订阅事件
+  m_EventSubscriptions.Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(handleMouseMove));
+  m_EventSubscriptions.Subscribe<MouseButtonReleasedEvent>(BIND_DISPATCH_FN(handleMouseButton));
+  m_EventSubscriptions.Subscribe<MouseScrollEvent>(BIND_DISPATCH_FN(handleMouseScroll));
+  m_EventSubscriptions.Subscribe<KeyReleasedEvent>(BIND_DISPATCH_FN(handleKeyEvent));
 }
 
 void CameraInputProcessor::UpdateCameraTransform(float deltaTime)

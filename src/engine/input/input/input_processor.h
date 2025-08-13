@@ -25,14 +25,8 @@ const int CAMERA = 200;   // 相机控制
  */
 class InputProcessor {
  public:
+  InputProcessor();
   virtual ~InputProcessor() = default;
-
-  /**
-   * @brief 处理输入事件
-   * @param e 输入事件引用
-   * @return 是否已处理（若返回true，事件将不再传递）
-   */
-  virtual bool HandleEvent(Event &e) = 0;
 
   // === 必须实现的接口 ===
   virtual int GetPriority() const = 0;
@@ -50,6 +44,12 @@ class InputProcessor {
 
  protected:
   bool m_Enabled = true;
+
+  // 日志系统
+  Logger m_Logger;
+
+  // 订阅事件集合
+  SubscriptionGroup m_EventSubscriptions;
 };
 };  // namespace mite
 
