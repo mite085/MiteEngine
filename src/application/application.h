@@ -2,8 +2,8 @@
 #define MITE_APPLICATION
 
 #include "asset_manager.h"
-#include "input.h"
-#include "modular_input_context.h"
+#include "input/input.h"
+#include "input/modular_input_context.h"
 #include "opengl_renderer/opengl_renderer.h"
 #include "scene_core/scene.h"
 #include "scene_view.h"
