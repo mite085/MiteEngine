@@ -35,40 +35,31 @@ class Camera {
   void SetViewMatrix(const glm::mat4 &view);
 
   // 矩阵获取
-  const glm::mat4 &GetProjectionMatrix() const
-  {
-    return m_ProjectionMatrix;
-  }
-  const glm::mat4 &GetViewMatrix() const
-  {
-    return m_ViewMatrix;
-  }
-  glm::mat4 GetViewProjectionMatrix() const
-  {
-    return m_ProjectionMatrix * m_ViewMatrix;
-  }
+  const glm::mat4 &GetProjectionMatrix() const;
+  const glm::mat4 &GetViewMatrix() const;
+  glm::mat4 GetViewProjectionMatrix() const;
 
   // 参数访问
-  float GetNear() const
-  {
-    return m_Near;
-  }
-  float GetFar() const
-  {
-    return m_Far;
-  }
-  float GetFOV() const
-  {
-    return m_FOV;
-  }
-  float GetAspectRatio() const
-  {
-    return m_Aspect;
-  }
+  float GetNear() const;
+  float GetFar() const;
+  float GetFOV() const;
+  float GetAspectRatio() const;
+  glm::vec3 GetPosition() const;
+  glm::vec3 GetRightVector() const;
+  glm::vec3 GetUpVector() const;
+  glm::vec3 GetForwardVector() const;
+
+  // 相机控制
+  void Rotate(float yaw, float pitch);    // 欧拉角旋转（偏航/俯仰）
+  void Pan(float right, float up);        // 屏幕空间平移
+  void Zoom(float amount);                // 视野缩放
+  void Move(const glm::vec3 &direction);  // 世界空间移动
 
  private:
+  // 辅助方法
   void RecalculateProjection();
 
+  // 投影类型，默认透视
   ProjectionType m_ProjectionType = ProjectionType::Perspective;
 
   // 透视参数
