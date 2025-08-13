@@ -1,0 +1,130 @@
+#include "camera_input_processor.h"
+#include "GLFW/glfw3.h"
+#include "input/input_manager.h"
+
+namespace mite {
+
+CameraInputProcessor::CameraInputProcessor(std::shared_ptr<Camera> camera)
+    : m_Camera(std::move(camera))
+{
+}
+
+bool CameraInputProcessor::HandleEvent(Event &e)
+{
+  // 按事件类型分发处理
+  switch (e.GetEventType()) {
+    case EventType::MOUSE_POSITION_MOVED:
+      return handleMouseMove(static_cast<MouseMoveEvent &>(e));
+    case EventType::MOUSE_BUTTON_PRESSED:
+      
+    case EventType::MOUSE_BUTTON_RELEASED:
+      return handleMouseButton(static_cast<MouseButtonReleasedEvent &>(e));
+    case EventType::MOUSE_SCROLLED:
+      return handleMouseScroll(static_cast<MouseScrollEvent &>(e));
+    case EventType::KEY_PRESSED:
+    case EventType::KEY_RELEASED:
+      return handleKeyEvent(static_cast<KeyReleasedEvent &>(e));
+    default:
+      return false;
+  }
+}
+
+void CameraInputProcessor::UpdateCameraTransform(float deltaTime)
+{
+  if (glm::length(m_InputState.moveDirection) > 0.01f) {
+    // 标准化移动方向并应用速度和帧时间
+    glm::vec3 moveDir = glm::normalize(m_InputState.moveDirection);
+    glm::vec3 worldMove = moveDir.x * m_Camera->GetRightVector() +
+                          moveDir.y * m_Camera->GetUpVector() +
+                          moveDir.z * m_Camera->GetForwardVector();
+
+    m_Camera->Move(worldMove * m_MoveSpeed * deltaTime);
+  }
+}
+
+// --- 私有方法实现 ---
+bool CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
+{
+  if (!m_InputState.rotating && !m_InputState.panning)
+    return false;
+
+  const glm::vec2 currentPos = {e.GetXPos(), e.GetYPos()};
+  const glm::vec2 delta = currentPos - m_LastMousePos;
+  m_LastMousePos = currentPos;
+
+  if (m_InputState.rotating) {
+    // 右键旋转视角
+    m_Camera->Rotate(-delta.x * m_RotationSpeed, delta.y * m_RotationSpeed);
+  }
+  else if (m_InputState.panning) {
+    // 中键平移视角
+    m_Camera->Pan(-delta.x * 0.01f * m_MoveSpeed, delta.y * 0.01f * m_MoveSpeed);
+  }
+
+  return true;
+}
+
+bool CameraInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
+{
+  const bool pressed = (e.GetEventType() == EventType::MOUSE_BUTTON_RELEASED);
+
+  // 右键旋转控制
+  if (e.GetButton() == GLFW_MOUSE_BUTTON_RIGHT) {
+    m_InputState.rotating = pressed;
+    if (pressed) {
+      m_LastMousePos = {e.GetXPos(), e.GetYPos()};
+    }
+    return true;
+  }
+
+  // 中键平移控制
+  if (e.GetButton() == GLFW_MOUSE_BUTTON_MIDDLE) {
+    m_InputState.panning = pressed;
+    if (pressed) {
+      m_LastMousePos = {e.GetXPos(), e.GetYPos()};
+    }
+    return true;
+  }
+
+  return false;
+}
+
+bool CameraInputProcessor::handleMouseScroll(MouseScrollEvent &e)
+{
+  m_Camera->Zoom(e.GetYOffset() * m_ZoomSpeed);
+  return true;
+}
+
+bool CameraInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
+{
+  const bool pressed = (e.GetEventType() == EventType::KEY_RELEASED);
+  const float value = pressed ? 1.0f : 0.0f;
+
+  // WASD移动控制
+  switch (e.GetKey()) {
+    case GLFW_KEY_W:
+      m_InputState.moveDirection.z = -value;
+      break;
+    case GLFW_KEY_S:
+      m_InputState.moveDirection.z = value;
+      break;
+    case GLFW_KEY_A:
+      m_InputState.moveDirection.x = -value;
+      break;
+    case GLFW_KEY_D:
+      m_InputState.moveDirection.x = value;
+      break;
+    case GLFW_KEY_Q:
+      m_InputState.moveDirection.y = -value;
+      break;
+    case GLFW_KEY_E:
+      m_InputState.moveDirection.y = value;
+      break;
+    default:
+      return false;
+  }
+
+  return true;
+}
+
+}  // namespace mite
