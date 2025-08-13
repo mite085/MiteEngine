@@ -2,45 +2,52 @@
 #define MITE_UI_PANEL
 
 #include "headers/headers.h"
-#include "imgui.h"
 
 namespace mite {
+
 /**
- * @brief UI面板抽象基类，所有具体功能面板需继承此类
- * @note 采用CRTP模式实现静态多态，避免虚函数开销
+ * @brief UI面板抽象基类，使用传统虚函数实现
  */
-template <typename DerivedPanel>
 class UIPanel {
-public:
-    explicit UIPanel(const std::string& name);
-    virtual ~UIPanel() = default;
+ public:
+  explicit UIPanel(const std::string &title) : m_title(title) {}
+  virtual ~UIPanel() = default;
 
-    //=== 核心接口 ===//
-    void Draw();  // 主绘制入口
-    void SetVisible(bool visible) { m_visible = visible; }
-    bool IsVisible() const { return m_visible; }
-    const std::string& GetName() const { return m_name; }
+  // 生命周期方法
+  virtual void onAttach() {}
+  virtual void onDetach() {}
+  virtual void onUpdate(float deltaTime) {}
+  virtual void onRender() = 0;  // 纯虚函数，必须实现
 
-    //=== 生命周期钩子 ===//
-    virtual void OnAttach() {}    // 面板首次注册时调用
-    virtual void OnDetach() {}    // 面板注销时调用
-    virtual void OnUpdate(float deltaTime) {}  // 每帧更新逻辑
+  // 事件处理
+  virtual bool onEvent(Event &event)
+  {
+    return false;
+  }
 
-    //=== 子类需实现的接口 ===//
-    virtual void DrawContent() = 0;  // 实际面板内容绘制
+  // 可见性控制
+  bool isVisible() const
+  {
+    return m_visible;
+  }
+  void setVisible(bool visible)
+  {
+    m_visible = visible;
+  }
 
-protected:
-    //=== 工具方法 ===//
-    void BeginWindowStyle();  // 应用预设窗口样式
-    void EndWindowStyle();    // 恢复样式
+  // 标题访问
+  const std::string &getTitle() const
+  {
+    return m_title;
+  }
+  void setTitle(const std::string &title)
+  {
+    m_title = title;
+  }
 
-    std::string m_name;      // 面板唯一标识名
-    bool m_visible = true;   // 是否显示面板
-    bool m_firstDraw = true; // 首次绘制标记
-
-    // 样式控制（可在子类修改）
-    ImGuiWindowFlags m_windowFlags = ImGuiWindowFlags_None;
-    ImVec2 m_defaultSize = ImVec2(300, 400);
+ protected:
+  std::string m_title;    // 面板标题
+  bool m_visible = true;  // 是否可见
 };
 
 };
