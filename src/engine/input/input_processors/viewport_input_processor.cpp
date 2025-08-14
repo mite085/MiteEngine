@@ -13,19 +13,20 @@ ViewportInputProcessor::ViewportInputProcessor(std::shared_ptr<Camera> camera,
     // 会调用ViewportInputProcessor::handleMouseMove。
 }
 
-bool ViewportInputProcessor::handleMouseMove(MouseMoveEvent &e)
+void ViewportInputProcessor::handleMouseMove(MouseMoveEvent &e)
 {
   // 只在视口有焦点且悬停时处理
   if (!m_ViewportHovered || !m_ViewportFocused) {
-    return false;
+    return;
   }
   return CameraInputProcessor::handleMouseMove(e);
 }
 
-bool ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
+void ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
 {
+  // 只在视口有焦点且悬停时处理
   if (!m_ViewportHovered || !m_ViewportFocused) {
-    return false;
+    return;
   }
 
   const bool pressed = (e.GetEventType() == EventType::MOUSE_BUTTON_PRESSED);
@@ -36,7 +37,7 @@ bool ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
-    return true;
+    return;
   }
 
   // 保留中键平移功能
@@ -45,24 +46,24 @@ bool ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
-    return true;
+    return;
   }
-
-  return false;
 }
 
-bool ViewportInputProcessor::handleMouseScroll(MouseScrollEvent &e)
+void ViewportInputProcessor::handleMouseScroll(MouseScrollEvent &e)
 {
+  // 只在视口有焦点且悬停时处理
   if (!m_ViewportHovered || !m_ViewportFocused) {
-    return false;
+    return;
   }
   return CameraInputProcessor::handleMouseScroll(e);
 }
 
-bool ViewportInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
+void ViewportInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
 {
+  // 只在视口有焦点时处理
   if (!m_ViewportFocused) {
-    return false;
+    return;
   }
   return CameraInputProcessor::handleKeyEvent(e);
 }

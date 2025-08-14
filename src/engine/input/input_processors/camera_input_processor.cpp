@@ -28,10 +28,10 @@ void CameraInputProcessor::UpdateCameraTransform(float deltaTime)
 }
 
 // --- 私有方法实现 ---
-bool CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
+void CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
 {
   if (!m_InputState.rotating && !m_InputState.panning)
-    return false;
+    return;
 
   const glm::vec2 currentPos = {e.GetXPos(), e.GetYPos()};
   const glm::vec2 delta = currentPos - m_LastMousePos;
@@ -45,42 +45,34 @@ bool CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
     // 中键平移视角
     m_Camera->Pan(-delta.x * 0.01f * m_MoveSpeed, delta.y * 0.01f * m_MoveSpeed);
   }
-
-  return true;
 }
 
-bool CameraInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
+void CameraInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
 {
   const bool pressed = (e.GetEventType() == EventType::MOUSE_BUTTON_RELEASED);
 
-  // 右键旋转控制
   if (e.GetButton() == GLFW_MOUSE_BUTTON_RIGHT) {
+    // 右键旋转控制
     m_InputState.rotating = pressed;
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
-    return true;
   }
-
-  // 中键平移控制
-  if (e.GetButton() == GLFW_MOUSE_BUTTON_MIDDLE) {
+  else if (e.GetButton() == GLFW_MOUSE_BUTTON_MIDDLE) {
+    // 中键平移控制
     m_InputState.panning = pressed;
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
-    return true;
   }
-
-  return false;
 }
 
-bool CameraInputProcessor::handleMouseScroll(MouseScrollEvent &e)
+void CameraInputProcessor::handleMouseScroll(MouseScrollEvent &e)
 {
   m_Camera->Zoom(e.GetYOffset() * m_ZoomSpeed);
-  return true;
 }
 
-bool CameraInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
+void CameraInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
 {
   const bool pressed = (e.GetEventType() == EventType::KEY_RELEASED);
   const float value = pressed ? 1.0f : 0.0f;
@@ -106,10 +98,9 @@ bool CameraInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
       m_InputState.moveDirection.y = value;
       break;
     default:
-      return false;
+      m_Logger->error("Invalid camera input key-code: {}", e.GetKey());
+      return ;
   }
-
-  return true;
 }
 
 }  // namespace mite

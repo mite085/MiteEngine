@@ -23,39 +23,38 @@ void GizmoInputProcessor::SetViewportRect(const glm::vec2 &pos, const glm::vec2 
   m_ViewportSize = size;
 }
 
-bool GizmoInputProcessor::handleMouseButton(MouseButtonPressedEvent &e)
+void GizmoInputProcessor::handleMouseButton(MouseButtonPressedEvent &e)
 {
   // 只处理左键点击且Gizmo未被使用时
   if (e.GetButton() == GLFW_MOUSE_BUTTON_LEFT && !m_Gizmo.IsOver()) {
     // TODO: 实现选择逻辑
-    return false;
   }
-  return false;
+  return;
 }
 
-bool GizmoInputProcessor::handleKey(KeyPressedEvent &e)
+void GizmoInputProcessor::handleKey(KeyPressedEvent &e)
 {
   const bool pressed = (e.GetEventType() == EventType::KEY_PRESSED);
   if (!pressed)
-    return false;
+    return ;
 
   // Gizmo操作切换
   switch (e.GetKey()) {
     case GLFW_KEY_W:  // 平移
       m_Gizmo.SetOperation(ImGuizmo::OPERATION::TRANSLATE);
-      return true;
+      break;
     case GLFW_KEY_E:  // 旋转
       m_Gizmo.SetOperation(ImGuizmo::OPERATION::ROTATE);
-      return true;
+      break;
     case GLFW_KEY_R:  // 缩放
       m_Gizmo.SetOperation(ImGuizmo::OPERATION::SCALE);
-      return true;
+      break;
     case GLFW_KEY_T:  // 切换本地/世界空间
       m_Gizmo.SetMode(m_Gizmo.GetMode() == ImGuizmo::MODE::LOCAL ? ImGuizmo::MODE::WORLD :
                                                                    ImGuizmo::MODE::LOCAL);
-      return true;
+      break;
   }
-  return false;
+  return;
 }
 
 }  // namespace mite

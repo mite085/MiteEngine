@@ -40,8 +40,8 @@ class GizmoInputProcessor : public InputProcessor {
 
  protected:
   // 事件处理
-  bool handleMouseButton(MouseButtonPressedEvent &e);
-  bool handleKey(KeyPressedEvent &e);
+  void handleMouseButton(MouseButtonPressedEvent &e);
+  void handleKey(KeyPressedEvent &e);
 
  private:
   std::shared_ptr<Camera> m_Camera;

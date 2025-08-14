@@ -60,10 +60,10 @@ class CameraInputProcessor : public InputProcessor {
 
  protected:
   // 事件处理辅助方法
-  virtual bool handleMouseMove(MouseMoveEvent &e);
-  virtual bool handleMouseButton(MouseButtonReleasedEvent &e);
-  virtual bool handleMouseScroll(MouseScrollEvent &e);
-  virtual bool handleKeyEvent(KeyReleasedEvent &e);
+  virtual void handleMouseMove(MouseMoveEvent &e);
+  virtual void handleMouseButton(MouseButtonReleasedEvent &e);
+  virtual void handleMouseScroll(MouseScrollEvent &e);
+  virtual void handleKeyEvent(KeyReleasedEvent &e);
 
   std::shared_ptr<Camera> m_Camera;
   glm::vec2 m_LastMousePos{0.0f, 0.0f};

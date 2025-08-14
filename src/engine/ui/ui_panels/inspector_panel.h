@@ -10,11 +10,11 @@ namespace mite {
  * @brief 实体属性检查与编辑面板
  * @note 动态显示当前选中实体的所有组件
  */
-class InspectorPanel : public UIPanel<InspectorPanel> {
+class InspectorPanel : public UIPanel {
  public:
   InspectorPanel(SceneRegistry & registry);
 
-  void DrawContent() override;
+  void onRender() override;
   void OnEntitySelected(Entity entity);  // 事件回调
 
  private:

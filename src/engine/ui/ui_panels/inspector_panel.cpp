@@ -11,7 +11,7 @@ InspectorPanel::InspectorPanel(SceneRegistry &registry)
   //EventBus::Subscribe(this, &InspectorPanel::OnEntitySelected);
 }
 
-void InspectorPanel::DrawContent()
+void InspectorPanel::onRender()
 {
   if (!m_currentEntity.IsValid()) {
     ImGui::Text("No selected entity");
