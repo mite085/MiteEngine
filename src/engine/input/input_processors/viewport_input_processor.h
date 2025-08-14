@@ -14,8 +14,7 @@ namespace mite {
  */
 class ViewportInputProcessor : public CameraInputProcessor {
  public:
-  explicit ViewportInputProcessor(std::shared_ptr<Camera> camera,
-                                  int navigationButton);
+  explicit ViewportInputProcessor(std::shared_ptr<Camera> camera, int navigationButton);
 
   // InputProcessor接口
   const std::string &GetID() const override
@@ -28,6 +27,10 @@ class ViewportInputProcessor : public CameraInputProcessor {
   }
 
   // 配置方法
+  void SetCamera(std::shared_ptr<Camera> camera)
+  {
+    m_Camera = camera;
+  }
   void SetNavigationButton(int button)
   {
     m_NavigationButton = button;

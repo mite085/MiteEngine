@@ -40,6 +40,7 @@ class Camera {
   glm::mat4 GetViewProjectionMatrix() const;
 
   // ฒฮสýทรฮส
+  ProjectionType GetProjectionType() const;
   float GetNear() const;
   float GetFar() const;
   float GetFOV() const;

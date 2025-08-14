@@ -3,6 +3,7 @@
 
 #include "glm/glm.hpp"
 #include "input_context_stack.h"
+#include "modular_input_context.h"
 
 namespace mite {
 

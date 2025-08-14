@@ -54,12 +54,20 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
+
+    # 强依赖
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
-    MiteEngine_Engine_Material
+    MiteEngine_Engine_Renderer
     MiteEngine_Engine_Input
 
-    MiteEngine_Engine_Renderer
+    # 弱依赖：创建资产浏览器界面
+    MiteEngine_Asset
+
+    # 弱依赖：创建材质修改界面
+    MiteEngine_Engine_Material
+
+    # 弱依赖：创建Component组件属性界面
     MiteEngine_Engine_Scene_Core
     MiteEngine_Engine_Scene_View
 )

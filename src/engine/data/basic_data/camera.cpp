@@ -67,6 +67,11 @@ glm::mat4 Camera::GetViewProjectionMatrix() const
 
 // === ฒฮสýทรฮส ===
 
+Camera::ProjectionType Camera::GetProjectionType() const
+{
+  return m_ProjectionType;
+}
+
 float Camera::GetNear() const
 {
   return m_Near;
