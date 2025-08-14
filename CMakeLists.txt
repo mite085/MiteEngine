@@ -44,13 +44,15 @@ add_subdirectory(thirdparty/glfw)
 include_directories(thirdparty/glm)
 include_directories(thirdparty/glad)
 include_directories(thirdparty/imgui)
-include_directories(thirdparty/imguizmo)
 add_subdirectory(thirdparty/spdlog)
 include_directories(thirdparty/stduuid)
 include_directories(thirdparty/stduuid/include)
 include_directories(thirdparty/cereal/include)
 include_directories(thirdparty/stbimg)
 add_subdirectory(thirdparty/assimp)
+
+# imguizmo无cmakelist，为避免污染依赖库，此处手动添加
+include(imguizmo.cmake)
 
 # 为第三方库设置文件夹属性
 if(TARGET spdlog)
@@ -68,7 +70,9 @@ endif()
 if(TARGET zlibstatic)
     set_target_properties(zlibstatic PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
 endif()
-
+if(TARGET ImGuizmo)
+    set_target_properties(ImGuizmo PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
+endif()
 # 添加子目录（配置代码）
 add_subdirectory(config)
 

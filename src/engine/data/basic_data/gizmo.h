@@ -1,6 +1,7 @@
 #ifndef MITE_GIZMO_H
 #define MITE_GIZMO_H
 
+#include "imgui.h"
 #include "ImGuizmo.h"
 #include "basic_data/camera.h"
 
