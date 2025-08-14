@@ -3,54 +3,83 @@
 
 #include "ui_core/ui_panel.h"
 #include "scene_core/entity.h"
-#include "ImGuizmo.h"
 #include "renderer.h"
+#include "input/input.h"
+#include "input_processors/viewport_input_processor.h"
+#include "input_processors/gizmo_input_processor.h"
 
 namespace mite {
 /**
- * @brief 3D视口面板，支持场景导航和Gizmo操作
- * @note 依赖ImGuizmo库实现变换工具
+ * @brief 3D视口面板，负责场景渲染和交互
+ *
+ * 核心功能：
+ * 1. 显示3D场景渲染结果
+ * 2. 提供相机导航控制
+ * 3. 支持Gizmo物体操作
+ * 4. 管理视口输入状态
  */
-class ViewportPanel : public UIPanel<ViewportPanel> {
+class ViewportPanel : public UIPanel {
  public:
-  ViewportPanel(Renderer &renderer);
+  explicit ViewportPanel(const std::string &title = "视口");
+  virtual ~ViewportPanel() override;
 
-  // 设置当前选中实体（供InspectorPanel调用）
-  void SetSelectedEntity(Entity entity)
-  {
-    m_selectedEntity = entity;
-  }
+  // ========== 基础面板接口 ==========
+  void onAttach() override;
+  void onDetach() override;
+  void onUpdate(float deltaTime) override;
+  void onRender() override;
+  bool onEvent(Event &event) override;
 
-  void DrawContent() override;
-  void OnAttach() override;
-  void OnUpdate(float dt) override;
+  // ========== 视口配置方法 ==========
+
+  /**
+   * @brief 设置视口使用的相机
+   * @param camera 共享指针管理的相机对象
+   */
+  void setCamera(std::shared_ptr<Camera> camera);
+
+  /**
+   * @brief 设置视口的帧缓冲对象
+   * @param framebuffer 包含场景渲染结果的帧缓冲
+   */
+  void setFramebuffer(std::shared_ptr<FrameBuffer> framebuffer);
+
+  /**
+   * @brief 设置当前选中的变换矩阵
+   * @param transform 用于Gizmo操作的变换矩阵引用
+   */
+  void setCurrentTransform(glm::mat4 &transform);
 
  private:
-  // ---- Renderer依赖注入 ----
-  Renderer &m_renderer;
+  // ========== 内部方法 ==========
 
-  // ---- Gizmo操作 ----
-  void DrawGizmoToolbar();  // 绘制Gizmo模式选择工具栏
-  void HandleGizmo();       // 处理Gizmo变换操作
+  // 更新视口尺寸和边界信息
+  void updateViewportSize();
 
-  // ---- 视口控制 ----
-  void UpdateCamera(float dt);  // 相机控制逻辑
-  void CalculateViewMatrix();   // 计算视图矩阵
+  // 处理视口输入事件
+  bool handleViewportEvent(Event &event);
 
-  // ---- 状态 ----
-  Entity m_selectedEntity;           // 当前选中的ECS实体
-  ImGuizmo::OPERATION m_gizmoOp{ImGuizmo::TRANSLATE};  // 当前Gizmo操作模式
-  ImGuizmo::MODE m_gizmoMode{ImGuizmo::LOCAL};         // 坐标系模式
+  // ========== 成员变量 ==========
 
-  // 相机参数
-  glm::vec3 m_cameraPos{0, 0, 5};
-  glm::vec3 m_cameraFront{0, 0, -1};
-  float m_cameraSpeed{2.5f};
+  // 视口状态
+  glm::vec2 m_viewportSize = {0.0f, 0.0f};  // 视口当前尺寸
+  glm::vec2 m_viewportBounds[2];            // 视口屏幕边界坐标
+  bool m_viewportFocused = false;           // 视口是否有输入焦点
+  bool m_viewportHovered = false;           // 鼠标是否悬停在视口上
 
-  // 矩阵缓存
-  glm::mat4 m_viewMatrix = glm::mat4();
-  glm::mat4 m_projMatrix = glm::mat4();
+  // 渲染资源
+  std::shared_ptr<Camera> m_camera;            // 视口相机
+  std::shared_ptr<FrameBuffer> m_framebuffer;  // 场景帧缓冲
+
+  // 输入处理
+  std::shared_ptr<ViewportInputProcessor> m_viewportInput;  // 视口导航处理器
+  std::shared_ptr<GizmoInputProcessor> m_gizmoInput;        // Gizmo操作处理器
+  std::shared_ptr<ModularInputContext> m_inputContext;      // 输入上下文
+
+  // 变换状态
+  glm::mat4 *m_currentTransform = nullptr;  // 当前操作的变换矩阵(外部管理)
 };
+
 };
 
 #endif

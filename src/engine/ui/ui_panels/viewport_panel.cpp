@@ -1,151 +1,157 @@
 #include "viewport_panel.h"
-#include "input.h"
-#include "renderer.h"
+#include "imgui.h"
+#include "GLFW/glfw3.h"
 
 namespace mite {
-// 初始化视口面板
-ViewportPanel::ViewportPanel(Renderer &renderer)
-    : m_renderer(renderer), m_selectedEntity(Entity()), UIPanel("Viewport")
+ViewportPanel::ViewportPanel(const std::string &title) : UIPanel(title)
 {
-  // 视口特有样式设置
-  m_windowFlags |= ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-  m_defaultSize = ImVec2(800, 600);
+  // 初始化时创建默认相机
+  m_camera = std::make_shared<Camera>();
 }
 
-// 面板首次加载时初始化
-void ViewportPanel::OnAttach()
+ViewportPanel::~ViewportPanel()
 {
-  // 初始化投影矩阵（透视投影）
-  m_projMatrix = glm::perspective(
-      glm::radians(45.0f), m_defaultSize.x / m_defaultSize.y, 0.1f, 100.0f);
-}
-
-// 每帧更新相机逻辑
-void ViewportPanel::OnUpdate(float dt)
-{
-  if (ImGui::IsWindowHovered()) {
-    UpdateCamera(dt);
+  // 确保输入上下文已注销
+  if (m_inputContext) {
+    Input::PopContext();
   }
 }
 
-// 主绘制函数
-void ViewportPanel::DrawContent()
+void ViewportPanel::onAttach()
 {
-  // 1. 获取当前渲染视口尺寸
-  auto viewportSize = ImGui::GetContentRegionAvail();
+  // 创建模块化输入上下文
+  m_inputContext = std::make_shared<ModularInputContext>("Viewport");
+  m_inputContext->SetBlockInput(true);
 
-  // 2. 通知Renderer更新视口尺寸
-  m_renderer.SetViewport(uint32_t(viewportSize.x), uint32_t(viewportSize.y));
+  // 初始化视口导航处理器
+  m_viewportInput = std::make_shared<ViewportInputProcessor>(m_camera, GLFW_MOUSE_BUTTON_RIGHT);
+  m_inputContext->AddProcessor(m_viewportInput);
 
-  // 3. 获取场景FBO并绘制到ImGui
-  intptr_t fbo = m_renderer.GetViewportFramebuffer();
-  ImGui::Image(fbo, viewportSize, ImVec2(0, 1), ImVec2(1, 0));
+  // 初始化Gizmo处理器
+  if (m_currentTransform) {
+    m_gizmoInput = std::make_shared<GizmoInputProcessor>(m_camera, *m_currentTransform);
+    m_inputContext->AddProcessor(m_gizmoInput);
+  }
 
-  // 4. 只有视口聚焦时才处理Gizmo
-  if (ImGui::IsWindowFocused()) {
-    // 绘制Gizmo操作工具栏
-    DrawGizmoToolbar();
+  // 注册输入上下文
+  Input::PushContext(m_inputContext);
+}
 
-    // 如果有选中实体则绘制Gizmo
-    if (m_selectedEntity.IsValid()) {
-      HandleGizmo();
-    }
+void ViewportPanel::onDetach()
+{
+  // 移除输入上下文
+  Input::PopContext();
+  m_inputContext.reset();
+}
+
+void ViewportPanel::onUpdate(float deltaTime)
+{
+  // 更新视口输入状态
+  if (m_viewportInput) {
+    m_viewportInput->SetViewportHovered(m_viewportHovered);
+    m_viewportInput->SetViewportFocused(m_viewportFocused);
+  }
+
+  // 更新相机导航(持续移动等)
+  if (m_viewportInput && m_viewportFocused && m_viewportHovered) {
+    m_viewportInput->UpdateCameraTransform(deltaTime);
   }
 }
 
-// 绘制Gizmo操作模式选择工具栏
-void ViewportPanel::DrawGizmoToolbar()
+void ViewportPanel::onRender()
 {
-  // 使用ImGui的SameLine和分组实现水平布局
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 2));
+  // 设置视口窗口样式(无内边距)
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+  ImGui::Begin(m_title.c_str(), &m_visible);
 
-  // 第一组：变换模式
-  ImGui::BeginGroup();
-  if (ImGui::RadioButton("Translate", m_gizmoOp == ImGuizmo::TRANSLATE))
-    m_gizmoOp = ImGuizmo::TRANSLATE;
-  ImGui::SameLine();
-  if (ImGui::RadioButton("Rotate", m_gizmoOp == ImGuizmo::ROTATE))
-    m_gizmoOp = ImGuizmo::ROTATE;
-  ImGui::SameLine();
-  if (ImGui::RadioButton("Scale", m_gizmoOp == ImGuizmo::SCALE))
-    m_gizmoOp = ImGuizmo::SCALE;
-  ImGui::EndGroup();
+  // ===== 1. 更新视口状态 =====
+  m_viewportFocused = ImGui::IsWindowFocused();
+  m_viewportHovered = ImGui::IsWindowHovered();
+  updateViewportSize();
 
-  // 第二组：坐标系模式（与第一组保持间距）
-  ImGui::SameLine(0, 20);
-  ImGui::BeginGroup();
-  if (ImGui::RadioButton("World", m_gizmoMode == ImGuizmo::WORLD))
-    m_gizmoMode = ImGuizmo::WORLD;
-  ImGui::SameLine();
-  if (ImGui::RadioButton("Local", m_gizmoMode == ImGuizmo::LOCAL))
-    m_gizmoMode = ImGuizmo::LOCAL;
-  ImGui::EndGroup();
+  // ===== 2. 渲染场景内容 =====
+  if (m_framebuffer) {
+    // 显示帧缓冲内容(注意UV坐标翻转)
+    ImGui::Image(reinterpret_cast<void *>(m_framebuffer->getColorAttachmentRendererID()),
+                 ImVec2(m_viewportSize.x, m_viewportSize.y),
+                 ImVec2(0, 1),  // UV起点(左下角)
+                 ImVec2(1, 0)   // UV终点(右上角)
+    );
+  }
 
-  // 添加分隔线增强可读性
-  ImGui::Separator();
+  // ===== 3. 渲染Gizmo =====
+  if (m_currentTransform && m_gizmoInput) {
+    // 设置Gizmo操作区域
+    m_gizmoInput->SetViewportRect(glm::vec2(m_viewportBounds[0].x, m_viewportBounds[0].y),
+                                  m_viewportSize);
+
+    // 更新Gizmo状态
+    m_gizmoInput->Update(ImGui::GetIO().DeltaTime);
+  }
+
+  ImGui::End();
   ImGui::PopStyleVar();
 }
 
-// 处理Gizmo变换操作
-void ViewportPanel::HandleGizmo()
+bool ViewportPanel::onEvent(Event &event)
 {
-//  auto &registry = SceneCore::GetRegistry();
-//  if (!registry.valid(m_selectedEntity))
-//    return;
-//
-//  // 1. 获取实体的Transform组件
-//  auto &transform = registry.get<Transform>(m_selectedEntity);
-//
-//  // 2. 准备ImGuizmo矩阵
-//  glm::mat4 modelMatrix = transform.GetWorldMatrix();  // 假设Transform类有该方法
-//
-//  // 3. 设置ImGuizmo上下文
-//  ImGuizmo::SetOrthographic(false);
-//  ImGuizmo::SetDrawlist();
-//  ImGuizmo::SetRect(ImGui::GetWindowPos().x,
-//                    ImGui::GetWindowPos().y,
-//                    ImGui::GetWindowWidth(),
-//                    ImGui::GetWindowHeight());
-//
-//  // 4. 计算视图矩阵（需在相机移动时更新）
-//  CalculateViewMatrix();
-//
-//  // 5. 执行Gizmo操作
-//  ImGuizmo::Manipulate(glm::value_ptr(m_viewMatrix),
-//                       glm::value_ptr(m_projMatrix),
-//                       m_gizmoOp,
-//                       m_gizmoMode,
-//                       glm::value_ptr(modelMatrix));
-//
-//  // 6. 如果Gizmo有变化，则更新Transform
-//  if (ImGuizmo::IsUsing()) {
-//    transform.SetFromWorldMatrix(modelMatrix);  // 假设Transform有矩阵分解方法
-//  }
+  // 只在视口有焦点时处理事件
+  if (!m_viewportFocused || !m_viewportHovered) {
+    return false;
+  }
+  return handleViewportEvent(event);
 }
 
-// 相机控制逻辑
-void ViewportPanel::UpdateCamera(float dt)
+// ===== 内部方法实现 =====
+
+void ViewportPanel::setCamera(std::shared_ptr<Camera> camera)
 {
-  //// 键盘移动（WASD控制）
-  //if (Input::IsKeyPressed(GLFW_KEY_W))
-  //  m_cameraPos += m_cameraSpeed * dt * m_cameraFront;
-  //if (Input::IsKeyPressed(GLFW_KEY_S))
-  //  m_cameraPos -= m_cameraSpeed * dt * m_cameraFront;
-
-  //// 鼠标旋转控制（省略实现细节）
-  //// ...
-
-  //// 标记视图矩阵需要更新
-  //m_viewMatrixDirty = true;
+  m_camera = std::move(camera);
+  if (m_viewportInput) {
+    m_viewportInput->SetCamera(m_camera);
+  }
 }
 
-// 计算视图矩阵
-void ViewportPanel::CalculateViewMatrix()
+void ViewportPanel::setFramebuffer(std::shared_ptr<FrameBuffer> framebuffer)
 {
-  m_viewMatrix = glm::lookAt(
-      m_cameraPos, m_cameraPos + m_cameraFront, glm::vec3(0, 1, 0)  // 上向量
-  );
+  m_framebuffer = std::move(framebuffer);
 }
 
+void ViewportPanel::setCurrentTransform(glm::mat4 &transform)
+{
+  m_currentTransform = &transform;
+
+  // 如果Gizmo处理器尚未创建，现在创建它
+  if (!m_gizmoInput && m_inputContext) {
+    m_gizmoInput = std::make_shared<GizmoInputProcessor>(m_camera, *m_currentTransform);
+    m_inputContext->AddProcessor(m_gizmoInput);
+  }
+  // 如果已存在，则更新引用
+  else if (m_gizmoInput) {
+    m_gizmoInput->SetTransform(*m_currentTransform);
+  }
+}
+
+void ViewportPanel::updateViewportSize()
+{
+  // 获取视口可用区域大小
+  ImVec2 contentSize = ImGui::GetContentRegionAvail();
+  m_viewportSize = {contentSize.x, contentSize.y};
+
+  // 计算视口在屏幕中的绝对位置
+  ImVec2 minRegion = ImGui::GetWindowContentRegionMin();
+  ImVec2 maxRegion = ImGui::GetWindowContentRegionMax();
+  ImVec2 windowPos = ImGui::GetWindowPos();
+
+  m_viewportBounds[0] = {minRegion.x + windowPos.x, minRegion.y + windowPos.y};
+  m_viewportBounds[1] = {maxRegion.x + windowPos.x, maxRegion.y + windowPos.y};
+}
+
+bool ViewportPanel::handleViewportEvent(Event &event)
+{
+  // 实际事件处理由ModularInputContext管理
+  // 这里只需要转发事件
+  return m_inputContext->ProcessEvent(event);
+}
 
 };
