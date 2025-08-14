@@ -42,15 +42,15 @@ class GizmoInputProcessor : public InputProcessor {
   bool HandleEvent(Event &e) override
   {
     EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_DISPATCH_FN(handleMouseButton));
-    dispatcher.Dispatch<KeyReleasedEvent>(BIND_DISPATCH_FN(handleKeyEvent));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_DISPATCH_FN(handleMouseButtonPressed));
+    dispatcher.Dispatch<KeyPressedEvent>(BIND_DISPATCH_FN(handleKeyPressed));
     return e.handled;
   }
 
  protected:
   // 事件处理
-  bool handleMouseButton(MouseButtonPressedEvent &e);
-  bool handleKey(KeyPressedEvent &e);
+  bool handleMouseButtonPressed(MouseButtonPressedEvent &e);
+  bool handleKeyPressed(KeyPressedEvent &e);
 
  private:
   std::shared_ptr<Camera> m_Camera;

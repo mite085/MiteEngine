@@ -96,8 +96,9 @@ float InputContext::GetActionValue(const std::string &name) const
   return it != m_Actions.end() ? it->second.value : 0.0f;
 }
 
-void InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
+bool InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
 {
+  bool handled = false;
   // 遍历所有动作，检查是否匹配当前按键
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
@@ -112,13 +113,16 @@ void InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
         }
 
         _UpdateActionValue(name, newValue);
+        handled = true;
       }
     }
   }
+  return handled;
 }
 
-void InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e)
+bool InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e)
 {
+  bool handled = false;
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse && binding.code == e.GetButton()) {
@@ -129,40 +133,48 @@ void InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent
           newValue = 0.0f;
 
         _UpdateActionValue(name, newValue);
-
+        handled = true;
       }
     }
   }
+  return handled;
 }
 
-void InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
+bool InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
 {
+  bool handled = false;
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse) {
-          // TODO: 鼠标移动作为超高频事件，是否应当放在这里处理？
-        float newValue = (e.GetEventType() == EventType::MOUSE_POSITION_MOVED) ? 1.0f * binding.scale : 0.0f;
-
-        _UpdateActionValue(name, newValue);
-      }
-    }
-  }
-}
-
-void InputContext::_ProcessMouseScrollEvent(const MouseScrollEvent &e)
-{
-  for (auto &[name, action] : m_Actions) {
-    for (const auto &binding : action.bindings) {
-      if (binding.device == InputDevice::Mouse) {
-        // TODO: 鼠标移动作为超高频事件，是否应当放在这里处理？
-        float newValue = (e.GetEventType() == EventType::MOUSE_SCROLLED) ?
+        // 鼠标移动作为超高频事件，可以优化处理频率
+        float newValue = (e.GetEventType() == EventType::MOUSE_POSITION_MOVED) ?
                              1.0f * binding.scale :
                              0.0f;
 
         _UpdateActionValue(name, newValue);
+        handled = true;
       }
     }
   }
+  return handled;
+}
+
+bool InputContext::_ProcessMouseScrollEvent(const MouseScrollEvent &e)
+{
+  bool handled = false;
+  for (auto &[name, action] : m_Actions) {
+    for (const auto &binding : action.bindings) {
+      if (binding.device == InputDevice::Mouse) {
+        // 鼠标滚轮事件通常需要立即处理
+        float newValue = (e.GetEventType() == EventType::MOUSE_SCROLLED) ? 1.0f * binding.scale :
+                                                                           0.0f;
+
+        _UpdateActionValue(name, newValue);
+        handled = true;
+      }
+    }
+  }
+  return handled;
 }
 
 void InputContext::_UpdateActionValue(const std::string &actionName, float newValue)

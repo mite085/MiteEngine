@@ -24,7 +24,7 @@ void GizmoInputProcessor::SetTransform(glm::mat4 &transformMatrix)
   m_TransformMatrix = transformMatrix;
 }
 
-bool GizmoInputProcessor::handleMouseButton(MouseButtonPressedEvent &e)
+bool GizmoInputProcessor::handleMouseButtonPressed(MouseButtonPressedEvent &e)
 {
   // 只处理左键点击且Gizmo未被使用时
   if (e.GetButton() == GLFW_MOUSE_BUTTON_LEFT && !m_Gizmo.IsOver()) {
@@ -34,7 +34,7 @@ bool GizmoInputProcessor::handleMouseButton(MouseButtonPressedEvent &e)
   return false;  // 事件未处理，允许其他处理器继续
 }
 
-bool GizmoInputProcessor::handleKey(KeyPressedEvent &e)
+bool GizmoInputProcessor::handleKeyPressed(KeyPressedEvent &e)
 {
   const bool pressed = (e.GetEventType() == EventType::KEY_PRESSED);
   if (!pressed) {

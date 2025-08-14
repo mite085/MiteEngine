@@ -25,7 +25,14 @@ class InputAction {
 
   float hold_time = 0.0f;  // 长按计时
 };
-
+/**
+ * @brief 输入上下文
+ *
+ * 功能：
+ * 1. 基础输入管理
+ * 2. 动作映射系统（Action Mapping）
+ * 3. 事件处理（TODO：判断是否和Modular互相冲突？）
+ */
 class InputContext {
  public:
   explicit InputContext(const std::string &name);
@@ -53,10 +60,10 @@ class InputContext {
 
  protected:
   // 内部处理方法
-  void _ProcessKeyPressedEvent(const KeyPressedEvent &e);
-  void _ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e);
-  void _ProcessMouseMoveEvent(const MouseMoveEvent &e);
-  void _ProcessMouseScrollEvent(const MouseScrollEvent &e);
+  bool _ProcessKeyPressedEvent(const KeyPressedEvent &e);
+  bool _ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e);
+  bool _ProcessMouseMoveEvent(const MouseMoveEvent &e);
+  bool _ProcessMouseScrollEvent(const MouseScrollEvent &e);
   void _UpdateActionValue(const std::string &actionName, float newValue);
 
   std::string m_Name;

@@ -30,26 +30,20 @@ class InputProcessor {
 
   // === 必须实现的接口 ===
   virtual int GetPriority() const = 0;
-  virtual const std::string &GetID() const = 0;
+  virtual const std::string GetID() const = 0;
 
   // === 可选重写的接口 ===
-  virtual bool IsEnabled() const
-  {
-    return m_Enabled;
-  }
-  virtual void SetEnabled(bool enabled)
-  {
-    m_Enabled = enabled;
-  }
+  virtual bool IsEnabled() const;
+  virtual void SetEnabled(bool enabled);
+
+  // === 处理事件统一接口 ===
+  virtual bool HandleEvent(Event &e) = 0;
 
  protected:
   bool m_Enabled = true;
 
   // 日志系统
   Logger m_Logger;
-
-  // 订阅事件集合
-  SubscriptionGroup m_EventSubscriptions;
 };
 };  // namespace mite
 

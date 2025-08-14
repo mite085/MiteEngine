@@ -1,7 +1,18 @@
 #include "modular_input_context.h"
 
 namespace mite {
-ModularInputContext::ModularInputContext(const std::string &name) : InputContext(name) {}
+ModularInputContext::ModularInputContext(const std::string &name) : InputContext(name)
+{
+  // 订阅EventBus中的输入事件，按照EventCategory大类订阅，由ProcessEvent分发
+  m_EventHandlerID = EventBus::Get().SubscribeByCategory(EventCategory::EVENT_CATEGORY_INPUT,
+                                                         [this](Event &e) { ProcessEvent(e); });
+}
+
+ModularInputContext::~ModularInputContext()
+{
+  // 取消订阅EventBus
+  EventBus::Get().Unsubscribe(m_EventHandlerID);
+}
 
 void ModularInputContext::AddProcessor(std::shared_ptr<InputProcessor> processor)
 {
@@ -52,52 +63,21 @@ std::shared_ptr<InputProcessor> ModularInputContext::GetProcessor(const std::str
 
 bool ModularInputContext::ProcessEvent(Event &e)
 {
-  // 1. 阻塞检查
+  // 阻塞情况下直接返回
   if (m_BlockInput)
     return true;
 
-  // 2. 处理器优先处理（按优先级排序）
+  // Processor改版时重新排序
   if (m_Dirty)
     _SortProcessors();
 
-  // 先尝试用上次成功的处理器处理(热点优化)
-  if (m_HotProcessor && m_HotProcessor->IsEnabled()) {
-    if (m_HotProcessor->HandleEvent(e)) {
-      return true;
-    }
-  }
-
-  // 按优先级尝试所有处理器
+  // 按优先级从高到低，遍历Processor
   for (auto processor : m_SortedProcessors) {
-    if (!processor->IsEnabled() || processor == m_HotProcessor)
-      continue;
-
-    if (processor->HandleEvent(e)) {
-      m_HotProcessor = processor;
-      return true;
+    if (processor->IsEnabled() && processor->HandleEvent(e)) {  // 最高优先级的处理器执行处理操作
+      e.handled = true;
+      break;  // 高优先级处理器已处理，终止传播
     }
   }
-
-  // 3. 回退到基类的动作映射处理
-  switch (e.GetEventType()) {
-    case EventType::KEY_PRESSED:
-    case EventType::KEY_RELEASED:
-      _ProcessKeyPressedEvent(static_cast<KeyPressedEvent &>(e));
-      break;
-    case EventType::MOUSE_BUTTON_PRESSED:
-    case EventType::MOUSE_BUTTON_RELEASED:
-      _ProcessMouseButtonPressedEvent(static_cast<MouseButtonPressedEvent &>(e));
-      break;
-    case EventType::MOUSE_POSITION_MOVED:
-      _ProcessMouseMoveEvent(static_cast<MouseMoveEvent &>(e));
-      break;
-    case EventType::MOUSE_SCROLLED:
-      _ProcessMouseScrollEvent(static_cast<MouseScrollEvent &>(e));
-      break;
-    default:
-      break;
-  }
-
   return e.handled;
 }
 
@@ -125,9 +105,9 @@ void ModularInputContext::DebugPrintProcessors()
   m_Logger->debug("=== Processors in context: {} ===", m_Name);
   for (auto processor : m_SortedProcessors) {
     m_Logger->debug("[Prio {}] {} - Enabled: {}",
-                      processor->GetPriority(),
-                      processor->GetID(),
-                      processor->IsEnabled());
+                    processor->GetPriority(),
+                    processor->GetID(),
+                    processor->IsEnabled());
   }
 }
-};
+};  // namespace mite
