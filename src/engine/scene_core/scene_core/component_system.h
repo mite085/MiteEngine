@@ -203,9 +203,13 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
    * @brief 处理组件添加事件
    * @param e 事件
    */
-  virtual void OnComponentAdded(ComponentAddedEvent<T> &e) 
+  virtual bool OnComponentAdded(ComponentAddedEvent<T> &e) 
   {
     Register(&e.GetComponent());
+
+    // 标记事件已处理，阻断传播
+    e.Handled();
+    return e.handled;
   }
 
   /**
@@ -215,14 +219,18 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
    * 仅当调用SceneRegistry的ReplaceComponent
    * 或PatchComponent，修改现有组件时触发。
    */
-  //virtual void OnComponentUpdated(ComponentChangedEvent<T> &e) {}
+  //virtual bool OnComponentUpdated(ComponentChangedEvent<T> &e) {}
 
   /**
    * @brief 处理组件移除事件
    */
-  virtual void OnComponentRemoved(ComponentRemovedEvent<T> &e) 
+  virtual bool OnComponentRemoved(ComponentRemovedEvent<T> &e) 
   {
     Unregister(&e.GetComponent());
+
+    // 标记事件已处理，阻断传播
+    e.Handled();
+    return e.handled;
   }
 
  protected:

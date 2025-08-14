@@ -38,10 +38,19 @@ class GizmoInputProcessor : public InputProcessor {
   void SetViewportRect(const glm::vec2 &pos, const glm::vec2 &size);
   void SetTransform(glm::mat4 &transformMatrix);
 
+  // 处理事件的方法
+  bool HandleEvent(Event &e) override
+  {
+    EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_DISPATCH_FN(handleMouseButton));
+    dispatcher.Dispatch<KeyReleasedEvent>(BIND_DISPATCH_FN(handleKeyEvent));
+    return e.handled;
+  }
+
  protected:
   // 事件处理
-  void handleMouseButton(MouseButtonPressedEvent &e);
-  void handleKey(KeyPressedEvent &e);
+  bool handleMouseButton(MouseButtonPressedEvent &e);
+  bool handleKey(KeyPressedEvent &e);
 
  private:
   std::shared_ptr<Camera> m_Camera;

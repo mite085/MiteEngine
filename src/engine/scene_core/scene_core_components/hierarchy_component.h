@@ -142,7 +142,7 @@ class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent>
  private:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
   //void OnComponentUpdated(ComponentChangedEvent<HierarchyComponent> &e) override;
-  void OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) override;
+  bool OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) override;
 
   /**
    * @brief 验证层次结构，防止循环依赖

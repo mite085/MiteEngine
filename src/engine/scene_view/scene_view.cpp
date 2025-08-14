@@ -41,13 +41,16 @@ const std::vector<std::shared_ptr<RenderableItem>> &SceneView::GetRenderQueue() 
 }
 
 //=== 私有事件处理函数 ===//
-void SceneView::OnEntityCreated(EntityCreatedEvent &event)
+bool SceneView::OnEntityCreated(EntityCreatedEvent &event)
 {
   // 加入延迟处理列表
   m_PendingEntities.insert(event.GetEntity());
+
+  // 不应当标记事件已处理
+  return event.handled;
 }
 
-void SceneView::OnEntityDestroyed(EntityDestroyedEvent &event)
+bool SceneView::OnEntityDestroyed(EntityDestroyedEvent &event)
 {
   RemoveFromRenderQueue(event.GetEntity());
 
@@ -55,9 +58,12 @@ void SceneView::OnEntityDestroyed(EntityDestroyedEvent &event)
   if (m_PendingEntities.find(event.GetEntity()) != m_PendingEntities.end()) {
     m_PendingEntities.erase(m_PendingEntities.find(event.GetEntity()));
   }
+
+  // 不应当标记事件已处理
+  return event.handled;
 }
 
-void SceneView::OnTransformChanged(TransformChangedEvent &event)
+bool SceneView::OnTransformChanged(TransformChangedEvent &event)
 {
   auto it = m_EntityToIndexMap.find(event.GetEntity());
   if (it != m_EntityToIndexMap.end()) {
@@ -65,9 +71,12 @@ void SceneView::OnTransformChanged(TransformChangedEvent &event)
     m_RenderQueue[it->second]->worldTransform =
         m_Registry.GetComponent<TransformComponent>(event.GetEntity()).GetWorldMatrix(m_Registry);
   }
+
+  // 不应当标记事件已处理
+  return event.handled;
 }
 
-void SceneView::OnMaterialChanged(MaterialChangedEvent &event)
+bool SceneView::OnMaterialChanged(MaterialChangedEvent &event)
 {
   auto it = m_EntityToIndexMap.find(event.GetEntity());
   if (it != m_EntityToIndexMap.end()) {
@@ -75,6 +84,9 @@ void SceneView::OnMaterialChanged(MaterialChangedEvent &event)
     m_RenderQueue[it->second]->materialInstance =
         m_Registry.GetComponent<MaterialComponent>(event.GetEntity()).GetMaterial();
   }
+
+  // 不应当标记事件已处理
+  return event.handled;
 }
 
 bool SceneView::AddToRenderQueue(Entity entity)

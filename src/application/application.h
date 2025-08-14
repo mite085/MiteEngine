@@ -95,7 +95,7 @@ class MiteApplication {
 
   // 事件处理
   void OnWindowResize(uint32_t width, uint32_t height);
-  void OnWindowClose(WindowCloseEvent& e);
+  bool OnWindowClose(WindowCloseEvent& e);
 
  private:
   // 子系统

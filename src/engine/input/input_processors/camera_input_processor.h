@@ -58,12 +58,23 @@ class CameraInputProcessor : public InputProcessor {
   // 相机控制方法
   void UpdateCameraTransform(float deltaTime);
 
+  // 处理事件的方法
+  bool HandleEvent(Event &e) override
+  {
+    EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<MouseMoveEvent>(BIND_DISPATCH_FN(handleMouseMove));
+    dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_DISPATCH_FN(handleMouseButton));
+    dispatcher.Dispatch<MouseScrollEvent>(BIND_DISPATCH_FN(handleMouseScroll));
+    dispatcher.Dispatch<KeyReleasedEvent>(BIND_DISPATCH_FN(handleKeyEvent));
+    return e.handled;
+  }
+
  protected:
   // 事件处理辅助方法
-  virtual void handleMouseMove(MouseMoveEvent &e);
-  virtual void handleMouseButton(MouseButtonReleasedEvent &e);
-  virtual void handleMouseScroll(MouseScrollEvent &e);
-  virtual void handleKeyEvent(KeyReleasedEvent &e);
+  virtual bool handleMouseMove(MouseMoveEvent &e);
+  virtual bool handleMouseButton(MouseButtonReleasedEvent &e);
+  virtual bool handleMouseScroll(MouseScrollEvent &e);
+  virtual bool handleKeyEvent(KeyReleasedEvent &e);
 
   std::shared_ptr<Camera> m_Camera;
   glm::vec2 m_LastMousePos{0.0f, 0.0f};

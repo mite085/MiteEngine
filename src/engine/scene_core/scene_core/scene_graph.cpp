@@ -24,7 +24,7 @@ void SceneGraph::Initialize(SceneRegistry &registry)
   //    BIND_DISPATCH_FN(OnHierarchyChanged));
   m_EventSubscriptions.Subscribe<ComponentRemovedEvent<HierarchyComponent>>(
       BIND_DISPATCH_FN(OnHierarchyRemoved));
-  m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(BIND_DISPATCH_FN(OnTransformChanged));
+  m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(BIND_DISPATCH_FN(OnTransformUpdated));
   m_EventSubscriptions.Subscribe<PositionChangedEvent>(BIND_DISPATCH_FN(OnPositionChanged));
   m_EventSubscriptions.Subscribe<RotationChangedEvent>(BIND_DISPATCH_FN(OnRotationChanged));
   m_EventSubscriptions.Subscribe<ScaleChangedEvent>(BIND_DISPATCH_FN(OnScaleChanged));
@@ -304,7 +304,7 @@ bool SceneGraph::TraverseReverseDFS(Entity entity, const VisitorFunc &visitor) c
 
 // 事件处理实现 ==========================================
 
-void SceneGraph::OnEntityCreated(EntityCreatedEvent &e)
+bool SceneGraph::OnEntityCreated(EntityCreatedEvent &e)
 {
   Entity entity = e.GetEntity();
 
@@ -312,9 +312,12 @@ void SceneGraph::OnEntityCreated(EntityCreatedEvent &e)
   if (!GetRegistry().HasComponent<HierarchyComponent>(entity)) {
     GetRegistry().AddComponent<HierarchyComponent>(entity);
   }
+
+  // 不应当标记事件已处理
+  return e.handled;
 }
 
-void SceneGraph::OnEntityDestroyed(EntityDestroyedEvent &e)
+bool SceneGraph::OnEntityDestroyed(EntityDestroyedEvent &e)
 {
   Entity entity = e.GetEntity();
 
@@ -346,9 +349,12 @@ void SceneGraph::OnEntityDestroyed(EntityDestroyedEvent &e)
       }
     }
   }
+
+  // 不应当标记事件已处理
+  return e.handled;
 }
 
-void SceneGraph::OnHierarchyAdded(ComponentAddedEvent<HierarchyComponent> &e)
+bool SceneGraph::OnHierarchyAdded(ComponentAddedEvent<HierarchyComponent> &e)
 {
   Entity entity = e.GetEntity();
   auto &hierarchy = e.GetComponent();
@@ -357,9 +363,14 @@ void SceneGraph::OnHierarchyAdded(ComponentAddedEvent<HierarchyComponent> &e)
   hierarchy.SetParent(Entity());  // 默认无父节点
 
   // 可以在这里添加默认子节点或执行其他初始化逻辑
+
+
+ // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
-//void SceneGraph::OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e)
+//bool SceneGraph::OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e)
 //{
 //  Entity entity = e.GetEntity();
 //  auto &newHierarchy = e.GetComponent();
@@ -404,7 +415,7 @@ void SceneGraph::OnHierarchyAdded(ComponentAddedEvent<HierarchyComponent> &e)
 //  EventBus::Get().Post(EntityParentChangedEvent(entity));
 //}
 
-void SceneGraph::OnHierarchyRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
+bool SceneGraph::OnHierarchyRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
 {
   Entity entity = e.GetEntity();
   auto &hierarchy = e.GetComponent();
@@ -432,6 +443,10 @@ void SceneGraph::OnHierarchyRemoved(ComponentRemovedEvent<HierarchyComponent> &e
       }
     }
   }
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
 void SceneGraph::UpdateDepthCacheRecursive(Entity entity)
@@ -479,15 +494,19 @@ bool SceneGraph::ValidateHierarchy(Entity child, Entity newParent) const
   return true;
 }
 
-void SceneGraph::OnTransformChanged(TransformUpdatedEvent &e)
+bool SceneGraph::OnTransformUpdated(TransformUpdatedEvent &e)
 {
   Entity entity = e.GetEntity();
 
   // 标记子实体需要更新层次变换
   MarkChildrenDirty(entity, TransformComponent::HIERARCHY_DIRTY);
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
-void SceneGraph::OnPositionChanged(PositionChangedEvent &e)
+bool SceneGraph::OnPositionChanged(PositionChangedEvent &e)
 {
   Entity entity = e.GetEntity();
 
@@ -498,9 +517,13 @@ void SceneGraph::OnPositionChanged(PositionChangedEvent &e)
 
     // 可以在这里添加空间加速结构更新等逻辑
   }
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
-void SceneGraph::OnRotationChanged(RotationChangedEvent &e)
+bool SceneGraph::OnRotationChanged(RotationChangedEvent &e)
 {
   Entity entity = e.GetEntity();
 
@@ -510,9 +533,13 @@ void SceneGraph::OnRotationChanged(RotationChangedEvent &e)
     // 旋转变更通常需要更新方向相关系统
     // 如：光源方向、摄像机朝向等
   }
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
-void SceneGraph::OnScaleChanged(ScaleChangedEvent &e)
+bool SceneGraph::OnScaleChanged(ScaleChangedEvent &e)
 {
   Entity entity = e.GetEntity();
 
@@ -521,9 +548,13 @@ void SceneGraph::OnScaleChanged(ScaleChangedEvent &e)
 
     // 缩放变更可能影响碰撞体、渲染LOD等
   }
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
-void SceneGraph::OnTransformChanged(TransformChangedEvent &e)
+bool SceneGraph::OnTransformChanged(TransformChangedEvent &e)
 {
   Entity entity = e.GetEntity();
 
@@ -533,6 +564,10 @@ void SceneGraph::OnTransformChanged(TransformChangedEvent &e)
     // 完整变换更新通常需要更多系统响应
     // 如：物理系统、动画系统等
   }
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
 void SceneGraph::MarkChildrenDirty(Entity entity, uint8_t flags)

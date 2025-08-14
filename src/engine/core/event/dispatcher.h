@@ -78,7 +78,7 @@ class EventDispatcher {
  * );
  * 此时，BIND_DISPATCH_FN(OnWindowResized) 等价于 [this](auto&& e) { OnWindowResized(e); }
  */
-#define BIND_DISPATCH_FN(fn) [this](auto &&event) -> void { this->fn(event); }
+#define BIND_DISPATCH_FN(fn) [this](auto &&event) -> bool { return this->fn(event); }
 
 
 #endif

@@ -32,10 +32,10 @@ class SceneView {
 
  private:
   //=== 事件处理函数（订阅SceneCore的事件） ===//
-  void OnEntityCreated(EntityCreatedEvent &event);
-  void OnEntityDestroyed(EntityDestroyedEvent &event);
-  void OnTransformChanged(TransformChangedEvent &event);
-  void OnMaterialChanged(MaterialChangedEvent &event);
+  bool OnEntityCreated(EntityCreatedEvent &event);
+  bool OnEntityDestroyed(EntityDestroyedEvent &event);
+  bool OnTransformChanged(TransformChangedEvent &event);
+  bool OnMaterialChanged(MaterialChangedEvent &event);
 
   /**
    * 将ECS实体转换为RenderableEntity并加入渲染队列

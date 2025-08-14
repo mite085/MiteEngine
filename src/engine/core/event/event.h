@@ -113,12 +113,12 @@ class Event {
   }
 
 // 通用成员函数绑定（支持 void* 回调）
-#define BIND_EVENT_FN(fn) \
-  [this](void *payload) -> void { \
-    using EventT = std::remove_reference_t<decltype(*static_cast<Event *>(payload))>; \
-    if (auto *event = dynamic_cast<EventT *>(static_cast<Event *>(payload))) { \
-      this->fn(*event); \
-    } \
-  }
+//#define BIND_EVENT_FN(fn) \
+//  [this](void *payload) -> void { \
+//    using EventT = std::remove_reference_t<decltype(*static_cast<Event *>(payload))>; \
+//    if (auto *event = dynamic_cast<EventT *>(static_cast<Event *>(payload))) { \
+//      this->fn(*event); \
+//    } \
+//  }
 
 #endif

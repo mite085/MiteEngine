@@ -55,8 +55,8 @@ class IRenderDevice {
   IRenderDevice();
 
   // ---- 事件响应函数 ----
-  virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
-  virtual void OnTextureLoaded(TextureLoadEvent &e) = 0;
+  virtual bool OnModelLoaded(ModelLoadEvent &e) = 0;
+  virtual bool OnTextureLoaded(TextureLoadEvent &e) = 0;
 
   // 订阅事件集合
   SubscriptionGroup m_EventSubscriptions;

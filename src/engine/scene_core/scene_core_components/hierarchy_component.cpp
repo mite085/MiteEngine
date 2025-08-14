@@ -171,7 +171,7 @@ void HierarchyComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegi
 //  hierarchy.MarkDirty();
 //}
 
-void HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
+bool HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
 {
   auto &oldComponent = e.GetComponent();
   Unregister(&oldComponent);
@@ -201,6 +201,10 @@ void HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<Hierarch
       EventBus::Get().Post(ParentChangedEvent(child, childHierarchy, entity, Entity()));
     }
   }
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
 bool HierarchyComponentSystem::ValidateHierarchy(Entity entity,

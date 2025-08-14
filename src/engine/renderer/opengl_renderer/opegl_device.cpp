@@ -317,22 +317,30 @@ GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
   }
 }
 
-void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
+bool OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
 {
   // 1. 创建GPU资源
   ModelGPUHandle modelHandle = CreateModel(e.GetModelSourceData());
 
   // 2. 更新ModelAsset
   e.GetModelGPUHandle() = std::make_shared<ModelGPUHandle>(modelHandle);
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
-void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
+bool OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
 {
   //  1. 创建GPU资源
   TextureGPUHandle textureHandle = CreateTexture(e.GetTextureSourceData());
 
   // 2. 更新TextureAsset
   e.GetTextureHandle() = std::make_shared<TextureGPUHandle>(textureHandle);
+
+  // 标记事件已处理，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
 GLenum OpenGLDevice::ConvertWrapMode(TextureWrapMode mode) const

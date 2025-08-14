@@ -325,12 +325,13 @@ void MiteApplication::HandlePendingOperations() {}
 
 void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
 
-void MiteApplication::OnWindowClose(WindowCloseEvent &e)
+bool MiteApplication::OnWindowClose(WindowCloseEvent &e)
 {
   m_logger->info("Window close event triggered.");
   m_ShouldClose = true;
 
   // 标记事件已处理，阻断传播
   e.Handled();
+  return e.handled;
 }
 }  // namespace mite

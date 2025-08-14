@@ -208,27 +208,27 @@ class SceneGraph {
   /**
    * @brief 处理实体创建事件
    */
-  void OnEntityCreated(EntityCreatedEvent &e);
+  bool OnEntityCreated(EntityCreatedEvent &e);
 
   /**
    * @brief 处理实体销毁事件
    */
-  void OnEntityDestroyed(EntityDestroyedEvent &e);
+  bool OnEntityDestroyed(EntityDestroyedEvent &e);
 
   /**
    * @brief 处理层次组件添加事件
    */
-  void OnHierarchyAdded(ComponentAddedEvent<HierarchyComponent> &e);
+  bool OnHierarchyAdded(ComponentAddedEvent<HierarchyComponent> &e);
 
   /**
    * @brief 处理层次组件变更事件
    */
-  //void OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e);
+  //bool OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e);
 
   /**
    * @brief 处理层次组件移除事件
    */
-  void OnHierarchyRemoved(ComponentRemovedEvent<HierarchyComponent> &e);
+  bool OnHierarchyRemoved(ComponentRemovedEvent<HierarchyComponent> &e);
 
   /**
    * @brief 更新实体及其所有子代的深度缓存
@@ -244,27 +244,27 @@ class SceneGraph {
   /**
    * @brief 处理变换组件变更事件
    */
-  void OnTransformChanged(TransformUpdatedEvent &e);
+  bool OnTransformUpdated(TransformUpdatedEvent &e);
 
     /**
    * @brief 处理位置变更事件
    */
-  void OnPositionChanged(PositionChangedEvent &e);
+  bool OnPositionChanged(PositionChangedEvent &e);
 
   /**
    * @brief 处理旋转变更事件
    */
-  void OnRotationChanged(RotationChangedEvent &e);
+  bool OnRotationChanged(RotationChangedEvent &e);
 
   /**
    * @brief 处理缩放变更事件
    */
-  void OnScaleChanged(ScaleChangedEvent &e);
+  bool OnScaleChanged(ScaleChangedEvent &e);
 
   /**
    * @brief 处理整体变换变更事件
    */
-  void OnTransformChanged(TransformChangedEvent &e);
+  bool OnTransformChanged(TransformChangedEvent &e);
 
   /**
    * @brief 标记子实体变换为脏

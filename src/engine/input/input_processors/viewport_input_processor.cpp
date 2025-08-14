@@ -13,20 +13,20 @@ ViewportInputProcessor::ViewportInputProcessor(std::shared_ptr<Camera> camera,
     // 会调用ViewportInputProcessor::handleMouseMove。
 }
 
-void ViewportInputProcessor::handleMouseMove(MouseMoveEvent &e)
+bool ViewportInputProcessor::handleMouseMove(MouseMoveEvent &e)
 {
   // 只在视口有焦点且悬停时处理
   if (!m_ViewportHovered || !m_ViewportFocused) {
-    return;
+    return false;  // 未处理该事件
   }
-  return CameraInputProcessor::handleMouseMove(e);
+  return CameraInputProcessor::handleMouseMove(e);  // 返回父类处理结果
 }
 
-void ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
+bool ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
 {
   // 只在视口有焦点且悬停时处理
   if (!m_ViewportHovered || !m_ViewportFocused) {
-    return;
+    return false;
   }
 
   const bool pressed = (e.GetEventType() == EventType::MOUSE_BUTTON_PRESSED);
@@ -37,7 +37,7 @@ void ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
-    return;
+    return true;  // 已处理该事件
   }
 
   // 保留中键平移功能
@@ -46,26 +46,28 @@ void ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
-    return;
+    return true;  // 已处理该事件
   }
+
+  return false;  // 未处理其他按钮事件
 }
 
-void ViewportInputProcessor::handleMouseScroll(MouseScrollEvent &e)
+bool ViewportInputProcessor::handleMouseScroll(MouseScrollEvent &e)
 {
   // 只在视口有焦点且悬停时处理
   if (!m_ViewportHovered || !m_ViewportFocused) {
-    return;
+    return false;
   }
-  return CameraInputProcessor::handleMouseScroll(e);
+  return CameraInputProcessor::handleMouseScroll(e);  // 返回父类处理结果
 }
 
-void ViewportInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
+bool ViewportInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
 {
   // 只在视口有焦点时处理
   if (!m_ViewportFocused) {
-    return;
+    return false;
   }
-  return CameraInputProcessor::handleKeyEvent(e);
+  return CameraInputProcessor::handleKeyEvent(e);  // 返回父类处理结果
 }
 
 }  // namespace mite
