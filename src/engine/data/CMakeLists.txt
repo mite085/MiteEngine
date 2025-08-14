@@ -15,6 +15,8 @@ source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 set(BASIC_DATA_SRCS
     basic_data/camera.h
     basic_data/camera.cpp
+    basic_data/gizmo.h
+    basic_data/gizmo.cpp
     basic_data/mesh.h
     basic_data/mesh.cpp
     basic_data/model.h
