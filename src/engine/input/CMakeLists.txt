@@ -50,6 +50,7 @@ target_link_libraries(${ENGINE_INPUT_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
+    ImGuizmo
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
 )

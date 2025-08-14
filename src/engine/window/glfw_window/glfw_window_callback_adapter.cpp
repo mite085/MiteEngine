@@ -1,6 +1,6 @@
 #include "glfw_window_callback_adapter.h"
 #include "window_event.h"
-#include "input_event.h"
+#include "input/input_event.h"
 namespace mite {
 
 Logger GLFWWindowCallbackAdapter::s_Logger = nullptr;

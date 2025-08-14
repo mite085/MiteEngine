@@ -161,6 +161,17 @@ sequenceDiagram
 > 本系统xxx
 
 ### Input输入系统
+```mermaid
+sequenceDiagram
+    participant EventBus
+    participant ModularInputContext
+    participant InputProcessor
+
+    EventBus->>ModularInputContext: 1. 调用 _HandleEvent(e)
+    ModularInputContext->>ModularInputContext: 2. 按优先级排序处理器，检查事件订阅
+    ModularInputContext->>EventBus: 3. 返回 e.handled 标记
+    EventBus->>InputProcessor: 4. 根据 e.handled 决定是否调用处理器的订阅函数
+````
 ### Material材质系统
 ### Renderer渲染系统
 ### SceneCore场景核心

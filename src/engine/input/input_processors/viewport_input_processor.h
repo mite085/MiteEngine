@@ -17,7 +17,7 @@ class ViewportInputProcessor : public CameraInputProcessor {
   explicit ViewportInputProcessor(std::shared_ptr<Camera> camera, int navigationButton);
 
   // InputProcessor½Ó¿Ú
-  const std::string &GetID() const override
+  const std::string GetID() const override
   {
     return "ViewportNavigation";
   }

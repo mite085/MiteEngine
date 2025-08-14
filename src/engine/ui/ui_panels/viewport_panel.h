@@ -9,6 +9,17 @@
 #include "input_processors/gizmo_input_processor.h"
 
 namespace mite {
+
+// 占位符，假定存在FrameBuffer
+class FakeFrameBuffer {
+ public:
+  ImTextureID getColorAttachmentRendererID()
+  {
+    return 0;
+  }
+
+};
+
 /**
  * @brief 3D视口面板，负责场景渲染和交互
  *
@@ -20,7 +31,7 @@ namespace mite {
  */
 class ViewportPanel : public UIPanel {
  public:
-  explicit ViewportPanel(const std::string &title = "视口");
+  explicit ViewportPanel(const std::string &title = "ViewPort");
   virtual ~ViewportPanel() override;
 
   // ========== 基础面板接口 ==========
@@ -42,7 +53,7 @@ class ViewportPanel : public UIPanel {
    * @brief 设置视口的帧缓冲对象
    * @param framebuffer 包含场景渲染结果的帧缓冲
    */
-  void setFramebuffer(std::shared_ptr<FrameBuffer> framebuffer);
+  void setFramebuffer(std::shared_ptr<FakeFrameBuffer> framebuffer);
 
   /**
    * @brief 设置当前选中的变换矩阵
@@ -69,7 +80,7 @@ class ViewportPanel : public UIPanel {
 
   // 渲染资源
   std::shared_ptr<Camera> m_camera;            // 视口相机
-  std::shared_ptr<FrameBuffer> m_framebuffer;  // 场景帧缓冲
+  std::shared_ptr<FakeFrameBuffer> m_framebuffer;  // 场景帧缓冲
 
   // 输入处理
   std::shared_ptr<ViewportInputProcessor> m_viewportInput;  // 视口导航处理器

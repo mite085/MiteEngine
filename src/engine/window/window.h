@@ -1,7 +1,7 @@
 #ifndef MITE_WINDOW
 #define MITE_WINDOW
 
-#include "input_event.h"
+#include "input/input_event.h"
 #include "window_event.h"
 
 namespace mite {

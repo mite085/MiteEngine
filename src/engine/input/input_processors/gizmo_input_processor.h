@@ -2,7 +2,6 @@
 #ifndef MITE_GIZMO_INPUT_PROCESSOR
 #define MITE_GIZMO_INPUT_PROCESSOR
 
-#include "ImGuizmo.h"
 #include "basic_data/camera.h"
 #include "basic_data/gizmo.h"
 #include "input/input_processor.h"
@@ -26,7 +25,7 @@ class GizmoInputProcessor : public InputProcessor {
   {
     return InputPriority::GIZMO;
   }
-  const std::string &GetID() const override
+  const std::string GetID() const override
   {
     static const std::string id = "GizmoProcessor";
     return id;
@@ -37,6 +36,7 @@ class GizmoInputProcessor : public InputProcessor {
 
   // 配置方法
   void SetViewportRect(const glm::vec2 &pos, const glm::vec2 &size);
+  void SetTransform(glm::mat4 &transformMatrix);
 
  protected:
   // 事件处理

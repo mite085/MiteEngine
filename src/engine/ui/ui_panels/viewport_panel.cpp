@@ -72,7 +72,7 @@ void ViewportPanel::onRender()
   // ===== 2. 渲染场景内容 =====
   if (m_framebuffer) {
     // 显示帧缓冲内容(注意UV坐标翻转)
-    ImGui::Image(reinterpret_cast<void *>(m_framebuffer->getColorAttachmentRendererID()),
+    ImGui::Image(m_framebuffer->getColorAttachmentRendererID(),
                  ImVec2(m_viewportSize.x, m_viewportSize.y),
                  ImVec2(0, 1),  // UV起点(左下角)
                  ImVec2(1, 0)   // UV终点(右上角)
@@ -112,7 +112,7 @@ void ViewportPanel::setCamera(std::shared_ptr<Camera> camera)
   }
 }
 
-void ViewportPanel::setFramebuffer(std::shared_ptr<FrameBuffer> framebuffer)
+void ViewportPanel::setFramebuffer(std::shared_ptr<FakeFrameBuffer> framebuffer)
 {
   m_framebuffer = std::move(framebuffer);
 }

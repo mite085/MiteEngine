@@ -69,7 +69,7 @@ void CameraInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
 
 void CameraInputProcessor::handleMouseScroll(MouseScrollEvent &e)
 {
-  m_Camera->Zoom(e.GetYOffset() * m_ZoomSpeed);
+  m_Camera->Zoom(float(e.GetYOffset()) * m_ZoomSpeed);
 }
 
 void CameraInputProcessor::handleKeyEvent(KeyReleasedEvent &e)

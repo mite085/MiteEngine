@@ -54,7 +54,8 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
-
+    ImGuizmo
+    
     # 强依赖
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data

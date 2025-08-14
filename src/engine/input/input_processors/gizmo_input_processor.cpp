@@ -2,7 +2,6 @@
 #include "GLFW/glfw3.h"
 
 namespace mite {
-
 GizmoInputProcessor::GizmoInputProcessor(std::shared_ptr<Camera> camera,
                                          glm::mat4 &transformMatrix)
     : m_Camera(std::move(camera)), m_TransformMatrix(transformMatrix)
@@ -23,6 +22,11 @@ void GizmoInputProcessor::SetViewportRect(const glm::vec2 &pos, const glm::vec2 
   m_ViewportSize = size;
 }
 
+void GizmoInputProcessor::SetTransform(glm::mat4 &transformMatrix)
+{
+  m_TransformMatrix = transformMatrix;
+}
+
 void GizmoInputProcessor::handleMouseButton(MouseButtonPressedEvent &e)
 {
   // 只处理左键点击且Gizmo未被使用时
@@ -36,7 +40,7 @@ void GizmoInputProcessor::handleKey(KeyPressedEvent &e)
 {
   const bool pressed = (e.GetEventType() == EventType::KEY_PRESSED);
   if (!pressed)
-    return ;
+    return;
 
   // Gizmo操作切换
   switch (e.GetKey()) {
@@ -56,5 +60,4 @@ void GizmoInputProcessor::handleKey(KeyPressedEvent &e)
   }
   return;
 }
-
 }  // namespace mite
