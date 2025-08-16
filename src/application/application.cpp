@@ -59,7 +59,7 @@ void MiteApplication::Initialize()
   InitializeAssertManager();
 
   InitializeWindowWithOpenGL();
-  InitializeRenderWithOpenGL();
+  InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行
   InitializeUI();
   InitializeMaterialSystem();
   InitializeSceneCore();

@@ -48,6 +48,12 @@ class FrameBuffer {
   void Unbind() const;
 
   /**
+   * @brief 获取帧缓冲对象ID
+   * @return 帧缓冲对象ID
+   */
+  uint32_t GetID() const;
+
+  /**
    * @brief 获取颜色附件纹理ID
    * @param index 颜色附件索引(默认为0)
    * @return 纹理ID

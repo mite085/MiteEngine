@@ -223,6 +223,11 @@ void FrameBuffer::Unbind() const
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+uint32_t FrameBuffer::GetID() const
+{
+  return m_RendererID;
+}
+
 uint32_t FrameBuffer::GetColorAttachmentID(uint32_t index) const
 {
   if (m_ColorAttachments.find(index) != m_ColorAttachments.end()) {
