@@ -2,104 +2,126 @@
 
 namespace mite {
 OpenGLRenderer::OpenGLRenderer()
-{  // 创建日志系统
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Renderer");
-  m_Logger->trace("Created OpenGL Renderer");
+{
+  // 创建日志系统
+  m_Logger = LoggerSystem::CreateModuleLogger("Mite OpenGL Renderer");
+  m_Logger->info("OpenGL Renderer created");
 }
 
-OpenGLRenderer::~OpenGLRenderer() {}
+OpenGLRenderer::~OpenGLRenderer()
+{
+  m_Logger->info("OpenGL Renderer destroyed");
+}
 
 void OpenGLRenderer::Initialize()
 {
-  // 初始化OpenGL默认状态
-  glEnable(GL_DEPTH_TEST);  // 深度测试
-  glEnable(GL_CULL_FACE);   // 面剔除
-  glCullFace(GL_BACK);      // 剔除背面
-  glFrontFace(GL_CCW);      // 逆时针为正面
+  // 初始化默认FrameBuffer
+  CreateDefaultFrameBuffer();
+
+  // 通过RenderCommand初始化OpenGL状态
+  RenderCommand::Init();
+
+  m_Logger->info("OpenGL Renderer initialized");
 }
 
-// ===================== 渲染指令 =====================
+void OpenGLRenderer::CreateDefaultFrameBuffer()
+{
+  // 创建FrameBuffer规格
+  FrameBufferSpec spec;
+  spec.width = viewportSize_.x;
+  spec.height = viewportSize_.y;
+  spec.attachments = {
+      {FrameBufferAttachmentType::Color, GL_RGBA8},  // 颜色附件
+      {FrameBufferAttachmentType::Depth}             // 深度附件
+  };
+
+  // 创建FrameBuffer
+  m_viewportFrameBuffer = std::make_shared<FrameBuffer>(spec);
+
+  if (!m_viewportFrameBuffer->IsComplete()) {
+    m_Logger->error("Failed to create complete framebuffer");
+    throw std::runtime_error("Framebuffer is incomplete");
+  }
+
+  m_Logger->info("Created default framebuffer ({}x{})", viewportSize_.x, viewportSize_.y);
+}
+
 void OpenGLRenderer::BeginFrame()
 {
-  SetClearColor(clearColor_);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  // 通过RenderCommand提交清屏命令
+  RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, clearColor_);
+
+  // TODO: 绑定视口FrameBuffer
+  //RenderCommand::BindFrameBuffer(m_viewportFrameBuffer);
+
+  // 设置视口大小
+  RenderCommand::SetViewport(0, 0, viewportSize_.x, viewportSize_.y);
 }
 
 void OpenGLRenderer::EndFrame()
 {
-  // 确保所有命令提交
-  glFlush();
+  // TODO: 解绑FrameBuffer
+  //RenderCommand::UnbindFrameBuffer();
 
-  // 重置OpenGL状态机
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glUseProgram(0);
-  glActiveTexture(GL_TEXTURE0);
+  // 重置OpenGL状态
+  RenderCommand::PushCustomCommand(
+      [] {
+        glBindVertexArray(0);
+        glUseProgram(0);
+        glActiveTexture(GL_TEXTURE0);
+      },
+      "ResetGLState");
 
-  // 注意：不包含交换缓冲区的操作，由窗口系统负责
+  // 执行所有命令
+  RenderCommand::Flush();
 }
 
 void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
                                  const std::vector<std::shared_ptr<RenderableItem>> &renderQueue)
 {
-  // 定义纹理绑定lambda函数
-  auto bindTextureFunc = [](TextureGPUHandle handle, uint32_t slot) {
-    IRenderDevice::Current().BindTexture(handle, slot);
-  };
-
   // 获取视图和投影矩阵
-  glm::mat4 viewMatrix = mainCamera->GetViewMatrix();
-  glm::mat4 projectionMatrix = mainCamera->GetProjectionMatrix();
+  const glm::mat4 viewMatrix = mainCamera->GetViewMatrix();
+  const glm::mat4 projectionMatrix = mainCamera->GetProjectionMatrix();
 
   // 遍历渲染队列
-  for (const auto &item : renderQueue) {  
-    // 0. 检查渲染实体是否有效
-    if (!item->materialInstance || item->mesh->GetModelHandle()->vertexArray == 0) {
+  for (const auto &item : renderQueue) {
+    if (!item->materialInstance || !item->mesh) {
       m_Logger->warn("Invalid renderable item - missing material or mesh");
       continue;
     }
 
-    // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
-    item->materialInstance->Apply(bindTextureFunc);
-
-    // 2. 设置模型矩阵（从世界变换获取）
-    auto shader = item->materialInstance->GetShader();
-    if (shader) {
-      shader->SetMat4("u_Model", item->worldTransform);
-      shader->SetMat4("u_View", viewMatrix);
-      shader->SetMat4("u_Projection", projectionMatrix);
-    }
-
-    // 3. 绑定网格VAO
-    IRenderDevice::Current().BindMesh(item->mesh);
-
-    // 4. 绘制网格:
-    IRenderDevice::Current().DrawIndexed(item->mesh->GetIndexCount(),
-                                         item->mesh->GetIndexOffset());
-
-    // 5. 解绑（可选，减少状态切换）
-    glBindVertexArray(0);
-  }
-
-  // 检查OpenGL错误
-  GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    m_Logger->error("OpenGL error after rendering: {}", static_cast<int>(err));
+    // 通过RenderCommand提交绘制命令
+    RenderCommand::Submit(item, viewMatrix, projectionMatrix);
   }
 }
 
 void OpenGLRenderer::SetClearColor(const glm::vec4 &color)
 {
-  glClearColor(color.r, color.g, color.b, color.a);
-}
-void OpenGLRenderer::SetViewport(uint32_t width, uint32_t height)
-{
-  glViewport(0, 0, viewportSize_.x, viewportSize_.y);
+  clearColor_ = color;
 }
 
-intptr_t OpenGLRenderer::GetViewportFramebuffer()
+void OpenGLRenderer::SetViewport(uint32_t width, uint32_t height)
 {
-  return static_cast<intptr_t>(m_viewportFBO);
+  viewportSize_ = {width, height};
+
+  // 调整FrameBuffer大小
+  if (m_viewportFrameBuffer) {
+    m_viewportFrameBuffer->Resize(width, height);
+  }
+
+  // 提交视口设置命令
+  RenderCommand::SetViewport(0, 0, width, height);
+}
+
+std::shared_ptr<FrameBuffer> OpenGLRenderer::GetViewportFrameBuffer() const
+{
+  return m_viewportFrameBuffer;
+}
+
+intptr_t OpenGLRenderer::GetViewportFramebufferID() const
+{
+  // 返回颜色附件0的纹理ID
+  return static_cast<intptr_t>(m_viewportFrameBuffer->GetColorAttachmentID());
 }
 
 }  // namespace mite

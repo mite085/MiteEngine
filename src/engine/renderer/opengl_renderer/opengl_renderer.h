@@ -10,27 +10,25 @@
 
 namespace mite {
 /**
- * OpenGL渲染器实现
+ * OpenGL渲染器实现类
  * 职责：
  * 1. 实现基类定义的渲染接口
  * 2. 管理OpenGL专属状态（如VAO、Shader Program）
- * 
- * TODO: 启用RenderCommand进行渲染
+ * 3. 集成FrameBuffer系统
  */
 class OpenGLRenderer : public Renderer {
  public:
   explicit OpenGLRenderer();
   ~OpenGLRenderer() override;
+
+  // ---- 初始化 ----
   void Initialize() override;
 
-  // ---- 渲染指令 ----
+  // ---- 帧控制 ----
   void BeginFrame() override;
   void EndFrame() override;
 
-  /**
-   * 渲染场景的核心接口
-   * @param renderQueue 从SceneView获取的可渲染实体列表
-   */
+  // ---- 场景渲染 ----
   void RenderScene(const std::shared_ptr<Camera> mainCamera,
                    const std::vector<std::shared_ptr<RenderableItem>> &renderQueue) override;
 
@@ -38,15 +36,20 @@ class OpenGLRenderer : public Renderer {
   void SetClearColor(const glm::vec4 &color) override;
   void SetViewport(uint32_t width, uint32_t height) override;
 
-  // ---- 供Window调用的接口 ----
-  intptr_t GetViewportFramebuffer() override;
+  // ---- UI接口 ----
+  std::shared_ptr<FrameBuffer> GetViewportFrameBuffer() const override;
+  intptr_t GetViewportFramebufferID() const override;
 
  private:
-  // ---- OpenGL专属状态 ----
-  GLuint m_viewportFBO = 0;	// 默认帧缓冲（渲染到屏幕），OpenGL 规定其ID为0
+  // ---- 私有方法 ----
+  /**
+   * @brief 创建默认FrameBuffer
+   */
+  void CreateDefaultFrameBuffer();
 
-  // 日志系统
-  Logger m_Logger;
+  // ---- 成员变量 ----
+  std::shared_ptr<FrameBuffer> m_viewportFrameBuffer;  // 视口FrameBuffer
+  Logger m_Logger;                                     // 日志系统
 };
 }  // namespace mite
 
