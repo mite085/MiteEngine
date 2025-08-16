@@ -30,7 +30,11 @@ class InputProcessor {
 
   // === 必须实现的接口 ===
   virtual int GetPriority() const = 0;
-  virtual const std::string GetID() const = 0;
+  virtual const std::string GetID() const
+  {
+    static const std::string id = "Undefined Processor";
+    return id;
+  };
 
   // === 可选重写的接口 ===
   virtual bool IsEnabled() const;

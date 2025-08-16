@@ -35,7 +35,7 @@ class CameraInputProcessor : public InputProcessor {
   {
     return InputPriority::CAMERA;
   }
-  const std::string GetID() const override
+  virtual const std::string GetID() const override
   {
     static const std::string id = "CameraProcessor";
     return id;
