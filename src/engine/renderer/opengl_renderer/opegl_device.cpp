@@ -72,7 +72,7 @@ TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> 
   // 记录活动纹理
   activeTextures_.insert(textureID);
 
-  TextureGPUHandle handle = {static_cast<uintptr_t>(textureID)};
+  TextureGPUHandle handle = {data->path, static_cast<uintptr_t>(textureID)};
   SetTextureWrapMode(handle, data->wrapMode);
   SetTextureFilterMode(handle, data->filterMode);
 
@@ -162,6 +162,7 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
 
   // 6. 填充GPU句柄
   ModelGPUHandle handle;
+  handle.path = data->path;
   handle.bboxMax = data->modelBboxMax;
   handle.bboxMin = data->modelBboxMin;
   handle.vertexArray = static_cast<uintptr_t>(VAO);

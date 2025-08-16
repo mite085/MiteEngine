@@ -17,9 +17,18 @@ class Texture {
   Texture(const TextureGPUHandle &handle);
 
   // ---- 元数据访问 ----
+  /**
+   * 获取GPU句柄
+   */
   TextureGPUHandle GetHandle() const
   {
     return handle_;
+  }
+  /**
+   * 获取文件路径，用于调试
+   */
+  const std::string GetPath() const {
+    return handle_.path;
   }
 
  private:

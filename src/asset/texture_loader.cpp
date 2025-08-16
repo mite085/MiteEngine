@@ -43,6 +43,7 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureData(const std::string &
 
   // 7. 转换为Renderer模块的TextureSourceData
   std::shared_ptr<TextureSourceData> rendererData = std::make_shared<TextureSourceData>();
+  rendererData->path = textureAsset->metadata.path;
   rendererData->pixelData = textureAsset->textureData.textureData.get();
   rendererData->width = textureAsset->metadata.width;
   rendererData->height = textureAsset->metadata.height;

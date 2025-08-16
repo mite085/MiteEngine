@@ -40,6 +40,13 @@ class Model {
   {
     return boundingBox_;
   }
+  /**
+   * 获取文件路径，用于调试
+   */
+  const std::string GetPath() const
+  {
+    return modelHandle_->path;
+  }
 
  private:
   std::shared_ptr<ModelGPUHandle> modelHandle_;   // 整个模型的GPU资源
