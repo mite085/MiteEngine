@@ -51,8 +51,8 @@ void OpenGLRenderer::BeginFrame()
   // 通过RenderCommand提交清屏命令
   RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, clearColor_);
 
-  // TODO: 绑定视口FrameBuffer
-  //RenderCommand::BindFrameBuffer(m_viewportFrameBuffer);
+  // 绑定视口FrameBuffer
+  RenderCommand::BindFrameBuffer(m_viewportFrameBuffer);
 
   // 设置视口大小
   RenderCommand::SetViewport(0, 0, viewportSize_.x, viewportSize_.y);
@@ -60,8 +60,8 @@ void OpenGLRenderer::BeginFrame()
 
 void OpenGLRenderer::EndFrame()
 {
-  // TODO: 解绑FrameBuffer
-  //RenderCommand::UnbindFrameBuffer();
+  // 解绑FrameBuffer
+  RenderCommand::UnbindFrameBuffer();
 
   // 重置OpenGL状态
   RenderCommand::PushCustomCommand(
