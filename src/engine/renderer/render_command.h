@@ -4,93 +4,104 @@
 #include "basic_data/shader.h"
 #include "basic_data/texture.h"
 #include "basic_data/mesh.h"
+#include "basic_data/framebuffer.h"
 
 namespace mite {
 /**
- * @brief 渲染命令队列（封装OpenGL调用，支持多线程提交）
- * @note 职责：
- * 1. 提供线程安全的渲染命令提交接口
- * 2. 管理渲染状态（深度测试/混合等）
- * 3. 执行实际渲染操作（在渲染线程调用）
- * 
- * TODO: 目前Renderer未启用RenderCommand。
+ * @brief 渲染命令系统（单例模式，线程安全）
+ *
+ * 主要功能：
+ * 1. 支持FrameBuffer操作
+ * 2. 完善的渲染状态管理
+ * 3. 可扩展性设计
+ * 4. 详细的错误检查
  */
 class RenderCommand {
  public:
-  // ---- 命令类型 ----
+  // 命令类型枚举
   enum class CommandType {
-    Clear,           // 清屏
-    SetClearColor,   // 设置清屏颜色
-    DrawIndexed,     // 绘制索引几何体
-    SetViewport,     // 设置视口
-    SetRenderState,  // 设置渲染状态
-    Custom           // 自定义命令
+    Clear,              // 清屏命令
+    SetClearColor,      // 设置清屏颜色
+    BindFrameBuffer,    // 绑定帧缓冲（新增）
+    UnbindFrameBuffer,  // 解绑帧缓冲（新增）
+    DrawIndexed,        // 绘制索引几何体
+    SetViewport,        // 设置视口
+    SetRenderState,     // 设置渲染状态
+    Custom              // 自定义命令
   };
 
-  // ---- 命令数据结构 ----
+  // 渲染状态结构体
+  struct RenderState {
+    bool depthTest = true;
+    GLenum depthFunc = GL_LESS;
+    bool blend = true;
+    GLenum blendSrc = GL_SRC_ALPHA;
+    GLenum blendDst = GL_ONE_MINUS_SRC_ALPHA;
+    bool cullFace = true;
+    GLenum cullFaceMode = GL_BACK;
+  };
+
+  // 命令数据结构
   struct Command {
     CommandType type;
-    std::function<void()> execute;  // 执行lambda
+    std::function<void()> execute;
+    std::string debugName;  // 调试用名称
   };
 
-  // ---- 单例访问 ----
+  // 获取单例实例
   static RenderCommand &Get();
 
   // ---- 核心接口 ----
-  /**
-   * @brief 提交一个清屏命令
-   * @param clearColor 清屏颜色（可选）
-   */
-  static void Clear(const glm::vec4 &clearColor = {0.1f, 0.1f, 0.1f, 1.0f});
+  static void Init();  // 初始化默认渲染状态
 
-  /**
-   * @brief 提交一个绘制命令
-   * @param shader      使用的Shader程序
-   * @param vertexArray 顶点数组对象
-   * @param transform   模型变换矩阵
-   */
+  // 清屏命令
+  static void Clear(uint32_t clearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+                    const glm::vec4 &clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f),
+                    float depthClear = 1.0f,
+                    int stencilClear = 0);
+
+  // 帧缓冲操作（新增）
+  static void BindFrameBuffer(const FrameBuffer::Ptr &framebuffer);
+  static void UnbindFrameBuffer();
+
+  // 绘制命令
   static void Submit(const std::shared_ptr<OpenGLShader> &shader,
                      const std::shared_ptr<Mesh> &mesh,
                      const glm::mat4 &transform = glm::mat4(1.0f));
 
-  /**
-   * @brief 设置视口大小
-   * @param x,y     左下角坐标
-   * @param width,height 尺寸
-   */
+  // 视口设置
   static void SetViewport(int x, int y, int width, int height);
 
-  /**
-   * @brief 提交自定义渲染命令
-   * @param func 可调用对象（lambda/函数指针）
-   */
-  template<typename Func> static void PushCustomCommand(Func &&func);
+  // 渲染状态设置（扩展）
+  static void SetRenderState(const RenderState &state);
 
-  // ---- 执行控制 ----
-  /**
-   * @brief 执行所有已提交的命令（必须在渲染线程调用）
-   */
-  static void Flush();
+  // 自定义命令
+  template<typename Func>
+  static void PushCustomCommand(Func &&func, const std::string &debugName = "Custom");
 
-  /**
-   * @brief 初始化渲染状态（程序启动时调用）
-   */
-  static void Init();
+  // 执行控制
+  static void Flush();       // 执行所有命令
+  static void ClearQueue();  // 清空命令队列（新增）
 
  private:
-  RenderCommand();
+  RenderCommand() = default;
 
   std::queue<Command> m_CommandQueue;
   std::mutex m_QueueMutex;
   glm::vec4 m_ClearColor{0.1f, 0.1f, 0.1f, 1.0f};
+  float m_DepthClearValue = 1.0f;
+  int m_StencilClearValue = 0;
+  uint32_t m_ClearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+  RenderState m_CurrentState;
 };
 
-// 模板实现必须放在头文件
-template<typename Func> void RenderCommand::PushCustomCommand(Func &&func)
+// 模板实现
+template<typename Func>
+void RenderCommand::PushCustomCommand(Func &&func, const std::string &debugName)
 {
   auto &instance = Get();
   std::lock_guard<std::mutex> lock(instance.m_QueueMutex);
-  instance.m_CommandQueue.push({CommandType::Custom, std::forward<Func>(func)});
+  instance.m_CommandQueue.push({CommandType::Custom, std::forward<Func>(func), debugName});
 }
 
 }  // namespace mite
