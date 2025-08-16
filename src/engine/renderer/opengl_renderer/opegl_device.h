@@ -17,6 +17,7 @@ class OpenGLDevice : public IRenderDevice {
  public:
   OpenGLDevice();
   ~OpenGLDevice() override;
+  void CleanupResources();
 
   // ---- 纹理操作 ----
   TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) override;
@@ -40,7 +41,15 @@ class OpenGLDevice : public IRenderDevice {
   // 需要整体梳理std::shared_ptr<Model>的生命周期
   void DestroyModel(ModelGPUHandle model) override;
   void BindMesh(std::shared_ptr<Mesh> mesh) const override;
-  void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const override;
+  void DrawIndexed(uint32_t indexCount,
+                   uint32_t indexOffset,
+                   GLenum mode = GL_TRIANGLES,
+                   GLenum indexType = GL_UNSIGNED_INT,
+                   bool enableDepthTest = true) const override;
+
+  // ---- FrameBuffer 操作 ----
+  FrameBuffer::Ptr CreateFrameBuffer(const FrameBufferSpec &spec) override;
+  void DestroyFrameBuffer(FrameBuffer::Ptr framebuffer) override;
 
  private:
   // ---- 事件响应函数 ----
@@ -54,8 +63,11 @@ class OpenGLDevice : public IRenderDevice {
   void SetVertexAttributes(const VertexLayout &layout);
 
   // 资源追踪（用于调试和泄漏检测）
-  std::unordered_set<GLuint> activeTextures_;
-  std::unordered_set<GLuint> activeModelsVAO_, activeModelsVBO_, activeModelsEBO_;
+  std::unordered_set<GLuint> m_ActiveTextures;  // 活动纹理集合
+  std::unordered_set<GLuint> m_ActiveVAOs;      // 活动VAO集合
+  std::unordered_set<GLuint> m_ActiveVBOs;      // 活动VBO集合
+  std::unordered_set<GLuint> m_ActiveEBOs;      // 活动EBO集合
+  std::unordered_set<GLuint> m_ActiveFBOs;      // 活动FBO集合
 
   // 日志系统
   Logger m_Logger;

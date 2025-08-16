@@ -7,35 +7,59 @@ OpenGLDevice::OpenGLDevice() : IRenderDevice()
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Device");
   m_Logger->trace("Created OpenGL Device");
+
+  // 初始化GLAD（必须在上下文激活后调用）
+  if (!gladLoadGL()) {
+    m_Logger->critical("Failed to initialize GLAD");
+    throw std::runtime_error("GLAD initialization failed");
+  }
 }
 
 OpenGLDevice::~OpenGLDevice()
 {
   // 防御性检查：确保所有资源已释放
-  if (!activeTextures_.empty()) {
-    m_Logger->warn("{} textures not released on shutdown", activeTextures_.size());
-    for (GLuint handle : activeTextures_) {
-      glDeleteTextures(1, &handle);
+  CleanupResources();
+  m_Logger->info("OpenGLDevice destroyed");
+}
+
+void OpenGLDevice::CleanupResources()
+{
+  // 清理纹理
+  if (!m_ActiveTextures.empty()) {
+    m_Logger->warn("{} textures not released on shutdown", m_ActiveTextures.size());
+    for (GLuint tex : m_ActiveTextures) {
+      glDeleteTextures(1, &tex);
     }
   }
-  if (!activeModelsVAO_.empty()) {
-    m_Logger->warn("{} meshes vao not released on shutdown", activeModelsVAO_.size());
-    for (GLuint vao : activeModelsVAO_) {
+  // 清理缓冲区对象
+  if (!m_ActiveVAOs.empty()) {
+    m_Logger->warn("{} VAOs not released on shutdown", m_ActiveVAOs.size());
+    for (GLuint vao : m_ActiveVAOs) {
       glDeleteVertexArrays(1, &vao);
     }
   }
-  if (!activeModelsVBO_.empty()) {
-    m_Logger->warn("{} meshes vbo not released on shutdown", activeModelsVBO_.size());
-    for (GLuint vbo : activeModelsVBO_) {
+  if (!m_ActiveVBOs.empty()) {
+    m_Logger->warn("{} VBOs not released on shutdown", m_ActiveVBOs.size());
+    for (GLuint vbo : m_ActiveVBOs) {
       glDeleteBuffers(1, &vbo);
     }
   }
-  if (!activeModelsEBO_.empty()) {
-    m_Logger->warn("{} meshes ebo not released on shutdown", activeModelsEBO_.size());
-    for (GLuint ebo : activeModelsEBO_) {
+  if (!m_ActiveEBOs.empty()) {
+    m_Logger->warn("{} EBOs not released on shutdown", m_ActiveEBOs.size());
+    for (GLuint ebo : m_ActiveEBOs) {
       glDeleteBuffers(1, &ebo);
     }
   }
+  // 清理FrameBuffer对象
+  if (!m_ActiveFBOs.empty()) {
+    m_Logger->warn("{} FBOs not released on shutdown", m_ActiveFBOs.size());
+    for (GLuint fbo : m_ActiveFBOs) {
+      glDeleteFramebuffers(1, &fbo);
+    }
+  }
+  m_Logger->info("Cleaned up {} GPU resources",
+                 m_ActiveTextures.size() + m_ActiveVAOs.size() + m_ActiveVBOs.size() +
+                     m_ActiveEBOs.size() + m_ActiveFBOs.size());
 }
 
 // ------------------------ 纹理操作 ------------------------
@@ -70,12 +94,17 @@ TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> 
   }
 
   // 记录活动纹理
-  activeTextures_.insert(textureID);
+  m_ActiveTextures.insert(textureID);
 
-  TextureGPUHandle handle = {data->path, static_cast<uintptr_t>(textureID)};
+  TextureGPUHandle handle;
+  handle.path = data->path;
+  handle.apiHandle = static_cast<uintptr_t>(textureID);
+
+  // 应用指定的包装和过滤模式
   SetTextureWrapMode(handle, data->wrapMode);
   SetTextureFilterMode(handle, data->filterMode);
 
+  m_Logger->debug("Created texture handle: {}", data->path);
   return handle;
 }
 
@@ -86,7 +115,7 @@ void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
 
   GLuint textureID = static_cast<GLuint>(handle.apiHandle);
   glDeleteTextures(1, &textureID);
-  activeTextures_.erase(textureID);
+  m_ActiveTextures.erase(textureID);
 }
 
 void OpenGLDevice::BindTexture(TextureGPUHandle handle, uint32_t slot) const
@@ -170,9 +199,9 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
   handle.indexBuffer = static_cast<uintptr_t>(EBO);
 
   // 7. 记录活动网格（调试用）
-  activeModelsVAO_.insert(VAO);
-  activeModelsVBO_.insert(VBO);
-  activeModelsEBO_.insert(EBO);
+  m_ActiveVAOs.insert(VAO);
+  m_ActiveVBOs.insert(VBO);
+  m_ActiveEBOs.insert(EBO);
 
   // 8. 保存ModelSourceData创建时生成的MeshSections
   handle.subMeshes = std::move(data->sections);
@@ -194,7 +223,7 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
     glDeleteVertexArrays(1, &vao);
 
     // 从活动资源中移除
-    activeModelsVAO_.erase(vao);
+    m_ActiveVAOs.erase(vao);
   }
 
   // 2. 删除顶点缓冲区(VBO)
@@ -203,7 +232,7 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
     glDeleteBuffers(1, &vbo);
 
     // 从活动资源中移除
-    activeModelsVBO_.erase(vbo);
+    m_ActiveVBOs.erase(vbo);
   }
 
   // 3. 删除索引缓冲区(EBO)
@@ -212,7 +241,7 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
     glDeleteBuffers(1, &ebo);
 
     // 从活动资源中移除
-    activeModelsEBO_.erase(ebo);
+    m_ActiveEBOs.erase(ebo);
   }
 
   // 4. 调试日志
@@ -271,7 +300,7 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   // m_CurrentModelHandle = modelHandle;
 
   // 6. 调试信息
-  //m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
+  // m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
   //                vao,
   //                modelHandle->vertexBuffer,
   //                modelHandle->indexBuffer,
@@ -279,25 +308,138 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   //                meshSection.vertexOffset);
 }
 
-void OpenGLDevice::DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const
+void OpenGLDevice::DrawIndexed(uint32_t indexCount,
+                               uint32_t indexOffset,
+                               GLenum mode,
+                               GLenum indexType,
+                               bool enableDepthTest) const
 {
+  // 1. 参数验证
   if (indexCount == 0) {
-    m_Logger->warn("Attempted to draw with indexCount=0");
+    m_Logger->warn("Attempted to draw with indexCount = 0");
     return;
   }
 
-  // 执行索引绘制
-  glDrawElements(GL_TRIANGLES,                                             // 绘制模式
-                 indexCount,                                               // 索引数量
-                 GL_UNSIGNED_INT,                                          // 索引类型
-                 reinterpret_cast<void *>(indexOffset * sizeof(uint32_t))  // 偏移量
-  );
+  // 2. 详细的状态检查
+  GLint currentVAO = 0;
+  glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &currentVAO);
+  if (currentVAO == 0) {
+    m_Logger->error("DrawIndexed Failed：Invalid VAO");
+    return;
+  }
 
-  // 调试用：检查OpenGL错误
+  GLint currentProgram = 0;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+  if (currentProgram == 0) {
+    m_Logger->error("DrawIndexed Failed：Invalid Shader");
+    return;
+  }
+
+  GLint elementBuffer = 0;
+  glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &elementBuffer);
+  if (elementBuffer == 0) {
+    m_Logger->error("DrawIndexed Failed：Invalid EBO");
+    return;
+  }
+
+  // 3. 设置深度测试状态
+  if (enableDepthTest) {
+    glEnable(GL_DEPTH_TEST);
+  }
+  else {
+    glDisable(GL_DEPTH_TEST);
+  }
+
+  // 4. 计算索引偏移量
+  void *indicesPtr = nullptr;
+  size_t typeSize = 0;
+  switch (indexType) {
+    case GL_UNSIGNED_BYTE:
+      typeSize = sizeof(GLubyte);
+      break;
+    case GL_UNSIGNED_SHORT:
+      typeSize = sizeof(GLushort);
+      break;
+    case GL_UNSIGNED_INT:
+      typeSize = sizeof(GLuint);
+      break;
+    default:
+      m_Logger->error("Invalid Index Type: {}", indexType);
+      return;
+  }
+  indicesPtr = reinterpret_cast<void *>(indexOffset * typeSize);
+
+  // 5. 执行绘制命令
+  glDrawElements(mode, indexCount, indexType, indicesPtr);
+
+  // 6. 增强的错误检查
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
-    m_Logger->error("OpenGL draw error: {}", static_cast<int>(err));
+    const char *errorStr = "";
+    switch (err) {
+      case GL_INVALID_ENUM:
+        errorStr = "GL_INVALID_ENUM";
+        break;
+      case GL_INVALID_VALUE:
+        errorStr = "GL_INVALID_VALUE";
+        break;
+      case GL_INVALID_OPERATION:
+        errorStr = "GL_INVALID_OPERATION";
+        break;
+      case GL_INVALID_FRAMEBUFFER_OPERATION:
+        errorStr = "GL_INVALID_FRAMEBUFFER_OPERATION";
+        break;
+      case GL_OUT_OF_MEMORY:
+        errorStr = "GL_OUT_OF_MEMORY";
+        break;
+      default:
+        errorStr = "Unknown Error";
+    }
+
+    m_Logger->error(
+        "OpenGL Draw Error: {} ({})\n"
+        "More infomation:\n"
+        "- Mode: {}\n"
+        "- Index Count: {}\n"
+        "- Index Type: {}\n"
+        "- VAO: {}\n"
+        "- Shader: {}\n"
+        "- EBO: {}",
+        err,
+        errorStr,
+        mode,
+        indexCount,
+        indexType,
+        currentVAO,
+        currentProgram,
+        elementBuffer);
   }
+}
+
+// ------------------------ FrameBuffer 操作 ------------------------
+
+FrameBuffer::Ptr OpenGLDevice::CreateFrameBuffer(const FrameBufferSpec &spec)
+{
+  // 创建FrameBuffer对象
+  auto framebuffer = std::make_shared<FrameBuffer>(spec);
+
+  // 记录FBO ID
+  m_ActiveFBOs.insert(framebuffer->GetID());
+
+  m_Logger->debug("Created framebuffer ({}x{})", spec.width, spec.height);
+  return framebuffer;
+}
+
+void OpenGLDevice::DestroyFrameBuffer(FrameBuffer::Ptr framebuffer)
+{
+  if (!framebuffer)
+    return;
+
+  // 从活动集合中移除
+  m_ActiveFBOs.erase(framebuffer->GetID());
+
+  // 实际销毁操作由FrameBuffer析构函数处理
+  m_Logger->debug("Destroyed framebuffer");
 }
 
 // ------------------------ 辅助方法 ------------------------
@@ -464,4 +606,5 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
     m_Logger->error("Vertex attribute offset {} doesn't match layout stride {}", offset, stride);
   }
 }
+
 };  // namespace mite
