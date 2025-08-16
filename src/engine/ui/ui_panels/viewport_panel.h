@@ -5,8 +5,8 @@
 #include "scene_core/entity.h"
 #include "renderer.h"
 #include "input/input.h"
-#include "input_processors/viewport_input_processor.h"
-#include "input_processors/gizmo_input_processor.h"
+#include "ui_input_processors/viewport_input_processor.h"
+#include "ui_input_processors/gizmo_input_processor.h"
 
 namespace mite {
 

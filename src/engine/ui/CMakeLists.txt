@@ -32,8 +32,19 @@ set(UI_RESOURCES_SRCS
     ui_resources/icon.cpp
     ui_resources/imgui_style.h
     ui_resources/imgui_style.cpp
+
+    ui_resources/gizmo.h
+    ui_resources/gizmo.cpp
 )
 source_group("ui_resources" FILES ${UI_RESOURCES_SRCS})
+
+set(UI_INPUT_PROCESSOR_SRCS
+    ui_input_processors/gizmo_input_processor.h
+    ui_input_processors/gizmo_input_processor.cpp
+    ui_input_processors/viewport_input_processor.h
+    ui_input_processors/viewport_input_processor.cpp
+)
+source_group("ui_input_processors" FILES ${UI_INPUT_PROCESSOR_SRCS})
 
 # 创建静态库，添加源代码组
 add_library(${ENGINE_UI_LIB_NAME}
@@ -42,6 +53,7 @@ add_library(${ENGINE_UI_LIB_NAME}
     ${UI_PANELS_SRCS}
     ${UI_WIDGETS_SRCS}
     ${UI_RESOURCES_SRCS}
+    ${UI_INPUT_PROCESSOR_SRCS}
 )
 
 # 设置头文件路径（供其他项目包含）

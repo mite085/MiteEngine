@@ -4,7 +4,10 @@
 namespace mite {
 GizmoInputProcessor::GizmoInputProcessor(std::shared_ptr<Camera> camera,
                                          glm::mat4 &transformMatrix)
-    : m_Camera(std::move(camera)), m_TransformMatrix(transformMatrix)
+    : m_Camera(std::move(camera)),
+      m_TransformMatrix(transformMatrix),
+      m_ViewportPos(0.0, 0.0),
+      m_ViewportSize(1080.0, 720.0)
 {
 }
 

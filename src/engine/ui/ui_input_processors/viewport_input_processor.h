@@ -1,7 +1,7 @@
 #ifndef MITE_VIEWPORT_INPUT_PROCESSOR
 #define MITE_VIEWPORT_INPUT_PROCESSOR
 
-#include "camera_input_processor.h"
+#include "input_processors/camera_input_processor.h"
 
 namespace mite {
 /**

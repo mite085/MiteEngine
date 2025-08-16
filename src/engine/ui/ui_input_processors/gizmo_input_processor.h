@@ -3,7 +3,7 @@
 #define MITE_GIZMO_INPUT_PROCESSOR
 
 #include "basic_data/camera.h"
-#include "basic_data/gizmo.h"
+#include "ui_resources/gizmo.h"
 #include "input/input_processor.h"
 #include "input/input_event.h"
 

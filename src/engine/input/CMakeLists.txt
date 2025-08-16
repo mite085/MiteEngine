@@ -27,10 +27,6 @@ source_group("input" FILES ${INPUT_SRCS})
 set(INPUT_PROCESSOR_SRCS
     input_processors/camera_input_processor.h
     input_processors/camera_input_processor.cpp
-    input_processors/gizmo_input_processor.h
-    input_processors/gizmo_input_processor.cpp
-    input_processors/viewport_input_processor.h
-    input_processors/viewport_input_processor.cpp
 )
 source_group("input_processors" FILES ${INPUT_PROCESSOR_SRCS})
 
@@ -50,7 +46,6 @@ target_link_libraries(${ENGINE_INPUT_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
-    ImGuizmo
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
 )

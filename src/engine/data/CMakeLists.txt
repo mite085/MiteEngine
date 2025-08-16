@@ -26,8 +26,7 @@ set(BASIC_DATA_SRCS
     basic_data/texture.h
     basic_data/texture.cpp
     
-    basic_data/gizmo.h
-    basic_data/gizmo.cpp
+
 )
 source_group("basic_data" FILES ${BASIC_DATA_SRCS})
 
@@ -53,6 +52,5 @@ target_link_libraries(${ENGINE_DATA_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
-    ImGuizmo
     MiteEngine_Engine_Core
 )
