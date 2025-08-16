@@ -8,6 +8,8 @@
 #include "scene_core/scene.h"
 #include "scene_view.h"
 #include "glfw_window/glfw_window.h"
+#include "ui_core/ui_system.h"
+#include "ui_panels/viewport_panel.h"
 
 namespace mite {
 
@@ -70,7 +72,8 @@ class MiteApplication {
   void CleanUpUI();
   void CleanUpAssertManager();
   void CleanUpMaterialSystem();
-  void CleanUpScene();
+  void CleanUpSceneCore();
+  void CleanUpSceneView();
 
   // ÷°—≠ª∑œ‡πÿ
   void BeginFrame();

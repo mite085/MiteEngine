@@ -18,24 +18,30 @@ void MiteApplication::run()
     // Time系统更新时间
     Time::Update();
 
-    // 1、处理事件
+    // 1. 处理事件
     m_Window->PollEvents();
     EventBus::Get().ProcessQueue();
 
-    // 2、更新输入系统
+    // 2. 更新输入系统
     Input::Update();
 
-    // 3、开始新的一帧
+    // 3. 开始新的一帧
     BeginFrame();
 
-    // 4、更新场景
+    // 4. 更新场景
     Update();
 
-    // 5、渲染场景
+    // 5. 渲染场景
     Render();
 
-    // 6、结束当前帧
+    // 6. 结束当前帧
     EndFrame();
+
+    // 7. UI渲染
+    RenderUI();
+
+    // 8. 窗口负责交换缓冲
+    m_Window->SwapBuffers();
   }
 
   CleanUp();
@@ -63,7 +69,7 @@ void MiteApplication::Initialize()
   InitializeUI();
   InitializeMaterialSystem();
   InitializeSceneCore();
-  InitializeSceneView();        // 依赖SceneCore
+  InitializeSceneView();  // 依赖SceneCore
   // 加载默认场景
   LoadDefaultScene();
 }
@@ -94,7 +100,15 @@ void MiteApplication::InitializeUI()
 {
   m_logger->info("Initializing user interface");
 
-  // TODO：初始化UI
+  // 初始化UI系统
+  UISystem::Instance().Init(reinterpret_cast<GLFWwindow *>(m_Window->GetNativeWindow()));
+
+  // 创建ViewportPanel并设置FrameBuffer
+  auto viewportPanel = std::make_shared<ViewportPanel>("Viewport");
+  viewportPanel->setFramebuffer(m_Renderer->GetViewportFrameBuffer());
+
+  // 注册面板到UI系统
+  UISystem::Instance().RegisterPanel("Viewport", viewportPanel);
 }
 
 void MiteApplication::InitializeAssertManager()
@@ -111,10 +125,9 @@ void MiteApplication::InitializeSceneCore()
 
   // 初始化场景核心
   m_Scene = std::make_unique<Scene>();
-  
 }
 
-void MiteApplication::InitializeSceneView() 
+void MiteApplication::InitializeSceneView()
 {
   m_logger->info("Initializing scene view");
 
@@ -142,14 +155,14 @@ void MiteApplication::InitializeInputSystem()
   Input::Init(m_InputContextStack);
 
   // 创建编辑器上下文
-  //auto editorContext = std::make_shared<ModularInputContext>("Editor");
+  // auto editorContext = std::make_shared<ModularInputContext>("Editor");
 
   //// TODO: 为编辑器上下文装配处理器，以PropertyPanelProcessor为例
   // std::shared_ptr<PropertyPanel> panel = std::make_shared<PropertyPanel>();
   // editorContext->AddProcessor(std::make_shared<PropertyPanelProcessor>(panel));
 
   // 将编辑器上下文推入全局栈
-  //Input::PushContext(editorContext);
+  // Input::PushContext(editorContext);
 }
 
 void MiteApplication::LoadDefaultScene()
@@ -179,7 +192,8 @@ void MiteApplication::LoadDefaultScene()
 
     // 3. 创建材质实例
     std::shared_ptr<MaterialInstance> plane_material =
-        m_MaterialSystem->CreateInstanceWithOverrides<PureColorMaterialTemplate>({{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
+        m_MaterialSystem->CreateInstanceWithOverrides<PureColorMaterialTemplate>(
+            {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
 
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
@@ -203,13 +217,17 @@ void MiteApplication::CleanUp()
   // 取消事件订阅
   m_EventSubscriptions.UnsubscribeAll();
 
-  CleanUpInputSystem();
-  CleanUpWindow();
-  CleanUpRenderWithOpenGL();
-  CleanUpUI();
-  CleanUpAssertManager();
+
+  // 按照初始化的倒序，依次CleanUp
+  CleanUpSceneView();
+  CleanUpSceneCore();
   CleanUpMaterialSystem();
-  CleanUpScene();
+  CleanUpUI();
+  CleanUpRenderWithOpenGL();
+  CleanUpWindow();
+
+  CleanUpAssertManager();
+  CleanUpInputSystem();
 }
 
 void MiteApplication::CleanUpInputSystem()
@@ -224,16 +242,24 @@ void MiteApplication::CleanUpWindow()
 
 void MiteApplication::CleanUpRenderWithOpenGL() {}
 
-void MiteApplication::CleanUpUI() {}
+void MiteApplication::CleanUpUI()
+{
+  m_logger->info("Cleaning up UI");
+
+  // 清理所有UI资源
+  UISystem::Instance().Shutdown();
+}
 
 void MiteApplication::CleanUpAssertManager() {}
 
 void MiteApplication::CleanUpMaterialSystem() {}
 
-void MiteApplication::CleanUpScene()
+void MiteApplication::CleanUpSceneCore()
 {
   m_Scene->Clear();
 }
+
+void MiteApplication::CleanUpSceneView(){}
 
 void MiteApplication::BeginFrame()
 {
@@ -281,8 +307,7 @@ void MiteApplication::Render()
     //}
   }
 
-  // UI渲染
-  RenderUI();
+
 
   // TODO: 预览窗口渲染
   // if (m_ShowPreviewWindow) {
@@ -294,8 +319,7 @@ void MiteApplication::EndFrame()
 {
   m_Renderer->EndFrame();
 
-  // TODO: 窗口负责交换缓冲
-  m_Window->SwapBuffers();
+
 
   // TODO: 处理延迟释放的资源
   // m_AssetManager->ProcessDeletionQueue();
@@ -305,7 +329,17 @@ void MiteApplication::LimitFrameRate() {}
 
 void MiteApplication::UpdateFrameStats() {}
 
-void MiteApplication::RenderUI() {}
+void MiteApplication::RenderUI()
+{  
+  // 开始UI帧
+  UISystem::Instance().BeginFrame();
+
+  // 更新UI逻辑（处理输入/动画等）
+  UISystem::Instance().Update(Time::DeltaTime());
+
+  // 渲染所有UI面板
+  UISystem::Instance().EndFrame();
+}
 
 void MiteApplication::RenderSceneHierarchy() {}
 
