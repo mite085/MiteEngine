@@ -17,11 +17,12 @@ target_include_directories(${PROJECT_NAME}
 # 链接核心库
 target_link_libraries(${PROJECT_NAME}
     PRIVATE 
-    
     # 第三方库依赖
     OpenGL::GL
     glfw
     spdlog::spdlog
+    Imgui
+    ImGuizmo
 
     # 应用程序依赖
     MiteEngine_Application

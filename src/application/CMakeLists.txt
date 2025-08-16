@@ -29,7 +29,9 @@ target_link_libraries(${APPLICATION_LIB_NAME}
     OpenGL::GL
     glfw
     spdlog::spdlog
-
+    Imgui
+    ImGuizmo
+    
     # 资产模块依赖
     MiteEngine_Asset
 

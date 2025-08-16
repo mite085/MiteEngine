@@ -36,15 +36,16 @@ target_include_directories(${IMGUIZMO_LIB_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imguizmo  # 公开ImGuizmo自己的头文件
 )
 
+# 链接核心库
+target_link_libraries(${IMGUIZMO_LIB_NAME}
+    PRIVATE 
+    # 第三方库依赖
+    OpenGL::GL
+    glfw
+    Imgui
+)
+
 # 设置编译定义(如果需要)
 target_compile_definitions(${IMGUIZMO_LIB_NAME}
     PRIVATE
-)
-
-# 链接依赖库
-target_link_libraries(${IMGUIZMO_LIB_NAME}
-    PRIVATE
-        # 这里不需要显式链接ImGui，因为你使用的是头文件包含方式
-        # 但如果有ImGui的库目标，可以这样链接:
-        # imgui::imgui
 )

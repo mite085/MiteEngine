@@ -66,6 +66,7 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
+    Imgui
     ImGuizmo
     
     # 强依赖
