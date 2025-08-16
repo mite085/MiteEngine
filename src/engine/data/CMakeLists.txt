@@ -6,15 +6,15 @@ set(ENGINE_DATA_LIB_NAME MiteEngine_Engine_Data)
 # 创建源代码组(筛选器)
 set(BASIC_TYPE_SRCS
     basic_type/asset_type.h
-    basic_type/asset_type.cpp
     basic_type/handle_type.h
-    basic_type/handle_type.cpp
 )
 source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 
 set(BASIC_DATA_SRCS
     basic_data/camera.h
     basic_data/camera.cpp
+    basic_data/framebuffer.h
+    basic_data/framebuffer.cpp
     basic_data/mesh.h
     basic_data/mesh.cpp
     basic_data/model.h
