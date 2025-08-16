@@ -5,18 +5,28 @@
 #include "basic_data/model.h"
 #include "basic_data/mesh.h"
 #include "basic_data/texture.h"
+#include "basic_data/framebuffer.h"
 
 namespace mite {
 
 /**
  * 渲染设备抽象接口
+ * 
+ * 职责：
+ * 1. 提供跨渲染API的资源管理接口
+ * 2. 处理资源加载事件
+ * 3. 管理GPU资源生命周期
  *
+ * 设计原则：
+ * 1. 接口与具体API解耦
+ * 2. 线程安全设计
+ * 3. 支持未来多后端扩展
+ * 
  * 单例模式：
  * 使用单例模式的目的是方便Texture和Mesh每次创建时可以不通过对IRenderDevice的
  * 依赖注入，且可独立实现Draw方法，确保代码的简洁性。
  *
- *
- * 但存在风险：
+ * 存在风险：
  * 1. 如果渲染指令需在多个线程提交（如渲染线程 vs. 资源加载线程），
  *	  单例的全局锁可能成为性能瓶颈。此时需设计无锁队列或线程局部存储（TLS）。
  * 2. 单例的 IRenderDevice 会阻碍单元测试中对渲染接口的模拟（Mocking）。
@@ -27,7 +37,7 @@ class IRenderDevice {
  public:
   virtual ~IRenderDevice() = default;
 
-  // 纹理操作
+  // ---- 纹理操作 ----
   virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
   virtual void BindTexture(TextureGPUHandle handle, uint32_t slot) const = 0;
@@ -35,7 +45,7 @@ class IRenderDevice {
   virtual void SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode) = 0;
   virtual void GenerateMipmaps(TextureGPUHandle handle) = 0;
 
-  // 模型/网格体操作
+  // ---- 模型/网格操作 ----
   virtual ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) = 0;
   virtual void DestroyModel(ModelGPUHandle handle) = 0;
   // 注意：
@@ -44,9 +54,17 @@ class IRenderDevice {
   // 但Bind和Draw的操作是和Mesh强相关，
   // 所以这里实现Bind Mesh而非Bind Model
   virtual void BindMesh(std::shared_ptr<Mesh> mesh) const = 0;
-  virtual void DrawIndexed(uint32_t indexCount, uint32_t indexOffset) const = 0;
+  virtual void DrawIndexed(uint32_t indexCount,
+                           uint32_t indexOffset,
+                           GLenum mode = GL_TRIANGLES,
+                           GLenum indexType = GL_UNSIGNED_INT,
+                           bool enableDepthTest = true) const = 0;
 
-  // 静态当前设备管理
+  // ---- FrameBuffer 操作 (新增) ----
+  virtual FrameBuffer::Ptr CreateFrameBuffer(const FrameBufferSpec &spec) = 0;
+  virtual void DestroyFrameBuffer(FrameBuffer::Ptr framebuffer) = 0;
+
+  // ---- 设备管理 ----
   static IRenderDevice &Current();
   static void SetCurrent(std::unique_ptr<IRenderDevice> device);
 
@@ -54,13 +72,13 @@ class IRenderDevice {
   // 私有构造函数
   IRenderDevice();
 
-  // ---- 事件响应函数 ----
+  // ---- 事件处理 ----
   virtual bool OnModelLoaded(ModelLoadEvent &e) = 0;
   virtual bool OnTextureLoaded(TextureLoadEvent &e) = 0;
 
-  // 订阅事件集合
-  SubscriptionGroup m_EventSubscriptions;
+  SubscriptionGroup m_EventSubscriptions;  // 事件订阅
 };
+
 };  // namespace mite
 
 #endif

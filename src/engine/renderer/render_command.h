@@ -5,6 +5,7 @@
 #include "basic_data/texture.h"
 #include "basic_data/mesh.h"
 #include "basic_data/framebuffer.h"
+#include "renderable_item.h"
 
 namespace mite {
 /**
@@ -65,9 +66,13 @@ class RenderCommand {
   static void UnbindFrameBuffer();
 
   // 绘制命令
-  static void Submit(const std::shared_ptr<OpenGLShader> &shader,
-                     const std::shared_ptr<Mesh> &mesh,
-                     const glm::mat4 &transform = glm::mat4(1.0f));
+  // TODO: 这一部分还可以继续优化，原则上仅需传递以下几个参数
+  // const std::shared_ptr<OpenGLShader>& shader,
+  // const std::shared_ptr<Mesh> &mesh,
+  // const glm::mat4 &transform  对应"u_Model"矩阵
+  static void Submit(std::shared_ptr<RenderableItem> item,
+                     glm::mat4 viewMatrix,
+                     glm::mat4 projectionMatrix);
 
   // 视口设置
   static void SetViewport(int x, int y, int width, int height);
@@ -93,6 +98,8 @@ class RenderCommand {
   int m_StencilClearValue = 0;
   uint32_t m_ClearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
   RenderState m_CurrentState;
+
+  Logger m_Logger;  // 日志系统
 };
 
 // 模板实现

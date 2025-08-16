@@ -15,6 +15,10 @@ void RenderCommand::Init()
   auto &instance = Get();
   std::lock_guard<std::mutex> lock(instance.m_QueueMutex);
 
+  // 创建日志系统
+  instance.m_Logger = LoggerSystem::CreateModuleLogger("Mite OpenGL Render Command");
+  instance.m_Logger->info("OpenGL Renderer Command created");
+
   // 设置默认渲染状态
   instance.m_CurrentState = {
       true,                    // depthTest
@@ -29,12 +33,13 @@ void RenderCommand::Init()
   // 提交初始化命令（确保在渲染线程执行）
   instance.m_CommandQueue.push({CommandType::SetRenderState,
                                 [] {
-                                  glEnable(GL_DEPTH_TEST);
+                                  glEnable(GL_DEPTH_TEST);  // 深度测试
                                   glDepthFunc(GL_LESS);
                                   glEnable(GL_BLEND);
                                   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                                  glEnable(GL_CULL_FACE);
-                                  glCullFace(GL_BACK);
+                                  glEnable(GL_CULL_FACE);  // 面剔除
+                                  glCullFace(GL_BACK);     // 剔除背面
+                                  glFrontFace(GL_CCW);     // 逆时针为正面
                                 },
                                 "InitRenderState"});
 
@@ -85,27 +90,40 @@ void RenderCommand::UnbindFrameBuffer()
                                 "UnbindFrameBuffer"});
 }
 
-void RenderCommand::Submit(const std::shared_ptr<OpenGLShader> &shader,
-                           const std::shared_ptr<Mesh> &mesh,
-                           const glm::mat4 &transform)
+void RenderCommand::Submit(std::shared_ptr<RenderableItem> item,
+                           glm::mat4 viewMatrix,
+                           glm::mat4 projectionMatrix)
 {
-  if (!shader || !mesh) {
-    LOG_WARN("RenderCommand::Submit - Null shader or mesh");
-    return;
-  }
-
   auto &instance = Get();
   std::lock_guard<std::mutex> lock(instance.m_QueueMutex);
 
+  auto bindTextureFunc = [](TextureGPUHandle handle, uint32_t slot) {
+    IRenderDevice::Current().BindTexture(handle, slot);
+  };
+
   instance.m_CommandQueue.push({CommandType::DrawIndexed,
                                 [=]() {
-                                  shader->Bind();
-                                  shader->SetMat4("u_Model", transform);
-                                  IRenderDevice::Current().BindMesh(mesh);
-                                  IRenderDevice::Current().DrawIndexed(mesh->GetIndexCount(),
-                                                                       mesh->GetIndexOffset());
+                                  // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
+                                  item->materialInstance->Apply(bindTextureFunc);
+
+                                  // 2. 设置模型矩阵（从世界变换获取）
+                                  auto shader = item->materialInstance->GetShader();
+                                  if (shader) {
+                                    shader->SetMat4("u_Model", item->worldTransform);
+                                    shader->SetMat4("u_View", viewMatrix);
+                                    shader->SetMat4("u_Projection", projectionMatrix);
+                                  }
+
+                                  // 3. 绑定网格VAO
+                                  IRenderDevice::Current().BindMesh(item->mesh);
+
+                                  // 4. 绘制网格:
+                                  IRenderDevice::Current().DrawIndexed(
+                                      item->mesh->GetIndexCount(), item->mesh->GetIndexOffset());
+
                                 },
-                                "DrawIndexed mesh from model: " + mesh->GetModelHandle()->path});
+                                "DrawIndexed mesh from model: " +
+                                    item->mesh->GetModelHandle()->path});
 }
 
 void RenderCommand::SetViewport(int x, int y, int width, int height)
