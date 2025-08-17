@@ -37,6 +37,10 @@ class GizmoInputProcessor : public InputProcessor {
   // 配置方法
   void SetViewportRect(const glm::vec2 &pos, const glm::vec2 &size);
   void SetTransform(glm::mat4 &transformMatrix);
+  void SetCamera(std::shared_ptr<Camera> camera)
+  {
+    m_Camera = camera;
+  }
 
   // 处理事件的方法
   bool HandleEvent(Event &e) override

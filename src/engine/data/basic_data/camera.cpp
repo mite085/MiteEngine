@@ -108,6 +108,12 @@ glm::vec3 Camera::GetForwardVector() const
   return -glm::normalize(glm::vec3(m_ViewMatrix[2]));
 }
 
+ float Camera::GetDistance() const
+{
+  // 计算相机位置到世界原点的距离（假设观察目标为原点）
+  return glm::length(GetPosition());
+}
+
 // === 相机控制方法实现 ===
 
 void Camera::Rotate(float yaw, float pitch)

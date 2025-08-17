@@ -49,6 +49,7 @@ class Camera {
   glm::vec3 GetRightVector() const;
   glm::vec3 GetUpVector() const;
   glm::vec3 GetForwardVector() const;
+  float GetDistance() const;
 
   // 相机控制
   void Rotate(float yaw, float pitch);    // 欧拉角旋转（偏航/俯仰）

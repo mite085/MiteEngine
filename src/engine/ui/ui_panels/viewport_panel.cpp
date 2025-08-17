@@ -63,6 +63,7 @@ void ViewportPanel::onRender()
   // 设置视口窗口样式(无内边距)
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
   ImGui::Begin(m_title.c_str(), &m_visible);
+  
 
   // ===== 1. 更新视口状态 =====
   m_viewportFocused = ImGui::IsWindowFocused();
@@ -80,6 +81,7 @@ void ViewportPanel::onRender()
   }
 
   // ===== 3. 渲染Gizmo =====
+
   if (m_currentTransform && m_gizmoInput) {
     // 设置Gizmo操作区域
     m_gizmoInput->SetViewportRect(glm::vec2(m_viewportBounds[0].x, m_viewportBounds[0].y),
@@ -88,6 +90,13 @@ void ViewportPanel::onRender()
     // 更新Gizmo状态
     m_gizmoInput->Update(ImGui::GetIO().DeltaTime);
   }
+  // 渲染第一个Gizmo之前需要BeginFrame，该步骤应当放在 UISystem::BeginFrame()中执行
+  ImGuizmo::BeginFrame();
+  ImGuizmo::ViewManipulate(const_cast<float*>(glm::value_ptr(m_camera->GetViewMatrix())),
+                           m_camera->GetDistance(),
+                           ImVec2(m_viewportBounds[1].x - 128, m_viewportBounds[0].y),
+                           ImVec2(128, 128),
+                           0x10101010);
 
   ImGui::End();
   ImGui::PopStyleVar();
@@ -109,6 +118,9 @@ void ViewportPanel::setCamera(std::shared_ptr<Camera> camera)
   m_camera = std::move(camera);
   if (m_viewportInput) {
     m_viewportInput->SetCamera(m_camera);
+  }
+  if (m_gizmoInput) {
+    m_gizmoInput->SetCamera(m_camera);
   }
 }
 
