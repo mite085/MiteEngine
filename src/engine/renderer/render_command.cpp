@@ -43,7 +43,7 @@ void RenderCommand::Init()
                                 },
                                 "InitRenderState"});
 
-  LOG_INFO("RenderCommand initialized with default states");
+  instance.m_Logger->info("RenderCommand initialized with default states");
 }
 
 void RenderCommand::Clear(uint32_t clearFlags,
@@ -68,12 +68,13 @@ void RenderCommand::Clear(uint32_t clearFlags,
 
 void RenderCommand::BindFrameBuffer(const FrameBuffer::Ptr &framebuffer)
 {
+  auto &instance = Get();
+
   if (!framebuffer) {
-    LOG_WARN("Attempt to bind null framebuffer");
+    instance.m_Logger->warn("Attempt to bind null framebuffer");
     return;
   }
 
-  auto &instance = Get();
   std::lock_guard<std::mutex> lock(instance.m_QueueMutex);
 
   instance.m_CommandQueue.push(
@@ -204,7 +205,7 @@ void RenderCommand::Flush()
       }
     }
     catch (const std::exception &e) {
-      LOG_ERROR("Failed to execute command {}: {}", cmd.debugName, e.what());
+      instance.m_Logger->error("Failed to execute command {}: {}", cmd.debugName, e.what());
     }
 
     instance.m_CommandQueue.pop();

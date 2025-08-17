@@ -69,7 +69,8 @@ void GLFWWindowCallbackAdapter::HandleWindowResize(GLFWwindow *window, int width
   auto *adapter = GetAdapter(window);
   WindowResizeEvent event(width, height);
   EventBus::Get().Post(event);
-  s_Logger->debug("Framebuffer resized to {}x{}", width, height);
+  // 避免过多的窗口Resize日志，在调试时选择性启用
+  // s_Logger->debug("Framebuffer resized to {}x{}", width, height);
 }
 void GLFWWindowCallbackAdapter::HandleWindowFocus(GLFWwindow *window, int focused)
 {
@@ -90,7 +91,8 @@ void GLFWWindowCallbackAdapter::HandleWindowMoved(GLFWwindow *window, int xpos, 
   auto *adapter = GetAdapter(window);
   WindowMovedEvent event(xpos, ypos);
   EventBus::Get().Post(event);
-  s_Logger->debug("Window moved to {}, {}", xpos, ypos);
+  // 避免过多的窗口移动日志，在调试时选择性启用
+  //s_Logger->debug("Window moved to {}, {}", xpos, ypos);
 }
 void GLFWWindowCallbackAdapter::HandleMouseMove(GLFWwindow *window, double xpos, double ypos)
 {
@@ -98,7 +100,7 @@ void GLFWWindowCallbackAdapter::HandleMouseMove(GLFWwindow *window, double xpos,
   MouseMoveEvent event(static_cast<float>(xpos), static_cast<float>(ypos));
   EventBus::Get().Post(event);
   // 避免过多的鼠标移动日志，在调试时选择性启用
-  // LOG_DEBUG("Mouse moved to ({}, {})", xpos, ypos);
+  // s_Logger->debug("Mouse moved to ({}, {})", xpos, ypos);
 }
 void GLFWWindowCallbackAdapter::HandleMouseButton(GLFWwindow *window,
                                                   int button,
@@ -113,12 +115,14 @@ void GLFWWindowCallbackAdapter::HandleMouseButton(GLFWwindow *window,
     MouseButtonPressedEvent event(
         button, mods, static_cast<float>(xpos), static_cast<float>(ypos));
     EventBus::Get().Post(event);
-    s_Logger->debug("Mouse button {} pressed", button);
+    // 避免过多的Mouse Button日志，在调试时选择性启用
+    // s_Logger->debug("Mouse button {} pressed", button);
   }
   else {
     MouseButtonReleasedEvent event(button, static_cast<float>(xpos), static_cast<float>(ypos));
     EventBus::Get().Post(event);
-    s_Logger->debug("Mouse button {} released", button);
+    // 避免过多的Mouse Button日志，在调试时选择性启用
+    // s_Logger->debug("Mouse button {} released", button);
   }
 }
 void GLFWWindowCallbackAdapter::HandleMouseScroll(GLFWwindow *window,
@@ -136,19 +140,22 @@ void GLFWWindowCallbackAdapter::HandleKeyEvent(
     case GLFW_PRESS: {
       KeyPressedEvent event(key, mods, false);  // 非重复按键
       EventBus::Get().Post(event);
-      s_Logger->debug("Key pressed: {} (scancode: {}, mods: {})", key, scancode, mods);
+      // 避免过多的Key pressed日志，在调试时选择性启用
+      // s_Logger->debug("Key pressed: {} (scancode: {}, mods: {})", key, scancode, mods);
       break;
     }
     case GLFW_RELEASE: {
       KeyReleasedEvent event(key);
       EventBus::Get().Post(event);
-      s_Logger->debug("Key released: {}", key);
+      // 避免过多的Key released日志，在调试时选择性启用
+      // s_Logger->debug("Key released: {}", key);
       break;
     }
     case GLFW_REPEAT: {
       KeyPressedEvent event(key, mods, true);  // 重复按键
       EventBus::Get().Post(event);
-      s_Logger->debug("Key pressed repeatly: {} (scancode: {}, mods: {})", key, scancode, mods);
+      // 避免过多的Key pressed日志，在调试时选择性启用
+      // s_Logger->debug("Key pressed repeatly: {} (scancode: {}, mods: {})", key, scancode, mods);
       break;
     }
   }
