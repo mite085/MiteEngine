@@ -4,9 +4,17 @@
 
 namespace mite {
 
+// 日志系统
+Logger CameraInputProcessor::s_Logger = nullptr;
+
 CameraInputProcessor::CameraInputProcessor(std::shared_ptr<Camera> camera)
     : m_Camera(std::move(camera))
 {
+  // 首次创建时初始化日志系统
+  if (!s_Logger) {
+    s_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Input Processor: Camera");
+    s_Logger->trace("Created Input Processor: Camera");
+  }
 }
 
 void CameraInputProcessor::UpdateCameraTransform(float deltaTime)
@@ -102,7 +110,7 @@ bool CameraInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
       m_InputState.moveDirection.y = value;
       return true;
     default:
-      m_Logger->error("Invalid camera input key-code: {}", e.GetKey());
+      s_Logger->error("Invalid camera input key-code: {}", e.GetKey());
       return false;  // 未处理的按键
   }
 }

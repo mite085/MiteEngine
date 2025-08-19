@@ -25,16 +25,12 @@ const int CAMERA = 200;   // 相机控制
  */
 class InputProcessor {
  public:
-  InputProcessor();
+  InputProcessor() = default;
   virtual ~InputProcessor() = default;
 
   // === 必须实现的接口 ===
   virtual int GetPriority() const = 0;
-  virtual const std::string GetID() const
-  {
-    static const std::string id = "Undefined Processor";
-    return id;
-  };
+  virtual const std::string GetID() const = 0;
 
   // === 可选重写的接口 ===
   virtual bool IsEnabled() const;
@@ -45,9 +41,6 @@ class InputProcessor {
 
  protected:
   bool m_Enabled = true;
-
-  // 日志系统
-  Logger m_Logger;
 };
 };  // namespace mite
 

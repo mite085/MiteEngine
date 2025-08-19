@@ -3,7 +3,7 @@
 #define MITE_GIZMO_INPUT_PROCESSOR
 
 #include "basic_data/camera.h"
-#include "ui_resources/gizmo.h"
+#include "ui_gizmo/gizmo.h"
 #include "input/input_processor.h"
 #include "input/input_event.h"
 
@@ -27,8 +27,7 @@ class GizmoInputProcessor : public InputProcessor {
   }
   const std::string GetID() const override
   {
-    static const std::string id = "GizmoProcessor";
-    return id;
+    return "GizmoProcessor";
   }
 
   // 每帧更新
@@ -62,6 +61,9 @@ class GizmoInputProcessor : public InputProcessor {
   Gizmo m_Gizmo;
   glm::vec2 m_ViewportPos;
   glm::vec2 m_ViewportSize;
+
+  // 静态日志对象
+  static Logger s_Logger;
 };
 
 }  // namespace mite

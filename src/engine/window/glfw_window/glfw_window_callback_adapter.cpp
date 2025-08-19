@@ -6,9 +6,12 @@ namespace mite {
 Logger GLFWWindowCallbackAdapter::s_Logger = nullptr;
 
 GLFWWindowCallbackAdapter::GLFWWindowCallbackAdapter() : CallbackAdapter()
-{  // 创建日志系统
-  s_Logger = mite::LoggerSystem::CreateModuleLogger("Mite GLFW Window Callback Adapter");
-  s_Logger->trace("Created GLFW Window Callback Adapter");
+{  
+  // 首次创建时初始化日志系统
+  if (!s_Logger) {
+    s_Logger = mite::LoggerSystem::CreateModuleLogger("Mite GLFW Window Callback Adapter");
+    s_Logger->trace("Created GLFW Window Callback Adapter");
+  }
 }
 
 GLFWWindowCallbackAdapter::~GLFWWindowCallbackAdapter()

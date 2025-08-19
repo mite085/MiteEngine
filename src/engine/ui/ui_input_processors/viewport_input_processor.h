@@ -17,13 +17,13 @@ class ViewportInputProcessor : public CameraInputProcessor {
   explicit ViewportInputProcessor(std::shared_ptr<Camera> camera, int navigationButton);
 
   // InputProcessor接口
-  const std::string GetID() const override
-  {
-    return "ViewportNavigation";
-  }
   int GetPriority() const override
   {
     return InputPriority::UI_FORM;
+  }
+  const std::string GetID() const override
+  {
+    return "ViewportProcessor";
   }
 
   // 配置方法
@@ -55,6 +55,9 @@ class ViewportInputProcessor : public CameraInputProcessor {
   int m_NavigationButton;
   bool m_ViewportHovered = false;
   bool m_ViewportFocused = false;
+
+  // 静态日志对象
+  static Logger s_Logger;
 };
 }  // namespace mite
 

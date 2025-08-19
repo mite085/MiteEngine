@@ -2,15 +2,23 @@
 #include "GLFW/glfw3.h"
 
 namespace mite {
+// 日志系统
+Logger ViewportInputProcessor::s_Logger = nullptr;
 
 ViewportInputProcessor::ViewportInputProcessor(std::shared_ptr<Camera> camera,
                                                int navigationButton = GLFW_MOUSE_BUTTON_RIGHT)
     : CameraInputProcessor(std::move(camera)), m_NavigationButton(navigationButton)
 {
-    // 注意：
-    // 此处无需重新订阅事件，事件触发后将会自动调用派生类的版本
-    // 例如handleMouseMove()被重写后，MouseMoveEvent触发时，
-    // 会调用ViewportInputProcessor::handleMouseMove。
+  // 首次创建时初始化日志系统
+  if (!s_Logger) {
+    s_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Input Processor: Viewport");
+    s_Logger->trace("Created Input Processor: Viewport");
+  }
+
+  // 注意：
+  // 此处无需重新订阅事件，事件触发后将会自动调用派生类的版本
+  // 例如handleMouseMove()被重写后，MouseMoveEvent触发时，
+  // 会调用ViewportInputProcessor::handleMouseMove。
 }
 
 bool ViewportInputProcessor::handleMouseMove(MouseMoveEvent &e)
@@ -69,5 +77,4 @@ bool ViewportInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
   }
   return CameraInputProcessor::handleKeyEvent(e);  // 返回父类处理结果
 }
-
 }  // namespace mite

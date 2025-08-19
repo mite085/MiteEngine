@@ -2,6 +2,10 @@
 #include "GLFW/glfw3.h"
 
 namespace mite {
+
+// 日志系统
+Logger GizmoInputProcessor::s_Logger = nullptr;
+
 GizmoInputProcessor::GizmoInputProcessor(std::shared_ptr<Camera> camera,
                                          glm::mat4 &transformMatrix)
     : m_Camera(std::move(camera)),
@@ -9,6 +13,11 @@ GizmoInputProcessor::GizmoInputProcessor(std::shared_ptr<Camera> camera,
       m_ViewportPos(0.0, 0.0),
       m_ViewportSize(1080.0, 720.0)
 {
+  // 首次创建时初始化日志系统
+  if (!s_Logger) {
+    s_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Input Processor: Gizmo");
+    s_Logger->trace("Created Input Processor: Gizmo");
+  }
 }
 
 void GizmoInputProcessor::Update(float deltaTime)

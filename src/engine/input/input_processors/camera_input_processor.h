@@ -37,8 +37,7 @@ class CameraInputProcessor : public InputProcessor {
   }
   virtual const std::string GetID() const override
   {
-    static const std::string id = "CameraProcessor";
-    return id;
+    return "CameraProcessor";
   }
 
   // 配置方法
@@ -90,6 +89,9 @@ class CameraInputProcessor : public InputProcessor {
     bool panning = false;
     glm::vec3 moveDirection{0.0f};
   } m_InputState;
+
+  // 静态日志对象
+  static Logger s_Logger;
 };
 
 }  // namespace mite
