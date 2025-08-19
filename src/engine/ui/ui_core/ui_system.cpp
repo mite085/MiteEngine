@@ -7,11 +7,6 @@
 #include "GLFW/glfw3.h"
 
 namespace mite {
-UISystem &UISystem::Instance()
-{
-  static UISystem instance;
-  return instance;
-}
 
 void UISystem::Init(GLFWwindow *window)
 {

@@ -45,6 +45,7 @@ class MiteApplication {
   void NewScene();
   void LoadScene(const std::string &filepath);
   void SaveScene(const std::string &filepath);
+  void LoadDefaultScene();
 
   // 获取子系统
   Window* GetWindow() const { return m_Window.get(); }
@@ -56,23 +57,23 @@ class MiteApplication {
  private:
   // 初始化与清理
   void Initialize();
-  void InitializeInputSystem();
-  void InitializeWindowWithOpenGL();
-  void InitializeRenderWithOpenGL();
-  void InitializeUI();
-  void InitializeAssertManager();
-  void InitializeMaterialSystem();
-  void InitializeSceneCore();
-  void InitializeSceneView();
-  void LoadDefaultScene();
   void CleanUp();
+
+  void InitializeInputSystem();
   void CleanUpInputSystem();
+  void InitializeWindowWithOpenGL();
   void CleanUpWindow();
+  void InitializeRenderWithOpenGL();
   void CleanUpRenderWithOpenGL();
+  void InitializeUI();
   void CleanUpUI();
+  void InitializeAssertManager();
   void CleanUpAssertManager();
+  void InitializeMaterialSystem();
   void CleanUpMaterialSystem();
+  void InitializeSceneCore();
   void CleanUpSceneCore();
+  void InitializeSceneView();
   void CleanUpSceneView();
 
   // 帧循环相关
@@ -109,7 +110,7 @@ class MiteApplication {
   std::unique_ptr<Renderer> m_Renderer;
   std::unique_ptr<Scene> m_Scene;
   std::unique_ptr<SceneView> m_SceneView;
-  //std::unique_ptr<UIManager> m_UIManager;
+  std::unique_ptr<UISystem> m_UISystem;
   std::unique_ptr<MaterialSystem> m_MaterialSystem;
 
   // 状态信息

@@ -53,6 +53,57 @@ void MiteApplication::LoadScene(const std::string &filepath) {}
 
 void MiteApplication::SaveScene(const std::string &filepath) {}
 
+void MiteApplication::LoadDefaultScene()
+{
+  m_logger->info("Loading default scene");
+
+  // 协调各模块，加载初始场景
+
+  // 0. 创建相机，并设定主相机，绑定ViewPort
+  Camera main_camera;
+  main_camera.LookAt({10.0, 10.0, 10.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0});
+  Entity main_camera_entity = m_Scene->CreateEntity("plane_submesh");
+  CameraComponent &main_camera_component = m_Scene->GetRegistry().AddComponent<CameraComponent>(
+      main_camera_entity, std::make_shared<Camera>(main_camera));
+  m_Scene->SetMainCamera(main_camera_entity);
+
+  std::shared_ptr<ViewportPanel> viewportPanel = std::static_pointer_cast<ViewportPanel>(
+      m_UISystem->GetPanel("Viewport"));
+  if (viewportPanel) {
+    viewportPanel->setCamera(std::make_shared<Camera>(main_camera));
+  }
+
+  // 1. 加载模型
+  AssetID plane_model_asset_id = m_AssetManager->LoadModel(
+      FileSystem::GetAssetPath("models/plane.obj").string());
+  Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle);
+
+  for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
+    // 2. 创建网格实体，挂载组件
+    Entity plane_submesh = m_Scene->CreateEntity("plane_submesh");
+    MeshComponent &plane_mesh_component = m_Scene->GetRegistry().AddComponent<MeshComponent>(
+        plane_submesh, plane_model.GetSubMesh(i));
+
+    // 3. 创建材质实例
+    std::shared_ptr<MaterialInstance> plane_material =
+        m_MaterialSystem->CreateInstanceWithOverrides<PureColorMaterialTemplate>(
+            {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
+
+    // 4. 创建材质组件
+    MaterialComponent &plane_material_component =
+        m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh, plane_material);
+
+    // 5. 创建变换组件
+    TransformComponent &plane_transform_component =
+        m_Scene->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
+
+    // 6. 由SceneView自动推入渲染队列（EntityCreatedEvent事件驱动+PendingEntities延迟处理）
+  }
+
+  // 更新场景视图
+  // m_SceneView->SyncFromSceneCore();
+}
+
 void MiteApplication::Initialize()
 {
   m_logger->info("Initialize application");
@@ -72,6 +123,25 @@ void MiteApplication::Initialize()
   InitializeSceneView();  // 依赖SceneCore
   // 加载默认场景
   LoadDefaultScene();
+}
+
+void MiteApplication::CleanUp()
+{
+  m_logger->info("Cleaning up application");
+
+  // 取消事件订阅
+  m_EventSubscriptions.UnsubscribeAll();
+
+  // 按照初始化的倒序，依次CleanUp
+  CleanUpSceneView();
+  CleanUpSceneCore();
+  CleanUpMaterialSystem();
+  CleanUpUI();
+  CleanUpRenderWithOpenGL();
+  CleanUpWindow();
+
+  CleanUpAssertManager();
+  CleanUpInputSystem();
 }
 
 void MiteApplication::InitializeWindowWithOpenGL()
@@ -101,14 +171,15 @@ void MiteApplication::InitializeUI()
   m_logger->info("Initializing user interface");
 
   // 初始化UI系统
-  UISystem::Instance().Init(reinterpret_cast<GLFWwindow *>(m_Window->GetNativeWindow()));
+  m_UISystem = std::make_unique<UISystem>();
+  m_UISystem->Init(reinterpret_cast<GLFWwindow *>(m_Window->GetNativeWindow()));
 
   // 创建ViewportPanel并设置FrameBuffer
   auto viewportPanel = std::make_shared<ViewportPanel>("Viewport");
   viewportPanel->setFramebuffer(m_Renderer->GetViewportFrameBuffer());
 
   // 注册面板到UI系统
-  UISystem::Instance().RegisterPanel("Viewport", viewportPanel);
+  m_UISystem->RegisterPanel("Viewport", viewportPanel);
 }
 
 void MiteApplication::InitializeAssertManager()
@@ -165,71 +236,6 @@ void MiteApplication::InitializeInputSystem()
   // Input::PushContext(editorContext);
 }
 
-void MiteApplication::LoadDefaultScene()
-{
-  m_logger->info("Loading default scene");
-
-  // 协调各模块，加载初始场景
-
-  // 0. 创建相机，并设定主相机
-  Camera main_camera;
-  main_camera.LookAt({10.0, 10.0, 10.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0});
-  Entity main_camera_entity = m_Scene->CreateEntity("plane_submesh");
-  CameraComponent &main_camera_component = m_Scene->GetRegistry().AddComponent<CameraComponent>(
-      main_camera_entity, std::make_shared<Camera>(main_camera));
-  m_Scene->SetMainCamera(main_camera_entity);
-
-  // 1. 加载模型
-  AssetID plane_model_asset_id = m_AssetManager->LoadModel(
-      FileSystem::GetAssetPath("models/plane.obj").string());
-  Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle);
-
-  for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
-    // 2. 创建网格实体，挂载组件
-    Entity plane_submesh = m_Scene->CreateEntity("plane_submesh");
-    MeshComponent &plane_mesh_component = m_Scene->GetRegistry().AddComponent<MeshComponent>(
-        plane_submesh, plane_model.GetSubMesh(i));
-
-    // 3. 创建材质实例
-    std::shared_ptr<MaterialInstance> plane_material =
-        m_MaterialSystem->CreateInstanceWithOverrides<PureColorMaterialTemplate>(
-            {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
-
-    // 4. 创建材质组件
-    MaterialComponent &plane_material_component =
-        m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh, plane_material);
-
-    // 5. 创建变换组件
-    TransformComponent &plane_transform_component =
-        m_Scene->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
-
-    // 6. 由SceneView自动推入渲染队列（EntityCreatedEvent事件驱动+PendingEntities延迟处理）
-  }
-
-  // 更新场景视图
-  // m_SceneView->SyncFromSceneCore();
-}
-
-void MiteApplication::CleanUp()
-{
-  m_logger->info("Cleaning up application");
-
-  // 取消事件订阅
-  m_EventSubscriptions.UnsubscribeAll();
-
-
-  // 按照初始化的倒序，依次CleanUp
-  CleanUpSceneView();
-  CleanUpSceneCore();
-  CleanUpMaterialSystem();
-  CleanUpUI();
-  CleanUpRenderWithOpenGL();
-  CleanUpWindow();
-
-  CleanUpAssertManager();
-  CleanUpInputSystem();
-}
-
 void MiteApplication::CleanUpInputSystem()
 {
   Input::Shutdown();
@@ -247,7 +253,7 @@ void MiteApplication::CleanUpUI()
   m_logger->info("Cleaning up UI");
 
   // 清理所有UI资源
-  UISystem::Instance().Shutdown();
+  m_UISystem->Shutdown();
 }
 
 void MiteApplication::CleanUpAssertManager() {}
@@ -259,7 +265,7 @@ void MiteApplication::CleanUpSceneCore()
   m_Scene->Clear();
 }
 
-void MiteApplication::CleanUpSceneView(){}
+void MiteApplication::CleanUpSceneView() {}
 
 void MiteApplication::BeginFrame()
 {
@@ -307,8 +313,6 @@ void MiteApplication::Render()
     //}
   }
 
-
-
   // TODO: 预览窗口渲染
   // if (m_ShowPreviewWindow) {
   //  RenderPreview();
@@ -319,8 +323,6 @@ void MiteApplication::EndFrame()
 {
   m_Renderer->EndFrame();
 
-
-
   // TODO: 处理延迟释放的资源
   // m_AssetManager->ProcessDeletionQueue();
 }
@@ -330,15 +332,15 @@ void MiteApplication::LimitFrameRate() {}
 void MiteApplication::UpdateFrameStats() {}
 
 void MiteApplication::RenderUI()
-{  
+{
   // 开始UI帧
-  UISystem::Instance().BeginFrame();
+  m_UISystem->BeginFrame();
 
   // 更新UI逻辑（处理输入/动画等）
-  UISystem::Instance().Update(Time::DeltaTime());
+  m_UISystem->Update(Time::DeltaTime());
 
   // 渲染所有UI面板
-  UISystem::Instance().EndFrame();
+  m_UISystem->EndFrame();
 }
 
 void MiteApplication::RenderSceneHierarchy() {}

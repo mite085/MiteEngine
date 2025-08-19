@@ -13,7 +13,6 @@ namespace mite {
  * @brief UI系统核心管理类（简化版，使用传统虚函数）
  *
  * 管理所有UI面板的生命周期、渲染顺序和输入事件分发
- * 单例模式确保全局唯一访问
  *
  * 使用示例：
  * 
@@ -41,8 +40,8 @@ namespace mite {
  */
 class UISystem {
  public:
-  // 获取单例实例
-  static UISystem &Instance();
+  UISystem() = default;
+  ~UISystem() = default;
 
   // 禁止拷贝和移动
   UISystem(const UISystem &) = delete;
@@ -70,8 +69,6 @@ class UISystem {
   void TogglePanelVisible(const std::string &name);
 
  private:
-  UISystem() = default;
-  ~UISystem() = default;
 
   // 面板存储
   std::unordered_map<std::string, std::shared_ptr<UIPanel>> m_panels;
