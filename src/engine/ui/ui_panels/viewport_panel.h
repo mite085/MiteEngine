@@ -1,16 +1,15 @@
 #ifndef MITE_UI_VIEWPORT_PANEL
 #define MITE_UI_VIEWPORT_PANEL
 
-#include "ui_core/ui_panel.h"
-#include "scene_core/entity.h"
-#include "renderer.h"
-#include "input/input.h"
-#include "ui_input_processors/viewport_input_processor.h"
-#include "ui_input_processors/gizmo_input_processor.h"
 #include "basic_data/framebuffer.h"
+#include "input/input.h"
+#include "renderer.h"
+#include "scene_core/entity.h"
+#include "ui_core/ui_panel.h"
+#include "ui_input_processors/gizmo_input_processor.h"
+#include "ui_input_processors/viewport_input_processor.h"
 
 namespace mite {
-
 /**
  * @brief 3D视口面板，负责场景渲染和交互
  *
@@ -65,12 +64,12 @@ class ViewportPanel : public UIPanel {
 
   // 视口状态
   glm::vec2 m_viewportSize = {100.0f, 100.0f};  // 视口当前尺寸
-  glm::vec2 m_viewportBounds[2];            // 视口屏幕边界坐标
-  bool m_viewportFocused = false;           // 视口是否有输入焦点
-  bool m_viewportHovered = false;           // 鼠标是否悬停在视口上
+  glm::vec2 m_viewportBounds[2];                // 视口屏幕边界坐标
+  bool m_viewportFocused = false;               // 视口是否有输入焦点
+  bool m_viewportHovered = false;               // 鼠标是否悬停在视口上
 
   // 渲染资源
-  std::shared_ptr<Camera> m_camera;            // 视口相机
+  std::shared_ptr<Camera> m_camera = nullptr;  // 视口相机
   std::shared_ptr<FrameBuffer> m_framebuffer;  // 场景帧缓冲
 
   // 输入处理
@@ -81,7 +80,6 @@ class ViewportPanel : public UIPanel {
   // 变换状态
   glm::mat4 *m_currentTransform = nullptr;  // 当前操作的变换矩阵(外部管理)
 };
-
-};
+};  // namespace mite
 
 #endif

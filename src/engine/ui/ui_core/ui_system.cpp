@@ -77,6 +77,9 @@ void UISystem::BeginFrame()
                                ImGui::GetMainViewport(),
                                ImGuiDockNodeFlags_PassthruCentralNode  // 常用标志
   );
+
+  // 启用Gizmo的BeginFrame
+  ImGuizmo::BeginFrame();
 }
 
 void UISystem::Update(float deltaTime)
