@@ -1,11 +1,9 @@
 #include "viewport_panel.h"
-#include "imgui.h"
 #include "GLFW/glfw3.h"
+#include "imgui.h"
 
 namespace mite {
-ViewportPanel::ViewportPanel(const std::string &title) : UIPanel(title)
-{
-}
+ViewportPanel::ViewportPanel(const std::string &title) : UIPanel(title) {}
 
 ViewportPanel::~ViewportPanel()
 {
@@ -62,7 +60,6 @@ void ViewportPanel::onRender()
   // 设置视口窗口样式(无内边距)
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
   ImGui::Begin(m_title.c_str(), &m_visible);
-  
 
   // ===== 1. 更新视口状态 =====
   m_viewportFocused = ImGui::IsWindowFocused();
@@ -90,15 +87,15 @@ void ViewportPanel::onRender()
     m_gizmoInput->Update(ImGui::GetIO().DeltaTime);
   }
   // 渲染第一个Gizmo之前需要BeginFrame，该步骤应当放在 UISystem::BeginFrame()中执行
-  
-  //ImGuizmo::ViewManipulate(const_cast<float*>(glm::value_ptr(m_camera->GetViewMatrix())),
-  //                         m_camera->GetDistance(),
-  //                         ImVec2(m_viewportBounds[1].x - 128, m_viewportBounds[0].y),
-  //                         ImVec2(128, 128),
-  //                         0x10101010);
+
+  // ImGuizmo::ViewManipulate(const_cast<float*>(glm::value_ptr(m_camera->GetViewMatrix())),
+  //                          m_camera->GetDistance(),
+  //                          ImVec2(m_viewportBounds[1].x - 128, m_viewportBounds[0].y),
+  //                          ImVec2(128, 128),
+  //                          0x10101010);
 
   // ===== 3. 渲染Gizmo =====
-  // 
+  //
   // 1. 准备 ImGuizmo 的绘制列表和矩形区域（这是为ViewManipulate准备的，不是为主Gizmo）
   ImGuizmo::SetDrawlist();
   float m_viewManipulateSize = 128;
@@ -121,50 +118,50 @@ void ViewportPanel::onRender()
   glm::mat4 oldMatrix{0.0f};
   if (m_currentTransform) {
     oldMatrix = *m_currentTransform;
-  }
 
-  // 4. 调用 ViewManipulate 函数
-  // 这个函数会修改 m_viewManipulateMatrix
-  ImGuizmo::ViewManipulate(glm::value_ptr(*m_currentTransform),  // 被操作的矩阵
-                           5.0f,  // 相机距离（缩放灵敏度）
-                           ImVec2(viewManipulatePos.x, viewManipulatePos.y),    // 位置
-                           ImVec2(m_viewManipulateSize, m_viewManipulateSize),  // 大小
-                           0x10101010  // 背景色（通常设为透明或深色）
-  );
+    // 4. 调用 ViewManipulate 函数
+    // 这个函数会修改 m_viewManipulateMatrix
+    ImGuizmo::ViewManipulate(glm::value_ptr(*m_currentTransform),  // 被操作的矩阵
+                             m_camera->GetDistance(),  // 相机距离（缩放灵敏度）
+                             ImVec2(viewManipulatePos.x, viewManipulatePos.y),    // 位置
+                             ImVec2(m_viewManipulateSize, m_viewManipulateSize),  // 大小
+                             0x10101010  // 背景色（通常设为透明或深色）
+    );
 
-  // 5. 关键步骤：检查矩阵是否被用户操作改变了
-  if (memcmp(glm::value_ptr(oldMatrix), glm::value_ptr(*m_currentTransform), sizeof(float) * 16) !=
-      0)
-  {
-    // 6. 将 ViewManipulate 的矩阵转换为相机的视图矩阵
-    // ViewManipulate 返回的矩阵是世界->视图空间矩阵，可以直接用作视图矩阵
-    glm::mat4 newViewMatrix = *m_currentTransform;
+    // 5. 关键步骤：检查矩阵是否被用户操作改变了
+    if (memcmp(glm::value_ptr(oldMatrix),
+               glm::value_ptr(*m_currentTransform),
+               sizeof(float) * 16) != 0)
+    {
+      // 6. 将 ViewManipulate 的矩阵转换为相机的视图矩阵
+      // ViewManipulate 返回的矩阵是世界->视图空间矩阵，可以直接用作视图矩阵
+      glm::mat4 newViewMatrix = *m_currentTransform;
 
-    // 7. 从新的视图矩阵中提取相机参数
-    // 视图矩阵的逆矩阵就是相机变换矩阵
-    glm::mat4 inverseView = glm::inverse(newViewMatrix);
-    // 提取位置（第四列）、前向向量（第三列）、上向量（第二列）
-    glm::vec3 newPosition = glm::vec3(inverseView[3]);
-    glm::vec3 newForward = -glm::normalize(glm::vec3(newViewMatrix[2]));
-    glm::vec3 newUp = glm::normalize(glm::vec3(newViewMatrix[1]));
+      // 7. 从新的视图矩阵中提取相机参数
+      // 视图矩阵的逆矩阵就是相机变换矩阵
+      glm::mat4 inverseView = glm::inverse(newViewMatrix);
+      // 提取位置（第四列）、前向向量（第三列）、上向量（第二列）
+      glm::vec3 newPosition = glm::vec3(inverseView[3]);
+      glm::vec3 newForward = -glm::normalize(glm::vec3(newViewMatrix[2]));
+      glm::vec3 newUp = glm::normalize(glm::vec3(newViewMatrix[1]));
 
-    // 8. 计算目标点：位置 + 前向方向
-    glm::vec3 newTarget = newPosition + newForward;
+      // 8. 计算目标点：位置 + 前向方向
+      glm::vec3 newTarget = newPosition + newForward;
 
-    // 9. 更新相机
-    if (m_camera) {
-      //m_camera->setPosition(newPosition);
-      //m_camera->setTarget(newTarget);
-      //m_camera->setUp(newUp);
-      //  确保相机的视图矩阵也被更新
-      //m_camera->updateViewMatrix();
-      m_camera->LookAt(newPosition, newTarget, newUp);
+      // 9. 更新相机
+      if (m_camera) {
+        // m_camera->setPosition(newPosition);
+        // m_camera->setTarget(newTarget);
+        // m_camera->setUp(newUp);
+        //   确保相机的视图矩阵也被更新
+        // m_camera->updateViewMatrix();
+        m_camera->LookAt(newPosition, newTarget, newUp);
+      }
+
+      // 标记为已处理，防止其他输入干扰
+      // event.handled = true; // 如果在事件回调中，可能需要这个
     }
-
-    // 标记为已处理，防止其他输入干扰
-    // event.handled = true; // 如果在事件回调中，可能需要这个
   }
-
   ImGui::End();
   ImGui::PopStyleVar();
 }
@@ -238,5 +235,4 @@ bool ViewportPanel::handleViewportEvent(Event &event)
   // 这里只需要转发事件
   return m_inputContext->ProcessEvent(event);
 }
-
-};
+};  // namespace mite

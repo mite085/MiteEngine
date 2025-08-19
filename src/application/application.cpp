@@ -61,7 +61,7 @@ void MiteApplication::LoadDefaultScene()
 
   // 0. 创建相机，并设定主相机，绑定ViewPort
   Camera main_camera;
-  main_camera.LookAt({10.0, 10.0, 10.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0});
+  main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
   Entity main_camera_entity = m_SceneCore->CreateEntity("plane_submesh");
   CameraComponent &main_camera_component = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
       main_camera_entity, std::make_shared<Camera>(main_camera));
@@ -70,7 +70,7 @@ void MiteApplication::LoadDefaultScene()
   std::shared_ptr<ViewportPanel> viewportPanel = std::static_pointer_cast<ViewportPanel>(
       m_UISystem->GetPanel("Viewport"));
   if (viewportPanel) {
-    viewportPanel->setCamera(std::make_shared<Camera>(main_camera));
+    viewportPanel->setCamera(m_SceneCore->GetMainCamera());
   }
 
   // 1. 加载模型
