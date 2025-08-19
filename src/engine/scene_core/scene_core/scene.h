@@ -14,14 +14,14 @@ namespace mite {
  * - 场景状态维护
  * - 序列化支持
  */
-class Scene{
+class SceneCore{
  public:
-  Scene(const std::string &name = "Untitled Scene");
-  ~Scene();
+  SceneCore(const std::string &name = "Untitled Scene");
+  ~SceneCore();
 
   // 禁止拷贝
-  Scene(const Scene &) = delete;
-  Scene &operator=(const Scene &) = delete;
+  SceneCore(const SceneCore &) = delete;
+  SceneCore &operator=(const SceneCore &) = delete;
 
   // ------------------------ 场景管理 ------------------------
   /**

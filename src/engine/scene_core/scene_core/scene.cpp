@@ -2,7 +2,7 @@
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
-Scene::Scene(const std::string &name) : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
+SceneCore::SceneCore(const std::string &name) : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
 {
   // 初始化核心系统
   InitSystems();
@@ -12,12 +12,12 @@ Scene::Scene(const std::string &name) : m_Name(name), m_Registry(), m_SystemMana
   // env.AddComponent<EnvironmentComponent>();
 }
 
-Scene::~Scene()
+SceneCore::~SceneCore()
 {
   Clear(false);
 }
 
-void Scene::InitSystems()
+void SceneCore::InitSystems()
 {
   // 创建核心系统
   //m_SceneGraph = std::make_unique<SceneGraph>();
@@ -28,7 +28,7 @@ void Scene::InitSystems()
   InitComponentSystems();
 }
 
-void Scene::InitComponentSystems()
+void SceneCore::InitComponentSystems()
 {
   // 逐个注册组件系统
   m_SystemManager.RegisterSystem<CameraComponentSystem>();
@@ -45,7 +45,7 @@ void Scene::InitComponentSystems()
   m_SystemManager.InitializeAll();
 }
 
-void Scene::ShutDownComponentSystems()
+void SceneCore::ShutDownComponentSystems()
 {
   // 销毁所有组件系统
   m_SystemManager.ShutdownAll();
@@ -62,7 +62,7 @@ void Scene::ShutDownComponentSystems()
   m_SystemManager.UnregisterSystem<VisibilityComponentSystem>();
 }
 
-void Scene::OnUpdate(float timestep)
+void SceneCore::OnUpdate(float timestep)
 {
   // 更新所有注册的系统
   m_SystemManager.UpdateAll(timestep);
@@ -77,13 +77,13 @@ void Scene::OnUpdate(float timestep)
   }
 }
 
-void Scene::OnRenderPrepare()
+void SceneCore::OnRenderPrepare()
 {
   // 准备场景图渲染状态
   //m_SceneGraph->OnRenderPrepare();
 }
 
-void Scene::Clear(bool keepSystems)
+void SceneCore::Clear(bool keepSystems)
 {
   // 1. 销毁所有实体（不触发单独销毁事件，直接批量清除）
   m_Registry.Clear();
@@ -109,7 +109,7 @@ void Scene::Clear(bool keepSystems)
   }
 }
 
-Entity Scene::CreateEntity(const std::string &name)
+Entity SceneCore::CreateEntity(const std::string &name)
 {
   auto entity = m_Registry.CreateEntity(name);
   ++m_EntityCounter;
@@ -117,7 +117,7 @@ Entity Scene::CreateEntity(const std::string &name)
   return entity;
 }
 
-void Scene::DestroyEntity(Entity entity)
+void SceneCore::DestroyEntity(Entity entity)
 {
   if (!IsValid(entity)) {
     return;
@@ -127,12 +127,12 @@ void Scene::DestroyEntity(Entity entity)
   m_Registry.AddComponent<DestroyComponent>(entity);
 }
 
-bool Scene::IsValid(Entity entity) const
+bool SceneCore::IsValid(Entity entity) const
 {
   return entity && m_Registry.IsValid(entity);
 }
 
-std::shared_ptr<Camera> Scene::GetMainCamera() const
+std::shared_ptr<Camera> SceneCore::GetMainCamera() const
 {
   // 通过访问Camera组件系统，获取到其维护的主相机实体
   std::optional<Entity> mainCameraEntity =
@@ -150,7 +150,7 @@ std::shared_ptr<Camera> Scene::GetMainCamera() const
   return mainCamera;
 }
 
-void Scene::SetMainCamera(Entity mainCameraEntity)
+void SceneCore::SetMainCamera(Entity mainCameraEntity)
 {
   // 通过访问Camera组件系统，更换其维护的主相机实体
   m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);

@@ -50,7 +50,7 @@ class MiteApplication {
   // 获取子系统
   Window* GetWindow() const { return m_Window.get(); }
   Renderer* GetRenderer() const { return m_Renderer.get(); }
-  Scene* GetScene() const { return m_Scene.get(); }
+  SceneCore* GetScene() const { return m_SceneCore.get(); }
   //MaterialSystem* GetMaterialSystem() const { return m_MaterialSystem.get(); }
 
 
@@ -108,7 +108,7 @@ class MiteApplication {
 
   std::unique_ptr<Window> m_Window;
   std::unique_ptr<Renderer> m_Renderer;
-  std::unique_ptr<Scene> m_Scene;
+  std::unique_ptr<SceneCore> m_SceneCore;
   std::unique_ptr<SceneView> m_SceneView;
   std::unique_ptr<UISystem> m_UISystem;
   std::unique_ptr<MaterialSystem> m_MaterialSystem;

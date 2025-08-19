@@ -62,10 +62,10 @@ void MiteApplication::LoadDefaultScene()
   // 0. 创建相机，并设定主相机，绑定ViewPort
   Camera main_camera;
   main_camera.LookAt({10.0, 10.0, 10.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0});
-  Entity main_camera_entity = m_Scene->CreateEntity("plane_submesh");
-  CameraComponent &main_camera_component = m_Scene->GetRegistry().AddComponent<CameraComponent>(
+  Entity main_camera_entity = m_SceneCore->CreateEntity("plane_submesh");
+  CameraComponent &main_camera_component = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
       main_camera_entity, std::make_shared<Camera>(main_camera));
-  m_Scene->SetMainCamera(main_camera_entity);
+  m_SceneCore->SetMainCamera(main_camera_entity);
 
   std::shared_ptr<ViewportPanel> viewportPanel = std::static_pointer_cast<ViewportPanel>(
       m_UISystem->GetPanel("Viewport"));
@@ -80,8 +80,8 @@ void MiteApplication::LoadDefaultScene()
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件
-    Entity plane_submesh = m_Scene->CreateEntity("plane_submesh");
-    MeshComponent &plane_mesh_component = m_Scene->GetRegistry().AddComponent<MeshComponent>(
+    Entity plane_submesh = m_SceneCore->CreateEntity("plane_submesh");
+    MeshComponent &plane_mesh_component = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
         plane_submesh, plane_model.GetSubMesh(i));
 
     // 3. 创建材质实例
@@ -91,11 +91,11 @@ void MiteApplication::LoadDefaultScene()
 
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
-        m_Scene->GetRegistry().AddComponent<MaterialComponent>(plane_submesh, plane_material);
+        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(plane_submesh, plane_material);
 
     // 5. 创建变换组件
     TransformComponent &plane_transform_component =
-        m_Scene->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
+        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
 
     // 6. 由SceneView自动推入渲染队列（EntityCreatedEvent事件驱动+PendingEntities延迟处理）
   }
@@ -195,7 +195,7 @@ void MiteApplication::InitializeSceneCore()
   m_logger->info("Initializing scene core");
 
   // 初始化场景核心
-  m_Scene = std::make_unique<Scene>();
+  m_SceneCore = std::make_unique<SceneCore>();
 }
 
 void MiteApplication::InitializeSceneView()
@@ -203,7 +203,7 @@ void MiteApplication::InitializeSceneView()
   m_logger->info("Initializing scene view");
 
   // 初始化场景视图
-  m_SceneView = std::make_unique<SceneView>(m_Scene->GetRegistry());
+  m_SceneView = std::make_unique<SceneView>(m_SceneCore->GetRegistry());
 }
 
 void MiteApplication::InitializeMaterialSystem()
@@ -262,7 +262,7 @@ void MiteApplication::CleanUpMaterialSystem() {}
 
 void MiteApplication::CleanUpSceneCore()
 {
-  m_Scene->Clear();
+  m_SceneCore->Clear();
 }
 
 void MiteApplication::CleanUpSceneView() {}
@@ -282,7 +282,7 @@ void MiteApplication::BeginFrame()
 void MiteApplication::Update()
 {
   // 更新场景状态(ECS系统更新)
-  m_Scene->OnUpdate(Time::DeltaTime());
+  m_SceneCore->OnUpdate(Time::DeltaTime());
 
   // TODO：处理动画
   UpdateAnimations();
@@ -302,7 +302,7 @@ void MiteApplication::Render()
   // 主场景渲染
   if (m_ShowMainViewport) {
     // 获取主相机
-    auto mainCamera = m_Scene->GetMainCamera();
+    auto mainCamera = m_SceneCore->GetMainCamera();
 
     // 渲染场景
     m_Renderer->RenderScene(mainCamera, m_SceneView->GetRenderQueue());

@@ -1,11 +1,11 @@
 #ifndef MITE_SCENE_SERIALIZER
 #define MITE_SCENE_SERIALIZER
 
-#include "scene_registry.h"
+#include "scene_core/scene_registry.h"
 
 namespace mite {
 // 前向声明
-class Scene;
+class SceneCore;
 
 /**
  * @brief 场景序列化器，负责将场景数据序列化为各种格式以及反序列化
@@ -19,7 +19,7 @@ class SceneSerializer {
    * @brief 构造函数
    * @param scene 要序列化的场景引用
    */
-  explicit SceneSerializer(Scene &scene);
+  explicit SceneSerializer(SceneCore &scene);
 
   /**
    * @brief 序列化场景到文件（JSON格式）
@@ -60,7 +60,7 @@ class SceneSerializer {
 
  private:
   // 场景引用
-  Scene &m_scene;
+  SceneCore &m_scene;
 
   // 存储最后一次错误信息
   std::string m_lastError;
