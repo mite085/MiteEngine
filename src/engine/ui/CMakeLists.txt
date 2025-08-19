@@ -13,30 +13,11 @@ set(UI_CORE_SRCS
 )
 source_group("ui_core" FILES ${UI_CORE_SRCS})
 
-set(UI_PANELS_SRCS
-    ui_panels/inspector_panel.h
-    ui_panels/inspector_panel.cpp
-    ui_panels/viewport_panel.h
-    ui_panels/viewport_panel.cpp
+set(UI_GIZMO_SRCS
+    ui_gizmo/gizmo.h
+    ui_gizmo/gizmo.cpp
 )
-source_group("ui_panels" FILES ${UI_PANELS_SRCS})
-
-set(UI_WIDGETS_SRCS
-    ui_widgets/component_widget.h
-    ui_widgets/component_widget.cpp
-)
-source_group("ui_widgets" FILES ${UI_WIDGETS_SRCS})
-
-set(UI_RESOURCES_SRCS
-    ui_resources/icon.h
-    ui_resources/icon.cpp
-    ui_resources/imgui_style.h
-    ui_resources/imgui_style.cpp
-
-    ui_resources/gizmo.h
-    ui_resources/gizmo.cpp
-)
-source_group("ui_resources" FILES ${UI_RESOURCES_SRCS})
+source_group("ui_gizmo" FILES ${UI_GIZMO_SRCS})
 
 set(UI_INPUT_PROCESSOR_SRCS
     ui_input_processors/gizmo_input_processor.h
@@ -46,14 +27,37 @@ set(UI_INPUT_PROCESSOR_SRCS
 )
 source_group("ui_input_processors" FILES ${UI_INPUT_PROCESSOR_SRCS})
 
+set(UI_PANELS_SRCS
+    ui_panels/inspector_panel.h
+    ui_panels/inspector_panel.cpp
+    ui_panels/viewport_panel.h
+    ui_panels/viewport_panel.cpp
+)
+source_group("ui_panels" FILES ${UI_PANELS_SRCS})
+
+set(UI_RESOURCES_SRCS
+    ui_resources/icon.h
+    ui_resources/icon.cpp
+    ui_resources/imgui_style.h
+    ui_resources/imgui_style.cpp
+)
+source_group("ui_resources" FILES ${UI_RESOURCES_SRCS})
+
+set(UI_WIDGETS_SRCS
+    ui_widgets/component_widget.h
+    ui_widgets/component_widget.cpp
+)
+source_group("ui_widgets" FILES ${UI_WIDGETS_SRCS})
+
 # 创建静态库，添加源代码组
 add_library(${ENGINE_UI_LIB_NAME}
     STATIC
     ${UI_CORE_SRCS}
-    ${UI_PANELS_SRCS}
-    ${UI_WIDGETS_SRCS}
-    ${UI_RESOURCES_SRCS}
+    ${UI_GIZMO_SRCS}
     ${UI_INPUT_PROCESSOR_SRCS}
+    ${UI_PANELS_SRCS}
+    ${UI_RESOURCES_SRCS}
+    ${UI_WIDGETS_SRCS}
 )
 
 # 设置头文件路径（供其他项目包含）
