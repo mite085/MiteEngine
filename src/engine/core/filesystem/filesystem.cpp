@@ -141,12 +141,7 @@ void FileSystem::InitializeAssetRoots()
   // 4. 安装目录
   s_assetRoots.push_back(fs::path(ASSETS_INSTALL_DIR));
 
-  // 5. 环境变量目录
-  if (const char *envPath = std::getenv("ASSETS_PATH")) {
-    s_assetRoots.push_back(fs::path(envPath));
-  }
-
-  // 6. 当前工作目录
+  // 5. 当前工作目录
   s_assetRoots.push_back(fs::current_path() / "assets");
 }
 };

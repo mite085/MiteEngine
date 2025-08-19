@@ -1,5 +1,5 @@
-#ifndef MITE_CORE_FUNCTIONS
-#define MITE_CORE_FUNCTIONS
+#ifndef MITE_RUNTIME
+#define MITE_RUNTIME
 
 #include <string>
 #include <vector>

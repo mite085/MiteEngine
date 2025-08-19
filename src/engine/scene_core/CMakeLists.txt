@@ -22,13 +22,8 @@ set(SCENE_CORE_SRCS
     scene_core/scene_event.cpp
     scene_core/scene_event_callback_adapter.h
     scene_core/scene_event_callback_adapter.cpp
-    scene_core/scene_graph.h
-    scene_core/scene_graph.cpp
     scene_core/scene_registry.h
     scene_core/scene_registry.cpp
-    scene_core/scene_serializer.h
-    scene_core/scene_serializer.cpp
-    
 )
 source_group("core" FILES ${SCENE_CORE_SRCS})
 

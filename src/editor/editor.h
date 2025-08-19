@@ -1,5 +1,5 @@
-#ifndef MITE_CORE_FUNCTIONS
-#define MITE_CORE_FUNCTIONS
+#ifndef MITE_EDITOR
+#define MITE_EDITOR
 
 #include <string>
 #include <vector>

@@ -1,7 +1,5 @@
 #include "scene.h"
 #include "scene_core_components/component_headers.h"
-#include "scene_graph.h"
-#include "scene_serializer.h"
 
 namespace mite {
 Scene::Scene(const std::string &name) : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
@@ -22,9 +20,9 @@ Scene::~Scene()
 void Scene::InitSystems()
 {
   // 创建核心系统
-  m_SceneGraph = std::make_unique<SceneGraph>();
-  m_SceneGraph->Initialize(GetRegistry());
-  m_Serializer = std::make_unique<SceneSerializer>(*this);
+  //m_SceneGraph = std::make_unique<SceneGraph>();
+  //m_SceneGraph->Initialize(GetRegistry());
+  //m_Serializer = std::make_unique<SceneSerializer>(*this);
 
   // 初始化组件系统
   InitComponentSystems();
@@ -70,7 +68,7 @@ void Scene::OnUpdate(float timestep)
   m_SystemManager.UpdateAll(timestep);
 
   // 场景图更新
-  m_SceneGraph->OnUpdate(timestep);
+  //m_SceneGraph->OnUpdate(timestep);
 
   // 处理实体销毁队列
   auto entities = m_Registry.GetEntitiesWith<DestroyComponent>();
@@ -82,7 +80,7 @@ void Scene::OnUpdate(float timestep)
 void Scene::OnRenderPrepare()
 {
   // 准备场景图渲染状态
-  m_SceneGraph->OnRenderPrepare();
+  //m_SceneGraph->OnRenderPrepare();
 }
 
 void Scene::Clear(bool keepSystems)
@@ -96,9 +94,9 @@ void Scene::Clear(bool keepSystems)
   // 3. TODO: 重置主相机
 
   // 4. 重置场景图状态
-  if (m_SceneGraph) {
-    m_SceneGraph->Clear();
-  }
+  //if (m_SceneGraph) {
+  //  m_SceneGraph->Clear();
+  //}
 
   // 6. 根据参数决定是否重置系统
   // TODO：重置其他系统
@@ -158,44 +156,44 @@ void Scene::SetMainCamera(Entity mainCameraEntity)
   m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);
 }
 
-void Scene::Serialize(const std::filesystem::path &filepath)
-{
-  const std::string ext = filepath.extension().string();
-
-  if (ext == ".json") {
-    if (!m_Serializer->SerializeToJson(filepath.string()))
-      throw std::runtime_error("JSON serialization failed: " + m_Serializer->GetLastError());
-  }
-  else if (ext == ".bin") {
-    if (!m_Serializer->SerializeToBinary(filepath.string()))
-      throw std::runtime_error("Binary serialization failed: " + m_Serializer->GetLastError());
-  }
-  else {
-    throw std::runtime_error("Unsupported file extension: " + ext);
-  }
-}
-void Scene::Deserialize(const std::filesystem::path &filepath)
-{
-  if (!m_Serializer) {
-    throw std::runtime_error("Serializer not initialized");
-  }
-
-  if (!std::filesystem::exists(filepath)) {
-    throw std::runtime_error("File not found: " + filepath.string());
-  }
-
-  const std::string ext = filepath.extension().string();
-
-  if (ext == ".json") {
-    if (!m_Serializer->DeserializeFromJson(filepath.string()))
-      throw std::runtime_error("JSON deserialization failed: " + m_Serializer->GetLastError());
-  }
-  else if (ext == ".bin") {
-    if (!m_Serializer->DeserializeFromBinary(filepath.string()))
-      throw std::runtime_error("Binary deserialization failed: " + m_Serializer->GetLastError());
-  }
-  else {
-    throw std::runtime_error("Unsupported file extension: " + ext);
-  }
-}
+//void Scene::Serialize(const std::filesystem::path &filepath)
+//{
+//  const std::string ext = filepath.extension().string();
+//
+//  if (ext == ".json") {
+//    if (!m_Serializer->SerializeToJson(filepath.string()))
+//      throw std::runtime_error("JSON serialization failed: " + m_Serializer->GetLastError());
+//  }
+//  else if (ext == ".bin") {
+//    if (!m_Serializer->SerializeToBinary(filepath.string()))
+//      throw std::runtime_error("Binary serialization failed: " + m_Serializer->GetLastError());
+//  }
+//  else {
+//    throw std::runtime_error("Unsupported file extension: " + ext);
+//  }
+//}
+//void Scene::Deserialize(const std::filesystem::path &filepath)
+//{
+//  if (!m_Serializer) {
+//    throw std::runtime_error("Serializer not initialized");
+//  }
+//
+//  if (!std::filesystem::exists(filepath)) {
+//    throw std::runtime_error("File not found: " + filepath.string());
+//  }
+//
+//  const std::string ext = filepath.extension().string();
+//
+//  if (ext == ".json") {
+//    if (!m_Serializer->DeserializeFromJson(filepath.string()))
+//      throw std::runtime_error("JSON deserialization failed: " + m_Serializer->GetLastError());
+//  }
+//  else if (ext == ".bin") {
+//    if (!m_Serializer->DeserializeFromBinary(filepath.string()))
+//      throw std::runtime_error("Binary deserialization failed: " + m_Serializer->GetLastError());
+//  }
+//  else {
+//    throw std::runtime_error("Unsupported file extension: " + ext);
+//  }
+//}
 }  // namespace mite

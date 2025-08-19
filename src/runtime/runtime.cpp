@@ -1,4 +1,4 @@
-#include "core_functions.h"
+#include "runtime.h"
 
 namespace mite {
 bool CoreFunctions::StringMatchWildcard(const std::string &str, const std::string &pattern)

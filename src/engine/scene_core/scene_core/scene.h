@@ -5,10 +5,6 @@
 #include "basic_data/camera.h"
 
 namespace mite {
-// 前向声明
-class SceneGraph;
-class SceneSerializer;
-
 /**
  * @brief 场景类 - 管理所有实体、组件和系统的主容器
  *
@@ -85,13 +81,13 @@ class Scene{
    * @brief 序列化场景到文件
    * @param filepath 文件路径
    */
-  void Serialize(const std::filesystem::path &filepath);
+  //void Serialize(const std::filesystem::path &filepath);
 
   /**
    * @brief 从文件反序列化场景
    * @param filepath 文件路径
    */
-  void Deserialize(const std::filesystem::path &filepath);
+  //void Deserialize(const std::filesystem::path &filepath);
 
   // ------------------------ 模块访问 ------------------------
   /**
@@ -132,8 +128,8 @@ class Scene{
   SceneRegistry m_Registry;  
 
   // 场景系统
-  std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统
-  std::unique_ptr<SceneSerializer> m_Serializer;   // 序列化系统
+  //std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统
+  //std::unique_ptr<SceneSerializer> m_Serializer;   // 序列化系统
 
 
   // 系统管理
