@@ -3,7 +3,6 @@
 #include "input/input_manager.h"
 
 namespace mite {
-
 // 日志系统
 Logger CameraInputProcessor::s_Logger = nullptr;
 
@@ -105,63 +104,45 @@ bool CameraInputProcessor::handleMouseScroll(MouseScrollEvent &e)
 
 bool CameraInputProcessor::handleKeyPressedEvent(KeyPressedEvent &e)
 {
-  const bool pressed = true;
-  const float value = pressed ? 1.0f : 0.0f;
-
-  // WASD移动控制
-  switch (e.GetKey()) {
-    case GLFW_KEY_W:
-      m_InputState.moveDirection.z = value;
-      return true;
-    case GLFW_KEY_S:
-      m_InputState.moveDirection.z = -value;
-      return true;
-    case GLFW_KEY_A:
-      m_InputState.moveDirection.x = -value;
-      return true;
-    case GLFW_KEY_D:
-      m_InputState.moveDirection.x = value;
-      return true;
-    case GLFW_KEY_Q:
-      m_InputState.moveDirection.y = -value;
-      return true;
-    case GLFW_KEY_E:
-      m_InputState.moveDirection.y = value;
-      return true;
-    default:
-      s_Logger->error("Invalid camera input key-code: {}", e.GetKey());
-      return false;  // 未处理的按键
-  }
+  // 记录按键按下状态
+  m_InputState.keyStates[e.GetKey()] = true;
+  UpdateMoveDirection();
+  return true;
 }
 
 bool CameraInputProcessor::handleKeyReleasedEvent(KeyReleasedEvent &e)
 {
-  const bool pressed = false;
-  const float value = pressed ? 1.0f : 0.0f;
+  // 记录按键释放状态
+  m_InputState.keyStates[e.GetKey()] = false;
+  UpdateMoveDirection();
+  return true;
+}
 
-  // WASD移动控制
-  switch (e.GetKey()) {
-    case GLFW_KEY_W:
-      m_InputState.moveDirection.z = value;
-      return true;  
-    case GLFW_KEY_S:
-      m_InputState.moveDirection.z = -value;
-      return true;
-    case GLFW_KEY_A:
-      m_InputState.moveDirection.x = -value;
-      return true;
-    case GLFW_KEY_D:
-      m_InputState.moveDirection.x = value;
-      return true;
-    case GLFW_KEY_Q:
-      m_InputState.moveDirection.y = -value;
-      return true;
-    case GLFW_KEY_E:
-      m_InputState.moveDirection.y = value;
-      return true;
-    default:
-      s_Logger->error("Invalid camera input key-code: {}", e.GetKey());
-      return false;  // 未处理的按键
+void CameraInputProcessor::UpdateMoveDirection()
+{
+  // 重置移动方向
+  m_InputState.moveDirection = glm::vec3(0.0f);
+
+  // 根据所有按键状态计算最终移动方向（避免按键竞争，当WS同时按下时，互相抵消）
+  if (m_InputState.keyStates[GLFW_KEY_W])
+    // 与GetForwardVector()相乘，W按键(前进)为正
+    m_InputState.moveDirection.z += 1.0f;   
+  if (m_InputState.keyStates[GLFW_KEY_S])
+    m_InputState.moveDirection.z -= 1.0f;
+  if (m_InputState.keyStates[GLFW_KEY_A])
+    m_InputState.moveDirection.x -= 1.0f;
+  if (m_InputState.keyStates[GLFW_KEY_D])
+    // 与GetRightVector()相乘，R按键(向右)为正
+    m_InputState.moveDirection.x += 1.0f;   
+  if (m_InputState.keyStates[GLFW_KEY_Q])
+    m_InputState.moveDirection.y -= 1.0f;
+  if (m_InputState.keyStates[GLFW_KEY_E])
+    // 与GetUpVector()相乘，E按键(向上)为正
+    m_InputState.moveDirection.y += 1.0f;   
+
+  // 可选：归一化对角线移动
+  if (glm::length(m_InputState.moveDirection) > 1.0f) {
+    m_InputState.moveDirection = glm::normalize(m_InputState.moveDirection);
   }
 }
 

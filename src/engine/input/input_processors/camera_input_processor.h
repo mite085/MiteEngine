@@ -79,6 +79,9 @@ class CameraInputProcessor : public InputProcessor {
   virtual bool handleKeyPressedEvent(KeyPressedEvent &e);
   virtual bool handleKeyReleasedEvent(KeyReleasedEvent &e);
 
+  // 更新移动方向
+  void UpdateMoveDirection();
+
   std::shared_ptr<Camera> m_Camera;
   glm::vec2 m_LastMousePos{0.0f, 0.0f};
 
@@ -89,9 +92,11 @@ class CameraInputProcessor : public InputProcessor {
 
   // 输入状态
   struct {
-    bool rotating = false;
-    bool panning = false;
-    glm::vec3 moveDirection{0.0f};
+    bool rotating = false;  // 鼠标右键控制旋转
+    bool panning = false;   // 鼠标中键控制平移
+
+    glm::vec3 moveDirection{0.0f}; // 记录键盘运动方向
+    std::unordered_map<int, bool> keyStates;  // 存储每个按键的状态
   } m_InputState;
 
   // 静态日志对象
