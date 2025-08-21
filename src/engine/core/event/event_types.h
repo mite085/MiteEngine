@@ -6,13 +6,11 @@ namespace mite {
 // 如 flags = EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD;
 // 表示flags既是输入事件又是键盘事件。
 // 使用flags & (EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD) != 0,判断类别是否符合
-// （一般来说，键盘输入和鼠标输入事件触发频率极高，分开处理可以降低处理压力）
+// （键盘鼠标分开意义不大，合并到EVENT_CATEGORY_INPUT了）
 enum EventCategory {
   None = 0,
   EVENT_CATEGORY_WINDOW = 1 << 0,    // 窗口事件
-  EVENT_CATEGORY_INPUT = 1 << 1,     // 输入事件
-  EVENT_CATEGORY_KEYBOARD = 1 << 2,  // 键盘输入事件
-  EVENT_CATEGORY_MOUSE = 1 << 3,     // 鼠标输入事件
+  EVENT_CATEGORY_INPUT = 1 << 1,     // 键盘/鼠标输入事件
   EVENT_CATEGORY_EDITOR = 1 << 4,    // 编辑器特定事件
   EVENT_CATEGORY_CUSTOM = 1 << 5,    // 用户自定义事件
 
@@ -32,12 +30,10 @@ enum class EventType {
   WINDOW_LOST_FOCUS,
   WINDOW_MOVED,
 
-  // EventCategoryKeyboard 键盘输入事件 ============================
+  // EVENT_CATEGORY_INPUT 键盘鼠标输入事件 ============================
   KEY_PRESSED,
   KEY_RELEASED,
   KEY_TYPED,
-
-  // EventCategoryMouse 鼠标输入事件 ===============================
   MOUSE_BUTTON_PRESSED,
   MOUSE_BUTTON_RELEASED,
   MOUSE_POSITION_MOVED,

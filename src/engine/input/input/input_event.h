@@ -29,7 +29,7 @@ class MouseMoveEvent : public Event {
   }
 
   EVENT_CLASS_TYPE(MOUSE_POSITION_MOVED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_MOUSE)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
     return new MouseMoveEvent(xpos, ypos);
@@ -72,7 +72,7 @@ class MouseButtonPressedEvent : public Event {
   }
 
   EVENT_CLASS_TYPE(MOUSE_BUTTON_PRESSED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_MOUSE)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
     return new MouseButtonPressedEvent(button, mods, xpos, ypos);
@@ -111,7 +111,7 @@ class MouseButtonReleasedEvent : public Event {
   }
 
   EVENT_CLASS_TYPE(MOUSE_BUTTON_RELEASED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_MOUSE)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
     return new MouseButtonReleasedEvent(button, xpos, ypos);
@@ -163,7 +163,7 @@ class MouseScrollEvent : public Event {
   }
 
   EVENT_CLASS_TYPE(MOUSE_SCROLLED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_MOUSE)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
 
   Event *Clone() const override
   {
@@ -203,7 +203,7 @@ class KeyPressedEvent : public Event {
   }
 
   EVENT_CLASS_TYPE(KEY_PRESSED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
     return new KeyPressedEvent(key, mods, isRepeated);
@@ -230,7 +230,7 @@ class KeyReleasedEvent : public Event {
   }
 
   EVENT_CLASS_TYPE(KEY_RELEASED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
     return new KeyReleasedEvent(key);
@@ -269,7 +269,7 @@ class KeyTypedEvent : public Event {
     return (m_Codepoint < 128) ? static_cast<char>(m_Codepoint) : '\0';
   }
   EVENT_CLASS_TYPE(KEY_TYPED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
     return new KeyTypedEvent(m_Codepoint);
