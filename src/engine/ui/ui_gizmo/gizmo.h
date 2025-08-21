@@ -1,12 +1,11 @@
 #ifndef MITE_GIZMO_H
 #define MITE_GIZMO_H
 
-#include "imgui.h"
-#include "ImGuizmo.h"
 #include "basic_data/camera.h"
+#include "imgui.h"
+#include "imguizmo.h"
 
 namespace mite {
-
 /**
  * @brief Gizmo工具类，封装ImGuizmo的核心功能
  */
@@ -17,6 +16,13 @@ class Gizmo {
   // 设置操作模式
   void SetOperation(ImGuizmo::OPERATION operation);
   void SetMode(ImGuizmo::MODE mode);
+
+  // 显示/隐藏控制
+  void Show();                    // 显示Gizmo
+  void Hide();                    // 隐藏Gizmo
+  void Toggle();                  // 切换显示/隐藏状态
+  bool IsVisible() const;         // 检查是否可见
+  void SetVisible(bool visible);  // 设置可见性
 
   /**
    * @brief 执行Gizmo操作
@@ -48,8 +54,8 @@ class Gizmo {
   ImGuizmo::MODE m_Mode = ImGuizmo::MODE::LOCAL;
   bool m_IsUsing = false;
   bool m_IsOver = false;
+  bool m_IsVisible = true;  // 默认可见
 };
-
 }  // namespace mite
 
 #endif  // MITE_GIZMO_H

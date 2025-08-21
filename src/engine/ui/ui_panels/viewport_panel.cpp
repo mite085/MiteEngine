@@ -3,7 +3,7 @@
 #include "imgui.h"
 
 namespace mite {
-ViewportPanel::ViewportPanel(const std::string &title) : UIPanel(title) {}
+ViewportPanel::ViewportPanel(const std::string &title) : UIPanel(title){}
 
 ViewportPanel::~ViewportPanel()
 {
@@ -17,17 +17,12 @@ void ViewportPanel::onAttach()
 {
   // 创建模块化输入上下文
   m_inputContext = std::make_shared<ModularInputContext>("Viewport");
-  m_inputContext->SetBlockInput(true);
+  m_inputContext->SetBlockInput(false);
 
   // 初始化视口导航处理器
   if (m_camera) {
     m_viewportInput = std::make_shared<ViewportInputProcessor>(m_camera, GLFW_MOUSE_BUTTON_RIGHT);
     m_inputContext->AddProcessor(m_viewportInput);
-  }
-  // 初始化Gizmo处理器
-  if (m_camera && m_currentTransform) {
-    m_gizmoInput = std::make_shared<GizmoInputProcessor>(m_camera, *m_currentTransform);
-    m_inputContext->AddProcessor(m_gizmoInput);
   }
 
   // 注册输入上下文
@@ -77,7 +72,7 @@ void ViewportPanel::onRender()
   }
 
   // ===== 3. 渲染Gizmo =====
-
+  ImGuizmo::SetDrawlist();
   if (m_currentTransform && m_gizmoInput) {
     // 设置Gizmo操作区域
     m_gizmoInput->SetViewportRect(glm::vec2(m_viewportBounds[0].x, m_viewportBounds[0].y),
@@ -88,80 +83,9 @@ void ViewportPanel::onRender()
   }
   // 渲染第一个Gizmo之前需要BeginFrame，该步骤应当放在 UISystem::BeginFrame()中执行
 
-  // ImGuizmo::ViewManipulate(const_cast<float*>(glm::value_ptr(m_camera->GetViewMatrix())),
-  //                          m_camera->GetDistance(),
-  //                          ImVec2(m_viewportBounds[1].x - 128, m_viewportBounds[0].y),
-  //                          ImVec2(128, 128),
-  //                          0x10101010);
+  // ===== 4. 绘制ViewManipulate =====
+  DrawViewManipulate();
 
-  // ===== 3. 渲染Gizmo =====
-  //
-  // 1. 准备 ImGuizmo 的绘制列表和矩形区域（这是为ViewManipulate准备的，不是为主Gizmo）
-  ImGuizmo::SetDrawlist();
-  float m_viewManipulateSize = 128;
-  // 将小方块放置在视口的右上角
-  ImVec2 viewManipulatePos = ImVec2(
-      m_viewportBounds[1].x - m_viewManipulateSize - 10.0f,  // 视口右边界 - 大小 - 边距
-      m_viewportBounds[0].y + 10.0f                          // 视口上边界 + 边距
-  );
-  ImGuizmo::SetRect(
-      viewManipulatePos.x, viewManipulatePos.y, m_viewManipulateSize, m_viewManipulateSize);
-
-  // 2. 获取当前相机的视图矩阵和投影矩阵
-  // 注意：这里使用正交投影用于ViewManipulate控件本身，不影响主视口的透视投影
-  glm::mat4 view = m_camera->GetViewMatrix();
-  glm::mat4 projection = m_camera->GetProjectionMatrix();
-  // 为ViewManipulate创建一个正交投影
-  glm::mat4 orthoProjection = glm::ortho(-0.8f, 0.8f, -0.8f, 0.8f, 0.1f, 100.f);
-
-  // 3. 保存操作前的矩阵（用于检测是否发生变化）
-  glm::mat4 oldMatrix{0.0f};
-  if (m_currentTransform) {
-    oldMatrix = *m_currentTransform;
-
-    // 4. 调用 ViewManipulate 函数
-    // 这个函数会修改 m_viewManipulateMatrix
-    ImGuizmo::ViewManipulate(glm::value_ptr(*m_currentTransform),  // 被操作的矩阵
-                             m_camera->GetDistance(),  // 相机距离（缩放灵敏度）
-                             ImVec2(viewManipulatePos.x, viewManipulatePos.y),    // 位置
-                             ImVec2(m_viewManipulateSize, m_viewManipulateSize),  // 大小
-                             0x10101010  // 背景色（通常设为透明或深色）
-    );
-
-    // 5. 关键步骤：检查矩阵是否被用户操作改变了
-    if (memcmp(glm::value_ptr(oldMatrix),
-               glm::value_ptr(*m_currentTransform),
-               sizeof(float) * 16) != 0)
-    {
-      // 6. 将 ViewManipulate 的矩阵转换为相机的视图矩阵
-      // ViewManipulate 返回的矩阵是世界->视图空间矩阵，可以直接用作视图矩阵
-      glm::mat4 newViewMatrix = *m_currentTransform;
-
-      // 7. 从新的视图矩阵中提取相机参数
-      // 视图矩阵的逆矩阵就是相机变换矩阵
-      glm::mat4 inverseView = glm::inverse(newViewMatrix);
-      // 提取位置（第四列）、前向向量（第三列）、上向量（第二列）
-      glm::vec3 newPosition = glm::vec3(inverseView[3]);
-      glm::vec3 newForward = -glm::normalize(glm::vec3(newViewMatrix[2]));
-      glm::vec3 newUp = glm::normalize(glm::vec3(newViewMatrix[1]));
-
-      // 8. 计算目标点：位置 + 前向方向
-      glm::vec3 newTarget = newPosition + newForward;
-
-      // 9. 更新相机
-      if (m_camera) {
-        // m_camera->setPosition(newPosition);
-        // m_camera->setTarget(newTarget);
-        // m_camera->setUp(newUp);
-        //   确保相机的视图矩阵也被更新
-        // m_camera->updateViewMatrix();
-        m_camera->LookAt(newPosition, newTarget, newUp);
-      }
-
-      // 标记为已处理，防止其他输入干扰
-      // event.handled = true; // 如果在事件回调中，可能需要这个
-    }
-  }
   ImGui::End();
   ImGui::PopStyleVar();
 }
@@ -181,10 +105,10 @@ void ViewportPanel::setCamera(std::shared_ptr<Camera> camera)
 {
   m_camera = std::move(camera);
 
-  if (m_currentTransform) {
-    delete m_currentTransform;
+  if (m_currentCameraTransform) {
+    delete m_currentCameraTransform;
   }
-  m_currentTransform = new glm::mat4(m_camera->GetViewMatrix());
+  m_currentCameraTransform = new glm::mat4(m_camera->GetViewMatrix());
 
   if (m_viewportInput) {
     m_viewportInput->SetCamera(m_camera);
@@ -234,5 +158,56 @@ bool ViewportPanel::handleViewportEvent(Event &event)
   // 实际事件处理由ModularInputContext管理
   // 这里只需要转发事件
   return m_inputContext->ProcessEvent(event);
+}
+void ViewportPanel::DrawViewManipulate()
+{
+  // 1. 准备 ViewManipulate 的绘制列表和矩形区域
+  float m_viewManipulateSize = 128;
+  // 将小方块放置在视口的右上角
+  ImVec2 viewManipulatePos = ImVec2(
+      m_viewportBounds[1].x - m_viewManipulateSize - 10.0f,  // 视口右边界 - 大小 - 边距
+      m_viewportBounds[0].y + 10.0f                          // 视口上边界 + 边距
+  );
+  ImGuizmo::SetRect(
+      viewManipulatePos.x, viewManipulatePos.y, m_viewManipulateSize, m_viewManipulateSize);
+
+  // 2. 获取当前相机的视图矩阵和投影矩阵
+  // 注意：这里使用正交投影用于ViewManipulate控件本身，不影响主视口的透视投影
+  glm::mat4 view = m_camera->GetViewMatrix();
+  glm::mat4 projection = m_camera->GetProjectionMatrix();
+  // 为ViewManipulate创建一个正交投影
+  glm::mat4 orthoProjection = glm::ortho(-0.8f, 0.8f, -0.8f, 0.8f, 0.1f, 100.f);
+
+  // 3. 保存操作前的矩阵（用于检测是否发生变化）
+  glm::mat4 oldMatrix{0.0f};
+
+  float m_ViewMatrixBuffer[16];  // 中间缓冲区
+  std::memcpy(m_ViewMatrixBuffer, glm::value_ptr(view), 16 * sizeof(float));
+
+  oldMatrix = *m_currentCameraTransform;
+
+  // 4. 调用 ViewManipulate 函数
+  // 这个函数会修改 m_viewManipulateMatrix
+  ImGuizmo::ViewManipulate(glm::value_ptr(*m_currentCameraTransform),  // 被操作的矩阵
+                           m_camera->GetDistance(),  // 相机距离（缩放灵敏度）
+                           ImVec2(viewManipulatePos.x, viewManipulatePos.y),    // 位置
+                           ImVec2(m_viewManipulateSize, m_viewManipulateSize),  // 大小
+                           0x10101010  // 背景色（通常设为透明或深色）
+  );
+
+  // 5. 关键步骤：检查矩阵是否被用户操作改变了
+  if (memcmp(glm::value_ptr(oldMatrix),
+             glm::value_ptr(*m_currentCameraTransform),
+             sizeof(float) * 16) !=
+      0)
+  {
+    // 9. 更新相机
+    if (m_camera) {
+      m_camera->SetViewMatrix(*m_currentCameraTransform);
+    }
+
+    // 标记为已处理，防止其他输入干扰
+    // event.handled = true; // 如果在事件回调中，可能需要这个
+  }
 }
 };  // namespace mite

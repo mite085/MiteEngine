@@ -59,20 +59,6 @@ void MiteApplication::LoadDefaultScene()
 
   // 协调各模块，加载初始场景
 
-  // 0. 创建相机，并设定主相机，绑定ViewPort
-  Camera main_camera;
-  main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
-  Entity main_camera_entity = m_SceneCore->CreateEntity("plane_submesh");
-  CameraComponent &main_camera_component = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
-      main_camera_entity, std::make_shared<Camera>(main_camera));
-  m_SceneCore->SetMainCamera(main_camera_entity);
-
-  std::shared_ptr<ViewportPanel> viewportPanel = std::static_pointer_cast<ViewportPanel>(
-      m_UISystem->GetPanel("Viewport"));
-  if (viewportPanel) {
-    viewportPanel->setCamera(m_SceneCore->GetMainCamera());
-  }
-
   // 1. 加载模型
   AssetID plane_model_asset_id = m_AssetManager->LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string());
@@ -117,10 +103,13 @@ void MiteApplication::Initialize()
 
   InitializeWindowWithOpenGL();
   InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行
-  InitializeUI();
+  
   InitializeMaterialSystem();
   InitializeSceneCore();
   InitializeSceneView();  // 依赖SceneCore
+
+  InitializeUI();   // 必须在Window创建GL上下文后执行
+
   // 加载默认场景
   LoadDefaultScene();
 }
@@ -178,6 +167,14 @@ void MiteApplication::InitializeUI()
   auto viewportPanel = std::make_shared<ViewportPanel>("Viewport");
   viewportPanel->setFramebuffer(m_Renderer->GetViewportFrameBuffer());
 
+  // 绑定MainCamera
+  // 注意：
+  // 该步骤需要在RegisterPanel之前执行，
+  // 因为调用OnAttach创建InputContext需要使用到Camera
+  if (viewportPanel) {
+    viewportPanel->setCamera(m_SceneCore->GetMainCamera());
+  }
+
   // 注册面板到UI系统
   m_UISystem->RegisterPanel("Viewport", viewportPanel);
 }
@@ -196,6 +193,15 @@ void MiteApplication::InitializeSceneCore()
 
   // 初始化场景核心
   m_SceneCore = std::make_unique<SceneCore>();
+
+  // 创建并绑定主相机（该步骤是否应当放在SceneCore构造函数内完成？)
+  Camera main_camera;
+  main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
+  Entity main_camera_entity = m_SceneCore->CreateEntity("main_camera");
+  CameraComponent &main_camera_component =
+      m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
+          main_camera_entity, std::make_shared<Camera>(main_camera));
+  m_SceneCore->SetMainCamera(main_camera_entity);
 }
 
 void MiteApplication::InitializeSceneView()
