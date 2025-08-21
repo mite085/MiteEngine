@@ -169,16 +169,16 @@ std::shared_ptr<UIPanel> UISystem::GetPanel(const std::string &name)
   return nullptr;
 }
 
-bool UISystem::ProcessEvent(Event &event)
-{
-  // 从后往前处理面板事件（保证顶层面板优先）
-  for (auto it = m_panelOrder.rbegin(); it != m_panelOrder.rend(); ++it) {
-    if (auto &panel = m_panels[*it]; panel->isVisible() && panel->onEvent(event)) {
-      return true;
-    }
-  }
-  return false;
-}
+//bool UISystem::ProcessEvent(Event &event)
+//{
+//  // 从后往前处理面板事件（保证顶层面板优先）
+//  for (auto it = m_panelOrder.rbegin(); it != m_panelOrder.rend(); ++it) {
+//    if (auto &panel = m_panels[*it]; panel->isVisible() && panel->onEvent(event)) {
+//      return true;
+//    }
+//  }
+//  return false;
+//}
 
 void UISystem::SetPanelVisible(const std::string &name, bool visible)
 {

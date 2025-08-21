@@ -14,10 +14,10 @@ namespace mite {
  * @brief 3D视口面板，负责场景渲染和交互
  *
  * 核心功能：
- * 1. 显示3D场景渲染结果
- * 2. 提供相机导航控制
- * 3. 支持Gizmo物体操作
- * 4. 管理视口输入状态
+ * 1. 显示3D场景渲染结果（通过ImGui::Image绘制Framebuffer）
+ * 2. 提供相机导航控制（通过ViewportInputProcessor控制Camera）
+ * 3. 支持Gizmo物体操作（通过GizmoInputProcessor控制Entity）
+ * 4. 显示右上角视图控件（通过ImGuizmo::ViewManipulate绘制）
  */
 class ViewportPanel : public UIPanel {
  public:

@@ -69,21 +69,6 @@ bool Gizmo::Manipulate(glm::mat4 &transformMatrix,
   return manipulated;
 }
 
-void Gizmo::DecomposeTransform(const glm::mat4 &transform,
-                               glm::vec3 &translation,
-                               glm::vec3 &rotation,
-                               glm::vec3 &scale)
-{
-  // 使用glm的分解函数
-  glm::quat orientation;
-  glm::vec3 skew;
-  glm::vec4 perspective;
-  glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
-  // 将四元数转换为欧拉角
-  rotation = glm::degrees(glm::eulerAngles(orientation));
-}
-
 bool Gizmo::IsUsing() const
 {
   return m_IsUsing;

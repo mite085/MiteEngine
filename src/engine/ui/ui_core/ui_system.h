@@ -17,25 +17,25 @@ namespace mite {
  * 使用示例：
  * 
  * // 初始化
- * UISystem::Instance().Init(window);
+ * m_UISystem.Init(window);
 
  * // 注册面板
  * auto viewportPanel = std::make_shared<ViewportPanel>();
- * UISystem::Instance().RegisterPanel("Viewport", viewportPanel);
+ * m_UISystem.RegisterPanel("Viewport", viewportPanel);
  *
  * // 主循环中
  * while (running) {
- *     UISystem::Instance().BeginFrame();
+ *     m_UISystem.BeginFrame();
  *
  *    // 更新逻辑...
- *    UISystem::Instance().Update(deltaTime);
+ *    m_UISystem.Update(deltaTime);
  *
  *    // 渲染逻辑...
- *    UISystem::Instance().EndFrame();
+ *    m_UISystem.EndFrame();
  * }
  *
  * // 关闭时
- * UISystem::Instance().Shutdown();
+ * m_UISystem.Shutdown();
  * 
  */
 class UISystem {
@@ -61,8 +61,8 @@ class UISystem {
   void Update(float deltaTime);
   void EndFrame();
 
-  // 事件处理
-  bool ProcessEvent(Event &event);
+  //// 事件处理
+  //bool ProcessEvent(Event &event);
 
   // 面板可见性控制
   void SetPanelVisible(const std::string &name, bool visible);

@@ -1,9 +1,10 @@
 #include "viewport_panel.h"
 #include "GLFW/glfw3.h"
 #include "imgui.h"
+#include "ImGuizmo.h"
 
 namespace mite {
-ViewportPanel::ViewportPanel(const std::string &title) : UIPanel(title){}
+ViewportPanel::ViewportPanel(const std::string &title) : UIPanel(title) {}
 
 ViewportPanel::~ViewportPanel()
 {
@@ -166,15 +167,11 @@ void ViewportPanel::DrawViewManipulate()
       viewManipulatePos.x, viewManipulatePos.y, m_viewManipulateSize, m_viewManipulateSize);
 
   // 2. 获取当前相机的视图矩阵和投影矩阵
-  // 注意：这里使用正交投影用于ViewManipulate控件本身，不影响主视口的透视投影
   m_currentCameraViewTransform = m_camera->GetViewMatrix();
   glm::mat4 projection = m_camera->GetProjectionMatrix();
-  // 为ViewManipulate创建一个正交投影
-  glm::mat4 orthoProjection = glm::ortho(-0.8f, 0.8f, -0.8f, 0.8f, 0.1f, 100.f);
 
   // 3. 保存操作前的矩阵（用于检测是否发生变化）
   glm::mat4 oldMatrix = m_currentCameraViewTransform;
-
 
   // 4. 调用 ViewManipulate 函数
   // 这个函数会修改 m_viewManipulateMatrix
@@ -182,22 +179,18 @@ void ViewportPanel::DrawViewManipulate()
                            m_camera->GetDistance(),  // 相机距离（缩放灵敏度）
                            ImVec2(viewManipulatePos.x, viewManipulatePos.y),    // 位置
                            ImVec2(m_viewManipulateSize, m_viewManipulateSize),  // 大小
-                           0x10101010  // 背景色（通常设为透明或深色）
+                           0x00000000  // 背景色（通常设为透明或深色）
   );
 
   // 5. 关键步骤：检查矩阵是否被用户操作改变了
   if (memcmp(glm::value_ptr(oldMatrix),
              glm::value_ptr(m_currentCameraViewTransform),
-             sizeof(float) * 16) !=
-      0)
+             sizeof(float) * 16) != 0)
   {
-    // 9. 更新相机
+    // 6. 更新相机
     if (m_camera) {
       m_camera->SetViewMatrix(m_currentCameraViewTransform);
     }
-
-    // 标记为已处理，防止其他输入干扰
-    // event.handled = true; // 如果在事件回调中，可能需要这个
   }
 }
 };  // namespace mite

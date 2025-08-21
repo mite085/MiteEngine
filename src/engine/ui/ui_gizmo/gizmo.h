@@ -43,12 +43,6 @@ class Gizmo {
   ImGuizmo::OPERATION GetOperation() const;
   ImGuizmo::MODE GetMode() const;
 
-  // 矩阵分解工具
-  static void DecomposeTransform(const glm::mat4 &transform,
-                                 glm::vec3 &translation,
-                                 glm::vec3 &rotation,
-                                 glm::vec3 &scale);
-
  private:
   ImGuizmo::OPERATION m_Operation = ImGuizmo::OPERATION::TRANSLATE;
   ImGuizmo::MODE m_Mode = ImGuizmo::MODE::LOCAL;
