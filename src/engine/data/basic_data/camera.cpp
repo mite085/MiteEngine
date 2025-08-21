@@ -44,10 +44,27 @@ void Camera::SetAspectRatio(float aspect)
 void Camera::LookAt(const glm::vec3 &position, const glm::vec3 &target, const glm::vec3 &up)
 {
   m_ViewMatrix = glm::lookAt(position, target, up);
+
+  // 从视图矩阵计算欧拉角
+  glm::mat3 rotationMat = glm::mat3(m_ViewMatrix);
+  rotationMat = glm::transpose(rotationMat);  // 视图矩阵的旋转部分是逆矩阵
+
+  // 从旋转矩阵提取欧拉角（Y-X-Z顺序，避免万向节死锁）
+  m_RotationEuler.y = glm::degrees(atan2(-rotationMat[2][0], rotationMat[0][0]));  // yaw
+  m_RotationEuler.x = glm::degrees(asin(rotationMat[1][0]));                       // pitch
+  m_RotationEuler.z = 0.0f;  // 强制无翻滚
 }
 void Camera::SetViewMatrix(const glm::mat4 &view)
 {
   m_ViewMatrix = view;
+
+  // 从视图矩阵计算欧拉角
+  glm::mat3 rotationMat = glm::mat3(view);
+  rotationMat = glm::transpose(rotationMat);
+
+  m_RotationEuler.y = glm::degrees(atan2(-rotationMat[2][0], rotationMat[0][0]));  // yaw
+  m_RotationEuler.x = glm::degrees(asin(rotationMat[1][0]));                       // pitch
+  m_RotationEuler.z = 0.0f;
 }
 
 // === 矩阵获取 ===
@@ -110,7 +127,7 @@ glm::vec3 Camera::GetForwardVector() const
 
  float Camera::GetDistance() const
 {
-  // 计算相机位置到世界原点的距离（假设观察目标为原点）
+  // 计算相机位置到世界原点的距离
   return glm::length(GetPosition());
 }
 
@@ -118,27 +135,15 @@ glm::vec3 Camera::GetForwardVector() const
 
 void Camera::Rotate(float yaw, float pitch)
 {
-  // 获取当前朝向和上向量
-  const glm::vec3 forward = GetForwardVector();
-  const glm::vec3 up = GetUpVector();
+  // 累积旋转角度
+  m_RotationEuler.y += yaw;    // 偏航（绕Y轴）
+  m_RotationEuler.x += pitch;  // 俯仰（绕X轴）
 
-  // 构造当前旋转四元数
-  const glm::quat orientation = glm::quatLookAt(forward, up);
+  // 限制俯仰角度避免翻转
+  m_RotationEuler.x = glm::clamp(m_RotationEuler.x, -89.0f, 89.0f);
 
-  // 创建偏航和俯仰旋转四元数
-  const glm::quat yawRot = glm::angleAxis(glm::radians(-yaw), glm::vec3(0, 1, 0));
-  const glm::quat pitchRot = glm::angleAxis(glm::radians(pitch), GetRightVector());
-
-  // 组合旋转
-  const glm::quat newOrientation = yawRot * orientation * pitchRot;
-
-  // 计算新方向向量
-  const glm::vec3 newForward = newOrientation * glm::vec3(0, 0, -1);  // 四元数旋转向量
-  const glm::vec3 newUp = newOrientation * glm::vec3(0, 1, 0);
-
-  // 更新视图矩阵
-  const glm::vec3 position = GetPosition();
-  LookAt(position, position + newForward, newUp);
+  // 从旋转重建视图矩阵
+  RecalculateViewFromRotation();
 }
 
 void Camera::Pan(float right, float up)
@@ -165,13 +170,33 @@ void Camera::Zoom(float amount)
 
 void Camera::Move(const glm::vec3 &direction)
 {
-  // 直接修改视图矩阵的平移分量
+  // 只移动位置，保持当前旋转
   glm::vec3 position = GetPosition();
   position += direction;
-  LookAt(position, position + GetForwardVector(), GetUpVector());
+
+  // 使用当前旋转重新构建视图矩阵
+  RecalculateViewFromRotation();
 }
 
 // === 辅助方法 ===
+
+void Camera::RecalculateViewFromRotation()
+{
+  // 从欧拉角计算旋转四元数
+  glm::quat rotation = glm::quat(glm::radians(m_RotationEuler));
+
+  // 计算方向向量
+  glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
+  glm::vec3 up = rotation * glm::vec3(0, 1, 0);
+
+  // 防止相机翻滚，强制上向量与世界Y轴对齐
+  glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+  up = glm::normalize(glm::cross(right, forward));
+
+  // 构建视图矩阵
+  glm::vec3 position = GetPosition();
+  m_ViewMatrix = glm::lookAt(position, position + forward, up);
+}
 
 void Camera::RecalculateProjection()
 {

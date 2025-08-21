@@ -59,6 +59,7 @@ class Camera {
 
  private:
   // 辅助方法
+  void RecalculateViewFromRotation();
   void RecalculateProjection();
 
   // 投影类型，默认透视
@@ -77,6 +78,9 @@ class Camera {
 
   glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
   glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
+
+  // 存储累积的欧拉角
+  glm::vec3 m_RotationEuler = glm::vec3(0.0f);  
 };
 };  // namespace mite
 
