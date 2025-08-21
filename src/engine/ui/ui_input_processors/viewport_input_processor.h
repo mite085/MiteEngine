@@ -50,7 +50,8 @@ class ViewportInputProcessor : public CameraInputProcessor {
   bool handleMouseButtonPressed(MouseButtonPressedEvent &e) override;
   bool handleMouseButtonReleased(MouseButtonReleasedEvent &e) override;
   bool handleMouseScroll(MouseScrollEvent &e) override;
-  bool handleKeyEvent(KeyReleasedEvent &e) override;
+  bool handleKeyPressedEvent(KeyPressedEvent &e) override;
+  bool handleKeyReleasedEvent(KeyReleasedEvent &e) override;
 
  private:
   int m_NavigationButton;

@@ -65,7 +65,8 @@ class CameraInputProcessor : public InputProcessor {
     dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_DISPATCH_FN(handleMouseButtonPressed));
     dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_DISPATCH_FN(handleMouseButtonReleased));
     dispatcher.Dispatch<MouseScrollEvent>(BIND_DISPATCH_FN(handleMouseScroll));
-    dispatcher.Dispatch<KeyReleasedEvent>(BIND_DISPATCH_FN(handleKeyEvent));
+    dispatcher.Dispatch<KeyPressedEvent>(BIND_DISPATCH_FN(handleKeyPressedEvent));
+    dispatcher.Dispatch<KeyReleasedEvent>(BIND_DISPATCH_FN(handleKeyReleasedEvent));
     return e.handled;
   }
 
@@ -75,13 +76,14 @@ class CameraInputProcessor : public InputProcessor {
   virtual bool handleMouseButtonPressed(MouseButtonPressedEvent &e);
   virtual bool handleMouseButtonReleased(MouseButtonReleasedEvent &e);
   virtual bool handleMouseScroll(MouseScrollEvent &e);
-  virtual bool handleKeyEvent(KeyReleasedEvent &e);
+  virtual bool handleKeyPressedEvent(KeyPressedEvent &e);
+  virtual bool handleKeyReleasedEvent(KeyReleasedEvent &e);
 
   std::shared_ptr<Camera> m_Camera;
   glm::vec2 m_LastMousePos{0.0f, 0.0f};
 
   // ¿ØÖÆ²ÎÊý
-  float m_MoveSpeed = 0.5f;
+  float m_MoveSpeed = 5.0f;
   float m_RotationSpeed = 0.5f;
   float m_ZoomSpeed = 2.0f;
 

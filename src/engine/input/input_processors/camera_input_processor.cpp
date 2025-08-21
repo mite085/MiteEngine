@@ -47,7 +47,7 @@ bool CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
   }
   else if (m_InputState.panning) {
     // 中键平移视角
-    m_Camera->Pan(-delta.x * m_MoveSpeed, delta.y * m_MoveSpeed);
+    m_Camera->Pan(-delta.x * float(0.01) * m_MoveSpeed, delta.y * float(0.01) * m_MoveSpeed);
     return true;  // 事件已处理
   }
 
@@ -102,9 +102,40 @@ bool CameraInputProcessor::handleMouseScroll(MouseScrollEvent &e)
   return true;  // 滚轮事件始终视为已处理
 }
 
-bool CameraInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
+bool CameraInputProcessor::handleKeyPressedEvent(KeyPressedEvent &e)
 {
-  const bool pressed = (e.GetEventType() == EventType::KEY_RELEASED);
+  const bool pressed = true;
+  const float value = pressed ? 1.0f : 0.0f;
+
+  // WASD移动控制
+  switch (e.GetKey()) {
+    case GLFW_KEY_W:
+      m_InputState.moveDirection.z = -value;
+      return true;  // 事件已处理
+    case GLFW_KEY_S:
+      m_InputState.moveDirection.z = value;
+      return true;
+    case GLFW_KEY_A:
+      m_InputState.moveDirection.x = -value;
+      return true;
+    case GLFW_KEY_D:
+      m_InputState.moveDirection.x = value;
+      return true;
+    case GLFW_KEY_Q:
+      m_InputState.moveDirection.y = -value;
+      return true;
+    case GLFW_KEY_E:
+      m_InputState.moveDirection.y = value;
+      return true;
+    default:
+      s_Logger->error("Invalid camera input key-code: {}", e.GetKey());
+      return false;  // 未处理的按键
+  }
+}
+
+bool CameraInputProcessor::handleKeyReleasedEvent(KeyReleasedEvent &e)
+{
+  const bool pressed = false;
   const float value = pressed ? 1.0f : 0.0f;
 
   // WASD移动控制

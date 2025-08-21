@@ -93,12 +93,22 @@ bool ViewportInputProcessor::handleMouseScroll(MouseScrollEvent &e)
   return CameraInputProcessor::handleMouseScroll(e);  // 返回父类处理结果
 }
 
-bool ViewportInputProcessor::handleKeyEvent(KeyReleasedEvent &e)
+bool ViewportInputProcessor::handleKeyPressedEvent(KeyPressedEvent &e)
 {
   // 只在视口有焦点时处理
   if (!m_ViewportFocused) {
     return false;
   }
-  return CameraInputProcessor::handleKeyEvent(e);  // 返回父类处理结果
+  return CameraInputProcessor::handleKeyPressedEvent(e);  // 返回父类处理结果
 }
+
+bool ViewportInputProcessor::handleKeyReleasedEvent(KeyReleasedEvent &e)
+{
+  // 只在视口有焦点时处理
+  if (!m_ViewportFocused) {
+    return false;
+  }
+  return CameraInputProcessor::handleKeyReleasedEvent(e);  // 返回父类处理结果
+}
+
 }  // namespace mite
