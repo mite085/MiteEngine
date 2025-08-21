@@ -111,10 +111,10 @@ bool CameraInputProcessor::handleKeyPressedEvent(KeyPressedEvent &e)
   // WASD移动控制
   switch (e.GetKey()) {
     case GLFW_KEY_W:
-      m_InputState.moveDirection.z = -value;
-      return true;  // 事件已处理
-    case GLFW_KEY_S:
       m_InputState.moveDirection.z = value;
+      return true;
+    case GLFW_KEY_S:
+      m_InputState.moveDirection.z = -value;
       return true;
     case GLFW_KEY_A:
       m_InputState.moveDirection.x = -value;
@@ -142,10 +142,10 @@ bool CameraInputProcessor::handleKeyReleasedEvent(KeyReleasedEvent &e)
   // WASD移动控制
   switch (e.GetKey()) {
     case GLFW_KEY_W:
-      m_InputState.moveDirection.z = -value;
-      return true;  // 事件已处理
-    case GLFW_KEY_S:
       m_InputState.moveDirection.z = value;
+      return true;  
+    case GLFW_KEY_S:
+      m_InputState.moveDirection.z = -value;
       return true;
     case GLFW_KEY_A:
       m_InputState.moveDirection.x = -value;

@@ -15,6 +15,12 @@ namespace mite {
  * 注意：
  * - 不依赖ECS，纯数学工具类
  * - 与TransformComponent协同工作
+ * 
+ * 对于标准的视图矩阵（GLM列主序，m_ViewMatrix[0]表示第一列）
+ * [ Right.x  Up.x  -Forward.x  Position.x ]
+ * [ Right.y  Up.y  -Forward.y  Position.y ]
+ * [ Right.z  Up.z  -Forward.z  Position.z ]
+ * [ 0        0     0           1          ]
  */
 class Camera {
  public:

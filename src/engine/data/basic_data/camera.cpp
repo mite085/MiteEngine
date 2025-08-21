@@ -64,13 +64,13 @@ void Camera::SetViewMatrix(const glm::mat4 &view)
   glm::mat4 inverseView = glm::inverse(view);
   m_Position = glm::vec3(inverseView[3]);
 
-  // 从视图矩阵计算欧拉角
+  // 从视图矩阵提取旋转矩阵（视图矩阵的左上3x3是相机到世界的旋转）
   glm::mat3 rotationMat = glm::mat3(view);
-  rotationMat = glm::transpose(rotationMat);
 
-  m_RotationEuler.y = glm::degrees(atan2(-rotationMat[2][0], rotationMat[0][0]));  // yaw
-  m_RotationEuler.x = glm::degrees(asin(rotationMat[1][0]));                       // pitch
-  m_RotationEuler.z = 0.0f;
+  // 更新欧拉角
+  m_RotationEuler.y = glm::degrees(atan2(rotationMat[0][2], rotationMat[2][2]));  // yaw
+  m_RotationEuler.x = glm::degrees(asin(-rotationMat[1][2]));                     // pitch
+  m_RotationEuler.z = glm::degrees(atan2(rotationMat[1][0], rotationMat[1][1]));  // roll
 }
 
 // === 矩阵获取 ===
@@ -118,17 +118,50 @@ glm::vec3 Camera::GetPosition() const
 
 glm::vec3 Camera::GetRightVector() const
 {
-  return glm::normalize(glm::vec3(m_ViewMatrix[0]));
+  // （复用RecalculateViewFromRotation代码段）
+  // 从欧拉角计算旋转四元数
+  glm::quat rotation = glm::quat(glm::radians(m_RotationEuler));
+  // 计算方向向量
+  glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
+  glm::vec3 up = rotation * glm::vec3(0, 1, 0);
+
+  // 防止相机翻滚，强制上向量与世界Y轴对齐
+  glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+  up = glm::normalize(glm::cross(right, forward));
+
+  return right;
 }
 
 glm::vec3 Camera::GetUpVector() const
 {
-  return glm::normalize(glm::vec3(m_ViewMatrix[1]));
+  // （复用RecalculateViewFromRotation代码段）
+  // 从欧拉角计算旋转四元数
+  glm::quat rotation = glm::quat(glm::radians(m_RotationEuler));
+  // 计算方向向量
+  glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
+  glm::vec3 up = rotation * glm::vec3(0, 1, 0);
+
+  // 防止相机翻滚，强制上向量与世界Y轴对齐
+  glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+  up = glm::normalize(glm::cross(right, forward));
+
+  return up;
 }
 
 glm::vec3 Camera::GetForwardVector() const
 {
-  return -glm::normalize(glm::vec3(m_ViewMatrix[2]));
+  // （复用RecalculateViewFromRotation代码段）
+  // 从欧拉角计算旋转四元数
+  glm::quat rotation = glm::quat(glm::radians(m_RotationEuler));
+  // 计算方向向量
+  glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
+  glm::vec3 up = rotation * glm::vec3(0, 1, 0);
+
+  // 防止相机翻滚，强制上向量与世界Y轴对齐
+  glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+  up = glm::normalize(glm::cross(right, forward));
+
+  return forward;
 }
 
  float Camera::GetDistance() const
