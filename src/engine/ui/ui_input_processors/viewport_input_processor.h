@@ -47,7 +47,8 @@ class ViewportInputProcessor : public CameraInputProcessor {
  protected:
   // 重写事件处理方法，增加视口状态检查
   bool handleMouseMove(MouseMoveEvent &e) override;
-  bool handleMouseButton(MouseButtonReleasedEvent &e) override;
+  bool handleMouseButtonPressed(MouseButtonPressedEvent &e) override;
+  bool handleMouseButtonReleased(MouseButtonReleasedEvent &e) override;
   bool handleMouseScroll(MouseScrollEvent &e) override;
   bool handleKeyEvent(KeyReleasedEvent &e) override;
 

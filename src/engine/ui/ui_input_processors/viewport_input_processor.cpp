@@ -30,14 +30,14 @@ bool ViewportInputProcessor::handleMouseMove(MouseMoveEvent &e)
   return CameraInputProcessor::handleMouseMove(e);  // 返回父类处理结果
 }
 
-bool ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
+bool ViewportInputProcessor::handleMouseButtonPressed(MouseButtonPressedEvent &e)
 {
   // 只在视口有焦点且悬停时处理
   if (!m_ViewportHovered || !m_ViewportFocused) {
     return false;
   }
 
-  const bool pressed = (e.GetEventType() == EventType::MOUSE_BUTTON_PRESSED);
+  const bool pressed = true;
 
   // 使用配置的导航按钮替代硬编码的右键
   if (e.GetButton() == m_NavigationButton) {
@@ -54,6 +54,30 @@ bool ViewportInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
+    return true;  // 已处理该事件
+  }
+
+  return false;  // 未处理其他按钮事件
+}
+
+bool ViewportInputProcessor::handleMouseButtonReleased(MouseButtonReleasedEvent &e)
+{
+  // 只在视口有焦点且悬停时处理
+  if (!m_ViewportHovered || !m_ViewportFocused) {
+    return false;
+  }
+
+  const bool pressed = false;
+
+  // 使用配置的导航按钮替代硬编码的右键
+  if (e.GetButton() == m_NavigationButton) {
+    m_InputState.rotating = pressed;
+    return true;  // 已处理该事件
+  }
+
+  // 保留中键平移功能
+  if (e.GetButton() == GLFW_MOUSE_BUTTON_MIDDLE) {
+    m_InputState.panning = pressed;
     return true;  // 已处理该事件
   }
 

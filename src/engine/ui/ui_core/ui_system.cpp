@@ -7,12 +7,24 @@
 #include "GLFW/glfw3.h"
 
 namespace mite {
-
-void UISystem::Init(GLFWwindow *window)
+UISystem::UISystem()
 {
   // 初始化LOGGER
   m_logger = mite::LoggerSystem::CreateModuleLogger("Mite Engine UI");
   m_logger->info("Create logger for user interface");
+
+  // 订阅EventBus中的输入事件，按照EventCategory大类订阅，由ProcessEvent分发
+  m_EventHandlerID = EventBus::Get().SubscribeByCategory(EventCategory::EVENT_CATEGORY_INPUT,
+                                                         [this](Event &e) { ProcessEvent(e); });
+}
+UISystem::~UISystem()
+{  
+  // 取消订阅EventBus
+  EventBus::Get().Unsubscribe(m_EventHandlerID);
+}
+
+void UISystem::Init(GLFWwindow *window)
+{
 
   // 初始化ImGui上下文
   IMGUI_CHECKVERSION();
@@ -39,7 +51,7 @@ void UISystem::Init(GLFWwindow *window)
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init("#version 410");
 
-  LOG_INFO("UI System initialized (using virtual functions)");
+  m_logger->info("UI System initialized");
 }
 
 void UISystem::Shutdown()
@@ -61,7 +73,7 @@ void UISystem::Shutdown()
     m_imguiContext = nullptr;
   }
 
-  LOG_INFO("UI System shutdown");
+  m_logger->info("UI System shutdown");
 }
 
 void UISystem::BeginFrame()
@@ -158,7 +170,7 @@ std::shared_ptr<UIPanel> UISystem::GetPanel(const std::string &name)
   return nullptr;
 }
 
-bool UISystem::OnEvent(Event &event)
+bool UISystem::ProcessEvent(Event &event)
 {
   // 从后往前处理面板事件（保证顶层面板优先）
   for (auto it = m_panelOrder.rbegin(); it != m_panelOrder.rend(); ++it) {

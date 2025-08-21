@@ -40,8 +40,8 @@ namespace mite {
  */
 class UISystem {
  public:
-  UISystem() = default;
-  ~UISystem() = default;
+  UISystem();
+  ~UISystem();
 
   // 禁止拷贝和移动
   UISystem(const UISystem &) = delete;
@@ -62,7 +62,7 @@ class UISystem {
   void EndFrame();
 
   // 事件处理
-  bool OnEvent(Event &event);
+  bool ProcessEvent(Event &event);
 
   // 面板可见性控制
   void SetPanelVisible(const std::string &name, bool visible);
@@ -77,6 +77,9 @@ class UISystem {
   // ImGui上下文
   ImGuiContext *m_imguiContext = nullptr;
   bool m_frameStarted = false;
+
+  // 事件订阅ID，用于取消订阅EventBus
+  EventBus::HandlerID m_EventHandlerID;  
 
   // 日志系统
   Logger m_logger;

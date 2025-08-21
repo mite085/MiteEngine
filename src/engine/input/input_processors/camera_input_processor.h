@@ -62,7 +62,8 @@ class CameraInputProcessor : public InputProcessor {
   {
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<MouseMoveEvent>(BIND_DISPATCH_FN(handleMouseMove));
-    dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_DISPATCH_FN(handleMouseButton));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_DISPATCH_FN(handleMouseButtonPressed));
+    dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_DISPATCH_FN(handleMouseButtonReleased));
     dispatcher.Dispatch<MouseScrollEvent>(BIND_DISPATCH_FN(handleMouseScroll));
     dispatcher.Dispatch<KeyReleasedEvent>(BIND_DISPATCH_FN(handleKeyEvent));
     return e.handled;
@@ -71,7 +72,8 @@ class CameraInputProcessor : public InputProcessor {
  protected:
   // 事件处理辅助方法
   virtual bool handleMouseMove(MouseMoveEvent &e);
-  virtual bool handleMouseButton(MouseButtonReleasedEvent &e);
+  virtual bool handleMouseButtonPressed(MouseButtonPressedEvent &e);
+  virtual bool handleMouseButtonReleased(MouseButtonReleasedEvent &e);
   virtual bool handleMouseScroll(MouseScrollEvent &e);
   virtual bool handleKeyEvent(KeyReleasedEvent &e);
 
@@ -79,7 +81,7 @@ class CameraInputProcessor : public InputProcessor {
   glm::vec2 m_LastMousePos{0.0f, 0.0f};
 
   // 控制参数
-  float m_MoveSpeed = 5.0f;
+  float m_MoveSpeed = 0.5f;
   float m_RotationSpeed = 0.5f;
   float m_ZoomSpeed = 2.0f;
 

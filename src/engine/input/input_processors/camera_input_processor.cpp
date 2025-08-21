@@ -47,16 +47,16 @@ bool CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
   }
   else if (m_InputState.panning) {
     // 中键平移视角
-    m_Camera->Pan(-delta.x * 0.01f * m_MoveSpeed, delta.y * 0.01f * m_MoveSpeed);
+    m_Camera->Pan(-delta.x * m_MoveSpeed, delta.y * m_MoveSpeed);
     return true;  // 事件已处理
   }
 
   return false;  // 默认返回未处理
 }
 
-bool CameraInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
+bool CameraInputProcessor::handleMouseButtonPressed(MouseButtonPressedEvent &e)
 {
-  const bool pressed = (e.GetEventType() == EventType::MOUSE_BUTTON_RELEASED);
+  const bool pressed = true;
 
   if (e.GetButton() == GLFW_MOUSE_BUTTON_RIGHT) {
     // 右键旋转控制
@@ -72,6 +72,24 @@ bool CameraInputProcessor::handleMouseButton(MouseButtonReleasedEvent &e)
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
+    return true;  // 事件已处理
+  }
+
+  return false;  // 未处理其他按钮事件
+}
+
+bool CameraInputProcessor::handleMouseButtonReleased(MouseButtonReleasedEvent &e)
+{
+  const bool pressed = false;
+
+  if (e.GetButton() == GLFW_MOUSE_BUTTON_RIGHT) {
+    // 右键旋转控制
+    m_InputState.rotating = pressed;
+    return true;  // 事件已处理
+  }
+  else if (e.GetButton() == GLFW_MOUSE_BUTTON_MIDDLE) {
+    // 中键平移控制
+    m_InputState.panning = pressed;
     return true;  // 事件已处理
   }
 

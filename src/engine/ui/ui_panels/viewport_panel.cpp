@@ -81,9 +81,8 @@ void ViewportPanel::onRender()
     // 更新Gizmo状态
     m_gizmoInput->Update(ImGui::GetIO().DeltaTime);
   }
-  // 渲染第一个Gizmo之前需要BeginFrame，该步骤应当放在 UISystem::BeginFrame()中执行
 
-  // ===== 4. 绘制ViewManipulate =====
+  // ===== 4. 绘制界面右上角ViewManipulate =====
   DrawViewManipulate();
 
   ImGui::End();
@@ -159,6 +158,7 @@ bool ViewportPanel::handleViewportEvent(Event &event)
   // 这里只需要转发事件
   return m_inputContext->ProcessEvent(event);
 }
+
 void ViewportPanel::DrawViewManipulate()
 {
   // 1. 准备 ViewManipulate 的绘制列表和矩形区域
