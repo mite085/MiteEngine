@@ -45,6 +45,9 @@ void Camera::LookAt(const glm::vec3 &position, const glm::vec3 &target, const gl
 {
   m_ViewMatrix = glm::lookAt(position, target, up);
 
+  // 更新位置坐标
+  m_Position = position;
+
   // 从视图矩阵计算欧拉角
   glm::mat3 rotationMat = glm::mat3(m_ViewMatrix);
   rotationMat = glm::transpose(rotationMat);  // 视图矩阵的旋转部分是逆矩阵
@@ -57,6 +60,10 @@ void Camera::LookAt(const glm::vec3 &position, const glm::vec3 &target, const gl
 void Camera::SetViewMatrix(const glm::mat4 &view)
 {
   m_ViewMatrix = view;
+
+  // 更新位置：视图矩阵的逆矩阵的平移分量就是相机位置
+  glm::mat4 inverseView = glm::inverse(view);
+  m_Position = glm::vec3(inverseView[3]);
 
   // 从视图矩阵计算欧拉角
   glm::mat3 rotationMat = glm::mat3(view);
@@ -107,7 +114,7 @@ float Camera::GetAspectRatio() const
 }
 glm::vec3 Camera::GetPosition() const
 {
-  return -glm::vec3(m_ViewMatrix[3]) * glm::mat3(m_ViewMatrix);
+  return m_Position;
 }
 
 glm::vec3 Camera::GetRightVector() const
@@ -170,9 +177,8 @@ void Camera::Zoom(float amount)
 
 void Camera::Move(const glm::vec3 &direction)
 {
-  // 只移动位置，保持当前旋转
-  glm::vec3 position = GetPosition();
-  position += direction;
+  // 直接更新位置状态
+  m_Position += direction;
 
   // 使用当前旋转重新构建视图矩阵
   RecalculateViewFromRotation();
@@ -194,15 +200,16 @@ void Camera::RecalculateViewFromRotation()
   up = glm::normalize(glm::cross(right, forward));
 
   // 构建视图矩阵
-  glm::vec3 position = GetPosition();
-  m_ViewMatrix = glm::lookAt(position, position + forward, up);
+  m_ViewMatrix = glm::lookAt(m_Position, m_Position + forward, up);
 }
 
 void Camera::RecalculateProjection()
 {
+  // 透视相机
   if (m_ProjectionType == ProjectionType::Perspective) {
     m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_Aspect, m_Near, m_Far);
   }
+  // 正交相机
   else if (m_ProjectionType == ProjectionType::Orthographic) {
     float width = m_OrthoSize * m_Aspect;
     float height = m_OrthoSize;

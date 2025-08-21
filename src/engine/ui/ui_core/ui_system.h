@@ -79,7 +79,7 @@ class UISystem {
   bool m_frameStarted = false;
 
   // 事件订阅ID，用于取消订阅EventBus
-  EventBus::HandlerID m_EventHandlerID;  
+  //EventBus::HandlerID m_EventHandlerID;  
 
   // 日志系统
   Logger m_logger;

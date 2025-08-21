@@ -14,13 +14,13 @@ UISystem::UISystem()
   m_logger->info("Create logger for user interface");
 
   // 订阅EventBus中的输入事件，按照EventCategory大类订阅，由ProcessEvent分发
-  m_EventHandlerID = EventBus::Get().SubscribeByCategory(EventCategory::EVENT_CATEGORY_INPUT,
-                                                         [this](Event &e) { ProcessEvent(e); });
+  //m_EventHandlerID = EventBus::Get().SubscribeByCategory(EventCategory::EVENT_CATEGORY_INPUT,
+  //                                                       [this](Event &e) { ProcessEvent(e); });
 }
 UISystem::~UISystem()
 {  
   // 取消订阅EventBus
-  EventBus::Get().Unsubscribe(m_EventHandlerID);
+  //EventBus::Get().Unsubscribe(m_EventHandlerID);
 }
 
 void UISystem::Init(GLFWwindow *window)
