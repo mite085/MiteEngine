@@ -43,19 +43,18 @@ void Camera::SetAspectRatio(float aspect)
 
 void Camera::LookAt(const glm::vec3 &position, const glm::vec3 &target, const glm::vec3 &up)
 {
-  m_ViewMatrix = glm::lookAt(position, target, up);
-
-  // 更新位置坐标
   m_Position = position;
 
-  // 从视图矩阵计算欧拉角
-  glm::mat3 rotationMat = glm::mat3(m_ViewMatrix);
-  rotationMat = glm::transpose(rotationMat);  // 视图矩阵的旋转部分是逆矩阵
+  // 计算看向目标的方向向量
+  glm::vec3 direction = glm::normalize(target - position);
 
-  // 从旋转矩阵提取欧拉角（Y-X-Z顺序，避免万向节死锁）
-  m_RotationEuler.y = glm::degrees(atan2(-rotationMat[2][0], rotationMat[0][0]));  // yaw
-  m_RotationEuler.x = glm::degrees(asin(rotationMat[1][0]));                       // pitch
-  m_RotationEuler.z = 0.0f;  // 强制无翻滚
+  // 直接从方向向量计算欧拉角
+  m_RotationEuler.y = glm::degrees(atan2(-direction.x, -direction.z));  // yaw
+  m_RotationEuler.x = glm::degrees(asin(direction.y));               // pitch
+  m_RotationEuler.z = 0.0f;
+
+  // 然后用欧拉角构建视图矩阵
+  RecalculateViewFromRotation();
 }
 void Camera::SetViewMatrix(const glm::mat4 &view)
 {

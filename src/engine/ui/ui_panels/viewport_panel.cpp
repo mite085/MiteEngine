@@ -104,11 +104,6 @@ void ViewportPanel::setCamera(std::shared_ptr<Camera> camera)
 {
   m_camera = std::move(camera);
 
-  if (m_currentCameraTransform) {
-    delete m_currentCameraTransform;
-  }
-  m_currentCameraTransform = new glm::mat4(m_camera->GetViewMatrix());
-
   if (m_viewportInput) {
     m_viewportInput->SetCamera(m_camera);
   }
@@ -155,8 +150,7 @@ void ViewportPanel::updateViewportSize()
 bool ViewportPanel::handleViewportEvent(Event &event)
 {
   // 实际事件处理由ModularInputContext管理
-  // 这里只需要转发事件
-  return m_inputContext->ProcessEvent(event);
+  return true;
 }
 
 void ViewportPanel::DrawViewManipulate()
@@ -173,22 +167,18 @@ void ViewportPanel::DrawViewManipulate()
 
   // 2. 获取当前相机的视图矩阵和投影矩阵
   // 注意：这里使用正交投影用于ViewManipulate控件本身，不影响主视口的透视投影
-  glm::mat4 view = m_camera->GetViewMatrix();
+  m_currentCameraViewTransform = m_camera->GetViewMatrix();
   glm::mat4 projection = m_camera->GetProjectionMatrix();
   // 为ViewManipulate创建一个正交投影
   glm::mat4 orthoProjection = glm::ortho(-0.8f, 0.8f, -0.8f, 0.8f, 0.1f, 100.f);
 
   // 3. 保存操作前的矩阵（用于检测是否发生变化）
-  glm::mat4 oldMatrix{0.0f};
+  glm::mat4 oldMatrix = m_currentCameraViewTransform;
 
-  float m_ViewMatrixBuffer[16];  // 中间缓冲区
-  std::memcpy(m_ViewMatrixBuffer, glm::value_ptr(view), 16 * sizeof(float));
-
-  oldMatrix = *m_currentCameraTransform;
 
   // 4. 调用 ViewManipulate 函数
   // 这个函数会修改 m_viewManipulateMatrix
-  ImGuizmo::ViewManipulate(glm::value_ptr(*m_currentCameraTransform),  // 被操作的矩阵
+  ImGuizmo::ViewManipulate(glm::value_ptr(m_currentCameraViewTransform),  // 被操作的矩阵
                            m_camera->GetDistance(),  // 相机距离（缩放灵敏度）
                            ImVec2(viewManipulatePos.x, viewManipulatePos.y),    // 位置
                            ImVec2(m_viewManipulateSize, m_viewManipulateSize),  // 大小
@@ -197,13 +187,13 @@ void ViewportPanel::DrawViewManipulate()
 
   // 5. 关键步骤：检查矩阵是否被用户操作改变了
   if (memcmp(glm::value_ptr(oldMatrix),
-             glm::value_ptr(*m_currentCameraTransform),
+             glm::value_ptr(m_currentCameraViewTransform),
              sizeof(float) * 16) !=
       0)
   {
     // 9. 更新相机
     if (m_camera) {
-      m_camera->SetViewMatrix(*m_currentCameraTransform);
+      m_camera->SetViewMatrix(m_currentCameraViewTransform);
     }
 
     // 标记为已处理，防止其他输入干扰

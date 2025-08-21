@@ -85,8 +85,8 @@ class ViewportPanel : public UIPanel {
   Entity m_entitySelected;					// 当前选中的Entity对象
   glm::mat4 *m_currentTransform = nullptr;  // 当前操作的Entity的World变换矩阵(外部管理)
 
-  // 当前操作的Camera的变换状态
-  glm::mat4 *m_currentCameraTransform = nullptr;
+  // 当前操作的Camera的View状态，Gizmo的绘制和反向修改相机需要该参数
+  glm::mat4 m_currentCameraViewTransform;
 };
 };  // namespace mite
 

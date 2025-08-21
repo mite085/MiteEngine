@@ -79,7 +79,7 @@ class Camera {
   glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
   glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 
-  // 存储当前的位置与欧拉角
+  // 存储当前的位置与欧拉角(degree)
   glm::vec3 m_Position = glm::vec3(0.0f);
   glm::vec3 m_RotationEuler = glm::vec3(0.0f);  
 };

@@ -16,8 +16,8 @@ enum WindowType {
 struct WindowConfig {
   WindowType type = GLFWWINDOW;       // 类型
   std::string title = "Mite Engine";  // 标题
-  uint32_t width = 1280;              // 宽度
-  uint32_t height = 720;              // 高度
+  uint32_t width = 1920;              // 宽度
+  uint32_t height = 1080;             // 高度
   bool vsync = false;                 // 垂直同步
   bool fullscreen = false;            // 全屏显示
   bool resizable = true;              // 可拉伸

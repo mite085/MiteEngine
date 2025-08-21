@@ -25,7 +25,6 @@ UISystem::~UISystem()
 
 void UISystem::Init(GLFWwindow *window)
 {
-
   // 初始化ImGui上下文
   IMGUI_CHECKVERSION();
   m_imguiContext = ImGui::CreateContext();

@@ -42,12 +42,12 @@ bool CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
 
   if (m_InputState.rotating) {
     // 右键旋转视角
-    m_Camera->Rotate(-delta.x * m_RotationSpeed, delta.y * m_RotationSpeed);
+    m_Camera->Rotate(-delta.x * m_RotationSpeed, -delta.y * m_RotationSpeed);
     return true;  // 事件已处理
   }
   else if (m_InputState.panning) {
     // 中键平移视角
-    m_Camera->Pan(-delta.x * float(0.01) * m_MoveSpeed, delta.y * float(0.01) * m_MoveSpeed);
+    m_Camera->Pan(delta.x * float(0.01) * m_MoveSpeed, -delta.y * float(0.01) * m_MoveSpeed);
     return true;  // 事件已处理
   }
 
