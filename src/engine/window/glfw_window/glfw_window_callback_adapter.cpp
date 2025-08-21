@@ -132,7 +132,11 @@ void GLFWWindowCallbackAdapter::HandleMouseScroll(GLFWwindow *window,
                                                   double xoffset,
                                                   double yoffset)
 {
-  // TODO: 后续考虑实现细节
+  auto *adapter = GetAdapter(window);
+  MouseScrollEvent event(xoffset, yoffset);
+  EventBus::Get().Post(event);
+  // 避免过多的滚轮日志，在调试时选择性启用
+  // s_Logger->debug("Mouse scrolled: xoffset={}, yoffset={}", xoffset, yoffset);
 }
 void GLFWWindowCallbackAdapter::HandleKeyEvent(
     GLFWwindow *window, int key, int scancode, int action, int mods)

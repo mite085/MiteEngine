@@ -98,6 +98,7 @@ bool CameraInputProcessor::handleMouseButtonReleased(MouseButtonReleasedEvent &e
 
 bool CameraInputProcessor::handleMouseScroll(MouseScrollEvent &e)
 {
+  // 常规鼠标仅存在Y方向鼠标，仅需处理Y轴。
   m_Camera->Zoom(float(e.GetYOffset()) * m_ZoomSpeed);
   return true;  // 滚轮事件始终视为已处理
 }

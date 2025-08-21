@@ -164,7 +164,7 @@ void Camera::Zoom(float amount)
 {
   if (m_ProjectionType == ProjectionType::Perspective) {
     // 透视模式：调整FOV
-    m_FOV = glm::clamp(m_FOV - amount, 1.0f, 120.0f);
+    m_FOV = glm::clamp(m_FOV - amount, 1.0f, 170.0f);
     RecalculateProjection();
   }
   else {
