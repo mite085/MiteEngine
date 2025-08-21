@@ -3,7 +3,7 @@
 
 #include "component.h"
 #include "entity.h"
-#include "scene_event_callback_adapter.h"
+#include "scene_core_event_callback_adapter.h"
 
 namespace mite {
 /**
@@ -17,7 +17,7 @@ class SceneRegistry {
   SceneRegistry();
   ~SceneRegistry();
 
-  SceneEventCallbackAdapter &GetEventCallbackAdapter();
+  SceneCoreEventCallbackAdapter &GetEventCallbackAdapter();
 
   // 1. 实体管理 ============================================
 
@@ -305,7 +305,7 @@ class SceneRegistry {
   mutable std::shared_mutex m_ComponentMutex;  // 组件操作的读写锁
   ComponentTypeMap m_Components;               // 组件存储
 
-  SceneEventCallbackAdapter m_EventCallbackAdapter;
+  SceneCoreEventCallbackAdapter m_EventCallbackAdapter;
 };
 };  // namespace mite
 

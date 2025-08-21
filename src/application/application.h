@@ -5,7 +5,7 @@
 #include "input/input.h"
 #include "input/modular_input_context.h"
 #include "opengl_renderer/opengl_renderer.h"
-#include "scene_core/scene.h"
+#include "scene_core/scene_core.h"
 #include "scene_view.h"
 #include "glfw_window/glfw_window.h"
 #include "ui_core/ui_system.h"

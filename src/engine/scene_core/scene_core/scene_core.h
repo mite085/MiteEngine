@@ -1,5 +1,5 @@
-#ifndef MITE_SCENE
-#define MITE_SCENE
+#ifndef MITE_SCENE_CORE
+#define MITE_SCENE_CORE
 
 #include "component_system_manager.h"
 #include "basic_data/camera.h"
@@ -8,11 +8,9 @@ namespace mite {
 /**
  * @brief 场景类 - 管理所有实体、组件和系统的主容器
  *
- * 封装EnTT的registry，提供场景管理的高级接口，包括：
+ * 提供场景管理的高级接口，包括：
  * - 实体创建/销毁
- * - 系统管理
- * - 场景状态维护
- * - 序列化支持
+ * - 组件系统管理
  */
 class SceneCore{
  public:
@@ -76,19 +74,6 @@ class SceneCore{
   std::shared_ptr<Camera> GetMainCamera() const;
   void SetMainCamera(Entity entity);
 
-  // ------------------------ 序列化 ------------------------
-  /**
-   * @brief 序列化场景到文件
-   * @param filepath 文件路径
-   */
-  //void Serialize(const std::filesystem::path &filepath);
-
-  /**
-   * @brief 从文件反序列化场景
-   * @param filepath 文件路径
-   */
-  //void Deserialize(const std::filesystem::path &filepath);
-
   // ------------------------ 模块访问 ------------------------
   /**
    * @brief 获取Registry
@@ -106,8 +91,6 @@ class SceneCore{
   }
 
  private:
-  // 初始化默认系统
-  void InitSystems();
   /**
    * @brief 初始化组件系统
    */
@@ -126,11 +109,6 @@ class SceneCore{
   // 避免unique_ptr不必要的堆分配，
   // 并方便其他模块直接引用m_Registry(可能存在风险？)
   SceneRegistry m_Registry;  
-
-  // 场景系统
-  //std::unique_ptr<SceneGraph> m_SceneGraph;        // 场景图系统
-  //std::unique_ptr<SceneSerializer> m_Serializer;   // 序列化系统
-
 
   // 系统管理
   ComponentSystemManager m_SystemManager;

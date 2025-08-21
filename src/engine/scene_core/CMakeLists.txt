@@ -16,12 +16,12 @@ set(SCENE_CORE_SRCS
     scene_core/component_system_manager.cpp
     scene_core/entity.h
     scene_core/entity.cpp
-    scene_core/scene.h
-    scene_core/scene.cpp
-    scene_core/scene_event.h
-    scene_core/scene_event.cpp
-    scene_core/scene_event_callback_adapter.h
-    scene_core/scene_event_callback_adapter.cpp
+    scene_core/scene_core.h
+    scene_core/scene_core.cpp
+    scene_core/scene_core_event.h
+    scene_core/scene_core_event.cpp
+    scene_core/scene_core_event_callback_adapter.h
+    scene_core/scene_core_event_callback_adapter.cpp
     scene_core/scene_registry.h
     scene_core/scene_registry.cpp
 )

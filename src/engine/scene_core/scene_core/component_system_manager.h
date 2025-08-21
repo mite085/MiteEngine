@@ -2,8 +2,8 @@
 #define MITE_SCENE_COMPONENT_SYSTEM_MANAGER
 
 #include "component_system.h"
-#include "scene_event.h"
-#include "scene_event_callback_adapter.h"
+#include "scene_core_event.h"
+#include "scene_core_event_callback_adapter.h"
 namespace mite {
 /**
  * @brief 组件系统管理器，集中管理所有组件系统

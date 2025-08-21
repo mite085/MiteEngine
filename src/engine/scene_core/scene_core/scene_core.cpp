@@ -1,11 +1,11 @@
-#include "scene.h"
+#include "scene_core.h"
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
 SceneCore::SceneCore(const std::string &name) : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
 {
   // 初始化核心系统
-  InitSystems();
+  InitComponentSystems();
 
   //// TODO: 创建默认环境实体
   // auto env = CreateEntity("Environment");
@@ -15,17 +15,6 @@ SceneCore::SceneCore(const std::string &name) : m_Name(name), m_Registry(), m_Sy
 SceneCore::~SceneCore()
 {
   Clear(false);
-}
-
-void SceneCore::InitSystems()
-{
-  // 创建核心系统
-  //m_SceneGraph = std::make_unique<SceneGraph>();
-  //m_SceneGraph->Initialize(GetRegistry());
-  //m_Serializer = std::make_unique<SceneSerializer>(*this);
-
-  // 初始化组件系统
-  InitComponentSystems();
 }
 
 void SceneCore::InitComponentSystems()
@@ -93,13 +82,8 @@ void SceneCore::Clear(bool keepSystems)
 
   // 3. TODO: 重置主相机
 
-  // 4. 重置场景图状态
-  //if (m_SceneGraph) {
-  //  m_SceneGraph->Clear();
-  //}
 
   // 6. 根据参数决定是否重置系统
-  // TODO：重置其他系统
   if (!keepSystems) {
     ShutDownComponentSystems();
   }
@@ -156,44 +140,4 @@ void SceneCore::SetMainCamera(Entity mainCameraEntity)
   m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);
 }
 
-//void Scene::Serialize(const std::filesystem::path &filepath)
-//{
-//  const std::string ext = filepath.extension().string();
-//
-//  if (ext == ".json") {
-//    if (!m_Serializer->SerializeToJson(filepath.string()))
-//      throw std::runtime_error("JSON serialization failed: " + m_Serializer->GetLastError());
-//  }
-//  else if (ext == ".bin") {
-//    if (!m_Serializer->SerializeToBinary(filepath.string()))
-//      throw std::runtime_error("Binary serialization failed: " + m_Serializer->GetLastError());
-//  }
-//  else {
-//    throw std::runtime_error("Unsupported file extension: " + ext);
-//  }
-//}
-//void Scene::Deserialize(const std::filesystem::path &filepath)
-//{
-//  if (!m_Serializer) {
-//    throw std::runtime_error("Serializer not initialized");
-//  }
-//
-//  if (!std::filesystem::exists(filepath)) {
-//    throw std::runtime_error("File not found: " + filepath.string());
-//  }
-//
-//  const std::string ext = filepath.extension().string();
-//
-//  if (ext == ".json") {
-//    if (!m_Serializer->DeserializeFromJson(filepath.string()))
-//      throw std::runtime_error("JSON deserialization failed: " + m_Serializer->GetLastError());
-//  }
-//  else if (ext == ".bin") {
-//    if (!m_Serializer->DeserializeFromBinary(filepath.string()))
-//      throw std::runtime_error("Binary deserialization failed: " + m_Serializer->GetLastError());
-//  }
-//  else {
-//    throw std::runtime_error("Unsupported file extension: " + ext);
-//  }
-//}
 }  // namespace mite

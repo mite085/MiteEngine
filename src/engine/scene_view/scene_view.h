@@ -2,7 +2,7 @@
 #define MITE_SCENE_VIEW
 
 #include "renderable_item.h"
-#include "scene_core/scene_event.h"
+#include "scene_core/scene_core_event.h"
 #include "scene_core/scene_registry.h"
 #include "scene_core_components/component_headers.h"
 

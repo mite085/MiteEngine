@@ -2,7 +2,7 @@
 #define MITE_SCENE_COMPONENT_SYSTEM
 
 #include "scene_registry.h"
-#include "scene_event.h"
+#include "scene_core_event.h"
 namespace mite {
 /**
  * @brief 组件系统基类，管理特定类型组件的更新逻辑

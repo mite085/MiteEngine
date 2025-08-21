@@ -1,5 +1,5 @@
-#ifndef MITE_SCENE_EVENT
-#define MITE_SCENE_EVENT
+#ifndef MITE_SCENE_CORE_EVENT
+#define MITE_SCENE_CORE_EVENT
 
 #include "component.h"
 #include "component_id.h"

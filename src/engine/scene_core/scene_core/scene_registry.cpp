@@ -11,7 +11,7 @@ SceneRegistry::~SceneRegistry()
   Clear();
 }
 
-SceneEventCallbackAdapter &SceneRegistry::GetEventCallbackAdapter()
+SceneCoreEventCallbackAdapter &SceneRegistry::GetEventCallbackAdapter()
 {
   return m_EventCallbackAdapter;
 }
