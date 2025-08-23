@@ -43,24 +43,20 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
   // 基础参数控制
   void SetPerspective(float fov, float near, float far);
   void SetOrthographic(float size, float near, float far);
+  void Rotate(float yaw, float pitch);
+  void Pan(float right, float up);
+  void Zoom(float amount);
+  void Move(const glm::vec3 &direction);
 
   // 主摄像机标记
-  CameraUsage GetUsage() const
-  {
-    return m_Usage;
-  }
-  void SetUsage(CameraUsage usage)
-  {
-    m_Usage = usage;
-    MarkDirty();
-  }
+  CameraUsage GetUsage() const;
+  void SetUsage(CameraUsage usage);
 
-  std::shared_ptr<Camera> GetCamera() {
-    return m_Camera;
-  }
+  // 主摄像机获取
+  std::shared_ptr<Camera> GetCamera();
 
-  // 矩阵获取（需结合Transform）
-  glm::mat4 GetViewMatrix(SceneRegistry &reg) const;
+  // 矩阵获取
+  glm::mat4 GetViewMatrix() const;
   glm::mat4 GetProjectionMatrix() const;
 
   // 视口适配

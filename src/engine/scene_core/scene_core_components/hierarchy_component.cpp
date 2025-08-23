@@ -121,55 +121,11 @@ void HierarchyComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegi
     UpdateChildrenDepthCache(entity, registry);
 
     // 清除脏标记
-    comp->CleanDirty();
+    comp->ClearDirty();
   }
   // 清空脏组件列表
   m_DirtyComponents.clear();
 }
-
-//void HierarchyComponentSystem::OnComponentUpdated(ComponentChangedEvent<HierarchyComponent> &e)
-//{
-//  auto &hierarchy = e.GetComponent();
-//  Entity entity = e.GetEntity();
-//  Entity oldParent = e.GetOldComponent().GetParent();
-//  Entity newParent = hierarchy.GetParent();
-//
-//  // 验证新的父子关系是否有效
-//  if (!ValidateHierarchy(entity, newParent, GetRegistry())) {
-//    // 如果无效，恢复原来的父节点
-//    hierarchy.SetParent(oldParent);
-//    return;
-//  }
-//
-//  // 1. 从旧父节点中移除
-//  if (oldParent.IsValid() && GetRegistry().IsValid(oldParent)) {
-//    if (GetRegistry().HasComponent<HierarchyComponent>(oldParent)) {
-//      auto &oldParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(oldParent);
-//      oldParentHierarchy.RemoveChild(entity);
-//
-//      // 发布子节点移除事件
-//      EventBus::Get().Post(ChildRemovedEvent(oldParent, oldParentHierarchy, entity));
-//    }
-//  }
-//
-//  // 2. 添加到新父节点
-//  if (newParent.IsValid() && GetRegistry().IsValid(newParent)) {
-//    if (GetRegistry().HasComponent<HierarchyComponent>(newParent)) {
-//      auto &newParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(newParent);
-//      newParentHierarchy.AddChild(entity);
-//
-//      // 发布子节点添加事件
-//      EventBus::Get().Post(ChildAddedEvent(newParent, newParentHierarchy, entity));
-//    }
-//  }
-//
-//  // 发布父节点改变事件
-//  EventBus::Get().Post(ParentChangedEvent(entity, hierarchy, oldParent, newParent));
-//
-//  // 注册组件为脏
-//  Register(&hierarchy);
-//  hierarchy.MarkDirty();
-//}
 
 bool HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
 {

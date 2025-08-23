@@ -1,5 +1,4 @@
 #include "camera_component.h"
-#include "transform_component.h"
 
 namespace mite {
 CameraComponent::CameraComponent(std::shared_ptr<Camera> camera) : m_Camera(camera) {}
@@ -18,14 +17,49 @@ void CameraComponent::SetOrthographic(float size, float near, float far)
   MarkDirty();
 }
 
-glm::mat4 CameraComponent::GetViewMatrix(SceneRegistry &reg) const
+void CameraComponent::Rotate(float yaw, float pitch)
 {
-  auto &transform = reg.GetComponent<TransformComponent>(GetOwnerEntity());
-  glm::vec3 position = transform.GetWorldPosition(reg);
-  glm::quat rotation = transform.GetWorldRotation(reg);
+  m_Camera->Rotate(yaw, pitch);
+  MarkDirty();
+}
 
-  glm::mat4 view = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
-  return glm::inverse(view);
+void CameraComponent::Pan(float right, float up)
+{
+  m_Camera->Pan(right, up);
+  MarkDirty();
+}
+
+void CameraComponent::Zoom(float amount)
+{
+  m_Camera->Zoom(amount);
+  MarkDirty();
+}
+
+void CameraComponent::Move(const glm::vec3 &direction)
+{
+  m_Camera->Move(direction);
+  MarkDirty();
+}
+
+CameraUsage CameraComponent::GetUsage() const
+{
+  return m_Usage;
+}
+
+void CameraComponent::SetUsage(CameraUsage usage)
+{
+  m_Usage = usage;
+  MarkDirty();
+}
+
+std::shared_ptr<Camera> CameraComponent::GetCamera()
+{
+  return m_Camera;
+}
+
+glm::mat4 CameraComponent::GetViewMatrix() const
+{
+  return m_Camera->GetViewMatrix();
 }
 
 glm::mat4 CameraComponent::GetProjectionMatrix() const
@@ -59,7 +93,7 @@ bool CameraComponent::Deserialize(std::istream &input)
 
 std::vector<std::type_index> CameraComponent::GetDependencies() const
 {
-  return {typeid(TransformComponent)};
+  return {};
 }
 
 std::optional<Entity> CameraComponentSystem::GetMainCameraEntity() const
@@ -83,8 +117,7 @@ void CameraComponentSystem::SetMainCameraEntity(Entity main_camera)
     if (!component) {
       LOG_ERROR("Empty camera component pointer in camera component system!");
     }
-    else if (component->GetUsage() == CameraUsage::MainView)
-    {
+    else if (component->GetUsage() == CameraUsage::MainView) {
       oldMain = component;
     }
     else if (component->GetOwnerEntity() == main_camera) {
@@ -109,7 +142,7 @@ void CameraComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistr
 {
   // 处理视口变化等逻辑
   for (auto *comp : m_DirtyComponents) {
-    comp->CleanDirty();
+    comp->ClearDirty();
   }
   m_DirtyComponents.clear();
 }
