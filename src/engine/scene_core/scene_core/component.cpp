@@ -17,7 +17,7 @@ bool Component::IsDirty() const
   return m_Dirty;
 }
 
-void Component::CleanDirty()
+void Component::ClearDirty()
 {
   m_Dirty = false;
 }
@@ -29,7 +29,7 @@ void Component::Update(float deltaTime, SceneRegistry &reg)
     ProcessDirty(deltaTime, reg);
 
     // Çå³ýÔà±ê¼Ç
-    CleanDirty();
+    ClearDirty();
   }
 }
 

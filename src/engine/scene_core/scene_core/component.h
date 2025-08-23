@@ -52,7 +52,7 @@ class Component {
   /**
    * @brief 清理组件修改状态
    */
-  void CleanDirty();
+  void ClearDirty();
   /**
    * @brief 更新方法，通常每帧调用
    */

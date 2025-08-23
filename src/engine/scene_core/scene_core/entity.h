@@ -15,7 +15,12 @@ class Entity {
   /**
    * @brief 默认构造一个空实体（无效实体）
    */
-  Entity();  // 生成随机UUID
+  Entity();  // 生成空ID
+
+  /**
+   * @brief 构造一个有效实体（原则上仅SceneRegistry::CreateEntity有权限调用）
+   */
+  static Entity CreateEntity();
 
   /**
    * @brief 从UUID构造实体
@@ -29,6 +34,8 @@ class Entity {
   Entity(const Entity &other);
 
   ~Entity() = default;
+
+
 
   // 实体状态操作 ============================================
 

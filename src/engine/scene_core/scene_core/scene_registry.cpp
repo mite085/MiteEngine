@@ -21,7 +21,7 @@ SceneCoreEventCallbackAdapter &SceneRegistry::GetEventCallbackAdapter()
 Entity SceneRegistry::CreateEntity(const std::string& name)
 {
   // 创建实体
-  Entity entity;
+  Entity entity = Entity::CreateEntity();
 
   // 添加ID组件，自动生成唯一ID
   auto &id = AddComponent<IDComponent>(entity);
