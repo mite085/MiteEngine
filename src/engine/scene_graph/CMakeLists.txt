@@ -5,7 +5,23 @@ set(ENGINE_SCENE_GRAPH_LIB_NAME MiteEngine_Engine_Scene_Graph)
 
 # 创建源代码组(筛选器)
 set(SCENE_GRAPH_INTERFACE_SRCS
-    scene_graph.h
+    bounding_volumes_types.h       # 基础几何类型定义（无依赖）
+    bounding_volumes_types.cpp
+    bounding_volumes.h             # AABB/OBB/Sphere等包围盒实现
+    bounding_volumes.cpp
+    ray.h                          # 射线类型定义和基础方法
+    ray.cpp
+    frustum.h                      # 视锥体类型定义和基础方法  
+    frustum.cpp
+    scene_node.h                   # 场景节点（依赖基础几何类型）
+    scene_node.cpp
+    spatial_partition.h            # 空间划分抽象接口（依赖几何类型）
+    spatial_partition.cpp
+    simple_bvh.h                   # BVH实现（依赖SceneNode和几何类型）
+    simple_bvh.cpp
+    transform_system.h             # 变换系统（依赖SceneNode）
+    transform_system.cpp
+    scene_graph.h                  # 主管理器，场景图核心逻辑（依赖所有上述模块）
     scene_graph.cpp
 )
 source_group("scene graph" FILES ${SCENE_GRAPH_INTERFACE_SRCS})
