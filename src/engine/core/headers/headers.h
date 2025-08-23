@@ -10,12 +10,14 @@
 #include <execution>
 #include <filesystem>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <queue>
-#include <sstream>
+#include <stdexcept>
 #include <string>
+#include <sstream>
 #include <typeindex>
 #include <unordered_set>
 #include <unordered_map>
@@ -35,7 +37,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/norm.hpp>
 #include <glm/gtx/transform.hpp>
 
 // 文件系统

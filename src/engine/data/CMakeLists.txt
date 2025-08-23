@@ -25,8 +25,8 @@ set(BASIC_DATA_SRCS
     basic_data/shader_cache.cpp
     basic_data/texture.h
     basic_data/texture.cpp
-    
-
+    basic_data/transform.h
+    basic_data/transform.cpp
 )
 source_group("basic_data" FILES ${BASIC_DATA_SRCS})
 
