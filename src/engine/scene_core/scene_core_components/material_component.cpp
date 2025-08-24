@@ -100,15 +100,15 @@ bool MaterialComponent::Deserialize(std::istream &input)
 }
 
 // Material组件系统实现 ==================================
-void MaterialComponentSystem::Initialize(SceneRegistry &registry)
+void MaterialComponentSystem::Initialize()
 {
-  DirtyComponentSystem<MaterialComponent>::Initialize(registry);
+  DirtyComponentSystem<MaterialComponent>::Initialize();
   // 初始化材质系统资源
 }
 
-void MaterialComponentSystem::Shutdown(SceneRegistry &registry)
+void MaterialComponentSystem::Shutdown()
 {
-  DirtyComponentSystem<MaterialComponent>::Shutdown(registry);
+  DirtyComponentSystem<MaterialComponent>::Shutdown();
   // 清理材质系统资源
 }
 

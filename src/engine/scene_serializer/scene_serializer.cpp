@@ -2,7 +2,7 @@
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
 #include "scene_serializer.h"
-#include "scene_core/scene.h"
+#include "scene_core/scene_core.h"
 
 namespace mite {
 SceneSerializer::SceneSerializer(SceneCore &scene) : m_scene(scene) {}

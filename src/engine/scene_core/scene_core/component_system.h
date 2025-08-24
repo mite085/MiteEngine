@@ -32,7 +32,7 @@ class ComponentSystem {
    * @brief 系统初始化（场景加载时调用）
    * @param registry 关联的EnTT registry
    */
-  virtual void Initialize(SceneRegistry &registry) = 0;
+  virtual void Initialize() = 0;
 
   /**
    * @brief 系统更新（每帧调用）
@@ -43,7 +43,7 @@ class ComponentSystem {
   /**
    * @brief 系统销毁（场景卸载时调用）
    */
-  virtual void Shutdown(SceneRegistry &registry) = 0;
+  virtual void Shutdown() = 0;
 
   /**
    * @brief 获取该系统管理的组件类型列表
@@ -55,14 +55,6 @@ class ComponentSystem {
    */
   virtual std::vector<std::type_index> GetSystemDependencies() const = 0;
 
-  /**
-   * @brief 获取Register的引用
-   */
-  SceneRegistry &GetRegistry()
-  {
-    return m_Registry.value();
-  }
-
  protected:
   // 保护构造函数，确保只能通过派生类实例化
   ComponentSystem() = default;
@@ -70,23 +62,6 @@ class ComponentSystem {
   // 禁用拷贝
   ComponentSystem(const ComponentSystem &) = delete;
   ComponentSystem &operator=(const ComponentSystem &) = delete;
-
-  // Register的引用
-  //
-  // 作用：
-  // 在HierarchyComponentSystem处理OnComponentRemoved事件时，
-  // 需要利用Register查询其他相关组件
-  //
-  // 注意：
-  // 此处使用optional包装的reference_wrapper，
-  // 以实现延时引用的功能，目的是将ComponentSystem的
-  // 构造和利用SceneRegistry&执行的初始化隔离开。
-  // 
-  // TODO: 
-  // ComponentSystem不应当维护SceneRegistry，
-  // 后续应当想更好的方法访问，并删除对m_Registry的维护
-  // （目前其他部分均已解耦，仅剩下HierarchyComponentSystem需要处理）
-  std::optional<std::reference_wrapper<SceneRegistry>> m_Registry;
 
   // 日志系统
   Logger m_Logger;
@@ -140,14 +115,10 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
    * @brief 初始化操作
    * @param registry
    */
-  virtual void Initialize(SceneRegistry &registry) override
+  virtual void Initialize() override
   {
-    // 添加对Registry的引用
-    m_Registry = registry;
-
     // 通过事件总线，订阅组件添加/改变/移除事件
     m_EventSubscriptions.Subscribe<ComponentAddedEvent<T>>(BIND_DISPATCH_FN(OnComponentAdded));
-    //m_EventSubscriptions.Subscribe<ComponentChangedEvent<T>>(BIND_DISPATCH_FN(OnComponentUpdated));
     m_EventSubscriptions.Subscribe<ComponentRemovedEvent<T>>(BIND_DISPATCH_FN(OnComponentRemoved));
   }
 
@@ -155,7 +126,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
    * @brief 清理操作
    * @param registry
    */
-  virtual void Shutdown(SceneRegistry &registry) override
+  virtual void Shutdown() override
   {
     m_EventSubscriptions.UnsubscribeAll();
     m_AllComponents.clear();

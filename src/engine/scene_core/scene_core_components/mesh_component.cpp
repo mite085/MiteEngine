@@ -82,15 +82,15 @@ bool MeshComponent::Deserialize(std::istream &input)
 }
 
 // Mesh组件系统实现 ======================================
-void MeshComponentSystem::Initialize(SceneRegistry &registry)
+void MeshComponentSystem::Initialize()
 {
-  DirtyComponentSystem<MeshComponent>::Initialize(registry);
+  DirtyComponentSystem<MeshComponent>::Initialize();
   // 初始化系统资源
 }
 
-void MeshComponentSystem::Shutdown(SceneRegistry &registry)
+void MeshComponentSystem::Shutdown()
 {
-  DirtyComponentSystem<MeshComponent>::Shutdown(registry);
+  DirtyComponentSystem<MeshComponent>::Shutdown();
   // 清理系统资源
 }
 

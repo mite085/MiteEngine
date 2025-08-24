@@ -185,8 +185,8 @@ class VisibilityComponent
 class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponent> {
   DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
  public:
-  void Initialize(SceneRegistry &registry) override;
-  void Shutdown(SceneRegistry &registry) override;
+  void Initialize() override;
+  void Shutdown() override;
   void Update(float deltaTime, SceneRegistry &registry) override;
 
   /**

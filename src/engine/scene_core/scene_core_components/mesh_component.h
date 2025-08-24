@@ -121,8 +121,8 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
 class MeshComponentSystem : public DirtyComponentSystem<MeshComponent> {
   DECLARE_COMPONENT_SYSTEM(MeshComponentSystem)
  public:
-  void Initialize(SceneRegistry &registry) override;
-  void Shutdown(SceneRegistry &registry) override;
+  void Initialize() override;
+  void Shutdown() override;
   void Update(float deltaTime, SceneRegistry &registry) override;
 };
 

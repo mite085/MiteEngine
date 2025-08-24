@@ -9,7 +9,7 @@ ComponentSystemManager::~ComponentSystemManager()
 {
   // 确保所有系统都已销毁
   for (auto &entry : m_SystemMap) {
-    entry.second->Shutdown(m_Registry);
+    entry.second->Shutdown();
   }
 }
 
@@ -22,7 +22,7 @@ void ComponentSystemManager::InitializeAll()
 
   // 按顺序初始化
   for (auto &system : m_Systems) {
-    system->Initialize(m_Registry);
+    system->Initialize();
   }
 }
 
@@ -41,7 +41,7 @@ void ComponentSystemManager::ShutdownAll()
 {
   // 逆序销毁
   for (auto it = m_Systems.rbegin(); it != m_Systems.rend(); ++it) {
-    (*it)->Shutdown(m_Registry);
+    (*it)->Shutdown();
   }
 }
 

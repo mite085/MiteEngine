@@ -141,15 +141,15 @@ bool VisibilityComponent::Deserialize(std::istream &input)
 }
 
 // Visibility组件系统实现 ==================================
-void VisibilityComponentSystem::Initialize(SceneRegistry &registry)
+void VisibilityComponentSystem::Initialize()
 {
-  DirtyComponentSystem<VisibilityComponent>::Initialize(registry);
+  DirtyComponentSystem<VisibilityComponent>::Initialize();
   // 初始化系统资源
 }
 
-void VisibilityComponentSystem::Shutdown(SceneRegistry &registry)
+void VisibilityComponentSystem::Shutdown()
 {
-  DirtyComponentSystem<VisibilityComponent>::Shutdown(registry);
+  DirtyComponentSystem<VisibilityComponent>::Shutdown();
   // 清理系统资源
 }
 

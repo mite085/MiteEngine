@@ -85,8 +85,8 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
 class MaterialComponentSystem : public DirtyComponentSystem<MaterialComponent> {
   DECLARE_COMPONENT_SYSTEM(MaterialComponentSystem)
  public:
-  void Initialize(SceneRegistry &registry) override;
-  void Shutdown(SceneRegistry &registry) override;
+  void Initialize() override;
+  void Shutdown() override;
   void Update(float deltaTime, SceneRegistry &registry) override;
 };
 
