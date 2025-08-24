@@ -31,7 +31,7 @@ Entity SceneRegistry::CreateEntity(const std::string& name)
   tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
 
   // 添加Hierachy组件，用于层次结构创建
-  auto hierachy = AddComponent<HierarchyComponent>(entity);
+  AddComponent<HierarchyComponent>(entity);
 
 
   // 创建事件并发布

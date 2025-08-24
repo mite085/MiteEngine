@@ -13,116 +13,50 @@ namespace mite {
  */
 class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component::Family::Core> {
  public:
-
   /**
    * @brief 构造函数（创建无父节点的根实体）
    */
   HierarchyComponent();
+  ~HierarchyComponent() override = default;
 
-  // 显示拷贝
-  HierarchyComponent(const HierarchyComponent &) noexcept;
-  HierarchyComponent &operator=(const HierarchyComponent &) noexcept;
-
-  // 允许移动
-  HierarchyComponent(HierarchyComponent &&) noexcept = default;
-  HierarchyComponent &operator=(HierarchyComponent &&) noexcept = default;
-
-  /**
-   * @brief 针对dirty对象进行处理
-   */
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
+  // 禁止拷贝与移动
+  HierarchyComponent(const HierarchyComponent &) = delete;
+  HierarchyComponent &operator=(const HierarchyComponent &) = delete;
+  HierarchyComponent(HierarchyComponent &&) = delete;
+  HierarchyComponent &operator=(HierarchyComponent &&) = delete;
 
   /**
-   * @brief 获取父实体句柄
-   * @return 父实体EnTT句柄（Entity()表示无父节点）
+   * @brief 处理脏标记，主要处理层级关系变化
    */
-  Entity GetParent() const
-  {
-    return m_Parent;
-  }
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
-  /**
-   * @brief 获取所有子实体句柄
-   * @return 子实体句柄列表（按添加顺序）
-   */
-  const std::vector<Entity> &GetChildren() const
-  {
-    return m_Children;
-  }
+  // ==================== 查询接口 ====================
 
-  /**
-   * @brief 获取子实体数量
-   */
-  size_t GetChildCount() const
-  {
-    return m_Children.size();
-  }
+  Entity GetParent() const;                        // 获取父实体句柄
+  const std::vector<Entity> &GetChildren() const;  // 获取所有子实体句柄
+  size_t GetChildCount() const;                    // 获取子实体数量
+  bool IsLeaf() const;                             // 检查是否为叶节点（无子节点）
+  bool IsRoot() const;                             // 检查是否为根节点（无父节点）
+  size_t GetDepth(SceneRegistry &registry);        // 获取深度（距离根节点的层级数）
 
-  /**
-   * @brief 检查是否为叶节点（无子节点）
-   */
-  bool IsLeaf() const
-  {
-    return m_Children.empty();
-  }
+  // ==================== 操作接口 ====================
 
-  /**
-   * @brief 检查是否为根节点（无父节点）
-   */
-  bool IsRoot() const
-  {
-    return m_Parent == Entity();
-  }
-
-  /**
-   * @brief 获取深度（距离根节点的层级数）
-   * @note 需要在场景中查询父级，可能有一定开销
-   */
-  size_t GetDepth(SceneRegistry &registry);
+  bool SetParent(SceneRegistry &registry, Entity newParent);  // 设置父节点
+  bool AddChild(SceneRegistry &registry, Entity child);       // 添加子节点
+  bool RemoveChild(SceneRegistry &registry, Entity child);    // 移除子节点
+  void ClearChildren(SceneRegistry &registry);                // 清空所有子节点
 
  private:
-  
-
-  friend class Entity;  // 允许Entity类直接修改层次关系
-  friend class SceneGraph;
-
-  // 内部方法 ==============================================
-
-  /**
-   * @brief 添加子节点（内部使用）
-   * @param child 子实体句柄
-   */
-  void AddChild(Entity child);
-
-  /**
-   * @brief 移除子节点（内部使用）
-   * @param child 子实体句柄
-   * @return 是否成功移除
-   */
-  bool RemoveChild(Entity child);
-
-  /**
-   * @brief 清空所有子节点（内部使用）
-   */
-  void ClearChildren();
-
-  /**
-   * @brief 设置父节点（内部使用）
-   * @param parent 父实体句柄
-   */
-  void SetParent(Entity parent);
-
- public:
-  size_t m_DepthCache = 0;  // 深度缓存（非持久化）
+  // ==================== 内部方法 ====================
+  bool ValidateHierarchy(SceneRegistry &registry, Entity newParent) const;
+  void UpdateTransformDirtyState(SceneRegistry &registry);
 
  private:
   Entity m_Parent;                 // 父实体句柄
   std::vector<Entity> m_Children;  // 子实体列表
-
-  friend class HierarchyComponentSystem;
 };
 
-// Hierarchy组件系统--用于批量处理脏数据 =====================================================
+// ==================== 组件系统 ====================
 
 class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent> {
   DECLARE_COMPONENT_SYSTEM(HierarchyComponentSystem)
@@ -144,21 +78,11 @@ class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent>
   bool OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) override;
 
   /**
-   * @brief 验证层次结构，防止循环依赖
-   * @param entity 要检查的实体
-   * @param newParent 新的父实体
-   * @return 是否允许建立此父子关系
+   * @brief 验证并修复层级关系完整性
    */
-  bool ValidateHierarchy(Entity entity, Entity newParent, SceneRegistry &registry);
-
-  /**
-   * @brief 递归更新子实体的深度缓存
-   * @param entity 起始实体
-   * @param registry 场景注册表
-   */
-  void UpdateChildrenDepthCache(Entity entity, SceneRegistry &registry);
+  void ValidateAndRepairHierarchy(SceneRegistry &registry);
 };
-// Hierarchy组件事件 =====================================================
+// ==================== 事件定义 ====================
 /**
  * @class ParentChangedEvent
  * @brief 父节点改变事件
@@ -195,61 +119,6 @@ class ParentChangedEvent : public ComponentEvent<HierarchyComponent> {
   Entity m_OldParent;
   Entity m_NewParent;
 };
-
-/**
- * @class ChildAddedEvent
- * @brief 子节点添加事件
- */
-class ChildAddedEvent : public ComponentEvent<HierarchyComponent> {
- public:
-  ChildAddedEvent(Entity entity, HierarchyComponent &component, Entity child)
-      : ComponentEvent<HierarchyComponent>(entity, component), m_Child(child)
-  {
-  }
-
-  EVENT_CLASS_TYPE(HIERACHY_COMPONENT_CHILD_ADDED)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new ChildAddedEvent(entity, component, m_Child);
-  }
-
-  Entity GetChild() const
-  {
-    return m_Child;
-  }
-
- private:
-  Entity m_Child;
-};
-
-/**
- * @class ChildRemovedEvent
- * @brief 子节点移除事件
- */
-class ChildRemovedEvent : public ComponentEvent<HierarchyComponent> {
- public:
-  ChildRemovedEvent(Entity entity, HierarchyComponent &component, Entity child)
-      : ComponentEvent<HierarchyComponent>(entity, component), m_Child(child)
-  {
-  }
-
-  EVENT_CLASS_TYPE(HIERACHY_COMPONENT_CHILD_REMOVE)
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new ChildRemovedEvent(entity, component, m_Child);
-  }
-
-  Entity GetChild() const
-  {
-    return m_Child;
-  }
-
- private:
-  Entity m_Child;
-};
-
 };  // namespace mite
 
 #endif
