@@ -61,8 +61,8 @@ class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component:
 class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent> {
   DECLARE_COMPONENT_SYSTEM(HierarchyComponentSystem)
  public:
-  void Initialize(SceneRegistry &registry) override;
-  void Shutdown(SceneRegistry &registry) override;
+  void Initialize() override;
+  void Shutdown() override;
 
   /**
    * @brief 获取系统执行优先级
@@ -81,6 +81,26 @@ class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent>
    * @brief 验证并修复层级关系完整性
    */
   void ValidateAndRepairHierarchy(SceneRegistry &registry);
+  /**
+   * @brief 处理延迟的组件移除操作
+   */
+  void ProcessPendingRemovals(SceneRegistry &registry);
+
+  private:
+  // 待处理的组件移除操作队列
+   struct PendingRemoval {
+     Entity entity;
+     Entity parent;
+     std::vector<Entity> children;
+
+     PendingRemoval(Entity entity, Entity parent, const std::vector<Entity> &children)
+         : entity(entity), parent(parent), children(children)
+     {
+     }
+   };
+
+   std::vector<PendingRemoval> m_pendingRemovals;
+   std::mutex m_removalMutex;
 };
 // ==================== 事件定义 ====================
 /**

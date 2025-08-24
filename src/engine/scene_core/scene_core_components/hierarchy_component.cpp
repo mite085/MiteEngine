@@ -196,28 +196,37 @@ void HierarchyComponent::UpdateTransformDirtyState(SceneRegistry &registry)
   }
 }
 
-void HierarchyComponentSystem::Initialize(SceneRegistry &registry)
+void HierarchyComponentSystem::Initialize()
 {
-  DirtyComponentSystem<HierarchyComponent>::Initialize(registry);
+  DirtyComponentSystem<HierarchyComponent>::Initialize();
 }
 
-void HierarchyComponentSystem::Shutdown(SceneRegistry &registry)
+void HierarchyComponentSystem::Shutdown()
 {
-  DirtyComponentSystem<HierarchyComponent>::Shutdown(registry);
+  // 清空待处理队列
+  {
+    std::lock_guard<std::mutex> lock(m_removalMutex);
+    m_pendingRemovals.clear();
+  }
+
+  DirtyComponentSystem<HierarchyComponent>::Shutdown();
 }
 
 void HierarchyComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
-  // 验证并修复所有层级关系的完整性
+  // 1. 首先处理待移除的组件
+  ProcessPendingRemovals(registry);
+
+  // 2. 验证并修复所有层级关系的完整性
   ValidateAndRepairHierarchy(registry);
 
-  // 处理脏组件
+  // 3. 处理脏组件
   for (auto *comp : m_DirtyComponents) {
     comp->ProcessDirty(deltaTime, registry);
     comp->ClearDirty();
   }
 
-  // 清空脏组件列表
+  // 4. 清空脏组件列表
   m_DirtyComponents.clear();
 }
 
@@ -226,26 +235,91 @@ bool HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<Hierarch
   auto &oldComponent = e.GetComponent();
   Entity entity = e.GetEntity();
 
-  // 1. 从父节点中移除自己
-  if (oldComponent.GetParent().IsValid()) {
-    if (GetRegistry().HasComponent<HierarchyComponent>(oldComponent.GetParent())) {
-      auto &parentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
-          oldComponent.GetParent());
-      parentHierarchy.RemoveChild(GetRegistry(), entity);
-    }
+  // 只保存必要的层级关系数据
+  Entity parent = oldComponent.GetParent();
+  std::vector<Entity> children = oldComponent.GetChildren();  // 拷贝子节点列表
+
+  // 将移除操作加入待处理队列，待下一帧的
+  // ProcessDirtyComponents处理待移除的父子关系
+  // 
+  // 分段处理原因：此处无法访问到SceneRegistry，
+  // ComponentSystem也不应当维护SceneRegistry对象
+  // （该操作复杂度较高，多打LOG方便后续调试）
+  {
+    std::lock_guard<std::mutex> lock(m_removalMutex);
+    m_pendingRemovals.emplace_back(entity, parent, children);
   }
 
-  // 2. 清除所有子节点的父节点
-  for (auto child : oldComponent.GetChildren()) {
-    if (GetRegistry().HasComponent<HierarchyComponent>(child)) {
-      auto &childHierarchy = GetRegistry().GetComponent<HierarchyComponent>(child);
-      childHierarchy.SetParent(GetRegistry(), Entity());
-    }
-  }
+  // 从组件列表中移除
+  Unregister(&oldComponent);
+  m_Logger->debug("Hierarchy component removal queued for entity {}", entity.GetUUIDString());
+  m_Logger->trace(
+      "Queued removal: parent={}, children_count={}", parent.GetUUIDString(), children.size());
 
   // 标记事件已处理，阻断传播
   e.Handled();
-  return e.handled;
+  return true;
+}
+
+void HierarchyComponentSystem::ProcessPendingRemovals(SceneRegistry &registry)
+{
+  std::vector<PendingRemoval> processingRemovals;
+
+  {
+    std::lock_guard<std::mutex> lock(m_removalMutex);
+    if (m_pendingRemovals.empty()) {
+      return;
+    }
+
+    // 交换数据以减少锁持有时间
+    processingRemovals.swap(m_pendingRemovals);
+  }
+  // 处理所有待移除的组件
+  for (const auto &removal : processingRemovals) {
+    Entity entity = removal.entity;
+
+    m_Logger->debug("Processing hierarchy component removal for entity {}",
+                    entity.GetUUIDString());
+    // 1. 从父节点中移除自己（如果父节点存在且有效）
+    if (removal.parent.IsValid() && registry.IsValid(removal.parent)) {
+      if (registry.HasComponent<HierarchyComponent>(removal.parent)) {
+        try {
+          auto &parentHierarchy = registry.GetComponent<HierarchyComponent>(removal.parent);
+          parentHierarchy.RemoveChild(registry, entity);
+          m_Logger->trace("Removed entity {} from parent {}",
+                          entity.GetUUIDString(),
+                          removal.parent.GetUUIDString());
+        }
+        catch (const std::exception &e) {
+          m_Logger->warn("Failed to remove entity {} from parent {}: {}",
+                         entity.GetUUIDString(),
+                         removal.parent.GetUUIDString(),
+                         e.what());
+        }
+      }
+    }
+    // 2. 清除所有子节点的父节点（如果子节点存在且有效）
+    for (auto child : removal.children) {
+      if (child.IsValid() && registry.IsValid(child)) {
+        if (registry.HasComponent<HierarchyComponent>(child)) {
+          try {
+            auto &childHierarchy = registry.GetComponent<HierarchyComponent>(child);
+            // 只有当当前父节点确实是这个被移除的实体时才清除
+            if (childHierarchy.GetParent() == entity) {
+              childHierarchy.SetParent(registry, Entity());
+              m_Logger->trace("Cleared parent for child entity {}", child.GetUUIDString());
+            }
+          }
+          catch (const std::exception &e) {
+            m_Logger->warn(
+                "Failed to clear parent for child entity {}: {}", child.GetUUIDString(), e.what());
+          }
+        }
+      }
+    }
+    m_Logger->debug("Completed hierarchy component removal for entity {}", entity.GetUUIDString());
+  }
+  m_Logger->trace("Processed {} pending hierarchy component removals", processingRemovals.size());
 }
 
 void HierarchyComponentSystem::ValidateAndRepairHierarchy(SceneRegistry &registry)
