@@ -87,5 +87,6 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
 
     # 弱依赖：创建Component组件属性界面
     MiteEngine_Engine_Scene_Core
+    MiteEngine_Engine_Scene_Graph
     MiteEngine_Engine_Scene_View
 )

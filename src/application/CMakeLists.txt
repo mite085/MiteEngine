@@ -43,6 +43,7 @@ target_link_libraries(${APPLICATION_LIB_NAME}
     MiteEngine_Engine_Material
     MiteEngine_Engine_Renderer
     MiteEngine_Engine_Scene_Core
+    MiteEngine_Engine_Scene_Graph
     MiteEngine_Engine_Scene_View
     MiteEngine_Engine_Window
     MiteEngine_Engine_Ui
