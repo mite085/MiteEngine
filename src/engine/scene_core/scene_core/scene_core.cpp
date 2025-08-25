@@ -2,10 +2,11 @@
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
-SceneCore::SceneCore(const std::string &name) : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
+SceneCore::SceneCore(const std::string &name)
+    : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
 {
   // 初始化核心系统
-  InitComponentSystems();
+  RegisterComponentSystems();
 
   //// TODO: 创建默认环境实体
   // auto env = CreateEntity("Environment");
@@ -17,7 +18,19 @@ SceneCore::~SceneCore()
   Clear(false);
 }
 
-void SceneCore::InitComponentSystems()
+void SceneCore::InitializeComponentSystems()
+{
+  // 初始化所有组件系统
+  m_SystemManager.InitializeAll();
+}
+
+void SceneCore::ShutdownComponentSystems()
+{
+  // 关闭所有组件系统
+  m_SystemManager.ShutdownAll();
+}
+
+void SceneCore::RegisterComponentSystems()
 {
   // 逐个注册组件系统
   m_SystemManager.RegisterSystem<CameraComponentSystem>();
@@ -28,17 +41,11 @@ void SceneCore::InitComponentSystems()
   m_SystemManager.RegisterSystem<MeshComponentSystem>();
   m_SystemManager.RegisterSystem<TagComponentSystem>();
   m_SystemManager.RegisterSystem<TransformComponentSystem>();
-  m_SystemManager.RegisterSystem<VisibilityComponentSystem>();
 
-  // 初始化所有组件系统
-  m_SystemManager.InitializeAll();
 }
 
-void SceneCore::ShutDownComponentSystems()
+void SceneCore::UnregisterComponentSystems()
 {
-  // 销毁所有组件系统
-  m_SystemManager.ShutdownAll();
-
   // 逐个注销组件系统
   m_SystemManager.UnregisterSystem<CameraComponentSystem>();
   m_SystemManager.UnregisterSystem<DestroyComponentSystem>();
@@ -48,16 +55,13 @@ void SceneCore::ShutDownComponentSystems()
   m_SystemManager.UnregisterSystem<MeshComponentSystem>();
   m_SystemManager.UnregisterSystem<TagComponentSystem>();
   m_SystemManager.UnregisterSystem<TransformComponentSystem>();
-  m_SystemManager.UnregisterSystem<VisibilityComponentSystem>();
+
 }
 
 void SceneCore::OnUpdate(float timestep)
 {
   // 更新所有注册的系统
   m_SystemManager.UpdateAll(timestep);
-
-  // 场景图更新
-  //m_SceneGraph->OnUpdate(timestep);
 
   // 处理实体销毁队列
   auto entities = m_Registry.GetEntitiesWith<DestroyComponent>();
@@ -69,7 +73,7 @@ void SceneCore::OnUpdate(float timestep)
 void SceneCore::OnRenderPrepare()
 {
   // 准备场景图渲染状态
-  //m_SceneGraph->OnRenderPrepare();
+  // m_SceneGraph->OnRenderPrepare();
 }
 
 void SceneCore::Clear(bool keepSystems)
@@ -82,10 +86,9 @@ void SceneCore::Clear(bool keepSystems)
 
   // 3. TODO: 重置主相机
 
-
   // 6. 根据参数决定是否重置系统
   if (!keepSystems) {
-    ShutDownComponentSystems();
+    UnregisterComponentSystems();
   }
 
   // 7. TODO: 系统保留则重新创建默认环境实体（避免与析构函数的Clear冲突）
@@ -139,5 +142,4 @@ void SceneCore::SetMainCamera(Entity mainCameraEntity)
   // 通过访问Camera组件系统，更换其维护的主相机实体
   m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);
 }
-
 }  // namespace mite

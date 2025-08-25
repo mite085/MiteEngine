@@ -89,16 +89,35 @@ class SceneCore{
   {
     return m_SystemManager;
   }
+  /**
+   * @brief 初始化组件系统
+   *
+   * 注意：
+   * 该步骤应当在Application::Init()的最后阶段进行
+   * 因为其他存在组件的模块(包括SceneGraph)，也会将
+   * 其定义的组件注册到ComponentSystemManager中，
+   * 若过早初始化会导致后注册的组件无法正常启用。
+   */
+  void InitializeComponentSystems();
+
+  /**
+   * @brief 关闭组件系统
+   * 
+   * 注意：
+   * 该步骤应当在Application关闭流程的
+   * 最开始阶段调用，原因同上。
+   */
+  void ShutdownComponentSystems();
 
  private:
   /**
-   * @brief 初始化组件系统
+   * @brief 注册组件系统
    */
-  void InitComponentSystems();
+  void RegisterComponentSystems();
   /**
-   * @brief 关闭组件系统
+   * @brief 注销组件系统
    */
-  void ShutDownComponentSystems();
+  void UnregisterComponentSystems();
 
  private:
   // 场景名称
