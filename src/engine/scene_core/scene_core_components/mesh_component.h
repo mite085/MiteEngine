@@ -59,7 +59,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
    * @brief 获取Mesh的包围盒
    * @return 
    */
-  const std::pair<glm::vec3, glm::vec3> &GetBoundingBox() const
+  const std::pair<glm::vec3, glm::vec3> GetBoundingBox() const
   {
     return m_Mesh->GetBoundingBox();
   }

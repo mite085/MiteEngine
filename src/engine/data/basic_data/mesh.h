@@ -62,7 +62,7 @@ class Mesh {
   /**
    * 获取子网格级包围盒
    */
-  const std::pair<glm::vec3, glm::vec3> &GetBoundingBox() const
+  const std::pair<glm::vec3, glm::vec3> GetBoundingBox() const
   {
     return {section_.bboxMin, section_.bboxMax};
   }

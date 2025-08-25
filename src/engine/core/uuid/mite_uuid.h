@@ -36,6 +36,8 @@ class UUIDGenerator {
    */
   static uuids::uuid Generate()
   {
+    // C6001 使用未初始化的内存“bytes”
+    // 这个警告是误报，bytes数组会被完全初始化
     thread_local uuids::uuid_random_generator gen{GetThreadLocalGenerator()};
     return gen();
   }
