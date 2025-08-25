@@ -8,6 +8,7 @@
 namespace mite {
 
 // 前向声明
+class ComponentSystemManager;
 class SceneRegistry;
 class Entity;
 
@@ -42,6 +43,10 @@ class SceneGraph {
   SceneGraph &operator=(const SceneGraph &) = delete;
   SceneGraph(SceneGraph &&) = delete;
   SceneGraph &operator=(SceneGraph &&) = delete;
+
+  // 初始化与清理均需要依赖SceneCore模块的组件系统管理器注册组件
+  void Initialize(ComponentSystemManager &manager);
+  void CleanUp(ComponentSystemManager &manager);
 
   // ==================== 场景节点生命周期管理 ====================
 

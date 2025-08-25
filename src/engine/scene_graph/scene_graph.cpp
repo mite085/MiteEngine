@@ -1,5 +1,9 @@
 #include "scene_graph.h"
 #include "simple_bvh.h"
+#include "scene_core/component_system_manager.h"
+#include "scene_graph_system.h"
+#include "transform_system.h"
+#include "visibility_component.h"
 
 namespace mite {
 
@@ -20,6 +24,18 @@ SceneGraph::~SceneGraph()
   m_logger->info("Destroying SceneGraph");
   Clear();
   m_logger->debug("SceneGraph destroyed");
+}
+
+void SceneGraph::Initialize(ComponentSystemManager &manager) {
+  manager.RegisterSystem<SceneGraphSystem>();
+  manager.RegisterSystem<TransformSystem>();
+  manager.RegisterSystem<VisibilityComponentSystem>();
+}
+
+void SceneGraph::CleanUp(ComponentSystemManager &manager) {
+  manager.UnregisterSystem<SceneGraphSystem>();
+  manager.UnregisterSystem<TransformSystem>();
+  manager.UnregisterSystem<VisibilityComponentSystem>();
 }
 
 // ==================== 场景节点生命周期管理 ====================
