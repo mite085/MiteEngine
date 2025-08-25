@@ -101,6 +101,11 @@ struct AABB {
   bool Intersects(const AABB &other) const;
 
   /**
+   * @brief 计算点到AABB的平方距离
+   */
+  float DistanceToPointSq(const glm::vec3 &point) const;
+
+  /**
    * @brief 合并两个AABB
    */
   static AABB Merge(const AABB &a, const AABB &b);

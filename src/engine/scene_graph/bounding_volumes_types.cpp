@@ -72,6 +72,28 @@ bool AABB::Intersects(const AABB &other) const
          (min.z <= other.max.z && max.z >= other.min.z);
 }
 
+float AABB::DistanceToPointSq(const glm::vec3 &point) const
+{
+  float sqDist = 0.0f;
+
+  // 分别计算三个轴上的距离分量
+  for (int i = 0; i < 3; ++i) {
+    // 点在包围盒左侧
+    if (point[i] < min[i]) {
+      float diff = min[i] - point[i];
+      sqDist += diff * diff;
+    }
+    // 点在包围盒右侧
+    else if (point[i] > max[i]) {
+      float diff = point[i] - max[i];
+      sqDist += diff * diff;
+    }
+    // 点在包围盒内部，该轴距离分量为0
+  }
+
+  return sqDist;
+}
+
 AABB AABB::Merge(const AABB &a, const AABB &b)
 {
   return AABB(glm::min(a.min, b.min), glm::max(a.max, b.max));

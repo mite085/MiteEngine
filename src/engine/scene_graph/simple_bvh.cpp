@@ -381,12 +381,12 @@ void SimpleBVH::AABBQueryRecursive(BVHNode *node,
   if (!node)
     return;
 
-  if (!AABBIntersectsAABB(aabb, node->bounds)) {
+  if (!BoundingVolumes::AABBIntersectsAABB(aabb, node->bounds)) {
     return;
   }
 
   if (node->IsLeaf()) {
-    if (AABBIntersectsAABB(aabb, node->sceneNode->GetWorldBounds())) {
+    if (BoundingVolumes::AABBIntersectsAABB(aabb, node->sceneNode->GetWorldBounds())) {
       results.push_back(node->sceneNode);
     }
   }
