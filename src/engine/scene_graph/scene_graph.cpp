@@ -1,594 +1,560 @@
 #include "scene_graph.h"
-
+#include "simple_bvh.h"
 
 namespace mite {
-SceneGraph::SceneGraph()
-{  // 创建日志系统
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Scene Graph");
-  m_Logger->trace("Created scene graph");
+
+// ==================== 构造函数和析构函数 ====================
+SceneGraph::SceneGraph(SpatialPartitionType spatialPartitionType)
+    : m_spatialPartitionType(spatialPartitionType)
+{
+  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph");
+  m_logger->trace("SceneGraph created with spatial partition type: {}",
+                  GetSpatialPartitionTypeName(m_spatialPartitionType));
+
+  // 初始化空间划分结构
+  InitializeSpatialPartition();
 }
+
 SceneGraph::~SceneGraph()
 {
+  m_logger->info("Destroying SceneGraph");
   Clear();
-}
-void SceneGraph::Initialize(SceneRegistry &registry)
-{
-  m_Registry = registry;
-
-  // 订阅相关事件
-  m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
-  m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
-  m_EventSubscriptions.Subscribe<ComponentAddedEvent<HierarchyComponent>>(
-      BIND_DISPATCH_FN(OnHierarchyAdded));
-  //m_EventSubscriptions.Subscribe<ComponentChangedEvent<HierarchyComponent>>(
-  //    BIND_DISPATCH_FN(OnHierarchyChanged));
-  m_EventSubscriptions.Subscribe<ComponentRemovedEvent<HierarchyComponent>>(
-      BIND_DISPATCH_FN(OnHierarchyRemoved));
-  m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(BIND_DISPATCH_FN(OnTransformUpdated));
-  m_EventSubscriptions.Subscribe<PositionChangedEvent>(BIND_DISPATCH_FN(OnPositionChanged));
-  m_EventSubscriptions.Subscribe<RotationChangedEvent>(BIND_DISPATCH_FN(OnRotationChanged));
-  m_EventSubscriptions.Subscribe<ScaleChangedEvent>(BIND_DISPATCH_FN(OnScaleChanged));
-  m_EventSubscriptions.Subscribe<TransformChangedEvent>(BIND_DISPATCH_FN(OnTransformChanged));
+  m_logger->debug("SceneGraph destroyed");
 }
 
-void SceneGraph::Clear()
+// ==================== 场景节点生命周期管理 ====================
+SceneNode *SceneGraph::CreateNode(Entity entity)
 {
-  m_EventSubscriptions.UnsubscribeAll();
+  if (!entity.IsValid()) {
+    m_logger->warn("Attempted to create node for invalid entity");
+    return nullptr;
+  }
+
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  // 检查是否已存在节点
+  if (m_entityToNodeMap.find(entity) != m_entityToNodeMap.end()) {
+    m_logger->warn("Scene node already exists for entity {}", entity.GetUUIDString());
+    return m_entityToNodeMap[entity].get();
+  }
+
+  try {
+    // 创建新的场景节点
+    auto node = std::make_unique<SceneNode>(entity);
+    SceneNode *nodePtr = node.get();
+
+    // 添加到映射表
+    m_entityToNodeMap[entity] = std::move(node);
+
+    // 添加到空间划分结构
+    AddNodeToSpatialPartition(nodePtr);
+
+    m_logger->debug("Created scene node for entity {}", entity.GetUUIDString());
+    return nodePtr;
+  }
+  catch (const std::exception &e) {
+    m_logger->error(
+        "Failed to create scene node for entity {}: {}", entity.GetUUIDString(), e.what());
+    return nullptr;
+  }
 }
 
-void SceneGraph::OnUpdate(float timestep)
+bool SceneGraph::DestroyNode(Entity entity)
 {
-  // 1. 处理变换继承和可见性继承（使用事件系统和ComponentSystem系统的每帧更新替代） --------------------------------
+  std::lock_guard<std::mutex> lock(m_mutex);
 
-  // 2. 处理延迟的层次结构变更 ----------------------------------
-
-  //// TODO: 如果有延迟的父子关系变更，在这里处理
-  // ProcessDeferredHierarchyChanges();
-
-  // 3. 更新场景图统计信息 --------------------------------------
-
-  //// TODO: 按照时间step更新统计信息
-  // UpdateSceneStatistics(timestep);
-}
-bool SceneGraph::SetParent(Entity entity, Entity newParent)
-{
-  // 检查实体有效性
-  if (!GetRegistry().IsValid(entity)) {
+  auto it = m_entityToNodeMap.find(entity);
+  if (it == m_entityToNodeMap.end()) {
+    m_logger->warn("Scene node not found for entity {}", entity.GetUUIDString());
     return false;
   }
 
-  // 检查parent有效性 (疑问：空实体是否能成为合法的parent?)
-  if (!GetRegistry().IsValid(newParent)) {
+  SceneNode *node = it->second.get();
+
+  // 从空间划分结构中移除
+  RemoveNodeFromSpatialPartition(node);
+
+  // 处理父子关系：将所有子节点提升为根节点
+  auto children = node->GetChildren();
+  for (SceneNode *child : children) {
+    SetParent(child, nullptr);
+  }
+
+  // 如果自身有父节点，从父节点中移除
+  if (node->GetParent()) {
+    node->GetParent()->RemoveChild(node);
+  }
+
+  // 从映射表中移除
+  m_entityToNodeMap.erase(it);
+
+  // 从脏节点列表中移除
+  m_dirtyNodes.erase(std::remove(m_dirtyNodes.begin(), m_dirtyNodes.end(), entity),
+                     m_dirtyNodes.end());
+
+  m_logger->debug("Destroyed scene node for entity {}", entity.GetUUIDString());
+  return true;
+}
+
+void SceneGraph::CreateNodes(const std::vector<Entity> &entities)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  for (Entity entity : entities) {
+    if (entity.IsValid() && m_entityToNodeMap.find(entity) == m_entityToNodeMap.end()) {
+      CreateNode(entity);
+    }
+  }
+
+  m_logger->debug("Created {} scene nodes in batch", entities.size());
+}
+
+void SceneGraph::DestroyNodes(const std::vector<Entity> &entities)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  for (Entity entity : entities) {
+    DestroyNode(entity);
+  }
+
+  m_logger->debug("Destroyed {} scene nodes in batch", entities.size());
+}
+
+// ==================== 场景节点查询接口 ====================
+SceneNode *SceneGraph::GetNode(Entity entity) const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+  auto it = m_entityToNodeMap.find(entity);
+  return it != m_entityToNodeMap.end() ? it->second.get() : nullptr;
+}
+
+bool SceneGraph::HasNode(Entity entity) const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+  return m_entityToNodeMap.find(entity) != m_entityToNodeMap.end();
+}
+
+std::vector<SceneNode *> SceneGraph::GetRootNodes() const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+  std::vector<SceneNode *> rootNodes;
+
+  for (const auto &[entity, node] : m_entityToNodeMap) {
+    if (node->IsRoot()) {
+      rootNodes.push_back(node.get());
+    }
+  }
+
+  return rootNodes;
+}
+
+std::vector<SceneNode *> SceneGraph::GetAllNodes() const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+  std::vector<SceneNode *> nodes;
+  nodes.reserve(m_entityToNodeMap.size());
+
+  for (const auto &[entity, node] : m_entityToNodeMap) {
+    nodes.push_back(node.get());
+  }
+
+  return nodes;
+}
+
+size_t SceneGraph::GetNodeCount() const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+  return m_entityToNodeMap.size();
+}
+
+bool SceneGraph::IsEmpty() const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+  return m_entityToNodeMap.empty();
+}
+
+// ==================== 场景树操作接口（编辑器支持） ====================
+bool SceneGraph::SetParent(SceneNode *node, SceneNode *newParent)
+{
+  if (!node) {
+    m_logger->warn("Attempted to set parent for null node");
     return false;
   }
 
-  // 检查是否设置为自己父节点
-  if (entity == newParent) {
+  // 检查循环引用
+  if (!ValidateParenting(node, newParent)) {
+    m_logger->warn("Invalid parenting operation: cyclic reference detected");
     return false;
   }
 
-  // 检查是否形成循环依赖
-  if (newParent.IsValid() && ValidateHierarchy(entity, newParent)) {
-    return false;
-  }
+  std::lock_guard<std::mutex> lock(m_mutex);
 
-  // 获取当前父节点
-  auto &hierarchy = GetRegistry().GetOrAddComponent<HierarchyComponent>(entity);
-  Entity oldParent = hierarchy.GetParent();
-
-  // 如果父节点没有变化，直接返回成功
-  if (oldParent == newParent) {
-    return true;
-  }
-
-  // 从旧父节点中移除
-  if (oldParent.IsValid()) {
-    auto &oldParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(oldParent);
-    oldParentHierarchy.RemoveChild(entity);
+  // 从原父节点移除
+  SceneNode *oldParent = node->GetParent();
+  if (oldParent) {
+    oldParent->RemoveChild(node);
   }
 
   // 设置新父节点
-  hierarchy.SetParent(newParent);
-
-  // 添加到新父节点的子列表
-  if (newParent.IsValid()) {
-    auto &newParentHierarchy = GetRegistry().GetOrAddComponent<HierarchyComponent>(newParent);
-    newParentHierarchy.AddChild(entity);
+  if (newParent) {
+    newParent->AddChild(node);
   }
 
-  // 重新计算受影响实体的深度
-  // 这里可以优化为只更新子树的深度
-  RecalculateAllDepths();
+  // 设置节点的父节点引用
+  node->SetParent(newParent);
+
+  // 标记节点需要更新（父子关系变化影响世界变换）
+  MarkNodeDirty(node->GetEntity());
+
+  m_logger->debug("Reparented node {}.", node->GetEntity().GetUUIDString());
 
   return true;
 }
 
-Entity SceneGraph::GetParent(Entity entity) const
+std::string SceneGraph::GetNodePath(SceneNode *node) const
 {
-  if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-    return hierarchy->GetParent();
-  }
-  return Entity();
-}
-
-const std::vector<Entity> &SceneGraph::GetChildren(Entity entity) const
-{
-  static const std::vector<Entity> emptyChildren;
-
-  if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-    return hierarchy->GetChildren();
-  }
-  return emptyChildren;
-}
-
-bool SceneGraph::IsRoot(Entity entity) const
-{
-  if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-    return hierarchy->IsRoot();
-  }
-  return true;  // 没有HierarchyComponent的实体视为根节点
-}
-
-bool SceneGraph::IsLeaf(Entity entity) const
-{
-  if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-    return hierarchy->IsLeaf();
-  }
-  return true;  // 没有HierarchyComponent的实体视为叶节点
-}
-
-size_t SceneGraph::GetDepth(Entity entity) 
-{
-  if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-    return hierarchy->GetDepth(GetRegistry());
-  }
-  return 0;  // 没有HierarchyComponent的实体深度为0
-}
-
-void SceneGraph::Traverse(Entity root, const VisitorFunc &visitor, TraversalOrder order) const
-{
-  if (!GetRegistry().IsValid(root) || !visitor) {
-    return;
+  if (!node) {
+    return "Invalid";
   }
 
-  switch (order) {
-    case TraversalOrder::DepthFirst:
-      TraverseDFS(root, visitor);
-      break;
-    case TraversalOrder::BreadthFirst:
-      TraverseBFS(root, visitor);
-      break;
-    case TraversalOrder::ReverseDepthFirst:
-      TraverseReverseDFS(root, visitor);
-      break;
+  std::vector<std::string> pathSegments;
+  SceneNode *current = node;
+
+  // 向上遍历构建路径
+  while (current) {
+    std::stringstream ss;
+    ss << "Entity_" << current->GetEntity().GetUUIDString();
+    pathSegments.push_back(ss.str());
+    current = current->GetParent();
   }
-}
 
-void SceneGraph::TraverseAll(const VisitorFunc &visitor, TraversalOrder order)
-{
-  auto roots = GetRoots();
-  for (auto root : roots) {
-    Traverse(root, visitor, order);
-  }
-}
+  // 反转路径（从根到当前节点）
+  std::reverse(pathSegments.begin(), pathSegments.end());
 
-std::vector<Entity> SceneGraph::GetPathToRoot(Entity entity) const
-{
-  std::vector<Entity> path;
-
-  while (GetRegistry().IsValid(entity)) {
-    path.push_back(entity);
-    entity = GetParent(entity);
+  // 拼接路径字符串
+  std::string path;
+  for (size_t i = 0; i < pathSegments.size(); ++i) {
+    if (i > 0)
+      path += "/";
+    path += pathSegments[i];
   }
 
   return path;
 }
 
-bool SceneGraph::IsInSameHierarchy(Entity entity1, Entity entity2) const
+SceneNode *SceneGraph::FindNodeByPath(const std::string &path) const
 {
-  // 获取两个实体到根节点的路径
-  auto path1 = GetPathToRoot(entity1);
-  auto path2 = GetPathToRoot(entity2);
+  std::lock_guard<std::mutex> lock(m_mutex);
 
-  // 检查是否有共同节点
-  for (auto e1 : path1) {
-    if (std::find(path2.begin(), path2.end(), e1) != path2.end()) {
-      return true;
+  // 简单的路径查找实现（可根据需要优化）
+  for (const auto &[entity, node] : m_entityToNodeMap) {
+    if (GetNodePath(node.get()) == path) {
+      return node.get();
     }
   }
 
-  return false;
+  return nullptr;
 }
 
-std::vector<Entity> SceneGraph::GetRoots()
+void SceneGraph::TraverseTree(std::function<bool(SceneNode *)> callback) const
 {
-  std::vector<Entity> roots;
+  std::lock_guard<std::mutex> lock(m_mutex);
 
-  // 遍历所有有HierarchyComponent的实体，收集根节点
-  auto &storage = GetRegistry().GetAllEntities();
-  for (auto entity : storage) {
-    if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-      if (hierarchy->IsRoot()) {
-        roots.push_back(entity);
-      }
-    }
-    else {
-      // 没有HierarchyComponent的实体也视为根节点
-      roots.push_back(entity);
-    }
-  }
-
-  return roots;
-}
-
-void SceneGraph::RecalculateAllDepths()
-{
-  // 广度优先遍历所有根节点，计算深度
-  std::queue<std::pair<Entity, size_t>> queue;
-
-  // 初始队列包含所有根节点，深度为0
-  auto roots = GetRoots();
-  for (auto root : roots) {
-    queue.emplace(root, 0);
-  }
-
-  while (!queue.empty()) {
-    auto [entity, depth] = queue.front();
-    queue.pop();
-
-    if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-      hierarchy->m_DepthCache = depth;
-
-      // 将子节点加入队列，深度+1
-      for (auto child : hierarchy->GetChildren()) {
-        queue.emplace(child, depth + 1);
+  // 从所有根节点开始遍历
+  for (const auto &[entity, node] : m_entityToNodeMap) {
+    if (node->IsRoot()) {
+      if (!TraverseRecursive(node.get(), callback)) {
+        break;  // 回调函数要求中断遍历
       }
     }
   }
 }
 
-void SceneGraph::OnRenderPrepare()
+// ==================== 空间划分管理接口 ====================
+void SceneGraph::SetSpatialPartitionType(SpatialPartitionType type)
 {
+  if (m_spatialPartitionType == type) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  m_spatialPartitionType = type;
+  InitializeSpatialPartition();
+
+  m_logger->info("Spatial partition type changed to: {}", GetSpatialPartitionTypeName(type));
 }
 
-bool SceneGraph::TraverseDFS(Entity entity, const VisitorFunc &visitor) const
+SpatialPartitionType SceneGraph::GetSpatialPartitionType() const
 {
-  if (!visitor(entity)) {
+  return m_spatialPartitionType;
+}
+
+void SceneGraph::RebuildSpatialPartition()
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (!m_spatialPartition) {
+    m_logger->warn("Cannot rebuild null spatial partition");
+    return;
+  }
+
+  m_spatialPartition->Clear();
+
+  // 重新添加所有节点
+  for (const auto &[entity, node] : m_entityToNodeMap) {
+    AddNodeToSpatialPartition(node.get());
+  }
+
+  m_logger->debug("Rebuilt spatial partition with {} nodes", m_entityToNodeMap.size());
+}
+
+std::string SceneGraph::GetSpatialPartitionStats() const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (!m_spatialPartition) {
+    return "Spatial partition not initialized";
+  }
+
+  return m_spatialPartition->GetStats();
+}
+
+void SceneGraph::DebugDraw(std::function<void(const AABB &, int depth)> drawCallback)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (m_spatialPartition && drawCallback) {
+    m_spatialPartition->DebugDraw(drawCallback);
+  }
+}
+
+// ==================== 空间查询接口 ====================
+int SceneGraph::QueryVisibleNodes(const Frustum &frustum, std::vector<SceneNode *> &results)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (!m_spatialPartition) {
+    m_logger->warn("Spatial partition not initialized for frustum culling");
+    return 0;
+  }
+
+  results.clear();
+  return m_spatialPartition->FrustumCull(frustum, results);
+}
+
+size_t SceneGraph::QueryRaycast(const Ray &ray, std::vector<SceneNode *> &results)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (!m_spatialPartition) {
+    m_logger->warn("Spatial partition not initialized for raycast");
+    return 0;
+  }
+
+  results.clear();
+  if (m_spatialPartition->Raycast(ray, results)) {
+    return results.size();
+  }
+  return 0;
+}
+
+bool SceneGraph::QueryRaycastFirst(const Ray &ray, SceneNode *&result, float &distance)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (!m_spatialPartition) {
+    m_logger->warn("Spatial partition not initialized for raycast");
     return false;
   }
 
-  if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-    for (auto child : hierarchy->GetChildren()) {
-      if (!TraverseDFS(child, visitor)) {
-        return false;
+  return m_spatialPartition->RaycastFirst(ray, result, distance);
+}
+
+int SceneGraph::QuerySphere(const Sphere &sphere, std::vector<SceneNode *> &results)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (!m_spatialPartition) {
+    m_logger->warn("Spatial partition not initialized for sphere query");
+    return 0;
+  }
+
+  results.clear();
+  return m_spatialPartition->SphereQuery(sphere, results);
+}
+
+int SceneGraph::QueryAABB(const AABB &aabb, std::vector<SceneNode *> &results)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (!m_spatialPartition) {
+    m_logger->warn("Spatial partition not initialized for AABB query");
+    return 0;
+  }
+
+  results.clear();
+  return m_spatialPartition->AABBQuery(aabb, results);
+}
+
+// ==================== 节点更新接口 ====================
+void SceneGraph::UpdateNodeTransform(Entity entity, const glm::mat4 &localTransform)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  auto it = m_entityToNodeMap.find(entity);
+  if (it != m_entityToNodeMap.end()) {
+    it->second->SetLocalTransform(localTransform);
+    MarkNodeDirty(entity);
+  }
+}
+
+void SceneGraph::UpdateNodeBounds(Entity entity, const AABB &localBounds)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  auto it = m_entityToNodeMap.find(entity);
+  if (it != m_entityToNodeMap.end()) {
+    it->second->SetLocalBounds(localBounds);
+    MarkNodeDirty(entity);
+  }
+}
+
+void SceneGraph::MarkNodeDirty(Entity entity)
+{
+  // 避免重复添加
+  if (std::find(m_dirtyNodes.begin(), m_dirtyNodes.end(), entity) == m_dirtyNodes.end()) {
+    m_dirtyNodes.push_back(entity);
+  }
+}
+
+void SceneGraph::UpdateDirtyNodes()
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  if (m_dirtyNodes.empty()) {
+    return;
+  }
+
+  // 更新所有脏节点
+  for (Entity entity : m_dirtyNodes) {
+    auto it = m_entityToNodeMap.find(entity);
+    if (it != m_entityToNodeMap.end()) {
+      it->second->Update();
+
+      // 更新空间划分结构中的节点位置
+      if (m_spatialPartition) {
+        m_spatialPartition->Update(it->second.get());
       }
+    }
+  }
+
+  m_logger->trace("Updated {} dirty nodes", m_dirtyNodes.size());
+  m_dirtyNodes.clear();
+}
+
+// ==================== 序列化支持 ====================
+bool SceneGraph::Serialize(std::ostream &output) const
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  // TODO: 实现完整的场景图序列化
+  // 目前先预留接口
+  m_logger->info("SceneGraph serialization called (not implemented)");
+  return !output.fail();
+}
+
+bool SceneGraph::Deserialize(std::istream &input)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+
+  // TODO: 实现完整的场景图反序列化
+  // 目前先预留接口
+  m_logger->info("SceneGraph deserialization called (not implemented)");
+  return !input.fail();
+}
+
+// ==================== 私有工具方法 ====================
+void SceneGraph::InitializeSpatialPartition()
+{
+  m_spatialPartition = CreateSpatialPartition(m_spatialPartitionType);
+  if (m_spatialPartition) {
+    m_logger->debug("Initialized {} spatial partition",
+                    GetSpatialPartitionTypeName(m_spatialPartitionType));
+  }
+  else {
+    m_logger->error("Failed to initialize spatial partition");
+  }
+}
+
+bool SceneGraph::TraverseRecursive(SceneNode *node,
+                                   std::function<bool(SceneNode *)> callback) const
+{
+  if (!node || !callback) {
+    return true;
+  }
+
+  // 先处理当前节点
+  if (!callback(node)) {
+    return false;  // 回调要求中断遍历
+  }
+
+  // 递归处理所有子节点
+  for (SceneNode *child : node->GetChildren()) {
+    if (!TraverseRecursive(child, callback)) {
+      return false;
     }
   }
 
   return true;
 }
 
-void SceneGraph::TraverseBFS(Entity entity, const VisitorFunc &visitor) const
+bool SceneGraph::ValidateParenting(SceneNode *node, SceneNode *newParent) const
 {
-  std::queue<Entity> queue;
-  queue.push(entity);
-
-  while (!queue.empty()) {
-    auto current = queue.front();
-    queue.pop();
-
-    if (!visitor(current)) {
-      return;
-    }
-
-    if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(current)) {
-      for (auto child : hierarchy->GetChildren()) {
-        queue.push(child);
-      }
-    }
-  }
-}
-
-bool SceneGraph::TraverseReverseDFS(Entity entity, const VisitorFunc &visitor) const
-{
-  if (auto *hierarchy = GetRegistry().TryGetComponent<HierarchyComponent>(entity)) {
-    for (auto child : hierarchy->GetChildren()) {
-      if (!TraverseReverseDFS(child, visitor)) {
-        return false;
-      }
-    }
+  if (!node || node == newParent) {
+    return false;  // 不能设置自己为父节点
   }
 
-  return visitor(entity);
-}
-
-// 事件处理实现 ==========================================
-
-bool SceneGraph::OnEntityCreated(EntityCreatedEvent &e)
-{
-  Entity entity = e.GetEntity();
-
-  // 为新实体添加默认层次组件（如果不存在）
-  if (!GetRegistry().HasComponent<HierarchyComponent>(entity)) {
-    GetRegistry().AddComponent<HierarchyComponent>(entity);
-  }
-
-  // 不应当标记事件已处理
-  return e.handled;
-}
-
-bool SceneGraph::OnEntityDestroyed(EntityDestroyedEvent &e)
-{
-  Entity entity = e.GetEntity();
-
-  // 如果实体有层次组件，需要清理父子关系
-  if (GetRegistry().HasComponent<HierarchyComponent>(entity)) {
-    auto &hierarchy = GetRegistry().GetComponent<HierarchyComponent>(entity);
-
-    // 1. 从父节点移除自己
-    if (hierarchy.GetParent().IsValid()) {
-      if (GetRegistry().HasComponent<HierarchyComponent>(hierarchy.GetParent())) {
-        auto &parentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
-            hierarchy.GetParent());
-        parentHierarchy.RemoveChild(entity);
-      }
+  // 检查循环引用：确保newParent不是node的子孙
+  SceneNode *current = newParent;
+  while (current) {
+    if (current == node) {
+      return false;  // 循环引用检测
     }
-
-    // 2. 将所有子节点提升为根节点
-    for (Entity child : hierarchy.GetChildren()) {
-      if (GetRegistry().IsValid(child) && GetRegistry().HasComponent<HierarchyComponent>(child)) {
-        auto &childHierarchy = GetRegistry().GetComponent<HierarchyComponent>(child);
-        childHierarchy.SetParent(Entity());
-
-        // 标记子节点变换为脏，需要重新计算世界变换
-        if (GetRegistry().HasComponent<TransformComponent>(child)) {
-          auto &transform = GetRegistry().GetComponent<TransformComponent>(child);
-          transform.dirtyFlags |= TransformComponent::HIERARCHY_DIRTY;
-          transform.MarkDirty();
-        }
-      }
-    }
-  }
-
-  // 不应当标记事件已处理
-  return e.handled;
-}
-
-bool SceneGraph::OnHierarchyAdded(ComponentAddedEvent<HierarchyComponent> &e)
-{
-  Entity entity = e.GetEntity();
-  auto &hierarchy = e.GetComponent();
-
-  // 新添加的层次组件需要初始化
-  hierarchy.SetParent(Entity());  // 默认无父节点
-
-  // 可以在这里添加默认子节点或执行其他初始化逻辑
-
-
- // 标记事件已处理，阻断传播
-  e.Handled();
-  return e.handled;
-}
-
-//bool SceneGraph::OnHierarchyChanged(ComponentChangedEvent<HierarchyComponent> &e)
-//{
-//  Entity entity = e.GetEntity();
-//  auto &newHierarchy = e.GetComponent();
-//  auto& oldHierarchy = e.GetOldComponent(); // 需要适配器支持获取旧组件
-//
-//  // 1. 验证新父子关系是否有效
-//  if (!ValidateHierarchy(entity, newHierarchy.GetParent())) {
-//    // 如果无效，恢复原来的父节点
-//     newHierarchy.SetParent(oldHierarchy.GetParent());
-//    return;
-//  }
-//
-//  // 2. 从旧父节点移除当前实体
-//  if (oldHierarchy.GetParent().IsValid()) {
-//    if (GetRegistry().HasComponent<HierarchyComponent>(oldHierarchy.GetParent())) {
-//      auto &oldParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
-//          oldHierarchy.GetParent());
-//      oldParentHierarchy.RemoveChild(entity);
-//    }
-//  }
-//
-//  // 3. 添加到新父节点
-//  if (newHierarchy.GetParent().IsValid()) {
-//    if (GetRegistry().HasComponent<HierarchyComponent>(newHierarchy.GetParent())) {
-//      auto &newParentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
-//          newHierarchy.GetParent());
-//      newParentHierarchy.AddChild(entity);
-//    }
-//  }
-//
-//  // 4. 更新深度缓存
-//  UpdateDepthCacheRecursive(entity);
-//
-//  // 5. 标记变换为脏，需要重新计算世界变换
-//  if (GetRegistry().HasComponent<TransformComponent>(entity)) {
-//    auto &transform = GetRegistry().GetComponent<TransformComponent>(entity);
-//    transform.dirtyFlags |= TransformComponent::HIERARCHY_DIRTY;
-//    transform.MarkDirty();
-//  }
-//
-//  // 6. 发布层次变更事件
-//  EventBus::Get().Post(EntityParentChangedEvent(entity));
-//}
-
-bool SceneGraph::OnHierarchyRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
-{
-  Entity entity = e.GetEntity();
-  auto &hierarchy = e.GetComponent();
-
-  // 1. 从父节点移除自己
-  if (hierarchy.GetParent().IsValid()) {
-    if (GetRegistry().HasComponent<HierarchyComponent>(hierarchy.GetParent())) {
-      auto &parentHierarchy = GetRegistry().GetComponent<HierarchyComponent>(
-          hierarchy.GetParent());
-      parentHierarchy.RemoveChild(entity);
-    }
-  }
-
-  // 2. 将所有子节点提升为根节点
-  for (Entity child : hierarchy.GetChildren()) {
-    if (GetRegistry().IsValid(child) && GetRegistry().HasComponent<HierarchyComponent>(child)) {
-      auto &childHierarchy = GetRegistry().GetComponent<HierarchyComponent>(child);
-      childHierarchy.SetParent(Entity());
-
-      // 标记子节点变换为脏
-      if (GetRegistry().HasComponent<TransformComponent>(child)) {
-        auto &transform = GetRegistry().GetComponent<TransformComponent>(child);
-        transform.dirtyFlags |= TransformComponent::HIERARCHY_DIRTY;
-        transform.MarkDirty();
-      }
-    }
-  }
-
-  // 标记事件已处理，阻断传播
-  e.Handled();
-  return e.handled;
-}
-
-void SceneGraph::UpdateDepthCacheRecursive(Entity entity)
-{
-  if (!entity.IsValid() || !GetRegistry().IsValid(entity)) {
-    return;
-  }
-
-  if (GetRegistry().HasComponent<HierarchyComponent>(entity)) {
-    auto &hierarchy = GetRegistry().GetComponent<HierarchyComponent>(entity);
-
-    // 使当前实体的深度缓存失效
-    hierarchy.m_DepthCache = 0;
-
-    // 递归处理所有子实体
-    for (Entity child : hierarchy.GetChildren()) {
-      UpdateDepthCacheRecursive(child);
-    }
-  }
-}
-
-bool SceneGraph::ValidateHierarchy(Entity child, Entity newParent) const
-{
-  // 不允许设置自己为自己的父节点
-  if (child == newParent) {
-    return false;
-  }
-
-  // 检查循环依赖
-  Entity current = newParent;
-  while (current.IsValid() && GetRegistry().IsValid(current)) {
-    if (current == child) {
-      return false;  // 检测到循环
-    }
-
-    if (GetRegistry().HasComponent<HierarchyComponent>(current)) {
-      auto &hierarchy = GetRegistry().GetComponent<HierarchyComponent>(current);
-      current = hierarchy.GetParent();
-    }
-    else {
-      break;
-    }
+    current = current->GetParent();
   }
 
   return true;
 }
 
-bool SceneGraph::OnTransformUpdated(TransformUpdatedEvent &e)
+void SceneGraph::RemoveNodeFromSpatialPartition(SceneNode *node)
 {
-  Entity entity = e.GetEntity();
-
-  // 标记子实体需要更新层次变换
-  MarkChildrenDirty(entity, TransformComponent::HIERARCHY_DIRTY);
-
-  // 标记事件已处理，阻断传播
-  e.Handled();
-  return e.handled;
-}
-
-bool SceneGraph::OnPositionChanged(PositionChangedEvent &e)
-{
-  Entity entity = e.GetEntity();
-
-  // 只处理局部空间变更（世界空间变更已在TransformComponent中转换为局部空间）
-  if (!e.IsWorldSpace()) {
-    // 标记子实体需要更新层次变换
-    MarkChildrenDirty(entity, TransformComponent::HIERARCHY_DIRTY);
-
-    // 可以在这里添加空间加速结构更新等逻辑
-  }
-
-  // 标记事件已处理，阻断传播
-  e.Handled();
-  return e.handled;
-}
-
-bool SceneGraph::OnRotationChanged(RotationChangedEvent &e)
-{
-  Entity entity = e.GetEntity();
-
-  if (!e.IsWorldSpace()) {
-    MarkChildrenDirty(entity, TransformComponent::HIERARCHY_DIRTY);
-
-    // 旋转变更通常需要更新方向相关系统
-    // 如：光源方向、摄像机朝向等
-  }
-
-  // 标记事件已处理，阻断传播
-  e.Handled();
-  return e.handled;
-}
-
-bool SceneGraph::OnScaleChanged(ScaleChangedEvent &e)
-{
-  Entity entity = e.GetEntity();
-
-  if (!e.IsWorldSpace()) {
-    MarkChildrenDirty(entity, TransformComponent::HIERARCHY_DIRTY);
-
-    // 缩放变更可能影响碰撞体、渲染LOD等
-  }
-
-  // 标记事件已处理，阻断传播
-  e.Handled();
-  return e.handled;
-}
-
-bool SceneGraph::OnTransformChanged(TransformChangedEvent &e)
-{
-  Entity entity = e.GetEntity();
-
-  if (!e.IsWorldSpace()) {
-    MarkChildrenDirty(entity, TransformComponent::HIERARCHY_DIRTY);
-
-    // 完整变换更新通常需要更多系统响应
-    // 如：物理系统、动画系统等
-  }
-
-  // 标记事件已处理，阻断传播
-  e.Handled();
-  return e.handled;
-}
-
-void SceneGraph::MarkChildrenDirty(Entity entity, uint8_t flags)
-{
-  if (!GetRegistry().IsValid(entity) || !GetRegistry().HasComponent<HierarchyComponent>(entity)) {
-    return;
-  }
-
-  auto &hierarchy = GetRegistry().GetComponent<HierarchyComponent>(entity);
-  for (Entity child : hierarchy.GetChildren()) {
-    if (GetRegistry().IsValid(child) && GetRegistry().HasComponent<TransformComponent>(child)) {
-      auto &childTransform = GetRegistry().GetComponent<TransformComponent>(child);
-      childTransform.dirtyFlags |= flags;
-      childTransform.MarkDirty();
-
-      // 递归处理子节点的子节点
-      MarkChildrenDirty(child, flags);
-    }
+  if (m_spatialPartition && node) {
+    m_spatialPartition->Remove(node);
   }
 }
 
+void SceneGraph::AddNodeToSpatialPartition(SceneNode *node)
+{
+  if (m_spatialPartition && node) {
+    m_spatialPartition->Insert(node);
+  }
+}
 
+void SceneGraph::Clear()
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
 
-};  // namespace mite
+  // 清空空间划分结构
+  if (m_spatialPartition) {
+    m_spatialPartition->Clear();
+  }
+
+  // 清空所有节点（会自动处理父子关系）
+  m_entityToNodeMap.clear();
+  m_dirtyNodes.clear();
+
+  m_logger->debug("SceneGraph cleared");
+}
+
+}  // namespace mite
