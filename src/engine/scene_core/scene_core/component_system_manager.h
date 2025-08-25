@@ -18,7 +18,8 @@ namespace mite {
  * 4. Scene运行阶段--每帧调用UpdateAll(deltaTime)，更新所有系统
  * 5. Scene运行阶段--视情况调用GetSystem()，针对某一系统进行处理
  *
- * 6. Scene运行阶段--每当新的Component创建/更新/移除，触发对应ComponentSystem的回调函数OnComponentAdded等
+ * 6.
+ * Scene运行阶段--每当新的Component创建/更新/移除，触发对应ComponentSystem的回调函数OnComponentAdded等
  *
  * 7. Scene销毁阶段--调用ShutdownAll()，关闭所有系统
  */
@@ -26,6 +27,11 @@ class ComponentSystemManager {
  public:
   ComponentSystemManager(SceneRegistry &registry);
   ~ComponentSystemManager();
+
+  // SFINAE 检测 T 是否有 ComponentType 成员类型
+  template<typename T, typename = void> struct HasComponentType : std::false_type {};
+  template<typename T>
+  struct HasComponentType<T, std::void_t<typename T::ComponentType>> : std::true_type {};
 
   /**
    * @brief 注册组件系统
@@ -54,15 +60,17 @@ class ComponentSystemManager {
 
     // 3. 存入管理结构
     m_SystemMap[type] = rawPtr;
-    m_Systems.push_back(std::move(system)); // 注意此处的system为临时变量，未能正确move会提前触发组件系统的析构函数
+    m_Systems.push_back(std::move(
+        system));  // 注意此处的system为临时变量，未能正确move会提前触发组件系统的析构函数
     m_SystemsSorted = false;
 
     // 4. 注册通用组件回调
-    using U = typename T::ComponentType;
-    static_assert(std::is_base_of<Component, U>::value,
-                  "Registered component must inherit from class component");
-    m_Registry.GetEventCallbackAdapter().RegisterComponentCallbacks<U>();
-
+    if constexpr (HasComponentType<T>::value) {
+      using U = typename T::ComponentType;
+      static_assert(std::is_base_of<Component, U>::value,
+                    "Registered component must inherit from class component");
+      m_Registry.GetEventCallbackAdapter().RegisterComponentCallbacks<U>();
+    }
     return rawPtr;
   }
 
@@ -71,7 +79,8 @@ class ComponentSystemManager {
    * @tparam T 系统类型
    * @tparam U 组件类型
    */
-  template<typename T> void UnregisterSystem() {
+  template<typename T> void UnregisterSystem()
+  {
     static_assert(std::is_base_of<ComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
     const std::type_index type = typeid(T);
@@ -103,10 +112,12 @@ class ComponentSystemManager {
     }
 
     // 4. 注销通用组件回调
-    using U = typename T::ComponentType;
-    static_assert(std::is_base_of<Component, U>::value,
-                  "Registered component must inherit from class component");
-    m_Registry.GetEventCallbackAdapter().UnregisterComponentCallbacks<U>();
+    if constexpr (HasComponentType<T>::value) {
+      using U = typename T::ComponentType;
+      static_assert(std::is_base_of<Component, U>::value,
+                    "Registered component must inherit from class component");
+      m_Registry.GetEventCallbackAdapter().UnregisterComponentCallbacks<U>();
+    }
   }
 
   /**
@@ -163,7 +174,7 @@ class ComponentSystemManager {
  private:
   /**
    * @brief 系统执行顺序排序
-   * 
+   *
    * 通过获取当前系统依赖的其他系统类型，
    * 使用拓扑排序算法，确保被依赖的系统排序在前。
    * 在系统更新阶段，优先更新被依赖的系统，
@@ -174,10 +185,10 @@ class ComponentSystemManager {
  private:
   SceneRegistry &m_Registry;
 
-  std::vector<std::unique_ptr<ComponentSystem>> m_Systems;       // 用于遍历
+  std::vector<std::unique_ptr<ComponentSystem>> m_Systems;             // 用于遍历
   std::unordered_map<std::type_index, ComponentSystem *> m_SystemMap;  // 用于查找
   bool m_SystemsSorted = false;
 };
-};
+};  // namespace mite
 
 #endif
