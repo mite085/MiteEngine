@@ -362,6 +362,29 @@ glm::quat TransformComponent::EulerDegreesToQuat(const glm::vec3 &euler)
 }
 
 // ==================== 组件系统实现 ====================
+
+
+bool TransformComponentSystem::OnComponentAdded(ComponentAddedEvent<TransformComponent> &e)
+{
+  Register(&e.GetComponent());
+
+  // 不应当标记事件已处理，继续传播给SceneGraph的TransformSceneNodeSystem
+  //e.Handled();
+  return e.handled;
+}
+
+/**
+ * @brief 处理组件移除事件
+ */
+bool TransformComponentSystem::OnComponentRemoved(ComponentRemovedEvent<TransformComponent> &e)
+{
+  Unregister(&e.GetComponent());
+
+  // 不应当标记事件已处理，继续传播给SceneGraph的TransformSceneNodeSystem
+  //e.Handled();
+  return e.handled;
+}
+
 void TransformComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
   // 使用预分配的内存池（极端条件下该函数每帧都需要调用，需要减少多次分配带来的性能开销）

@@ -93,7 +93,7 @@ std::vector<std::type_index> SceneGraphSystem::GetComponentTypes() const
 std::vector<std::type_index> SceneGraphSystem::GetSystemDependencies() const
 {
   return {typeid(TransformComponentSystem),
-          typeid(TransformSystem),
+          typeid(TransformSceneNodeSystem),
           typeid(MeshComponentSystem),
           typeid(HierarchyComponentSystem)};
 }

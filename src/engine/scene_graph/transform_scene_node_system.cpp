@@ -1,25 +1,25 @@
-#include "transform_system.h"
+#include "transform_scene_node_system.h"
 #include "bounding_volumes.h"
 #include "scene_core/component_system_manager.h"
 #include "scene_core/scene_registry.h"
 
 namespace mite {
 
-TransformSystem::TransformSystem()
+TransformSceneNodeSystem::TransformSceneNodeSystem()
 {
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite TransformSystem");
-  m_Logger->trace("TransformSystem created");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite TransformSceneNodeSystem");
+  m_Logger->trace("TransformSceneNodeSystem created");
 }
 
-Component::Family TransformSystem::GetExecutionOrder() const
+Component::Family TransformSceneNodeSystem::GetExecutionOrder() const
 {
   // TODO: 应当在TransformComponent处理完脏标记后执行
   return Component::Family::Core;
 }
 
-void TransformSystem::Initialize()
+void TransformSceneNodeSystem::Initialize()
 {
-  m_Logger->info("Initializing TransformSystem");
+  m_Logger->info("Initializing TransformSceneNodeSystem");
 
   // TransformSystem并非继承自DirtyComponentSystem，组件添加/删除事件需要单独订阅
   m_EventSubscriptions.Subscribe<ComponentAddedEvent<TransformComponent>>(
@@ -29,17 +29,17 @@ void TransformSystem::Initialize()
   m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(BIND_DISPATCH_FN(OnTransformUpdated));
   m_EventSubscriptions.Subscribe<ParentChangedEvent>(BIND_DISPATCH_FN(OnParentChanged));
 
-  m_Logger->debug("TransformSystem initialized - event subscriptions complete");
+  m_Logger->debug("TransformSceneNodeSystem initialized - event subscriptions complete");
 }
 
-void TransformSystem::Update(float deltaTime, SceneRegistry &registry)
+void TransformSceneNodeSystem::Update(float deltaTime, SceneRegistry &registry)
 {
   ProcessPendingSync(registry);
 }
 
-void TransformSystem::Shutdown()
+void TransformSceneNodeSystem::Shutdown()
 {
-  m_Logger->info("Shutting down TransformSystem");
+  m_Logger->info("Shutting down TransformSceneNodeSystem");
   m_EventSubscriptions.UnsubscribeAll();
 
   std::lock_guard<std::mutex> lock(m_mutex);
@@ -47,17 +47,17 @@ void TransformSystem::Shutdown()
   m_pendingSyncEntities.clear();
 }
 
-std::vector<std::type_index> TransformSystem::GetComponentTypes() const
+std::vector<std::type_index> TransformSceneNodeSystem::GetComponentTypes() const
 {
   return {typeid(TransformComponent)};
 }
 
-std::vector<std::type_index> TransformSystem::GetSystemDependencies() const
+std::vector<std::type_index> TransformSceneNodeSystem::GetSystemDependencies() const
 {
   return {typeid(TransformComponentSystem), typeid(HierarchyComponentSystem)};
 }
 
-void TransformSystem::RegisterSceneNode(Entity entity, SceneNode *node)
+void TransformSceneNodeSystem::RegisterSceneNode(Entity entity, SceneNode *node)
 {
   if (!node)
     return;
@@ -67,7 +67,7 @@ void TransformSystem::RegisterSceneNode(Entity entity, SceneNode *node)
   m_pendingSyncEntities.push_back(entity);
 }
 
-void TransformSystem::UnregisterSceneNode(Entity entity)
+void TransformSceneNodeSystem::UnregisterSceneNode(Entity entity)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   m_entityToNodeMap.erase(entity);
@@ -77,14 +77,14 @@ void TransformSystem::UnregisterSceneNode(Entity entity)
       m_pendingSyncEntities.end());
 }
 
-SceneNode *TransformSystem::GetSceneNode(Entity entity) const
+SceneNode *TransformSceneNodeSystem::GetSceneNode(Entity entity) const
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   auto it = m_entityToNodeMap.find(entity);
   return it != m_entityToNodeMap.end() ? it->second : nullptr;
 }
 
-void TransformSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
+void TransformSceneNodeSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -95,20 +95,20 @@ void TransformSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
   }
 }
 
-void TransformSystem::MarkEntityForSync(Entity entity)
+void TransformSceneNodeSystem::MarkEntityForSync(Entity entity)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   m_pendingSyncEntities.push_back(entity);
 }
 
-bool TransformSystem::OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &e)
+bool TransformSceneNodeSystem::OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &e)
 {
   MarkEntityForSync(e.GetEntity());
   e.Handled();
   return true;
 }
 
-bool TransformSystem::OnTransformComponentRemoved(ComponentRemovedEvent<TransformComponent> &e)
+bool TransformSceneNodeSystem::OnTransformComponentRemoved(ComponentRemovedEvent<TransformComponent> &e)
 {
   Entity entity = e.GetEntity();
 
@@ -121,14 +121,14 @@ bool TransformSystem::OnTransformComponentRemoved(ComponentRemovedEvent<Transfor
   return true;
 }
 
-bool TransformSystem::OnTransformUpdated(TransformUpdatedEvent &e)
+bool TransformSceneNodeSystem::OnTransformUpdated(TransformUpdatedEvent &e)
 {
   MarkEntityForSync(e.GetEntity());
   e.Handled();
   return true;
 }
 
-bool TransformSystem::OnParentChanged(ParentChangedEvent &e)
+bool TransformSceneNodeSystem::OnParentChanged(ParentChangedEvent &e)
 {
   // 简化实现：只标记当前实体，子节点会在变换传播时自动标记
   MarkEntityForSync(e.GetEntity());
@@ -136,7 +136,7 @@ bool TransformSystem::OnParentChanged(ParentChangedEvent &e)
   return true;
 }
 
-void TransformSystem::ProcessPendingSync(SceneRegistry &registry)
+void TransformSceneNodeSystem::ProcessPendingSync(SceneRegistry &registry)
 {
   std::vector<Entity> processingEntities;
 
@@ -158,7 +158,7 @@ void TransformSystem::ProcessPendingSync(SceneRegistry &registry)
   }
 }
 
-void TransformSystem::SyncComponentToNode(SceneRegistry &registry, Entity entity, SceneNode *node)
+void TransformSceneNodeSystem::SyncComponentToNode(SceneRegistry &registry, Entity entity, SceneNode *node)
 {
   try {
     auto &transformComp = registry.GetComponent<TransformComponent>(entity);

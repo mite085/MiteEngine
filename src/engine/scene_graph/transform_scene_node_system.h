@@ -1,5 +1,5 @@
-#ifndef MITE_TRANSFORM_SYSTEM_H
-#define MITE_TRANSFORM_SYSTEM_H
+#ifndef MITE_TRANSFORM_SCENE_NODE_SYSTEM_H
+#define MITE_TRANSFORM_SCENE_NODE_SYSTEM_H
 
 #include "scene_core_components/hierarchy_component.h"
 #include "scene_core_components/transform_component.h"
@@ -16,12 +16,12 @@ namespace mite {
  * 2. 使用延迟处理机制，在Update阶段批量执行
  * 3. 提供清晰的接口用于场景图集成
  */
-class TransformSystem : public ComponentSystem {
+class TransformSceneNodeSystem : public ComponentSystem {
  public:
-  DECLARE_COMPONENT_SYSTEM(TransformSystem)
+  DECLARE_COMPONENT_SYSTEM(TransformSceneNodeSystem)
 
-  TransformSystem();
-  ~TransformSystem() override = default;
+  TransformSceneNodeSystem();
+  ~TransformSceneNodeSystem() override = default;
 
   // ==================== ComponentSystem 接口实现 ====================
   Component::Family GetExecutionOrder() const override;
