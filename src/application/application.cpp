@@ -59,6 +59,28 @@ void MiteApplication::LoadDefaultScene()
 
   // 协调各模块，加载初始场景
 
+  // 0. 创建并绑定主相机（该步骤必须在m_SceneCore->InitializeComponentSystems();之后执行)
+  Camera main_camera;
+  main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
+  Entity main_camera_entity = m_SceneCore->CreateEntity("main_camera");
+  CameraComponent &main_camera_component =
+      m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
+          main_camera_entity, std::make_shared<Camera>(main_camera));
+  m_SceneCore->SetMainCamera(main_camera_entity);
+
+  // 0. 创建ViewportPanel并设置FrameBuffer
+  auto viewportPanel = std::make_shared<ViewportPanel>("Viewport");
+  viewportPanel->setFramebuffer(m_Renderer->GetViewportFrameBuffer());
+  // 绑定MainCamera
+  // 注意：
+  // 该步骤需要在RegisterPanel之前执行，
+  // 因为调用OnAttach创建InputContext需要使用到Camera
+  if (viewportPanel) {
+    viewportPanel->setCamera(m_SceneCore->GetMainCamera());
+  }
+  // 注册面板到UI系统
+  m_UISystem->RegisterPanel("Viewport", viewportPanel);
+
   // 1. 加载模型
   AssetID plane_model_asset_id = m_AssetManager->LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string());
@@ -100,15 +122,16 @@ void MiteApplication::Initialize()
   // 按照依赖关系，先初始化底层模块，后初始化顶层模块
   InitializeInputSystem();
   InitializeAssertManager();
-
   InitializeWindowWithOpenGL();
   InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行
-  
   InitializeMaterialSystem();
   InitializeSceneCore();
-  InitializeSceneView();  // 依赖SceneCore
+  InitializeSceneGraph();  // 依赖SceneCore
+  InitializeSceneView();   // 依赖SceneCore和SceneGraph
+  InitializeUI();          // 必须在Window创建GL上下文后执行
 
-  InitializeUI();   // 必须在Window创建GL上下文后执行
+  // 初始化组件系统（必须在SceneGraph的组件注册到SceneCore之后执行）
+  m_SceneCore->InitializeComponentSystems();
 
   // 加载默认场景
   LoadDefaultScene();
@@ -121,14 +144,17 @@ void MiteApplication::CleanUp()
   // 取消事件订阅
   m_EventSubscriptions.UnsubscribeAll();
 
+  // 关闭组件系统
+  m_SceneCore->ShutdownComponentSystems();
+
   // 按照初始化的倒序，依次CleanUp
+  CleanUpUI();
   CleanUpSceneView();
+  CleanUpSceneGraph();
   CleanUpSceneCore();
   CleanUpMaterialSystem();
-  CleanUpUI();
   CleanUpRenderWithOpenGL();
   CleanUpWindow();
-
   CleanUpAssertManager();
   CleanUpInputSystem();
 }
@@ -162,21 +188,6 @@ void MiteApplication::InitializeUI()
   // 初始化UI系统
   m_UISystem = std::make_unique<UISystem>();
   m_UISystem->Init(reinterpret_cast<GLFWwindow *>(m_Window->GetNativeWindow()));
-
-  // 创建ViewportPanel并设置FrameBuffer
-  auto viewportPanel = std::make_shared<ViewportPanel>("Viewport");
-  viewportPanel->setFramebuffer(m_Renderer->GetViewportFrameBuffer());
-
-  // 绑定MainCamera
-  // 注意：
-  // 该步骤需要在RegisterPanel之前执行，
-  // 因为调用OnAttach创建InputContext需要使用到Camera
-  if (viewportPanel) {
-    viewportPanel->setCamera(m_SceneCore->GetMainCamera());
-  }
-
-  // 注册面板到UI系统
-  m_UISystem->RegisterPanel("Viewport", viewportPanel);
 }
 
 void MiteApplication::InitializeAssertManager()
@@ -193,15 +204,6 @@ void MiteApplication::InitializeSceneCore()
 
   // 初始化场景核心
   m_SceneCore = std::make_unique<SceneCore>();
-
-  // 创建并绑定主相机（该步骤是否应当放在SceneCore构造函数内完成？)
-  Camera main_camera;
-  main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
-  Entity main_camera_entity = m_SceneCore->CreateEntity("main_camera");
-  CameraComponent &main_camera_component =
-      m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
-          main_camera_entity, std::make_shared<Camera>(main_camera));
-  m_SceneCore->SetMainCamera(main_camera_entity);
 }
 
 void MiteApplication::InitializeSceneView()
@@ -269,6 +271,20 @@ void MiteApplication::CleanUpMaterialSystem() {}
 void MiteApplication::CleanUpSceneCore()
 {
   m_SceneCore->Clear();
+}
+
+void MiteApplication::InitializeSceneGraph() {
+  m_logger->info("Initializing scene graph");
+
+  // 初始化场景图
+  m_SceneGraph = std::make_unique<SceneGraph>();
+  m_SceneGraph->Initialize(m_SceneCore->GetComponentSystemManager());
+}
+
+void MiteApplication::CleanUpSceneGraph()
+{
+  m_logger->info("Cleaning up scene graph");
+  m_SceneGraph->CleanUp(m_SceneCore->GetComponentSystemManager());
 }
 
 void MiteApplication::CleanUpSceneView() {}
