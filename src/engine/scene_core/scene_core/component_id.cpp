@@ -5,19 +5,14 @@ namespace mite {
 
 ComponentID::ComponentID(uuids::uuid id) : m_ID(std::move(id)) {}
 
-template<typename T> uuids::uuid ComponentID::GenerateTypeUUID()
+template<typename T> ComponentID ComponentID::Get()
 {
   // 使用类型信息生成确定性UUID
   const std::type_index typeIdx(typeid(T));
   const size_t hash = typeIdx.hash_code();
 
-  return UUIDGenerator::Generate(hash);
-}
-
-template<typename T> ComponentID ComponentID::Get()
-{
   // 静态局部变量保证每个类型只有一个ID实例
-  static const ComponentID id(GenerateTypeUUID<T>());
+  static const ComponentID id(UUIDGenerator::Generate(hash));
   return id;
 }
 
@@ -69,5 +64,9 @@ template ComponentID ComponentID::Get<MaterialComponent>();
 template ComponentID ComponentID::Get<MeshComponent>();
 template ComponentID ComponentID::Get<TagComponent>();
 template ComponentID ComponentID::Get<TransformComponent>();
-template ComponentID ComponentID::Get<VisibilityComponent>();
+
+// VisibilityComponent隶属于SceneGraph模块，应当在SceneGraph中实现
+class VisibilityComponent;                                       // 前向声明
+template<> ComponentID ComponentID::Get<VisibilityComponent>();  // 声明显式特化
+
 };

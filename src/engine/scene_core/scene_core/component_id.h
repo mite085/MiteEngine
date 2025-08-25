@@ -41,12 +41,9 @@ class ComponentID {
 
   // 内部UUID存储
   uuids::uuid m_ID;
-
-  // 编译期ID生成模板
-  template<typename T> static uuids::uuid GenerateTypeUUID();
 };
 
-};
+};  // namespace mite
 
 // 哈希特化
 namespace std {
