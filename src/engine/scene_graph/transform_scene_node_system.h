@@ -10,6 +10,11 @@ namespace mite {
 /**
  * @class TransformSystem
  * @brief 变换系统 - 负责ECS组件与场景图节点之间的变换数据同步
+ * 
+ * 注意：
+ * 与SceneCore模块的TransformComponentSystem不同，
+ * 不负责TransformComponent的管理，仅负责Entity和
+ * SceneNode之间的Transform数据传递与同步。
  *
  * 设计原则：
  * 1. 不维护SceneRegistry引用，完全通过事件和参数传递

@@ -14,26 +14,6 @@
 
 namespace mite {
 
-// 当前帧统计信息
-struct FrameStatistics {
-  float fps = 0.0f;
-  float frameTime = 0.0f;
-  uint32_t drawCalls = 0;
-  uint32_t entityCount = 0;
-  size_t gpuMemoryUsage = 0;
-};
-
-// Editor状态
-struct EditorState {
-  bool showDemoWindow = false;
-  bool showMetricsWindow = false;
-  bool showSceneHierarchy = true;
-  bool showPropertiesPanel = true;
-  bool showMaterialEditor = false;
-  bool showPreviewWindow = false;
-  bool showDebugOverlay = true;
-};
-
 class MiteApplication {
  public:
   MiteApplication();
@@ -49,9 +29,9 @@ class MiteApplication {
   void LoadDefaultScene();
 
   // 获取子系统
-  Window* GetWindow() const { return m_Window.get(); }
-  Renderer* GetRenderer() const { return m_Renderer.get(); }
-  SceneCore* GetScene() const { return m_SceneCore.get(); }
+  //Window* GetWindow() const { return m_Window.get(); }
+  //Renderer* GetRenderer() const { return m_Renderer.get(); }
+  //SceneCore* GetScene() const { return m_SceneCore.get(); }
   //MaterialSystem* GetMaterialSystem() const { return m_MaterialSystem.get(); }
 
 
@@ -120,17 +100,6 @@ class MiteApplication {
   // 状态信息
   WindowConfig m_Config;
   bool m_ShouldClose = false;
-  // TODO: 以下状态信息暂未启用
-  FrameStatistics m_FrameStats;
-  EditorState m_EditorState;
-  bool m_ShowMainViewport = true;
-  bool m_ShowDebug = true;
-  bool m_IsInitialized = false;
-  float m_TargetFrameRate = 60.0f;
-
-  // TODO: 待处理操作队列
-  std::vector<std::function<void()>> m_PendingOperations;
-  std::mutex m_PendingOperationsMutex;
 
   // 日志系统
   Logger m_logger;

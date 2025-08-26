@@ -4,29 +4,23 @@
 #include "headers/headers.h"
 
 namespace mite {
+// 前向声明
+class SceneRegistry;
 
 /**
  * @brief 实体类，表示场景中的一个独立对象
- *
  * 使用UUID作为唯一标识，提供类型安全的组件操作和层次结构管理
+ * 
+ * 注意：
+ * 仅SceneRegistry有权限构造有效实体，其他所有非拷贝构造的实体均为空实体
  */
 class Entity {
+  //=================== 构造函数 =========================
  public:
   /**
    * @brief 默认构造一个空实体（无效实体）
    */
   Entity();  // 生成空ID
-
-  /**
-   * @brief 构造一个有效实体（原则上仅SceneRegistry::CreateEntity有权限调用）
-   */
-  static Entity CreateEntity();
-
-  /**
-   * @brief 从UUID构造实体
-   * @param uuid 实体UUID
-   */
-  explicit Entity(const uuids::uuid &uuid);
 
   /**
    * @brief 拷贝构造函数
@@ -35,10 +29,26 @@ class Entity {
 
   ~Entity() = default;
 
+ private:
+  /**
+   * @brief 从UUID构造有效实体（内部使用）
+   * @param uuid 实体UUID
+   */
+  explicit Entity(const uuids::uuid &uuid);
 
+  /**
+   * @brief 构造一个有效实体（内部和友元函数使用）
+   *
+   * 原则上仅SceneRegistry有权限调用，
+   * 其他所有非拷贝构造的实体均为空实体
+   *
+   * 若有其他模块需要构建有效实体，需要添加为friend
+   */
+  static Entity CreateEntity();
+  friend SceneRegistry;
 
-  // 实体状态操作 ============================================
-
+  //=================== 实体状态操作 =========================
+ public:
   /**
    * @brief 检查实体是否有效
    * @return 是否有效（未被销毁）
@@ -66,7 +76,7 @@ class Entity {
     return uuids::to_string(m_UUID);
   }
 
-  // 操作符重载 =============================================
+  //===================== 操作符重载 ========================
 
   bool operator==(const Entity &other) const
   {
@@ -84,6 +94,8 @@ class Entity {
   }
 
  private:
+
+
   uuids::uuid m_UUID;  // 实体唯一标识
 };
 
