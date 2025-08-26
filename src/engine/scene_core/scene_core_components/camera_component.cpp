@@ -1,4 +1,5 @@
 #include "camera_component.h"
+#include "transform_component.h"
 
 namespace mite {
 CameraComponent::CameraComponent(std::shared_ptr<Camera> camera) : m_Camera(camera) {}
@@ -94,6 +95,13 @@ bool CameraComponent::Deserialize(std::istream &input)
 std::vector<std::type_index> CameraComponent::GetDependencies() const
 {
   return {};
+}
+
+// ==================== CameraComponentSystem ====================
+
+std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() const
+{
+  return {typeid(TransformComponentSystem)};  // 需要变换信息
 }
 
 std::optional<Entity> CameraComponentSystem::GetMainCameraEntity() const

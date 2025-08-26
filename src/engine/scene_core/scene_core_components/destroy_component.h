@@ -14,7 +14,7 @@ class SceneRegistry;
  *
  * 注意：这是一个空组件，仅作为标记使用，不包含任何数据成员。
  */
-struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Family::Core> {
+struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Family::Cleanup> {
   // 无数据成员，纯标记组件
 
   /**
@@ -47,16 +47,6 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
 // Destroy组件系统 =====================================================
 class DestroyComponentSystem : public DirtyComponentSystem<DestroyComponent> {
   DECLARE_COMPONENT_SYSTEM(DestroyComponentSystem)
- public:
-
-  /**
-   * @brief 获取系统执行优先级
-   * @note 应该在所有其他系统之后执行
-   */
-  Component::Family GetExecutionOrder() const override
-  {
-    return Component::Family::PostUpdate;
-  }
 
 };
 // Destroy组件事件：由EntityDestroyEvent代行 =====================================================

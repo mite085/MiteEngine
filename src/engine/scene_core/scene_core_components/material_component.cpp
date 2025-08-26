@@ -1,4 +1,5 @@
 #include "material_component.h"
+#include "mesh_component.h"
 
 namespace mite {
 MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> material)
@@ -100,6 +101,11 @@ bool MaterialComponent::Deserialize(std::istream &input)
 }
 
 // Material组件系统实现 ==================================
+std::vector<std::type_index> MaterialComponentSystem::GetSystemDependencies() const
+{
+  return {typeid(MeshComponentSystem)};  // 通常与Mesh配合使用
+}
+
 void MaterialComponentSystem::Initialize()
 {
   DirtyComponentSystem<MaterialComponent>::Initialize();

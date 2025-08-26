@@ -1,10 +1,12 @@
 #include "hierarchy_component.h"
 #include "transform_component.h"
+#include "id_component.h"
 
 namespace mite {
 HierarchyComponent::HierarchyComponent() : ComponentTraits() {}
 
-void HierarchyComponent::ProcessDirty(float deltaTime, SceneRegistry &reg) {
+void HierarchyComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
+{
   if (!IsDirty())
     return;
 
@@ -212,6 +214,11 @@ void HierarchyComponentSystem::Shutdown()
   DirtyComponentSystem<HierarchyComponent>::Shutdown();
 }
 
+std::vector<std::type_index> HierarchyComponentSystem::GetSystemDependencies() const
+{
+  return {typeid(IDComponentSystem)};  // 需要实体ID信息
+}
+
 void HierarchyComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
   // 1. 首先处理待移除的组件
@@ -241,7 +248,7 @@ bool HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<Hierarch
 
   // 将移除操作加入待处理队列，待下一帧的
   // ProcessDirtyComponents处理待移除的父子关系
-  // 
+  //
   // 分段处理原因：此处无法访问到SceneRegistry，
   // ComponentSystem也不应当维护SceneRegistry对象
   // （该操作复杂度较高，多打LOG方便后续调试）
@@ -359,5 +366,4 @@ void HierarchyComponentSystem::ValidateAndRepairHierarchy(SceneRegistry &registr
     }
   }
 }
-
 };  // namespace mite

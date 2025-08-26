@@ -13,8 +13,7 @@ TransformSceneNodeSystem::TransformSceneNodeSystem()
 
 Component::Family TransformSceneNodeSystem::GetExecutionOrder() const
 {
-  // TODO: 应当在TransformComponent处理完脏标记后执行
-  return Component::Family::Core;
+  return Component::Family::SceneGraph;
 }
 
 void TransformSceneNodeSystem::Initialize()
@@ -54,7 +53,7 @@ std::vector<std::type_index> TransformSceneNodeSystem::GetComponentTypes() const
 
 std::vector<std::type_index> TransformSceneNodeSystem::GetSystemDependencies() const
 {
-  return {typeid(TransformComponentSystem), typeid(HierarchyComponentSystem)};
+  return {typeid(TransformComponentSystem), typeid(HierarchyComponentSystem)};// 依赖ECS变换和层级
 }
 
 void TransformSceneNodeSystem::RegisterSceneNode(Entity entity, SceneNode *node)

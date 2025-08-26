@@ -19,7 +19,7 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持实例化渲染
  */
-class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::Render> {
+class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::Geometry> {
  public:
 
   /**
@@ -121,6 +121,8 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::R
 class MeshComponentSystem : public DirtyComponentSystem<MeshComponent> {
   DECLARE_COMPONENT_SYSTEM(MeshComponentSystem)
  public:
+  std::vector<std::type_index> GetSystemDependencies() const override;
+
   void Initialize() override;
   void Shutdown() override;
   void Update(float deltaTime, SceneRegistry &registry) override;

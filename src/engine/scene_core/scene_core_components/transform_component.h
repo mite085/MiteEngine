@@ -21,7 +21,8 @@ class SceneRegistry;
  * - 旋转使用四元数存储避免万向节锁
  * - 提供脏标记系统优化矩阵计算
  */
-class TransformComponent : public ComponentTraits<TransformComponent, Component::Family::Core> {
+class TransformComponent
+    : public ComponentTraits<TransformComponent, Component::Family::Transform> {
  public:
   /**
    * @brief 默认构造函数
@@ -139,6 +140,8 @@ class TransformComponent : public ComponentTraits<TransformComponent, Component:
 class TransformComponentSystem : public DirtyComponentSystem<TransformComponent> {
   DECLARE_COMPONENT_SYSTEM(TransformComponentSystem)
  
+  std::vector<std::type_index> GetSystemDependencies() const override;
+
  private:
   // 组件添加与移除事件响应函数重写：
   // 后续SceneGraph模块的TransformSceneNodeSystem负责处理Entity和SceneNode的Transform同步，不应当阻断事件传播

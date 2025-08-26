@@ -1,4 +1,6 @@
 #include "scene_graph_system.h"
+#include "transform_scene_node_system.h"
+#include "visibility_component.h"
 
 namespace mite {
 // ==================== 构造函数 ====================
@@ -94,7 +96,8 @@ std::vector<std::type_index> SceneGraphSystem::GetSystemDependencies() const
   return {typeid(TransformComponentSystem),
           typeid(TransformSceneNodeSystem),
           typeid(MeshComponentSystem),
-          typeid(HierarchyComponentSystem)};
+          typeid(HierarchyComponentSystem),
+          typeid(VisibilityComponentSystem)};
 }
 
 // ==================== SceneGraph 访问接口 ====================
@@ -312,7 +315,7 @@ void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
     if (m_sceneGraph && m_sceneGraph->HasNode(entity)) {
       // 检查是否真的需要销毁（没有变换组件）
       if (!ShouldCreateNodeForEntity(registry, entity)) {
-        m_sceneGraph->DestroyNode(registry,entity);
+        m_sceneGraph->DestroyNode(registry, entity);
         m_stats.nodesDestroyed++;
       }
     }

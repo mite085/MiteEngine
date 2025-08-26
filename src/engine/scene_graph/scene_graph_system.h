@@ -1,8 +1,8 @@
 #ifndef MITE_SCENE_GRAPH_SYSTEM_H
 #define MITE_SCENE_GRAPH_SYSTEM_H
 
+#include "scene_core_components/transform_component.h"
 #include "scene_core_components/mesh_component.h"
-#include "transform_scene_node_system.h"
 #include "scene_graph.h"
 
 namespace mite {

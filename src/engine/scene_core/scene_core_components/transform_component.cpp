@@ -363,13 +363,17 @@ glm::quat TransformComponent::EulerDegreesToQuat(const glm::vec3 &euler)
 
 // ==================== 组件系统实现 ====================
 
+std::vector<std::type_index> TransformComponentSystem::GetSystemDependencies() const
+{
+  return {typeid(HierarchyComponentSystem)};  // 依赖层级信息
+}
 
 bool TransformComponentSystem::OnComponentAdded(ComponentAddedEvent<TransformComponent> &e)
 {
   Register(&e.GetComponent());
 
   // 不应当标记事件已处理，继续传播给SceneGraph的TransformSceneNodeSystem
-  //e.Handled();
+  // e.Handled();
   return e.handled;
 }
 
@@ -381,7 +385,7 @@ bool TransformComponentSystem::OnComponentRemoved(ComponentRemovedEvent<Transfor
   Unregister(&e.GetComponent());
 
   // 不应当标记事件已处理，继续传播给SceneGraph的TransformSceneNodeSystem
-  //e.Handled();
+  // e.Handled();
   return e.handled;
 }
 
@@ -433,6 +437,4 @@ void TransformComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegi
     }
   }
 }
-
-
 };  // namespace mite

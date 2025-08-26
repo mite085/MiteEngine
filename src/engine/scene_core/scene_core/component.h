@@ -21,12 +21,17 @@ class Component {
  public:
   // 组件家族类型标识，用于组件分类，以及优先级判断
   enum class Family : uint8_t {
-    Core = 0,           // 核心组件(Transform等)
-    Render = 1,         // 渲染相关组件
-    Geometry = 2,       // 几何相关组件
-    Logic = 3,          // 逻辑/行为组件
-    Custom = 100,       // 自定义组件起始值
-    PostUpdate = 255    // 确保最后更新的组件
+    Core = 0,         // 核心基础组件（必须最先执行）
+    Hierarchy = 10,   // 层级关系组件
+    Transform = 20,   // 变换相关组件
+    Geometry = 30,    // 几何数据组件
+    Visibility = 40,  // 可见性计算组件
+    SceneGraph = 50,  // 场景图同步组件
+    Render = 60,      // 渲染准备组件
+    Logic = 70,       // 逻辑/行为组件(未来扩展)
+    Cleanup = 80,     // 清理相关组件
+    Custom = 100,     // 自定义组件起始值(暂未规划)
+    PostUpdate = 255  // 确保最后更新的组件(特殊用途)
   };
 
   virtual ~Component() = default;

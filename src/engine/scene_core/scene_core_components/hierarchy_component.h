@@ -11,7 +11,8 @@ namespace mite {
  * 注意：
  * 实际父子关系逻辑由Entity类管理，此类仅存储数据
  */
-class HierarchyComponent : public ComponentTraits<HierarchyComponent, Component::Family::Core> {
+class HierarchyComponent
+    : public ComponentTraits<HierarchyComponent, Component::Family::Hierarchy> {
  public:
   /**
    * @brief 构造函数（创建无父节点的根实体）
@@ -64,14 +65,7 @@ class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent>
   void Initialize() override;
   void Shutdown() override;
 
-  /**
-   * @brief 获取系统执行优先级
-   * @note 需要在TransformSystem之前执行
-   */
-  Component::Family GetExecutionOrder() const override
-  {
-    return Component::Family::Core;
-  }
+  std::vector<std::type_index> GetSystemDependencies() const override;
 
  private:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;

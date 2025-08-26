@@ -33,7 +33,7 @@ enum class CameraUsage {
  * - 必须与TransformComponent共存
  * - SceneView通过此组件获取渲染用摄像机
  */
-class CameraComponent : public ComponentTraits<CameraComponent, Component::Family::Core> {
+class CameraComponent : public ComponentTraits<CameraComponent, Component::Family::Render> {
  public:
   CameraComponent(std::shared_ptr<Camera> camera);
 
@@ -76,8 +76,10 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
 // 摄像机组件系统
 class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
   DECLARE_COMPONENT_SYSTEM(CameraComponentSystem)
+ public:
+  std::vector<std::type_index> GetSystemDependencies() const override;
 
-  // 获取指定用途的相机实体
+  // 获取Main相机实体
   std::optional<Entity> GetMainCameraEntity() const;
 
   // 设置主相机实体（确保唯一性）

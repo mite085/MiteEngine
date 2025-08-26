@@ -82,6 +82,11 @@ bool MeshComponent::Deserialize(std::istream &input)
 }
 
 // Mesh组件系统实现 ======================================
+std::vector<std::type_index> MeshComponentSystem::GetSystemDependencies() const
+{
+  return {typeid(TransformComponentSystem)};  // 需要变换信息
+}
+
 void MeshComponentSystem::Initialize()
 {
   DirtyComponentSystem<MeshComponent>::Initialize();

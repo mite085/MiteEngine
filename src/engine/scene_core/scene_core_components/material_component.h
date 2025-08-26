@@ -19,7 +19,7 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持GPU实例化
  */
-class MaterialComponent : public ComponentTraits<MaterialComponent, Component::Family::Render> {
+class MaterialComponent : public ComponentTraits<MaterialComponent, Component::Family::Geometry> {
  public:
   /**
    * @brief 带初始值的构造函数
@@ -34,7 +34,7 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
-  // 材质基础操作 ========================================
+  //===================== 材质基础操作 ===================
   /**
    * @brief 获取材质数据
    * @return 共享指针指向的材质数据
@@ -60,19 +60,19 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
    */
   bool HasMaterial() const;
 
-  // 着色器控制 ==========================================
+  //===================== 着色器控制 =====================
   /**
    * @brief 获取关联的着色器
    * @return 着色器指针
    */
   std::shared_ptr<OpenGLShader> GetShader() const;
 
-  // 材质参数快捷设置 ========================================
+  //==================== 材质参数快捷设置 ====================
   void SetFloatParam(const std::string &name, float value);
   void SetColorParam(const std::string &name, const glm::vec3 &color);
   void SetTextureParam(const std::string &name, std::shared_ptr<Texture> texture);
 
-  // 组件接口实现 ========================================
+  //==================== 组件接口实现 ====================
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
@@ -81,16 +81,17 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
   std::shared_ptr<MaterialInstance> m_Material;  // 材质数据
 };
 
-// Material组件系统 ==============================================
+//====================== Material组件系统 ========================
 class MaterialComponentSystem : public DirtyComponentSystem<MaterialComponent> {
   DECLARE_COMPONENT_SYSTEM(MaterialComponentSystem)
  public:
+  std::vector<std::type_index> GetSystemDependencies() const override;
   void Initialize() override;
   void Shutdown() override;
   void Update(float deltaTime, SceneRegistry &registry) override;
 };
 
-// Material组件事件 ==============================================
+//====================== Material组件事件 ========================
 /**
  * @class MaterialChangedEvent
  * @brief 材质改变事件

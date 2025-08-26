@@ -1,12 +1,12 @@
 #include "visibility_component.h"
 #include "bounding_volumes.h"
+#include "scene_core/component_id.h"
 #include "scene_core/scene_registry.h"
 #include "scene_core_components/transform_component.h"
 #include "scene_node.h"
-#include "scene_core/component_id.h"
+#include "transform_scene_node_system.h"
 
 namespace mite {
-
 // ==================== VisibilityComponent ====================
 
 VisibilityComponent::VisibilityComponent() : ComponentTraits(), localAABB(), worldAABB() {}
@@ -126,6 +126,11 @@ IntersectionType VisibilityComponent::TestFrustum(const Frustum &frustum) const
 
 // ==================== VisibilityComponentSystem ====================
 
+std::vector<std::type_index> VisibilityComponentSystem::GetSystemDependencies() const
+{
+  return {typeid(TransformComponentSystem), typeid(TransformSceneNodeSystem)};  // 需要世界变换信息
+}
+
 void VisibilityComponentSystem::SetMainCameraFrustum(const Frustum &frustum)
 {
   mainCameraFrustum = frustum;
@@ -173,5 +178,4 @@ template<> ComponentID ComponentID::Get<VisibilityComponent>()
   static const mite::ComponentID id(UUIDGenerator::Generate(hash));
   return id;
 }
-
 }  // namespace mite

@@ -17,7 +17,7 @@ namespace mite {
  * 4. 与SceneGraph协同工作实现高效的空间查询
  */
 class VisibilityComponent
-    : public ComponentTraits<VisibilityComponent, Component::Family::Geometry> {
+    : public ComponentTraits<VisibilityComponent, Component::Family::Visibility> {
  public:
   /**
    * @brief 默认构造函数
@@ -188,6 +188,8 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
   DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
 
  public:
+  std::vector<std::type_index> GetSystemDependencies() const override;
+
   /**
    * @brief 设置主相机视锥体
    * @param frustum 相机视锥体
