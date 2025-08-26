@@ -1,20 +1,22 @@
 #ifndef MITE_SCENE_GRAPH_SYSTEM_H
 #define MITE_SCENE_GRAPH_SYSTEM_H
 
-#include "scene_core_components/transform_component.h"
-#include "scene_core_components/mesh_component.h"
 #include "scene_graph.h"
+#include "scene_core/component_system.h"
 
 namespace mite {
+// 前向声明
+class MeshComponent;
+class ParentChangedEvent;
+
 /**
  * @class SceneGraphSystem
  * @brief 场景图系统 - 负责ECS与SceneGraph之间的数据同步和协调
  *
  * 核心职责：
  * 1. 监听ECS事件，维护SceneGraph中的节点生命周期
- * 2. 协调TransformSystem进行数据同步
- * 3. 处理组件变化对场景图的影响
- * 4. 作为ECS与SceneGraph之间的桥梁
+ * 2. 处理组件变化对场景图的影响
+ * 3. 作为ECS与SceneGraph之间的桥梁
  *
  * 设计原则：
  * - 纯粹的ComponentSystem，不包含场景管理逻辑
@@ -73,21 +75,6 @@ class SceneGraphSystem : public ComponentSystem {
   bool OnEntityDestroyed(EntityDestroyedEvent &e);
 
   /**
-   * @brief 处理变换组件添加事件
-   */
-  bool OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &e);
-
-  /**
-   * @brief 处理变换组件移除事件
-   */
-  bool OnTransformComponentRemoved(ComponentRemovedEvent<TransformComponent> &e);
-
-  /**
-   * @brief 处理变换更新事件
-   */
-  bool OnTransformUpdated(TransformUpdatedEvent &e);
-
-  /**
    * @brief 处理Mesh组件添加事件
    */
   bool OnMeshComponentAdded(ComponentAddedEvent<MeshComponent> &e);
@@ -118,12 +105,6 @@ class SceneGraphSystem : public ComponentSystem {
   bool ShouldCreateNodeForEntity(SceneRegistry &registry, Entity entity) const;
 
   /**
-   * @brief 同步变换数据到SceneGraph
-   * @param entity 目标实体
-   */
-  void SyncTransformToSceneGraph(SceneRegistry &registry, Entity entity);
-
-  /**
    * @brief 同步包围盒数据到SceneGraph
    * @param entity 目标实体
    */
@@ -146,7 +127,6 @@ class SceneGraphSystem : public ComponentSystem {
   // 实体暂存队列
   std::vector<Entity> m_pendingCreateNodes;                       // 待创建的节点
   std::vector<Entity> m_pendingDestroyNodes;                      // 待销毁的节点
-  std::vector<Entity> m_pendingSyncTransforms;                    // 待同步变换的节点
   std::vector<Entity> m_pendingSyncBounds;                        // 待同步包围盒的节点
   std::vector<std::pair<Entity, Entity>> m_pendingParentChanges;  // 待处理的父子关系变化
 
@@ -161,7 +141,6 @@ class SceneGraphSystem : public ComponentSystem {
   struct {
     uint32_t nodesCreated = 0;
     uint32_t nodesDestroyed = 0;
-    uint32_t transformSyncs = 0;
     uint32_t boundsSyncs = 0;
   } m_stats;
 

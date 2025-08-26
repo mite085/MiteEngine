@@ -1,6 +1,7 @@
 #include "scene_graph_system.h"
 #include "transform_scene_node_system.h"
 #include "visibility_component.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
 // ==================== 构造函数 ====================
@@ -26,14 +27,6 @@ void SceneGraphSystem::Initialize()
 
   m_eventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
 
-  m_eventSubscriptions.Subscribe<ComponentAddedEvent<TransformComponent>>(
-      BIND_DISPATCH_FN(OnTransformComponentAdded));
-
-  m_eventSubscriptions.Subscribe<ComponentRemovedEvent<TransformComponent>>(
-      BIND_DISPATCH_FN(OnTransformComponentRemoved));
-
-  m_eventSubscriptions.Subscribe<TransformUpdatedEvent>(BIND_DISPATCH_FN(OnTransformUpdated));
-
   m_eventSubscriptions.Subscribe<ComponentAddedEvent<MeshComponent>>(
       BIND_DISPATCH_FN(OnMeshComponentAdded));
 
@@ -45,7 +38,6 @@ void SceneGraphSystem::Initialize()
   // 清空暂存队列（确保初始化后状态干净）
   m_pendingCreateNodes.clear();
   m_pendingDestroyNodes.clear();
-  m_pendingSyncTransforms.clear();
   m_pendingSyncBounds.clear();
   m_pendingParentChanges.clear();
 
@@ -93,8 +85,7 @@ std::vector<std::type_index> SceneGraphSystem::GetComponentTypes() const
 
 std::vector<std::type_index> SceneGraphSystem::GetSystemDependencies() const
 {
-  return {typeid(TransformComponentSystem),
-          typeid(TransformSceneNodeSystem),
+  return {typeid(TransformSceneNodeSystem),
           typeid(MeshComponentSystem),
           typeid(HierarchyComponentSystem),
           typeid(VisibilityComponentSystem)};
@@ -122,7 +113,7 @@ std::string SceneGraphSystem::GetStats() const
 {
   std::stringstream ss;
   ss << "NodesCreated=" << m_stats.nodesCreated << ", NodesDestroyed=" << m_stats.nodesDestroyed
-     << ", TransformSyncs=" << m_stats.transformSyncs << ", BoundsSyncs=" << m_stats.boundsSyncs;
+     << ", BoundsSyncs=" << m_stats.boundsSyncs;
   return ss.str();
 }
 
@@ -139,36 +130,6 @@ bool SceneGraphSystem::OnEntityDestroyed(EntityDestroyedEvent &e)
 {
   Entity entity = e.GetEntity();
   m_pendingDestroyNodes.push_back(entity);  // 暂存而不是立即处理
-  e.Handled();
-  return true;
-}
-
-bool SceneGraphSystem::OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &e)
-{
-  Entity entity = e.GetEntity();
-
-  // 暂存创建请求，不立即处理
-  m_pendingCreateNodes.push_back(entity);
-
-  e.Handled();
-  return true;
-}
-
-bool SceneGraphSystem::OnTransformComponentRemoved(ComponentRemovedEvent<TransformComponent> &e)
-{
-  Entity entity = e.GetEntity();
-
-  // 暂存销毁请求
-  m_pendingDestroyNodes.push_back(entity);
-
-  e.Handled();
-  return true;
-}
-
-bool SceneGraphSystem::OnTransformUpdated(TransformUpdatedEvent &e)
-{
-  Entity entity = e.GetEntity();
-  m_pendingSyncTransforms.push_back(entity);  // 暂存同步请求
   e.Handled();
   return true;
 }
@@ -217,7 +178,6 @@ void SceneGraphSystem::CreateNodeForEntity(SceneRegistry &registry, Entity entit
     m_stats.nodesCreated++;
 
     // 立即同步初始数据
-    SyncTransformToSceneGraph(registry, entity);
     SyncBoundsToSceneGraph(registry, entity);
 
     m_logger->debug("Created and synced scene node for entity {}", entity.GetUUIDString());
@@ -229,25 +189,6 @@ bool SceneGraphSystem::ShouldCreateNodeForEntity(SceneRegistry &registry, Entity
   // 只有拥有变换组件的实体才需要场景节点
   // （因为场景节点主要用于空间变换和渲染）
   return registry.HasComponent<TransformComponent>(entity);
-}
-
-void SceneGraphSystem::SyncTransformToSceneGraph(SceneRegistry &registry, Entity entity)
-{
-  if (!m_sceneGraph || !registry.HasComponent<TransformComponent>(entity)) {
-    return;
-  }
-
-  try {
-    auto &transformComp = registry.GetComponent<TransformComponent>(entity);
-    glm::mat4 localTransform = transformComp.GetLocalMatrix();
-
-    m_sceneGraph->UpdateNodeTransform(registry, entity, localTransform);
-    m_stats.transformSyncs++;
-  }
-  catch (const std::exception &e) {
-    m_logger->error(
-        "Failed to sync transform for entity {}: {}", entity.GetUUIDString(), e.what());
-  }
 }
 
 void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity entity)
@@ -332,14 +273,7 @@ void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
   }
   m_pendingCreateNodes.clear();
 
-  // 3. 处理其他同步操作（原有的变换、包围盒、父子关系）
-  for (Entity entity : m_pendingSyncTransforms) {
-    if (m_sceneGraph && m_sceneGraph->HasNode(entity)) {
-      SyncTransformToSceneGraph(registry, entity);
-    }
-  }
-  m_pendingSyncTransforms.clear();
-
+  // 3. 处理其他同步操作（原有的包围盒、父子关系）
   for (Entity entity : m_pendingSyncBounds) {
     if (m_sceneGraph && m_sceneGraph->HasNode(entity)) {
       SyncBoundsToSceneGraph(registry, entity);
