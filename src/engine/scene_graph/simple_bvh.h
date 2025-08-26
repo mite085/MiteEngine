@@ -74,9 +74,9 @@ class SimpleBVH : public SpatialPartition {
   bool Raycast(const Ray &ray, std::vector<SceneNode *> &results) override;
   bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) override;
   int FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) override;
-  int SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results) override;
-  int AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results) override;
-  int PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) override;
+  size_t SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results) override;
+  size_t AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results) override;
+  size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) override;
   bool NearestNeighbor(const glm::vec3 &point,
                        SceneNode *&result,
                        float maxDistance = FLT_MAX) override;

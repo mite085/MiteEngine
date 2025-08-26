@@ -328,7 +328,7 @@ void SimpleBVH::FrustumCullRecursive(BVHNode *node,
   }
 }
 
-int SimpleBVH::SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results)
+size_t SimpleBVH::SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results)
 {
   if (needsRebuild_)
     Rebuild();
@@ -337,7 +337,7 @@ int SimpleBVH::SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &resul
 
   results.clear();
   SphereQueryRecursive(root_, sphere, results);
-  return static_cast<int>(results.size());
+  return results.size();
 }
 
 void SimpleBVH::SphereQueryRecursive(BVHNode *node,
@@ -362,7 +362,7 @@ void SimpleBVH::SphereQueryRecursive(BVHNode *node,
   }
 }
 
-int SimpleBVH::AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results)
+size_t SimpleBVH::AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results)
 {
   if (needsRebuild_)
     Rebuild();
@@ -371,7 +371,7 @@ int SimpleBVH::AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results)
 
   results.clear();
   AABBQueryRecursive(root_, aabb, results);
-  return static_cast<int>(results.size());
+  return results.size();
 }
 
 void SimpleBVH::AABBQueryRecursive(BVHNode *node,
@@ -396,7 +396,7 @@ void SimpleBVH::AABBQueryRecursive(BVHNode *node,
   }
 }
 
-int SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results)
+size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results)
 {
   if (needsRebuild_)
     Rebuild();
@@ -406,7 +406,7 @@ int SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &resu
   results.clear();
   AABB pointAABB(point, point);  // 创建零大小的AABB
   AABBQueryRecursive(root_, pointAABB, results);
-  return static_cast<int>(results.size());
+  return results.size();
 }
 
 bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, float maxDistance)

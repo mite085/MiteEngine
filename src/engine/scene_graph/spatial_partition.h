@@ -78,7 +78,7 @@ class SpatialPartition {
    * @param results 结果节点列表（输出参数）
    * @return 结果节点数量
    */
-  virtual int SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results) = 0;
+  virtual size_t SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results) = 0;
 
   /**
    * @brief AABB查询，返回AABB内的所有场景节点
@@ -86,7 +86,7 @@ class SpatialPartition {
    * @param results 结果节点列表（输出参数）
    * @return 结果节点数量
    */
-  virtual int AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results) = 0;
+  virtual size_t AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results) = 0;
 
   /**
    * @brief 点查询，返回包含点的所有场景节点
@@ -94,7 +94,7 @@ class SpatialPartition {
    * @param results 结果节点列表（输出参数）
    * @return 结果节点数量
    */
-  virtual int PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) = 0;
+  virtual size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) = 0;
 
   /**
    * @brief 最近邻查询，返回距离点最近的场景节点
@@ -149,14 +149,13 @@ class SpatialPartition {
    */
   virtual void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback) = 0;
 
- protected:
   /**
    * @brief 计算两个AABB的合并结果
    * @param a 第一个AABB
    * @param b 第二个AABB
    * @return 合并后的AABB
    */
-  AABB MergeAABBs(const AABB &a, const AABB &b) const
+  static AABB MergeAABBs(const AABB &a, const AABB &b)
   {
     return AABB::Merge(a, b);
   }
@@ -166,7 +165,7 @@ class SpatialPartition {
    * @param aabbs AABB列表
    * @return 合并后的AABB
    */
-  AABB MergeAABBs(const std::vector<AABB> &aabbs) const
+  static AABB MergeAABBs(const std::vector<AABB> &aabbs)
   {
     if (aabbs.empty())
       return AABB();
@@ -185,7 +184,7 @@ class SpatialPartition {
    * @param t 相交距离（输出参数）
    * @return 是否相交
    */
-  bool RayIntersectsAABB(const Ray &ray, const AABB &aabb, float &t) const
+  static bool RayIntersectsAABB(const Ray &ray, const AABB &aabb, float &t)
   {
     return ray.Intersects(aabb, t);
   }
@@ -196,7 +195,7 @@ class SpatialPartition {
    * @param aabb 包围盒
    * @return 相交类型
    */
-  IntersectionType FrustumIntersectsAABB(const Frustum &frustum, const AABB &aabb) const
+  static IntersectionType FrustumIntersectsAABB(const Frustum &frustum, const AABB &aabb)
   {
     return frustum.TestAABB(aabb);
   }
@@ -207,7 +206,7 @@ class SpatialPartition {
    * @param aabb 包围盒
    * @return 是否在内部
    */
-  bool PointInAABB(const glm::vec3 &point, const AABB &aabb) const
+  static bool PointInAABB(const glm::vec3 &point, const AABB &aabb)
   {
     return aabb.Contains(point);
   }
@@ -218,7 +217,7 @@ class SpatialPartition {
    * @param aabb 包围盒
    * @return 是否相交
    */
-  bool SphereIntersectsAABB(const Sphere &sphere, const AABB &aabb) const
+  static bool SphereIntersectsAABB(const Sphere &sphere, const AABB &aabb)
   {
     return BoundingVolumes::SphereIntersectsAABB(sphere, aabb);
   }
