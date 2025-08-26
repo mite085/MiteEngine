@@ -72,6 +72,15 @@ class VisibilityComponent
     return isVisible != wasVisible;
   }
 
+  // ==================== 视锥体操作 ====================
+      
+  /**
+   * @brief 执行视锥体裁剪测试
+   * @param frustum 相机视锥体
+   * @return 相交类型
+   */
+  IntersectionType TestFrustum(const Frustum &frustum) const;
+
   // ==================== 包围盒操作 ====================
 
   /**
@@ -103,6 +112,12 @@ class VisibilityComponent
    * @return 世界包围球
    */
   Sphere GetWorldSphere() const;
+
+  /**
+   * @brief 更新世界空间包围盒
+   * @param reg 场景注册表
+   */
+  void UpdateWorldAABB(SceneRegistry &reg);
 
   // ==================== 掩码操作 ====================
 
@@ -150,20 +165,6 @@ class VisibilityComponent
   {
     return boundsDirty;
   }
-
- private:
-  /**
-   * @brief 更新世界空间包围盒
-   * @param reg 场景注册表
-   */
-  void UpdateWorldAABB(SceneRegistry &reg);
-
-  /**
-   * @brief 执行视锥体裁剪测试
-   * @param frustum 相机视锥体
-   * @return 相交类型
-   */
-  IntersectionType TestFrustum(const Frustum &frustum) const;
 
  private:
   AABB localAABB;  ///< 局部空间包围盒

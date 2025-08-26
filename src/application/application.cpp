@@ -273,12 +273,19 @@ void MiteApplication::CleanUpSceneCore()
   m_SceneCore->Clear();
 }
 
-void MiteApplication::InitializeSceneGraph() {
+void MiteApplication::InitializeSceneGraph()
+{
   m_logger->info("Initializing scene graph");
 
   // 初始化场景图
   m_SceneGraph = std::make_unique<SceneGraph>();
+
+  // 在SceneCore内注册SceneGraphSystem
   m_SceneGraph->Initialize(m_SceneCore->GetComponentSystemManager());
+
+  // 将创建好的SceneGraph交付给注册在SceneCore模块的SceneGraphSystem
+  m_SceneCore->GetComponentSystemManager().GetSystem<SceneGraphSystem>()->SetSceneGraph(
+      m_SceneGraph.get());
 }
 
 void MiteApplication::CleanUpSceneGraph()
@@ -303,8 +310,21 @@ void MiteApplication::BeginFrame()
 
 void MiteApplication::Update()
 {
-  // 更新场景状态(ECS系统更新)
+  // 1. 更新场景状态(ECS系统更新)
   m_SceneCore->OnUpdate(Time::DeltaTime());
+
+  // 2. SceneGraphSystem同步ECS状态到场景图
+  //    - 处理实体创建/销毁
+  //    - 同步变换数据
+  // 
+  // TODO：SceneGraphSystem作为ComponentSystem已经注册到SceneCore的组件管理器，
+  // 需要明确 m_SceneCore->OnUpdate的执行顺序，将SceneGraphSystem顺序放在最后
+
+  // 3. 更新DirtySceneNode，由SceneGraph负责
+  // 该步骤也由SceneGraphSystem负责了。
+
+  // 4. VisibilityComponentSystem执行可见性计算
+  //    - 使用SceneGraph的空间查询进行视锥体裁剪
 
   // TODO：处理动画
   UpdateAnimations();
@@ -322,18 +342,13 @@ void MiteApplication::Update()
 void MiteApplication::Render()
 {
   // 主场景渲染
-  if (m_ShowMainViewport) {
-    // 获取主相机
-    auto mainCamera = m_SceneCore->GetMainCamera();
+  auto mainCamera = m_SceneCore->GetMainCamera();  // 获取主相机
+  m_Renderer->RenderScene(mainCamera, m_SceneView->GetRenderQueue());  // 渲染场景
 
-    // 渲染场景
-    m_Renderer->RenderScene(mainCamera, m_SceneView->GetRenderQueue());
-
-    // TODO：渲染调试信息
-    // if (m_ShowDebug) {
-    //  m_Renderer->RenderDebug(m_SceneView->GetRenderData());
-    //}
-  }
+  // TODO：渲染调试信息
+  // if (m_ShowDebug) {
+  //  m_Renderer->RenderDebug(m_SceneView->GetRenderData());
+  //}
 
   // TODO: 预览窗口渲染
   // if (m_ShowPreviewWindow) {

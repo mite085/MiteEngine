@@ -6,7 +6,6 @@
 #include "spatial_partition.h"
 
 namespace mite {
-
 // 前向声明
 class ComponentSystemManager;
 class SceneRegistry;
@@ -48,6 +47,20 @@ class SceneGraph {
   void Initialize(ComponentSystemManager &manager);
   void CleanUp(ComponentSystemManager &manager);
 
+  // ==================== 视锥体与可见性设定 ====================
+
+  /**
+   * @brief 设定主相机的视锥体
+   * @param frustum 视锥体对象引用
+   */
+  void SceneGraph::SetMainCameraFrustum(const Frustum &frustum);
+
+  /**
+   * @brief 设定主相机的可见性
+   * @param mask 可见性掩码
+   */
+  void SceneGraph::SetCameraVisibilityMask(uint32_t mask);
+
   // ==================== 场景节点生命周期管理 ====================
 
   /**
@@ -55,26 +68,14 @@ class SceneGraph {
    * @param entity 目标实体
    * @return 创建的场景节点指针，失败返回nullptr
    */
-  SceneNode *CreateNode(Entity entity);
+  SceneNode *CreateNode(SceneRegistry &registry, Entity entity);
 
   /**
    * @brief 销毁实体的场景节点
    * @param entity 目标实体
    * @return 是否成功销毁
    */
-  bool DestroyNode(Entity entity);
-
-  /**
-   * @brief 批量创建场景节点
-   * @param entities 实体列表
-   */
-  void CreateNodes(const std::vector<Entity> &entities);
-
-  /**
-   * @brief 批量销毁场景节点
-   * @param entities 实体列表
-   */
-  void DestroyNodes(const std::vector<Entity> &entities);
+  bool DestroyNode(SceneRegistry &registry, Entity entity);
 
   // ==================== 场景节点查询接口 ====================
 
@@ -180,20 +181,36 @@ class SceneGraph {
   // ==================== 空间查询接口（为SceneView提供优化） ====================
 
   /**
-   * @brief 视锥体裁剪查询 - 主要给SceneView使用
-   * @param frustum 视锥体
-   * @param results 可见节点列表（输出参数）
+   * @brief 查询可见节点（使用内部保存的视锥体）
+   * @return 可见节点列表
+   */
+  std::vector<SceneNode *> QueryVisibleNodes(SceneRegistry &registry);
+
+  /**
+   * @brief 快速可见性检查（不返回具体节点，只计数）
    * @return 可见节点数量
    */
-  int QueryVisibleNodes(const Frustum &frustum, std::vector<SceneNode *> &results);
+  size_t QueryVisibleCount(SceneRegistry &registry);
+
+  /**
+   * @brief 获取可见节点数量（不执行可见性检查，只获取上次检查结果）
+   * @return 可见节点数量
+   */
+  size_t GetVisibleNodeCount() const;
+
+  /**
+   * @brief 视锥体裁剪查询 - 主要给SceneView使用
+   * @param frustum 视锥体
+   * @return 可见节点列表
+   */
+  std::vector<SceneNode *> QueryVisibleNodes(SceneRegistry &registry, const Frustum &frustum);
 
   /**
    * @brief 射线检测查询
    * @param ray 检测射线
-   * @param results 相交节点列表（输出参数）
-   * @return 相交节点数量
+   * @return 相交节点列表
    */
-  size_t QueryRaycast(const Ray &ray, std::vector<SceneNode *> &results);
+  std::vector<SceneNode *> QueryRaycast(SceneRegistry &registry, const Ray &ray);
 
   /**
    * @brief 射线检测查询（第一个命中）
@@ -202,23 +219,24 @@ class SceneGraph {
    * @param distance 相交距离（输出参数）
    * @return 是否命中
    */
-  bool QueryRaycastFirst(const Ray &ray, SceneNode *&result, float &distance);
+  bool QueryRaycastFirst(SceneRegistry &registry,
+                         const Ray &ray,
+                         SceneNode *&result,
+                         float &distance);
 
   /**
    * @brief 球体查询
    * @param sphere 查询球体
-   * @param results 结果节点列表（输出参数）
-   * @return 结果节点数量
+   * @return 结果节点列表
    */
-  int QuerySphere(const Sphere &sphere, std::vector<SceneNode *> &results);
+  std::vector<SceneNode *> QuerySphere(SceneRegistry &registry, const Sphere &sphere);
 
   /**
    * @brief AABB查询
    * @param aabb 查询AABB
-   * @param results 结果节点列表（输出参数）
-   * @return 结果节点数量
+   * @return 结果节点列表
    */
-  int QueryAABB(const AABB &aabb, std::vector<SceneNode *> &results);
+  std::vector<SceneNode *> QueryAABB(SceneRegistry &registry, const AABB &aabb);
 
   // ==================== 节点更新接口（由SceneGraphSystem调用） ====================
 
@@ -227,14 +245,16 @@ class SceneGraph {
    * @param entity 目标实体
    * @param localTransform 局部变换矩阵
    */
-  void UpdateNodeTransform(Entity entity, const glm::mat4 &localTransform);
+  void UpdateNodeTransform(SceneRegistry &registry,
+                           Entity entity,
+                           const glm::mat4 &localTransform);
 
   /**
    * @brief 更新场景节点的包围盒数据
    * @param entity 目标实体
    * @param localBounds 局部包围盒
    */
-  void UpdateNodeBounds(Entity entity, const AABB &localBounds);
+  void UpdateNodeBounds(SceneRegistry &registry, Entity entity, const AABB &localBounds);
 
   /**
    * @brief 标记节点需要更新（变换或包围盒变化）
@@ -245,7 +265,7 @@ class SceneGraph {
   /**
    * @brief 批量更新所有脏节点
    */
-  void UpdateDirtyNodes();
+  void UpdateDirtyNodes(SceneRegistry &registry);
 
   // ==================== 序列化支持（为编辑器保存/加载） ====================
 
@@ -292,6 +312,14 @@ class SceneGraph {
   void AddNodeToSpatialPartition(SceneNode *node);
 
   /**
+   * @brief 检查节点是否可见
+   * @param registry 场景注册表
+   * @param entity 实体
+   * @return 是否可见
+   */
+  bool IsNodeVisible(SceneRegistry &registry, Entity entity) const;
+
+  /**
    * @brief 清空空间划分结构,清空所有节点
    */
   void Clear();
@@ -309,13 +337,17 @@ class SceneGraph {
   // 需要更新的脏节点列表
   std::vector<Entity> m_dirtyNodes;
 
+  // 状态存储
+  Frustum m_mainCameraFrustum;      // 主相机的视锥体
+  uint32_t m_cameraVisibilityMask;  // 主相机的可见性（通过掩码判断，支持不同通道渲染）
+  size_t m_visibleNodeCount;        // 可见节点数量
+
   // 线程安全保护
   mutable std::mutex m_mutex;
 
   // 日志器
   Logger m_logger;
 };
-
 }  // namespace mite
 
 #endif  // MITE_SCENE_GRAPH_H

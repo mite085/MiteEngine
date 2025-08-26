@@ -1,6 +1,5 @@
 #include "scene_graph_system.h"
 
-
 namespace mite {
 // ==================== 构造函数 ====================
 SceneGraphSystem::SceneGraphSystem() : m_sceneGraph(nullptr)
@@ -61,7 +60,7 @@ void SceneGraphSystem::Update(float deltaTime, SceneRegistry &registry)
   ProcessPendingOperations(registry);
 
   // 更新SceneGraph中的脏节点
-  m_sceneGraph->UpdateDirtyNodes();
+  m_sceneGraph->UpdateDirtyNodes(registry);
 
   // 定期输出统计信息（调试用）
   static float statsTimer = 0.0f;
@@ -136,12 +135,7 @@ bool SceneGraphSystem::OnEntityCreated(EntityCreatedEvent &e)
 bool SceneGraphSystem::OnEntityDestroyed(EntityDestroyedEvent &e)
 {
   Entity entity = e.GetEntity();
-
-  if (m_sceneGraph && m_sceneGraph->HasNode(entity)) {
-    m_sceneGraph->DestroyNode(entity);
-    m_stats.nodesDestroyed++;
-  }
-
+  m_pendingDestroyNodes.push_back(entity);  // 暂存而不是立即处理
   e.Handled();
   return true;
 }
@@ -215,7 +209,7 @@ void SceneGraphSystem::CreateNodeForEntity(SceneRegistry &registry, Entity entit
     return;
   }
 
-  SceneNode *node = m_sceneGraph->CreateNode(entity);
+  SceneNode *node = m_sceneGraph->CreateNode(registry, entity);
   if (node) {
     m_stats.nodesCreated++;
 
@@ -244,7 +238,7 @@ void SceneGraphSystem::SyncTransformToSceneGraph(SceneRegistry &registry, Entity
     auto &transformComp = registry.GetComponent<TransformComponent>(entity);
     glm::mat4 localTransform = transformComp.GetLocalMatrix();
 
-    m_sceneGraph->UpdateNodeTransform(entity, localTransform);
+    m_sceneGraph->UpdateNodeTransform(registry, entity, localTransform);
     m_stats.transformSyncs++;
   }
   catch (const std::exception &e) {
@@ -283,7 +277,7 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
     localBounds = AABB(glm::vec3(-0.5f), glm::vec3(0.5f));
   }
 
-  m_sceneGraph->UpdateNodeBounds(entity, localBounds);
+  m_sceneGraph->UpdateNodeBounds(registry, entity, localBounds);
   m_stats.boundsSyncs++;
 }
 
@@ -318,7 +312,7 @@ void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
     if (m_sceneGraph && m_sceneGraph->HasNode(entity)) {
       // 检查是否真的需要销毁（没有变换组件）
       if (!ShouldCreateNodeForEntity(registry, entity)) {
-        m_sceneGraph->DestroyNode(entity);
+        m_sceneGraph->DestroyNode(registry,entity);
         m_stats.nodesDestroyed++;
       }
     }
