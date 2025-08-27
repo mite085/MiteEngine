@@ -2,6 +2,7 @@
 #include "bounding_volumes.h"
 #include "scene_core/component_system_manager.h"
 #include "scene_core/scene_registry.h"
+#include "hierarchy_scene_node_system.h"
 
 namespace mite {
 
@@ -13,7 +14,7 @@ TransformSceneNodeSystem::TransformSceneNodeSystem()
 
 Component::Family TransformSceneNodeSystem::GetExecutionOrder() const
 {
-  return Component::Family::SceneGraph;
+  return Component::Family::Transform;
 }
 
 void TransformSceneNodeSystem::Initialize()
@@ -26,7 +27,6 @@ void TransformSceneNodeSystem::Initialize()
   m_EventSubscriptions.Subscribe<ComponentRemovedEvent<TransformComponent>>(
       BIND_DISPATCH_FN(OnTransformComponentRemoved));
   m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(BIND_DISPATCH_FN(OnTransformUpdated));
-  m_EventSubscriptions.Subscribe<ParentChangedEvent>(BIND_DISPATCH_FN(OnParentChanged));
 
   m_Logger->debug("TransformSceneNodeSystem initialized - event subscriptions complete");
 }
@@ -42,7 +42,6 @@ void TransformSceneNodeSystem::Shutdown()
   m_EventSubscriptions.UnsubscribeAll();
 
   std::lock_guard<std::mutex> lock(m_mutex);
-  m_entityToNodeMap.clear();
   m_pendingSyncEntities.clear();
 }
 
@@ -53,43 +52,24 @@ std::vector<std::type_index> TransformSceneNodeSystem::GetComponentTypes() const
 
 std::vector<std::type_index> TransformSceneNodeSystem::GetSystemDependencies() const
 {
-  return {typeid(TransformComponentSystem), typeid(HierarchyComponentSystem)};// 依赖ECS变换和层级
+  return {typeid(TransformComponentSystem), typeid(HierarchySceneNodeSystem)};// 依赖ECS变换和层级
 }
 
-void TransformSceneNodeSystem::RegisterSceneNode(Entity entity, SceneNode *node)
+void TransformSceneNodeSystem::SetSceneGraph(SceneGraph *sceneGraph)
 {
-  if (!node)
-    return;
-
-  std::lock_guard<std::mutex> lock(m_mutex);
-  m_entityToNodeMap[entity] = node;
-  m_pendingSyncEntities.push_back(entity);
-}
-
-void TransformSceneNodeSystem::UnregisterSceneNode(Entity entity)
-{
-  std::lock_guard<std::mutex> lock(m_mutex);
-  m_entityToNodeMap.erase(entity);
-
-  m_pendingSyncEntities.erase(
-      std::remove(m_pendingSyncEntities.begin(), m_pendingSyncEntities.end(), entity),
-      m_pendingSyncEntities.end());
-}
-
-SceneNode *TransformSceneNodeSystem::GetSceneNode(Entity entity) const
-{
-  std::lock_guard<std::mutex> lock(m_mutex);
-  auto it = m_entityToNodeMap.find(entity);
-  return it != m_entityToNodeMap.end() ? it->second : nullptr;
+  m_sceneGraph = sceneGraph;
 }
 
 void TransformSceneNodeSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
-
-  for (const auto &[entity, node] : m_entityToNodeMap) {
-    if (registry.HasComponent<TransformComponent>(entity)) {
-      SyncComponentToNode(registry, entity, node);
+  if (!m_sceneGraph) {
+    return;
+  }
+  // 遍历所有有变换组件的实体
+  auto view = registry.GetEntitiesWith<TransformComponent>();
+  for (Entity entity : view) {
+    if (m_sceneGraph->HasNode(entity)) {
+      SyncComponentToNode(registry, entity);
     }
   }
 }
@@ -97,7 +77,12 @@ void TransformSceneNodeSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
 void TransformSceneNodeSystem::MarkEntityForSync(Entity entity)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
-  m_pendingSyncEntities.push_back(entity);
+  // 避免重复添加
+  if (std::find(m_pendingSyncEntities.begin(), m_pendingSyncEntities.end(), entity) ==
+      m_pendingSyncEntities.end())
+  {
+    m_pendingSyncEntities.push_back(entity);
+  }
 }
 
 bool TransformSceneNodeSystem::OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &e)
@@ -109,6 +94,9 @@ bool TransformSceneNodeSystem::OnTransformComponentAdded(ComponentAddedEvent<Tra
 
 bool TransformSceneNodeSystem::OnTransformComponentRemoved(ComponentRemovedEvent<TransformComponent> &e)
 {
+  // 移除组件时不需要特殊处理，SceneGraph会处理节点销毁
+  // 此处仅需要维护好PendingSyncEntities即可
+
   Entity entity = e.GetEntity();
 
   std::lock_guard<std::mutex> lock(m_mutex);
@@ -127,14 +115,6 @@ bool TransformSceneNodeSystem::OnTransformUpdated(TransformUpdatedEvent &e)
   return true;
 }
 
-bool TransformSceneNodeSystem::OnParentChanged(ParentChangedEvent &e)
-{
-  // 简化实现：只标记当前实体，子节点会在变换传播时自动标记
-  MarkEntityForSync(e.GetEntity());
-  e.Handled();
-  return true;
-}
-
 void TransformSceneNodeSystem::ProcessPendingSync(SceneRegistry &registry)
 {
   std::vector<Entity> processingEntities;
@@ -148,22 +128,28 @@ void TransformSceneNodeSystem::ProcessPendingSync(SceneRegistry &registry)
   }
 
   for (Entity entity : processingEntities) {
-    if (registry.IsValid(entity)) {
-      SceneNode *node = GetSceneNode(entity);
-      if (node && registry.HasComponent<TransformComponent>(entity)) {
-        SyncComponentToNode(registry, entity, node);
-      }
+    if (registry.IsValid(entity) && registry.HasComponent<TransformComponent>(entity)) {
+      SyncComponentToNode(registry, entity);
     }
   }
 }
 
-void TransformSceneNodeSystem::SyncComponentToNode(SceneRegistry &registry, Entity entity, SceneNode *node)
+void TransformSceneNodeSystem::SyncComponentToNode(SceneRegistry &registry, Entity entity)
 {
+  if (!m_sceneGraph || !m_sceneGraph->HasNode(entity)) {
+    return;
+  }
   try {
     auto &transformComp = registry.GetComponent<TransformComponent>(entity);
-    node->SetLocalTransform(transformComp.GetLocalMatrix());
-    node->MarkTransformDirty();
-    node->MarkBoundsDirty();
+    SceneNode *node = m_sceneGraph->GetNode(entity);
+
+    if (node) {
+      node->SetLocalTransform(transformComp.GetLocalMatrix());
+      node->MarkTransformDirty();
+      node->MarkBoundsDirty();
+
+      m_Logger->trace("Synced transform for entity {}", entity.GetUUIDString());
+    }
   }
   catch (const std::exception &e) {
     m_Logger->error("Sync failed for entity {}: {}", entity.GetUUIDString(), e.what());

@@ -3,28 +3,26 @@
 
 #include "scene_core_components/hierarchy_component.h"
 #include "scene_core_components/transform_component.h"
-#include "scene_node.h"
+#include "scene_graph.h"
 
 namespace mite {
-
 /**
- * @class TransformSystem
- * @brief 变换系统 - 负责ECS组件与场景图节点之间的变换数据同步
- * 
+ * @class TransformSceneNodeSystem
+ * @brief 变换场景节点系统 - 负责ECS变换组件与场景图节点之间的数据同步
+ *
  * 注意：
  * 与SceneCore模块的TransformComponentSystem不同，
  * 不负责TransformComponent的管理，仅负责Entity和
  * SceneNode之间的Transform数据传递与同步。
- *
+ * 
  * 设计原则：
- * 1. 不维护SceneRegistry引用，完全通过事件和参数传递
- * 2. 使用延迟处理机制，在Update阶段批量执行
- * 3. 提供清晰的接口用于场景图集成
+ * 1. 通过SceneGraph服务直接查询SceneNode，避免维护重复映射
+ * 2. 专注于变换数据同步，不涉及层级关系处理
+ * 3. 使用延迟处理机制提高性能
  */
 class TransformSceneNodeSystem : public ComponentSystem {
  public:
   DECLARE_COMPONENT_SYSTEM(TransformSceneNodeSystem)
-
   TransformSceneNodeSystem();
   ~TransformSceneNodeSystem() override = default;
 
@@ -33,75 +31,50 @@ class TransformSceneNodeSystem : public ComponentSystem {
   void Initialize() override;
   void Update(float deltaTime, SceneRegistry &registry) override;
   void Shutdown() override;
-
   std::vector<std::type_index> GetComponentTypes() const override;
   std::vector<std::type_index> GetSystemDependencies() const override;
 
-  // ==================== 场景图集成接口 ====================
+  // ==================== SceneGraph 访问接口 ====================
+  void SetSceneGraph(SceneGraph *sceneGraph);
 
+  // ==================== 同步控制接口 ====================
   /**
-   * @brief 注册场景节点映射
-   * @param entity 实体
-   * @param node 对应的场景节点
+   * @brief 手动标记实体需要同步
+   * @param entity 需要同步的实体
    */
-  void RegisterSceneNode(Entity entity, SceneNode *node);
-
-  /**
-   * @brief 取消注册场景节点映射
-   * @param entity 实体
-   */
-  void UnregisterSceneNode(Entity entity);
-
-  /**
-   * @brief 获取实体对应的场景节点
-   * @param entity 实体句柄
-   * @return 场景节点指针，不存在时返回nullptr
-   */
-  SceneNode *GetSceneNode(Entity entity) const;
-
+  void MarkEntityForSync(Entity entity);
   /**
    * @brief 批量同步ECS组件数据到场景节点
    * @param registry 场景注册表引用
    */
   void SyncAllComponentsToNodes(SceneRegistry &registry);
 
-  /**
-   * @brief 手动标记实体需要同步
-   * @param entity 需要同步的实体
-   */
-  void MarkEntityForSync(Entity entity);
-
  private:
   // ==================== 事件处理回调 ====================
   bool OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &e);
   bool OnTransformComponentRemoved(ComponentRemovedEvent<TransformComponent> &e);
   bool OnTransformUpdated(TransformUpdatedEvent &e);
-  bool OnParentChanged(ParentChangedEvent &e);
 
   // ==================== 内部处理方法 ====================
-
   /**
    * @brief 处理待同步的实体
    * @param registry 场景注册表引用
    */
   void ProcessPendingSync(SceneRegistry &registry);
-
   /**
    * @brief 将ECS变换组件数据同步到场景节点
    * @param registry 场景注册表引用
    * @param entity 目标实体
-   * @param node 对应的场景节点
    */
-  void SyncComponentToNode(SceneRegistry &registry, Entity entity, SceneNode *node);
+  void SyncComponentToNode(SceneRegistry &registry, Entity entity);
 
  private:
-  // 实体到场景节点的映射表
-  std::unordered_map<Entity, SceneNode *> m_entityToNodeMap;
+  SceneGraph *m_sceneGraph = nullptr;
 
   // 需要同步的实体队列
   std::vector<Entity> m_pendingSyncEntities;
 
-  // 线程安全保护
+  // PendingSyncEntities的线程安全保护
   mutable std::mutex m_mutex;
 };
 
