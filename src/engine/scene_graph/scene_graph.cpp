@@ -1,4 +1,5 @@
 #include "scene_graph.h"
+#include "Hierarchy_scene_node_system.h"
 #include "scene_core/component_system_manager.h"
 #include "scene_graph_system.h"
 #include "simple_bvh.h"
@@ -21,8 +22,14 @@ SceneGraph::~SceneGraph() {}
 void SceneGraph::Initialize(ComponentSystemManager &manager)
 {
   manager.RegisterSystem<SceneGraphSystem>();
+  manager.RegisterSystem<HierarchySceneNodeSystem>();
   manager.RegisterSystem<TransformSceneNodeSystem>();
   manager.RegisterSystem<VisibilityComponentSystem>();
+
+  // 将创建好的SceneGraph交付给注册在SceneCore模块的SceneGraph组件系统
+  manager.GetSystem<SceneGraphSystem>()->SetSceneGraph(this);
+  manager.GetSystem<HierarchySceneNodeSystem>()->SetSceneGraph(this);
+  manager.GetSystem<TransformSceneNodeSystem>()->SetSceneGraph(this);
 
   // 初始化空间划分结构（默认BVH）
   InitializeSpatialPartition();
@@ -36,6 +43,7 @@ void SceneGraph::CleanUp(ComponentSystemManager &manager)
 
   Clear();
   manager.UnregisterSystem<SceneGraphSystem>();
+  manager.UnregisterSystem<HierarchySceneNodeSystem>();
   manager.UnregisterSystem<TransformSceneNodeSystem>();
   manager.UnregisterSystem<VisibilityComponentSystem>();
 
@@ -458,8 +466,8 @@ std::vector<SceneNode *> SceneGraph::QueryRaycast(SceneRegistry &registry, const
     m_logger->warn("Invalid spatial partition, cannot Raycast.");
     return results;
   }
-  
-  float distance; // 用于记录Ray行进距离的临时变量
+
+  float distance;  // 用于记录Ray行进距离的临时变量
 
   // 第一阶段：使用空间划分结构进行粗检测
   std::vector<SceneNode *> potentialHits;
@@ -546,8 +554,7 @@ bool SceneGraph::QueryRaycastFirst(SceneRegistry &registry,
   return false;
 }
 
-std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry,
-                                                 const Sphere &sphere)
+std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry, const Sphere &sphere)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   std::vector<SceneNode *> results;
@@ -588,8 +595,7 @@ std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry,
   return results;
 }
 
-std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry,
-                                               const AABB &aabb)
+std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry, const AABB &aabb)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   std::vector<SceneNode *> results;
@@ -631,19 +637,6 @@ std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry,
 }
 
 // ==================== 节点更新接口 ====================
-void SceneGraph::UpdateNodeTransform(SceneRegistry &registry,
-                                     Entity entity,
-                                     const glm::mat4 &localTransform)
-{
-  std::lock_guard<std::mutex> lock(m_mutex);
-
-  auto it = m_entityToNodeMap.find(entity);
-  if (it != m_entityToNodeMap.end()) {
-    it->second->SetLocalTransform(localTransform);
-    MarkNodeDirty(entity);
-  }
-}
-
 void SceneGraph::UpdateNodeBounds(SceneRegistry &registry, Entity entity, const AABB &localBounds)
 {
   std::lock_guard<std::mutex> lock(m_mutex);

@@ -239,16 +239,6 @@ class SceneGraph {
   std::vector<SceneNode *> QueryAABB(SceneRegistry &registry, const AABB &aabb);
 
   // ==================== 节点更新接口（由SceneGraphSystem调用） ====================
-
-  /**
-   * @brief 更新场景节点的变换数据
-   * @param entity 目标实体
-   * @param localTransform 局部变换矩阵
-   */
-  void UpdateNodeTransform(SceneRegistry &registry,
-                           Entity entity,
-                           const glm::mat4 &localTransform);
-
   /**
    * @brief 更新场景节点的包围盒数据
    * @param entity 目标实体
