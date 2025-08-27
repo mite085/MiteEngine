@@ -1,7 +1,8 @@
 #include "scene_graph_system.h"
+#include "scene_core_components/component_headers.h"
+#include "hierarchy_scene_node_system.h"
 #include "transform_scene_node_system.h"
 #include "visibility_component.h"
-#include "scene_core_components/component_headers.h"
 
 namespace mite {
 // ==================== 构造函数 ====================
@@ -20,7 +21,7 @@ Component::Family SceneGraphSystem::GetExecutionOrder() const
 
 void SceneGraphSystem::Initialize()
 {
-  m_logger->info("Initializing SceneGraphSystem");
+  m_logger->info("Initializing Scene Graph System");
 
   // 订阅ECS事件
   m_eventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
@@ -33,15 +34,12 @@ void SceneGraphSystem::Initialize()
   m_eventSubscriptions.Subscribe<ComponentRemovedEvent<MeshComponent>>(
       BIND_DISPATCH_FN(OnMeshComponentRemoved));
 
-  m_eventSubscriptions.Subscribe<ParentChangedEvent>(BIND_DISPATCH_FN(OnParentChanged));
-
   // 清空暂存队列（确保初始化后状态干净）
   m_pendingCreateNodes.clear();
   m_pendingDestroyNodes.clear();
   m_pendingSyncBounds.clear();
-  m_pendingParentChanges.clear();
 
-  m_logger->debug("SceneGraphSystem initialized.");
+  m_logger->debug("Scene Graph System initialized.");
 }
 
 void SceneGraphSystem::Update(float deltaTime, SceneRegistry &registry)
@@ -87,7 +85,7 @@ std::vector<std::type_index> SceneGraphSystem::GetSystemDependencies() const
 {
   return {typeid(TransformSceneNodeSystem),
           typeid(MeshComponentSystem),
-          typeid(HierarchyComponentSystem),
+          typeid(HierarchySceneNodeSystem),
           typeid(VisibilityComponentSystem)};
 }
 
@@ -122,16 +120,16 @@ bool SceneGraphSystem::OnEntityCreated(EntityCreatedEvent &e)
 {
   Entity entity = e.GetEntity();
   m_pendingCreateNodes.push_back(entity);  // 暂存而不是立即处理
-  e.Handled();
-  return true;
+
+  return e.handled;  // EntityCreatedEvent还有很多地方需要响应，不应当标记事件已处理
 }
 
 bool SceneGraphSystem::OnEntityDestroyed(EntityDestroyedEvent &e)
 {
   Entity entity = e.GetEntity();
   m_pendingDestroyNodes.push_back(entity);  // 暂存而不是立即处理
-  e.Handled();
-  return true;
+
+  return e.handled;  // EntityDestroyedEvent还有很多地方需要响应，不应当标记事件已处理
 }
 
 bool SceneGraphSystem::OnMeshComponentAdded(ComponentAddedEvent<MeshComponent> &e)
@@ -149,13 +147,6 @@ bool SceneGraphSystem::OnMeshComponentRemoved(ComponentRemovedEvent<MeshComponen
   // 暂存销毁检查请求
   m_pendingDestroyNodes.push_back(entity);
 
-  e.Handled();
-  return true;
-}
-
-bool SceneGraphSystem::OnParentChanged(ParentChangedEvent &e)
-{
-  m_pendingParentChanges.emplace_back(e.GetEntity(), e.GetNewParent());
   e.Handled();
   return true;
 }
@@ -225,30 +216,6 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
   m_stats.boundsSyncs++;
 }
 
-void SceneGraphSystem::HandleParentChange(SceneRegistry &registry, Entity entity, Entity newParent)
-{
-  if (!m_sceneGraph) {
-    return;
-  }
-
-  SceneNode *node = m_sceneGraph->GetNode(entity);
-  SceneNode *parentNode = nullptr;
-
-  if (newParent.IsValid()) {
-    parentNode = m_sceneGraph->GetNode(newParent);
-    if (!parentNode) {
-      // 如果父节点还没有场景节点，先创建
-      CreateNodeForEntity(registry, newParent);
-      parentNode = m_sceneGraph->GetNode(newParent);
-    }
-  }
-
-  if (node) {
-    m_sceneGraph->SetParent(node, parentNode);
-    m_logger->debug("Updated parent for entity {}", entity.GetUUIDString());
-  }
-}
-
 void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
 {
   // 1. 先处理节点销毁（避免操作已销毁的节点）
@@ -280,12 +247,5 @@ void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
     }
   }
   m_pendingSyncBounds.clear();
-
-  for (auto &[entity, newParent] : m_pendingParentChanges) {
-    if (m_sceneGraph && m_sceneGraph->HasNode(entity)) {
-      HandleParentChange(registry, entity, newParent);
-    }
-  }
-  m_pendingParentChanges.clear();
 }
 }  // namespace mite

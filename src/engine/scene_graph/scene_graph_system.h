@@ -1,8 +1,8 @@
 #ifndef MITE_SCENE_GRAPH_SYSTEM_H
 #define MITE_SCENE_GRAPH_SYSTEM_H
 
-#include "scene_graph.h"
 #include "scene_core/component_system.h"
+#include "scene_graph.h"
 
 namespace mite {
 // 前向声明
@@ -64,30 +64,10 @@ class SceneGraphSystem : public ComponentSystem {
  private:
   // ==================== ECS事件处理回调 ====================
 
-  /**
-   * @brief 处理实体创建事件
-   */
   bool OnEntityCreated(EntityCreatedEvent &e);
-
-  /**
-   * @brief 处理实体销毁事件
-   */
   bool OnEntityDestroyed(EntityDestroyedEvent &e);
-
-  /**
-   * @brief 处理Mesh组件添加事件
-   */
   bool OnMeshComponentAdded(ComponentAddedEvent<MeshComponent> &e);
-
-  /**
-   * @brief 处理Mesh组件移除事件
-   */
   bool OnMeshComponentRemoved(ComponentRemovedEvent<MeshComponent> &e);
-
-  /**
-   * @brief 处理父节点改变事件
-   */
-  bool OnParentChanged(ParentChangedEvent &e);
 
   // ==================== 内部工具方法 ====================
 
@@ -110,13 +90,6 @@ class SceneGraphSystem : public ComponentSystem {
    */
   void SyncBoundsToSceneGraph(SceneRegistry &registry, Entity entity);
 
-  /**
-   * @brief 处理层级关系变化
-   * @param entity 目标实体
-   * @param newParent 新的父实体
-   */
-  void HandleParentChange(SceneRegistry &registry, Entity entity, Entity newParent);
-
  private:
   /**
    * @brief 处理实体暂存队列
@@ -125,10 +98,9 @@ class SceneGraphSystem : public ComponentSystem {
   void ProcessPendingOperations(SceneRegistry &registry);
 
   // 实体暂存队列
-  std::vector<Entity> m_pendingCreateNodes;                       // 待创建的节点
-  std::vector<Entity> m_pendingDestroyNodes;                      // 待销毁的节点
-  std::vector<Entity> m_pendingSyncBounds;                        // 待同步包围盒的节点
-  std::vector<std::pair<Entity, Entity>> m_pendingParentChanges;  // 待处理的父子关系变化
+  std::vector<Entity> m_pendingCreateNodes;   // 待创建的节点
+  std::vector<Entity> m_pendingDestroyNodes;  // 待销毁的节点
+  std::vector<Entity> m_pendingSyncBounds;    // 待同步包围盒的节点
 
  private:
   // SceneGraph服务引用（外部注入）
