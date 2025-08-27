@@ -19,7 +19,9 @@ set(SCENE_GRAPH_INTERFACE_SRCS
     spatial_partition.cpp
     simple_bvh.h                   # BVH实现（依赖SceneNode和几何类型）
     simple_bvh.cpp
-    transform_scene_node_system.h  # 变换系统（依赖SceneNode）
+    hierarchy_scene_node_system.h  # SceneNode的层次系统，负责管理父子关系
+    hierarchy_scene_node_system.cpp
+    transform_scene_node_system.h  # SceneNode的变换系统
     transform_scene_node_system.cpp
     visibility_component.h         # 可见性组件（依赖基础几何类型和视锥体）
     visibility_component.cpp

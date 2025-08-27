@@ -219,22 +219,13 @@ std::vector<std::type_index> HierarchyComponentSystem::GetSystemDependencies() c
   return {typeid(IDComponentSystem)};  // 需要实体ID信息
 }
 
-void HierarchyComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
+bool HierarchyComponentSystem::OnComponentAdded(ComponentAddedEvent<HierarchyComponent> &e)
 {
-  // 1. 首先处理待移除的组件
-  ProcessPendingRemovals(registry);
+  Register(&e.GetComponent());
 
-  // 2. 验证并修复所有层级关系的完整性
-  ValidateAndRepairHierarchy(registry);
-
-  // 3. 处理脏组件
-  for (auto *comp : m_DirtyComponents) {
-    comp->ProcessDirty(deltaTime, registry);
-    comp->ClearDirty();
-  }
-
-  // 4. 清空脏组件列表
-  m_DirtyComponents.clear();
+  // 不应当标记事件已处理，继续传播给SceneGraph的HierarchySceneNodeSystem
+  // e.Handled();
+  return e.handled;
 }
 
 bool HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e)
@@ -263,9 +254,65 @@ bool HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<Hierarch
   m_Logger->trace(
       "Queued removal: parent={}, children_count={}", parent.GetUUIDString(), children.size());
 
-  // 标记事件已处理，阻断传播
-  e.Handled();
+  // 不应当标记事件已处理，继续传播给SceneGraph的HierarchySceneNodeSystem
+  // e.Handled();
   return true;
+}
+
+void HierarchyComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
+{
+  // 1. 首先处理待移除的组件
+  ProcessPendingRemovals(registry);
+
+  // 2. 验证并修复所有层级关系的完整性
+  ValidateAndRepairHierarchy(registry);
+
+  // 3. 处理脏组件
+  for (auto *comp : m_DirtyComponents) {
+    comp->ProcessDirty(deltaTime, registry);
+    comp->ClearDirty();
+  }
+
+  // 4. 清空脏组件列表
+  m_DirtyComponents.clear();
+}
+
+void HierarchyComponentSystem::ValidateAndRepairHierarchy(SceneRegistry &registry)
+{
+  auto view = registry.GetEntitiesWith<HierarchyComponent>();
+  std::vector<std::pair<Entity, Entity>> invalidRelations;
+
+  // 验证所有层级关系的完整性
+  for (auto entity : view) {
+    auto &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
+
+    // 验证父节点，仅当parent存在，但Invalid或者没有Hierarchy组件时，认为需要修复
+    Entity parent = hierarchy.GetParent();
+    if (parent.IsValid() &&
+        (!registry.IsValid(parent) || !registry.HasComponent<HierarchyComponent>(parent)))
+    {
+      invalidRelations.emplace_back(entity, parent);
+    }
+
+    // 验证子节点，仅当child存在，但Invalid或者没有Hierarchy组件时，认为需要修复
+    for (auto child : hierarchy.GetChildren()) {
+      if (!registry.IsValid(child) || !registry.HasComponent<HierarchyComponent>(child)) {
+        invalidRelations.emplace_back(entity, child);
+      }
+    }
+  }
+
+  // 使用HierarchyComponent接口修复
+  for (auto &[entity, invalidRef] : invalidRelations) {
+    auto &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
+
+    if (invalidRef == hierarchy.GetParent()) {
+      hierarchy.SetParent(registry, Entity());
+    }
+    else {
+      hierarchy.RemoveChild(registry, invalidRef);
+    }
+  }
 }
 
 void HierarchyComponentSystem::ProcessPendingRemovals(SceneRegistry &registry)
@@ -329,41 +376,5 @@ void HierarchyComponentSystem::ProcessPendingRemovals(SceneRegistry &registry)
   m_Logger->trace("Processed {} pending hierarchy component removals", processingRemovals.size());
 }
 
-void HierarchyComponentSystem::ValidateAndRepairHierarchy(SceneRegistry &registry)
-{
-  auto view = registry.GetEntitiesWith<HierarchyComponent>();
-  std::vector<std::pair<Entity, Entity>> invalidRelations;
 
-  // 验证所有层级关系的完整性
-  for (auto entity : view) {
-    auto &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
-
-    // 验证父节点，仅当parent存在，但Invalid或者没有Hierarchy组件时，认为需要修复
-    Entity parent = hierarchy.GetParent();
-    if (parent.IsValid() &&
-        (!registry.IsValid(parent) || !registry.HasComponent<HierarchyComponent>(parent)))
-    {
-      invalidRelations.emplace_back(entity, parent);
-    }
-
-    // 验证子节点，仅当child存在，但Invalid或者没有Hierarchy组件时，认为需要修复
-    for (auto child : hierarchy.GetChildren()) {
-      if (!registry.IsValid(child) || !registry.HasComponent<HierarchyComponent>(child)) {
-        invalidRelations.emplace_back(entity, child);
-      }
-    }
-  }
-
-  // 使用HierarchyComponent接口修复
-  for (auto &[entity, invalidRef] : invalidRelations) {
-    auto &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
-
-    if (invalidRef == hierarchy.GetParent()) {
-      hierarchy.SetParent(registry, Entity());
-    }
-    else {
-      hierarchy.RemoveChild(registry, invalidRef);
-    }
-  }
-}
 };  // namespace mite

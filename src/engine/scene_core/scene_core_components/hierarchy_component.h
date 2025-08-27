@@ -68,8 +68,11 @@ class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent>
   std::vector<std::type_index> GetSystemDependencies() const override;
 
  private:
-  void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
+  // 组件添加与移除事件响应函数重写：
+  // 后续SceneGraph模块的TransformSceneNodeSystem负责处理Entity和SceneNode的Transform同步，不应当阻断事件传播
+  bool OnComponentAdded(ComponentAddedEvent<HierarchyComponent> &e) override;
   bool OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) override;
+  void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
 
   /**
    * @brief 验证并修复层级关系完整性

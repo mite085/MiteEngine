@@ -282,10 +282,6 @@ void MiteApplication::InitializeSceneGraph()
 
   // 在SceneCore内注册SceneGraphSystem
   m_SceneGraph->Initialize(m_SceneCore->GetComponentSystemManager());
-
-  // 将创建好的SceneGraph交付给注册在SceneCore模块的SceneGraphSystem
-  m_SceneCore->GetComponentSystemManager().GetSystem<SceneGraphSystem>()->SetSceneGraph(
-      m_SceneGraph.get());
 }
 
 void MiteApplication::CleanUpSceneGraph()
