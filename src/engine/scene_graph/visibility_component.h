@@ -4,6 +4,7 @@
 #include "bounding_volumes_types.h"
 #include "frustum.h"
 #include "scene_core/component_system.h"
+#include "scene_core_components/camera_component.h"
 
 namespace mite {
 /**
@@ -73,7 +74,7 @@ class VisibilityComponent
   }
 
   // ==================== 视锥体操作 ====================
-      
+
   /**
    * @brief 执行视锥体裁剪测试
    * @param frustum 相机视锥体
@@ -188,6 +189,7 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
   DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
 
  public:
+  void Initialize() override;
   std::vector<std::type_index> GetSystemDependencies() const override;
 
   /**
@@ -213,11 +215,14 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
 
  protected:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
+  bool OnMainCameraChanged(MainCameraChangedEvent &e);
+  bool OnCameraVisibilityMaskChanged(CameraVisibilityMaskChangedEvent &e);
 
  private:
-  Frustum mainCameraFrustum;                   ///< 主相机视锥体
-  uint32_t cameraVisibilityMask = 0xFFFFFFFF;  ///< 相机可见性掩码
-  size_t visibleCount = 0;                     ///< 当前可见实体计数
+  Frustum mainCameraFrustum;  ///< 主相机视锥体
+  uint32_t cameraVisibilityMask =
+      0xFFFFFFFF;  ///< 相机可见性掩码（通过掩码判断，支持不同通道渲染）
+  size_t visibleCount = 0;  ///< 当前可见实体计数
 };
 
 // ==================== 事件定义 ====================

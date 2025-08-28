@@ -126,6 +126,17 @@ IntersectionType VisibilityComponent::TestFrustum(const Frustum &frustum) const
 
 // ==================== VisibilityComponentSystem ====================
 
+void VisibilityComponentSystem::Initialize()
+{
+  // 订阅原先组件通用事件
+  DirtyComponentSystem<VisibilityComponent>::Initialize();
+
+  // 订阅主相机修改事件和相机可见性掩码修改事件
+  m_EventSubscriptions.Subscribe<MainCameraChangedEvent>(BIND_DISPATCH_FN(OnMainCameraChanged));
+  m_EventSubscriptions.Subscribe<CameraVisibilityMaskChangedEvent>(
+      BIND_DISPATCH_FN(OnCameraVisibilityMaskChanged));
+}
+
 std::vector<std::type_index> VisibilityComponentSystem::GetSystemDependencies() const
 {
   return {typeid(TransformComponentSystem), typeid(TransformSceneNodeSystem)};  // 需要世界变换信息
@@ -167,6 +178,32 @@ void VisibilityComponentSystem::ProcessDirtyComponents(float deltaTime, SceneReg
                     visibleCount++;
                   }
                 });
+}
+
+bool VisibilityComponentSystem::OnMainCameraChanged(MainCameraChangedEvent &e)
+{
+  // 获取修改后的主相机
+  auto &mainCamera = e.GetComponent();
+
+  // 根据主相机，修改相机可见性掩码
+  cameraVisibilityMask = mainCamera.GetVisibilityMask();
+
+  e.Handled();
+  return true;
+}
+
+bool VisibilityComponentSystem::OnCameraVisibilityMaskChanged(CameraVisibilityMaskChangedEvent &e)
+{
+  // 判断修改后的相机是否为主相机
+  auto &mainCamera = e.GetComponent();
+
+  if (mainCamera.GetUsage() == CameraUsage::MainView) {
+    // 根据主相机，修改相机可见性掩码
+    cameraVisibilityMask = mainCamera.GetVisibilityMask();
+  }
+
+  e.Handled();
+  return true;
 }
 
 template<> ComponentID ComponentID::Get<VisibilityComponent>()
