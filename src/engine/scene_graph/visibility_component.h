@@ -174,9 +174,9 @@ class VisibilityComponent
   bool isVisible = true;    ///< 当前可见性状态
   bool wasVisible = false;  ///< 上一帧可见性状态（用于检测变化）
 
-  uint32_t visibilityMask = 0xFFFFFFFF;  ///< 可见性掩码
-  bool boundsDirty = true;               ///< 包围盒脏标记
-  bool manualOverride = false;           ///< 手动覆盖标志
+  uint32_t visibilityMask = CameraVisibilityMask::ALL;  ///< 可见性掩码
+  bool boundsDirty = true;                              ///< 包围盒脏标记
+  bool manualOverride = false;                          ///< 手动覆盖标志
 };
 
 // ==================== 组件系统 ====================
@@ -221,7 +221,7 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
  private:
   Frustum mainCameraFrustum;  ///< 主相机视锥体
   uint32_t cameraVisibilityMask =
-      0xFFFFFFFF;  ///< 相机可见性掩码（通过掩码判断，支持不同通道渲染）
+      CameraVisibilityMask::ALL;  ///< 相机可见性掩码（通过掩码判断，支持不同通道渲染）
   size_t visibleCount = 0;  ///< 当前可见实体计数
 };
 

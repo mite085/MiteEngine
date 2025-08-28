@@ -4,6 +4,43 @@
 namespace mite {
 CameraComponent::CameraComponent(std::shared_ptr<Camera> camera) : m_Camera(camera) {}
 
+void CameraComponent::ProcessDirty(float deltaTime, SceneRegistry& reg) 
+{
+  if (!IsDirty()) {
+    return;
+  }
+  // ProcessDirty应当同步ECS的Transform到Camera
+  // 但由于Camera内部使用了独立的Transform系统，
+  // 每次Rotate、Pan等均为立即执行，
+  // 无需等待每帧的ProcessDirty步骤。
+  // 
+  // TODO: 
+  // Camera内部使用了独立的Transform系统并不太标准，
+  // 应当使用同一套统一的Transform系统，但如果Camera维护Transform，
+  // 此时CameraComponent和TransformComponent为同级关系，
+  // 先更新Transform结束后，再更新Camera，是否会导致覆盖更新？
+  // 
+  // 初步解决方案：
+  // CameraEntity维护一个普通的TransformComponent，仅仅记录欧拉角旋转，
+  // CameraComponent执行的Rotate、Pan、Move等均累积记录，待ProcessDirty
+  // 执行时，将这些作用于TransformComponent的矩阵上，并将矩阵用于Camera的View矩阵更新
+  // 
+  //if (reg.HasComponent<TransformComponent>(GetOwnerEntity())) {
+  //  auto &transform = reg.GetComponent<TransformComponent>(GetOwnerEntity());
+
+  //  // 获取世界变换矩阵
+  //  glm::mat4 worldMatrix = transform.GetWorldMatrix(reg);
+
+  //  // 从世界矩阵提取位置和旋转
+  //  glm::vec3 position = glm::vec3(worldMatrix[3]);
+  //  glm::mat3 rotationMat = glm::mat3(worldMatrix);
+
+  //  // 设置Camera的位置和朝向
+  //  m_Camera->SetViewMatrix(glm::inverse(worldMatrix));
+  //}
+  ClearDirty();
+}
+
 void CameraComponent::SetPerspective(float fov, float near, float far)
 {
   float aspect = m_Camera->GetAspectRatio();

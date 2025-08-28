@@ -37,8 +37,7 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
  public:
   CameraComponent(std::shared_ptr<Camera> camera);
 
-  // TODO: Camera如何处理脏标记?
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
+  void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
   // ==================== 基础参数控制 ====================
   void SetPerspective(float fov, float near, float far);
