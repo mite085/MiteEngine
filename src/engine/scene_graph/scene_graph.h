@@ -47,20 +47,6 @@ class SceneGraph {
   void Initialize(ComponentSystemManager &manager);
   void CleanUp(ComponentSystemManager &manager);
 
-  // ==================== 视锥体与可见性设定 ====================
-
-  /**
-   * @brief 设定主相机的视锥体
-   * @param frustum 视锥体对象引用
-   */
-  void SceneGraph::SetMainCameraFrustum(const Frustum &frustum);
-
-  /**
-   * @brief 设定主相机的可见性
-   * @param mask 可见性掩码
-   */
-  void SceneGraph::SetCameraVisibilityMask(uint32_t mask);
-
   // ==================== 场景节点生命周期管理 ====================
 
   /**
@@ -179,18 +165,13 @@ class SceneGraph {
   void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback);
 
   // ==================== 空间查询接口（为SceneView提供优化） ====================
-
-  /**
-   * @brief 查询可见节点（使用内部保存的视锥体）
-   * @return 可见节点列表
-   */
-  std::vector<SceneNode *> QueryVisibleNodes(SceneRegistry &registry);
-
   /**
    * @brief 快速可见性检查（不返回具体节点，只计数）
    * @return 可见节点数量
    */
-  size_t QueryVisibleCount(SceneRegistry &registry);
+  size_t QueryVisibleCount(SceneRegistry &registry,
+                           const Frustum &frustum,
+                           uint32_t visibilityMask);
 
   /**
    * @brief 获取可见节点数量（不执行可见性检查，只获取上次检查结果）
@@ -203,14 +184,18 @@ class SceneGraph {
    * @param frustum 视锥体
    * @return 可见节点列表
    */
-  std::vector<SceneNode *> QueryVisibleNodes(SceneRegistry &registry, const Frustum &frustum);
+  std::vector<SceneNode *> QueryVisibleNodes(SceneRegistry &registry,
+                                             const Frustum &frustum,
+                                             uint32_t visibilityMask);
 
   /**
    * @brief 射线检测查询
    * @param ray 检测射线
    * @return 相交节点列表
    */
-  std::vector<SceneNode *> QueryRaycast(SceneRegistry &registry, const Ray &ray);
+  std::vector<SceneNode *> QueryRaycast(SceneRegistry &registry,
+                                        const Ray &ray,
+                                        uint32_t visibilityMask);
 
   /**
    * @brief 射线检测查询（第一个命中）
@@ -222,21 +207,26 @@ class SceneGraph {
   bool QueryRaycastFirst(SceneRegistry &registry,
                          const Ray &ray,
                          SceneNode *&result,
-                         float &distance);
+                         float &distance,
+                         uint32_t visibilityMask);
 
   /**
    * @brief 球体查询
    * @param sphere 查询球体
    * @return 结果节点列表
    */
-  std::vector<SceneNode *> QuerySphere(SceneRegistry &registry, const Sphere &sphere);
+  std::vector<SceneNode *> QuerySphere(SceneRegistry &registry,
+                                       const Sphere &sphere,
+                                       uint32_t visibilityMask);
 
   /**
    * @brief AABB查询
    * @param aabb 查询AABB
    * @return 结果节点列表
    */
-  std::vector<SceneNode *> QueryAABB(SceneRegistry &registry, const AABB &aabb);
+  std::vector<SceneNode *> QueryAABB(SceneRegistry &registry,
+                                     const AABB &aabb,
+                                     uint32_t visibilityMask);
 
   // ==================== 节点更新接口（由SceneGraphSystem调用） ====================
   /**
@@ -255,7 +245,7 @@ class SceneGraph {
   /**
    * @brief 批量更新所有脏节点
    */
-  void UpdateDirtyNodes(SceneRegistry &registry);
+  void Update(SceneRegistry &registry);
 
   // ==================== 序列化支持（为编辑器保存/加载） ====================
 
@@ -307,7 +297,7 @@ class SceneGraph {
    * @param entity 实体
    * @return 是否可见
    */
-  bool IsNodeVisible(SceneRegistry &registry, Entity entity) const;
+  bool IsNodeVisible(SceneRegistry &registry, Entity entity, uint32_t visibilityMask) const;
 
   /**
    * @brief 清空空间划分结构,清空所有节点
@@ -328,8 +318,6 @@ class SceneGraph {
   std::vector<Entity> m_dirtyNodes;
 
   // 状态存储
-  Frustum m_mainCameraFrustum;      // 主相机的视锥体
-  uint32_t m_cameraVisibilityMask;  // 主相机的可见性（通过掩码判断，支持不同通道渲染）
   size_t m_visibleNodeCount;        // 可见节点数量
 
   // 线程安全保护

@@ -10,8 +10,6 @@ namespace mite {
 // ==================== 构造函数和析构函数 ====================
 SceneGraph::SceneGraph(SpatialPartitionType spatialPartitionType)
     : m_spatialPartitionType(spatialPartitionType),
-      m_mainCameraFrustum(),
-      m_cameraVisibilityMask(0xFFFFFFFF),
       m_visibleNodeCount(0)
 {
   m_logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph");
@@ -48,20 +46,6 @@ void SceneGraph::CleanUp(ComponentSystemManager &manager)
   manager.UnregisterSystem<VisibilityComponentSystem>();
 
   m_logger->debug("SceneGraph destroyed");
-}
-
-// ==================== 视锥体与可见性设定 ====================
-
-void SceneGraph::SetMainCameraFrustum(const Frustum &frustum)
-{
-  std::lock_guard<std::mutex> lock(m_mutex);
-  m_mainCameraFrustum = frustum;
-}
-
-void SceneGraph::SetCameraVisibilityMask(uint32_t mask)
-{
-  std::lock_guard<std::mutex> lock(m_mutex);
-  m_cameraVisibilityMask = mask;
 }
 
 // ==================== 场景节点生命周期管理 ====================
@@ -362,14 +346,11 @@ void SceneGraph::DebugDraw(std::function<void(const AABB &, int depth)> drawCall
 
 // ==================== 空间查询接口 ====================
 
-std::vector<SceneNode *> SceneGraph::QueryVisibleNodes(SceneRegistry &registry)
+size_t SceneGraph::QueryVisibleCount(SceneRegistry &registry,
+                                     const Frustum &frustum,
+                                     uint32_t visibilityMask)
 {
-  return QueryVisibleNodes(registry, m_mainCameraFrustum);
-}
-
-size_t SceneGraph::QueryVisibleCount(SceneRegistry &registry)
-{
-  QueryVisibleNodes(registry);
+  QueryVisibleNodes(registry, frustum, visibilityMask);
   return m_visibleNodeCount;
 }
 
@@ -379,7 +360,8 @@ size_t SceneGraph::GetVisibleNodeCount() const
 }
 
 std::vector<SceneNode *> SceneGraph::QueryVisibleNodes(SceneRegistry &registry,
-                                                       const Frustum &frustum)
+                                                       const Frustum &frustum,
+                                                       uint32_t visibilityMask)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   if (!m_spatialPartition) {
@@ -414,7 +396,7 @@ std::vector<SceneNode *> SceneGraph::QueryVisibleNodes(SceneRegistry &registry,
       auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
 
       // 检查可见性掩码匹配
-      if (!visibilityComp.MatchesMask(m_cameraVisibilityMask)) {
+      if (!visibilityComp.MatchesMask(visibilityMask)) {
         continue;  // 掩码不匹配，跳过
       }
 
@@ -458,7 +440,9 @@ std::vector<SceneNode *> SceneGraph::QueryVisibleNodes(SceneRegistry &registry,
   return results;
 }
 
-std::vector<SceneNode *> SceneGraph::QueryRaycast(SceneRegistry &registry, const Ray &ray)
+std::vector<SceneNode *> SceneGraph::QueryRaycast(SceneRegistry &registry,
+                                                  const Ray &ray,
+                                                  uint32_t visibilityMask)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   std::vector<SceneNode *> results;
@@ -477,7 +461,7 @@ std::vector<SceneNode *> SceneGraph::QueryRaycast(SceneRegistry &registry, const
       Entity entity = node->GetEntity();
 
       // 检查节点可见性
-      if (!IsNodeVisible(registry, entity)) {
+      if (!IsNodeVisible(registry, entity, visibilityMask)) {
         continue;
       }
       // 如果有VisibilityComponent，使用其世界包围盒进行精确检测
@@ -506,7 +490,8 @@ std::vector<SceneNode *> SceneGraph::QueryRaycast(SceneRegistry &registry, const
 bool SceneGraph::QueryRaycastFirst(SceneRegistry &registry,
                                    const Ray &ray,
                                    SceneNode *&result,
-                                   float &distance)
+                                   float &distance,
+                                   uint32_t visibilityMask)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   result = nullptr;
@@ -527,7 +512,7 @@ bool SceneGraph::QueryRaycastFirst(SceneRegistry &registry,
     Entity entity = node->GetEntity();
 
     // 检查节点可见性
-    if (!IsNodeVisible(registry, entity)) {
+    if (!IsNodeVisible(registry, entity, visibilityMask)) {
       continue;
     }
 
@@ -554,7 +539,9 @@ bool SceneGraph::QueryRaycastFirst(SceneRegistry &registry,
   return false;
 }
 
-std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry, const Sphere &sphere)
+std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry,
+                                                 const Sphere &sphere,
+                                                 uint32_t visibilityMask)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   std::vector<SceneNode *> results;
@@ -572,7 +559,7 @@ std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry, const 
       Entity entity = node->GetEntity();
 
       // 检查节点可见性
-      if (!IsNodeVisible(registry, entity)) {
+      if (!IsNodeVisible(registry, entity, visibilityMask)) {
         continue;
       }
       // 精确的球体与包围盒相交测试
@@ -595,7 +582,9 @@ std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry, const 
   return results;
 }
 
-std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry, const AABB &aabb)
+std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry,
+                                               const AABB &aabb,
+                                               uint32_t visibilityMask)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   std::vector<SceneNode *> results;
@@ -613,7 +602,7 @@ std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry, const AA
       Entity entity = node->GetEntity();
 
       // 检查节点可见性
-      if (!IsNodeVisible(registry, entity)) {
+      if (!IsNodeVisible(registry, entity, visibilityMask)) {
         continue;
       }
       // 精确的AABB与AABB相交测试
@@ -656,30 +645,21 @@ void SceneGraph::MarkNodeDirty(Entity entity)
   }
 }
 
-void SceneGraph::UpdateDirtyNodes(SceneRegistry &registry)
+void SceneGraph::Update(SceneRegistry &registry)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
 
+  // 更新主相机的视锥体和可见性掩码
+
+   // 更新所有脏节点
   if (m_dirtyNodes.empty()) {
     return;
   }
 
-  // 更新所有脏节点
   for (Entity entity : m_dirtyNodes) {
     auto it = m_entityToNodeMap.find(entity);
     if (it != m_entityToNodeMap.end()) {
       it->second->Update();
-
-      // 同步更新VisibilityComponent的世界包围盒
-      if (registry.HasComponent<VisibilityComponent>(entity)) {
-        auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
-
-        // 如果VisibilityComponent的包围盒是脏的，用SceneNode的世界包围盒更新它
-        if (visibilityComp.IsBoundsDirty()) {
-          visibilityComp.UpdateWorldAABB(registry);
-          visibilityComp.ClearDirty();
-        }
-      }
 
       // 更新空间划分结构中的节点位置
       if (m_spatialPartition) {
@@ -780,7 +760,9 @@ void SceneGraph::AddNodeToSpatialPartition(SceneNode *node)
   }
 }
 
-bool SceneGraph::IsNodeVisible(SceneRegistry &registry, Entity entity) const
+bool SceneGraph::IsNodeVisible(SceneRegistry &registry,
+                               Entity entity,
+                               uint32_t visibilityMask) const
 {
   if (!entity.IsValid()) {
     return false;
@@ -788,7 +770,7 @@ bool SceneGraph::IsNodeVisible(SceneRegistry &registry, Entity entity) const
 
   if (registry.HasComponent<VisibilityComponent>(entity)) {
     auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
-    return visibilityComp.IsVisible() && visibilityComp.MatchesMask(m_cameraVisibilityMask);
+    return visibilityComp.IsVisible() && visibilityComp.MatchesMask(visibilityMask);
   }
 
   // 没有VisibilityComponent的节点默认可见
