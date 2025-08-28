@@ -52,7 +52,7 @@ void SceneGraphSystem::Update(float deltaTime, SceneRegistry &registry)
   ProcessPendingOperations(registry);
 
   // 更新SceneGraph中的脏节点
-  m_sceneGraph->UpdateDirtyNodes(registry);
+  m_sceneGraph->Update(registry);
 
   // 定期输出统计信息（调试用）
   static float statsTimer = 0.0f;
