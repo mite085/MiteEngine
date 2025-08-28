@@ -4,40 +4,36 @@
 namespace mite {
 CameraComponent::CameraComponent(std::shared_ptr<Camera> camera) : m_Camera(camera) {}
 
-void CameraComponent::ProcessDirty(float deltaTime, SceneRegistry& reg) 
+void CameraComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 {
-  if (!IsDirty()) {
-    return;
+  // 处理CameraInputProcessor和TransformComponent的数据同步
+  if (reg.HasComponent<TransformComponent>(GetOwnerEntity())) {
+    // 对比上一帧，检测Transform是否主动发生变化
+    auto &transform = reg.GetComponent<TransformComponent>(GetOwnerEntity());
+    TransformState currentState = {transform.GetWorldPosition(reg),
+                                   transform.GetWorldRotation(reg)};
+
+    // 若Transform主动改动（并非通过CameraInputProcessor手段改动的，而是通过TransfromComponent，如Gizmo、界面滑动条等）
+    if (IsTransformChanged(currentState, m_lastTransformState)) {
+      // 执行 Transform → Camera 同步（均为累加式同步，防止直接赋值导致歧义）
+      m_Camera->Move(transform.GetWorldPosition(reg) - currentState.position);
+      m_Camera->Rotate(transform.GetWorldRotation(reg) - currentState.rotation);
+    }
+
+    // 执行 Camera → Transform 同步
+    // （均为赋值式同步，直接使用Camera数值修改Transfrom可以更直观的显示结果）
+    glm::vec3 newPosition = m_Camera->GetPosition();
+    glm::vec3 newRotation = m_Camera->GetRotationEuler();
+    transform.SetWorldPosition(reg, m_lastTransformState.position);
+    transform.SetWorldRotation(reg, m_lastTransformState.rotation);
+
+    // 并以同步结果记录State
+    // （此时即便Transform没有主动改动，transform也会不同，
+    // 这个“不同”不作为主动改动依据，否则会出现多次累加的bug）
+    m_lastTransformState.position = newPosition;
+    m_lastTransformState.rotation = newRotation;
   }
-  // ProcessDirty应当同步ECS的Transform到Camera
-  // 但由于Camera内部使用了独立的Transform系统，
-  // 每次Rotate、Pan等均为立即执行，
-  // 无需等待每帧的ProcessDirty步骤。
-  // 
-  // TODO: 
-  // Camera内部使用了独立的Transform系统并不太标准，
-  // 应当使用同一套统一的Transform系统，但如果Camera维护Transform，
-  // 此时CameraComponent和TransformComponent为同级关系，
-  // 先更新Transform结束后，再更新Camera，是否会导致覆盖更新？
-  // 
-  // 初步解决方案：
-  // CameraEntity维护一个普通的TransformComponent，仅仅记录欧拉角旋转，
-  // CameraComponent执行的Rotate、Pan、Move等均累积记录，待ProcessDirty
-  // 执行时，将这些作用于TransformComponent的矩阵上，并将矩阵用于Camera的View矩阵更新
-  // 
-  //if (reg.HasComponent<TransformComponent>(GetOwnerEntity())) {
-  //  auto &transform = reg.GetComponent<TransformComponent>(GetOwnerEntity());
 
-  //  // 获取世界变换矩阵
-  //  glm::mat4 worldMatrix = transform.GetWorldMatrix(reg);
-
-  //  // 从世界矩阵提取位置和旋转
-  //  glm::vec3 position = glm::vec3(worldMatrix[3]);
-  //  glm::mat3 rotationMat = glm::mat3(worldMatrix);
-
-  //  // 设置Camera的位置和朝向
-  //  m_Camera->SetViewMatrix(glm::inverse(worldMatrix));
-  //}
   ClearDirty();
 }
 
@@ -55,17 +51,17 @@ void CameraComponent::SetOrthographic(float size, float near, float far)
   MarkDirty();
 }
 
-void CameraComponent::Rotate(float yaw, float pitch)
-{
-  m_Camera->Rotate(yaw, pitch);
-  MarkDirty();
-}
-
-void CameraComponent::Pan(float right, float up)
-{
-  m_Camera->Pan(right, up);
-  MarkDirty();
-}
+// void CameraComponent::Rotate(float yaw, float pitch)
+//{
+//   m_Camera->Rotate(yaw, pitch);
+//   MarkDirty();
+// }
+//
+// void CameraComponent::Pan(float right, float up)
+//{
+//   m_Camera->Pan(right, up);
+//   MarkDirty();
+// }
 
 void CameraComponent::Zoom(float amount)
 {
@@ -73,11 +69,11 @@ void CameraComponent::Zoom(float amount)
   MarkDirty();
 }
 
-void CameraComponent::Move(const glm::vec3 &direction)
-{
-  m_Camera->Move(direction);
-  MarkDirty();
-}
+// void CameraComponent::Move(const glm::vec3 &direction)
+//{
+//   m_Camera->Move(direction);
+//   MarkDirty();
+// }
 
 CameraUsage CameraComponent::GetUsage() const
 {
@@ -172,6 +168,20 @@ std::vector<std::type_index> CameraComponent::GetDependencies() const
   return {};
 }
 
+bool CameraComponent::IsTransformChanged(const TransformState &current, const TransformState &last)
+{
+  // 位置容差比较
+  bool positionChanged = glm::length(current.position - last.position) > POSITION_EPSILON;
+
+  // 欧拉角容差比较（分别比较三个轴）
+  glm::vec3 rotationDelta = glm::abs(current.rotation - last.rotation);
+  bool rotationChanged = (rotationDelta.x > ROTATION_EPSILON) ||
+                         (rotationDelta.y > ROTATION_EPSILON) ||
+                         (rotationDelta.z > ROTATION_EPSILON);
+
+  return positionChanged || rotationChanged;
+}
+
 // ==================== CameraComponentSystem ====================
 
 std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() const
@@ -228,9 +238,10 @@ void CameraComponentSystem::SetMainCameraEntity(Entity main_camera)
 
 void CameraComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
-  // 处理视口变化等逻辑
-  for (auto *comp : m_DirtyComponents) {
-    comp->ClearDirty();
+  // CameraComponent负责了CameraInputProcessor和TransformComponent的数据同步，
+  // 由于无法通过CameraInputProcessor标注dirty，此处应当处理所有Camera
+  for (auto *comp : m_AllComponents) {
+    comp->ProcessDirty(deltaTime, registry);
   }
   m_DirtyComponents.clear();
 }

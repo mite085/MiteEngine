@@ -66,6 +66,8 @@ void MiteApplication::LoadDefaultScene()
   CameraComponent &main_camera_component =
       m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
           main_camera_entity, std::make_shared<Camera>(main_camera));
+  TransformComponent &main_camera_transform =
+      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(main_camera_entity);
   m_SceneCore->SetMainCamera(main_camera_entity);
 
   // 0. 创建ViewportPanel并设置FrameBuffer

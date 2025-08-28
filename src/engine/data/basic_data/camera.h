@@ -15,7 +15,8 @@ namespace mite {
  * 注意：
  * - 不依赖ECS，纯数学工具类
  * - 与TransformComponent协同工作
- * 
+ * - 默认朝向Z负方向，Up为Y轴正方向，欧拉角顺序为YXZ（更符合OpenGL标准）
+ *
  * 对于标准的视图矩阵（GLM列主序，m_ViewMatrix[0]表示第一列）
  * [ Right.x  Up.x  -Forward.x  Position.x ]
  * [ Right.y  Up.y  -Forward.y  Position.y ]
@@ -52,16 +53,19 @@ class Camera {
   float GetFOV() const;
   float GetAspectRatio() const;
   glm::vec3 GetPosition() const;
+  glm::vec3 GetRotationEuler() const;
   glm::vec3 GetRightVector() const;
   glm::vec3 GetUpVector() const;
   glm::vec3 GetForwardVector() const;
   float GetDistance() const;
 
   // 相机控制
-  void Rotate(float yaw, float pitch);    // 欧拉角旋转（偏航/俯仰）
-  void Pan(float right, float up);        // 屏幕空间平移
-  void Zoom(float amount);                // 视野缩放
-  void Move(const glm::vec3 &direction);  // 世界空间移动
+  void Translate(const glm::vec3 position);  // 世界空间定位
+  void Rotate(const glm::vec3 rotation);  // 欧拉角旋转（角度制，偏航/俯仰/滚转）
+  void Rotate(float yaw, float pitch, float roll = 0.0f);  // 欧拉角旋转（角度制，偏航/俯仰/滚转）
+  void Pan(float right, float up);                         // 屏幕空间平移
+  void Zoom(float amount);                                 // 视野缩放
+  void Move(const glm::vec3 direction);                    // 世界空间移动
 
  private:
   // 辅助方法
@@ -87,7 +91,7 @@ class Camera {
 
   // 存储当前的位置与欧拉角(degree)
   glm::vec3 m_Position = glm::vec3(0.0f);
-  glm::vec3 m_RotationEuler = glm::vec3(0.0f);  
+  glm::vec3 m_RotationEuler = glm::vec3(0.0f);
 };
 };  // namespace mite
 

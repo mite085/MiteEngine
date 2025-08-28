@@ -116,6 +116,11 @@ glm::vec3 Camera::GetPosition() const
   return m_Position;
 }
 
+glm::vec3 Camera::GetRotationEuler() const
+{
+  return m_RotationEuler;
+}
+
 glm::vec3 Camera::GetRightVector() const
 {
   // （复用RecalculateViewFromRotation代码段）
@@ -172,11 +177,26 @@ glm::vec3 Camera::GetForwardVector() const
 
 // === 相机控制方法实现 ===
 
-void Camera::Rotate(float yaw, float pitch)
+ 
+void Camera::Translate(const glm::vec3 position)
+{
+  // 直接更新位置状态
+  m_Position = position;
+
+  // 使用当前旋转重新构建视图矩阵
+  RecalculateViewFromRotation();
+}
+
+void Camera::Rotate(const glm::vec3 rotation) {
+  Rotate(rotation.x, rotation.y, rotation.z);
+}
+
+void Camera::Rotate(float yaw, float pitch, float roll)
 {
   // 累积旋转角度
   m_RotationEuler.y += yaw;    // 偏航（绕Y轴）
   m_RotationEuler.x += pitch;  // 俯仰（绕X轴）
+  m_RotationEuler.z += roll;   // 滚转（绕Z轴）
 
   // 限制俯仰角度避免翻转
   m_RotationEuler.x = glm::clamp(m_RotationEuler.x, -89.0f, 89.0f);
@@ -207,7 +227,7 @@ void Camera::Zoom(float amount)
   }
 }
 
-void Camera::Move(const glm::vec3 &direction)
+void Camera::Move(const glm::vec3 direction)
 {
   // 直接更新位置状态
   m_Position += direction;
@@ -215,6 +235,7 @@ void Camera::Move(const glm::vec3 &direction)
   // 使用当前旋转重新构建视图矩阵
   RecalculateViewFromRotation();
 }
+
 
 // === 辅助方法 ===
 

@@ -133,7 +133,7 @@ std::shared_ptr<Camera> SceneCore::GetMainCamera() const
 
   // 查询到组件，获取到相机并返回
   std::shared_ptr<Camera> mainCamera =
-      m_Registry.GetComponent<CameraComponent>(*mainCameraEntity).GetCamera();
+      m_Registry.GetComponent<CameraComponent>(mainCameraEntity).GetCamera();
   return mainCamera;
 }
 
