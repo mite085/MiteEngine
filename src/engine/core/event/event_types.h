@@ -9,10 +9,10 @@ namespace mite {
 // （键盘鼠标分开意义不大，合并到EVENT_CATEGORY_INPUT了）
 enum EventCategory {
   None = 0,
-  EVENT_CATEGORY_WINDOW = 1 << 0,    // 窗口事件
-  EVENT_CATEGORY_INPUT = 1 << 1,     // 键盘/鼠标输入事件
-  EVENT_CATEGORY_EDITOR = 1 << 4,    // 编辑器特定事件
-  EVENT_CATEGORY_CUSTOM = 1 << 5,    // 用户自定义事件
+  EVENT_CATEGORY_WINDOW = 1 << 0,  // 窗口事件
+  EVENT_CATEGORY_INPUT = 1 << 1,   // 键盘/鼠标输入事件
+  EVENT_CATEGORY_EDITOR = 1 << 4,  // 编辑器特定事件
+  EVENT_CATEGORY_CUSTOM = 1 << 5,  // 用户自定义事件
 
   EVENT_CATEGORY_SCENE_CHANGE = 1 << 6,  // 场景变更事件
   EVENT_CATEGORY_RENDER = 1 << 7,        // 渲染事件
@@ -44,8 +44,8 @@ enum class EventType {
   MATERIAL_CHANGED,  // 材质变更
 
   // EventCategorySceneChange 场景变更事件 =========================
-  ENTITY_CREATED,     // 实体创建
-  ENTITY_DESTROYED,   // 实体销毁
+  ENTITY_CREATED,    // 实体创建
+  ENTITY_DESTROYED,  // 实体销毁
 
   COMPONENT_ADDED_EVENT_BASE = 0x10000,  // 组件添加事件区间（自动生成，预留高位区间）
   COMPONENT_REMOVED_EVENT_BASE = 0x20000,  // 组件移除事件区间（自动生成，预留高位区间）
@@ -56,6 +56,9 @@ enum class EventType {
 
   MODEL_LOADED,    // 模型加载
   TEXTURE_LOADED,  // 贴图加载
+
+  MAIN_CAMERA_CHANGED,          // 主相机对象修改
+  CAMERA_VISIBLE_MASK_CHANGED,  // 相机可见性掩码修改
 
   VISIBILITY_COMPONENT_CHANGED,  // 可见性组件修改
 

@@ -122,11 +122,11 @@ bool SceneCore::IsValid(Entity entity) const
 std::shared_ptr<Camera> SceneCore::GetMainCamera() const
 {
   // 通过访问Camera组件系统，获取到其维护的主相机实体
-  std::optional<Entity> mainCameraEntity =
+  Entity mainCameraEntity =
       m_SystemManager.GetSystem<CameraComponentSystem>()->GetMainCameraEntity();
 
   // 无主相机情况报错，并返回nullptr
-  if (!mainCameraEntity) {
+  if (!mainCameraEntity.IsValid()) {
     LOG_ERROR("Invalid Main Camera in CameraComponentSystem!");
     return nullptr;
   }

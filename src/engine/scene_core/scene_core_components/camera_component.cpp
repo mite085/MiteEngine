@@ -77,6 +77,44 @@ void CameraComponent::SetViewportSize(uint32_t width, uint32_t height)
   MarkDirty();
 }
 
+void CameraComponent::SetVisibilityMask(uint32_t mask)
+{
+  if (m_VisibilityMask != mask) {
+    m_VisibilityMask = mask;
+    MarkDirty();
+    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_OwnerEntity, *this, m_VisibilityMask));
+  }
+}
+
+uint32_t CameraComponent::GetVisibilityMask() const
+{
+  return m_VisibilityMask;
+}
+
+void CameraComponent::AddVisibilityLayer(uint32_t mask)
+{
+  uint32_t old_mask = m_VisibilityMask;
+  m_VisibilityMask |= mask;
+  if (m_VisibilityMask != mask) {
+    MarkDirty();
+    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_OwnerEntity, *this, m_VisibilityMask));
+  }
+}
+void CameraComponent::RemoveVisibilityLayer(uint32_t mask)
+{
+  uint32_t old_mask = m_VisibilityMask;
+  m_VisibilityMask &= ~mask;
+  if (m_VisibilityMask != mask) {
+    MarkDirty();
+    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_OwnerEntity, *this, m_VisibilityMask));
+  }
+}
+
+bool CameraComponent::HasVisibilityLayer(uint32_t mask) const
+{
+  return (m_VisibilityMask & mask) != 0;
+}
+
 bool CameraComponent::Serialize(std::ostream &output) const
 {
   // TODO: 序列化投影类型、参数等
@@ -104,7 +142,7 @@ std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() cons
   return {typeid(TransformComponentSystem)};  // 需要变换信息
 }
 
-std::optional<Entity> CameraComponentSystem::GetMainCameraEntity() const
+Entity CameraComponentSystem::GetMainCameraEntity() const
 {
   for (auto component : m_AllComponents) {
     if (!component) {
@@ -114,7 +152,7 @@ std::optional<Entity> CameraComponentSystem::GetMainCameraEntity() const
       return component->GetOwnerEntity();
     }
   }
-  return std::nullopt;
+  return Entity{};
 }
 
 void CameraComponentSystem::SetMainCameraEntity(Entity main_camera)
@@ -133,6 +171,10 @@ void CameraComponentSystem::SetMainCameraEntity(Entity main_camera)
     }
   }
 
+  // 如果新旧相同，则省略修改
+  if (oldMain == newMain)
+    return;
+
   // 清除之前的主相机标记
   if (oldMain) {
     oldMain->SetUsage(CameraUsage::FreeView);
@@ -140,6 +182,7 @@ void CameraComponentSystem::SetMainCameraEntity(Entity main_camera)
   // 设置新的主相机
   if (newMain) {
     newMain->SetUsage(CameraUsage::MainView);
+    EventBus::Get().Post(MainCameraChangedEvent(main_camera, *newMain));
   }
   else {
     LOG_ERROR("Invalid camera entity when setting new main camera");

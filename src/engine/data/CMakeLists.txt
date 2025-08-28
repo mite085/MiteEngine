@@ -7,6 +7,7 @@ set(ENGINE_DATA_LIB_NAME MiteEngine_Engine_Data)
 set(BASIC_TYPE_SRCS
     basic_type/asset_type.h
     basic_type/handle_type.h
+    basic_type/camera_type.h
 )
 source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 
