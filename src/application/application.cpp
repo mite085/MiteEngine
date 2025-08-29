@@ -83,9 +83,9 @@ void MiteApplication::LoadDefaultScene()
   // 注册面板到UI系统
   m_UISystem->RegisterPanel("Viewport", viewportPanel);
 
-  // 1. 加载模型
+  // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
   AssetID plane_model_asset_id = m_AssetManager->LoadModel(
-      FileSystem::GetAssetPath("models/plane.obj").string());
+      FileSystem::GetAssetPath("models/plane.obj").string(), true, true);
   Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {

@@ -56,7 +56,10 @@ void AssetManager::ReleaseTexture(AssetID id)
 }
 
 // ===================== 模型管理 =====================
-AssetID AssetManager::LoadModel(const std::string &path)
+AssetID AssetManager::LoadModel(const std::string &path,
+                                bool flipUVs,
+                                bool generateLODs,
+                                const std::vector<float> &lodLevels)
 {
   
   std::lock_guard<std::mutex> lock(mutex_);
@@ -66,7 +69,7 @@ AssetID AssetManager::LoadModel(const std::string &path)
 
   // 缓存不存在则执行加载
   if (!cachedModel) {
-    LoadModelInternalToCache(path);
+    LoadModelInternalToCache(path ,flipUVs, generateLODs, lodLevels);
     cachedModel = m_ModelCache.Get(id);
   }
 
@@ -79,11 +82,15 @@ std::shared_ptr<ModelAsset> AssetManager::GetModel(AssetID id) const
   return m_ModelCache.Get(id);
 }
 
-void AssetManager::LoadModelInternalToCache(const std::string &path)
+void AssetManager::LoadModelInternalToCache(const std::string &path,
+                                            bool flipUVs,
+                                            bool generateLODs,
+                                            const std::vector<float> &lodLevels)
 {
   try {
     // 1. 使用ModelLoader加载模型数据
-   std::shared_ptr<ModelAsset> model = ModelLoader::LoadModel(path);
+    std::shared_ptr<ModelAsset> model = ModelLoader::LoadModel(
+        path, flipUVs, generateLODs, lodLevels);
 
     // 2. 缓存资源
     AssetID id = UUIDGenerator::Generate(path.c_str());
