@@ -38,8 +38,13 @@ struct MeshData {
   glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // 子网格局部包围盒
   glm::vec3 boundingBoxMax = glm::vec3(-FLT_MAX);
 
-  uint32_t lodLevel = 0;             // 0表示原始LOD
-  MeshData *lodOriginPtr = nullptr;  // 指向原始LOD的MeshData，若自身为原始LOD，则为空
+  uint32_t lodLevel = 0;  // 0表示原始LOD
+};
+
+// 子网格 LOD 链结构
+struct MeshDataLODChain {
+  MeshData baseSection;               // 基础 LOD (level 0)
+  std::vector<MeshData> lodSections;  // 其他 LOD 级别 (level 1+)
 };
 
 // 模型元数据
@@ -64,9 +69,8 @@ struct TextureAsset {
 struct ModelAsset {
   AssetID id;
   ModelMetadata metadata;
-  std::vector<MeshData> subMeshData;  // 子网格集合
-
-  std::shared_ptr<ModelGPUHandle> handle;  // 模型GPU句柄
+  std::vector<MeshDataLODChain> subMeshData;  // 子网格集合
+  std::shared_ptr<ModelGPUHandle> handle;     // 模型GPU句柄
 };
 };  // namespace mite
 

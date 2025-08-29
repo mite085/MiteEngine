@@ -75,32 +75,37 @@ struct MeshSection {
   uint32_t indexCount;    // Mesh的索引数量
   glm::vec3 bboxMin;      // 网格级包围盒
   glm::vec3 bboxMax;
-  uint32_t materialIndex;               // 材质索引
-  uint32_t lodLevel;                    // LOD级别，0表示原始LOD
-  MeshSection *lodOriginPtr = nullptr;  // 指向原始LOD的MeshData，若自身为原始LOD，则为空
+  uint32_t materialIndex;  // 材质索引
+  uint32_t lodLevel;       // LOD级别，0表示原始LOD
+};
+
+// 子网格 LOD 链结构
+struct MeshSectionLODChain {
+  MeshSection baseSection;               // 基础 LOD (level 0)
+  std::vector<MeshSection> lodSections;  // 其他 LOD 级别 (level 1+)
 };
 
 // ------------------------ 模型相关 ------------------------
 
 // 模型数据来源（Renderer模块专用的过渡型数据格式）
 struct ModelSourceData {
-  std::string path;                       // 文件原始路径
-  std::vector<uint8_t> mergedVertexData;  // 合并后的顶点数据
-  std::vector<uint32_t> mergedIndices;    // 合并后的索引数据
-  std::vector<MeshSection> sections;      // 子网格分段信息
-  VertexLayout layout;                    // 顶点布局(所有子网格共享)
-  glm::vec3 modelBboxMin;                 // 模型级包围盒
+  std::string path;                           // 文件原始路径
+  std::vector<uint8_t> mergedVertexData;      // 合并后的顶点数据
+  std::vector<uint32_t> mergedIndices;        // 合并后的索引数据
+  std::vector<MeshSectionLODChain> sections;  // 子网格分段信息
+  VertexLayout layout;                        // 顶点布局(所有子网格共享)
+  glm::vec3 modelBboxMin;                     // 模型级包围盒
   glm::vec3 modelBboxMax;
 };
 
 // 模型GPU句柄
 struct ModelGPUHandle {
-  std::string path;                    // 文件原始路径
-  uintptr_t vertexArray;               // 整个Model的VAO
-  uintptr_t vertexBuffer;              // 整个Model的VBO
-  uintptr_t indexBuffer;               // 整个Model的EBO
-  std::vector<MeshSection> subMeshes;  // 子Mesh信息
-  glm::vec3 bboxMin;                   // 模型级包围盒
+  std::string path;                            // 文件原始路径
+  uintptr_t vertexArray;                       // 整个Model的VAO
+  uintptr_t vertexBuffer;                      // 整个Model的VBO
+  uintptr_t indexBuffer;                       // 整个Model的EBO
+  std::vector<MeshSectionLODChain> subMeshes;  // 子Mesh信息
+  glm::vec3 bboxMin;                           // 模型级包围盒
   glm::vec3 bboxMax;
 };
 
