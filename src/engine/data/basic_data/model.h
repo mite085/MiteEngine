@@ -21,10 +21,7 @@ class Model {
   /**
    * 获取子网格数量
    */
-  size_t GetSubMeshCount() const
-  {
-    return subMeshes_.size();
-  }
+  size_t GetSubMeshCount() const;
 
   /**
    * 获取指定子网格
@@ -32,26 +29,33 @@ class Model {
    * @return 共享指针指向Mesh对象，无效索引返回nullptr
    */
   std::shared_ptr<Mesh> GetSubMesh(size_t index) const;
+  /**
+   * 获取所有子网格
+   */
+  const std::vector<std::shared_ptr<Mesh>> &GetAllSubMeshes() const;
+  /**
+   * 获取支持的LOD级别列表
+   */
+  std::vector<uint32_t> GetSupportedLODLevels() const;
 
   /**
    * 获取模型级包围盒
    */
-  const std::pair<glm::vec3, glm::vec3> &GetBoundingBox() const
-  {
-    return boundingBox_;
-  }
+  const std::pair<glm::vec3, glm::vec3> &GetBoundingBox() const;
   /**
    * 获取文件路径，用于调试
    */
-  const std::string GetPath() const
-  {
-    return modelHandle_->path;
-  }
+  const std::string GetPath() const;
+  /**
+   * 检查模型是否包含LOD
+   */
+  bool HasLOD() const;
 
  private:
   std::shared_ptr<ModelGPUHandle> modelHandle_;   // 整个模型的GPU资源
   std::vector<std::shared_ptr<Mesh>> subMeshes_;  // 子网格集合
   std::pair<glm::vec3, glm::vec3> boundingBox_;   // 模型级包围盒(min, max)
+  bool hasLOD_ = false;                           // 是否包含LOD
 };
 };  // namespace mite
 

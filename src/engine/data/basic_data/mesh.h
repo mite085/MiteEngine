@@ -10,6 +10,7 @@ namespace mite {
  * 职责：
  * - 引用父模型的GPU资源
  * - 提供子网格特定数据（偏移量、计数等）
+ * - 管理不同LOD级别的网格数据
  */
 class Mesh {
  public:
@@ -19,9 +20,9 @@ class Mesh {
    * @param baseSection 基础LOD级别的网格数据段信息
    * @param lodSections_ 所有LOD级别的网格数据段信息
    */
-  Mesh(std::shared_ptr<ModelGPUHandle> modelHandle,
-       const MeshSection &baseSection,
-       const std::vector<MeshSection> &lodSections);
+  explicit Mesh(std::shared_ptr<ModelGPUHandle> modelHandle,
+                const MeshSection &baseSection,
+                const std::vector<MeshSection> &lodSections);
 
   /**
    * 获取指定LOD级别的顶点数量
@@ -51,27 +52,23 @@ class Mesh {
    * 获取支持的LOD级别数量
    */
   uint32_t GetLODCount() const;
-
   /**
    * 获取父模型GPU资源
    */
-  std::shared_ptr<ModelGPUHandle> GetModelHandle() const
-  {
-    return modelHandle_;
-  }
-
+  std::shared_ptr<ModelGPUHandle> GetModelHandle() const;
   /**
    * 获取子网格级包围盒
    */
-  const std::pair<glm::vec3, glm::vec3> GetBoundingBox(uint32_t lodLevel = 0) const
-  {
-    return {section_.bboxMin, section_.bboxMax};
-  }
+  const std::pair<glm::vec3, glm::vec3> GetBoundingBox(uint32_t lodLevel = 0) const;
+  /**
+   * 获取材质索引
+   */
+  uint32_t GetMaterialIndex() const;
 
  private:
   std::shared_ptr<ModelGPUHandle> modelHandle_;  // 父模型资源
-  MeshSection baseSection_;                      // 基础LOD级别的网格数据段信息
-  std::vector<MeshSection> lodSections_;         // 所有LOD级别的网格数据段信息
+  MeshSection baseSection_;                      // 原始LOD级别的网格数据段信息
+  std::vector<MeshSection> lodSections_;         // 所有LOD级别的网格数据段信息（包含原始LOD）
 };
 };  // namespace mite
 

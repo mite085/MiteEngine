@@ -100,4 +100,11 @@ const std::pair<glm::vec3, glm::vec3> Mesh::GetBoundingBox(uint32_t lodLevel) co
   // 如果找不到指定LOD级别，返回基础LOD级别的包围盒
   return {baseSection_.bboxMin, baseSection_.bboxMax};
 }
+/**
+ * 获取材质索引
+ */
+uint32_t Mesh::GetMaterialIndex() const
+{
+  return baseSection_.materialIndex;
+}
 };  // namespace mite
