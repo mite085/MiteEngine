@@ -1,11 +1,11 @@
 #ifndef MITE_HANDLE_TYPE
 #define MITE_HANDLE_TYPE
 
+#include <glad.h>
 #include <glm/glm.hpp>
+#include <string>
 #include <variant>
 #include <vector>
-#include <glad.h>
-#include <string>
 
 namespace mite {
 // ------------------------ 纹理相关 ------------------------
@@ -34,7 +34,7 @@ enum class TextureFilterMode {
 
 // 纹理GPU句柄
 struct TextureGPUHandle {
-  std::string path;         // 文件原始路径	
+  std::string path;         // 文件原始路径
   uintptr_t apiHandle = 0;  // 底层驱动句柄（OpenGL的GLuint或Vulkan的VkImage）
 };
 
@@ -75,8 +75,9 @@ struct MeshSection {
   uint32_t indexCount;    // Mesh的索引数量
   glm::vec3 bboxMin;      // 网格级包围盒
   glm::vec3 bboxMax;
-
-  uint32_t lodLevel;  // 添加LOD级别
+  uint32_t materialIndex;               // 材质索引
+  uint32_t lodLevel;                    // LOD级别，0表示原始LOD
+  MeshSection *lodOriginPtr = nullptr;  // 指向原始LOD的MeshData，若自身为原始LOD，则为空
 };
 
 // ------------------------ 模型相关 ------------------------
