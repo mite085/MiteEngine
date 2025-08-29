@@ -203,8 +203,11 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
   m_ActiveVBOs.insert(VBO);
   m_ActiveEBOs.insert(EBO);
 
-  // 8. 保存ModelSourceData创建时生成的MeshSections
+  // 8. 保存ModelSourceData创建时生成的MeshSections（包含LOD信息）
   handle.subMeshes = std::move(data->sections);
+
+   // 9. 记录LOD信息
+  m_Logger->debug("Created model with {} LOD levels for: {}", data->sections.size(), data->path);
 
   return handle;
 }
@@ -306,6 +309,72 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   //                modelHandle->indexBuffer,
   //                meshSection.indexOffset,
   //                meshSection.vertexOffset);
+}
+
+// 添加LOD选择辅助函数
+uint32_t OpenGLDevice::SelectLODLevel(const ModelGPUHandle &model,
+                                      const glm::vec3 &cameraPosition,
+                                      float lodBias) const
+{
+  if (model.subMeshes.empty()) {
+    return 0;
+  }
+  // 计算相机到模型中心的距离
+  glm::vec3 modelCenter = (model.bboxMin + model.bboxMax) * 0.5f;
+  float distance = glm::distance(cameraPosition, modelCenter);
+
+  // 根据距离选择LOD级别
+  // 当前使用简单的线性选择，后续可以根据需要实现更复杂的算法
+  uint32_t maxLOD = 0;
+  for (const auto &section : model.subMeshes) {
+    if (section.lodLevel > maxLOD) {
+      maxLOD = section.lodLevel;
+    }
+  }
+
+  // 简单的距离-based LOD选择
+  float normalizedDistance = distance * lodBias;
+  uint32_t selectedLOD = static_cast<uint32_t>(normalizedDistance);
+
+  return glm::min(selectedLOD, maxLOD);
+}
+
+void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const
+{
+  std::shared_ptr<ModelGPUHandle> modelHandle = mesh->GetModelHandle();
+
+  if (!modelHandle) {
+    m_Logger->warn("Attempt to draw mesh with null model handle");
+    return;
+  }
+  // 查找指定LOD级别的MeshSection
+  const MeshSection *targetSection = nullptr;
+  for (const auto &section : modelHandle->subMeshes) {
+    if (section.lodLevel == lodLevel) {
+      targetSection = &section;
+      break;
+    }
+  }
+  if (!targetSection) {
+    // 如果没有找到指定LOD，使用最低级别（原始网格）
+    m_Logger->warn("LOD level {} not found for mesh, using base LOD", lodLevel);
+    for (const auto &section : modelHandle->subMeshes) {
+      if (section.lodLevel == 0) {
+        targetSection = &section;
+        break;
+      }
+    }
+  }
+  if (!targetSection) {
+    m_Logger->error("No valid mesh section found for drawing");
+    return;
+  }
+  // 绑定模型
+  GLuint vao = static_cast<GLuint>(modelHandle->vertexArray);
+  glBindVertexArray(vao);
+  // 绘制指定LOD级别的网格
+  DrawIndexed(
+      targetSection->indexCount, targetSection->indexOffset, GL_TRIANGLES, GL_UNSIGNED_INT, true);
 }
 
 void OpenGLDevice::DrawIndexed(uint32_t indexCount,
