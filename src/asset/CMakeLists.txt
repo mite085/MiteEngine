@@ -37,6 +37,8 @@ target_link_libraries(${ASSET_LIB_NAME}
     PRIVATE 
     spdlog::spdlog
     assimp
+    meshoptimizer
+    
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
 )

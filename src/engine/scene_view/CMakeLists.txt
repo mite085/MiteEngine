@@ -14,16 +14,20 @@ set(SCENE_VIEW_INTERFACE_SRCS
     scene_view_system.cpp
     scene_view.h                # 主控制器
     scene_view.cpp
-    batch_optimizer.h           # 批处理(实现静态和动态批处理逻辑，根据材质、网格相似性等判断合批条件，生成合批后的渲染项以减少DrawCall)
-    batch_optimizer.cpp
     lod_processor.h             # LOD系统(基于距离和屏幕占比计算LOD级别，管理不同LOD层次的网格切换)
     lod_processor.cpp
-    multi_view_manager.h        # 多视口管理器
-    multi_view_manager.cpp
-    debug_visualizer.h          # 调试绘制
-    debug_visualizer.cpp
-}
+)
 source_group("scene view" FILES ${SCENE_VIEW_INTERFACE_SRCS})
+
+set(SCENE_VIEW_TODO_INTERFACE_SRCS
+    scene_view_todo/batch_optimizer.h           # 批处理(未实现)
+    scene_view_todo/batch_optimizer.cpp
+    scene_view_todo/multi_view_manager.h        # 多视口管理器(未实现)
+    scene_view_todo/multi_view_manager.cpp
+    scene_view_todo/debug_visualizer.h          # 调试绘制(未实现)
+    scene_view_todo/debug_visualizer.cpp
+)
+source_group(scene view TODO)
 
 # 创建静态库
 add_library(${ENGINE_SCENE_VIEW_LIB_NAME}  STATIC  ${SCENE_VIEW_INTERFACE_SRCS})
