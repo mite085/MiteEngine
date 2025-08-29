@@ -19,10 +19,16 @@ class ModelLoader {
    * 加载模型文件
    * @param path 模型文件路径
    * @param flipUVs 是否翻转UV垂直坐标（适配OpenGL坐标系）
+   * @param generateLODs 是否生成多级LOD
+   * @param lodLevels LOD级别配置（每个级别的简化比例）
    * @return 包含模型元数据和所有子网格数据的结构体
    * @throws std::runtime_error 当模型加载失败时抛出异常
    */
-  static std::shared_ptr<ModelAsset> LoadModel(const std::string &path, bool flipUVs = true);
+  static std::shared_ptr<ModelAsset> LoadModel(const std::string &path,
+                                               bool flipUVs = true,
+                                               bool generateLODs = false,
+                                               const std::vector<float> &lodLevels = {
+                                                   1.0f, 0.5f, 0.25f, 0.1f});
 
  private:
   // 创建模型资源数据
@@ -33,6 +39,9 @@ class ModelLoader {
 
   // 处理顶点布局描述（供Renderer模块使用）
   static VertexLayout GenerateVertexLayout(const aiMesh *aiMesh);
+
+  // 使用meshoptimizer简化网格
+  static MeshData SimplifyMesh(const MeshData &originalMesh, float targetRatio);
 
   // 计算模型的包围盒
   static void CalculateBoundingBox(const std::vector<MeshData> &subMeshes,

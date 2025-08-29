@@ -37,6 +37,8 @@ struct MeshData {
 
   glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // 子网格局部包围盒
   glm::vec3 boundingBoxMax = glm::vec3(-FLT_MAX);
+
+  uint32_t lodLevel = 0;  // 0表示原始LOD
 };
 
 // 模型元数据

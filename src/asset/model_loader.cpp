@@ -2,8 +2,13 @@
 #include "basic_event/asset_event.h"
 #include <assimp/Importer.hpp>   // Assimp模型导入器
 #include <assimp/postprocess.h>  // Assimp后处理标志
+#include "meshoptimizer.h"
+
 namespace mite {
-std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path, bool flipUVs)
+std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
+                                                   bool flipUVs,
+                                                   bool generateLODs,
+                                                   const std::vector<float> &lodLevels)
 {
   // 1. 配置Assimp导入器
   Assimp::Importer importer;
@@ -13,7 +18,7 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path, bool
   // 2. 加载模型文件
   const aiScene *scene = importer.ReadFile(path, flags);
   if (!scene || scene == NULL || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-    LOG_ERROR("Assimp加载失败: " + std::string(importer.GetErrorString()));
+    LOG_ERROR("Assimp load failed: " + std::string(importer.GetErrorString()));
     return {};
   }
 
@@ -24,7 +29,19 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path, bool
 
   // 3. 处理所有子网格
   for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-    model->subMeshData.push_back(ProcessMesh(scene->mMeshes[i], scene));
+    MeshData originalMesh = ProcessMesh(scene->mMeshes[i], scene);
+    model->subMeshData.push_back(originalMesh);
+
+    // 4. 生成多级LOD
+    if (generateLODs) {
+      for (size_t lodLevel = 0; lodLevel < lodLevels.size(); lodLevel++) {
+        if (lodLevels[lodLevel] < 1.0f) {  // 跳过原始LOD级别
+          MeshData simplifiedMesh = SimplifyMesh(originalMesh, lodLevels[lodLevel]);
+          simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel + 1);  // LOD级别从1开始
+          model->subMeshData.push_back(simplifiedMesh);
+        }
+      }
+    }
   }
 
   // 4. 计算模型包围盒
@@ -200,6 +217,76 @@ VertexLayout ModelLoader::GenerateVertexLayout(const aiMesh *aiMesh)
 
   layout.stride = offset;
   return layout;
+}
+
+MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRatio)
+{
+  MeshData simplifiedMesh = originalMesh;
+
+  if (originalMesh.indices.empty() || targetRatio >= 1.0f) {
+    return simplifiedMesh;
+  }
+  // 准备meshoptimizer输入数据
+  const size_t index_count = originalMesh.indices.size();
+  const size_t vertex_count = originalMesh.vertexData.size() / originalMesh.layout.stride;
+
+  std::vector<unsigned int> indices = originalMesh.indices;
+
+  // 首先进行顶点缓存优化
+  meshopt_optimizeVertexCache(indices.data(), indices.data(), index_count, vertex_count);
+
+  // 计算目标索引数量
+  const size_t target_index_count = static_cast<size_t>(index_count * targetRatio);
+  const float target_error = 1e-2f;  // 可接受的简化误差
+
+  // 使用meshoptimizer进行网格简化
+  std::vector<unsigned int> simplified_indices(indices.size());
+  size_t simplified_index_count = meshopt_simplify(
+      simplified_indices.data(),
+      indices.data(),
+      index_count,
+      reinterpret_cast<const float *>(originalMesh.vertexData.data()),
+      vertex_count,
+      originalMesh.layout.stride,
+      target_index_count,
+      target_error);
+
+  // 调整简化后的索引数组大小
+  simplified_indices.resize(simplified_index_count);
+
+  // 重新映射顶点数据
+  std::vector<unsigned int> remap(vertex_count);
+  size_t unique_vertex_count = meshopt_optimizeVertexFetchRemap(
+      remap.data(), simplified_indices.data(), simplified_index_count, vertex_count);
+
+  // 应用顶点重映射
+  std::vector<uint8_t> simplified_vertex_data(unique_vertex_count * originalMesh.layout.stride);
+  meshopt_remapVertexBuffer(simplified_vertex_data.data(),
+                            originalMesh.vertexData.data(),
+                            vertex_count,
+                            originalMesh.layout.stride,
+                            remap.data());
+
+  // 重映射索引
+  meshopt_remapIndexBuffer(
+      simplified_indices.data(), simplified_indices.data(), simplified_index_count, remap.data());
+
+  // 更新简化后的网格数据
+  simplifiedMesh.vertexData = std::move(simplified_vertex_data);
+  simplifiedMesh.indices = std::move(simplified_indices);
+
+  // 重新计算包围盒
+  simplifiedMesh.boundingBoxMin = glm::vec3(FLT_MAX);
+  simplifiedMesh.boundingBoxMax = glm::vec3(-FLT_MAX);
+  const uint8_t *vPtr = simplifiedMesh.vertexData.data();
+  for (size_t i = 0; i < simplifiedMesh.vertexData.size(); i += simplifiedMesh.layout.stride) {
+    glm::vec3 position;
+    memcpy(&position, vPtr + i, sizeof(glm::vec3));
+    simplifiedMesh.boundingBoxMin = glm::min(simplifiedMesh.boundingBoxMin, position);
+    simplifiedMesh.boundingBoxMax = glm::max(simplifiedMesh.boundingBoxMax, position);
+  }
+
+  return simplifiedMesh;
 }
 
 void ModelLoader::CalculateBoundingBox(const std::vector<MeshData> &subMeshes,

@@ -77,6 +77,9 @@ endif()
 if(TARGET ImGuizmo)
     set_target_properties(ImGuizmo PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
 endif()
+if(TARGET meshoptimizerd)
+    set_target_properties(meshoptimizerd PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
+endif()
 # 添加子目录（配置代码）
 add_subdirectory(config)
 
