@@ -20,9 +20,7 @@ class Mesh {
    * @param baseSection 基础LOD级别的网格数据段信息
    * @param lodSections_ 所有LOD级别的网格数据段信息
    */
-  explicit Mesh(std::shared_ptr<ModelGPUHandle> modelHandle,
-                const MeshSection &baseSection,
-                const std::vector<MeshSection> &lodSections);
+  explicit Mesh(std::shared_ptr<ModelGPUHandle> modelHandle, const MeshSectionLODChain &lodChain);
 
   /**
    * 获取指定LOD级别的顶点数量
@@ -67,8 +65,7 @@ class Mesh {
 
  private:
   std::shared_ptr<ModelGPUHandle> modelHandle_;  // 父模型资源
-  MeshSection baseSection_;                      // 原始LOD级别的网格数据段信息
-  std::vector<MeshSection> lodSections_;         // 所有LOD级别的网格数据段信息（包含原始LOD）
+  MeshSectionLODChain lodChain_;  // 包含网格体Section的LODChain对象，可从中提取到Offset信息
 };
 };  // namespace mite
 
