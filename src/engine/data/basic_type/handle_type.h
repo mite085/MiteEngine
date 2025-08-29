@@ -75,6 +75,8 @@ struct MeshSection {
   uint32_t indexCount;    // Mesh的索引数量
   glm::vec3 bboxMin;      // 网格级包围盒
   glm::vec3 bboxMax;
+
+  uint32_t lodLevel;  // 添加LOD级别
 };
 
 // ------------------------ 模型相关 ------------------------
