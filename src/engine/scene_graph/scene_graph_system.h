@@ -7,7 +7,6 @@
 namespace mite {
 // Ç°ÏòÉùÃ÷
 class MeshComponent;
-class ParentChangedEvent;
 
 /**
  * @class SceneGraphSystem

@@ -196,33 +196,33 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
    * @brief 设置主相机视锥体
    * @param frustum 相机视锥体
    */
-  void SetMainCameraFrustum(const Frustum &frustum);
+  //void SetMainCameraFrustum(const Frustum &frustum);
 
   /**
    * @brief 设置相机可见性掩码
    * @param mask 相机掩码
    */
-  void SetCameraVisibilityMask(uint32_t mask);
+  //void SetCameraVisibilityMask(uint32_t mask);
 
   /**
    * @brief 获取当前可见实体数量
    * @return 可见实体数
    */
-  size_t GetVisibleCount() const
-  {
-    return visibleCount;
-  }
+  //size_t GetVisibleCount() const
+  //{
+  //  return visibleCount;
+  //}
 
  protected:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
-  bool OnMainCameraChanged(MainCameraChangedEvent &e);
-  bool OnCameraVisibilityMaskChanged(CameraVisibilityMaskChangedEvent &e);
+  //bool OnMainCameraChanged(MainCameraChangedEvent &e);
+  //bool OnCameraVisibilityMaskChanged(CameraVisibilityMaskChangedEvent &e);
 
  private:
-  Frustum mainCameraFrustum;  ///< 主相机视锥体
-  uint32_t cameraVisibilityMask =
-      CameraVisibilityMask::ALL;  ///< 相机可见性掩码（通过掩码判断，支持不同通道渲染）
-  size_t visibleCount = 0;  ///< 当前可见实体计数
+  //Frustum mainCameraFrustum;  ///< 主相机视锥体
+  //uint32_t cameraVisibilityMask =
+  //    CameraVisibilityMask::ALL;  ///< 相机可见性掩码（通过掩码判断，支持不同通道渲染）
+  //size_t visibleCount = 0;  ///< 当前可见实体计数
 };
 
 // ==================== 事件定义 ====================
