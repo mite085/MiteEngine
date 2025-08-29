@@ -133,7 +133,7 @@ class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
 
 /**
  * @class MainCameraChangedEvent
- * @brief 主摄像机修改事件
+ * @brief 主摄像机修改事件（暂未启用）
  */
 class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
  public:
@@ -152,7 +152,7 @@ class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
 
 /**
  * @class CameraVisibilityMaskChangedEvent
- * @brief 摄像机掩码修改事件
+ * @brief 摄像机掩码修改事件（暂未启用）
  */
 class CameraVisibilityMaskChangedEvent : public ComponentEvent<CameraComponent> {
  public:
