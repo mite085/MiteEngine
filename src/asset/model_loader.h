@@ -16,7 +16,7 @@ namespace mite {
 class ModelLoader {
  public:
   /**
-   * 加载模型文件
+   * @brief LoadModel 加载模型文件
    * @param path 模型文件路径
    * @param flipUVs 是否翻转UV垂直坐标（适配OpenGL坐标系）
    * @param generateLODs 是否生成多级LOD

@@ -1,8 +1,8 @@
 #include "model_loader.h"
 #include "basic_event/asset_event.h"
+#include "meshoptimizer.h"
 #include <assimp/Importer.hpp>   // Assimp模型导入器
 #include <assimp/postprocess.h>  // Assimp后处理标志
-#include "meshoptimizer.h"
 
 namespace mite {
 std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
@@ -31,13 +31,19 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
   for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
     MeshData originalMesh = ProcessMesh(scene->mMeshes[i], scene);
     model->subMeshData.push_back(originalMesh);
+    // 获取刚刚添加的元素的地址
+    MeshData *ptrToOriginal = &(model->subMeshData.back());
 
     // 4. 生成多级LOD
     if (generateLODs) {
       for (size_t lodLevel = 0; lodLevel < lodLevels.size(); lodLevel++) {
-        if (lodLevels[lodLevel] < 1.0f) {  // 跳过原始LOD级别
+        // 跳过原始LOD级别
+        if (lodLevels[lodLevel] < 1.0f) {
           MeshData simplifiedMesh = SimplifyMesh(originalMesh, lodLevels[lodLevel]);
-          simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel + 1);  // LOD级别从1开始
+          // LOD级别从1开始
+          simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel + 1);
+          // 并记录原始LOD的MeshData指针（为了防止originalMesh临时变量销毁导致悬垂指针，使用地址获取逻辑）
+          simplifiedMesh.lodOriginPtr = ptrToOriginal;
           model->subMeshData.push_back(simplifiedMesh);
         }
       }
@@ -89,6 +95,7 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
   uint32_t indexOffset = 0;
 
   for (const auto &subMesh : model->subMeshData) {
+
     // 添加顶点数据
     size_t prevVertexSize = sourceData->mergedVertexData.size();
     sourceData->mergedVertexData.insert(
@@ -103,19 +110,43 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
     uint32_t vertexCount = static_cast<uint32_t>(subMesh.vertexData.size() /
                                                  subMesh.layout.stride);
 
-    // 记录并保存MeshSection，由CreateModel步骤交付给ModelGPUHandle
-    sourceData->sections.emplace_back(MeshSection{vertexOffset,
-                                                   indexOffset,
-                                                   vertexCount,
-                                                   static_cast<uint32_t>(subMesh.indices.size()),
-                                                   subMesh.boundingBoxMin,
-                                                   subMesh.boundingBoxMax});
+    // 记录并保存MeshSection，包含LOD信息，由CreateModel步骤交付给ModelGPUHandle
+    MeshSection newSection{
+        vertexOffset,
+        indexOffset,
+        vertexCount,
+        static_cast<uint32_t>(subMesh.indices.size()),
+        subMesh.boundingBoxMin,
+        subMesh.boundingBoxMax,
+        subMesh.materialIndex,
+        subMesh.lodLevel,
+        nullptr  // 先设置为nullptr，稍后设置
+    };
+    sourceData->sections.push_back(newSection);
 
     // 更新偏移量
     vertexOffset = static_cast<uint32_t>(sourceData->mergedVertexData.size() /
                                          subMesh.layout.stride);
     indexOffset = static_cast<uint32_t>(sourceData->mergedIndices.size());
   }
+
+  // 执行第二遍遍历，设置所有 lodOriginPtr
+  for (size_t i = 0; i < model->subMeshData.size(); ++i) {
+    const auto &subMesh = model->subMeshData[i];
+    if (subMesh.lodOriginPtr != nullptr) {
+      // 找到对应的 MeshData 在数组中的位置
+      auto it = std::find_if(model->subMeshData.begin(),
+                             model->subMeshData.end(),
+                             [&](const MeshData &md) { return &md == subMesh.lodOriginPtr; });
+
+      // 通过迭代器步长确定地址，执行赋值
+      if (it != model->subMeshData.end()) {
+        size_t originIndex = std::distance(model->subMeshData.begin(), it);
+        sourceData->sections[i].lodOriginPtr = &sourceData->sections[originIndex];
+      }
+    }
+  }
+
   return sourceData;
 }
 
