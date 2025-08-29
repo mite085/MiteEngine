@@ -11,10 +11,12 @@
 #include <filesystem>
 #include <functional>
 #include <limits>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <queue>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <sstream>

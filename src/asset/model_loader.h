@@ -44,7 +44,7 @@ class ModelLoader {
   static MeshData SimplifyMesh(const MeshData &originalMesh, float targetRatio);
 
   // 计算模型的包围盒
-  static void CalculateBoundingBox(const std::vector<MeshData> &subMeshes,
+  static void CalculateBoundingBox(const std::vector<MeshDataLODChain> &subMeshes,
                                    glm::vec3 &outMin,
                                    glm::vec3 &outMax);
   // 提取材质路径列表

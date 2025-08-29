@@ -29,25 +29,22 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
 
   // 3. 处理所有子网格
   for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-    MeshData originalMesh = ProcessMesh(scene->mMeshes[i], scene);
-    model->subMeshData.push_back(originalMesh);
-    // 获取刚刚添加的元素的地址
-    MeshData *ptrToOriginal = &(model->subMeshData.back());
+    // 构建MeshLod链
+    MeshDataLODChain subMeshLodChain{ProcessMesh(scene->mMeshes[i], scene), {}};
 
     // 4. 生成多级LOD
     if (generateLODs) {
       for (size_t lodLevel = 0; lodLevel < lodLevels.size(); lodLevel++) {
         // 跳过原始LOD级别
         if (lodLevels[lodLevel] < 1.0f) {
-          MeshData simplifiedMesh = SimplifyMesh(originalMesh, lodLevels[lodLevel]);
+          MeshData simplifiedMesh = SimplifyMesh(subMeshLodChain.baseSection, lodLevels[lodLevel]);
           // LOD级别从1开始
           simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel + 1);
-          // 并记录原始LOD的MeshData指针（为了防止originalMesh临时变量销毁导致悬垂指针，使用地址获取逻辑）
-          simplifiedMesh.lodOriginPtr = ptrToOriginal;
-          model->subMeshData.push_back(simplifiedMesh);
+          subMeshLodChain.lodSections.push_back(simplifiedMesh);
         }
       }
     }
+    model->subMeshData.push_back(subMeshLodChain);
   }
 
   // 4. 计算模型包围盒
@@ -74,16 +71,25 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
   sourceData->path = model->metadata.path;
   sourceData->modelBboxMin = model->metadata.boundingBoxMin;
   sourceData->modelBboxMax = model->metadata.boundingBoxMax;
-  sourceData->layout = model->subMeshData.empty() ? VertexLayout{} : model->subMeshData[0].layout;
+  if (!model->subMeshData.empty()) {
+    sourceData->layout = model->subMeshData[0].baseSection.layout;
+  }
 
   // 2. 合并顶点和索引数据
   size_t totalVertexBytes = 0;
   size_t totalIndices = 0;
 
   // 预计算总大小
-  for (const auto &subMesh : model->subMeshData) {
-    totalVertexBytes += subMesh.vertexData.size();
-    totalIndices += subMesh.indices.size();
+  for (const auto &lodChain : model->subMeshData) {
+    // 基础 LOD
+    totalVertexBytes += lodChain.baseSection.vertexData.size();
+    totalIndices += lodChain.baseSection.indices.size();
+
+    // 其他 LOD 级别
+    for (const auto &lodSection : lodChain.lodSections) {
+      totalVertexBytes += lodSection.vertexData.size();
+      totalIndices += lodSection.indices.size();
+    }
   }
 
   // 预分配空间
@@ -94,57 +100,54 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
   uint32_t vertexOffset = 0;
   uint32_t indexOffset = 0;
 
-  for (const auto &subMesh : model->subMeshData) {
-
+  // 定义Lambda函数，兼顾合并顶点到sourceData、更新Offset、构建MeshSection三个功能
+  auto MergeMeshDataToSourceData =
+      [&sourceData, &vertexOffset, &indexOffset](const MeshData &meshData) -> MeshSection {
     // 添加顶点数据
-    size_t prevVertexSize = sourceData->mergedVertexData.size();
-    sourceData->mergedVertexData.insert(
-        sourceData->mergedVertexData.end(), subMesh.vertexData.begin(), subMesh.vertexData.end());
+    sourceData->mergedVertexData.insert(sourceData->mergedVertexData.end(),
+                                        meshData.vertexData.begin(),
+                                        meshData.vertexData.end());
 
-    // 添加索引数据(需要调整偏移)
-    size_t prevIndexSize = sourceData->mergedIndices.size();
+    // 添加索引数据
+    std::vector<uint32_t> adjustedIndices = meshData.indices;
+    for (auto &index : adjustedIndices) {
+      // 修正索引值偏移，将单个 MeshData 存储的相对偏移（相对于自己的顶点数据），
+      // 修正为合并到 ModelSourceData 后的绝对偏移（相对于合并后的顶点数据）
+      index += vertexOffset;
+    }
     sourceData->mergedIndices.insert(
-        sourceData->mergedIndices.end(), subMesh.indices.begin(), subMesh.indices.end());
+        sourceData->mergedIndices.end(), adjustedIndices.begin(), adjustedIndices.end());
 
-    // 计算顶点数(基于stride)
-    uint32_t vertexCount = static_cast<uint32_t>(subMesh.vertexData.size() /
-                                                 subMesh.layout.stride);
-
-    // 记录并保存MeshSection，包含LOD信息，由CreateModel步骤交付给ModelGPUHandle
-    MeshSection newSection{
-        vertexOffset,
-        indexOffset,
-        vertexCount,
-        static_cast<uint32_t>(subMesh.indices.size()),
-        subMesh.boundingBoxMin,
-        subMesh.boundingBoxMax,
-        subMesh.materialIndex,
-        subMesh.lodLevel,
-        nullptr  // 先设置为nullptr，稍后设置
-    };
-    sourceData->sections.push_back(newSection);
+    // 创建基础 MeshSection
+    MeshSection meshSection = MeshSection{
+        vertexOffset,  // 顶点偏移（以顶点计数为单位）
+        indexOffset,   // 索引偏移（以索引计数为单位）
+        static_cast<uint32_t>(meshData.vertexData.size() / meshData.layout.stride),
+        static_cast<uint32_t>(meshData.indices.size()),
+        meshData.boundingBoxMin,
+        meshData.boundingBoxMax,
+        meshData.materialIndex,
+        meshData.lodLevel};
 
     // 更新偏移量
-    vertexOffset = static_cast<uint32_t>(sourceData->mergedVertexData.size() /
-                                         subMesh.layout.stride);
+    vertexOffset += meshSection.vertexCount;
     indexOffset = static_cast<uint32_t>(sourceData->mergedIndices.size());
-  }
 
-  // 执行第二遍遍历，设置所有 lodOriginPtr
-  for (size_t i = 0; i < model->subMeshData.size(); ++i) {
-    const auto &subMesh = model->subMeshData[i];
-    if (subMesh.lodOriginPtr != nullptr) {
-      // 找到对应的 MeshData 在数组中的位置
-      auto it = std::find_if(model->subMeshData.begin(),
-                             model->subMeshData.end(),
-                             [&](const MeshData &md) { return &md == subMesh.lodOriginPtr; });
+    return meshSection;
+  };
 
-      // 通过迭代器步长确定地址，执行赋值
-      if (it != model->subMeshData.end()) {
-        size_t originIndex = std::distance(model->subMeshData.begin(), it);
-        sourceData->sections[i].lodOriginPtr = &sourceData->sections[originIndex];
-      }
+  // 遍历MeshData并逐个处理，并构建MeshSection
+  for (const MeshDataLODChain &meshLODChain : model->subMeshData) {
+    MeshSectionLODChain sectionLODChain;
+
+    // 处理基础 LOD
+    sectionLODChain.baseSection = MergeMeshDataToSourceData(meshLODChain.baseSection);
+
+    // 处理其他 LOD 级别
+    for (const MeshData &lodMeshData : meshLODChain.lodSections) {
+      sectionLODChain.lodSections.push_back(MergeMeshDataToSourceData(lodMeshData));
     }
+    sourceData->sections.push_back(sectionLODChain);
   }
 
   return sourceData;
@@ -195,7 +198,7 @@ MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)
     }
   }
 
-  // 3. 处理索引数据
+  // 3. 处理索引数据（相对于自己的顶点数据的相对偏移）
   subMesh.indices.reserve(aiMesh->mNumFaces * 3);
   for (unsigned int i = 0; i < aiMesh->mNumFaces; i++) {
     const aiFace &face = aiMesh->mFaces[i];
@@ -298,7 +301,7 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
                             originalMesh.layout.stride,
                             remap.data());
 
-  // 重映射索引
+  // 重映射索引（相对于自己的顶点数据的相对偏移）
   meshopt_remapIndexBuffer(
       simplified_indices.data(), simplified_indices.data(), simplified_index_count, remap.data());
 
@@ -320,7 +323,7 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
   return simplifiedMesh;
 }
 
-void ModelLoader::CalculateBoundingBox(const std::vector<MeshData> &subMeshes,
+void ModelLoader::CalculateBoundingBox(const std::vector<MeshDataLODChain> &subMeshes,
                                        glm::vec3 &outMin,
                                        glm::vec3 &outMax)
 {
@@ -333,8 +336,8 @@ void ModelLoader::CalculateBoundingBox(const std::vector<MeshData> &subMeshes,
   outMax = glm::vec3(-FLT_MAX);
 
   for (const auto &subMesh : subMeshes) {
-    outMin = glm::min(outMin, subMesh.boundingBoxMin);
-    outMax = glm::max(outMax, subMesh.boundingBoxMax);
+    outMin = glm::min(outMin, subMesh.baseSection.boundingBoxMin);
+    outMax = glm::max(outMax, subMesh.baseSection.boundingBoxMax);
   }
 }
 
