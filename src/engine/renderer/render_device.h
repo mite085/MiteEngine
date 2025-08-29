@@ -59,15 +59,21 @@ class IRenderDevice {
    */
   virtual void BindMesh(std::shared_ptr<Mesh> mesh) const = 0;
   /**
-   * @brief SelectLODLevel 根据输入LOD偏差，选择LOD层级
-   * @param model 模型GPU句柄
+   * @brief SelectMeshLODLevel 根据输入LOD偏差，选择单个Mesh的LOD层级
+   * @param mesh 网格体对象
    * @param cameraPosition 相机距离
+   * @param worldTransform 局部空间到世界空间的旋转矩阵
    * @param lodBias LOD层级偏差值
-   * @return
+   * @return LOD层级
+   * 
+   * 针对超大Model（如地形）可以逐Mesh划分LOD，降低渲染压力
    */
-  virtual uint32_t SelectLODLevel(const ModelGPUHandle &model,
-                                  const glm::vec3 &cameraPosition,
-                                  float lodBias) const = 0;
+  virtual uint32_t SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
+                                      const glm::vec3 &cameraPosition,
+                                      const glm::mat4 &worldTransform,
+                                      const glm::mat4 &viewProjectionMatrix,
+                                      float screenWidth,
+                                      float lodBias) const = 0;
   /**
    * @brief DrawMeshLOD 根据LOD绘制Mesh
    * @param mesh

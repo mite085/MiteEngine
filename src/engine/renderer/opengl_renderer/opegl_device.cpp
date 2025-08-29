@@ -206,7 +206,7 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
   // 8. 保存ModelSourceData创建时生成的MeshSections（包含LOD信息）
   handle.subMeshes = std::move(data->sections);
 
-   // 9. 记录LOD信息
+  // 9. 记录LOD信息
   m_Logger->debug("Created model with {} LOD levels for: {}", data->sections.size(), data->path);
 
   return handle;
@@ -311,32 +311,85 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   //                meshSection.vertexOffset);
 }
 
-// 添加LOD选择辅助函数
-uint32_t OpenGLDevice::SelectLODLevel(const ModelGPUHandle &model,
-                                      const glm::vec3 &cameraPosition,
-                                      float lodBias) const
+uint32_t OpenGLDevice::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
+                                          const glm::vec3 &cameraPosition,
+                                          const glm::mat4 &worldTransform,
+                                          const glm::mat4 &viewProjectionMatrix,
+                                          float screenWidth,
+                                          float lodBias) const
 {
-  if (model.subMeshes.empty()) {
+  if (!mesh) {
     return 0;
   }
-  // 计算相机到模型中心的距离
-  glm::vec3 modelCenter = (model.bboxMin + model.bboxMax) * 0.5f;
-  float distance = glm::distance(cameraPosition, modelCenter);
 
-  // 根据距离选择LOD级别
-  // 当前使用简单的线性选择，后续可以根据需要实现更复杂的算法
-  uint32_t maxLOD = 0;
-  for (const auto &section : model.subMeshes) {
-    if (section.lodLevel > maxLOD) {
-      maxLOD = section.lodLevel;
+  // 获取网格的世界空间包围盒
+  auto localBBox = mesh->GetBoundingBox(0);
+  glm::vec3 localMin = localBBox.first;
+  glm::vec3 localMax = localBBox.second;
+
+  // 转换到世界空间
+  glm::vec3 worldMin = glm::vec3(worldTransform * glm::vec4(localMin, 1.0f));
+  glm::vec3 worldMax = glm::vec3(worldTransform * glm::vec4(localMax, 1.0f));
+  glm::vec3 worldCenter = (worldMin + worldMax) * 0.5f;
+
+  // 计算屏幕空间覆盖率
+  //
+  // 假设一个网格：
+  // 原始大小：10米 × 10米 × 10米
+  // 距离相机：100米
+  // 屏幕宽度：1920像素
+  // screenCoverage = (10.0f / 100.0f) * 1920.0f = 192像素
+  float distance = glm::distance(cameraPosition, worldCenter);
+  glm::vec3 bboxSize = worldMax - worldMin;
+  float objectSize = glm::max(bboxSize.x, glm::max(bboxSize.y, bboxSize.z));
+  float screenCoverage = (objectSize / distance) * screenWidth * lodBias;
+
+  // 基于屏幕覆盖率的LOD选择（使用像素宽度进行判断）
+  //
+  // 200.0f: 当网格在屏幕上覆盖宽度小于200像素时，切换到LOD 1
+  // 100.0f: 当网格在屏幕上覆盖宽度小于100像素时，切换到LOD 2
+  //  50.0f: 当网格在屏幕上覆盖宽度小于 50像素时，切换到LOD 3
+  //  25.0f: 当网格在屏幕上覆盖宽度小于 25像素时，切换到LOD 4
+  //  10.0f: 当网格在屏幕上覆盖宽度小于 10像素时，切换到LOD 5
+  //   5.0f: 当网格在屏幕上覆盖宽度小于  5像素时，切换到LOD 6
+  //
+  // TODO：可以将该选择方案作为配置项，针对不同情况修改配置
+  //
+  // 高质量场景（近处细节重要）：
+  //    {300.0f, 150.0f, 75.0f, 30.0f, 15.0f, 5.0f};
+  // 性能优先场景：
+  //    {100.0f, 50.0f, 20.0f, 8.0f, 3.0f};
+  // 环境网格（可以更早降级）：
+  //    {80.0f, 40.0f, 15.0f, 5.0f};
+  uint32_t selectedLOD = 0;
+  constexpr float lodThresholds[] = {200.0f, 100.0f, 50.0f, 25.0f, 10.0f, 5.0f};
+  for (uint32_t i = 0; i < sizeof(lodThresholds) / sizeof(lodThresholds[0]); ++i) {
+    if (screenCoverage < lodThresholds[i]) {
+      selectedLOD = i + 1;
+    }
+    else {
+      break;
     }
   }
 
-  // 简单的距离-based LOD选择
-  float normalizedDistance = distance * lodBias;
-  uint32_t selectedLOD = static_cast<uint32_t>(normalizedDistance);
+  // 获取可用的LOD级别
+  std::set<uint32_t> availableLODs;
+  availableLODs.insert(mesh->GetBaseSection().lodLevel);
+  for (const auto &lodSection : mesh->GetAllLODSections()) {
+    availableLODs.insert(lodSection.lodLevel);
+  }
 
-  return glm::min(selectedLOD, maxLOD);
+  // 确保选择的LOD级别实际存在
+  if (!availableLODs.empty()) {
+    auto it = availableLODs.lower_bound(selectedLOD);
+    if (it != availableLODs.end()) {
+      selectedLOD = *it;
+    }
+    else {
+      selectedLOD = *availableLODs.rbegin();
+    }
+  }
+  return selectedLOD;
 }
 
 void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const
@@ -347,28 +400,14 @@ void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) co
     m_Logger->warn("Attempt to draw mesh with null model handle");
     return;
   }
-  // 查找指定LOD级别的MeshSection
-  const MeshSection *targetSection = nullptr;
-  for (const auto &section : modelHandle->subMeshes) {
-    if (section.lodLevel == lodLevel) {
-      targetSection = &section;
-      break;
-    }
-  }
-  if (!targetSection) {
-    // 如果没有找到指定LOD，使用最低级别（原始网格）
-    m_Logger->warn("LOD level {} not found for mesh, using base LOD", lodLevel);
-    for (const auto &section : modelHandle->subMeshes) {
-      if (section.lodLevel == 0) {
-        targetSection = &section;
-        break;
-      }
-    }
-  }
-  if (!targetSection) {
-    m_Logger->error("No valid mesh section found for drawing");
+  if (modelHandle->subMeshes.empty()) {
+    m_Logger->warn("No subMeshes LOD chains found in model handle");
     return;
   }
+
+  // 直接从Mesh对象获取指定LOD级别的MeshSection
+  const MeshSection *targetSection = &mesh->GetSection(lodLevel);
+
   // 绑定模型
   GLuint vao = static_cast<GLuint>(modelHandle->vertexArray);
   glBindVertexArray(vao);
@@ -675,5 +714,4 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
     m_Logger->error("Vertex attribute offset {} doesn't match layout stride {}", offset, stride);
   }
 }
-
 };  // namespace mite

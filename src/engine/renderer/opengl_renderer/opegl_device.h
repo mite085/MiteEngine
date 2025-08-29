@@ -42,9 +42,12 @@ class OpenGLDevice : public IRenderDevice {
   // 需要整体梳理std::shared_ptr<Model>的生命周期
   void DestroyModel(ModelGPUHandle model) override;
   void BindMesh(std::shared_ptr<Mesh> mesh) const override;
-  uint32_t SelectLODLevel(const ModelGPUHandle &model,
-                          const glm::vec3 &cameraPosition,
-                          float lodBias) const override;
+  uint32_t SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
+                              const glm::vec3 &cameraPosition,
+                              const glm::mat4 &worldTransform,
+                              const glm::mat4 &viewProjectionMatrix,
+                              float screenWidth,
+                              float lodBias) const override;
   void DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const override;
   void DrawIndexed(uint32_t indexCount,
                    uint32_t indexOffset,
