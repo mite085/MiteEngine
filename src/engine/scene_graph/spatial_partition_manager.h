@@ -68,14 +68,6 @@ class SpatialPartitionManager {
 
   // ==================== 空间查询接口（为SceneView提供优化） ====================
   /**
-   * @brief 快速可见性检查（不返回具体节点，只计数）
-   * @return 可见节点数量
-   */
-  size_t QueryVisibleCount(SceneRegistry &registry,
-                           const Frustum &frustum,
-                           uint32_t visibilityMask);
-
-  /**
    * @brief 获取可见节点数量（不执行可见性检查，只获取上次检查结果）
    * @return 可见节点数量
    */

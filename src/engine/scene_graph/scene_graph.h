@@ -1,9 +1,8 @@
 #ifndef MITE_SCENE_GRAPH_H
 #define MITE_SCENE_GRAPH_H
 
-#include "scene_core/entity.h"
-#include "scene_core/scene_registry.h"
-#include "spatial_partition.h"
+#include "spatial_partition_manager.h"
+#include "scene_node_manager.h"
 
 namespace mite {
 // 前向声明
@@ -12,7 +11,7 @@ class SceneRegistry;
 class Entity;
 
 /**
- * @class SceneGraph
+ * @class SceneGraph（负责协调与暴露接口，不直接实现）
  * @brief 场景图独立服务 - 负责场景节点层级管理和空间查询优化
  *
  * 核心职责：
@@ -150,7 +149,7 @@ class SceneGraph {
   /**
    * @brief 重新构建空间划分结构（优化性能）
    */
-  void RebuildSpatialPartition();
+  void RebuildSpatialPartition(std::vector<SceneNode *> nodelist);
 
   /**
    * @brief 获取空间划分统计信息
@@ -264,64 +263,8 @@ class SceneGraph {
   bool Deserialize(std::istream &input);
 
  private:
-  // ==================== 内部工具方法 ====================
-
-  /**
-   * @brief 初始化空间划分结构
-   */
-  void InitializeSpatialPartition();
-
-  /**
-   * @brief 递归遍历场景树辅助函数
-   */
-  bool TraverseRecursive(SceneNode *node, std::function<bool(SceneNode *)> callback) const;
-
-  /**
-   * @brief 验证父子关系是否有效（防止循环引用）
-   */
-  bool ValidateParenting(SceneNode *node, SceneNode *newParent) const;
-
-  /**
-   * @brief 从空间划分结构中移除节点
-   */
-  void RemoveNodeFromSpatialPartition(SceneNode *node);
-
-  /**
-   * @brief 添加节点到空间划分结构
-   */
-  void AddNodeToSpatialPartition(SceneNode *node);
-
-  /**
-   * @brief 检查节点是否可见
-   * @param registry 场景注册表
-   * @param entity 实体
-   * @return 是否可见
-   */
-  bool IsNodeVisible(SceneRegistry &registry, Entity entity, uint32_t visibilityMask) const;
-
-  /**
-   * @brief 清空空间划分结构,清空所有节点
-   */
-  void Clear();
-
- private:
-  // 实体到场景节点的映射表
-  std::unordered_map<Entity, std::unique_ptr<SceneNode>> m_entityToNodeMap;
-
-  // 空间划分结构
-  std::unique_ptr<SpatialPartition> m_spatialPartition;
-
-  // 当前空间划分类型
-  SpatialPartitionType m_spatialPartitionType;
-
-  // 需要更新的脏节点列表
-  std::vector<Entity> m_dirtyNodes;
-
-  // 状态存储
-  size_t m_visibleNodeCount;        // 可见节点数量
-
-  // 线程安全保护
-  mutable std::mutex m_mutex;
+  SceneNodeManager m_nodeManager;
+  SpatialPartitionManager m_spatialPartitionManager;
 
   // 日志器
   Logger m_logger;

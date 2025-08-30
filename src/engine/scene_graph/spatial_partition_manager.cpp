@@ -102,15 +102,6 @@ void SpatialPartitionManager::DebugDraw(std::function<void(const AABB &, int dep
 }
 
 // ==================== 空间查询接口 ====================
-
-size_t SpatialPartitionManager::QueryVisibleCount(SceneRegistry &registry,
-                                                  const Frustum &frustum,
-                                                  uint32_t visibilityMask)
-{
-  QueryVisibleNodes(registry, frustum, visibilityMask);
-  return m_visibleNodeCount;
-}
-
 size_t SpatialPartitionManager::GetVisibleNodeCount() const
 {
   return m_visibleNodeCount;
