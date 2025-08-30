@@ -15,7 +15,11 @@ set(SCENE_GRAPH_INTERFACE_SRCS
     frustum.cpp
     scene_node.h                   # 场景节点（依赖基础几何类型）
     scene_node.cpp
+    scene_node_manager.h           # 场景节点管理器（负责节点的创建、销毁、更新等）
+    scene_node_manager.cpp
     spatial_partition.h            # 空间划分抽象接口（依赖几何类型）
+    spatial_partition_manager.cpp    
+    spatial_partition_manager.h    # 空间划分管理器（负责空间划分的创建、查询等）
     spatial_partition.cpp
     simple_bvh.h                   # BVH实现（依赖SceneNode和几何类型）
     simple_bvh.cpp

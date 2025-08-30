@@ -2,6 +2,7 @@
 #include "scene_core/scene_registry.h"
 #include "scene_core_components/hierarchy_component.h"
 #include "scene_core_components/transform_component.h"
+#include "visibility_component.h"
 
 namespace mite {
 
@@ -206,6 +207,22 @@ std::string SceneNode::GetPath() const
   }
 
   return ss.str();
+}
+
+bool SceneNode::IsNodeVisible(SceneRegistry &registry,
+                                     uint32_t visibilityMask) const
+{
+  if (!entity_.IsValid()) {
+    return false;
+  }
+
+  if (registry.HasComponent<VisibilityComponent>(entity_)) {
+    auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity_);
+    return visibilityComp.IsVisible() && visibilityComp.MatchesMask(visibilityMask);
+  }
+
+  // 没有VisibilityComponent的节点默认可见
+  return true;
 }
 
 }  // namespace mite

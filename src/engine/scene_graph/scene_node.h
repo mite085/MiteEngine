@@ -175,6 +175,13 @@ class SceneNode {
    */
   std::string GetPath() const;
 
+  /**
+   * @brief 检查节点是否可见
+   * @param registry 场景注册表
+   * @return 是否可见
+   */
+  bool IsNodeVisible(SceneRegistry &registry, uint32_t visibilityMask) const;
+
  private:
   /**
    * @brief 递归更新子节点的变换状态
