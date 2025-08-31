@@ -148,6 +148,10 @@ class RenderableItemBuilder {
   // 禁用拷贝构造和赋值
   RenderableItemBuilder(const RenderableItemBuilder &) = delete;
   RenderableItemBuilder &operator=(const RenderableItemBuilder &) = delete;
+
+  
+  // 日志器
+  Logger m_logger;
 };
 
 }  // namespace mite
