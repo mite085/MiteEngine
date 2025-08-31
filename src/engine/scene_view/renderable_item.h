@@ -11,12 +11,39 @@ namespace mite {
  * 注：仅包含渲染所需的最小字段，未来可扩展（如LOD、骨骼动画等）
  */
 struct RenderableItem {
-  Entity entity;                       // 对应的ECS实体ID
-  glm::mat4 worldTransform;            // 世界空间变换矩阵（从Transform组件计算）
-  std::shared_ptr<Mesh> mesh;           // 网格GPU句柄（从Mesh组件获取）
-  std::shared_ptr<MaterialInstance> materialInstance;  // 材质实例（从Material组件获取）
+  Entity entity;               // 对应的ECS实体ID
+  glm::mat4 worldTransform;    // 世界空间变换矩阵（从Transform组件计算）
+  std::shared_ptr<Mesh> mesh;  // 网格GPU句柄（从Mesh组件获取）
+  std::shared_ptr<MaterialInstance> material;  // 材质实例（从Material组件获取）
 
-  // 注：可在此添加渲染排序所需的附加字段（如与摄像机的距离）
+  // 渲染排序相关字段
+  float distanceToCamera;  // 与摄像机的距离（用于透明物体排序）
+  uint32_t renderLayer;    // 渲染层级（用于自定义渲染顺序）
+
+
+
+  /**
+   * @brief 默认构造函数
+   */
+  RenderableItem()
+      : entity(Entity()), worldTransform(glm::mat4(1.0f)), distanceToCamera(0.0f), renderLayer(0)
+  {
+  }
+  /**
+   * @brief 参数化构造函数
+   */
+  RenderableItem(Entity ent,
+                 const glm::mat4 &transform,
+                 std::shared_ptr<Mesh> meshPtr,
+                 std::shared_ptr<MaterialInstance> materialPtr)
+      : entity(ent),
+        worldTransform(transform),
+        mesh(meshPtr),
+        material(materialPtr),
+        distanceToCamera(0.0f),
+        renderLayer(0)
+  {
+  }
 };
 };  // namespace mite
 
