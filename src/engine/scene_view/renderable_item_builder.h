@@ -52,7 +52,7 @@ class RenderableItemBuilder {
    * 
    * （RenderableItem构建成本仅有智能指针构建的开销，短期内不会成为较为严重的瓶颈）
    */
-  std::vector<RenderableItem> BuildFromSceneNodes(const std::vector<SceneNode *> &sceneNodes);
+  std::vector<RenderableItem> BuildFromSceneNodes(SceneRegistry& registry, const std::vector<SceneNode *> &sceneNodes);
 
   // ==================== 核心构建接口 ====================
   /**
@@ -60,21 +60,22 @@ class RenderableItemBuilder {
    * @param sceneNode 场景节点
    * @return 构建成功的RenderableItem，如果构建失败返回空对象
    */
-  RenderableItem BuildFromSceneNode(SceneNode *sceneNode);
+  RenderableItem BuildFromSceneNode(SceneRegistry &registry, SceneNode *sceneNode);
 
   /**
    * @brief 从Entity构建RenderableItem
    * @param entity ECS实体
    * @return 构建成功的RenderableItem，如果构建失败返回空对象
    */
-  RenderableItem BuildFromEntity(Entity entity);
+  RenderableItem BuildFromEntity(SceneRegistry &registry, Entity entity);
 
   /**
    * @brief 批量构建RenderableItem
    * @param entities ECS实体列表
    * @return 构建成功的RenderableItem列表
    */
-  std::vector<RenderableItem> BuildFromEntities(const std::vector<Entity> &entities);
+  std::vector<RenderableItem> BuildFromEntities(SceneRegistry &registry,
+                                                const std::vector<Entity> &entities);
 
   // ==================== 配置接口 ====================
   /**
@@ -106,14 +107,14 @@ class RenderableItemBuilder {
    * @param sceneNode 场景节点
    * @return 是否包含渲染所需的组件
    */
-  bool IsRenderable(SceneNode *sceneNode) const;
+  bool IsRenderable(SceneRegistry &registry, SceneNode *sceneNode) const;
 
   /**
    * @brief 检查Entity是否可渲染
    * @param entity ECS实体
    * @return 是否包含渲染所需的组件
    */
-  bool IsRenderable(Entity entity) const;
+  bool IsRenderable(SceneRegistry &registry, Entity entity) const;
 
  private:
   /**
@@ -121,21 +122,22 @@ class RenderableItemBuilder {
    * @param entity ECS实体
    * @return 网格组件共享指针，如果不存在返回nullptr
    */
-  std::shared_ptr<Mesh> ExtractMeshComponent(Entity entity);
+  std::shared_ptr<Mesh> ExtractMeshComponent(SceneRegistry &registry, Entity entity);
 
   /**
    * @brief 从实体提取材质组件
    * @param entity ECS实体
    * @return 材质实例共享指针，如果不存在返回nullptr
    */
-  std::shared_ptr<MaterialInstance> ExtractMaterialComponent(Entity entity);
+  std::shared_ptr<MaterialInstance> ExtractMaterialComponent(SceneRegistry &registry,
+                                                             Entity entity);
 
   /**
    * @brief 从实体提取变换组件
    * @param entity ECS实体
    * @return 世界变换矩阵
    */
-  glm::mat4 ExtractTransformComponent(Entity entity);
+  glm::mat4 ExtractTransformComponent(SceneRegistry &registry, Entity entity);
 
   // 自定义回调函数（用于扩展功能）
   std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>

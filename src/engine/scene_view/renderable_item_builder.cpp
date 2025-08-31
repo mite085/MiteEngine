@@ -18,7 +18,25 @@ RenderableItemBuilder::~RenderableItemBuilder()
   LOG_DEBUG("RenderableItemBuilder destroyed");
 }
 
-RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneNode *sceneNode)
+std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
+    SceneRegistry &registry, const std::vector<SceneNode *> &sceneNodes)
+{
+
+  std::vector<RenderableItem> items;
+  items.reserve(sceneNodes.size());
+
+  for (SceneNode *node : sceneNodes) {
+    RenderableItem item = BuildFromSceneNode(registry, node);
+    if (item.entity.IsValid()) {  // 检查是否构建成功
+      items.push_back(std::move(item));
+    }
+  }
+
+  return items;
+}
+
+RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry,
+                                                         SceneNode *sceneNode)
 {
   if (!sceneNode) {
     LOG_WARN("Attempted to build from null SceneNode");
@@ -31,26 +49,26 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneNode *sceneNode)
     return RenderableItem();
   }
 
-  return BuildFromEntity(entity);
+  return BuildFromEntity(registry, entity);
 }
 
-RenderableItem RenderableItemBuilder::BuildFromEntity(Entity entity)
+RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, Entity entity)
 {
   if (!entity.IsValid()) {
     LOG_WARN("Attempted to build from null Entity");
     return RenderableItem();
   }
 
-  if (!IsRenderable(entity)) {
+  if (!IsRenderable(registry, entity)) {
     LOG_DEBUG("Entity {} is not renderable", entity.GetUUIDString());
     return RenderableItem();
   }
 
   try {
     // 提取渲染所需组件数据
-    auto mesh = ExtractMeshComponent(entity);
-    auto material = ExtractMaterialComponent(entity);
-    glm::mat4 transform = ExtractTransformComponent(entity);
+    auto mesh = ExtractMeshComponent(registry, entity);
+    auto material = ExtractMaterialComponent(registry, entity);
+    glm::mat4 transform = ExtractTransformComponent(registry, entity);
 
     if (!mesh || !material) {
       LOG_WARN("Entity {} missing mesh or material component", entity.GetUUIDString());
@@ -89,24 +107,8 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(Entity entity)
   }
 }
 
-std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
-    const std::vector<SceneNode *> &sceneNodes)
-{
-
-  std::vector<RenderableItem> items;
-  items.reserve(sceneNodes.size());
-
-  for (SceneNode *node : sceneNodes) {
-    RenderableItem item = BuildFromSceneNode(node);
-    if (item.entity.IsValid()) {  // 检查是否构建成功
-      items.push_back(std::move(item));
-    }
-  }
-
-  return items;
-}
-
 std::vector<RenderableItem> RenderableItemBuilder::BuildFromEntities(
+    SceneRegistry &registry, 
     const std::vector<Entity> &entities)
 {
 
@@ -114,7 +116,7 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromEntities(
   items.reserve(entities.size());
 
   for (Entity entity : entities) {
-    RenderableItem item = BuildFromEntity(entity);
+    RenderableItem item = BuildFromEntity(registry, entity);
     if (item.entity.IsValid()) {  // 检查是否构建成功
       items.push_back(std::move(item));
     }
@@ -145,50 +147,52 @@ void RenderableItemBuilder::SetLODSelectorFunction(
   m_lodSelectorFunc = func;
 }
 
-bool RenderableItemBuilder::IsRenderable(SceneNode *sceneNode) const
+bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, SceneNode *sceneNode) const
 {
   if (!sceneNode)
     return false;
   Entity entity = sceneNode->GetEntity();
-  return IsRenderable(entity);
+  return IsRenderable(registry, entity);
 }
 
-bool RenderableItemBuilder::IsRenderable(Entity entity) const
+bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, Entity entity) const
 {
   if (!entity.IsValid())
     return false;
 
   // 检查是否包含渲染所需的组件
-  bool hasMesh = m_registry.HasComponent<MeshComponent>(entity);
-  bool hasMaterial = m_registry.HasComponent<MaterialComponent>(entity);
-  bool hasTransform = m_registry.HasComponent<TransformComponent>(entity);
+  bool hasMesh = registry.HasComponent<MeshComponent>(entity);
+  bool hasMaterial = registry.HasComponent<MaterialComponent>(entity);
+  bool hasTransform = registry.HasComponent<TransformComponent>(entity);
 
   return hasMesh && hasMaterial && hasTransform;
 }
 
-std::shared_ptr<Mesh> RenderableItemBuilder::ExtractMeshComponent(Entity entity)
+std::shared_ptr<Mesh> RenderableItemBuilder::ExtractMeshComponent(SceneRegistry &registry,
+                                                                  Entity entity)
 {
-  if (m_registry.HasComponent<MeshComponent>(entity)) {
-    auto &meshComp = m_registry.GetComponent<MeshComponent>(entity);
+  if (registry.HasComponent<MeshComponent>(entity)) {
+    auto &meshComp = registry.GetComponent<MeshComponent>(entity);
     return meshComp.GetMesh();
   }
   return nullptr;
 }
 
-std::shared_ptr<MaterialInstance> RenderableItemBuilder::ExtractMaterialComponent(Entity entity)
+std::shared_ptr<MaterialInstance> RenderableItemBuilder::ExtractMaterialComponent(
+    SceneRegistry &registry, Entity entity)
 {
-  if (m_registry.HasComponent<MaterialComponent>(entity)) {
-    auto &materialComp = m_registry.GetComponent<MaterialComponent>(entity);
+  if (registry.HasComponent<MaterialComponent>(entity)) {
+    auto &materialComp = registry.GetComponent<MaterialComponent>(entity);
     return materialComp.GetMaterial();
   }
   return nullptr;
 }
 
-glm::mat4 RenderableItemBuilder::ExtractTransformComponent(Entity entity)
+glm::mat4 RenderableItemBuilder::ExtractTransformComponent(SceneRegistry &registry, Entity entity)
 {
-  if (m_registry.HasComponent<TransformComponent>(entity)) {
-    auto &transformComp = m_registry.GetComponent<TransformComponent>(entity);
-    return transformComp.GetWorldMatrix();
+  if (registry.HasComponent<TransformComponent>(entity)) {
+    auto &transformComp = registry.GetComponent<TransformComponent>(entity);
+    return transformComp.GetWorldMatrix(registry);
   }
   return glm::mat4(1.0f);  // 返回单位矩阵作为默认值
 }
