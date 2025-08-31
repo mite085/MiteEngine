@@ -148,7 +148,7 @@ void TransformSceneNodeSystem::SyncComponentToNode(SceneRegistry &registry, Enti
       node->MarkTransformDirty();
       node->MarkBoundsDirty();
 
-      m_Logger->trace("Synced transform for entity {}", entity.GetUUIDString());
+      m_Logger->debug("Synced transform for entity {}", entity.GetUUIDString());
     }
   }
   catch (const std::exception &e) {

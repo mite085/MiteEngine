@@ -50,12 +50,12 @@ void SceneGraph::CleanUp(ComponentSystemManager &manager)
 // ==================== 场景节点生命周期管理 ====================
 SceneNode *SceneGraph::CreateNode(SceneRegistry &registry, Entity entity)
 {
-  m_nodeManager.CreateNode(registry, entity);
+  return m_nodeManager.CreateNode(registry, entity);
 }
 
 bool SceneGraph::DestroyNode(SceneRegistry &registry, Entity entity)
 {
-  m_nodeManager.DestroyNode(registry, entity);
+  return m_nodeManager.DestroyNode(registry, entity);
 }
 
 // ==================== 场景节点查询接口 ====================
