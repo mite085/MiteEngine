@@ -62,29 +62,29 @@ bool InputContextStack::IsInContext(const std::string &name)
   return it != m_Stack.rend();
 }
 
-//bool InputContextStack::ProcessEvent(Event &event)
-//{
-//  std::lock_guard<std::mutex> lock(m_Mutex);
-//
-//  // 从栈顶向下处理
-//  for (auto it = m_Stack.rbegin(); it != m_Stack.rend(); ++it) {
-//    const auto &context = *it;
-//
-//    // 1. 检查是否阻塞输入
-//    if (context->IsInputBlocked()) {
-//      m_Logger->trace("Event blocked by context: {}", context->GetName());
-//      return true;
-//    }
-//
-//    // 2. 尝试处理事件
-//    if (context->ProcessEvent(event)) {
-//      m_Logger->trace("Event consumed by context: {}", context->GetName());
-//      return true;
-//    }
-//  }
-//
-//  return false;
-//}
+bool InputContextStack::ProcessEvent(Event &event)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+
+  // 从栈顶向下处理
+  for (auto it = m_Stack.rbegin(); it != m_Stack.rend(); ++it) {
+    const auto &context = *it;
+
+    // 1. 检查是否阻塞输入
+    if (context->IsInputBlocked()) {
+      m_Logger->trace("Event blocked by context: {}", context->GetName());
+      return true;
+    }
+
+    // 2. 尝试处理事件
+    if (context->ProcessEvent(event)) {
+      m_Logger->trace("Event consumed by context: {}", context->GetName());
+      return true;
+    }
+  }
+
+  return false;
+}
 
 bool InputContextStack::IsEmpty()
 {
