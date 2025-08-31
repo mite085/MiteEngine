@@ -72,6 +72,7 @@ class SceneCore{
    * @brief 获取主相机
    */
   std::shared_ptr<Camera> GetMainCamera() const;
+  uint32_t GetMainCameraVisibilityMask() const;
   void SetMainCamera(Entity entity);
 
   // ------------------------ 模块访问 ------------------------
