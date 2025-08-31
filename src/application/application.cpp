@@ -1,4 +1,5 @@
 #include "application.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -213,7 +214,7 @@ void MiteApplication::InitializeSceneView()
   m_logger->info("Initializing scene view");
 
   // 初始化场景视图
-  m_SceneView = std::make_unique<SceneView>(m_SceneCore->GetRegistry());
+  m_SceneView = std::make_unique<SceneView>();
 }
 
 void MiteApplication::InitializeMaterialSystem()
@@ -334,14 +335,30 @@ void MiteApplication::Update()
   // m_AssetManager->ProcessLoadingQueue();
 
   // TODO：更新场景视图(将ECS数据转换为渲染友好格式)
-  m_SceneView->Update();
+  //m_SceneView->Update();
 }
 
 void MiteApplication::Render()
 {
   // 主场景渲染
-  auto mainCamera = m_SceneCore->GetMainCamera();  // 获取主相机
-  m_Renderer->RenderScene(mainCamera, m_SceneView->GetRenderQueue());  // 渲染场景
+
+  // 1. 获取主相机，构建视锥体
+  std::shared_ptr<Camera> mainCamera = m_SceneCore->GetMainCamera();  
+  uint32_t mainCameraVisibilityMask = m_SceneCore->GetMainCameraVisibilityMask();
+  if (!mainCamera)
+    return;
+  Frustum mainCameraFrustum(mainCamera->GetViewMatrix());
+
+  // 2. SceneGraph执行视锥体裁剪查询，获取可见节点列表
+  std::vector<SceneNode *> visibleNodes = m_SceneGraph->QueryVisibleNodes(
+      m_SceneCore->GetRegistry(), mainCameraFrustum, mainCameraVisibilityMask);
+
+  // 3. SceneView根据可见节点列表构建RendererQueue
+  m_SceneView->Update(m_SceneCore->GetRegistry(), visibleNodes);
+  std::shared_ptr<RenderQueue> renderQueue = m_SceneView->GetRenderQueue();
+
+  // 4. 渲染器渲染场景  
+  m_Renderer->RenderScene(mainCamera, renderQueue);  // 渲染场景
 
   // TODO：渲染调试信息
   // if (m_ShowDebug) {
