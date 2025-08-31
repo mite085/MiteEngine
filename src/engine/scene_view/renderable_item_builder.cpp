@@ -92,12 +92,6 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
     item.mesh = mesh;
     item.material = material;
 
-    // 设置LOD级别（如果设置了LOD选择器）
-    if (m_lodSelectorFunc) {
-      // 这里可以设置LOD相关数据，具体实现取决于LOD系统设计
-      // item.lodLevel = m_lodSelectorFunc(entity, mesh);
-    }
-
      m_logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
     return item;
   }
