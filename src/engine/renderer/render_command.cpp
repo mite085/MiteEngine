@@ -91,7 +91,7 @@ void RenderCommand::UnbindFrameBuffer()
                                 "UnbindFrameBuffer"});
 }
 
-void RenderCommand::Submit(std::shared_ptr<RenderableItem> item,
+void RenderCommand::Submit(RenderableItem item,
                            glm::mat4 viewMatrix,
                            glm::mat4 projectionMatrix)
 {
@@ -106,27 +106,27 @@ void RenderCommand::Submit(std::shared_ptr<RenderableItem> item,
       {CommandType::DrawIndexed,
        [=]() {
           // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
-         item->material->Apply(bindTextureFunc);
+         item.material->Apply(bindTextureFunc);
 
          // 2. 设置模型矩阵（从世界变换获取）
-         auto shader = item->material->GetShader();
+         auto shader = item.material->GetShader();
          if (shader) {
-           shader->SetMat4("u_Model", item->worldTransform);
+           shader->SetMat4("u_Model", item.worldTransform);
            shader->SetMat4("u_View", viewMatrix);
            shader->SetMat4("u_Projection", projectionMatrix);
          }
 
          // 3. 绑定网格VAO
-         IRenderDevice::Current().BindMesh(item->mesh);
+         IRenderDevice::Current().BindMesh(item.mesh);
 
          // 4. 绘制网格:
          // TODO: 深度测试或模板测试冲突，如果此时启用了深度测试，由于深度附件未正确初始化，会导致绘制被丢弃。
-         IRenderDevice::Current().DrawIndexed(item->mesh->GetIndexCount(),
-                                              item->mesh->GetIndexOffset(),
+         IRenderDevice::Current().DrawIndexed(item.mesh->GetIndexCount(),
+                                              item.mesh->GetIndexOffset(),
                                               GL_TRIANGLES,
                                               GL_UNSIGNED_INT, false);
        },
-       "DrawIndexed mesh from model: " + item->mesh->GetModelHandle()->path});
+       "DrawIndexed mesh from model: " + item.mesh->GetModelHandle()->path});
 
 
 }

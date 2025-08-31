@@ -70,7 +70,7 @@ class RenderCommand {
   // const std::shared_ptr<OpenGLShader>& shader,
   // const std::shared_ptr<Mesh> &mesh,
   // const glm::mat4 &transform  ∂‘”¶"u_Model"æÿ’Û
-  static void Submit(std::shared_ptr<RenderableItem> item,
+  static void Submit(RenderableItem item,
                      glm::mat4 viewMatrix,
                      glm::mat4 projectionMatrix);
 

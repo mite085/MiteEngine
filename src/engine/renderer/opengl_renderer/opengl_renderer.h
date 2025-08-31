@@ -30,7 +30,7 @@ class OpenGLRenderer : public Renderer {
 
   // ---- ³¡¾°äÖÈ¾ ----
   void RenderScene(const std::shared_ptr<Camera> mainCamera,
-                   const std::vector<std::shared_ptr<RenderableItem>> &renderQueue) override;
+                   std::shared_ptr<RenderQueue> renderQueue) override;
 
   // ---- ×´Ì¬ÉèÖÃ ----
   void SetClearColor(const glm::vec4 &color) override;

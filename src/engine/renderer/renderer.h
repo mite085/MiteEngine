@@ -6,6 +6,7 @@
 #include "basic_data/framebuffer.h"
 #include "renderable_item.h"
 #include "render_command.h"
+#include "render_queue.h"
 
 namespace mite {
 /**
@@ -40,7 +41,7 @@ class Renderer {
    * EndFrame()负责调用RenderCommand::Flush();执行所有命令
    */
   virtual void RenderScene(const std::shared_ptr<Camera> mainCamera,
-                           const std::vector<std::shared_ptr<RenderableItem>> &renderQueue) = 0;
+                           std::shared_ptr<RenderQueue> renderQueue) = 0;
 
   // ---- 状态设置 ----
   virtual void SetClearColor(const glm::vec4 &color) = 0;
