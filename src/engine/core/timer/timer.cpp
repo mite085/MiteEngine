@@ -18,13 +18,10 @@ float Timer::ElapsedSeconds() const
   return std::chrono::duration<float>(now - m_StartTime).count();
 }
 
-// 帧时间专用：自动更新上一次时间戳
-float Timer::GetDeltaTime()
+float Timer::ElapsedMillis() const
 {
   auto now = std::chrono::high_resolution_clock::now();
-  float delta = std::chrono::duration<float>(now - m_LastFrameTime).count();
-  m_LastFrameTime = now;
-  return delta;
+  return std::chrono::duration<float, std::milli>(now - m_StartTime).count();
 }
 
 // 性能分析工具
