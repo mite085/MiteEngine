@@ -88,7 +88,7 @@ void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
 
   // ±éÀúäÖÈ¾¶ÓÁÐ
   for (const auto &item : renderQueue) {
-    if (!item->materialInstance || !item->mesh) {
+    if (!item->material || !item->mesh) {
       m_Logger->warn("Invalid renderable item - missing material or mesh");
       continue;
     }

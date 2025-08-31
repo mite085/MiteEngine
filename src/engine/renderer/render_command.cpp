@@ -106,10 +106,10 @@ void RenderCommand::Submit(std::shared_ptr<RenderableItem> item,
       {CommandType::DrawIndexed,
        [=]() {
           // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
-         item->materialInstance->Apply(bindTextureFunc);
+         item->material->Apply(bindTextureFunc);
 
          // 2. 设置模型矩阵（从世界变换获取）
-         auto shader = item->materialInstance->GetShader();
+         auto shader = item->material->GetShader();
          if (shader) {
            shader->SetMat4("u_Model", item->worldTransform);
            shader->SetMat4("u_View", viewMatrix);

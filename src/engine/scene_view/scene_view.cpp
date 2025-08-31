@@ -81,7 +81,7 @@ bool SceneView::OnMaterialChanged(MaterialChangedEvent &event)
   auto it = m_EntityToIndexMap.find(event.GetEntity());
   if (it != m_EntityToIndexMap.end()) {
     // 更新现有渲染实体的材质引用
-    m_RenderQueue[it->second]->materialInstance =
+    m_RenderQueue[it->second]->material =
         m_Registry.GetComponent<MaterialComponent>(event.GetEntity()).GetMaterial();
   }
 
@@ -107,7 +107,7 @@ bool SceneView::AddToRenderQueue(Entity entity)
         m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
         m_Registry);
     renderable->mesh = m_Registry.GetComponent<MeshComponent>(entity).GetMesh();
-    renderable->materialInstance =
+    renderable->material =
         m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
 
     // 加入队列并记录索引
@@ -151,6 +151,6 @@ void SceneView::UpdateRenderableEntity(Entity entity)
   std::shared_ptr<RenderableItem> &renderable = m_RenderQueue[it->second];
   renderable->worldTransform = m_Registry.GetComponent<TransformComponent>(entity).GetWorldMatrix(
       m_Registry);
-  renderable->materialInstance = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
+  renderable->material = m_Registry.GetComponent<MaterialComponent>(entity).GetMaterial();
 }
 }  // namespace mite
