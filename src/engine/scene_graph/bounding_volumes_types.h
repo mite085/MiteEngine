@@ -197,6 +197,10 @@ struct OBB {
 /**
  * @brief 平面定义
  * 用于视锥体裁剪和碰撞检测
+ * 
+ * 注意：
+ * 右手系平面定义：normal·point + d = 0
+ * Side的正值：点在平面正侧（法线指向的一侧）
  */
 struct Plane {
   glm::vec3 normal;

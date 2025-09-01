@@ -149,9 +149,12 @@ Sphere Sphere::Transform(const glm::mat4 &matrix) const
   // 提取平移和均匀缩放
   glm::vec3 newCenter = glm::vec3(matrix * glm::vec4(center, 1.0f));
 
-  // 假设均匀缩放，取x轴缩放作为半径缩放
-  float scale = glm::length(glm::vec3(matrix[0]));
-  float newRadius = radius * scale;
+  // 假设均匀缩放，取最大缩放值
+  glm::vec3 scale = glm::vec3(glm::length(glm::vec3(matrix[0])),
+                              glm::length(glm::vec3(matrix[1])),
+                              glm::length(glm::vec3(matrix[2])));
+  float maxScale = glm::max(glm::max(scale.x, scale.y), scale.z);
+  float newRadius = radius * maxScale;
 
   return Sphere(newCenter, newRadius);
 }
@@ -212,13 +215,16 @@ bool OBB::Contains(const glm::vec3 &point) const
 // ==================== Plane成员函数实现 ====================
 
 Plane::Plane(const glm::vec3 &point, const glm::vec3 &normal)
-    : normal(glm::normalize(normal)), distance(glm::dot(normal, point))
+    : normal(glm::normalize(normal)), distance(-glm::dot(normal, point))
 {
+  // 因为平面方程是 normal·point + distance = 0，所以 distance = -normal·point
 }
 
 float Plane::DistanceToPoint(const glm::vec3 &point) const
 {
-  return glm::dot(normal, point) - distance;
+  // 右手系平面方程：normal.x*x + normal.y*y + normal.z*z + distance = 0
+  // 所以点到平面的距离 = normal·point + distance
+  return glm::dot(normal, point) + distance;
 }
 
 int Plane::GetSide(const glm::vec3 &point) const
