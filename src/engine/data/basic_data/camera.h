@@ -16,12 +16,30 @@ namespace mite {
  * - 不依赖ECS，纯数学工具类
  * - 与TransformComponent协同工作
  * - 默认朝向Z负方向，Up为Y轴正方向，欧拉角顺序为YXZ（更符合OpenGL标准）
- *
- * 对于标准的视图矩阵（GLM列主序，m_ViewMatrix[0]表示第一列）
- * [ Right.x  Up.x  -Forward.x  Position.x ]
- * [ Right.y  Up.y  -Forward.y  Position.y ]
- * [ Right.z  Up.z  -Forward.z  Position.z ]
- * [ 0        0     0           1          ]
+ * - GLM使用了右手坐标系
+ * - GLM的mat4使用了列主序
+ *   如:
+ *   m_ViewMatrix[0]或者glm::column(m_ViewMatrix,1)   表示第一列[right.x,  up.x,  -forward.x,  0]
+ *   glm::row(vpMatrix,0)   表示[ right.x  right.y  right.z  -dot(right, eye)]
+ *   如：
+ *   m_ProjectionMatrix[2]或者glm::column(m_ProjectionMatrix,2)表示第三列[0,  0,  -(f+n)/(f-n),  -1]
+ * 
+ * 对于标准的右手系视图矩阵
+ * [ right.x     right.y     right.z     -dot(right, eye)  ]
+ * [ up.x        up.y        up.z        -dot(up, eye)     ]
+ * [ -forward.x -forward.y  -forward.z    dot(forward, eye)]
+ * [ 0           0           0            1                ]
+
+ * 
+ * 标准的右手系透视投影矩阵
+ * [ n/r   0     0             0        ]
+ * [ 0     n/t   0             0        ]
+ * [ 0     0    -(f+n)/(f-n)  -2fn/(f-n)]
+ * [ 0     0    -1             0        ]
+ * 其中
+ * 近平面：n = near
+ * 远平面：f = far
+ * 宽高比：a = aspect
  */
 class Camera {
  public:
