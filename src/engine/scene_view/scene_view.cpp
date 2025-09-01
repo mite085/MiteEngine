@@ -24,10 +24,10 @@ void SceneView::Update(SceneRegistry &registry, std::vector<SceneNode *> visible
   ProcessVisibility(registry, visibleNodes);
   m_lastUpdateTime = timer.ElapsedMillis();
 
-  m_logger->debug("SceneView updated in {:.3f}ms, visible nodes: {}, render items: {}",
-                 m_lastUpdateTime,
-                 m_lastVisibleNodeCount,
-                 m_lastRenderItemCount);
+  //m_logger->debug("SceneView updated in {:.3f}ms, visible nodes: {}, render items: {}",
+  //               m_lastUpdateTime,
+  //               m_lastVisibleNodeCount,
+  //               m_lastRenderItemCount);
 }
 void SceneView::Rebuild(SceneRegistry &registry,
                         std::vector<SceneNode *> visibleNodes)
