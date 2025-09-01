@@ -71,13 +71,15 @@ class Frustum {
   IntersectionType TestOBB(const OBB &obb) const;
 
  private:
+  enum FrustumPlane { LEFT = 0, RIGHT = 1, BOTTOM = 2, TOP = 3, NEAR = 4, FAR = 5 };
+
   /**
    * @brief 从矩阵提取裁剪平面
    * @param matrix 视图投影矩阵
    * @param planeIndex 平面索引（0-5）
    * @param sign 符号（1或-1）
    */
-  void ExtractPlane(const glm::mat4 &matrix, int planeIndex, float sign);
+  void ExtractPlane(const glm::mat4 &matrix, FrustumPlane plane);
 
  private:
   Plane planes[6];  ///< 6个裁剪平面（左、右、下、上、近、远）
