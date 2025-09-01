@@ -62,7 +62,19 @@ void MiteApplication::LoadDefaultScene()
 
   // 0. 创建并绑定主相机（该步骤必须在m_SceneCore->InitializeComponentSystems();之后执行)
   Camera main_camera;
-  main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
+  // main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
+
+  // 设定方便观看模型的角度
+  main_camera.LookAt(glm::vec3(0.0f, 3.0f, 5.0f),  // 位置：在模型上方稍后方
+                     glm::vec3(0.0f, 0.0f, 0.0f),  // 看向模型中心
+                     glm::vec3(0.0f, 1.0f, 0.0f)   // 上方向
+  );
+  // 投影参数
+  main_camera.SetPerspective(60.0f,  // FOV: 60度（便于计算）
+                             1.0f,   // 宽高比: 1:1（正方形视口，简化计算）
+                             1.0f,   // 近平面: 1m
+                             20.0f   // 远平面: 20m（足够包含场景）
+  );
   Entity main_camera_entity = m_SceneCore->CreateEntity("main_camera");
   CameraComponent &main_camera_component =
       m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
@@ -315,7 +327,7 @@ void MiteApplication::Update()
   // 2. SceneGraphSystem同步ECS状态到场景图
   //    - 处理实体创建/销毁
   //    - 同步变换数据
-  // 
+  //
   // TODO：SceneGraphSystem作为ComponentSystem已经注册到SceneCore的组件管理器，
   // 需要明确 m_SceneCore->OnUpdate的执行顺序，将SceneGraphSystem顺序放在最后
 
@@ -335,7 +347,7 @@ void MiteApplication::Update()
   // m_AssetManager->ProcessLoadingQueue();
 
   // TODO：更新场景视图(将ECS数据转换为渲染友好格式)
-  //m_SceneView->Update();
+  // m_SceneView->Update();
 }
 
 void MiteApplication::Render()
@@ -343,11 +355,11 @@ void MiteApplication::Render()
   // 主场景渲染
 
   // 1. 获取主相机，构建视锥体
-  std::shared_ptr<Camera> mainCamera = m_SceneCore->GetMainCamera();  
+  std::shared_ptr<Camera> mainCamera = m_SceneCore->GetMainCamera();
   uint32_t mainCameraVisibilityMask = m_SceneCore->GetMainCameraVisibilityMask();
   if (!mainCamera)
     return;
-  Frustum mainCameraFrustum(mainCamera->GetViewMatrix());
+  Frustum mainCameraFrustum(mainCamera->GetViewProjectionMatrix());
 
   // 2. SceneGraph执行视锥体裁剪查询，获取可见节点列表
   std::vector<SceneNode *> visibleNodes = m_SceneGraph->QueryVisibleNodes(
@@ -357,7 +369,7 @@ void MiteApplication::Render()
   m_SceneView->Update(m_SceneCore->GetRegistry(), visibleNodes);
   std::shared_ptr<RenderQueue> renderQueue = m_SceneView->GetRenderQueue();
 
-  // 4. 渲染器渲染场景  
+  // 4. 渲染器渲染场景
   m_Renderer->RenderScene(mainCamera, renderQueue);  // 渲染场景
 
   // TODO：渲染调试信息
