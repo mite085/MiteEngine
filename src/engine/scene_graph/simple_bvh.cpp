@@ -105,7 +105,10 @@ BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int en
 
   // 如果节点数较少或达到最大深度，创建叶子节点
   if (count <= minLeafSize_ || depth >= maxDepth_) {
-    node->sceneNode = nodes[start];  // 存储第一个节点（实际应存储所有，这里简化）
+    // 存储该范围内的所有场景节点
+    for (int i = start; i < end; ++i) {
+      node->sceneNodes.push_back(nodes[i]);
+    }
     return node;
   }
 
@@ -114,7 +117,9 @@ BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int en
   float bestSplitPos = 0.0f;
   if (!FindBestSplit(nodes, start, end, bestAxis, bestSplitPos)) {
     // 无法分割，创建叶子节点
-    node->sceneNode = nodes[start];
+    for (int i = start; i < end; ++i) {
+      node->sceneNodes.push_back(nodes[i]);
+    }
     return node;
   }
 
@@ -192,6 +197,10 @@ void SimpleBVH::FreeNode(BVHNode *node)
 
   FreeNode(node->left);
   FreeNode(node->right);
+
+  // 释放 sceneNodes 向量（不需要释放 SceneNode 对象本身，它们由场景管理）
+  node->sceneNodes.clear();
+
   delete node;
   nodeCount_--;
 }
@@ -221,7 +230,9 @@ void SimpleBVH::RaycastRecursive(BVHNode *node,
   }
 
   if (node->IsLeaf()) {
-    results.push_back(node->sceneNode);
+    for (SceneNode *sceneNode : node->sceneNodes) {
+      results.push_back(sceneNode);
+    }
   }
   else {
     RaycastRecursive(node->left, ray, results);
@@ -256,13 +267,14 @@ void SimpleBVH::RaycastFirstRecursive(BVHNode *node,
   }
 
   if (node->IsLeaf()) {
-    // 检查与具体场景节点的精确相交
-    float nodeDistance;
-    if (RayIntersectsAABB(ray, node->sceneNode->GetWorldBounds(), nodeDistance) &&
-        nodeDistance < bestDistance)
-    {
-      bestNode = node->sceneNode;
-      bestDistance = nodeDistance;
+    for (SceneNode *sceneNode : node->sceneNodes) {
+      float nodeDistance;
+      if (RayIntersectsAABB(ray, sceneNode->GetWorldBounds(), nodeDistance) &&
+          nodeDistance < bestDistance)
+      {
+        bestNode = sceneNode;
+        bestDistance = nodeDistance;
+      }
     }
   }
   else {
@@ -315,11 +327,12 @@ void SimpleBVH::FrustumCullRecursive(BVHNode *node,
   }
 
   if (node->IsLeaf()) {
-    if (intersection == IntersectionType::Inside ||
-        FrustumIntersectsAABB(frustum, node->sceneNode->GetWorldBounds()) !=
-            IntersectionType::Outside)
-    {
-      results.push_back(node->sceneNode);
+    for (SceneNode *sceneNode : node->sceneNodes) {
+      if (intersection == IntersectionType::Inside ||
+          FrustumIntersectsAABB(frustum, sceneNode->GetWorldBounds()) != IntersectionType::Outside)
+      {
+        results.push_back(sceneNode);
+      }
     }
   }
   else {
@@ -352,8 +365,10 @@ void SimpleBVH::SphereQueryRecursive(BVHNode *node,
   }
 
   if (node->IsLeaf()) {
-    if (SphereIntersectsAABB(sphere, node->sceneNode->GetWorldBounds())) {
-      results.push_back(node->sceneNode);
+    for (SceneNode *sceneNode : node->sceneNodes) {
+      if (SphereIntersectsAABB(sphere, sceneNode->GetWorldBounds())) {
+        results.push_back(sceneNode);
+      }
     }
   }
   else {
@@ -386,8 +401,10 @@ void SimpleBVH::AABBQueryRecursive(BVHNode *node,
   }
 
   if (node->IsLeaf()) {
-    if (BoundingVolumes::AABBIntersectsAABB(aabb, node->sceneNode->GetWorldBounds())) {
-      results.push_back(node->sceneNode);
+    for (SceneNode *sceneNode : node->sceneNodes) {
+      if (BoundingVolumes::AABBIntersectsAABB(aabb, sceneNode->GetWorldBounds())) {
+        results.push_back(sceneNode);
+      }
     }
   }
   else {
@@ -443,10 +460,13 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, floa
     }
 
     if (current.node->IsLeaf()) {
-      float distSq = glm::distance2(point, current.node->sceneNode->GetWorldBounds().GetCenter());
-      if (distSq < bestDistanceSq) {
-        bestDistanceSq = distSq;
-        result = current.node->sceneNode;
+      // 遍历叶子节点中的所有场景节点
+      for (SceneNode *sceneNode : current.node->sceneNodes) {
+        float distSq = glm::distance2(point, sceneNode->GetWorldBounds().GetCenter());
+        if (distSq < bestDistanceSq) {
+          bestDistanceSq = distSq;
+          result = sceneNode;
+        }
       }
     }
     else {
@@ -485,9 +505,12 @@ bool SimpleBVH::ForEachNodeRecursive(BVHNode *node,
   if (!node)
     return true;
 
-  if (node->IsLeaf()) {
-    if (!callback(node->sceneNode)) {
-      return false;
+  if(node->IsLeaf())
+  {
+    for (SceneNode *sceneNode : node->sceneNodes) {
+      if (!callback(sceneNode)) {
+        return false;
+      }
     }
   }
   else {

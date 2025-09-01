@@ -4,17 +4,16 @@
 #include "spatial_partition.h"
 
 namespace mite {
-
 /**
  * @class BVHNode
  * @brief BVH树节点，用于构建层次包围盒结构
  */
 struct BVHNode {
-  AABB bounds;                     ///< 节点包围盒
-  BVHNode *left = nullptr;         ///< 左子节点
-  BVHNode *right = nullptr;        ///< 右子节点
-  SceneNode *sceneNode = nullptr;  ///< 关联的场景节点（叶子节点）
-  int depth = 0;                   ///< 节点深度
+  AABB bounds;                          ///< 节点包围盒
+  BVHNode *left = nullptr;              ///< 左子节点
+  BVHNode *right = nullptr;             ///< 右子节点
+  std::vector<SceneNode *> sceneNodes;  ///< 关联的场景节点（叶子节点）
+  int depth = 0;                        ///< 节点深度
 
   /**
    * @brief 判断是否为叶子节点
@@ -22,7 +21,7 @@ struct BVHNode {
    */
   bool IsLeaf() const
   {
-    return sceneNode != nullptr;
+    return !sceneNodes.empty();  // 有场景节点就是叶子节点
   }
 
   /**
@@ -221,7 +220,6 @@ class SimpleBVH : public SpatialPartition {
   mutable uint64_t raycastTests_ = 0;  ///< 射线检测测试次数
   mutable uint64_t frustumTests_ = 0;  ///< 视锥体测试次数
 };
-
 }  // namespace mite
 
 #endif  // MITE_SIMPLE_BVH_H
