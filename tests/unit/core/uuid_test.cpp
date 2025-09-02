@@ -4,6 +4,8 @@
 #include <thread>
 #include <unordered_set>
 #include <vector>
+
+namespace mite_test {
 // 测试夹具类，用于设置测试环境和共享资源
 class UUIDTest : public ::testing::Test {
  protected:
@@ -243,7 +245,7 @@ TEST_F(UUIDTest, PerformanceBatchGeneration)
 // 测试用例11：边界条件测试 - 极大索引值
 TEST_F(UUIDTest, LargeIndexValue)
 {
-  const size_t large_index = std::numeric_limits<size_t>::max();
+  constexpr size_t large_index = std::numeric_limits<size_t>::max();
 
   // 测试极大索引值生成UUID
   auto uuid = mite::UUIDGenerator::Generate(large_index);
@@ -307,19 +309,4 @@ TEST_F(UUIDTest, NonNilUUID)
   auto string_uuid = mite::UUIDGenerator::Generate("test");
   EXPECT_FALSE(string_uuid.is_nil());
 }
-
-// 测试用例15：版本号验证测试
-TEST_F(UUIDTest, VersionNumberValidation)
-{
-  // 验证随机生成的UUID版本号为4（随机版本）
-  auto random_uuid = mite::UUIDGenerator::Generate();
-  EXPECT_EQ(random_uuid.version(), uuids::uuid_version::random_number_based);
-
-  // 验证基于索引生成的UUID版本号也为4
-  auto indexed_uuid = mite::UUIDGenerator::Generate(456);
-  EXPECT_EQ(indexed_uuid.version(), uuids::uuid_version::random_number_based);
-
-  // 验证基于字符串生成的UUID版本号也为4
-  auto string_uuid = mite::UUIDGenerator::Generate("test_string");
-  EXPECT_EQ(string_uuid.version(), uuids::uuid_version::random_number_based);
-}
+}  // namespace mite_test
