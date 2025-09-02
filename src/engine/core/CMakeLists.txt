@@ -101,7 +101,7 @@ add_library(${ENGINE_CORE_LIB_NAME}
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${ENGINE_CORE_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
-    PUBLIC ${CMAKE_BINARY_DIR}/src/core/filesystem # 检索配置文件
+    PUBLIC ${CMAKE_BINARY_DIR}/src/engine/core/filesystem # 检索配置文件
 )
 
 target_link_libraries(${ENGINE_CORE_LIB_NAME}
