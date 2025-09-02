@@ -125,10 +125,10 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
 
   if (potentiallyVisibleNodes.empty()) {
     m_visibleNodeCount = 0;
-    m_logger->trace("None visible node after FrustumCull");
+    //m_logger->trace("None visible node after FrustumCull");
     return {};
   }
-  m_logger->trace("{} visible nodes after FrustumCull", potentiallyVisibleNodes.size());
+  //m_logger->trace("{} visible nodes after FrustumCull", potentiallyVisibleNodes.size());
 
   // 第二阶段：细粒度可见性检查（结合VisibilityComponent）
   m_visibleNodeCount = 0;
@@ -181,7 +181,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
       }
     }
   }
-  m_logger->debug("QueryVisibleNodes complete: find {} visible nodes", m_visibleNodeCount);
+  //m_logger->debug("QueryVisibleNodes complete: find {} visible nodes", m_visibleNodeCount);
 
   return results;
 }

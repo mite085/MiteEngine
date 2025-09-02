@@ -61,7 +61,7 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
   }
 
   if (!IsRenderable(registry, entity)) {
-    m_logger->debug("Entity {} is not renderable", entity.GetUUIDString());
+    //m_logger->debug("Entity {} is not renderable", entity.GetUUIDString());
     return RenderableItem();
   }
 
@@ -92,7 +92,7 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
     item.mesh = mesh;
     item.material = material;
 
-     m_logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
+     //m_logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
     return item;
   }
   catch (const std::exception &e) {
