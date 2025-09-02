@@ -22,17 +22,17 @@ class Texture {
    */
   TextureGPUHandle GetHandle() const
   {
-    return handle_;
+    return m_Handle;
   }
   /**
    * 获取文件路径，用于调试
    */
   const std::string GetPath() const {
-    return handle_.path;
+    return m_Handle.path;
   }
 
  private:
-  TextureGPUHandle handle_;
+  TextureGPUHandle m_Handle;
 };
 
 };  // namespace mite

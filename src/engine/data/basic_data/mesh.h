@@ -64,8 +64,8 @@ class Mesh {
   uint32_t GetMaterialIndex() const;
 
  private:
-  std::shared_ptr<ModelGPUHandle> modelHandle_;  // 父模型资源
-  MeshSectionLODChain lodChain_;  // 包含网格体Section的LODChain对象，可从中提取到Offset信息
+  std::shared_ptr<ModelGPUHandle> m_ModelGPUHandle;  // 父模型资源
+  MeshSectionLODChain m_LODChain;  // 包含网格体Section的LODChain对象，可从中提取到Offset信息
 };
 };  // namespace mite
 

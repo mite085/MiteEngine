@@ -3,7 +3,7 @@
 namespace mite {
 
 SimpleBVH::SimpleBVH(int maxDepth, int minLeafSize)
-    : maxDepth_(maxDepth), minLeafSize_(minLeafSize)
+    : m_MaxDepth(maxDepth), m_MinLeafSize(minLeafSize)
 {
 }
 
@@ -18,12 +18,12 @@ void SimpleBVH::Insert(SceneNode *node)
     return;
 
   // 检查是否已存在
-  if (std::find(allNodes_.begin(), allNodes_.end(), node) != allNodes_.end()) {
+  if (std::find(m_AllNodes.begin(), m_AllNodes.end(), node) != m_AllNodes.end()) {
     return;
   }
 
-  allNodes_.push_back(node);
-  needsRebuild_ = true;
+  m_AllNodes.push_back(node);
+  m_NeedsRebuild = true;
 }
 
 void SimpleBVH::Remove(SceneNode *node)
@@ -31,10 +31,10 @@ void SimpleBVH::Remove(SceneNode *node)
   if (!node)
     return;
 
-  auto it = std::find(allNodes_.begin(), allNodes_.end(), node);
-  if (it != allNodes_.end()) {
-    allNodes_.erase(it);
-    needsRebuild_ = true;
+  auto it = std::find(m_AllNodes.begin(), m_AllNodes.end(), node);
+  if (it != m_AllNodes.end()) {
+    m_AllNodes.erase(it);
+    m_NeedsRebuild = true;
   }
 }
 
@@ -45,43 +45,43 @@ void SimpleBVH::Update(SceneNode *node)
 
   // 简单实现：标记需要重建
   // 优化实现：可增量更新，这里为简化先重建
-  needsRebuild_ = true;
+  m_NeedsRebuild = true;
 }
 
 void SimpleBVH::Clear()
 {
-  if (root_) {
-    FreeNode(root_);
-    root_ = nullptr;
+  if (m_Root) {
+    FreeNode(m_Root);
+    m_Root = nullptr;
   }
-  allNodes_.clear();
-  nodeCount_ = 0;
-  needsRebuild_ = false;
+  m_AllNodes.clear();
+  m_NodeCount = 0;
+  m_NeedsRebuild = false;
 }
 
 void SimpleBVH::Rebuild()
 {
-  if (allNodes_.empty()) {
-    if (root_) {
-      FreeNode(root_);
-      root_ = nullptr;
+  if (m_AllNodes.empty()) {
+    if (m_Root) {
+      FreeNode(m_Root);
+      m_Root = nullptr;
     }
-    nodeCount_ = 0;
-    needsRebuild_ = false;
+    m_NodeCount = 0;
+    m_NeedsRebuild = false;
     return;
   }
 
   // 释放旧树
-  if (root_) {
-    FreeNode(root_);
+  if (m_Root) {
+    FreeNode(m_Root);
   }
 
   // 构建新树
-  std::vector<SceneNode *> nodesToBuild = allNodes_;
-  root_ = BuildTree(nodesToBuild, 0, static_cast<int>(nodesToBuild.size()), 0);
-  needsRebuild_ = false;
+  std::vector<SceneNode *> nodesToBuild = m_AllNodes;
+  m_Root = BuildTree(nodesToBuild, 0, static_cast<int>(nodesToBuild.size()), 0);
+  m_NeedsRebuild = false;
 
-  LOG_INFO("BVH rebuilt with {} nodes, depth: {}", nodeCount_, GetDepth());
+  LOG_INFO("BVH rebuilt with {} nodes, depth: {}", m_NodeCount, GetDepth());
 }
 
 BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int end, int depth)
@@ -94,7 +94,7 @@ BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int en
   // 创建新节点
   BVHNode *node = new BVHNode();
   node->depth = depth;
-  nodeCount_++;
+  m_NodeCount++;
 
   // 计算所有节点的合并包围盒
   AABB totalBounds;
@@ -104,7 +104,7 @@ BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int en
   node->bounds = totalBounds;
 
   // 如果节点数较少或达到最大深度，创建叶子节点
-  if (count <= minLeafSize_ || depth >= maxDepth_) {
+  if (count <= m_MinLeafSize || depth >= m_MaxDepth) {
     // 存储该范围内的所有场景节点
     for (int i = start; i < end; ++i) {
       node->sceneNodes.push_back(nodes[i]);
@@ -202,18 +202,18 @@ void SimpleBVH::FreeNode(BVHNode *node)
   node->sceneNodes.clear();
 
   delete node;
-  nodeCount_--;
+  m_NodeCount--;
 }
 
 bool SimpleBVH::Raycast(const Ray &ray, std::vector<SceneNode *> &results)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return false;
 
   results.clear();
-  RaycastRecursive(root_, ray, results);
+  RaycastRecursive(m_Root, ray, results);
   return !results.empty();
 }
 
@@ -242,14 +242,14 @@ void SimpleBVH::RaycastRecursive(BVHNode *node,
 
 bool SimpleBVH::RaycastFirst(const Ray &ray, SceneNode *&result, float &distance)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return false;
 
   result = nullptr;
   distance = std::numeric_limits<float>::max();
-  RaycastFirstRecursive(root_, ray, result, distance);
+  RaycastFirstRecursive(m_Root, ray, result, distance);
   return result != nullptr;
 }
 
@@ -304,13 +304,13 @@ void SimpleBVH::RaycastFirstRecursive(BVHNode *node,
 
 int SimpleBVH::FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return 0;
 
   results.clear();
-  FrustumCullRecursive(root_, frustum, results);
+  FrustumCullRecursive(m_Root, frustum, results);
   return static_cast<int>(results.size());
 }
 
@@ -343,13 +343,13 @@ void SimpleBVH::FrustumCullRecursive(BVHNode *node,
 
 size_t SimpleBVH::SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return 0;
 
   results.clear();
-  SphereQueryRecursive(root_, sphere, results);
+  SphereQueryRecursive(m_Root, sphere, results);
   return results.size();
 }
 
@@ -379,13 +379,13 @@ void SimpleBVH::SphereQueryRecursive(BVHNode *node,
 
 size_t SimpleBVH::AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return 0;
 
   results.clear();
-  AABBQueryRecursive(root_, aabb, results);
+  AABBQueryRecursive(m_Root, aabb, results);
   return results.size();
 }
 
@@ -415,22 +415,22 @@ void SimpleBVH::AABBQueryRecursive(BVHNode *node,
 
 size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return 0;
 
   results.clear();
   AABB pointAABB(point, point);  // 创建零大小的AABB
-  AABBQueryRecursive(root_, pointAABB, results);
+  AABBQueryRecursive(m_Root, pointAABB, results);
   return results.size();
 }
 
 bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, float maxDistance)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return false;
 
   result = nullptr;
@@ -449,7 +449,7 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, floa
   };
 
   std::priority_queue<QueueElement> queue;
-  queue.push({root_, 0.0f});
+  queue.push({m_Root, 0.0f});
 
   while (!queue.empty()) {
     QueueElement current = queue.top();
@@ -491,12 +491,12 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, floa
 
 void SimpleBVH::ForEachNode(std::function<bool(SceneNode *)> callback)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return;
 
-  ForEachNodeRecursive(root_, callback);
+  ForEachNodeRecursive(m_Root, callback);
 }
 
 bool SimpleBVH::ForEachNodeRecursive(BVHNode *node,
@@ -525,19 +525,19 @@ bool SimpleBVH::ForEachNodeRecursive(BVHNode *node,
 
 size_t SimpleBVH::GetNodeCount() const
 {
-  return nodeCount_;
+  return m_NodeCount;
 }
 
 bool SimpleBVH::IsEmpty() const
 {
-  return nodeCount_ == 0;
+  return m_NodeCount == 0;
 }
 
 int SimpleBVH::GetDepth() const
 {
-  if (!root_)
+  if (!m_Root)
     return 0;
-  return root_->GetHeight();
+  return m_Root->GetHeight();
 }
 
 const char *SimpleBVH::GetTypeName() const
@@ -548,15 +548,15 @@ const char *SimpleBVH::GetTypeName() const
 std::string SimpleBVH::GetStats() const
 {
   BVHStats stats;
-  if (root_) {
-    CollectStatsRecursive(root_, stats);
+  if (m_Root) {
+    CollectStatsRecursive(m_Root, stats);
     if (stats.leafCount > 0) {
       stats.avgDepth = static_cast<float>(stats.totalDepth) / stats.leafCount;
     }
   }
 
   std::stringstream ss;
-  ss << "Nodes: " << nodeCount_ << " (Internal: " << stats.internalCount
+  ss << "Nodes: " << m_NodeCount << " (Internal: " << stats.internalCount
      << ", Leaves: " << stats.leafCount << "), Max Depth: " << stats.maxDepth
      << ", Avg Depth: " << stats.avgDepth;
   return ss.str();
@@ -582,12 +582,12 @@ void SimpleBVH::CollectStatsRecursive(BVHNode *node, BVHStats &stats) const
 
 void SimpleBVH::DebugDraw(std::function<void(const AABB &, int depth)> drawCallback)
 {
-  if (needsRebuild_)
+  if (m_NeedsRebuild)
     Rebuild();
-  if (!root_)
+  if (!m_Root)
     return;
 
-  DebugDrawRecursive(root_, drawCallback);
+  DebugDrawRecursive(m_Root, drawCallback);
 }
 
 void SimpleBVH::DebugDrawRecursive(BVHNode *node,

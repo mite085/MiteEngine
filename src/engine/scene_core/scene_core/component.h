@@ -148,13 +148,13 @@ class Component {
   /**
    * @brief 获取组件绑定的实体
    */
-  Entity GetOwnerEntity() const;
+  Entity GetEntity() const;
 
  protected:
   // 保护构造函数，确保只能通过子类实例化，
   explicit Component() = default;
 
-  Entity m_OwnerEntity;
+  Entity m_Entity;
 
   std::atomic<bool> m_Dirty{false};  // 脏标记，标识组件是否被修改
   bool m_Enabled = true;             // 组件是否启用

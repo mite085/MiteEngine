@@ -140,10 +140,10 @@ class RenderQueue {
     QueueData() : sortStrategy(SortStrategy::None), isVisible(true) {}
   };
 
-  QueueData opaqueQueue;       // 不透明物体队列
-  QueueData transparentQueue;  // 透明物体队列
-  QueueData alphaTestQueue;    // Alpha测试物体队列
-  QueueData customQueue;       // 自定义队列（预留）
+  QueueData m_OpaqueQueue;       // 不透明物体队列
+  QueueData m_TransparentQueue;  // 透明物体队列
+  QueueData m_AlphaTestQueue;    // Alpha测试物体队列
+  QueueData m_CustomQueue;       // 自定义队列（预留）
 
   /**
    * @brief 根据队列类型获取对应的队列数据

@@ -46,9 +46,9 @@ class HierarchySceneNodeSystem : public ComponentSystem {
   void ProcessPendingHierarchyChanges(SceneRegistry &registry);
 
  private:
-  SceneGraph *m_sceneGraph = nullptr;
-  std::vector<Entity> m_pendingHierarchyChanges;
-  SubscriptionGroup m_eventSubscriptions;
+  SceneGraph *m_SceneGraph = nullptr;
+  std::vector<Entity> m_PendingHierarchyChanges;
+  SubscriptionGroup m_EventSubscriptions;
   Logger m_Logger;
 };
 

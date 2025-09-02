@@ -61,8 +61,8 @@ class Renderer {
   virtual intptr_t GetViewportFramebufferID() const = 0;
 
  protected:
-  glm::vec4 clearColor_ = {0.1f, 0.1f, 0.1f, 1.0f};  // 清屏颜色
-  glm::ivec2 viewportSize_ = {1280, 720};            // 视口尺寸
+  glm::vec4 m_ClearColor = {0.1f, 0.1f, 0.1f, 1.0f};  // 清屏颜色
+  glm::ivec2 m_ViewportSize = {1280, 720};            // 视口尺寸
 };
 }  // namespace mite
 

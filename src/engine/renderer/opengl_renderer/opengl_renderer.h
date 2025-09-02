@@ -48,7 +48,7 @@ class OpenGLRenderer : public Renderer {
   void CreateDefaultFrameBuffer();
 
   // ---- 成员变量 ----
-  std::shared_ptr<FrameBuffer> m_viewportFrameBuffer;  // 视口FrameBuffer
+  std::shared_ptr<FrameBuffer> m_ViewportFrameBuffer;  // 视口FrameBuffer
   Logger m_Logger;                                     // 日志系统
 };
 }  // namespace mite

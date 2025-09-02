@@ -42,6 +42,11 @@ set(FILESYSTEM_SRCS
 )
 source_group("filesystem" FILES ${FILESYSTEM_SRCS})
 
+set(FILESYSTEM_CONFIG_SRCS
+    ${CMAKE_BINARY_DIR}/src/engine/core/filesystem/filesystem_config.h
+)
+source_group("filesystem config" FILES ${FILESYSTEM_CONFIG_SRCS})
+
 set(HEADERS_SRCS
     headers/headers.h
 )
@@ -90,6 +95,7 @@ add_library(${ENGINE_CORE_LIB_NAME}
     STATIC
     ${CORE_SRCS}
     ${FILESYSTEM_SRCS}
+    ${FILESYSTEM_CONFIG_SRCS}
     ${HEADERS_SRCS}
     ${LOGGER_SRCS}
     ${EVENT_SRCS}
@@ -101,7 +107,7 @@ add_library(${ENGINE_CORE_LIB_NAME}
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${ENGINE_CORE_LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}  # 公开头文件目录
-    PUBLIC ${CMAKE_BINARY_DIR}/src/engine/core/filesystem # 检索配置文件
+    PUBLIC ${CMAKE_BINARY_DIR}/src/engine/core/filesystem/
 )
 
 target_link_libraries(${ENGINE_CORE_LIB_NAME}

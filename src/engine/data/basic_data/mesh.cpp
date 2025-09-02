@@ -2,14 +2,14 @@
 
 namespace mite {
 Mesh::Mesh(std::shared_ptr<ModelGPUHandle> modelHandle, const MeshSectionLODChain &lodChain)
-    : modelHandle_(modelHandle), lodChain_(lodChain)
+    : m_ModelGPUHandle(modelHandle), m_LODChain(lodChain)
 {
-  if (!modelHandle_) {
+  if (!m_ModelGPUHandle) {
     throw std::invalid_argument("Model handle cannot be null");
   }
 
   // 检查是否为空Mesh
-  if (lodChain_.baseSection.vertexCount == 0 || lodChain_.baseSection.indexCount == 0) {
+  if (m_LODChain.baseSection.vertexCount == 0 || m_LODChain.baseSection.indexCount == 0) {
     throw std::invalid_argument("Invalid mesh section: vertex or index count is zero");
   }
 
@@ -17,83 +17,83 @@ Mesh::Mesh(std::shared_ptr<ModelGPUHandle> modelHandle, const MeshSectionLODChai
 
 uint32_t Mesh::GetVertexCount(uint32_t lodLevel) const
 {
-  for (const auto &section : lodChain_.lodSections) {
+  for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return section.vertexCount;
     }
   }
   // 如果找不到指定LOD级别，返回基础LOD级别的数据
-  return lodChain_.baseSection.vertexCount;
+  return m_LODChain.baseSection.vertexCount;
 }
 
 uint32_t Mesh::GetIndexCount(uint32_t lodLevel) const
 {
-  for (const auto &section : lodChain_.lodSections) {
+  for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return section.indexCount;
     }
   }
   // 如果找不到指定LOD级别，返回基础LOD级别的数据
-  return lodChain_.baseSection.indexCount;
+  return m_LODChain.baseSection.indexCount;
 }
 
 uint32_t Mesh::GetIndexOffset(uint32_t lodLevel) const
 {
-  for (const auto &section : lodChain_.lodSections) {
+  for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return section.indexOffset;
     }
   }
   // 如果找不到指定LOD级别，返回基础LOD级别的数据
-  return lodChain_.baseSection.indexOffset;
+  return m_LODChain.baseSection.indexOffset;
 }
 
 const MeshSection &Mesh::GetSection(uint32_t lodLevel) const
 {
-  for (const auto &section : lodChain_.lodSections) {
+  for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return section;
     }
   }
   // 如果找不到指定LOD级别，返回基础LOD级别
-  return lodChain_.baseSection;
+  return m_LODChain.baseSection;
 }
 
 const MeshSection &Mesh::GetBaseSection() const
 {
-  return lodChain_.baseSection;
+  return m_LODChain.baseSection;
 }
 
 const std::vector<MeshSection> &Mesh::GetAllLODSections() const
 {
-  return lodChain_.lodSections;
+  return m_LODChain.lodSections;
 }
 
 uint32_t Mesh::GetLODCount() const
 {
-  return static_cast<uint32_t>(lodChain_.lodSections.size());
+  return static_cast<uint32_t>(m_LODChain.lodSections.size());
 }
 
 std::shared_ptr<ModelGPUHandle> Mesh::GetModelHandle() const
 {
-  return modelHandle_;
+  return m_ModelGPUHandle;
 }
 
 const std::pair<glm::vec3, glm::vec3> Mesh::GetBoundingBox(uint32_t lodLevel) const
 {
-  for (const auto &section : lodChain_.lodSections) {
+  for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return {section.bboxMin, section.bboxMax};
     }
   }
   // 如果找不到指定LOD级别，返回基础LOD级别的包围盒
-  return {lodChain_.baseSection.bboxMin, lodChain_.baseSection.bboxMax};
+  return {m_LODChain.baseSection.bboxMin, m_LODChain.baseSection.bboxMax};
 }
 /**
  * 获取材质索引
  */
 uint32_t Mesh::GetMaterialIndex() const
 {
-  return lodChain_.baseSection.materialIndex;
+  return m_LODChain.baseSection.materialIndex;
 }
 };  // namespace mite

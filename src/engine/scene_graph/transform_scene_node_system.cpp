@@ -41,8 +41,8 @@ void TransformSceneNodeSystem::Shutdown()
   m_Logger->info("Shutting down TransformSceneNodeSystem");
   m_EventSubscriptions.UnsubscribeAll();
 
-  std::lock_guard<std::mutex> lock(m_mutex);
-  m_pendingSyncEntities.clear();
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  m_PendingSyncEntities.clear();
 }
 
 std::vector<std::type_index> TransformSceneNodeSystem::GetComponentTypes() const
@@ -57,18 +57,18 @@ std::vector<std::type_index> TransformSceneNodeSystem::GetSystemDependencies() c
 
 void TransformSceneNodeSystem::SetSceneGraph(SceneGraph *sceneGraph)
 {
-  m_sceneGraph = sceneGraph;
+  m_SceneGraph = sceneGraph;
 }
 
 void TransformSceneNodeSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
 {
-  if (!m_sceneGraph) {
+  if (!m_SceneGraph) {
     return;
   }
   // 遍历所有有变换组件的实体
   auto view = registry.GetEntitiesWith<TransformComponent>();
   for (Entity entity : view) {
-    if (m_sceneGraph->HasNode(entity)) {
+    if (m_SceneGraph->HasNode(entity)) {
       SyncComponentToNode(registry, entity);
     }
   }
@@ -76,12 +76,12 @@ void TransformSceneNodeSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
 
 void TransformSceneNodeSystem::MarkEntityForSync(Entity entity)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   // 避免重复添加
-  if (std::find(m_pendingSyncEntities.begin(), m_pendingSyncEntities.end(), entity) ==
-      m_pendingSyncEntities.end())
+  if (std::find(m_PendingSyncEntities.begin(), m_PendingSyncEntities.end(), entity) ==
+      m_PendingSyncEntities.end())
   {
-    m_pendingSyncEntities.push_back(entity);
+    m_PendingSyncEntities.push_back(entity);
   }
 }
 
@@ -99,10 +99,10 @@ bool TransformSceneNodeSystem::OnTransformComponentRemoved(ComponentRemovedEvent
 
   Entity entity = e.GetEntity();
 
-  std::lock_guard<std::mutex> lock(m_mutex);
-  m_pendingSyncEntities.erase(
-      std::remove(m_pendingSyncEntities.begin(), m_pendingSyncEntities.end(), entity),
-      m_pendingSyncEntities.end());
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  m_PendingSyncEntities.erase(
+      std::remove(m_PendingSyncEntities.begin(), m_PendingSyncEntities.end(), entity),
+      m_PendingSyncEntities.end());
 
   e.Handled();
   return true;
@@ -121,10 +121,10 @@ void TransformSceneNodeSystem::ProcessPendingSync(SceneRegistry &registry)
 
   // 处理阶段先交换缓存，后续处理阶段不影响其他事件触发导致的m_pendingSyncEntities修改
   {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    if (m_pendingSyncEntities.empty())
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    if (m_PendingSyncEntities.empty())
       return;
-    processingEntities.swap(m_pendingSyncEntities);
+    processingEntities.swap(m_PendingSyncEntities);
   }
 
   for (Entity entity : processingEntities) {
@@ -136,12 +136,12 @@ void TransformSceneNodeSystem::ProcessPendingSync(SceneRegistry &registry)
 
 void TransformSceneNodeSystem::SyncComponentToNode(SceneRegistry &registry, Entity entity)
 {
-  if (!m_sceneGraph || !m_sceneGraph->HasNode(entity)) {
+  if (!m_SceneGraph || !m_SceneGraph->HasNode(entity)) {
     return;
   }
   try {
     auto &transformComp = registry.GetComponent<TransformComponent>(entity);
-    SceneNode *node = m_sceneGraph->GetNode(entity);
+    SceneNode *node = m_SceneGraph->GetNode(entity);
 
     if (node) {
       node->SetLocalTransform(transformComp.GetLocalMatrix());

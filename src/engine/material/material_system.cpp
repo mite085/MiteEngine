@@ -40,37 +40,37 @@ void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<M
     throw std::invalid_argument("Material template name cannot be empty");
   }
 
-  auto it = m_templates.find(name);
-  if (it != m_templates.end()) {
+  auto it = m_Templates.find(name);
+  if (it != m_Templates.end()) {
     // 材质模板已存在，跳过注册步骤。
     m_Logger->error("Existing material template: {}, registing failed", name);
     return;
   }
   // 注册材质模板
   m_Logger->info("Register material template: {}", name);
-  m_templates.emplace(name, std::move(material));
+  m_Templates.emplace(name, std::move(material));
 }
 
 bool MaterialSystem::HasTemplate(const std::string &name) const
 {
-  return m_templates.find(name) != m_templates.end();
+  return m_Templates.find(name) != m_Templates.end();
 }
 
 std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::string &templateName)
 {
   m_Logger->info("Creating material instance with material template: {}.", templateName);
   // 1. 查找模板
-  auto it = m_templates.find(templateName);
-  if (it == m_templates.end()) {
+  auto it = m_Templates.find(templateName);
+  if (it == m_Templates.end()) {
     // 材质模板不存在, 使用回退材质
     m_Logger->warn("Invalid material template: {}, trying to use fallback material.",
                    templateName);
-    if (!m_fallbackMaterial) {
+    if (!m_FallbackMaterial) {
       // 无可用回退材质
       m_Logger->error("There has not any fallback material to use.");
       throw std::out_of_range("There has not any fallback material to use.");
     }
-    return m_fallbackMaterial->CreateInstance();
+    return m_FallbackMaterial->CreateInstance();
   }
 
   // 2. 创建实例（通过模板工厂方法）
@@ -143,8 +143,8 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
 
 void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Material> newMaterial)
 {
-  auto it = m_templates.find(name);
-  if (it == m_templates.end()) {
+  auto it = m_Templates.find(name);
+  if (it == m_Templates.end()) {
     // 未能在注册列表中寻找到需要被reload的material
     m_Logger->error("Reload failed，reloaded material name invalid: {}", name);
     return;
@@ -168,8 +168,8 @@ void MaterialSystem::SetFallbackMaterial(std::unique_ptr<Material> material)
     m_Logger->error("Fallback material cannot be nullptr.");
     return;
   }
-  m_fallbackMaterial = std::move(material);
+  m_FallbackMaterial = std::move(material);
   // 设置回退材质
-  m_Logger->debug("Setting fallback material: {}", m_fallbackMaterial->GetName());
+  m_Logger->debug("Setting fallback material: {}", m_FallbackMaterial->GetName());
 }
 };  // namespace mite

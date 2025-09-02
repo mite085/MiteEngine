@@ -54,7 +54,7 @@ class Frustum {
    */
   const Plane *GetPlanes() const
   {
-    return planes;
+    return m_Planes;
   }
 
   /**
@@ -82,7 +82,7 @@ class Frustum {
   void ExtractPlane(const glm::mat4 &matrix, FrustumPlane plane);
 
  private:
-  Plane planes[6];  ///< 6个裁剪平面（左、右、下、上、近、远）
+  Plane m_Planes[6];  // 6个裁剪平面（左、右、下、上、近、远）
 };
 }  // namespace mite
 

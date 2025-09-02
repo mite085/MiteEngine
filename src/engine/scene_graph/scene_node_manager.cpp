@@ -4,15 +4,15 @@
 
 namespace mite {
 SceneNodeManager::SceneNodeManager(SpatialPartitionManager &spatialPartition)
-    : m_spatialPartition(spatialPartition)
+    : m_SpatialPartition(spatialPartition)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph NodeManager");
 }
 void SceneNodeManager::Clear()
 {
   // 清空所有节点（会自动处理父子关系）
-  m_entityToNodeMap.clear();
-  m_dirtyNodes.clear();
+  m_EntityToNodeMap.clear();
+  m_DirtyNodes.clear();
 }
 // ==================== 场景节点生命周期管理 ====================
 SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
@@ -22,12 +22,12 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
     return nullptr;
   }
 
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 检查是否已存在节点
-  if (m_entityToNodeMap.find(entity) != m_entityToNodeMap.end()) {
+  if (m_EntityToNodeMap.find(entity) != m_EntityToNodeMap.end()) {
     m_Logger->warn("Scene node already exists for entity {}", entity.GetUUIDString());
-    return m_entityToNodeMap[entity].get();
+    return m_EntityToNodeMap[entity].get();
   }
 
   try {
@@ -36,7 +36,7 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
     SceneNode *nodePtr = node.get();
 
     // 添加到映射表
-    m_entityToNodeMap[entity] = std::move(node);
+    m_EntityToNodeMap[entity] = std::move(node);
 
     // 如果实体有VisibilityComponent，初始化其局部包围盒
     if (registry.HasComponent<VisibilityComponent>(entity)) {
@@ -46,7 +46,7 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
     }
 
     // 添加到空间划分结构
-    m_spatialPartition.AddNodeToSpatialPartition(nodePtr);
+    m_SpatialPartition.AddNodeToSpatialPartition(nodePtr);
 
     m_Logger->debug("Created scene node for entity {}", entity.GetUUIDString());
     return nodePtr;
@@ -60,10 +60,10 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
 
 bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
-  auto it = m_entityToNodeMap.find(entity);
-  if (it == m_entityToNodeMap.end()) {
+  auto it = m_EntityToNodeMap.find(entity);
+  if (it == m_EntityToNodeMap.end()) {
     m_Logger->warn("Scene node not found for entity {}", entity.GetUUIDString());
     return false;
   }
@@ -71,7 +71,7 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   SceneNode *node = it->second.get();
 
   // 从空间划分结构中移除
-  m_spatialPartition.RemoveNodeFromSpatialPartition(node);
+  m_SpatialPartition.RemoveNodeFromSpatialPartition(node);
 
   // 处理父子关系：将所有子节点提升为根节点
   auto children = node->GetChildren();
@@ -91,11 +91,11 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   }
 
   // 从映射表中移除
-  m_entityToNodeMap.erase(it);
+  m_EntityToNodeMap.erase(it);
 
   // 从脏节点列表中移除
-  m_dirtyNodes.erase(std::remove(m_dirtyNodes.begin(), m_dirtyNodes.end(), entity),
-                     m_dirtyNodes.end());
+  m_DirtyNodes.erase(std::remove(m_DirtyNodes.begin(), m_DirtyNodes.end(), entity),
+                     m_DirtyNodes.end());
 
   m_Logger->debug("Destroyed scene node for entity {}", entity.GetUUIDString());
   return true;
@@ -104,23 +104,23 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
 // ==================== 场景节点查询接口 ====================
 SceneNode *SceneNodeManager::GetNode(Entity entity) const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  auto it = m_entityToNodeMap.find(entity);
-  return it != m_entityToNodeMap.end() ? it->second.get() : nullptr;
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  auto it = m_EntityToNodeMap.find(entity);
+  return it != m_EntityToNodeMap.end() ? it->second.get() : nullptr;
 }
 
 bool SceneNodeManager::HasNode(Entity entity) const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  return m_entityToNodeMap.find(entity) != m_entityToNodeMap.end();
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  return m_EntityToNodeMap.find(entity) != m_EntityToNodeMap.end();
 }
 
 std::vector<SceneNode *> SceneNodeManager::GetRootNodes() const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   std::vector<SceneNode *> rootNodes;
 
-  for (const auto &[entity, node] : m_entityToNodeMap) {
+  for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (node->IsRoot()) {
       rootNodes.push_back(node.get());
     }
@@ -131,11 +131,11 @@ std::vector<SceneNode *> SceneNodeManager::GetRootNodes() const
 
 std::vector<SceneNode *> SceneNodeManager::GetAllNodes() const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   std::vector<SceneNode *> nodes;
-  nodes.reserve(m_entityToNodeMap.size());
+  nodes.reserve(m_EntityToNodeMap.size());
 
-  for (const auto &[entity, node] : m_entityToNodeMap) {
+  for (const auto &[entity, node] : m_EntityToNodeMap) {
     nodes.push_back(node.get());
   }
 
@@ -144,8 +144,8 @@ std::vector<SceneNode *> SceneNodeManager::GetAllNodes() const
 
 size_t SceneNodeManager::GetNodeCount() const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  return m_entityToNodeMap.size();
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  return m_EntityToNodeMap.size();
 }
 
 std::string SceneNodeManager::GetNodePath(SceneNode *node) const
@@ -181,10 +181,10 @@ std::string SceneNodeManager::GetNodePath(SceneNode *node) const
 
 SceneNode *SceneNodeManager::FindNodeByPath(const std::string &path) const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 简单的路径查找实现（可根据需要优化）
-  for (const auto &[entity, node] : m_entityToNodeMap) {
+  for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (GetNodePath(node.get()) == path) {
       return node.get();
     }
@@ -195,10 +195,10 @@ SceneNode *SceneNodeManager::FindNodeByPath(const std::string &path) const
 
 void SceneNodeManager::TraverseTree(std::function<bool(SceneNode *)> callback) const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 从所有根节点开始遍历
-  for (const auto &[entity, node] : m_entityToNodeMap) {
+  for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (node->IsRoot()) {
       if (!TraverseRecursive(node.get(), callback)) {
         break;  // 回调函数要求中断遍历
@@ -209,8 +209,8 @@ void SceneNodeManager::TraverseTree(std::function<bool(SceneNode *)> callback) c
 
 bool SceneNodeManager::IsEmpty() const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  return m_entityToNodeMap.empty();
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  return m_EntityToNodeMap.empty();
 }
 
 // ==================== 节点更新接口 ====================
@@ -227,7 +227,7 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
     return false;
   }
 
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 从原父节点移除
   SceneNode *oldParent = node->GetParent();
@@ -255,10 +255,10 @@ void SceneNodeManager::UpdateNodeBounds(SceneRegistry &registry,
                                         Entity entity,
                                         const AABB &localBounds)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
-  auto it = m_entityToNodeMap.find(entity);
-  if (it != m_entityToNodeMap.end()) {
+  auto it = m_EntityToNodeMap.find(entity);
+  if (it != m_EntityToNodeMap.end()) {
     it->second->SetLocalBounds(localBounds);
     MarkNodeDirty(entity);
   }
@@ -267,34 +267,34 @@ void SceneNodeManager::UpdateNodeBounds(SceneRegistry &registry,
 void SceneNodeManager::MarkNodeDirty(Entity entity)
 {
   // 避免重复添加
-  if (std::find(m_dirtyNodes.begin(), m_dirtyNodes.end(), entity) == m_dirtyNodes.end()) {
-    m_dirtyNodes.push_back(entity);
+  if (std::find(m_DirtyNodes.begin(), m_DirtyNodes.end(), entity) == m_DirtyNodes.end()) {
+    m_DirtyNodes.push_back(entity);
   }
 }
 
 void SceneNodeManager::Update(SceneRegistry &registry)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 更新主相机的视锥体和可见性掩码
 
   // 更新所有脏节点
-  if (m_dirtyNodes.empty()) {
+  if (m_DirtyNodes.empty()) {
     return;
   }
 
-  for (Entity entity : m_dirtyNodes) {
-    auto it = m_entityToNodeMap.find(entity);
-    if (it != m_entityToNodeMap.end()) {
+  for (Entity entity : m_DirtyNodes) {
+    auto it = m_EntityToNodeMap.find(entity);
+    if (it != m_EntityToNodeMap.end()) {
       it->second->Update();
 
       // 更新空间划分结构中的节点位置
-      m_spatialPartition.Update(it->second.get());
+      m_SpatialPartition.Update(it->second.get());
     }
   }
 
-  m_Logger->trace("Updated {} dirty nodes", m_dirtyNodes.size());
-  m_dirtyNodes.clear();
+  m_Logger->trace("Updated {} dirty nodes", m_DirtyNodes.size());
+  m_DirtyNodes.clear();
 }
 // ==================== 私有工具方法 ====================
 

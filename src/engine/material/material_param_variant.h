@@ -54,7 +54,7 @@ class UniformVariant {
   UniformVariant() = default;
 
   // 通用构造函数（支持所有variant类型）
-  template<typename T> UniformVariant(T &&value) : m_data(std::forward<T>(value))
+  template<typename T> UniformVariant(T &&value) : m_Data(std::forward<T>(value))
   {
     static_assert(std::is_constructible_v<VariantType, T>, "Invalid uniform type");
   }
@@ -65,13 +65,13 @@ class UniformVariant {
   // 类型检查
   template<typename T> bool Is() const
   {
-    return std::holds_alternative<T>(m_data);
+    return std::holds_alternative<T>(m_Data);
   }
 
   // ---- 值获取（安全版）----
   template<typename T> bool TryGet(T &out) const
   {
-    if (const T *ptr = std::get_if<T>(&m_data)) {
+    if (const T *ptr = std::get_if<T>(&m_Data)) {
       out = *ptr;
       return true;
     }
@@ -81,12 +81,12 @@ class UniformVariant {
   // ---- 值获取（非安全版）----
   template<typename T> const T &Get() const
   {
-    return std::get<T>(m_data);
+    return std::get<T>(m_Data);
   }
 
   const VariantType &GetVariant() const
   {
-    return m_data;
+    return m_Data;
   }
 
   // ---- 转换为旧UniformValue兼容接口 ----
@@ -115,7 +115,7 @@ class UniformVariant {
   std::string ToShaderString() const;
 
  private:
-  VariantType m_data;
+  VariantType m_Data;
 };
 
 template<typename T> inline std::pair<const T *, size_t> UniformVariant::GetArray() const

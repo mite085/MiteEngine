@@ -42,9 +42,9 @@ class FileSystem {
   // 初始化资源搜索路径
   static void InitializeAssetRoots();
 
-  static std::filesystem::path s_executablePath;
-  static std::vector<std::filesystem::path> s_assetRoots;
-  static bool s_initialized;
+  static std::filesystem::path s_ExecutablePath;
+  static std::vector<std::filesystem::path> s_AssetRoots;
+  static bool s_Initialized;
 };
 };
 

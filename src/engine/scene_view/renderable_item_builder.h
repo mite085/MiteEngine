@@ -141,9 +141,9 @@ class RenderableItemBuilder {
 
   // 自定义回调函数（用于扩展功能）
   std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>
-      m_materialOverrideFunc;
-  std::function<glm::mat4(Entity, const glm::mat4 &)> m_transformOverrideFunc;
-  std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> m_lodSelectorFunc;
+      m_MaterialOverrideFunc;
+  std::function<glm::mat4(Entity, const glm::mat4 &)> m_TransformOverrideFunc;
+  std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> m_LODSelectorFunc;
 
   // 禁用拷贝构造和赋值
   RenderableItemBuilder(const RenderableItemBuilder &) = delete;

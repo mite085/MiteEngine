@@ -46,7 +46,7 @@ class VisibilityComponent
    */
   bool IsVisible() const
   {
-    return isVisible;
+    return m_IsVisible;
   }
 
   /**
@@ -61,7 +61,7 @@ class VisibilityComponent
    */
   bool WasVisible() const
   {
-    return wasVisible;
+    return m_WasVisible;
   }
 
   /**
@@ -70,7 +70,7 @@ class VisibilityComponent
    */
   bool VisibilityChanged() const
   {
-    return isVisible != wasVisible;
+    return m_IsVisible != m_WasVisible;
   }
 
   // ==================== 视锥体操作 ====================
@@ -90,7 +90,7 @@ class VisibilityComponent
    */
   const AABB &GetLocalAABB() const
   {
-    return localAABB;
+    return m_LocalAABB;
   }
 
   /**
@@ -105,7 +105,7 @@ class VisibilityComponent
    */
   const AABB &GetWorldAABB() const
   {
-    return worldAABB;
+    return m_WorldAABB;
   }
 
   /**
@@ -128,7 +128,7 @@ class VisibilityComponent
    */
   uint32_t GetVisibilityMask() const
   {
-    return visibilityMask;
+    return m_VisibilityMask;
   }
 
   /**
@@ -144,7 +144,7 @@ class VisibilityComponent
    */
   bool MatchesMask(uint32_t cameraMask) const
   {
-    return (visibilityMask & cameraMask) != 0;
+    return (m_VisibilityMask & cameraMask) != 0;
   }
 
   // ==================== 组件接口 ====================
@@ -164,19 +164,19 @@ class VisibilityComponent
    */
   bool IsBoundsDirty() const
   {
-    return boundsDirty;
+    return m_BoundsDirty;
   }
 
  private:
-  AABB localAABB;  ///< 局部空间包围盒
-  AABB worldAABB;  ///< 世界空间包围盒（缓存）
+  AABB m_LocalAABB;  // 局部空间包围盒
+  AABB m_WorldAABB;  // 世界空间包围盒（缓存）
 
-  bool isVisible = true;    ///< 当前可见性状态
-  bool wasVisible = false;  ///< 上一帧可见性状态（用于检测变化）
+  bool m_IsVisible = true;    // 当前可见性状态
+  bool m_WasVisible = false;  // 上一帧可见性状态（用于检测变化）
 
-  uint32_t visibilityMask = CameraVisibilityMask::ALL;  ///< 可见性掩码
-  bool boundsDirty = true;                              ///< 包围盒脏标记
-  bool manualOverride = false;                          ///< 手动覆盖标志
+  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 可见性掩码
+  bool m_BoundsDirty = true;                              // 包围盒脏标记
+  bool m_ManualOverride = false;                          // 手动覆盖标志
 };
 
 // ==================== 组件系统 ====================
@@ -219,10 +219,10 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
   //bool OnCameraVisibilityMaskChanged(CameraVisibilityMaskChangedEvent &e);
 
  private:
-  //Frustum mainCameraFrustum;  ///< 主相机视锥体
+  //Frustum mainCameraFrustum;  // 主相机视锥体
   //uint32_t cameraVisibilityMask =
-  //    CameraVisibilityMask::ALL;  ///< 相机可见性掩码（通过掩码判断，支持不同通道渲染）
-  //size_t visibleCount = 0;  ///< 当前可见实体计数
+  //    CameraVisibilityMask::ALL;  // 相机可见性掩码（通过掩码判断，支持不同通道渲染）
+  //size_t visibleCount = 0;  // 当前可见实体计数
 };
 
 // ==================== 事件定义 ====================

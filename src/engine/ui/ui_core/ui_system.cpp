@@ -27,8 +27,8 @@ void UISystem::Init(GLFWwindow *window)
 {
   // 初始化ImGui上下文
   IMGUI_CHECKVERSION();
-  m_imguiContext = ImGui::CreateContext();
-  ImGui::SetCurrentContext(m_imguiContext);
+  m_ImguiContext = ImGui::CreateContext();
+  ImGui::SetCurrentContext(m_ImguiContext);
 
   // 配置ImGui
   ImGuiIO &io = ImGui::GetIO();
@@ -67,9 +67,9 @@ void UISystem::Shutdown()
   ImGui_ImplGlfw_Shutdown();
 
   // 销毁上下文
-  if (m_imguiContext) {
-    ImGui::DestroyContext(m_imguiContext);
-    m_imguiContext = nullptr;
+  if (m_ImguiContext) {
+    ImGui::DestroyContext(m_ImguiContext);
+    m_ImguiContext = nullptr;
   }
 
   m_Logger->info("UI System shutdown");
@@ -81,7 +81,7 @@ void UISystem::BeginFrame()
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
-  m_frameStarted = true;
+  m_FrameStarted = true;
 
   // 设置主停靠空间
   ImGui::DockSpaceOverViewport(ImGui::GetID("MainDockspace"),  // 自定义dockspace ID
@@ -95,7 +95,7 @@ void UISystem::BeginFrame()
 
 void UISystem::Update(float deltaTime)
 {
-  if (!m_frameStarted)
+  if (!m_FrameStarted)
     BeginFrame();
 
   // 更新所有可见面板
@@ -108,7 +108,7 @@ void UISystem::Update(float deltaTime)
 
 void UISystem::EndFrame()
 {
-  if (!m_frameStarted)
+  if (!m_FrameStarted)
     return;
 
   // 渲染所有可见面板
@@ -130,7 +130,7 @@ void UISystem::EndFrame()
     glfwMakeContextCurrent(backup);
   }
 
-  m_frameStarted = false;
+  m_FrameStarted = false;
 }
 
 void UISystem::RegisterPanel(const std::string &name, std::shared_ptr<UIPanel> panel)

@@ -28,37 +28,37 @@ void OpenGLRenderer::CreateDefaultFrameBuffer()
 {
   // 创建FrameBuffer规格
   FrameBufferSpec spec;
-  spec.width = viewportSize_.x;
-  spec.height = viewportSize_.y;
+  spec.width = m_ViewportSize.x;
+  spec.height = m_ViewportSize.y;
   spec.attachments = {
       {FrameBufferAttachmentType::Color, GL_RGBA8},  // 颜色附件
       {FrameBufferAttachmentType::Depth}             // 深度附件
   };
 
   // 创建FrameBuffer
-  m_viewportFrameBuffer = std::make_shared<FrameBuffer>(spec);
+  m_ViewportFrameBuffer = std::make_shared<FrameBuffer>(spec);
 
-  if (!m_viewportFrameBuffer->IsComplete()) {
+  if (!m_ViewportFrameBuffer->IsComplete()) {
     m_Logger->error("Failed to create complete framebuffer");
     throw std::runtime_error("Framebuffer is incomplete");
   }
 
-  m_Logger->info("Created default framebuffer ({}x{})", viewportSize_.x, viewportSize_.y);
+  m_Logger->info("Created default framebuffer ({}x{})", m_ViewportSize.x, m_ViewportSize.y);
 }
 
 void OpenGLRenderer::BeginFrame()
 {
   // 通过RenderCommand提交清屏命令
-  RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, clearColor_);
+  RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, m_ClearColor);
 
   // 绑定视口FrameBuffer
-  RenderCommand::BindFrameBuffer(m_viewportFrameBuffer);
+  RenderCommand::BindFrameBuffer(m_ViewportFrameBuffer);
 
   // 本次绘制首次绑定FrameBuffer，提交FrameBuffer的清屏命令
-  RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, clearColor_);
+  RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, m_ClearColor);
 
   // 设置视口大小
-  RenderCommand::SetViewport(0, 0, viewportSize_.x, viewportSize_.y);
+  RenderCommand::SetViewport(0, 0, m_ViewportSize.x, m_ViewportSize.y);
 }
 
 void OpenGLRenderer::EndFrame()
@@ -118,16 +118,16 @@ void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
 
 void OpenGLRenderer::SetClearColor(const glm::vec4 &color)
 {
-  clearColor_ = color;
+  m_ClearColor = color;
 }
 
 void OpenGLRenderer::SetViewport(uint32_t width, uint32_t height)
 {
-  viewportSize_ = {width, height};
+  m_ViewportSize = {width, height};
 
   // 调整FrameBuffer大小
-  if (m_viewportFrameBuffer) {
-    m_viewportFrameBuffer->Resize(width, height);
+  if (m_ViewportFrameBuffer) {
+    m_ViewportFrameBuffer->Resize(width, height);
   }
 
   // 提交视口设置命令
@@ -136,13 +136,13 @@ void OpenGLRenderer::SetViewport(uint32_t width, uint32_t height)
 
 std::shared_ptr<FrameBuffer> OpenGLRenderer::GetViewportFrameBuffer() const
 {
-  return m_viewportFrameBuffer;
+  return m_ViewportFrameBuffer;
 }
 
 intptr_t OpenGLRenderer::GetViewportFramebufferID() const
 {
   // 返回颜色附件0的纹理ID
-  return static_cast<intptr_t>(m_viewportFrameBuffer->GetColorAttachmentID());
+  return static_cast<intptr_t>(m_ViewportFrameBuffer->GetColorAttachmentID());
 }
 
 }  // namespace mite

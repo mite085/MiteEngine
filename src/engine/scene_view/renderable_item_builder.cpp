@@ -77,12 +77,12 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
     }
 
     // 应用自定义覆盖函数（如果设置）
-    if (m_materialOverrideFunc) {
-      material = m_materialOverrideFunc(entity, material);
+    if (m_MaterialOverrideFunc) {
+      material = m_MaterialOverrideFunc(entity, material);
     }
 
-    if (m_transformOverrideFunc) {
-      transform = m_transformOverrideFunc(entity, transform);
+    if (m_TransformOverrideFunc) {
+      transform = m_TransformOverrideFunc(entity, transform);
     }
 
     // 构建RenderableItem
@@ -125,21 +125,21 @@ void RenderableItemBuilder::SetMaterialOverrideFunction(
         func)
 {
 
-  m_materialOverrideFunc = func;
+  m_MaterialOverrideFunc = func;
 }
 
 void RenderableItemBuilder::SetTransformOverrideFunction(
     std::function<glm::mat4(Entity, const glm::mat4 &)> func)
 {
 
-  m_transformOverrideFunc = func;
+  m_TransformOverrideFunc = func;
 }
 
 void RenderableItemBuilder::SetLODSelectorFunction(
     std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> func)
 {
 
-  m_lodSelectorFunc = func;
+  m_LODSelectorFunc = func;
 }
 
 bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, SceneNode *sceneNode) const

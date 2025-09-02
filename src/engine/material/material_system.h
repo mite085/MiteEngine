@@ -115,9 +115,9 @@ class MaterialSystem {
   Logger m_Logger;
 
   // ---- 成员变量 ----
-  std::unordered_map<std::string, std::unique_ptr<Material>> m_templates;  // 模板存储
-  std::unique_ptr<Material> m_fallbackMaterial;                            // 错误回退材质
-  std::unordered_map<size_t, std::weak_ptr<MaterialInstance>> m_instanceCache;  // 实例弱引用缓存
+  std::unordered_map<std::string, std::unique_ptr<Material>> m_Templates;  // 模板存储
+  std::unique_ptr<Material> m_FallbackMaterial;                            // 错误回退材质
+  std::unordered_map<size_t, std::weak_ptr<MaterialInstance>> m_InstanceCache;  // 实例弱引用缓存
 };
 
 /**
@@ -129,7 +129,7 @@ class MaterialReloadedEvent : public Event {
   MaterialReloadedEvent(const std::string &templateName,
                         Material *oldMaterial,
                         Material *newMaterial)
-      : templateName(templateName), oldMaterial(oldMaterial), newMaterial(newMaterial)
+      : m_TemplateName(templateName), m_OldMaterial(oldMaterial), m_NewMaterial(newMaterial)
   {
   }
 
@@ -137,13 +137,13 @@ class MaterialReloadedEvent : public Event {
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new MaterialReloadedEvent(templateName, oldMaterial, newMaterial);
+    return new MaterialReloadedEvent(m_TemplateName, m_OldMaterial, m_NewMaterial);
   }
 
  private:
-  std::string templateName;         // 被重载的模板名
-  Material *oldMaterial = nullptr;  // 旧材质指针（可能已失效）
-  Material *newMaterial = nullptr;  // 新材质指针
+  std::string m_TemplateName;         // 被重载的模板名
+  Material *m_OldMaterial = nullptr;  // 旧材质指针（可能已失效）
+  Material *m_NewMaterial = nullptr;  // 新材质指针
 };
 };  // namespace mite
 

@@ -66,27 +66,27 @@ class ViewportPanel : public UIPanel {
   // ========== 成员变量 ==========
 
   // 视口状态
-  glm::vec2 m_viewportSize = {100.0f, 100.0f};  // 视口当前尺寸
-  glm::vec2 m_viewportBounds[2] = {{100.0f, 100.0f}, {100.0f, 100.0f}};  // 视口屏幕边界坐标
-  bool m_viewportFocused = false;               // 视口是否有输入焦点
-  bool m_viewportHovered = false;               // 鼠标是否悬停在视口上
+  glm::vec2 m_ViewportSize = {100.0f, 100.0f};  // 视口当前尺寸
+  glm::vec2 m_ViewportBounds[2] = {{100.0f, 100.0f}, {100.0f, 100.0f}};  // 视口屏幕边界坐标
+  bool m_ViewportFocused = false;               // 视口是否有输入焦点
+  bool m_ViewportHovered = false;               // 鼠标是否悬停在视口上
 
   // 渲染资源
-  std::shared_ptr<Camera> m_camera = nullptr;  // 视口相机
-  std::shared_ptr<FrameBuffer> m_framebuffer = nullptr;  // 场景帧缓冲
+  std::shared_ptr<Camera> m_Camera = nullptr;  // 视口相机
+  std::shared_ptr<FrameBuffer> m_Framebuffer = nullptr;  // 场景帧缓冲
 
   // 输入处理
-  std::shared_ptr<ViewportInputProcessor> m_viewportInput;  // 视口导航处理器
-  std::shared_ptr<GizmoInputProcessor> m_gizmoInput;        // Gizmo操作处理器
-  std::shared_ptr<ModularInputContext> m_inputContext;      // 输入上下文
+  std::shared_ptr<ViewportInputProcessor> m_ViewportInput;  // 视口导航处理器
+  std::shared_ptr<GizmoInputProcessor> m_GizmoInput;        // Gizmo操作处理器
+  std::shared_ptr<ModularInputContext> m_InputContext;      // 输入上下文
 
   // Entity的Gizmo变换状态
-  bool m_isEntitySelected = false;			// 当前是否处于Entity选中状态（用于控制Gizmo显示）
-  Entity m_entitySelected;					// 当前选中的Entity对象
-  glm::mat4 *m_currentTransform = nullptr;  // 当前操作的Entity的World变换矩阵(外部管理)
+  bool m_IsEntitySelected = false;			// 当前是否处于Entity选中状态（用于控制Gizmo显示）
+  Entity m_EntitySelected;					// 当前选中的Entity对象
+  glm::mat4 *m_CurrentTransform = nullptr;  // 当前操作的Entity的World变换矩阵(外部管理)
 
   // 当前操作的Camera的View状态，Gizmo的绘制和反向修改相机需要该参数
-  glm::mat4 m_currentCameraViewTransform;
+  glm::mat4 m_CurrentCameraViewTransform;
 };
 };  // namespace mite
 

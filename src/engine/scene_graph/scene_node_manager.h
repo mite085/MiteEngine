@@ -136,16 +136,16 @@ class SceneNodeManager {
   bool ValidateParenting(SceneNode *node, SceneNode *newParent) const;
 
   // 实体到场景节点的映射表
-  std::unordered_map<Entity, std::unique_ptr<SceneNode>> m_entityToNodeMap;
+  std::unordered_map<Entity, std::unique_ptr<SceneNode>> m_EntityToNodeMap;
 
   // 需要更新的脏节点列表
-  std::vector<Entity> m_dirtyNodes;
+  std::vector<Entity> m_DirtyNodes;
 
   // 空间划分结构
-  SpatialPartitionManager &m_spatialPartition;
+  SpatialPartitionManager &m_SpatialPartition;
 
   // 线程安全保护
-  mutable std::mutex m_mutex;
+  mutable std::mutex m_Mutex;
 
   // 日志器
   Logger m_Logger;

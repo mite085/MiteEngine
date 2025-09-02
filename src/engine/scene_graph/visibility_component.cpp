@@ -9,38 +9,38 @@
 namespace mite {
 // ==================== VisibilityComponent ====================
 
-VisibilityComponent::VisibilityComponent() : ComponentTraits(), localAABB(), worldAABB() {}
+VisibilityComponent::VisibilityComponent() : ComponentTraits(), m_LocalAABB(), m_WorldAABB() {}
 
 VisibilityComponent::VisibilityComponent(const AABB &localAABB)
-    : ComponentTraits(), localAABB(localAABB), worldAABB()
+    : ComponentTraits(), m_LocalAABB(localAABB), m_WorldAABB()
 {
 }
 
 void VisibilityComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 {
-  if (!IsDirty() && !boundsDirty) {
+  if (!IsDirty() && !m_BoundsDirty) {
     return;
   }
 
   // 更新世界空间包围盒
-  if (boundsDirty) {
+  if (m_BoundsDirty) {
     UpdateWorldAABB(reg);
-    boundsDirty = false;
+    m_BoundsDirty = false;
   }
 
   // 保存上一帧状态
-  wasVisible = isVisible;
+  m_WasVisible = m_IsVisible;
 
   // 如果没有手动覆盖，执行自动可见性计算
-  if (!manualOverride) {
+  if (!m_ManualOverride) {
     // 这里可以添加更复杂的可见性计算逻辑
     // 目前简单设置为总是可见，后续可以扩展为基于相机位置的测试
-    isVisible = true;
+    m_IsVisible = true;
   }
 
   // 如果可见性发生变化，发布事件
   if (VisibilityChanged()) {
-    EventBus::Get().Post(VisibilityChangedEvent(GetOwnerEntity(), *this, isVisible));
+    EventBus::Get().Post(VisibilityChangedEvent(GetEntity(), *this, m_IsVisible));
   }
 
   ClearDirty();
@@ -48,17 +48,17 @@ void VisibilityComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 
 void VisibilityComponent::SetVisible(bool visible)
 {
-  if (isVisible != visible) {
-    isVisible = visible;
-    manualOverride = true;  // 设置为手动覆盖模式
+  if (m_IsVisible != visible) {
+    m_IsVisible = visible;
+    m_ManualOverride = true;  // 设置为手动覆盖模式
     MarkDirty();
   }
 }
 
 void VisibilityComponent::SetLocalAABB(const AABB &aabb)
 {
-  if (localAABB.min != aabb.min || localAABB.max != aabb.max) {
-    localAABB = aabb;
+  if (m_LocalAABB.min != aabb.min || m_LocalAABB.max != aabb.max) {
+    m_LocalAABB = aabb;
     MarkBoundsDirty();
     MarkDirty();
   }
@@ -66,15 +66,15 @@ void VisibilityComponent::SetLocalAABB(const AABB &aabb)
 
 void VisibilityComponent::SetVisibilityMask(uint32_t mask)
 {
-  if (visibilityMask != mask) {
-    visibilityMask = mask;
+  if (m_VisibilityMask != mask) {
+    m_VisibilityMask = mask;
     MarkDirty();
   }
 }
 
 Sphere VisibilityComponent::GetWorldSphere() const
 {
-  return Sphere::FromAABB(worldAABB);
+  return Sphere::FromAABB(m_WorldAABB);
 }
 
 std::vector<std::type_index> VisibilityComponent::GetDependencies() const
@@ -100,28 +100,28 @@ bool VisibilityComponent::Deserialize(std::istream &input)
 
 void VisibilityComponent::MarkBoundsDirty()
 {
-  boundsDirty = true;
+  m_BoundsDirty = true;
   MarkDirty();
 }
 
 void VisibilityComponent::UpdateWorldAABB(SceneRegistry &reg)
 {
-  if (reg.HasComponent<TransformComponent>(GetOwnerEntity())) {
-    auto &transform = reg.GetComponent<TransformComponent>(GetOwnerEntity());
+  if (reg.HasComponent<TransformComponent>(GetEntity())) {
+    auto &transform = reg.GetComponent<TransformComponent>(GetEntity());
     glm::mat4 worldMatrix = transform.GetWorldMatrix(reg);
 
     // 使用BoundingVolumes工具类变换AABB
-    worldAABB = BoundingVolumes::TransformAABB(localAABB, worldMatrix);
+    m_WorldAABB = BoundingVolumes::TransformAABB(m_LocalAABB, worldMatrix);
   }
   else {
     // 没有变换组件，使用局部AABB作为世界AABB
-    worldAABB = localAABB;
+    m_WorldAABB = m_LocalAABB;
   }
 }
 
 IntersectionType VisibilityComponent::TestFrustum(const Frustum &frustum) const
 {
-  return frustum.TestAABB(worldAABB);
+  return frustum.TestAABB(m_WorldAABB);
 }
 
 // ==================== VisibilityComponentSystem ====================

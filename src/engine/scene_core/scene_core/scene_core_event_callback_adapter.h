@@ -51,7 +51,7 @@ class SceneCoreEventCallbackAdapter {
    */
   template<typename T> void UnregisterComponentCallbacks()
   {
-    std::unique_lock lock(m_CallbackMutex);
+    std::unique_lock lock(m_Mutex);
     const std::type_index type = typeid(T);
     m_ConstructCallbacks.erase(type);
     // m_UpdateCallbacks.erase(type);
@@ -61,7 +61,7 @@ class SceneCoreEventCallbackAdapter {
   // 以下方法由SceneRegistry调用以触发事件
   template<typename T> void OnComponentConstructed(Entity entity, Component &component)
   {
-    std::shared_lock lock(m_CallbackMutex);
+    std::shared_lock lock(m_Mutex);
     const std::type_index type = typeid(component);
 
     // 触发构造回调
@@ -73,7 +73,7 @@ class SceneCoreEventCallbackAdapter {
 
   template<typename T> void OnComponentDestroyed(Entity entity, Component &component)
   {
-    std::shared_lock lock(m_CallbackMutex);
+    std::shared_lock lock(m_Mutex);
     const std::type_index type = typeid(component);
 
     // 触发销毁回调
@@ -87,7 +87,7 @@ class SceneCoreEventCallbackAdapter {
   template<typename T>
   void RegisterCallbackComponentConstruct(std::function<void(Entity, T &)> callback)
   {
-    std::unique_lock lock(m_CallbackMutex);
+    std::unique_lock lock(m_Mutex);
     const std::type_index type = typeid(T);
     m_ConstructCallbacks[type] = [callback](Entity entity, Component &comp) {
       callback(entity, static_cast<T &>(comp));
@@ -97,7 +97,7 @@ class SceneCoreEventCallbackAdapter {
   template<typename T>
   void RegisterCallbackComponentDestroy(std::function<void(Entity, T &)> callback)
   {
-    std::unique_lock lock(m_CallbackMutex);
+    std::unique_lock lock(m_Mutex);
     const std::type_index type = typeid(T);
     m_DestroyCallbacks[type] = [callback](Entity entity, Component &comp) {
       callback(entity, static_cast<T &>(comp));
@@ -105,7 +105,7 @@ class SceneCoreEventCallbackAdapter {
   }
 
  private:
-  mutable std::shared_mutex m_CallbackMutex;
+  mutable std::shared_mutex m_Mutex;
 
   std::unordered_map<std::type_index, ComponentCallback> m_ConstructCallbacks;
   std::unordered_map<std::type_index, ComponentCallback> m_DestroyCallbacks;

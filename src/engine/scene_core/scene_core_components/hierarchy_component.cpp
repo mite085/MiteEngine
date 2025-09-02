@@ -77,7 +77,7 @@ bool HierarchyComponent::SetParent(SceneRegistry &registry, Entity newParent)
   // 从旧父节点移除
   if (oldParent.IsValid() && registry.HasComponent<HierarchyComponent>(oldParent)) {
     auto &oldParentHierarchy = registry.GetComponent<HierarchyComponent>(oldParent);
-    oldParentHierarchy.RemoveChild(registry, GetOwnerEntity());
+    oldParentHierarchy.RemoveChild(registry, GetEntity());
   }
 
   // 设置新父节点
@@ -86,13 +86,13 @@ bool HierarchyComponent::SetParent(SceneRegistry &registry, Entity newParent)
   // 添加到新父节点
   if (newParent.IsValid() && registry.HasComponent<HierarchyComponent>(newParent)) {
     auto &newParentHierarchy = registry.GetComponent<HierarchyComponent>(newParent);
-    newParentHierarchy.AddChild(registry, GetOwnerEntity());
+    newParentHierarchy.AddChild(registry, GetEntity());
   }
 
   MarkDirty();
 
   // 发布事件
-  EventBus::Get().Post(ParentChangedEvent(GetOwnerEntity(), *this, oldParent, newParent));
+  EventBus::Get().Post(ParentChangedEvent(GetEntity(), *this, oldParent, newParent));
 
   return true;
 }
@@ -111,7 +111,7 @@ bool HierarchyComponent::AddChild(SceneRegistry &registry, Entity child)
   // 设置子节点的父节点
   if (registry.HasComponent<HierarchyComponent>(child)) {
     auto &childHierarchy = registry.GetComponent<HierarchyComponent>(child);
-    if (!childHierarchy.SetParent(registry, GetOwnerEntity())) {
+    if (!childHierarchy.SetParent(registry, GetEntity())) {
       return false;
     }
   }
@@ -158,14 +158,14 @@ void HierarchyComponent::ClearChildren(SceneRegistry &registry)
 bool HierarchyComponent::ValidateHierarchy(SceneRegistry &registry, Entity newParent) const
 {
   // 检查自引用
-  if (newParent == GetOwnerEntity()) {
+  if (newParent == GetEntity()) {
     return false;
   }
 
   // 检查循环引用
   Entity current = newParent;
   while (current.IsValid() && registry.IsValid(current)) {
-    if (current == GetOwnerEntity()) {
+    if (current == GetEntity()) {
       return false;
     }
 
@@ -184,8 +184,8 @@ bool HierarchyComponent::ValidateHierarchy(SceneRegistry &registry, Entity newPa
 void HierarchyComponent::UpdateTransformDirtyState(SceneRegistry &registry)
 {
   // 标记自己的TransformComponent需要更新
-  if (registry.HasComponent<TransformComponent>(GetOwnerEntity())) {
-    auto &transform = registry.GetComponent<TransformComponent>(GetOwnerEntity());
+  if (registry.HasComponent<TransformComponent>(GetEntity())) {
+    auto &transform = registry.GetComponent<TransformComponent>(GetEntity());
     transform.MarkDirty();
   }
 
@@ -207,8 +207,8 @@ void HierarchyComponentSystem::Shutdown()
 {
   // 清空待处理队列
   {
-    std::lock_guard<std::mutex> lock(m_removalMutex);
-    m_pendingRemovals.clear();
+    std::lock_guard<std::mutex> lock(m_RemovalMutex);
+    m_PendingRemovals.clear();
   }
 
   DirtyComponentSystem<HierarchyComponent>::Shutdown();
@@ -244,8 +244,8 @@ bool HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<Hierarch
   // ComponentSystem也不应当维护SceneRegistry对象
   // （该操作复杂度较高，多打LOG方便后续调试）
   {
-    std::lock_guard<std::mutex> lock(m_removalMutex);
-    m_pendingRemovals.emplace_back(entity, parent, children);
+    std::lock_guard<std::mutex> lock(m_RemovalMutex);
+    m_PendingRemovals.emplace_back(entity, parent, children);
   }
 
   // 从组件列表中移除
@@ -320,13 +320,13 @@ void HierarchyComponentSystem::ProcessPendingRemovals(SceneRegistry &registry)
   std::vector<PendingRemoval> processingRemovals;
 
   {
-    std::lock_guard<std::mutex> lock(m_removalMutex);
-    if (m_pendingRemovals.empty()) {
+    std::lock_guard<std::mutex> lock(m_RemovalMutex);
+    if (m_PendingRemovals.empty()) {
       return;
     }
 
     // 交换数据以减少锁持有时间
-    processingRemovals.swap(m_pendingRemovals);
+    processingRemovals.swap(m_PendingRemovals);
   }
   // 处理所有待移除的组件
   for (const auto &removal : processingRemovals) {

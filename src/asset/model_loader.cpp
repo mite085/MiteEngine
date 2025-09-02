@@ -261,53 +261,53 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
     return simplifiedMesh;
   }
   // 准备meshoptimizer输入数据
-  const size_t index_count = originalMesh.indices.size();
-  const size_t vertex_count = originalMesh.vertexData.size() / originalMesh.layout.stride;
+  const size_t indexCount = originalMesh.indices.size();
+  const size_t vertexCount = originalMesh.vertexData.size() / originalMesh.layout.stride;
 
   std::vector<unsigned int> indices = originalMesh.indices;
 
   // 首先进行顶点缓存优化
-  meshopt_optimizeVertexCache(indices.data(), indices.data(), index_count, vertex_count);
+  meshopt_optimizeVertexCache(indices.data(), indices.data(), indexCount, vertexCount);
 
   // 计算目标索引数量
-  const size_t target_index_count = static_cast<size_t>(index_count * targetRatio);
-  const float target_error = 1e-2f;  // 可接受的简化误差
+  const size_t targetIndexCount = static_cast<size_t>(indexCount * targetRatio);
+  const float targetError = 1e-2f;  // 可接受的简化误差
 
   // 使用meshoptimizer进行网格简化
-  std::vector<unsigned int> simplified_indices(indices.size());
-  size_t simplified_index_count = meshopt_simplify(
-      simplified_indices.data(),
+  std::vector<unsigned int> simplifiedIndices(indices.size());
+  size_t simplifiedIndexCount = meshopt_simplify(
+      simplifiedIndices.data(),
       indices.data(),
-      index_count,
+      indexCount,
       reinterpret_cast<const float *>(originalMesh.vertexData.data()),
-      vertex_count,
+      vertexCount,
       originalMesh.layout.stride,
-      target_index_count,
-      target_error);
+      targetIndexCount,
+      targetError);
 
   // 调整简化后的索引数组大小
-  simplified_indices.resize(simplified_index_count);
+  simplifiedIndices.resize(simplifiedIndexCount);
 
   // 重新映射顶点数据
-  std::vector<unsigned int> remap(vertex_count);
-  size_t unique_vertex_count = meshopt_optimizeVertexFetchRemap(
-      remap.data(), simplified_indices.data(), simplified_index_count, vertex_count);
+  std::vector<unsigned int> remap(vertexCount);
+  size_t uniqueVertexCount = meshopt_optimizeVertexFetchRemap(
+      remap.data(), simplifiedIndices.data(), simplifiedIndexCount, vertexCount);
 
   // 应用顶点重映射
-  std::vector<uint8_t> simplified_vertex_data(unique_vertex_count * originalMesh.layout.stride);
-  meshopt_remapVertexBuffer(simplified_vertex_data.data(),
+  std::vector<uint8_t> simplifiedVertexData(uniqueVertexCount * originalMesh.layout.stride);
+  meshopt_remapVertexBuffer(simplifiedVertexData.data(),
                             originalMesh.vertexData.data(),
-                            vertex_count,
+                            vertexCount,
                             originalMesh.layout.stride,
                             remap.data());
 
   // 重映射索引（相对于自己的顶点数据的相对偏移）
   meshopt_remapIndexBuffer(
-      simplified_indices.data(), simplified_indices.data(), simplified_index_count, remap.data());
+      simplifiedIndices.data(), simplifiedIndices.data(), simplifiedIndexCount, remap.data());
 
   // 更新简化后的网格数据
-  simplifiedMesh.vertexData = std::move(simplified_vertex_data);
-  simplifiedMesh.indices = std::move(simplified_indices);
+  simplifiedMesh.vertexData = std::move(simplifiedVertexData);
+  simplifiedMesh.indices = std::move(simplifiedIndices);
 
   // 重新计算包围盒
   simplifiedMesh.boundingBoxMin = glm::vec3(FLT_MAX);

@@ -75,8 +75,8 @@ class UISystem {
   std::vector<std::string> m_panelOrder;  // 维护渲染顺序
 
   // ImGui上下文
-  ImGuiContext *m_imguiContext = nullptr;
-  bool m_frameStarted = false;
+  ImGuiContext *m_ImguiContext = nullptr;
+  bool m_FrameStarted = false;
 
   // 事件订阅ID，用于取消订阅EventBus
   //EventBus::HandlerID m_EventHandlerID;  

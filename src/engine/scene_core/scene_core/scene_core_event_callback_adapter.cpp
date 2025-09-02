@@ -17,7 +17,7 @@ void SceneCoreEventCallbackAdapter::RegisterCallbacks()
 
 void SceneCoreEventCallbackAdapter::UnregisterCallbacks()
 {
-  std::unique_lock lock(m_CallbackMutex);
+  std::unique_lock lock(m_Mutex);
   m_ConstructCallbacks.clear();
   //m_UpdateCallbacks.clear();
   m_DestroyCallbacks.clear();

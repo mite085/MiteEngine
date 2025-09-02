@@ -97,23 +97,22 @@ class SceneGraphSystem : public ComponentSystem {
   void ProcessPendingOperations(SceneRegistry &registry);
 
   // 实体暂存队列
-  std::vector<Entity> m_pendingCreateNodes;   // 待创建的节点
-  std::vector<Entity> m_pendingDestroyNodes;  // 待销毁的节点
-  std::vector<Entity> m_pendingSyncBounds;    // 待同步包围盒的节点
+  std::vector<Entity> m_PendingCreateNodes;   // 待创建的节点
+  std::vector<Entity> m_PendingDestroyNodes;  // 待销毁的节点
+  std::vector<Entity> m_PendingSyncBounds;    // 待同步包围盒的节点
 
- private:
   // SceneGraph服务引用（外部注入）
-  SceneGraph *m_sceneGraph;
+  SceneGraph *m_SceneGraph;
 
   // 事件订阅管理
-  SubscriptionGroup m_eventSubscriptions;
+  SubscriptionGroup m_EventSubscriptions;
 
   // 性能统计
   struct {
     uint32_t nodesCreated = 0;
     uint32_t nodesDestroyed = 0;
     uint32_t boundsSyncs = 0;
-  } m_stats;
+  } m_Stats;
 
   // 日志器
   Logger m_Logger;

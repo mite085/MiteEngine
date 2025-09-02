@@ -74,14 +74,14 @@ template<typename AssetType> class AssetCache {
   };
 
   // ---- 成员变量 ----
-  mutable std::mutex mutex_;
-  std::unordered_map<AssetID, CachedAsset> cache_;
+  mutable std::mutex m_Mutex;
+  std::unordered_map<AssetID, CachedAsset> m_Cache;
 
   // LRU实现：（Least recently used，最近最少使用）
   // 该算法根据数据的历史访问记录来进行淘汰数据，
   // 确保缓存占用小，且被重复访问的效率高.
-  mutable std::list<AssetID> lruList_;  // 最近使用顺序
-  mutable size_t maxSize_ = 1000;       // 最大缓存数量
+  mutable std::list<AssetID> m_LruList;  // 最近使用顺序
+  mutable size_t m_MaxSize = 1000;       // 最大缓存数量
 };
 
 // 常用缓存类型别名

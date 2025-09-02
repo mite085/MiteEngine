@@ -25,7 +25,7 @@ void TransformComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
   UpdateWorldMatrix(reg);
 
   // 发布更新事件
-  EventBus::Get().Post(TransformUpdatedEvent(GetOwnerEntity(), *this));
+  EventBus::Get().Post(TransformUpdatedEvent(GetEntity(), *this));
 
   // 清除标记
   m_HierarchyDirty = false;
@@ -44,7 +44,7 @@ void TransformComponent::SetLocalPosition(const glm::vec3 &position)
     m_Transform.SetPosition(position);
     MarkDirty();
 
-    EventBus::Get().Post(PositionChangedEvent(GetOwnerEntity(), *this, position, false));
+    EventBus::Get().Post(PositionChangedEvent(GetEntity(), *this, position, false));
   }
 }
 
@@ -59,8 +59,8 @@ void TransformComponent::SetWorldPosition(SceneRegistry &reg, const glm::vec3 &p
 {
   // 转换为LocalPosition后调用SetLocalPosition
   // 注意：MarkDirty和EventPost均由SetLocal函数负责，此处调用SetLocal函数后，无需执行这些操作
-  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 如果有父节点，转换为局部空间
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
@@ -89,7 +89,7 @@ void TransformComponent::SetLocalRotation(const glm::vec3 &rotation)
     m_Transform.SetRotation(rotation);
     MarkDirty();
 
-    EventBus::Get().Post(RotationChangedEvent(GetOwnerEntity(), *this, rotation, false));
+    EventBus::Get().Post(RotationChangedEvent(GetEntity(), *this, rotation, false));
   }
 }
 
@@ -119,8 +119,8 @@ void TransformComponent::SetWorldRotation(SceneRegistry &reg, const glm::vec3 &r
 {
   // 转换为LocalRotation后调用SetLocalRotation
   // 注意：MarkDirty和EventPost均由SetLocal函数负责，此处调用SetLocal函数后，无需执行这些操作
-  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 转换为局部旋转
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
@@ -162,8 +162,8 @@ void TransformComponent::RotateAround(SceneRegistry &reg,
   glm::vec3 worldRot = GetWorldRotation(reg);
 
   // 如果有父节点，需要将世界坐标转换为局部坐标
-  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
@@ -208,7 +208,7 @@ void TransformComponent::SetLocalScale(const glm::vec3 &scale)
     m_Transform.SetScale(scale);
     MarkDirty();
 
-    EventBus::Get().Post(ScaleChangedEvent(GetOwnerEntity(), *this, scale, false));
+    EventBus::Get().Post(ScaleChangedEvent(GetEntity(), *this, scale, false));
   }
 }
 
@@ -245,13 +245,13 @@ void TransformComponent::SetLocalMatrix(const glm::mat4 &matrix)
   m_Transform.SetLocalMatrix(matrix);
   MarkDirty();
 
-  EventBus::Get().Post(TransformChangedEvent(GetOwnerEntity(), *this, matrix, false));
+  EventBus::Get().Post(TransformChangedEvent(GetEntity(), *this, matrix, false));
 }
 
 void TransformComponent::SetWorldMatrix(SceneRegistry &reg, const glm::mat4 &matrix)
 {
-  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
       // 转换为局部空间
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
@@ -330,8 +330,8 @@ void TransformComponent::UpdateWorldMatrix(SceneRegistry &reg) const
 {
   glm::mat4 localMat = GetLocalMatrix();
 
-  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity())) {
-    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetOwnerEntity());
+  if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
+    auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());

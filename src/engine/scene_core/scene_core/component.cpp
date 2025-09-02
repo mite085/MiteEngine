@@ -59,8 +59,8 @@ bool Component::Deserialize(std::istream &input)
 
 bool Component::HasParent(SceneRegistry &reg)
 {
-  if (reg.HasComponent<HierarchyComponent>(GetOwnerEntity()))
-    return reg.GetComponent<HierarchyComponent>(GetOwnerEntity()).GetParent().IsValid();
+  if (reg.HasComponent<HierarchyComponent>(GetEntity()))
+    return reg.GetComponent<HierarchyComponent>(GetEntity()).GetParent().IsValid();
   else
     return false;
 }
@@ -68,16 +68,16 @@ bool Component::HasParent(SceneRegistry &reg)
 Entity Component::GetParent(SceneRegistry &reg)
 {
   // 与Component::HasParent配合使用，故不设置if分支进行正确性检查。
-  return reg.GetComponent<HierarchyComponent>(GetOwnerEntity()).GetParent();
+  return reg.GetComponent<HierarchyComponent>(GetEntity()).GetParent();
 }
 
 void Component::SetOwnerEntity(Entity entity)
 {
-  m_OwnerEntity = entity;
+  m_Entity = entity;
 }
 
-Entity Component::GetOwnerEntity() const
+Entity Component::GetEntity() const
 {
-  return m_OwnerEntity;
+  return m_Entity;
 }
 };  // namespace mite

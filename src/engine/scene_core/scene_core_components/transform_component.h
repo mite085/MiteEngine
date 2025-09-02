@@ -178,8 +178,8 @@ class PositionChangedEvent : public ComponentEvent<TransformComponent> {
                        glm::vec3 newPosition,
                        bool isWorldSpace)
       : ComponentEvent<TransformComponent>(entity, component),
-        newPosition(newPosition),
-        isWorldSpace(isWorldSpace)
+        m_NewPosition(newPosition),
+        m_IsWorldSpace(isWorldSpace)
   {
   }
 
@@ -187,15 +187,15 @@ class PositionChangedEvent : public ComponentEvent<TransformComponent> {
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new PositionChangedEvent(entity, component, newPosition, isWorldSpace);
+    return new PositionChangedEvent(entity, component, m_NewPosition, m_IsWorldSpace);
   }
   bool IsWorldSpace()
   {
-    return isWorldSpace;
+    return m_IsWorldSpace;
   }
  private:
-  glm::vec3 newPosition;
-  bool isWorldSpace;
+  glm::vec3 m_NewPosition;
+  bool m_IsWorldSpace;
 };
 /**
  * @class RotationChangedEvent
@@ -208,24 +208,24 @@ class RotationChangedEvent : public ComponentEvent<TransformComponent> {
                        glm::quat newRotation,
                        bool isWorldSpace)
       : ComponentEvent<TransformComponent>(entity, component),
-        newRotation(newRotation),
-        isWorldSpace(isWorldSpace)
+        m_NewRotation(newRotation),
+        m_IsWorldSpace(isWorldSpace)
   {
   }
   bool IsWorldSpace()
   {
-    return isWorldSpace;
+    return m_IsWorldSpace;
   }
   EVENT_CLASS_TYPE(TRANSFORM_COMPONENT_ROTATION_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new RotationChangedEvent(entity, component, newRotation, isWorldSpace);
+    return new RotationChangedEvent(entity, component, m_NewRotation, m_IsWorldSpace);
   }
 
  private:
-  glm::quat newRotation;
-  bool isWorldSpace;
+  glm::quat m_NewRotation;
+  bool m_IsWorldSpace;
 };
 /**
  * @class ScaleChangedEvent
@@ -238,24 +238,24 @@ class ScaleChangedEvent : public ComponentEvent<TransformComponent> {
                     glm::vec3 newPosition,
                     bool isWorldSpace)
       : ComponentEvent<TransformComponent>(entity, component),
-        newScale(newPosition),
-        isWorldSpace(isWorldSpace)
+        m_NewScale(newPosition),
+        m_IsWorldSpace(isWorldSpace)
   {
   }
   bool IsWorldSpace()
   {
-    return isWorldSpace;
+    return m_IsWorldSpace;
   }
   EVENT_CLASS_TYPE(TRANSFORM_COMPONENT_SCALE_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new ScaleChangedEvent(entity, component, newScale, isWorldSpace);
+    return new ScaleChangedEvent(entity, component, m_NewScale, m_IsWorldSpace);
   }
 
  private:
-  glm::vec3 newScale;
-  bool isWorldSpace;
+  glm::vec3 m_NewScale;
+  bool m_IsWorldSpace;
 };
 /**
  * @class TransformChangedEvent

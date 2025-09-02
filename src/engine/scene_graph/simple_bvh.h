@@ -9,11 +9,11 @@ namespace mite {
  * @brief BVH树节点，用于构建层次包围盒结构
  */
 struct BVHNode {
-  AABB bounds;                          ///< 节点包围盒
-  BVHNode *left = nullptr;              ///< 左子节点
-  BVHNode *right = nullptr;             ///< 右子节点
-  std::vector<SceneNode *> sceneNodes;  ///< 关联的场景节点（叶子节点）
-  int depth = 0;                        ///< 节点深度
+  AABB bounds;                          // 节点包围盒
+  BVHNode *left = nullptr;              // 左子节点
+  BVHNode *right = nullptr;             // 右子节点
+  std::vector<SceneNode *> sceneNodes;  // 关联的场景节点（叶子节点）
+  int depth = 0;                        // 节点深度
 
   /**
    * @brief 判断是否为叶子节点
@@ -203,22 +203,22 @@ class SimpleBVH : public SpatialPartition {
   void CollectStatsRecursive(BVHNode *node, struct BVHStats &stats) const;
 
   /**
-   * @brief 更新场景节点在BVH中的位置
+   * @brief TODO: 更新场景节点在BVH中的位置
    * @param node 场景节点
    */
-  void UpdateNode(SceneNode *node);
+  //void UpdateNode(SceneNode *node);
 
  private:
-  BVHNode *root_ = nullptr;            ///< BVH根节点
-  std::vector<SceneNode *> allNodes_;  ///< 所有场景节点列表（用于快速重建）
-  int maxDepth_;                       ///< 最大构建深度
-  int minLeafSize_;                    ///< 叶子节点最小对象数
-  bool needsRebuild_ = false;          ///< 需要重建标记
-  size_t nodeCount_ = 0;               ///< 总节点数统计
+  BVHNode *m_Root = nullptr;            // BVH根节点
+  std::vector<SceneNode *> m_AllNodes;  // 所有场景节点列表（用于快速重建）
+  int m_MaxDepth;                       // 最大构建深度
+  int m_MinLeafSize;                    // 叶子节点最小对象数
+  bool m_NeedsRebuild = false;          // 需要重建标记
+  size_t m_NodeCount = 0;               // 总节点数统计
 
   // 性能统计
-  mutable uint64_t raycastTests_ = 0;  ///< 射线检测测试次数
-  mutable uint64_t frustumTests_ = 0;  ///< 视锥体测试次数
+  mutable uint64_t m_RaycastTests = 0;  // 射线检测测试次数
+  mutable uint64_t m_FrustumTests = 0;  // 视锥体测试次数
 };
 }  // namespace mite
 

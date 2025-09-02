@@ -52,10 +52,10 @@ class Model {
   bool HasLOD() const;
 
  private:
-  std::shared_ptr<ModelGPUHandle> modelHandle_;   // 整个模型的GPU资源
-  std::vector<std::shared_ptr<Mesh>> subMeshes_;  // 子网格集合
-  std::pair<glm::vec3, glm::vec3> boundingBox_;   // 模型级包围盒(min, max)
-  bool hasLOD_ = false;                           // 是否包含LOD
+  std::shared_ptr<ModelGPUHandle> m_ModelHandle;   // 整个模型的GPU资源
+  std::vector<std::shared_ptr<Mesh>> m_SubMeshes;  // 子网格集合
+  std::pair<glm::vec3, glm::vec3> m_BoundingBox;   // 模型级包围盒(min, max)
+  bool m_HasLOD = false;                           // 是否包含LOD
 };
 };  // namespace mite
 

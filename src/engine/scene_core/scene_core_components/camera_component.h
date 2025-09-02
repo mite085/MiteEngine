@@ -125,7 +125,7 @@ class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
   Entity GetMainCameraEntity() const;
 
   // 设置主相机实体（确保唯一性）
-  void SetMainCameraEntity(Entity main_camera);
+  void SetMainCameraEntity(Entity mainCamera);
 
  protected:
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
@@ -160,7 +160,7 @@ class CameraVisibilityMaskChangedEvent : public ComponentEvent<CameraComponent> 
                                    CameraComponent &component,
                                    uint32_t newVisibilityMask)
       : ComponentEvent<CameraComponent>(entity, component),
-        newVisibilityMask(newVisibilityMask)
+        m_NewVisibilityMask(newVisibilityMask)
   {
   }
 
@@ -168,15 +168,15 @@ class CameraVisibilityMaskChangedEvent : public ComponentEvent<CameraComponent> 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new CameraVisibilityMaskChangedEvent(entity, component, newVisibilityMask);
+    return new CameraVisibilityMaskChangedEvent(entity, component, m_NewVisibilityMask);
   }
   uint32_t GetNewVisibleMask()
   {
-    return newVisibilityMask;
+    return m_NewVisibilityMask;
   }
 
  private:
-  uint32_t newVisibilityMask;
+  uint32_t m_NewVisibilityMask;
 };
 };  // namespace mite
 

@@ -11,10 +11,10 @@ namespace mite {
  */
 class Ray {
  public:
-  glm::vec3 origin;     ///< 射线起点
-  glm::vec3 direction;  ///< 射线方向（单位向量）
-  float tMin;           ///< 最小距离
-  float tMax;           ///< 最大距离
+  glm::vec3 origin;     // 射线起点
+  glm::vec3 direction;  // 射线方向（单位向量）
+  float tMin;           // 最小距离
+  float tMax;           // 最大距离
 
   /**
    * @brief 默认构造函数

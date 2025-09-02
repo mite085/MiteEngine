@@ -227,11 +227,11 @@ class SpatialPartition {
  * @brief 空间划分类型枚举
  */
 enum class SpatialPartitionType {
-  BVH,       ///< 包围盒层次结构
-  QuadTree,  ///< 四叉树（2D空间）
-  Octree,    ///< 八叉树（3D空间）
-  Grid,      ///< 均匀网格
-  KDTree     ///< KD树
+  BVH,       // 包围盒层次结构
+  QuadTree,  // 四叉树（2D空间）
+  Octree,    // 八叉树（3D空间）
+  Grid,      // 均匀网格
+  KDTree     // KD树
 };
 
 /**

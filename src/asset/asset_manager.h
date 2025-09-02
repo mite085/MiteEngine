@@ -53,7 +53,7 @@ class AssetManager {
   // ---- 成员变量 ----
   TextureCache m_TextureCache;  // 纹理资源缓存
   ModelCache m_ModelCache;      // 模型资源缓存
-  mutable std::mutex mutex_;    // 线程安全锁
+  mutable std::mutex m_Mutex;    // 线程安全锁
 };
 };  // namespace mite
 

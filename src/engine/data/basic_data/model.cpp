@@ -2,36 +2,36 @@
 
 namespace mite {
 Model::Model(std::shared_ptr<ModelGPUHandle> modelHandle)
-    : modelHandle_(modelHandle), boundingBox_(modelHandle->bboxMin, modelHandle->bboxMax)
+    : m_ModelHandle(modelHandle), m_BoundingBox(modelHandle->bboxMin, modelHandle->bboxMax)
 {
-  if (!modelHandle_) {
+  if (!m_ModelHandle) {
     throw std::invalid_argument("Model handle cannot be null");
   }
 
   // 基于每个原始 LOD 创建的分组，逐个构建 Mesh 对象
-  for (MeshSectionLODChain &lodChain : modelHandle_->subMeshes) {
+  for (MeshSectionLODChain &lodChain : m_ModelHandle->subMeshes) {
     auto mesh = std::make_shared<Mesh>(modelHandle, lodChain);
-    subMeshes_.push_back(mesh);
+    m_SubMeshes.push_back(mesh);
   }
 }
 
 size_t Model::GetSubMeshCount() const
 {
-  return subMeshes_.size();
+  return m_SubMeshes.size();
 }
 
 const std::vector<std::shared_ptr<Mesh>> &Model::GetAllSubMeshes() const
 {
-  return subMeshes_;
+  return m_SubMeshes;
 }
 
 std::shared_ptr<Mesh> Model::GetSubMesh(size_t index) const
 {
-  if (index >= subMeshes_.size()) {
+  if (index >= m_SubMeshes.size()) {
     LOG_ERROR("Invalid submesh index: {}", index);
     return nullptr;
   }
-  return subMeshes_[index];
+  return m_SubMeshes[index];
 }
 
 std::vector<uint32_t> Model::GetSupportedLODLevels() const
@@ -39,7 +39,7 @@ std::vector<uint32_t> Model::GetSupportedLODLevels() const
   std::unordered_set<uint32_t> lodLevels;
 
   // 遍历所有SubMesh，获取Lod层级
-  for (const auto &mesh : subMeshes_) {
+  for (const auto &mesh : m_SubMeshes) {
     for (const auto &section : mesh->GetAllLODSections()) {
       lodLevels.insert(section.lodLevel);
     }
@@ -54,16 +54,16 @@ std::vector<uint32_t> Model::GetSupportedLODLevels() const
 
 const std::pair<glm::vec3, glm::vec3> &Model::GetBoundingBox() const
 {
-  return boundingBox_;
+  return m_BoundingBox;
 }
 
 const std::string Model::GetPath() const
 {
-  return modelHandle_->path;
+  return m_ModelHandle->path;
 }
 
 bool Model::HasLOD() const
 {
-  return hasLOD_;
+  return m_HasLOD;
 }
 };  // namespace mite

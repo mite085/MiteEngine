@@ -61,27 +61,27 @@ void MiteApplication::LoadDefaultScene()
   // 协调各模块，加载初始场景
 
   // 0. 创建并绑定主相机（该步骤必须在m_SceneCore->InitializeComponentSystems();之后执行)
-  Camera main_camera;
+  Camera mainCamera;
   // main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
 
   // 设定方便观看模型的角度
-  main_camera.LookAt(glm::vec3(0.0f, 3.0f, 5.0f),  // 位置：在模型上方稍后方
+  mainCamera.LookAt(glm::vec3(0.0f, 3.0f, 5.0f),  // 位置：在模型上方稍后方
                      glm::vec3(0.0f, 0.0f, 0.0f),  // 看向模型中心
                      glm::vec3(0.0f, 1.0f, 0.0f)   // 上方向
   );
   // 投影参数
-  main_camera.SetPerspective(60.0f,  // FOV: 60度（便于计算）
+  mainCamera.SetPerspective(60.0f,  // FOV: 60度（便于计算）
                              1.0f,   // 宽高比: 1:1（正方形视口，简化计算）
                              1.0f,   // 近平面: 1m
                              20.0f   // 远平面: 20m（足够包含场景）
   );
-  Entity main_camera_entity = m_SceneCore->CreateEntity("main_camera");
-  CameraComponent &main_camera_component =
+  Entity mainCameraEntity = m_SceneCore->CreateEntity("main_camera");
+  CameraComponent &mainCameraComponent =
       m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
-          main_camera_entity, std::make_shared<Camera>(main_camera));
-  TransformComponent &main_camera_transform =
-      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(main_camera_entity);
-  m_SceneCore->SetMainCamera(main_camera_entity);
+          mainCameraEntity, std::make_shared<Camera>(mainCamera));
+  TransformComponent &mainCameraTransform =
+      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
+  m_SceneCore->SetMainCamera(mainCameraEntity);
 
   // 0. 创建ViewportPanel并设置FrameBuffer
   auto viewportPanel = std::make_shared<ViewportPanel>("Viewport");

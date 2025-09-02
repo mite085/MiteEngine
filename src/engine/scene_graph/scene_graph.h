@@ -263,8 +263,8 @@ class SceneGraph {
   bool Deserialize(std::istream &input);
 
  private:
-  SceneNodeManager m_nodeManager;
-  SpatialPartitionManager m_spatialPartitionManager;
+  SceneNodeManager m_NodeManager;
+  SpatialPartitionManager m_SpatialPartitionManager;
 
   // ÈÕÖ¾Æ÷
   Logger m_Logger;

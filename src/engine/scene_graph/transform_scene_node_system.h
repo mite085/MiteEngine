@@ -69,13 +69,13 @@ class TransformSceneNodeSystem : public ComponentSystem {
   void SyncComponentToNode(SceneRegistry &registry, Entity entity);
 
  private:
-  SceneGraph *m_sceneGraph = nullptr;
+  SceneGraph *m_SceneGraph = nullptr;
 
   // 需要同步的实体队列
-  std::vector<Entity> m_pendingSyncEntities;
+  std::vector<Entity> m_PendingSyncEntities;
 
   // PendingSyncEntities的线程安全保护
-  mutable std::mutex m_mutex;
+  mutable std::mutex m_Mutex;
 };
 
 }  // namespace mite

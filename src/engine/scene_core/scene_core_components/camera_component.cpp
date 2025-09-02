@@ -7,9 +7,9 @@ CameraComponent::CameraComponent(std::shared_ptr<Camera> camera) : m_Camera(came
 void CameraComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 {
   // 处理CameraInputProcessor和TransformComponent的数据同步
-  if (reg.HasComponent<TransformComponent>(GetOwnerEntity())) {
+  if (reg.HasComponent<TransformComponent>(GetEntity())) {
     // 对比上一帧，检测Transform是否主动发生变化
-    auto &transform = reg.GetComponent<TransformComponent>(GetOwnerEntity());
+    auto &transform = reg.GetComponent<TransformComponent>(GetEntity());
     TransformState currentState = {transform.GetWorldPosition(reg),
                                    transform.GetWorldRotation(reg)};
 
@@ -115,7 +115,7 @@ void CameraComponent::SetVisibilityMask(uint32_t mask)
   if (m_VisibilityMask != mask) {
     m_VisibilityMask = mask;
     MarkDirty();
-    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_OwnerEntity, *this, m_VisibilityMask));
+    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
 }
 
@@ -130,7 +130,7 @@ void CameraComponent::AddVisibilityLayer(uint32_t mask)
   m_VisibilityMask |= mask;
   if (m_VisibilityMask != mask) {
     MarkDirty();
-    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_OwnerEntity, *this, m_VisibilityMask));
+    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
 }
 void CameraComponent::RemoveVisibilityLayer(uint32_t mask)
@@ -139,7 +139,7 @@ void CameraComponent::RemoveVisibilityLayer(uint32_t mask)
   m_VisibilityMask &= ~mask;
   if (m_VisibilityMask != mask) {
     MarkDirty();
-    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_OwnerEntity, *this, m_VisibilityMask));
+    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
 }
 
@@ -196,13 +196,13 @@ Entity CameraComponentSystem::GetMainCameraEntity() const
       LOG_ERROR("Empty camera component pointer in camera component system!");
     }
     else if (component->GetUsage() == CameraUsage::MainView) {
-      return component->GetOwnerEntity();
+      return component->GetEntity();
     }
   }
   return Entity{};
 }
 
-void CameraComponentSystem::SetMainCameraEntity(Entity main_camera)
+void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
 {
   // 遍历组件列表，获取新camera组件和旧camera组件
   CameraComponent *oldMain = nullptr, *newMain = nullptr;
@@ -213,7 +213,7 @@ void CameraComponentSystem::SetMainCameraEntity(Entity main_camera)
     else if (component->GetUsage() == CameraUsage::MainView) {
       oldMain = component;
     }
-    else if (component->GetOwnerEntity() == main_camera) {
+    else if (component->GetEntity() == mainCamera) {
       newMain = component;
     }
   }
@@ -229,7 +229,7 @@ void CameraComponentSystem::SetMainCameraEntity(Entity main_camera)
   // 设置新的主相机
   if (newMain) {
     newMain->SetUsage(CameraUsage::MainView);
-    EventBus::Get().Post(MainCameraChangedEvent(main_camera, *newMain));
+    EventBus::Get().Post(MainCameraChangedEvent(mainCamera, *newMain));
   }
   else {
     LOG_ERROR("Invalid camera entity when setting new main camera");

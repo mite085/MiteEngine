@@ -5,10 +5,10 @@ namespace mite {
 RenderQueue::RenderQueue()
 {
   // …Ë÷√ƒ¨»œ≈≈–Ú≤ﬂ¬‘
-  opaqueQueue.sortStrategy = SortStrategy::FrontToBack;
-  transparentQueue.sortStrategy = SortStrategy::BackToFront;
-  alphaTestQueue.sortStrategy = SortStrategy::ByMaterial;
-  customQueue.sortStrategy = SortStrategy::None;
+  m_OpaqueQueue.sortStrategy = SortStrategy::FrontToBack;
+  m_TransparentQueue.sortStrategy = SortStrategy::BackToFront;
+  m_AlphaTestQueue.sortStrategy = SortStrategy::ByMaterial;
+  m_CustomQueue.sortStrategy = SortStrategy::None;
 }
 
 RenderQueue::~RenderQueue()
@@ -37,10 +37,10 @@ void RenderQueue::ClearQueue(QueueType queueType)
 
 void RenderQueue::ClearAll()
 {
-  opaqueQueue.items.clear();
-  transparentQueue.items.clear();
-  alphaTestQueue.items.clear();
-  customQueue.items.clear();
+  m_OpaqueQueue.items.clear();
+  m_TransparentQueue.items.clear();
+  m_AlphaTestQueue.items.clear();
+  m_CustomQueue.items.clear();
 }
 
 void RenderQueue::SetSortStrategy(QueueType queueType, SortStrategy strategy)
@@ -124,8 +124,8 @@ size_t RenderQueue::GetItemCount(QueueType queueType) const
 
 size_t RenderQueue::GetTotalItemCount() const
 {
-  return opaqueQueue.items.size() + transparentQueue.items.size() + alphaTestQueue.items.size() +
-         customQueue.items.size();
+  return m_OpaqueQueue.items.size() + m_TransparentQueue.items.size() + m_AlphaTestQueue.items.size() +
+         m_CustomQueue.items.size();
 }
 
 void RenderQueue::SetCustomSortFunction(
@@ -146,15 +146,15 @@ RenderQueue::QueueData &RenderQueue::GetQueueData(QueueType queueType)
 {
   switch (queueType) {
     case QueueType::Opaque:
-      return opaqueQueue;
+      return m_OpaqueQueue;
     case QueueType::Transparent:
-      return transparentQueue;
+      return m_TransparentQueue;
     case QueueType::AlphaTest:
-      return alphaTestQueue;
+      return m_AlphaTestQueue;
     case QueueType::Custom:
-      return customQueue;
+      return m_CustomQueue;
     default:
-      return opaqueQueue;
+      return m_OpaqueQueue;
   }
 }
 
@@ -162,15 +162,15 @@ const RenderQueue::QueueData &RenderQueue::GetQueueData(QueueType queueType) con
 {
   switch (queueType) {
     case QueueType::Opaque:
-      return opaqueQueue;
+      return m_OpaqueQueue;
     case QueueType::Transparent:
-      return transparentQueue;
+      return m_TransparentQueue;
     case QueueType::AlphaTest:
-      return alphaTestQueue;
+      return m_AlphaTestQueue;
     case QueueType::Custom:
-      return customQueue;
+      return m_CustomQueue;
     default:
-      return opaqueQueue;
+      return m_OpaqueQueue;
   }
 }
 

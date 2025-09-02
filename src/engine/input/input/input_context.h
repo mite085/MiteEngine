@@ -23,7 +23,7 @@ class InputAction {
   std::vector<Binding> bindings;
   float value = 0.0f;  // 当前动作值
 
-  float hold_time = 0.0f;  // 长按计时
+  float holdTime = 0.0f;  // 长按计时
 };
 /**
  * @brief 输入上下文

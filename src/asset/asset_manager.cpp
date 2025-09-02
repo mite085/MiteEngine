@@ -13,7 +13,7 @@ AssetManager::~AssetManager()
 AssetID AssetManager::LoadTexture(const std::string &path)
 {
   AssetID id = UUIDGenerator::Generate(path.c_str());
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
   auto cachedTex = m_TextureCache.Get(id);
 
@@ -49,7 +49,7 @@ void AssetManager::LoadTextureInternalToCache(const std::string &path)
 
 void AssetManager::ReleaseTexture(AssetID id)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   if (m_TextureCache.Release(id) <= 0) {
     m_TextureCache.ForceRemove(id);
   }
@@ -62,7 +62,7 @@ AssetID AssetManager::LoadModel(const std::string &path,
                                 const std::vector<float> &lodLevels)
 {
   
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
   AssetID id = UUIDGenerator::Generate(path.c_str());
   auto cachedModel = m_ModelCache.Get(id);
@@ -103,7 +103,7 @@ void AssetManager::LoadModelInternalToCache(const std::string &path,
 
 void AssetManager::ReleaseModel(AssetID id)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   if (m_ModelCache.Release(id) <= 0) {
     m_ModelCache.ForceRemove(id);
   }

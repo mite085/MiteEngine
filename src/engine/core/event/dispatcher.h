@@ -64,7 +64,7 @@ class EventDispatcher {
   }
 
  private:
-  Event *m_Event = nullptr;  ///< 指向当前要分发的事件对象的指针
+  Event *m_Event = nullptr;  // 指向当前要分发的事件对象的指针
 };
 
 }  // namespace mite

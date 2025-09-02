@@ -19,7 +19,7 @@ UniformVariant::Type UniformVariant::GetType() const
       Type::Vector3Array, // vec3[]
       Type::Texture,
   };
-  return typeMap[m_data.index()];
+  return typeMap[m_Data.index()];
 }
 float UniformVariant::GetFloat(float defaultValue) const
 {
@@ -92,6 +92,6 @@ std::string UniformVariant::ToShaderString() const
     }
   };
 
-  return std::visit(ToStringHelper, m_data);
+  return std::visit(ToStringHelper, m_Data);
 }
 };  // namespace mite

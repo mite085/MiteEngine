@@ -32,7 +32,7 @@ class SceneNode {
    */
   Entity GetEntity() const
   {
-    return entity_;
+    return m_Entity;
   }
 
   /**
@@ -47,7 +47,7 @@ class SceneNode {
    */
   SceneNode *GetParent() const
   {
-    return parent_;
+    return m_Parent;
   }
 
   /**
@@ -69,7 +69,7 @@ class SceneNode {
    */
   const std::vector<SceneNode *> &GetChildren() const
   {
-    return children_;
+    return m_Children;
   }
 
   /**
@@ -84,7 +84,7 @@ class SceneNode {
    */
   const glm::mat4 &GetLocalTransform() const
   {
-    return localTransform_;
+    return m_LocalTransform;
   }
 
   /**
@@ -93,7 +93,7 @@ class SceneNode {
    */
   const glm::mat4 &GetWorldTransform() const
   {
-    return worldTransform_;
+    return m_WorldTransform;
   }
 
   /**
@@ -108,7 +108,7 @@ class SceneNode {
    */
   const AABB &GetLocalBounds() const
   {
-    return localBounds_;
+    return m_LocalBounds;
   }
 
   /**
@@ -117,7 +117,7 @@ class SceneNode {
    */
   const AABB &GetWorldBounds() const
   {
-    return worldBounds_;
+    return m_WorldBounds;
   }
 
   /**
@@ -142,7 +142,7 @@ class SceneNode {
    */
   bool IsDirty() const
   {
-    return transformDirty_ || boundsDirty_;
+    return m_TransformDirty || m_BoundsDirty;
   }
 
   /**
@@ -157,7 +157,7 @@ class SceneNode {
    */
   bool IsRoot() const
   {
-    return parent_ == nullptr;
+    return m_Parent == nullptr;
   }
 
   /**
@@ -166,7 +166,7 @@ class SceneNode {
    */
   bool IsLeaf() const
   {
-    return children_.empty();
+    return m_Children.empty();
   }
 
   /**
@@ -204,18 +204,18 @@ class SceneNode {
   void UpdateWorldBounds();
 
  private:
-  Entity entity_;                      ///< 关联的ECS实体
-  SceneNode *parent_ = nullptr;        ///< 父节点指针
-  std::vector<SceneNode *> children_;  ///< 子节点列表
+  Entity m_Entity;                      // 关联的ECS实体
+  SceneNode *m_Parent = nullptr;        // 父节点指针
+  std::vector<SceneNode *> m_Children;  // 子节点列表
 
-  glm::mat4 localTransform_ = glm::mat4(1.0f);  ///< 局部变换矩阵
-  glm::mat4 worldTransform_ = glm::mat4(1.0f);  ///< 世界变换矩阵
+  glm::mat4 m_LocalTransform = glm::mat4(1.0f);  // 局部变换矩阵
+  glm::mat4 m_WorldTransform = glm::mat4(1.0f);  // 世界变换矩阵
 
-  AABB localBounds_;  ///< 局部空间包围盒
-  AABB worldBounds_;  ///< 世界空间包围盒
+  AABB m_LocalBounds;  // 局部空间包围盒
+  AABB m_WorldBounds;  // 世界空间包围盒
 
-  bool transformDirty_ = true;  ///< 变换脏标记
-  bool boundsDirty_ = true;     ///< 包围盒脏标记
+  bool m_TransformDirty = true;  // 变换脏标记
+  bool m_BoundsDirty = true;     // 包围盒脏标记
 
   // 禁止拷贝和赋值
   SceneNode(const SceneNode &) = delete;

@@ -4,7 +4,7 @@
 
 namespace mite {
 SpatialPartitionManager::SpatialPartitionManager(SpatialPartitionType spatialPartitionType)
-    : m_spatialPartitionType(spatialPartitionType)
+    : m_SpatialPartitionType(spatialPartitionType)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph Spatial Partition Manager");
 
@@ -14,44 +14,44 @@ SpatialPartitionManager::SpatialPartitionManager(SpatialPartitionType spatialPar
 
 void SpatialPartitionManager::Clear()
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 清空空间划分结构
-  if (m_spatialPartition) {
-    m_spatialPartition->Clear();
+  if (m_SpatialPartition) {
+    m_SpatialPartition->Clear();
   }
 }
 
 // ==================== 节点增删管理接口 ====================
 void SpatialPartitionManager::RemoveNodeFromSpatialPartition(SceneNode *node)
 {
-  if (m_spatialPartition && node) {
-    m_spatialPartition->Remove(node);
+  if (m_SpatialPartition && node) {
+    m_SpatialPartition->Remove(node);
   }
 }
 
 void SpatialPartitionManager::AddNodeToSpatialPartition(SceneNode *node)
 {
-  if (m_spatialPartition && node) {
-    m_spatialPartition->Insert(node);
+  if (m_SpatialPartition && node) {
+    m_SpatialPartition->Insert(node);
   }
 }
 
 void SpatialPartitionManager::Update(SceneNode *node)
 {
-  m_spatialPartition->Update(node);
+  m_SpatialPartition->Update(node);
 }
 
 // ==================== 空间划分管理接口 ====================
 void SpatialPartitionManager::SetSpatialPartitionType(SpatialPartitionType type)
 {
-  if (m_spatialPartitionType == type) {
+  if (m_SpatialPartitionType == type) {
     return;
   }
 
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
-  m_spatialPartitionType = type;
+  m_SpatialPartitionType = type;
   InitializeSpatialPartition();
 
   m_Logger->info("Spatial partition type changed to: {}", GetSpatialPartitionTypeName(type));
@@ -59,19 +59,19 @@ void SpatialPartitionManager::SetSpatialPartitionType(SpatialPartitionType type)
 
 SpatialPartitionType SpatialPartitionManager::GetSpatialPartitionType() const
 {
-  return m_spatialPartitionType;
+  return m_SpatialPartitionType;
 }
 
 void SpatialPartitionManager::RebuildSpatialPartition(std::vector<SceneNode *> nodelist)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
-  if (!m_spatialPartition) {
+  if (!m_SpatialPartition) {
     m_Logger->warn("Cannot rebuild null spatial partition");
     return;
   }
 
-  m_spatialPartition->Clear();
+  m_SpatialPartition->Clear();
 
   // 重新添加所有节点
   for (const auto node : nodelist) {
@@ -83,36 +83,36 @@ void SpatialPartitionManager::RebuildSpatialPartition(std::vector<SceneNode *> n
 
 std::string SpatialPartitionManager::GetSpatialPartitionStats() const
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
-  if (!m_spatialPartition) {
+  if (!m_SpatialPartition) {
     return "Spatial partition not initialized";
   }
 
-  return m_spatialPartition->GetStats();
+  return m_SpatialPartition->GetStats();
 }
 
 void SpatialPartitionManager::DebugDraw(std::function<void(const AABB &, int depth)> drawCallback)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
 
-  if (m_spatialPartition && drawCallback) {
-    m_spatialPartition->DebugDraw(drawCallback);
+  if (m_SpatialPartition && drawCallback) {
+    m_SpatialPartition->DebugDraw(drawCallback);
   }
 }
 
 // ==================== 空间查询接口 ====================
 size_t SpatialPartitionManager::GetVisibleNodeCount() const
 {
-  return m_visibleNodeCount;
+  return m_VisibleNodeCount;
 }
 
 std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistry &registry,
                                                                     const Frustum &frustum,
                                                                     uint32_t visibilityMask)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  if (!m_spatialPartition) {
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  if (!m_SpatialPartition) {
     m_Logger->warn("Invalid spatial partition, cannot QueryVisibleNodes.");
     return {};
   }
@@ -121,17 +121,17 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
 
   // 第一阶段：使用空间划分结构进行粗粒度剔除
   std::vector<SceneNode *> potentiallyVisibleNodes;
-  int spatialResult = m_spatialPartition->FrustumCull(frustum, potentiallyVisibleNodes);
+  int spatialResult = m_SpatialPartition->FrustumCull(frustum, potentiallyVisibleNodes);
 
   if (potentiallyVisibleNodes.empty()) {
-    m_visibleNodeCount = 0;
+    m_VisibleNodeCount = 0;
     //m_Logger->trace("None visible node after FrustumCull");
     return {};
   }
   //m_Logger->trace("{} visible nodes after FrustumCull", potentiallyVisibleNodes.size());
 
   // 第二阶段：细粒度可见性检查（结合VisibilityComponent）
-  m_visibleNodeCount = 0;
+  m_VisibleNodeCount = 0;
 
   for (SceneNode *node : potentiallyVisibleNodes) {
     Entity entity = node->GetEntity();
@@ -159,7 +159,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
       if (intersection != IntersectionType::Outside) {
         // 节点可见，添加到结果列表
         results.push_back(node);
-        m_visibleNodeCount++;
+        m_VisibleNodeCount++;
 
         // 更新VisibilityComponent的可见性状态
         visibilityComp.SetVisible(true);  // 确保状态一致
@@ -177,7 +177,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
 
       if (intersection != IntersectionType::Outside) {
         results.push_back(node);
-        m_visibleNodeCount++;
+        m_VisibleNodeCount++;
       }
     }
   }
@@ -190,9 +190,9 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryRaycast(SceneRegistry &re
                                                                const Ray &ray,
                                                                uint32_t visibilityMask)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   std::vector<SceneNode *> results;
-  if (!m_spatialPartition) {
+  if (!m_SpatialPartition) {
     m_Logger->warn("Invalid spatial partition, cannot Raycast.");
     return results;
   }
@@ -201,7 +201,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryRaycast(SceneRegistry &re
 
   // 第一阶段：使用空间划分结构进行粗检测
   std::vector<SceneNode *> potentialHits;
-  if (m_spatialPartition->Raycast(ray, potentialHits)) {
+  if (m_SpatialPartition->Raycast(ray, potentialHits)) {
     // 第二阶段：精确检测和可见性过滤
     for (SceneNode *node : potentialHits) {
       Entity entity = node->GetEntity();
@@ -239,16 +239,16 @@ bool SpatialPartitionManager::QueryRaycastFirst(SceneRegistry &registry,
                                                 float &distance,
                                                 uint32_t visibilityMask)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   result = nullptr;
   distance = FLT_MAX;
-  if (!m_spatialPartition) {
+  if (!m_SpatialPartition) {
     m_Logger->warn("Invalid spatial partition, cannot Raycast.");
     return false;
   }
   // 获取所有潜在命中节点
   std::vector<SceneNode *> potentialHits;
-  if (!m_spatialPartition->Raycast(ray, potentialHits)) {
+  if (!m_SpatialPartition->Raycast(ray, potentialHits)) {
     return false;
   }
   SceneNode *closestNode = nullptr;
@@ -289,15 +289,15 @@ std::vector<SceneNode *> SpatialPartitionManager::QuerySphere(SceneRegistry &reg
                                                               const Sphere &sphere,
                                                               uint32_t visibilityMask)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   std::vector<SceneNode *> results;
-  if (!m_spatialPartition) {
+  if (!m_SpatialPartition) {
     m_Logger->warn("Invalid spatial partition, cannot QuerySphere.");
     return results;
   }
   // 第一阶段：使用空间划分结构进行粗检测
   std::vector<SceneNode *> potentialHits;
-  size_t hitCount = m_spatialPartition->SphereQuery(sphere, potentialHits);
+  size_t hitCount = m_SpatialPartition->SphereQuery(sphere, potentialHits);
 
   if (hitCount > 0) {
     // 第二阶段：精确检测和可见性过滤
@@ -332,15 +332,15 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryAABB(SceneRegistry &regis
                                                             const AABB &aabb,
                                                             uint32_t visibilityMask)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(m_Mutex);
   std::vector<SceneNode *> results;
-  if (!m_spatialPartition) {
+  if (!m_SpatialPartition) {
     m_Logger->warn("Invalid spatial partition, cannot QueryAABB.");
     return results;
   }
   // 第一阶段：使用空间划分结构进行粗检测
   std::vector<SceneNode *> potentialHits;
-  size_t hitCount = m_spatialPartition->AABBQuery(aabb, potentialHits);
+  size_t hitCount = m_SpatialPartition->AABBQuery(aabb, potentialHits);
 
   if (hitCount > 0) {
     // 第二阶段：精确检测和可见性过滤
@@ -375,10 +375,10 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryAABB(SceneRegistry &regis
 
 void SpatialPartitionManager::InitializeSpatialPartition()
 {
-  m_spatialPartition = CreateSpatialPartition(m_spatialPartitionType);
-  if (m_spatialPartition) {
+  m_SpatialPartition = CreateSpatialPartition(m_SpatialPartitionType);
+  if (m_SpatialPartition) {
     m_Logger->debug("Initialized {} spatial partition",
-                    GetSpatialPartitionTypeName(m_spatialPartitionType));
+                    GetSpatialPartitionTypeName(m_SpatialPartitionType));
   }
   else {
     m_Logger->error("Failed to initialize spatial partition");

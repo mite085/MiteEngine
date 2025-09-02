@@ -11,27 +11,27 @@ namespace fs = std::filesystem;
 
 namespace mite {
 // 静态成员初始化
-fs::path FileSystem::s_executablePath;
-std::vector<fs::path> FileSystem::s_assetRoots;
-bool FileSystem::s_initialized = false;
+fs::path FileSystem::s_ExecutablePath;
+std::vector<fs::path> FileSystem::s_AssetRoots;
+bool FileSystem::s_Initialized = false;
 
 void FileSystem::Init(int argc, char **argv)
 {
-  if (s_initialized)
+  if (s_Initialized)
     return;
 
-  s_executablePath = GetExecutablePath();
+  s_ExecutablePath = GetExecutablePath();
   InitializeAssetRoots();
-  s_initialized = true;
+  s_Initialized = true;
 }
 
 fs::path FileSystem::GetAssetPath(const std::string &relativePath)
 {
-  if (!s_initialized) {
+  if (!s_Initialized) {
     throw std::runtime_error("FileSystem not initialized. Call FileSystem::Initialize() first.");
   }
 
-  for (const auto &root : s_assetRoots) {
+  for (const auto &root : s_AssetRoots) {
     fs::path fullPath = root / relativePath;
     if (Exists(fullPath)) {
       return fullPath;
@@ -39,7 +39,7 @@ fs::path FileSystem::GetAssetPath(const std::string &relativePath)
   }
 
   std::string errorMsg = "Asset not found: " + relativePath + "\nSearched in:";
-  for (const auto &root : s_assetRoots) {
+  for (const auto &root : s_AssetRoots) {
     errorMsg += "\n- " + root.string();
   }
   throw std::runtime_error(errorMsg);
@@ -47,10 +47,10 @@ fs::path FileSystem::GetAssetPath(const std::string &relativePath)
 
 const std::vector<fs::path> &FileSystem::GetAssetRoots()
 {
-  if (!s_initialized) {
+  if (!s_Initialized) {
     throw std::runtime_error("FileSystem not initialized. Call FileSystem::Initialize() first.");
   }
-  return s_assetRoots;
+  return s_AssetRoots;
 }
 
 bool FileSystem::Exists(const fs::path &path)
@@ -127,21 +127,21 @@ fs::path FileSystem::GetExecutablePath()
 
 void FileSystem::InitializeAssetRoots()
 {
-  s_assetRoots.clear();
+  s_AssetRoots.clear();
 
   // 1. 可执行文件同级目录
-  s_assetRoots.push_back(s_executablePath / "assets");
+  s_AssetRoots.push_back(s_ExecutablePath / "assets");
 
   // 2. 可执行文件父目录
-  s_assetRoots.push_back(s_executablePath.parent_path() / "assets");
+  s_AssetRoots.push_back(s_ExecutablePath.parent_path() / "assets");
 
   // 3. 源代码目录
-  s_assetRoots.push_back(fs::path(ASSETS_SOURCE_DIR));
+  s_AssetRoots.push_back(fs::path(ASSETS_SOURCE_DIR));
 
   // 4. 安装目录
-  s_assetRoots.push_back(fs::path(ASSETS_INSTALL_DIR));
+  s_AssetRoots.push_back(fs::path(ASSETS_INSTALL_DIR));
 
   // 5. 当前工作目录
-  s_assetRoots.push_back(fs::current_path() / "assets");
+  s_AssetRoots.push_back(fs::current_path() / "assets");
 }
 };

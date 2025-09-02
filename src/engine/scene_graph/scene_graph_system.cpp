@@ -6,7 +6,7 @@
 
 namespace mite {
 // ==================== 构造函数 ====================
-SceneGraphSystem::SceneGraphSystem() : m_sceneGraph(nullptr)
+SceneGraphSystem::SceneGraphSystem() : m_SceneGraph(nullptr)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraphSystem");
   m_Logger->trace("SceneGraphSystem created");
@@ -24,27 +24,27 @@ void SceneGraphSystem::Initialize()
   m_Logger->info("Initializing Scene Graph System");
 
   // 订阅ECS事件
-  m_eventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
+  m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
 
-  m_eventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
+  m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
 
-  m_eventSubscriptions.Subscribe<ComponentAddedEvent<MeshComponent>>(
+  m_EventSubscriptions.Subscribe<ComponentAddedEvent<MeshComponent>>(
       BIND_DISPATCH_FN(OnMeshComponentAdded));
 
-  m_eventSubscriptions.Subscribe<ComponentRemovedEvent<MeshComponent>>(
+  m_EventSubscriptions.Subscribe<ComponentRemovedEvent<MeshComponent>>(
       BIND_DISPATCH_FN(OnMeshComponentRemoved));
 
   // 清空暂存队列（确保初始化后状态干净）
-  m_pendingCreateNodes.clear();
-  m_pendingDestroyNodes.clear();
-  m_pendingSyncBounds.clear();
+  m_PendingCreateNodes.clear();
+  m_PendingDestroyNodes.clear();
+  m_PendingSyncBounds.clear();
 
   m_Logger->debug("Scene Graph System initialized.");
 }
 
 void SceneGraphSystem::Update(float deltaTime, SceneRegistry &registry)
 {
-  if (!m_sceneGraph) {
+  if (!m_SceneGraph) {
     return;
   }
 
@@ -52,7 +52,7 @@ void SceneGraphSystem::Update(float deltaTime, SceneRegistry &registry)
   ProcessPendingOperations(registry);
 
   // 更新SceneGraph中的脏节点
-  m_sceneGraph->Update(registry);
+  m_SceneGraph->Update(registry);
 
   // 定期输出统计信息（调试用）
   static float statsTimer = 0.0f;
@@ -68,10 +68,10 @@ void SceneGraphSystem::Shutdown()
   m_Logger->info("Shutting down SceneGraphSystem");
 
   // 取消所有事件订阅
-  m_eventSubscriptions.UnsubscribeAll();
+  m_EventSubscriptions.UnsubscribeAll();
 
   // 清空统计信息
-  m_stats = {};
+  m_Stats = {};
 
   m_Logger->debug("SceneGraphSystem shutdown complete");
 }
@@ -92,13 +92,13 @@ std::vector<std::type_index> SceneGraphSystem::GetSystemDependencies() const
 // ==================== SceneGraph 访问接口 ====================
 SceneGraph *SceneGraphSystem::GetSceneGraph() const
 {
-  return m_sceneGraph;
+  return m_SceneGraph;
 }
 
 void SceneGraphSystem::SetSceneGraph(SceneGraph *sceneGraph)
 {
-  m_sceneGraph = sceneGraph;
-  if (m_sceneGraph) {
+  m_SceneGraph = sceneGraph;
+  if (m_SceneGraph) {
     m_Logger->info("SceneGraph service attached");
   }
   else {
@@ -110,8 +110,8 @@ void SceneGraphSystem::SetSceneGraph(SceneGraph *sceneGraph)
 std::string SceneGraphSystem::GetStats() const
 {
   std::stringstream ss;
-  ss << "NodesCreated=" << m_stats.nodesCreated << ", NodesDestroyed=" << m_stats.nodesDestroyed
-     << ", BoundsSyncs=" << m_stats.boundsSyncs;
+  ss << "NodesCreated=" << m_Stats.nodesCreated << ", NodesDestroyed=" << m_Stats.nodesDestroyed
+     << ", BoundsSyncs=" << m_Stats.boundsSyncs;
   return ss.str();
 }
 
@@ -119,7 +119,7 @@ std::string SceneGraphSystem::GetStats() const
 bool SceneGraphSystem::OnEntityCreated(EntityCreatedEvent &e)
 {
   Entity entity = e.GetEntity();
-  m_pendingCreateNodes.push_back(entity);  // 暂存而不是立即处理
+  m_PendingCreateNodes.push_back(entity);  // 暂存而不是立即处理
 
   return e.handled;  // EntityCreatedEvent还有很多地方需要响应，不应当标记事件已处理
 }
@@ -127,7 +127,7 @@ bool SceneGraphSystem::OnEntityCreated(EntityCreatedEvent &e)
 bool SceneGraphSystem::OnEntityDestroyed(EntityDestroyedEvent &e)
 {
   Entity entity = e.GetEntity();
-  m_pendingDestroyNodes.push_back(entity);  // 暂存而不是立即处理
+  m_PendingDestroyNodes.push_back(entity);  // 暂存而不是立即处理
 
   return e.handled;  // EntityDestroyedEvent还有很多地方需要响应，不应当标记事件已处理
 }
@@ -135,7 +135,7 @@ bool SceneGraphSystem::OnEntityDestroyed(EntityDestroyedEvent &e)
 bool SceneGraphSystem::OnMeshComponentAdded(ComponentAddedEvent<MeshComponent> &e)
 {
   Entity entity = e.GetEntity();
-  m_pendingSyncBounds.push_back(entity);  // 暂存包围盒同步
+  m_PendingSyncBounds.push_back(entity);  // 暂存包围盒同步
   e.Handled();
   return true;
 }
@@ -145,7 +145,7 @@ bool SceneGraphSystem::OnMeshComponentRemoved(ComponentRemovedEvent<MeshComponen
   Entity entity = e.GetEntity();
 
   // 暂存销毁检查请求
-  m_pendingDestroyNodes.push_back(entity);
+  m_PendingDestroyNodes.push_back(entity);
 
   e.Handled();
   return true;
@@ -154,19 +154,19 @@ bool SceneGraphSystem::OnMeshComponentRemoved(ComponentRemovedEvent<MeshComponen
 // ==================== 内部工具方法 ====================
 void SceneGraphSystem::CreateNodeForEntity(SceneRegistry &registry, Entity entity)
 {
-  if (!m_sceneGraph) {
+  if (!m_SceneGraph) {
     m_Logger->warn("Cannot create node - SceneGraph service not available");
     return;
   }
 
-  if (m_sceneGraph->HasNode(entity)) {
+  if (m_SceneGraph->HasNode(entity)) {
     m_Logger->debug("Scene node already exists for entity {}", entity.GetUUIDString());
     return;
   }
 
-  SceneNode *node = m_sceneGraph->CreateNode(registry, entity);
+  SceneNode *node = m_SceneGraph->CreateNode(registry, entity);
   if (node) {
-    m_stats.nodesCreated++;
+    m_Stats.nodesCreated++;
 
     // 立即同步初始数据
     SyncBoundsToSceneGraph(registry, entity);
@@ -184,7 +184,7 @@ bool SceneGraphSystem::ShouldCreateNodeForEntity(SceneRegistry &registry, Entity
 
 void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity entity)
 {
-  if (!m_sceneGraph) {
+  if (!m_SceneGraph) {
     return;
   }
 
@@ -212,40 +212,40 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
     localBounds = AABB(glm::vec3(-0.5f), glm::vec3(0.5f));
   }
 
-  m_sceneGraph->UpdateNodeBounds(registry, entity, localBounds);
-  m_stats.boundsSyncs++;
+  m_SceneGraph->UpdateNodeBounds(registry, entity, localBounds);
+  m_Stats.boundsSyncs++;
 }
 
 void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
 {
   // 1. 先处理节点销毁（避免操作已销毁的节点）
-  for (Entity entity : m_pendingDestroyNodes) {
-    if (m_sceneGraph && m_sceneGraph->HasNode(entity)) {
+  for (Entity entity : m_PendingDestroyNodes) {
+    if (m_SceneGraph && m_SceneGraph->HasNode(entity)) {
       // 检查是否真的需要销毁（没有变换组件）
       if (!ShouldCreateNodeForEntity(registry, entity)) {
-        m_sceneGraph->DestroyNode(registry, entity);
-        m_stats.nodesDestroyed++;
+        m_SceneGraph->DestroyNode(registry, entity);
+        m_Stats.nodesDestroyed++;
       }
     }
   }
-  m_pendingDestroyNodes.clear();
+  m_PendingDestroyNodes.clear();
 
   // 2. 处理节点创建
-  for (Entity entity : m_pendingCreateNodes) {
-    if (ShouldCreateNodeForEntity(registry, entity) && m_sceneGraph &&
-        !m_sceneGraph->HasNode(entity))
+  for (Entity entity : m_PendingCreateNodes) {
+    if (ShouldCreateNodeForEntity(registry, entity) && m_SceneGraph &&
+        !m_SceneGraph->HasNode(entity))
     {
       CreateNodeForEntity(registry, entity);
     }
   }
-  m_pendingCreateNodes.clear();
+  m_PendingCreateNodes.clear();
 
   // 3. 处理其他同步操作（原有的包围盒、父子关系）
-  for (Entity entity : m_pendingSyncBounds) {
-    if (m_sceneGraph && m_sceneGraph->HasNode(entity)) {
+  for (Entity entity : m_PendingSyncBounds) {
+    if (m_SceneGraph && m_SceneGraph->HasNode(entity)) {
       SyncBoundsToSceneGraph(registry, entity);
     }
   }
-  m_pendingSyncBounds.clear();
+  m_PendingSyncBounds.clear();
 }
 }  // namespace mite

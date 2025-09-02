@@ -9,7 +9,7 @@ namespace mite {
  * @class SceneViewSystem
  * @brief ECS事件监听和状态同步
  * 
- * 职责：
+ * TODO：
  * 监听ECS组件变化事件（创建、销毁、修改）
  * 维护SceneView与ECS状态的同步
  * 处理脏标记和增量更新

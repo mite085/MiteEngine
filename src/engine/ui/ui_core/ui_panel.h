@@ -10,7 +10,7 @@ namespace mite {
  */
 class UIPanel {
  public:
-  explicit UIPanel(const std::string &title) : m_title(title) {}
+  explicit UIPanel(const std::string &title) : m_Title(title) {}
   virtual ~UIPanel() = default;
 
   // 生命周期方法
@@ -28,26 +28,26 @@ class UIPanel {
   // 可见性控制
   bool isVisible() const
   {
-    return m_visible;
+    return m_Visible;
   }
   void setVisible(bool visible)
   {
-    m_visible = visible;
+    m_Visible = visible;
   }
 
   // 标题访问
   const std::string &getTitle() const
   {
-    return m_title;
+    return m_Title;
   }
   void setTitle(const std::string &title)
   {
-    m_title = title;
+    m_Title = title;
   }
 
  protected:
-  std::string m_title;    // 面板标题
-  bool m_visible = true;  // 是否可见
+  std::string m_Title;    // 面板标题
+  bool m_Visible = true;  // 是否可见
 };
 
 };

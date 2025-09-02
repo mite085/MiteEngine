@@ -3,11 +3,11 @@
 
 namespace mite {
 SceneView::SceneView()
-    : m_builder(std::make_unique<RenderableItemBuilder>()),
-      m_renderQueue(std::make_shared<RenderQueue>()),
-      m_lastVisibleNodeCount(0),
-      m_lastRenderItemCount(0),
-      m_lastUpdateTime(0.0f)
+    : m_Builder(std::make_unique<RenderableItemBuilder>()),
+      m_RenderQueue(std::make_shared<RenderQueue>()),
+      m_LastVisibleNodeCount(0),
+      m_LastRenderItemCount(0),
+      m_LastUpdateTime(0.0f)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView");
   // 初始化日志
@@ -22,7 +22,7 @@ void SceneView::Update(SceneRegistry &registry, std::vector<SceneNode *> visible
   // 计时，确定构建RenderQueue所消耗的时间
   Timer timer;
   ProcessVisibility(registry, visibleNodes);
-  m_lastUpdateTime = timer.ElapsedMillis();
+  m_LastUpdateTime = timer.ElapsedMillis();
 
   //m_Logger->debug("SceneView updated in {:.3f}ms, visible nodes: {}, render items: {}",
   //               m_lastUpdateTime,
@@ -36,44 +36,44 @@ void SceneView::Rebuild(SceneRegistry &registry,
 }
 std::shared_ptr<RenderQueue> SceneView::GetRenderQueue() const
 {
-  return m_renderQueue;
+  return m_RenderQueue;
 }
 
 void SceneView::SetCustomFilter(std::function<bool(SceneNode *)> filterFunc)
 {
-  m_customFilterFunc = filterFunc;
+  m_CustomFilterFunc = filterFunc;
   m_Logger->debug("SceneView custom filter set");
 }
 size_t SceneView::GetVisibleNodeCount() const
 {
-  return m_lastVisibleNodeCount;
+  return m_LastVisibleNodeCount;
 }
 size_t SceneView::GetRenderItemCount() const
 {
-  return m_lastRenderItemCount;
+  return m_LastRenderItemCount;
 }
 float SceneView::GetLastUpdateTime() const
 {
-  return m_lastUpdateTime;
+  return m_LastUpdateTime;
 }
 void SceneView::ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes)
 {
-  m_lastVisibleNodeCount = visibleNodes.size();
+  m_LastVisibleNodeCount = visibleNodes.size();
 
   // 1. 应用自定义过滤器（如果设置）
-  if (m_customFilterFunc) {
+  if (m_CustomFilterFunc) {
     visibleNodes = ApplyCustomFilter(visibleNodes);
   }
 
   // 2. 构建渲染项
-  std::vector<RenderableItem> renderItems = m_builder->BuildFromSceneNodes(registry, visibleNodes);
+  std::vector<RenderableItem> renderItems = m_Builder->BuildFromSceneNodes(registry, visibleNodes);
 
-  m_lastRenderItemCount = renderItems.size();
+  m_LastRenderItemCount = renderItems.size();
 
   // 3. 更新渲染队列
-  m_renderQueue->ClearAll();
-  m_renderQueue->AddItems(renderItems);
-  m_renderQueue->SortAll();
+  m_RenderQueue->ClearAll();
+  m_RenderQueue->AddItems(renderItems);
+  m_RenderQueue->SortAll();
 }
 std::vector<SceneNode *> SceneView::ApplyCustomFilter(const std::vector<SceneNode *> &nodes)
 {
@@ -81,7 +81,7 @@ std::vector<SceneNode *> SceneView::ApplyCustomFilter(const std::vector<SceneNod
   filteredNodes.reserve(nodes.size());
 
   for (SceneNode *node : nodes) {
-    if (m_customFilterFunc(node)) {
+    if (m_CustomFilterFunc(node)) {
       filteredNodes.push_back(node);
     }
   }

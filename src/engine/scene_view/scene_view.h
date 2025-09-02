@@ -85,15 +85,15 @@ class SceneView {
   std::vector<SceneNode *> ApplyCustomFilter(const std::vector<SceneNode *> &nodes);
 
 
-  std::unique_ptr<RenderableItemBuilder> m_builder;  // 渲染Item构建器
-  std::shared_ptr<RenderQueue> m_renderQueue;        // 渲染队列
+  std::unique_ptr<RenderableItemBuilder> m_Builder;  // 渲染Item构建器
+  std::shared_ptr<RenderQueue> m_RenderQueue;        // 渲染队列
 
-  std::function<bool(SceneNode *)> m_customFilterFunc;  // 自定义过滤器
+  std::function<bool(SceneNode *)> m_CustomFilterFunc;  // 自定义过滤器
 
   // 统计信息
-  size_t m_lastVisibleNodeCount;  // 上次可见节点数量
-  size_t m_lastRenderItemCount;   // 上次渲染Item数量
-  float m_lastUpdateTime;         // 上次更新耗时（毫秒）
+  size_t m_LastVisibleNodeCount;  // 上次可见节点数量
+  size_t m_LastRenderItemCount;   // 上次渲染Item数量
+  float m_LastUpdateTime;         // 上次更新耗时（毫秒）
 
   // 禁用拷贝构造和赋值
   SceneView(const SceneView &) = delete;

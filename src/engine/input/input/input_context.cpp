@@ -39,10 +39,10 @@ void InputContext::Update(){
    // 每帧更新持续动作时间（如长按）
   for (auto &[name, action] : m_Actions) {
     if (action.value > 0.0f) {
-      action.hold_time += Time::DeltaTime();
+      action.holdTime += Time::DeltaTime();
     }
     else {
-      action.hold_time = 0.0f;
+      action.holdTime = 0.0f;
     }
   }
 }
@@ -51,7 +51,7 @@ void InputContext::DebugPrintActions() const
 {
   m_Logger->debug("=== Actions in {} ===", m_Name);
   for (const auto &[name, action] : m_Actions) {
-    m_Logger->debug("{}: value={}, hold={}s", name, action.value, action.hold_time);
+    m_Logger->debug("{}: value={}, hold={}s", name, action.value, action.holdTime);
   }
 }
 

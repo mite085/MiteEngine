@@ -24,10 +24,10 @@ class InspectorPanel : public UIPanel {
   void DrawAddComponentMenu();
 
   // ---- SceneRegistry依赖注入 ----
-  SceneRegistry &m_registry;
+  SceneRegistry &m_Registry;
 
   // ---- 当前选中实体 ----
-  Entity m_currentEntity;
+  Entity m_CurrentEntity;
 };
 };
 

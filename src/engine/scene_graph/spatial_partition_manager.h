@@ -130,16 +130,16 @@ class SpatialPartitionManager {
   void InitializeSpatialPartition();
 
   // 空间划分结构
-  std::unique_ptr<SpatialPartition> m_spatialPartition;
+  std::unique_ptr<SpatialPartition> m_SpatialPartition;
 
   // 当前空间划分类型
-  SpatialPartitionType m_spatialPartitionType;
+  SpatialPartitionType m_SpatialPartitionType;
 
   // 可见节点数量存储
-  size_t m_visibleNodeCount;
+  size_t m_VisibleNodeCount;
 
   // 线程安全保护
-  mutable std::mutex m_mutex;
+  mutable std::mutex m_Mutex;
 
   // 日志器
   Logger m_Logger;

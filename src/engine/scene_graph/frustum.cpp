@@ -1,11 +1,10 @@
 #include "frustum.h"
-// #include <glm/gtc/matrix_access.hpp>
 
 namespace mite {
 Frustum::Frustum()
 {
   for (int i = 0; i < 6; ++i) {
-    planes[i] = Plane();
+    m_Planes[i] = Plane();
   }
 }
 
@@ -57,13 +56,13 @@ void Frustum::ExtractPlane(const glm::mat4 &vpMatrix, FrustumPlane plane)
   }
   // 右手系平面方程：normal.x*x + normal.y*y + normal.z*z + d = 0
   // 其中 d = planeCoeffs.w（与左手系符号相反）
-  planes[static_cast<int>(plane)] = Plane(glm::vec3(planeCoeffs), planeCoeffs.w);
+  m_Planes[static_cast<int>(plane)] = Plane(glm::vec3(planeCoeffs), planeCoeffs.w);
 }
 
 bool Frustum::Contains(const glm::vec3 &point) const
 {
   for (int i = 0; i < 6; ++i) {
-    if (planes[i].DistanceToPoint(point) < 0.0f) {
+    if (m_Planes[i].DistanceToPoint(point) < 0.0f) {
       return false;
     }
   }
@@ -75,7 +74,7 @@ IntersectionType Frustum::TestSphere(const Sphere &sphere) const
   bool completelyInside = true;
 
   for (int i = 0; i < 6; ++i) {
-    float distance = planes[i].DistanceToPoint(sphere.center);
+    float distance = m_Planes[i].DistanceToPoint(sphere.center);
 
     if (distance < -sphere.radius) {
       return IntersectionType::Outside;
@@ -96,15 +95,15 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
     // 计算极值点
     glm::vec3 positiveVertex = aabb.min;
     glm::vec3 negativeVertex = aabb.max;
-    if (planes[i].normal.x >= 0) {
+    if (m_Planes[i].normal.x >= 0) {
       positiveVertex.x = aabb.max.x;
       negativeVertex.x = aabb.min.x;
     }
-    if (planes[i].normal.y >= 0) {
+    if (m_Planes[i].normal.y >= 0) {
       positiveVertex.y = aabb.max.y;
       negativeVertex.y = aabb.min.y;
     }
-    if (planes[i].normal.z >= 0) {
+    if (m_Planes[i].normal.z >= 0) {
       positiveVertex.z = aabb.max.z;
       negativeVertex.z = aabb.min.z;
     }
@@ -116,7 +115,7 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
     // 负值表示点在平面负侧（视锥体外部）
 
     // 测试负顶点（最远的点）
-    float negativeDistance = planes[i].DistanceToPoint(negativeVertex);
+    float negativeDistance = m_Planes[i].DistanceToPoint(negativeVertex);
     if (negativeDistance < 0.0f) {
       // 如果最远的点都在外面，AABB完全在这个平面外
       // 但还要确认是否真的完全在外面（测试8个顶点）
@@ -130,7 +129,7 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
                                {aabb.max.x, aabb.max.y, aabb.min.z},
                                {aabb.max.x, aabb.max.y, aabb.max.z}};
       for (int j = 0; j < 8; ++j) {
-        if (planes[i].DistanceToPoint(vertices[j]) >= 0.0f) {
+        if (m_Planes[i].DistanceToPoint(vertices[j]) >= 0.0f) {
           allOutside = false;
           break;
         }
@@ -144,7 +143,7 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
       continue;
     }
     // 测试正顶点
-    float positiveDistance = planes[i].DistanceToPoint(positiveVertex);
+    float positiveDistance = m_Planes[i].DistanceToPoint(positiveVertex);
     if (positiveDistance < 0.0f) {
       // 与这个平面相交
       intersects = true;

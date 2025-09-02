@@ -5,7 +5,7 @@
 
 namespace mite {
 InspectorPanel::InspectorPanel(SceneRegistry &registry)
-    : m_registry(registry), UIPanel("Inspector")
+    : m_Registry(registry), UIPanel("Inspector")
 {
   // 订阅实体选择事件
   //EventBus::Subscribe(this, &InspectorPanel::OnEntitySelected);
@@ -13,28 +13,28 @@ InspectorPanel::InspectorPanel(SceneRegistry &registry)
 
 void InspectorPanel::onRender()
 {
-  if (!m_currentEntity.IsValid()) {
+  if (!m_CurrentEntity.IsValid()) {
     ImGui::Text("No selected entity");
     return;
   }
 
-  if (!m_registry.IsValid(m_currentEntity)) {
-    m_currentEntity = Entity();
+  if (!m_Registry.IsValid(m_CurrentEntity)) {
+    m_CurrentEntity = Entity();
     return;
   }
 
   // 1. 显示实体基本信息
-  ImGui::Text("Entity ID: %s", m_currentEntity.GetUUIDString().c_str());
+  ImGui::Text("Entity ID: %s", m_CurrentEntity.GetUUIDString().c_str());
   ImGui::SameLine();
   if (ImGui::Button("Destroy Entity")) {
-    m_registry.DestroyEntity(m_currentEntity);
-    m_currentEntity = Entity();
+    m_Registry.DestroyEntity(m_CurrentEntity);
+    m_CurrentEntity = Entity();
     return;
   }
 
   // 2. 绘制所有组件
   DrawTransformComponent();
-  if (m_registry.HasComponent<MeshComponent>(m_currentEntity)) {
+  if (m_Registry.HasComponent<MeshComponent>(m_CurrentEntity)) {
     DrawMeshComponent();
   }
 
@@ -52,7 +52,7 @@ void InspectorPanel::onRender()
 void InspectorPanel::DrawTransformComponent()
 {
   if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-    auto &transform = m_registry.GetComponent<TransformComponent>(m_currentEntity);
+    auto &transform = m_Registry.GetComponent<TransformComponent>(m_CurrentEntity);
 
     //ImGui::DragFloat3("位置", transform.GetLocalPosition().x, 0.1f);
     //ImGui::DragFloat3("旋转", transform.GetLocalPosition().x, 1.0f);
@@ -67,7 +67,7 @@ void InspectorPanel::DrawTransformComponent()
 void InspectorPanel::DrawMeshComponent()
 {
   if (ImGui::CollapsingHeader("Mesh")) {
-    auto &mesh = m_registry.GetComponent<MeshComponent>(m_currentEntity);
+    auto &mesh = m_Registry.GetComponent<MeshComponent>(m_CurrentEntity);
 
     // TODO:显示网格资产信息
     //if (ImGui::Button("更换网格")) {
@@ -89,7 +89,7 @@ void InspectorPanel::DrawMeshComponent()
 
 void InspectorPanel::OnEntitySelected(Entity entity)
 {
-  m_currentEntity = entity;
+  m_CurrentEntity = entity;
 }
 
 void InspectorPanel::DrawAddComponentMenu()
@@ -97,17 +97,17 @@ void InspectorPanel::DrawAddComponentMenu()
 
   // 1. 不可重复添加的组件（已存在时禁用）
   auto drawUniqueComponent = [&](const char *name, auto componentType) {
-    if (registry.all_of<decltype(componentType)>(m_currentEntity)) {
+    if (registry.all_of<decltype(componentType)>(m_CurrentEntity)) {
       ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
       ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
     }
 
     if (ImGui::MenuItem(name)) {
-      registry.emplace<decltype(componentType)>(m_currentEntity);
-      EventBus::Publish(ComponentAddedEvent{m_currentEntity, typeid(componentType)});
+      registry.emplace<decltype(componentType)>(m_CurrentEntity);
+      EventBus::Publish(ComponentAddedEvent{m_CurrentEntity, typeid(componentType)});
     }
 
-    if (registry.all_of<decltype(componentType)>(m_currentEntity)) {
+    if (registry.all_of<decltype(componentType)>(m_CurrentEntity)) {
       ImGui::PopItemFlag();
       ImGui::PopStyleVar();
     }
@@ -116,8 +116,8 @@ void InspectorPanel::DrawAddComponentMenu()
   // 2. 可重复添加的组件
   auto drawMultiComponent = [&](const char *name, auto componentType) {
     if (ImGui::MenuItem(name)) {
-      registry.emplace<decltype(componentType)>(m_currentEntity);
-      EventBus::Publish(ComponentAddedEvent{m_currentEntity, typeid(componentType)});
+      registry.emplace<decltype(componentType)>(m_CurrentEntity);
+      EventBus::Publish(ComponentAddedEvent{m_CurrentEntity, typeid(componentType)});
     }
   };
 

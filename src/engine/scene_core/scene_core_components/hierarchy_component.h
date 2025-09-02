@@ -96,8 +96,8 @@ class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent>
      }
    };
 
-   std::vector<PendingRemoval> m_pendingRemovals;
-   std::mutex m_removalMutex;
+   std::vector<PendingRemoval> m_PendingRemovals;
+   std::mutex m_RemovalMutex;
 };
 // ==================== 事件定义 ====================
 /**
