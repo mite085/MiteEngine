@@ -14,6 +14,10 @@ project(MiteEngine
   HOMEPAGE_URL "https://github.com/mite085/MiteEngine"
 )
 
+# 项目配置选项
+option(BUILD_TESTS "Build tests" ON)
+option(BUILD_BENCHMARKS "Build benchmarks" OFF)
+
 # 打印Make信息
 message(STATUS "Building Project name: ${PROJECT_NAME}")
 message(STATUS "Project version: ${PROJECT_VERSION}")
@@ -50,6 +54,7 @@ include_directories(thirdparty/cereal/include)
 include_directories(thirdparty/stbimg)
 add_subdirectory(thirdparty/assimp)
 add_subdirectory(thirdparty/meshoptimizer)
+add_subdirectory(thirdparty/googletest)
 
 # imgui和imguizmo无cmakelist，为避免污染依赖库，此处手动添加
 include(imgui.cmake)
@@ -77,11 +82,18 @@ endif()
 if(TARGET ImGuizmo)
     set_target_properties(ImGuizmo PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
 endif()
-if(TARGET meshoptimizerd)
-    set_target_properties(meshoptimizerd PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
+if(TARGET meshoptimizer)
+    set_target_properties(meshoptimizer PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
 endif()
-# 添加子目录（配置代码）
+# 添加配置目录
 add_subdirectory(config)
 
-# 添加子目录（核心代码）
+# 添加核心目录
 add_subdirectory(src)
+
+# 添加测试目录
+# 添加测试（如果启用）
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
