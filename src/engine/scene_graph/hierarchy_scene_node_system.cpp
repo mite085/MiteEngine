@@ -5,8 +5,8 @@ namespace mite {
 
 HierarchySceneNodeSystem::HierarchySceneNodeSystem()
 {
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite HierarchySceneNodeSystem");
-  m_logger->trace("HierarchySceneNodeSystem created");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite HierarchySceneNodeSystem");
+  m_Logger->trace("HierarchySceneNodeSystem created");
 }
 
 Component::Family HierarchySceneNodeSystem::GetExecutionOrder() const
@@ -16,7 +16,7 @@ Component::Family HierarchySceneNodeSystem::GetExecutionOrder() const
 
 void HierarchySceneNodeSystem::Initialize()
 {
-  m_logger->info("Initializing HierarchySceneNodeSystem");
+  m_Logger->info("Initializing HierarchySceneNodeSystem");
 
   m_eventSubscriptions.Subscribe<ComponentAddedEvent<HierarchyComponent>>(
       BIND_DISPATCH_FN(OnHierarchyComponentAdded));
@@ -24,7 +24,7 @@ void HierarchySceneNodeSystem::Initialize()
       BIND_DISPATCH_FN(OnHierarchyComponentRemoved));
   m_eventSubscriptions.Subscribe<ParentChangedEvent>(BIND_DISPATCH_FN(OnParentChanged));
 
-  m_logger->debug("HierarchySceneNodeSystem initialized");
+  m_Logger->debug("HierarchySceneNodeSystem initialized");
 }
 
 void HierarchySceneNodeSystem::Update(float deltaTime, SceneRegistry &registry)
@@ -34,7 +34,7 @@ void HierarchySceneNodeSystem::Update(float deltaTime, SceneRegistry &registry)
 
 void HierarchySceneNodeSystem::Shutdown()
 {
-  m_logger->info("Shutting down HierarchySceneNodeSystem");
+  m_Logger->info("Shutting down HierarchySceneNodeSystem");
   m_eventSubscriptions.UnsubscribeAll();
   m_pendingHierarchyChanges.clear();
 }
@@ -100,7 +100,7 @@ void HierarchySceneNodeSystem::UpdateSceneNodeParent(SceneRegistry &registry, En
   }
 
   m_sceneGraph->SetParent(node, parentNode);
-  m_logger->debug("Updated parent for entity {}", entity.GetUUIDString());
+  m_Logger->debug("Updated parent for entity {}", entity.GetUUIDString());
 }
 
 void HierarchySceneNodeSystem::ProcessPendingHierarchyChanges(SceneRegistry &registry)

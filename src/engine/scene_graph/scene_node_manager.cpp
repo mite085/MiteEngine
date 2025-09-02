@@ -6,7 +6,7 @@ namespace mite {
 SceneNodeManager::SceneNodeManager(SpatialPartitionManager &spatialPartition)
     : m_spatialPartition(spatialPartition)
 {
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph NodeManager");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph NodeManager");
 }
 void SceneNodeManager::Clear()
 {
@@ -18,7 +18,7 @@ void SceneNodeManager::Clear()
 SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
 {
   if (!entity.IsValid()) {
-    m_logger->warn("Attempted to create node for invalid entity");
+    m_Logger->warn("Attempted to create node for invalid entity");
     return nullptr;
   }
 
@@ -26,7 +26,7 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
 
   // 检查是否已存在节点
   if (m_entityToNodeMap.find(entity) != m_entityToNodeMap.end()) {
-    m_logger->warn("Scene node already exists for entity {}", entity.GetUUIDString());
+    m_Logger->warn("Scene node already exists for entity {}", entity.GetUUIDString());
     return m_entityToNodeMap[entity].get();
   }
 
@@ -48,11 +48,11 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
     // 添加到空间划分结构
     m_spatialPartition.AddNodeToSpatialPartition(nodePtr);
 
-    m_logger->debug("Created scene node for entity {}", entity.GetUUIDString());
+    m_Logger->debug("Created scene node for entity {}", entity.GetUUIDString());
     return nodePtr;
   }
   catch (const std::exception &e) {
-    m_logger->error(
+    m_Logger->error(
         "Failed to create scene node for entity {}: {}", entity.GetUUIDString(), e.what());
     return nullptr;
   }
@@ -64,7 +64,7 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
 
   auto it = m_entityToNodeMap.find(entity);
   if (it == m_entityToNodeMap.end()) {
-    m_logger->warn("Scene node not found for entity {}", entity.GetUUIDString());
+    m_Logger->warn("Scene node not found for entity {}", entity.GetUUIDString());
     return false;
   }
 
@@ -97,7 +97,7 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   m_dirtyNodes.erase(std::remove(m_dirtyNodes.begin(), m_dirtyNodes.end(), entity),
                      m_dirtyNodes.end());
 
-  m_logger->debug("Destroyed scene node for entity {}", entity.GetUUIDString());
+  m_Logger->debug("Destroyed scene node for entity {}", entity.GetUUIDString());
   return true;
 }
 
@@ -217,13 +217,13 @@ bool SceneNodeManager::IsEmpty() const
 bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
 {
   if (!node) {
-    m_logger->warn("Attempted to set parent for null node");
+    m_Logger->warn("Attempted to set parent for null node");
     return false;
   }
 
   // 检查循环引用
   if (!ValidateParenting(node, newParent)) {
-    m_logger->warn("Invalid parenting operation: cyclic reference detected");
+    m_Logger->warn("Invalid parenting operation: cyclic reference detected");
     return false;
   }
 
@@ -246,7 +246,7 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
   // 标记节点需要更新（父子关系变化影响世界变换）
   MarkNodeDirty(node->GetEntity());
 
-  m_logger->debug("Reparented node {}.", node->GetEntity().GetUUIDString());
+  m_Logger->debug("Reparented node {}.", node->GetEntity().GetUUIDString());
 
   return true;
 }
@@ -293,7 +293,7 @@ void SceneNodeManager::Update(SceneRegistry &registry)
     }
   }
 
-  m_logger->trace("Updated {} dirty nodes", m_dirtyNodes.size());
+  m_Logger->trace("Updated {} dirty nodes", m_dirtyNodes.size());
   m_dirtyNodes.clear();
 }
 // ==================== 私有工具方法 ====================

@@ -151,7 +151,7 @@ class RenderableItemBuilder {
 
   
   // ÈÕÖ¾Æ÷
-  Logger m_logger;
+  Logger m_Logger;
 };
 
 }  // namespace mite

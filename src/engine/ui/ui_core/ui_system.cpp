@@ -10,8 +10,8 @@ namespace mite {
 UISystem::UISystem()
 {
   // 初始化LOGGER
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite Engine UI");
-  m_logger->info("Create logger for user interface");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Engine UI");
+  m_Logger->info("Create logger for user interface");
 
   // 订阅EventBus中的输入事件，按照EventCategory大类订阅，由ProcessEvent分发
   //m_EventHandlerID = EventBus::Get().SubscribeByCategory(EventCategory::EVENT_CATEGORY_INPUT,
@@ -50,7 +50,7 @@ void UISystem::Init(GLFWwindow *window)
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init("#version 410");
 
-  m_logger->info("UI System initialized");
+  m_Logger->info("UI System initialized");
 }
 
 void UISystem::Shutdown()
@@ -72,7 +72,7 @@ void UISystem::Shutdown()
     m_imguiContext = nullptr;
   }
 
-  m_logger->info("UI System shutdown");
+  m_Logger->info("UI System shutdown");
 }
 
 void UISystem::BeginFrame()

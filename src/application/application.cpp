@@ -5,8 +5,8 @@ namespace mite {
 MiteApplication::MiteApplication()
 {
   // 初始化LOGGER
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite Application");
-  m_logger->info("Create logger for application");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Application");
+  m_Logger->info("Create logger for application");
 }
 
 MiteApplication::~MiteApplication() {}
@@ -56,7 +56,7 @@ void MiteApplication::SaveScene(const std::string &filepath) {}
 
 void MiteApplication::LoadDefaultScene()
 {
-  m_logger->info("Loading default scene");
+  m_Logger->info("Loading default scene");
 
   // 协调各模块，加载初始场景
 
@@ -129,7 +129,7 @@ void MiteApplication::LoadDefaultScene()
 
 void MiteApplication::Initialize()
 {
-  m_logger->info("Initialize application");
+  m_Logger->info("Initialize application");
 
   // 订阅事件，并管理订阅句柄
   m_EventSubscriptions.Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
@@ -154,7 +154,7 @@ void MiteApplication::Initialize()
 
 void MiteApplication::CleanUp()
 {
-  m_logger->info("Cleaning up application");
+  m_Logger->info("Cleaning up application");
 
   // 取消事件订阅
   m_EventSubscriptions.UnsubscribeAll();
@@ -176,7 +176,7 @@ void MiteApplication::CleanUp()
 
 void MiteApplication::InitializeWindowWithOpenGL()
 {
-  m_logger->info("Initializing window with OpenGL mode");
+  m_Logger->info("Initializing window with OpenGL mode");
 
   // 初始化OpenGL窗口
   m_Config = WindowConfig();
@@ -186,7 +186,7 @@ void MiteApplication::InitializeWindowWithOpenGL()
 
 void MiteApplication::InitializeRenderWithOpenGL()
 {
-  m_logger->info("Initializing renderer with OpenGL mode");
+  m_Logger->info("Initializing renderer with OpenGL mode");
 
   // 初始化 OpenGL 设备
   IRenderDevice::SetCurrent(std::make_unique<OpenGLDevice>());
@@ -198,7 +198,7 @@ void MiteApplication::InitializeRenderWithOpenGL()
 
 void MiteApplication::InitializeUI()
 {
-  m_logger->info("Initializing user interface");
+  m_Logger->info("Initializing user interface");
 
   // 初始化UI系统
   m_UISystem = std::make_unique<UISystem>();
@@ -207,7 +207,7 @@ void MiteApplication::InitializeUI()
 
 void MiteApplication::InitializeAssertManager()
 {
-  m_logger->info("Initializing asset manager");
+  m_Logger->info("Initializing asset manager");
 
   // 初始化资产管理器
   m_AssetManager = std::make_unique<AssetManager>();
@@ -215,7 +215,7 @@ void MiteApplication::InitializeAssertManager()
 
 void MiteApplication::InitializeSceneCore()
 {
-  m_logger->info("Initializing scene core");
+  m_Logger->info("Initializing scene core");
 
   // 初始化场景核心
   m_SceneCore = std::make_unique<SceneCore>();
@@ -223,7 +223,7 @@ void MiteApplication::InitializeSceneCore()
 
 void MiteApplication::InitializeSceneView()
 {
-  m_logger->info("Initializing scene view");
+  m_Logger->info("Initializing scene view");
 
   // 初始化场景视图
   m_SceneView = std::make_unique<SceneView>();
@@ -231,7 +231,7 @@ void MiteApplication::InitializeSceneView()
 
 void MiteApplication::InitializeMaterialSystem()
 {
-  m_logger->info("Initializing material system");
+  m_Logger->info("Initializing material system");
 
   // 初始化材质系统
   m_MaterialSystem = std::make_unique<MaterialSystem>();
@@ -240,7 +240,7 @@ void MiteApplication::InitializeMaterialSystem()
 
 void MiteApplication::InitializeInputSystem()
 {
-  m_logger->info("Initializing input system");
+  m_Logger->info("Initializing input system");
 
   // 创建输入上下文栈ContextStack
   m_InputContextStack = std::make_shared<InputContextStack>();
@@ -273,7 +273,7 @@ void MiteApplication::CleanUpRenderWithOpenGL() {}
 
 void MiteApplication::CleanUpUI()
 {
-  m_logger->info("Cleaning up UI");
+  m_Logger->info("Cleaning up UI");
 
   // 清理所有UI资源
   m_UISystem->Shutdown();
@@ -290,7 +290,7 @@ void MiteApplication::CleanUpSceneCore()
 
 void MiteApplication::InitializeSceneGraph()
 {
-  m_logger->info("Initializing scene graph");
+  m_Logger->info("Initializing scene graph");
 
   // 初始化场景图
   m_SceneGraph = std::make_unique<SceneGraph>();
@@ -301,7 +301,7 @@ void MiteApplication::InitializeSceneGraph()
 
 void MiteApplication::CleanUpSceneGraph()
 {
-  m_logger->info("Cleaning up scene graph");
+  m_Logger->info("Cleaning up scene graph");
   m_SceneGraph->CleanUp(m_SceneCore->GetComponentSystemManager());
 }
 
@@ -427,7 +427,7 @@ void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
 
 bool MiteApplication::OnWindowClose(WindowCloseEvent &e)
 {
-  m_logger->info("Window close event triggered.");
+  m_Logger->info("Window close event triggered.");
   m_ShouldClose = true;
 
   // 标记事件已处理，阻断传播

@@ -9,14 +9,14 @@ namespace mite {
 
 RenderableItemBuilder::RenderableItemBuilder()
 {
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView RenderableItem Builder");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView RenderableItem Builder");
   // 初始化日志
-  m_logger->debug("RenderableItem Builder initialized");
+  m_Logger->debug("RenderableItem Builder initialized");
 }
 
 RenderableItemBuilder::~RenderableItemBuilder()
 {
-  m_logger->debug("RenderableItemBuilder destroyed");
+  m_Logger->debug("RenderableItemBuilder destroyed");
 }
 
 std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
@@ -40,13 +40,13 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
                                                          SceneNode *sceneNode)
 {
   if (!sceneNode) {
-    m_logger->warn("Attempted to build from null SceneNode");
+    m_Logger->warn("Attempted to build from null SceneNode");
     return RenderableItem();
   }
 
   Entity entity = sceneNode->GetEntity();
   if (!entity.IsValid()) {
-    m_logger->warn("SceneNode has no associated Entity");
+    m_Logger->warn("SceneNode has no associated Entity");
     return RenderableItem();
   }
 
@@ -56,12 +56,12 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
 RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, Entity entity)
 {
   if (!entity.IsValid()) {
-    m_logger->warn("Attempted to build from null Entity");
+    m_Logger->warn("Attempted to build from null Entity");
     return RenderableItem();
   }
 
   if (!IsRenderable(registry, entity)) {
-    //m_logger->debug("Entity {} is not renderable", entity.GetUUIDString());
+    //m_Logger->debug("Entity {} is not renderable", entity.GetUUIDString());
     return RenderableItem();
   }
 
@@ -72,7 +72,7 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
     glm::mat4 transform = ExtractTransformComponent(registry, entity);
 
     if (!mesh || !material) {
-      m_logger->warn("Entity {} missing mesh or material component", entity.GetUUIDString());
+      m_Logger->warn("Entity {} missing mesh or material component", entity.GetUUIDString());
       return RenderableItem();
     }
 
@@ -92,11 +92,11 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
     item.mesh = mesh;
     item.material = material;
 
-     //m_logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
+     //m_Logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
     return item;
   }
   catch (const std::exception &e) {
-    m_logger->error(
+    m_Logger->error(
         "Failed to build RenderableItem for Entity {}: {}", entity.GetUUIDString(), e.what());
     return RenderableItem();
   }

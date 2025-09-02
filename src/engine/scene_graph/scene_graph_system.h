@@ -116,7 +116,7 @@ class SceneGraphSystem : public ComponentSystem {
   } m_stats;
 
   // ÈÕÖ¾Æ÷
-  Logger m_logger;
+  Logger m_Logger;
 };
 }  // namespace mite
 

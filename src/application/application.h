@@ -103,7 +103,7 @@ class MiteApplication {
   bool m_ShouldClose = false;
 
   // 日志系统
-  Logger m_logger;
+  Logger m_Logger;
   // 订阅事件集合
   SubscriptionGroup m_EventSubscriptions;
 };

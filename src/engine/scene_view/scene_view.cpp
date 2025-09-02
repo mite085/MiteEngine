@@ -9,13 +9,13 @@ SceneView::SceneView()
       m_lastRenderItemCount(0),
       m_lastUpdateTime(0.0f)
 {
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView");
   // 初始化日志
-  m_logger->debug("SceneView initialized");
+  m_Logger->debug("SceneView initialized");
 }
 SceneView::~SceneView()
 {
-  m_logger->debug("SceneView destroyed");
+  m_Logger->debug("SceneView destroyed");
 }
 void SceneView::Update(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes)
 {
@@ -24,7 +24,7 @@ void SceneView::Update(SceneRegistry &registry, std::vector<SceneNode *> visible
   ProcessVisibility(registry, visibleNodes);
   m_lastUpdateTime = timer.ElapsedMillis();
 
-  //m_logger->debug("SceneView updated in {:.3f}ms, visible nodes: {}, render items: {}",
+  //m_Logger->debug("SceneView updated in {:.3f}ms, visible nodes: {}, render items: {}",
   //               m_lastUpdateTime,
   //               m_lastVisibleNodeCount,
   //               m_lastRenderItemCount);
@@ -42,7 +42,7 @@ std::shared_ptr<RenderQueue> SceneView::GetRenderQueue() const
 void SceneView::SetCustomFilter(std::function<bool(SceneNode *)> filterFunc)
 {
   m_customFilterFunc = filterFunc;
-  m_logger->debug("SceneView custom filter set");
+  m_Logger->debug("SceneView custom filter set");
 }
 size_t SceneView::GetVisibleNodeCount() const
 {

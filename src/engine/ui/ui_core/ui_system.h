@@ -82,7 +82,7 @@ class UISystem {
   //EventBus::HandlerID m_EventHandlerID;  
 
   // 日志系统
-  Logger m_logger;
+  Logger m_Logger;
 };
 };  // namespace mite
 

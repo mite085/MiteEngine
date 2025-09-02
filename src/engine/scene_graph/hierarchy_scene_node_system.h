@@ -49,7 +49,7 @@ class HierarchySceneNodeSystem : public ComponentSystem {
   SceneGraph *m_sceneGraph = nullptr;
   std::vector<Entity> m_pendingHierarchyChanges;
   SubscriptionGroup m_eventSubscriptions;
-  Logger m_logger;
+  Logger m_Logger;
 };
 
 }  // namespace mite

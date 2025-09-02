@@ -142,7 +142,7 @@ class SpatialPartitionManager {
   mutable std::mutex m_mutex;
 
   // ÈÕÖ¾Æ÷
-  Logger m_logger;
+  Logger m_Logger;
 };
 }  // namespace mite
 

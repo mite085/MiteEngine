@@ -11,7 +11,7 @@ namespace mite {
 SceneGraph::SceneGraph(SpatialPartitionType spatialPartitionType)
     : m_spatialPartitionManager(spatialPartitionType), m_nodeManager(m_spatialPartitionManager)
 {
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph");
 }
 
 SceneGraph::~SceneGraph() {}
@@ -28,13 +28,13 @@ void SceneGraph::Initialize(ComponentSystemManager &manager)
   manager.GetSystem<HierarchySceneNodeSystem>()->SetSceneGraph(this);
   manager.GetSystem<TransformSceneNodeSystem>()->SetSceneGraph(this);
 
-  m_logger->trace("SceneGraph created with spatial partition type: {}",
+  m_Logger->trace("SceneGraph created with spatial partition type: {}",
                   GetSpatialPartitionTypeName(m_spatialPartitionManager.GetSpatialPartitionType()));
 }
 
 void SceneGraph::CleanUp(ComponentSystemManager &manager)
 {
-  m_logger->info("Destroying SceneGraph");
+  m_Logger->info("Destroying SceneGraph");
 
   manager.UnregisterSystem<SceneGraphSystem>();
   manager.UnregisterSystem<HierarchySceneNodeSystem>();
@@ -44,7 +44,7 @@ void SceneGraph::CleanUp(ComponentSystemManager &manager)
   m_nodeManager.Clear();
   m_spatialPartitionManager.Clear();
 
-  m_logger->debug("SceneGraph destroyed");
+  m_Logger->debug("SceneGraph destroyed");
 }
 
 // ==================== 场景节点生命周期管理 ====================
@@ -209,7 +209,7 @@ bool SceneGraph::Serialize(std::ostream &output) const
 {
   // TODO: 实现完整的场景图序列化
   // 目前先预留接口
-  m_logger->info("SceneGraph serialization called (not implemented)");
+  m_Logger->info("SceneGraph serialization called (not implemented)");
   return !output.fail();
 }
 
@@ -217,7 +217,7 @@ bool SceneGraph::Deserialize(std::istream &input)
 {
   // TODO: 实现完整的场景图反序列化
   // 目前先预留接口
-  m_logger->info("SceneGraph deserialization called (not implemented)");
+  m_Logger->info("SceneGraph deserialization called (not implemented)");
   return !input.fail();
 }
 }  // namespace mite

@@ -5,14 +5,14 @@ namespace mite {
 MaterialSystem::MaterialSystem()
 {
   // 初始化LOGGER
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
-  m_logger->info("Create logger for material system");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
+  m_Logger->info("Create logger for material system");
 }
 
 void MaterialSystem::Initialize()
 {
   // 注册材质
-  m_logger->info("Registering material templates");
+  m_Logger->info("Registering material templates");
 
   // 注册基础材质
   // TODO: shader的创建放在此处是否合理？待后续调整
@@ -36,18 +36,18 @@ void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<M
 {
   if (name.empty()) {
     // 材质模板名称不能为空
-    m_logger->error("Material template name cannot be empty");
+    m_Logger->error("Material template name cannot be empty");
     throw std::invalid_argument("Material template name cannot be empty");
   }
 
   auto it = m_templates.find(name);
   if (it != m_templates.end()) {
     // 材质模板已存在，跳过注册步骤。
-    m_logger->error("Existing material template: {}, registing failed", name);
+    m_Logger->error("Existing material template: {}, registing failed", name);
     return;
   }
   // 注册材质模板
-  m_logger->info("Register material template: {}", name);
+  m_Logger->info("Register material template: {}", name);
   m_templates.emplace(name, std::move(material));
 }
 
@@ -58,16 +58,16 @@ bool MaterialSystem::HasTemplate(const std::string &name) const
 
 std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::string &templateName)
 {
-  m_logger->info("Creating material instance with material template: {}.", templateName);
+  m_Logger->info("Creating material instance with material template: {}.", templateName);
   // 1. 查找模板
   auto it = m_templates.find(templateName);
   if (it == m_templates.end()) {
     // 材质模板不存在, 使用回退材质
-    m_logger->warn("Invalid material template: {}, trying to use fallback material.",
+    m_Logger->warn("Invalid material template: {}, trying to use fallback material.",
                    templateName);
     if (!m_fallbackMaterial) {
       // 无可用回退材质
-      m_logger->error("There has not any fallback material to use.");
+      m_Logger->error("There has not any fallback material to use.");
       throw std::out_of_range("There has not any fallback material to use.");
     }
     return m_fallbackMaterial->CreateInstance();
@@ -85,7 +85,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
   auto instance = CreateInstance(templateName);
   if (!instance) {
     // 无法创建材质实例
-    m_logger->error("Cannot create material instance: {}", templateName);
+    m_Logger->error("Cannot create material instance: {}", templateName);
     return nullptr;
   }
 
@@ -133,7 +133,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
         break;
       }
       default:
-        m_logger->error("Invalid OpenGL uniform item: {};", name);
+        m_Logger->error("Invalid OpenGL uniform item: {};", name);
         break;
     }
   }
@@ -146,7 +146,7 @@ void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Mat
   auto it = m_templates.find(name);
   if (it == m_templates.end()) {
     // 未能在注册列表中寻找到需要被reload的material
-    m_logger->error("Reload failed，reloaded material name invalid: {}", name);
+    m_Logger->error("Reload failed，reloaded material name invalid: {}", name);
     return;
   }
 
@@ -158,18 +158,18 @@ void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Mat
   // 2. 替换模板
   it->second = std::move(newMaterial);
   // 材质模板已重载
-  m_logger->info("Material template has been reloaded: {}", name);
+  m_Logger->info("Material template has been reloaded: {}", name);
 }
 
 void MaterialSystem::SetFallbackMaterial(std::unique_ptr<Material> material)
 {
   if (!material) {
     // 回退材质不能为空
-    m_logger->error("Fallback material cannot be nullptr.");
+    m_Logger->error("Fallback material cannot be nullptr.");
     return;
   }
   m_fallbackMaterial = std::move(material);
   // 设置回退材质
-  m_logger->debug("Setting fallback material: {}", m_fallbackMaterial->GetName());
+  m_Logger->debug("Setting fallback material: {}", m_fallbackMaterial->GetName());
 }
 };  // namespace mite

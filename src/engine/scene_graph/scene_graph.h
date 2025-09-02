@@ -267,7 +267,7 @@ class SceneGraph {
   SpatialPartitionManager m_spatialPartitionManager;
 
   // ÈÕÖ¾Æ÷
-  Logger m_logger;
+  Logger m_Logger;
 };
 }  // namespace mite
 

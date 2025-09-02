@@ -8,8 +8,8 @@ namespace mite {
 // ==================== 构造函数 ====================
 SceneGraphSystem::SceneGraphSystem() : m_sceneGraph(nullptr)
 {
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraphSystem");
-  m_logger->trace("SceneGraphSystem created");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraphSystem");
+  m_Logger->trace("SceneGraphSystem created");
 }
 
 // ==================== ComponentSystem 接口实现 ====================
@@ -21,7 +21,7 @@ Component::Family SceneGraphSystem::GetExecutionOrder() const
 
 void SceneGraphSystem::Initialize()
 {
-  m_logger->info("Initializing Scene Graph System");
+  m_Logger->info("Initializing Scene Graph System");
 
   // 订阅ECS事件
   m_eventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
@@ -39,7 +39,7 @@ void SceneGraphSystem::Initialize()
   m_pendingDestroyNodes.clear();
   m_pendingSyncBounds.clear();
 
-  m_logger->debug("Scene Graph System initialized.");
+  m_Logger->debug("Scene Graph System initialized.");
 }
 
 void SceneGraphSystem::Update(float deltaTime, SceneRegistry &registry)
@@ -58,14 +58,14 @@ void SceneGraphSystem::Update(float deltaTime, SceneRegistry &registry)
   static float statsTimer = 0.0f;
   statsTimer += deltaTime;
   if (statsTimer > 5.0f) {
-    m_logger->debug("SceneGraphSystem stats: {}", GetStats());
+    m_Logger->debug("SceneGraphSystem stats: {}", GetStats());
     statsTimer = 0.0f;
   }
 }
 
 void SceneGraphSystem::Shutdown()
 {
-  m_logger->info("Shutting down SceneGraphSystem");
+  m_Logger->info("Shutting down SceneGraphSystem");
 
   // 取消所有事件订阅
   m_eventSubscriptions.UnsubscribeAll();
@@ -73,7 +73,7 @@ void SceneGraphSystem::Shutdown()
   // 清空统计信息
   m_stats = {};
 
-  m_logger->debug("SceneGraphSystem shutdown complete");
+  m_Logger->debug("SceneGraphSystem shutdown complete");
 }
 
 std::vector<std::type_index> SceneGraphSystem::GetComponentTypes() const
@@ -99,10 +99,10 @@ void SceneGraphSystem::SetSceneGraph(SceneGraph *sceneGraph)
 {
   m_sceneGraph = sceneGraph;
   if (m_sceneGraph) {
-    m_logger->info("SceneGraph service attached");
+    m_Logger->info("SceneGraph service attached");
   }
   else {
-    m_logger->warn("SceneGraph service detached");
+    m_Logger->warn("SceneGraph service detached");
   }
 }
 
@@ -155,12 +155,12 @@ bool SceneGraphSystem::OnMeshComponentRemoved(ComponentRemovedEvent<MeshComponen
 void SceneGraphSystem::CreateNodeForEntity(SceneRegistry &registry, Entity entity)
 {
   if (!m_sceneGraph) {
-    m_logger->warn("Cannot create node - SceneGraph service not available");
+    m_Logger->warn("Cannot create node - SceneGraph service not available");
     return;
   }
 
   if (m_sceneGraph->HasNode(entity)) {
-    m_logger->debug("Scene node already exists for entity {}", entity.GetUUIDString());
+    m_Logger->debug("Scene node already exists for entity {}", entity.GetUUIDString());
     return;
   }
 
@@ -171,7 +171,7 @@ void SceneGraphSystem::CreateNodeForEntity(SceneRegistry &registry, Entity entit
     // 立即同步初始数据
     SyncBoundsToSceneGraph(registry, entity);
 
-    m_logger->debug("Created and synced scene node for entity {}", entity.GetUUIDString());
+    m_Logger->debug("Created and synced scene node for entity {}", entity.GetUUIDString());
   }
 }
 
@@ -202,7 +202,7 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
       }
     }
     catch (const std::exception &e) {
-      m_logger->warn(
+      m_Logger->warn(
           "Failed to get mesh bounds for entity {}: {}", entity.GetUUIDString(), e.what());
     }
   }

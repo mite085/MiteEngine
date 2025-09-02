@@ -112,7 +112,7 @@ class MaterialSystem {
 
  private:
   // 日志系统
-  Logger m_logger;
+  Logger m_Logger;
 
   // ---- 成员变量 ----
   std::unordered_map<std::string, std::unique_ptr<Material>> m_templates;  // 模板存储

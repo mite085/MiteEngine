@@ -6,7 +6,7 @@ namespace mite {
 SpatialPartitionManager::SpatialPartitionManager(SpatialPartitionType spatialPartitionType)
     : m_spatialPartitionType(spatialPartitionType)
 {
-  m_logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph Spatial Partition Manager");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph Spatial Partition Manager");
 
   // 初始化空间划分结构（默认BVH）
   InitializeSpatialPartition();
@@ -54,7 +54,7 @@ void SpatialPartitionManager::SetSpatialPartitionType(SpatialPartitionType type)
   m_spatialPartitionType = type;
   InitializeSpatialPartition();
 
-  m_logger->info("Spatial partition type changed to: {}", GetSpatialPartitionTypeName(type));
+  m_Logger->info("Spatial partition type changed to: {}", GetSpatialPartitionTypeName(type));
 }
 
 SpatialPartitionType SpatialPartitionManager::GetSpatialPartitionType() const
@@ -67,7 +67,7 @@ void SpatialPartitionManager::RebuildSpatialPartition(std::vector<SceneNode *> n
   std::lock_guard<std::mutex> lock(m_mutex);
 
   if (!m_spatialPartition) {
-    m_logger->warn("Cannot rebuild null spatial partition");
+    m_Logger->warn("Cannot rebuild null spatial partition");
     return;
   }
 
@@ -78,7 +78,7 @@ void SpatialPartitionManager::RebuildSpatialPartition(std::vector<SceneNode *> n
     AddNodeToSpatialPartition(node);
   }
 
-  m_logger->debug("Rebuilt spatial partition with {} nodes", nodelist.size());
+  m_Logger->debug("Rebuilt spatial partition with {} nodes", nodelist.size());
 }
 
 std::string SpatialPartitionManager::GetSpatialPartitionStats() const
@@ -113,7 +113,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   if (!m_spatialPartition) {
-    m_logger->warn("Invalid spatial partition, cannot QueryVisibleNodes.");
+    m_Logger->warn("Invalid spatial partition, cannot QueryVisibleNodes.");
     return {};
   }
 
@@ -125,10 +125,10 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
 
   if (potentiallyVisibleNodes.empty()) {
     m_visibleNodeCount = 0;
-    //m_logger->trace("None visible node after FrustumCull");
+    //m_Logger->trace("None visible node after FrustumCull");
     return {};
   }
-  //m_logger->trace("{} visible nodes after FrustumCull", potentiallyVisibleNodes.size());
+  //m_Logger->trace("{} visible nodes after FrustumCull", potentiallyVisibleNodes.size());
 
   // 第二阶段：细粒度可见性检查（结合VisibilityComponent）
   m_visibleNodeCount = 0;
@@ -181,7 +181,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
       }
     }
   }
-  //m_logger->debug("QueryVisibleNodes complete: find {} visible nodes", m_visibleNodeCount);
+  //m_Logger->debug("QueryVisibleNodes complete: find {} visible nodes", m_visibleNodeCount);
 
   return results;
 }
@@ -193,7 +193,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryRaycast(SceneRegistry &re
   std::lock_guard<std::mutex> lock(m_mutex);
   std::vector<SceneNode *> results;
   if (!m_spatialPartition) {
-    m_logger->warn("Invalid spatial partition, cannot Raycast.");
+    m_Logger->warn("Invalid spatial partition, cannot Raycast.");
     return results;
   }
 
@@ -229,7 +229,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryRaycast(SceneRegistry &re
       }
     }
   }
-  m_logger->trace("QueryRaycast complete: find {} visible nodes", results.size());
+  m_Logger->trace("QueryRaycast complete: find {} visible nodes", results.size());
   return results;
 }
 
@@ -243,7 +243,7 @@ bool SpatialPartitionManager::QueryRaycastFirst(SceneRegistry &registry,
   result = nullptr;
   distance = FLT_MAX;
   if (!m_spatialPartition) {
-    m_logger->warn("Invalid spatial partition, cannot Raycast.");
+    m_Logger->warn("Invalid spatial partition, cannot Raycast.");
     return false;
   }
   // 获取所有潜在命中节点
@@ -292,7 +292,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QuerySphere(SceneRegistry &reg
   std::lock_guard<std::mutex> lock(m_mutex);
   std::vector<SceneNode *> results;
   if (!m_spatialPartition) {
-    m_logger->warn("Invalid spatial partition, cannot QuerySphere.");
+    m_Logger->warn("Invalid spatial partition, cannot QuerySphere.");
     return results;
   }
   // 第一阶段：使用空间划分结构进行粗检测
@@ -324,7 +324,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QuerySphere(SceneRegistry &reg
       }
     }
   }
-  m_logger->trace("QuerySphere complete: find {} visible nodes", results.size());
+  m_Logger->trace("QuerySphere complete: find {} visible nodes", results.size());
   return results;
 }
 
@@ -335,7 +335,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryAABB(SceneRegistry &regis
   std::lock_guard<std::mutex> lock(m_mutex);
   std::vector<SceneNode *> results;
   if (!m_spatialPartition) {
-    m_logger->warn("Invalid spatial partition, cannot QueryAABB.");
+    m_Logger->warn("Invalid spatial partition, cannot QueryAABB.");
     return results;
   }
   // 第一阶段：使用空间划分结构进行粗检测
@@ -367,7 +367,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryAABB(SceneRegistry &regis
       }
     }
   }
-  m_logger->trace("QueryAABB complete: find {} visible nodes", results.size());
+  m_Logger->trace("QueryAABB complete: find {} visible nodes", results.size());
   return results;
 }
 
@@ -377,11 +377,11 @@ void SpatialPartitionManager::InitializeSpatialPartition()
 {
   m_spatialPartition = CreateSpatialPartition(m_spatialPartitionType);
   if (m_spatialPartition) {
-    m_logger->debug("Initialized {} spatial partition",
+    m_Logger->debug("Initialized {} spatial partition",
                     GetSpatialPartitionTypeName(m_spatialPartitionType));
   }
   else {
-    m_logger->error("Failed to initialize spatial partition");
+    m_Logger->error("Failed to initialize spatial partition");
   }
 }
 }  // namespace mite
