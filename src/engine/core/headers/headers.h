@@ -30,9 +30,6 @@
 #include <any>
 #include <optional>
 
-// 核心函数模块
-#include "core/core_functions.h"
-
 // 数学库（使用gtx相关函数，需要启用EXPERIMENTAL）
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>

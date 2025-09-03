@@ -29,12 +29,6 @@ cmake_minimum_required(VERSION 3.10)
 set(ENGINE_CORE_LIB_NAME MiteEngine_Engine_Core)
 
 # 创建源代码组(筛选器)
-set(CORE_SRCS
-    core/core_functions.h
-    core/core_functions.cpp
-)
-source_group("core" FILES ${CORE_SRCS})
-
 set(FILESYSTEM_SRCS
     filesystem/filesystem.h
     filesystem/filesystem.cpp
@@ -93,7 +87,6 @@ source_group("uuid" FILES ${UUID_SRCS})
 # 创建静态库
 add_library(${ENGINE_CORE_LIB_NAME}
     STATIC
-    ${CORE_SRCS}
     ${FILESYSTEM_SRCS}
     ${FILESYSTEM_CONFIG_SRCS}
     ${HEADERS_SRCS}
