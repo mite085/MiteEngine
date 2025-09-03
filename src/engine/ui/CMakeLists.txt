@@ -5,7 +5,6 @@ set(ENGINE_UI_LIB_NAME MiteEngine_Engine_Ui)
 
 # 创建源代码组(筛选器)
 set(UI_CORE_SRCS
-    ui_core/ui_module.h
     ui_core/ui_panel.h
     ui_core/ui_panel.cpp
     ui_core/ui_system.h
@@ -28,26 +27,10 @@ set(UI_INPUT_PROCESSOR_SRCS
 source_group("ui_input_processors" FILES ${UI_INPUT_PROCESSOR_SRCS})
 
 set(UI_PANELS_SRCS
-    ui_panels/inspector_panel.h
-    ui_panels/inspector_panel.cpp
     ui_panels/viewport_panel.h
     ui_panels/viewport_panel.cpp
 )
 source_group("ui_panels" FILES ${UI_PANELS_SRCS})
-
-set(UI_RESOURCES_SRCS
-    ui_resources/icon.h
-    ui_resources/icon.cpp
-    ui_resources/imgui_style.h
-    ui_resources/imgui_style.cpp
-)
-source_group("ui_resources" FILES ${UI_RESOURCES_SRCS})
-
-set(UI_WIDGETS_SRCS
-    ui_widgets/component_widget.h
-    ui_widgets/component_widget.cpp
-)
-source_group("ui_widgets" FILES ${UI_WIDGETS_SRCS})
 
 # 创建静态库，添加源代码组
 add_library(${ENGINE_UI_LIB_NAME}
