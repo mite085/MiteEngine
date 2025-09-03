@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 #include <variant>
+#include <typeindex>
 
 namespace mite {
 /**
@@ -67,14 +68,13 @@ class EventBus {
       return dispatcher.Dispatch<T>(handler);
     };
 
-    // 获取事件类型的哈希值作为键
+    // 获取事件类型typeIndex作为键
     HandlerID id = m_NextHandlerID++;
-    EventType type = T::GetStaticType();
+    std::type_index typeIndex = typeid(T);
 
-    // 将处理函数存储到对应事件类型的列表中
-    m_Subscribers[type].emplace_back(id, genericHandler);
-    m_HandlerIDs[id] = type;
-
+    // 存储处理函数
+    m_Subscribers[typeIndex].emplace_back(id, genericHandler);
+    m_HandlerTypes[id] = typeIndex;
     return id;
   }
 
@@ -88,7 +88,7 @@ class EventBus {
   {
     HandlerID id = m_NextHandlerID++;
     m_CategorySubscribers[category].emplace_back(id, handler);
-    m_HandlerIDs[id] = category;  // 这里使用category作为类型标记
+    m_HandlerCategories[id] = category;
     return id;
   }
 
@@ -98,57 +98,68 @@ class EventBus {
    */
   void Unsubscribe(HandlerID id)
   {
-    auto it = m_HandlerIDs.find(id);
-    if (it == m_HandlerIDs.end())
-      return;
-
-    // 判断是基于类型还是基于类别的订阅
-    // 
-    // std::holds_alternative 是 C++17 引入的一个模板函数，
-    // 用于检查给定的 std::variant 对象是否包含指定类型的值。
-    if (std::holds_alternative<EventType>(it->second)) {
-      EventType type = std::get<EventType>(it->second);
-      auto &handlers = m_Subscribers[type];
+    // 首先尝试从类型订阅中移除
+    if (auto it = m_HandlerTypes.find(id); it != m_HandlerTypes.end()) {
+      std::type_index typeIndex = it->second;
+      auto &handlers = m_Subscribers[typeIndex];
       handlers.erase(std::remove_if(handlers.begin(),
                                     handlers.end(),
                                     [id](const auto &pair) { return pair.first == id; }),
                      handlers.end());
-    }
-    else {
-      EventCategory category = std::get<EventCategory>(it->second);
+      m_HandlerTypes.erase(it);
+      return;
+    }  
+    // 然后尝试从类别订阅中移除
+    if (auto it = m_HandlerCategories.find(id); it != m_HandlerCategories.end()) {
+      EventCategory category = it->second;
       auto &handlers = m_CategorySubscribers[category];
       handlers.erase(std::remove_if(handlers.begin(),
                                     handlers.end(),
                                     [id](const auto &pair) { return pair.first == id; }),
                      handlers.end());
+      m_HandlerCategories.erase(it);
     }
-
-    m_HandlerIDs.erase(it);
   }
 
   /**
    * @brief 发布事件(立即处理)
    * @param event 事件对象
-   * @param immediate 是否立即处理(默认为true)
+   * @param immediate 是否立即处理(默认为true，否则推入队列异步处理)
    */
-  void Post(Event &event, bool immediate = true)
+  template<typename T>
+  void Post(T &e, bool immediate = true)
   {
+    static_assert(std::is_base_of<Event, T>::value, "Must inherit from Event");
+
     if (immediate) {
-      ProcessEvent(event);
+      // 立即执行
+      ProcessEvent<T>(e);
     }
     else {
-      // 异步处理预留(当前未实现)
-      m_EventQueue.push_back(std::unique_ptr<Event>(event.Clone()));
+      // 创建包装器，存储事件拷贝，保存类型信息和处理逻辑（方便异步处理时获取正确类型）
+      EventWrapper wrapper;
+      wrapper.event = std::unique_ptr<Event>(e.Clone());
+
+      // 设置类型特定的处理器
+      wrapper.processor = [](EventBus &bus, Event &storedEvent) {
+        // 直接static_cast，如果类型不匹配会在编译时或运行时报错
+        T &specificEvent = static_cast<T &>(storedEvent);
+        bus.ProcessEvent(specificEvent);
+      };
+      // 等待异步处理(当前未验证多线程安全性)
+      m_EventQueue.push_back(std::move(wrapper));
     }
   }
 
   /**
    * @brief 处理队列中的事件
+   * 
+   * 异步处理(当前未验证多线程安全性，未启用)
    */
   void ProcessQueue()
   {
-    for (auto &event : m_EventQueue) {
-      ProcessEvent(*event);
+    for (auto &wrapper : m_EventQueue) {
+      wrapper.processor(*this, *wrapper.event);
     }
     m_EventQueue.clear();
   }
@@ -160,7 +171,8 @@ class EventBus {
   {
     m_Subscribers.clear();
     m_CategorySubscribers.clear();
-    m_HandlerIDs.clear();
+    m_HandlerTypes.clear();
+    m_HandlerCategories.clear();
     m_EventQueue.clear();
     m_NextHandlerID = 0;
   }
@@ -170,8 +182,10 @@ class EventBus {
    * @brief 处理单个事件
    * @param event 事件对象
    */
+  template<typename T>
   void ProcessEvent(Event &event)
   {
+    std::type_index typeIndex = typeid(T);
     // 1. 首先处理特定类型订阅者
     auto type = event.GetEventType();
     if (m_Subscribers.find(type) != m_Subscribers.end()) {
@@ -199,18 +213,28 @@ class EventBus {
   // 单例模式：构造函数私有化
   EventBus() = default;
 
-  // 基于事件类型的订阅者列表
-  std::unordered_map<EventType, std::vector<std::pair<HandlerID, EventHandler>>> m_Subscribers;
+  // 基于类型索引的订阅者列表
+  std::unordered_map<std::type_index, std::vector<std::pair<HandlerID, EventHandler>>>
+      m_Subscribers;
 
   // 基于事件类别的订阅者列表
   std::unordered_map<EventCategory, std::vector<std::pair<HandlerID, EventHandler>>>
       m_CategorySubscribers;
 
-  // 处理器ID到订阅类型的映射(用于取消订阅)
-  std::unordered_map<HandlerID, std::variant<EventType, EventCategory>> m_HandlerIDs;
+  // 处理器ID到类型索引的映射
+  std::unordered_map<HandlerID, std::type_index> m_HandlerTypes;
 
-  // 事件队列(用于延迟处理)
-  std::vector<std::unique_ptr<Event>> m_EventQueue;
+  // 处理器ID到事件类别的映射
+  std::unordered_map<HandlerID, EventCategory> m_HandlerCategories;
+
+
+  // 使用std::any存储事件对象，保持类型信息
+  struct EventWrapper {
+    std::unique_ptr<Event> event;  // 存储事件对象的拷贝
+    std::function<void(EventBus &, Event &)> processor;
+  };
+  // 事件队列
+  std::vector<EventWrapper> m_EventQueue;
 
   // 下一个可用的处理器ID
   HandlerID m_NextHandlerID = 1;
