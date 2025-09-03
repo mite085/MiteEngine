@@ -14,6 +14,7 @@ UISystem::UISystem()
   m_Logger->info("Create logger for user interface");
 
   // 订阅EventBus中的输入事件，按照EventCategory大类订阅，由ProcessEvent分发
+  // (实际事件由modular input context处理）
   //m_EventHandlerID = EventBus::Get().SubscribeByCategory(EventCategory::EVENT_CATEGORY_INPUT,
   //                                                       [this](Event &e) { ProcessEvent(e); });
 }

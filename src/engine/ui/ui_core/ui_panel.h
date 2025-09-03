@@ -6,7 +6,7 @@
 namespace mite {
 
 /**
- * @brief UI面板抽象基类，使用传统虚函数实现
+ * @brief UI面板抽象基类，使用虚函数实现
  */
 class UIPanel {
  public:

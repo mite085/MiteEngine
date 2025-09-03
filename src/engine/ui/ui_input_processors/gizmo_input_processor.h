@@ -12,8 +12,8 @@ namespace mite {
 /**
  * @brief Gizmo输入处理器
  *
- * 修改点：
- * - 不再直接操作Entity
+ * 职责：
+ * - 直接操作Camera执行修改
  * - 使用glm::mat4作为变换矩阵
  */
 class GizmoInputProcessor : public InputProcessor {
