@@ -20,10 +20,16 @@ void UILocalizationJson::InitializeBuiltinLanguages()
   if (!enPath.empty() && LoadLanguagePackFromFile(ENGLISH, enPath)) {
     m_Logger->info("Loaded English language pack from file");
   }
+  else {
+    m_Logger->error("Failed in Loading English language pack from file");
+  }
 
   std::string zhPath = GetLocalizationFilePath("zh-CN");
   if (!zhPath.empty() && LoadLanguagePackFromFile(SIMPLIFIED_CHINESE, zhPath)) {
     m_Logger->info("Loaded Simplified Chinese language pack from file");
+  }
+  else {
+    m_Logger->error("Failed in Loading Simplified Chinese language pack from file");
   }
 }
 
