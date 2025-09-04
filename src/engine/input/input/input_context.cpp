@@ -103,14 +103,8 @@ bool InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Keyboard && binding.code == e.GetKey()) {
-        // 根据事件类型更新动作值
-        float newValue = 0.0f;
-        if (e.GetEventType() == EventType::KEY_PRESSED) {
-          newValue = 1.0f * binding.scale;
-        }
-        else if (e.GetEventType() == EventType::KEY_RELEASED) {
-          newValue = 0.0f;
-        }
+        // 更新动作值
+        float newValue = 1.0f * binding.scale;
 
         _UpdateActionValue(name, newValue);
         handled = true;
@@ -126,11 +120,7 @@ bool InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse && binding.code == e.GetButton()) {
-        float newValue = 0.0f;
-        if (e.GetEventType() == EventType::MOUSE_BUTTON_PRESSED)
-          newValue = 1.0f * binding.scale;
-        else if (e.GetEventType() == EventType::MOUSE_BUTTON_RELEASED)
-          newValue = 0.0f;
+        float newValue = 1.0f * binding.scale;
 
         _UpdateActionValue(name, newValue);
         handled = true;
@@ -147,9 +137,7 @@ bool InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse) {
         // 鼠标移动作为超高频事件，可以优化处理频率
-        float newValue = (e.GetEventType() == EventType::MOUSE_POSITION_MOVED) ?
-                             1.0f * binding.scale :
-                             0.0f;
+        float newValue = 1.0f * binding.scale;
 
         _UpdateActionValue(name, newValue);
         handled = true;
@@ -166,8 +154,7 @@ bool InputContext::_ProcessMouseScrollEvent(const MouseScrollEvent &e)
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse) {
         // 鼠标滚轮事件通常需要立即处理
-        float newValue = (e.GetEventType() == EventType::MOUSE_SCROLLED) ? 1.0f * binding.scale :
-                                                                           0.0f;
+        float newValue = 1.0f * binding.scale;
 
         _UpdateActionValue(name, newValue);
         handled = true;

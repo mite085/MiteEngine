@@ -141,8 +141,6 @@ class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
       : ComponentEvent<CameraComponent>(entity, component)
   {
   }
-
-  EVENT_CLASS_TYPE(MAIN_CAMERA_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -164,7 +162,6 @@ class CameraVisibilityMaskChangedEvent : public ComponentEvent<CameraComponent> 
   {
   }
 
-  EVENT_CLASS_TYPE(CAMERA_VISIBLE_MASK_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {

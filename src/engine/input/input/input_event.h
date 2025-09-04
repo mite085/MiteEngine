@@ -28,7 +28,6 @@ class MouseMoveEvent : public Event {
     return ypos;
   }
 
-  EVENT_CLASS_TYPE(MOUSE_POSITION_MOVED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
@@ -71,7 +70,6 @@ class MouseButtonPressedEvent : public Event {
     return ypos;
   }
 
-  EVENT_CLASS_TYPE(MOUSE_BUTTON_PRESSED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
@@ -110,7 +108,6 @@ class MouseButtonReleasedEvent : public Event {
     return ypos;
   }
 
-  EVENT_CLASS_TYPE(MOUSE_BUTTON_RELEASED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
@@ -162,7 +159,6 @@ class MouseScrollEvent : public Event {
     return glm::vec2(xoffset, yoffset);
   }
 
-  EVENT_CLASS_TYPE(MOUSE_SCROLLED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
 
   Event *Clone() const override
@@ -202,7 +198,6 @@ class KeyPressedEvent : public Event {
     return isRepeated;
   }
 
-  EVENT_CLASS_TYPE(KEY_PRESSED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
@@ -228,8 +223,6 @@ class KeyReleasedEvent : public Event {
   {
     return key;
   }
-
-  EVENT_CLASS_TYPE(KEY_RELEASED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {
@@ -268,7 +261,6 @@ class KeyTypedEvent : public Event {
   {
     return (m_Codepoint < 128) ? static_cast<char>(m_Codepoint) : '\0';
   }
-  EVENT_CLASS_TYPE(KEY_TYPED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
   Event *Clone() const override
   {

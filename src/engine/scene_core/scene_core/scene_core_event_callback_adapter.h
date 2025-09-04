@@ -36,13 +36,13 @@ class SceneCoreEventCallbackAdapter {
     // 组件添加事件
     RegisterCallbackComponentConstruct<T>([this](Entity entity, T &component) {
       ComponentAddedEvent<T> event(entity, component);
-      EventBus::Get().Post(event);
+      EventBus::Get().Post<ComponentAddedEvent<T>>(event);
     });
 
     // 组件删除事件
     RegisterCallbackComponentDestroy<T>([this](Entity entity, T &component) {
       ComponentRemovedEvent<T> event(entity, component);
-      EventBus::Get().Post(event);
+      EventBus::Get().Post<ComponentRemovedEvent<T>>(event);
     });
   }
 

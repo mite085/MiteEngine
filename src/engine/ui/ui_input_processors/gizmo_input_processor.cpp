@@ -48,10 +48,7 @@ bool GizmoInputProcessor::handleMouseButtonPressed(MouseButtonPressedEvent &e)
 
 bool GizmoInputProcessor::handleKeyPressed(KeyPressedEvent &e)
 {
-  const bool pressed = (e.GetEventType() == EventType::KEY_PRESSED);
-  if (!pressed) {
-    return false;  // 忽略按键释放事件
-  }
+  const bool pressed = true;
 
   // Gizmo操作切换
   bool handled = true;  // 默认认为已处理

@@ -8,7 +8,6 @@ namespace mite {
 class WindowCloseEvent : public Event {
  public:
   WindowCloseEvent() = default;
-  EVENT_CLASS_TYPE(WINDOW_CLOSE)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
   Event *Clone() const override
   {
@@ -21,7 +20,6 @@ class WindowResizeEvent : public Event {
   WindowResizeEvent(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) {}
   uint32_t GetWidth() const;
   uint32_t GetHeight() const;
-  EVENT_CLASS_TYPE(WINDOW_RESIZE)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
   Event *Clone() const override
   {
@@ -34,7 +32,6 @@ class WindowResizeEvent : public Event {
 class WindowFocusEvent : public Event {
  public:
   WindowFocusEvent() = default;
-  EVENT_CLASS_TYPE(WINDOW_FOCUS)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
   Event *Clone() const override
   {
@@ -45,7 +42,6 @@ class WindowFocusEvent : public Event {
 class WindowLostFocusEvent : public Event {
  public:
   WindowLostFocusEvent() = default;
-  EVENT_CLASS_TYPE(WINDOW_LOST_FOCUS)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
   Event *Clone() const override
   {
@@ -56,7 +52,6 @@ class WindowLostFocusEvent : public Event {
 class WindowMovedEvent : public Event {
  public:
   WindowMovedEvent(int xpos, int ypos) : xpos(xpos), ypos(ypos) {}
-  EVENT_CLASS_TYPE(WINDOW_MOVED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_WINDOW)
   Event *Clone() const override
   {

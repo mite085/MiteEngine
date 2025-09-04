@@ -115,8 +115,6 @@ class ParentChangedEvent : public ComponentEvent<HierarchyComponent> {
         m_NewParent(newParent)
   {
   }
-
-  EVENT_CLASS_TYPE(HIERACHY_COMPONENT_PARENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {

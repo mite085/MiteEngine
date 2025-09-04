@@ -132,8 +132,6 @@ class MaterialReloadedEvent : public Event {
       : m_TemplateName(templateName), m_OldMaterial(oldMaterial), m_NewMaterial(newMaterial)
   {
   }
-
-  EVENT_CLASS_TYPE(MATERIAL_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {

@@ -16,7 +16,6 @@ class SceneLoadedEvent : public Event {
  public:
   SceneLoadedEvent() {}
 
-  EVENT_CLASS_TYPE(SCENE_LOADED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -31,7 +30,6 @@ class SceneClearedEvent : public Event {
  public:
   SceneClearedEvent() {}
 
-  EVENT_CLASS_TYPE(SCENE_CLEARED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -53,10 +51,6 @@ class EntityEvent : public Event {
     return entity;
   }
 
-  virtual EventType GetEventType() const = 0;
-  virtual const char *GetName() const = 0;
-  virtual int GetCategoryFlags() const = 0;
-
  protected:
   Entity entity;  // 关联的实体
 };
@@ -69,7 +63,6 @@ class EntityCreatedEvent : public EntityEvent {
  public:
   EntityCreatedEvent(Entity entity) : EntityEvent(entity) {}
 
-  EVENT_CLASS_TYPE(ENTITY_CREATED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -84,7 +77,6 @@ class EntityDestroyedEvent : public EntityEvent {
  public:
   EntityDestroyedEvent(Entity entity) : EntityEvent(entity) {}
 
-  EVENT_CLASS_TYPE(ENTITY_DESTROYED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -100,7 +92,6 @@ class EntityParentChangedEvent : public EntityEvent {
  public:
   EntityParentChangedEvent(Entity entity) : EntityEvent(entity) {}
 
-  EVENT_CLASS_TYPE(HIERACHY_COMPONENT_PARENT_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -115,7 +106,6 @@ class EntityTagChangedEvent : public EntityEvent {
  public:
   EntityTagChangedEvent(Entity entity) : EntityEvent(entity) {}
 
-  EVENT_CLASS_TYPE(TAG_CHANGED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
@@ -142,11 +132,6 @@ template<typename T> class ComponentEvent : public Event {
   {
     return component;
   }
-
-  virtual EventType GetEventType() const = 0;
-  virtual const char *GetName() const = 0;
-  virtual int GetCategoryFlags() const = 0;
-
  protected:
   Entity entity;   // 关联的实体
   T &component;    // 组件
@@ -160,31 +145,6 @@ template<typename T> class ComponentEvent : public Event {
 template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
  public:
   ComponentAddedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
-
-  // EVENT_CLASS_TYPE(COMPONENT_ADDED)
-  // 
-  // 无法使用宏的原因：
-  // 负责注册事件接收函数的ComponentSystem是模板类，
-  // adapter的RegisterCallbackComponentConstruct也是模板函数，
-  // 但不同模板不能使用同一个EventType，否则分发器会分发给所有
-  // 订阅任意模板的ComponentAddedEvent的类。
-  //
-  // 使用 ComponentID 的哈希值作为 EventType，可以避免这个问题
-  static EventType GetStaticType()
-  {
-    return static_cast<EventType>(static_cast<uint32_t>(EventType::COMPONENT_ADDED_EVENT_BASE) +
-                                  ComponentID::Get<T>().Hash());
-  }
-  virtual EventType GetEventType() const override
-  {
-    return GetStaticType();
-  }
-  // 动态生成事件名称
-  virtual const char *GetName() const override
-  {
-    static std::string name = std::string("ComponentAddedEvent_") + typeid(T).name();
-    return name.c_str();
-  }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
@@ -201,24 +161,6 @@ template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
 template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
  public:
   ComponentRemovedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
-
-  // EVENT_CLASS_TYPE(COMPONENT_REMOVED)
-  // 使用 ComponentID 的哈希值作为 EventType
-  static EventType GetStaticType()
-  {
-    return static_cast<EventType>(static_cast<uint32_t>(EventType::COMPONENT_REMOVED_EVENT_BASE) +
-                                  ComponentID::Get<T>().Hash());
-  }
-  virtual EventType GetEventType() const override
-  {
-    return GetStaticType();
-  }
-  // 动态生成事件名称
-  virtual const char *GetName() const override
-  {
-    static std::string name = std::string("ComponentRemovedEvent_") + typeid(T).name();
-    return name.c_str();
-  }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override

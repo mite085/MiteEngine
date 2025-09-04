@@ -25,7 +25,7 @@ void TransformComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
   UpdateWorldMatrix(reg);
 
   // 发布更新事件
-  EventBus::Get().Post(TransformUpdatedEvent(GetEntity(), *this));
+  EventBus::Get().Post<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
 
   // 清除标记
   m_HierarchyDirty = false;
@@ -44,7 +44,8 @@ void TransformComponent::SetLocalPosition(const glm::vec3 &position)
     m_Transform.SetPosition(position);
     MarkDirty();
 
-    EventBus::Get().Post(PositionChangedEvent(GetEntity(), *this, position, false));
+    EventBus::Get().Post<PositionChangedEvent>(
+        PositionChangedEvent(GetEntity(), *this, position, false));
   }
 }
 
@@ -89,7 +90,8 @@ void TransformComponent::SetLocalRotation(const glm::vec3 &rotation)
     m_Transform.SetRotation(rotation);
     MarkDirty();
 
-    EventBus::Get().Post(RotationChangedEvent(GetEntity(), *this, rotation, false));
+    EventBus::Get().Post<RotationChangedEvent>(
+        RotationChangedEvent(GetEntity(), *this, rotation, false));
   }
 }
 
@@ -208,7 +210,7 @@ void TransformComponent::SetLocalScale(const glm::vec3 &scale)
     m_Transform.SetScale(scale);
     MarkDirty();
 
-    EventBus::Get().Post(ScaleChangedEvent(GetEntity(), *this, scale, false));
+    EventBus::Get().Post<ScaleChangedEvent>(ScaleChangedEvent(GetEntity(), *this, scale, false));
   }
 }
 
@@ -245,7 +247,8 @@ void TransformComponent::SetLocalMatrix(const glm::mat4 &matrix)
   m_Transform.SetLocalMatrix(matrix);
   MarkDirty();
 
-  EventBus::Get().Post(TransformChangedEvent(GetEntity(), *this, matrix, false));
+  EventBus::Get().Post<TransformChangedEvent>(
+      TransformChangedEvent(GetEntity(), *this, matrix, false));
 }
 
 void TransformComponent::SetWorldMatrix(SceneRegistry &reg, const glm::mat4 &matrix)

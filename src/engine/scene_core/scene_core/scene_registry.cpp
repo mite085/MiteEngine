@@ -36,7 +36,7 @@ Entity SceneRegistry::CreateEntity(const std::string& name)
 
   // 创建事件并发布
   EntityCreatedEvent event(entity);
-  EventBus::Get().Post(event);
+  EventBus::Get().Post<EntityCreatedEvent>(event);
 
   return entity;
 }

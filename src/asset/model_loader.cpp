@@ -56,7 +56,7 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
 
   // 6. 发布事件，委托RendererDevice创建GPU资源
   ModelLoadEvent event(sourceData, model->handle);
-  EventBus::Get().Post(event);
+  EventBus::Get().Post<ModelLoadEvent>(event);
   // model->handle = IRenderDevice::Current().CreateModel(rendererData);
 
   return model;

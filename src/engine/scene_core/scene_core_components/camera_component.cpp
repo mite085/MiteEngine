@@ -115,7 +115,8 @@ void CameraComponent::SetVisibilityMask(uint32_t mask)
   if (m_VisibilityMask != mask) {
     m_VisibilityMask = mask;
     MarkDirty();
-    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
+    EventBus::Get().Post<CameraVisibilityMaskChangedEvent>(
+        CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
 }
 
@@ -130,7 +131,8 @@ void CameraComponent::AddVisibilityLayer(uint32_t mask)
   m_VisibilityMask |= mask;
   if (m_VisibilityMask != mask) {
     MarkDirty();
-    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
+    EventBus::Get().Post<CameraVisibilityMaskChangedEvent>(
+        CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
 }
 void CameraComponent::RemoveVisibilityLayer(uint32_t mask)
@@ -139,7 +141,8 @@ void CameraComponent::RemoveVisibilityLayer(uint32_t mask)
   m_VisibilityMask &= ~mask;
   if (m_VisibilityMask != mask) {
     MarkDirty();
-    EventBus::Get().Post(CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
+    EventBus::Get().Post<CameraVisibilityMaskChangedEvent>(
+        CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
 }
 
@@ -229,7 +232,7 @@ void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
   // 设置新的主相机
   if (newMain) {
     newMain->SetUsage(CameraUsage::MainView);
-    EventBus::Get().Post(MainCameraChangedEvent(mainCamera, *newMain));
+    EventBus::Get().Post<MainCameraChangedEvent>(MainCameraChangedEvent(mainCamera, *newMain));
   }
   else {
     LOG_ERROR("Invalid camera entity when setting new main camera");

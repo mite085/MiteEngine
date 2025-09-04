@@ -26,7 +26,6 @@ class ModelLoadEvent : public Event {
     return m_Handle;
   }
 
-  EVENT_CLASS_TYPE(MODEL_LOADED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_ASSET)
   Event *Clone() const override
   {
@@ -58,7 +57,6 @@ class TextureLoadEvent : public Event {
     return m_Handle;
   }
 
-  EVENT_CLASS_TYPE(TEXTURE_LOADED)
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_ASSET)
   Event *Clone() const override
   {
