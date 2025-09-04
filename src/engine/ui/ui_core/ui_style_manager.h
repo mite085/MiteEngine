@@ -6,21 +6,23 @@
 namespace mite {
 
 /**
- * @brief 样式变更事件
- * 当样式或样式属性发生变化时触发
- */
-struct StyleChangedEvent {
-  std::string styleName;     // 样式名称
-  std::string propertyName;  // 属性名称（如果为全局样式变更则为空）
-  StyleValue oldValue;       // 旧值（如果为全局样式变更则为空）
-  StyleValue newValue;       // 新值（如果为全局样式变更则为空）
-  bool isGlobalChange;       // 是否为全局样式变更
-};
-
-/**
  * @brief UI样式管理器
  * 负责管理所有UI样式，提供样式的注册、获取、切换等功能
  * 采用单例模式确保全局唯一性
+ * 
+ * 使用示例：
+ * // 初始化
+ * UIStyleManager::Get().Initialize();
+ * 
+ * // 获取当前样式
+ * auto currentStyle = UIStyleManager::Get().GetCurrentStyle();
+ * 
+ * // 切换主题
+ * UIStyleManager::Get().SetCurrentStyle("dark");
+ * 
+ * // 监听样式变更事件
+ * SubscriptionGroup m_EventSubscriptions;
+ * m_EventSubscriptions.Subscribe<StyleChangedEvent>((BIND_DISPATCH_FN(onStyleChanged));
  */
 class UIStyleManager {
  public:
@@ -96,12 +98,6 @@ class UIStyleManager {
   size_t GetStyleCount() const;
 
   /**
-   * @brief 创建默认样式
-   * @return std::shared_ptr<UIStyle> 默认样式对象
-   */
-  static std::shared_ptr<UIStyle> CreateDefaultStyle();
-
-  /**
    * @brief 创建暗色主题样式
    * @return std::shared_ptr<UIStyle> 暗色主题样式对象
    */
@@ -125,9 +121,13 @@ class UIStyleManager {
    */
   void CreateBuiltinStyles();
 
+  Logger m_Logger;
+
   std::unordered_map<std::string, std::shared_ptr<UIStyle>> m_Styles;  // 样式存储映射表
   std::string m_CurrentStyleName;                                      // 当前样式名称
 };
+
+
 
 }  // namespace mite
 

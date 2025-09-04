@@ -102,6 +102,7 @@ class UIStyle {
 
   /**
    * @brief 设置父样式
+   * @param parent 父样式共享指针
    */
   void SetParent(std::shared_ptr<UIStyle> parent)
   {
@@ -110,36 +111,18 @@ class UIStyle {
 
   /**
    * @brief 获取父样式
+   * @return std::shared_ptr<UIStyle> 父样式共享指针
    */
   std::shared_ptr<UIStyle> GetParent() const
   {
     return m_Parent;
   }
 
-  /**
-   * @brief 应用默认样式
-   */
-  void ApplyDefaultStyle();
-
  private:
-  std::string m_Name;
-  std::unordered_map<std::string, StyleProperty> m_Properties;
-  std::shared_ptr<UIStyle> m_Parent;
+  std::string m_Name;                                           // 样式名称
+  std::unordered_map<std::string, StyleProperty> m_Properties;  // 属性存储
+  std::shared_ptr<UIStyle> m_Parent;                            // 父样式指针
 };
-
-// 显式实例化模板特化
-extern template int UIStyle::GetProperty<int>(const std::string &, const int &) const;
-extern template float UIStyle::GetProperty<float>(const std::string &, const float &) const;
-extern template bool UIStyle::GetProperty<bool>(const std::string &, const bool &) const;
-extern template glm::vec2 UIStyle::GetProperty<glm::vec2>(const std::string &,
-                                                          const glm::vec2 &) const;
-extern template glm::vec3 UIStyle::GetProperty<glm::vec3>(const std::string &,
-                                                          const glm::vec3 &) const;
-extern template glm::vec4 UIStyle::GetProperty<glm::vec4>(const std::string &,
-                                                          const glm::vec4 &) const;
-extern template std::string UIStyle::GetProperty<std::string>(const std::string &,
-                                                              const std::string &) const;
-
 
 // 常用样式属性名称定义
 namespace StyleProperties {
@@ -162,7 +145,6 @@ constexpr const char *SIZE_MAX_HEIGHT = "size.max_height";
 // 边框相关
 constexpr const char *BORDER_WIDTH = "border.width";
 constexpr const char *BORDER_RADIUS = "border.radius";
-constexpr const char *BORDER_COLOR = "border.color";
 
 // 间距相关
 constexpr const char *PADDING_LEFT = "padding.left";
@@ -177,17 +159,10 @@ constexpr const char *MARGIN_BOTTOM = "margin.bottom";
 // 字体相关
 constexpr const char *FONT_SIZE = "font.size";
 constexpr const char *FONT_FAMILY = "font.family";
-constexpr const char *FONT_WEIGHT = "font.weight";
-constexpr const char *FONT_STYLE = "font.style";
 
 // 布局相关
 constexpr const char *LAYOUT_ALIGN = "layout.align";
 constexpr const char *LAYOUT_JUSTIFY = "layout.justify";
-constexpr const char *LAYOUT_DIRECTION = "layout.direction";
-
-// 动画相关
-constexpr const char *ANIMATION_DURATION = "animation.duration";
-constexpr const char *ANIMATION_EASING = "animation.easing";
 }  // namespace StyleProperties
 }  // namespace mite
 

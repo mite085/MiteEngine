@@ -1,6 +1,7 @@
 #ifndef MITE_UI_INTERACTION_EVENTS_H
 #define MITE_UI_INTERACTION_EVENTS_H
 
+#include "ui_core/ui_style.h"
 #include "ui_event.h"
 #include <glm/glm.hpp>
 
@@ -286,6 +287,40 @@ class MouseLeaveEvent : public UIEvent {
 
  private:
   uint64_t m_WidgetId;
+};
+
+/**
+ * @brief 样式变更事件
+ * 当样式或样式属性发生变化时触发
+ */
+struct StyleChangedEvent : public UIEvent {
+ public:
+  explicit StyleChangedEvent(std::string styleName,
+                             bool isGlobalChange,
+                             std::string propertyName = {},
+                             StyleValue oldValue = {},
+                             StyleValue newValue = {})
+      : m_StyleName(styleName),
+        m_PropertyName(propertyName),
+        m_OldValue(oldValue),
+        m_NewValue(newValue),
+        m_IsGlobalChange(isGlobalChange)
+  {
+  }
+
+  Event *Clone() const override
+  {
+    return new StyleChangedEvent(
+        m_StyleName, m_IsGlobalChange, m_PropertyName, m_OldValue, m_NewValue);
+  }
+  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
+
+ private:
+  std::string m_StyleName;     // 样式名称
+  bool m_IsGlobalChange;       // 是否为全局样式变更
+  std::string m_PropertyName;  // 属性名称（如果为全局样式变更则为空）
+  StyleValue m_OldValue;       // 旧值（如果为全局样式变更则为空）
+  StyleValue m_NewValue;       // 新值（如果为全局样式变更则为空）
 };
 }  // namespace mite
 
