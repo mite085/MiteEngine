@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Localization Schema",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "language": {"type": "string"},
+        "locale": {"type": "string"},
+        "direction": {"type": "string", "enum": ["LTR", "RTL"]},
+        "version": {"type": "string"}
+      },
+      "required": ["language", "locale"]
+    },
+    "common": {
+      "type": "object",
+      "description": "通用UI文本"
+    },
+    "editor": {
+      "type": "object",
+      "description": "编辑器专用文本"
+    },
+    "runtime": {
+      "type": "object",
+      "description": "运行时专用文本"
+    },
+    "errors": {
+      "type": "object",
+      "description": "错误消息文本"
+    },
+    "tooltips": {
+      "type": "object",
+      "description": "工具提示文本"
+    }
+  },
+  "required": ["metadata", "common"],
+  "additionalProperties": false
+}
