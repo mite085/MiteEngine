@@ -1,5 +1,0 @@
-#ifndef MITE_LOCALIZATION_CONFIG_H
-#define MITE_LOCALIZATION_CONFIG_H
-#define LOCALIZATION_DIR "assets/localization"
-#define LOCALIZATION_SCHEMA_FILE "assets/localization/localization.schema.json"
-#endif // MITE_LOCALIZATION_CONFIG_H
