@@ -10,8 +10,11 @@ set(UI_CORE_SRCS
     ui_core/ui_style.cpp
     ui_core/ui_style_manager.h  # 样式管理
     ui_core/ui_style_manager.cpp
-    ui_core/ui_localization.h   # 本地化管理抽象
+    ui_core/ui_localization.h   # 翻译
     ui_core/ui_localization.cpp
+    ui_core/ui_localization_json.h # 基于Json配置文件的翻译实现
+    ui_core/ui_localization_json.cpp
+    ${CMAKE_BINARY_DIR}/src/engine/ui/ui_core/localization_json_config.h # Json配置文件索引
 
     ui_core/ui_system.h         # UI系统单例，管理全局UI状态
     ui_core/ui_system.cpp
@@ -39,7 +42,7 @@ source_group("ui widgets" FILES ${UI_WIDGET_SRCS})
 set(UI_IMGUI_BACKEND_SRCS
     ui_imgui_backend/ui_imgui_backend.h         # ImGui后端实现
     ui_imgui_backend/ui_imgui_style_adapter.h   # ImGui样式适配器
-    ui_imgui_backend/ui_imgui_localization.h    # ImGui本地化实现
+
     ui_imgui_backend/ui_imgui_input_adapter.h   # ImGui输入适配器（事件转换）
 )
 source_group("ui imgui backend" FILES ${UI_IMGUI_BACKEND_SRCS})
