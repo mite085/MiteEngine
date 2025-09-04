@@ -11,6 +11,7 @@ set(UI_CORE_SRCS
     ui_core/ui_style_manager.h  # 样式管理
     ui_core/ui_style_manager.cpp
     ui_core/ui_localization.h   # 本地化管理抽象
+    ui_core/ui_localization.cpp
 
     ui_core/ui_system.h         # UI系统单例，管理全局UI状态
     ui_core/ui_system.cpp

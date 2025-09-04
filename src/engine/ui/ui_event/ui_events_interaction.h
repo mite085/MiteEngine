@@ -307,7 +307,33 @@ struct StyleChangedEvent : public UIEvent {
         m_IsGlobalChange(isGlobalChange)
   {
   }
-
+  const std::string &GetStyleName() const
+  {
+    return m_StyleName;
+  }
+  const std::string &GetPropertyName() const
+  {
+    return m_PropertyName;
+  }
+  const StyleValue &GetOldValue() const
+  {
+    return m_OldValue;
+  }
+  const StyleValue &GetNewValue() const
+  {
+    return m_NewValue;
+  }
+  const bool IsGlobalChange() const
+  {
+    return m_IsGlobalChange;
+  }
+  std::string ToString() const override
+  {
+    if (m_IsGlobalChange)
+      return "StyleChangedEvent: change to " + m_StyleName;
+    else
+      return "LanguageChangedEvent: " + m_PropertyName + " value changed."; // 不方便打印std::variant
+  }
   Event *Clone() const override
   {
     return new StyleChangedEvent(
@@ -321,6 +347,42 @@ struct StyleChangedEvent : public UIEvent {
   std::string m_PropertyName;  // 属性名称（如果为全局样式变更则为空）
   StyleValue m_OldValue;       // 旧值（如果为全局样式变更则为空）
   StyleValue m_NewValue;       // 新值（如果为全局样式变更则为空）
+};
+
+/**
+ * @brief 语言变更事件
+ */
+class LanguageChangedEvent : public UIEvent {
+ public:
+  explicit LanguageChangedEvent(const std::string &oldLanguage, const std::string &newLanguage)
+      : m_OldLanguage(oldLanguage), m_NewLanguage(newLanguage)
+  {
+  }
+
+  const std::string &GetOldLanguage() const
+  {
+    return m_OldLanguage;
+  }
+  const std::string &GetNewLanguage() const
+  {
+    return m_NewLanguage;
+  }
+
+  std::string ToString() const override
+  {
+    return "LanguageChangedEvent: " + m_OldLanguage + " -> " + m_NewLanguage;
+  }
+
+  Event *Clone() const override
+  {
+    return new LanguageChangedEvent(m_OldLanguage, m_NewLanguage);
+  }
+
+  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
+
+ private:
+  std::string m_OldLanguage;
+  std::string m_NewLanguage;
 };
 }  // namespace mite
 
