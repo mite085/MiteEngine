@@ -6,7 +6,7 @@ src/engine/ui/
 │   ├── UISystem.h          # UI系统单例，管理全局UI状态
 │   ├── UIBackend.h         # 后端抽象接口
 │   ├── events/             # UI事件定义层
-│   │   ├── UIEventTypes.h          # 核心UI事件类型定义
+│   │   ├── UIEvent.h          # UI事件类型定义
 │   │   ├── UIInteractionEvents.h   # 用户交互事件
 │   │   ├── UILifecycleEvents.h     # UI生命周期事件
 │   │   ├── EditorUIEvents.h        # 编辑器专用事件
@@ -76,7 +76,7 @@ src/engine/ui/
 通用功能优先于专用功能
 
 第一阶段：核心抽象层（1-7）
-core/UIEventTypes.h - 核心事件类型定义，所有事件系统的基础
+core/UIEvent.h - UI相关的事件定义
 core/UIBackend.h - 后端抽象接口，定义UI系统与渲染后端的契约
 core/UISystem.h - UI系统单例，管理全局UI状态和事件总线
 core/UIStyle.h - 样式管理抽象，为控件提供统一的样式接口

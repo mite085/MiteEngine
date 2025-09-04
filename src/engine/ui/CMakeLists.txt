@@ -5,12 +5,22 @@ set(ENGINE_UI_LIB_NAME MiteEngine_Engine_Ui)
 
 # 创建源代码组(筛选器)
 set(UI_CORE_SRCS
+    ui_core/ui_backend.h    # 后端抽象接口
     ui_core/ui_panel.h
     ui_core/ui_panel.cpp
     ui_core/ui_system.h
     ui_core/ui_system.cpp
 )
 source_group("ui_core" FILES ${UI_CORE_SRCS})
+
+set(UI_EVENT_SRCS
+    ui_event/ui_event.h                 # 事件基本类型
+    ui_event/ui_interaction_events.h    # 交互事件，包括按钮点击，滑块值改变等
+    ui_event/ui_lifecycle_events.h      # 生命周期事件，包括窗口创建，关闭等
+    ui_event/ui_editor_events.h         # 编辑器专属事件，包括Component属性编辑等
+    ui_event/ui_runtime_events.h        # 运行时专属事件，包括游戏逻辑等
+)
+source_group("ui_events" FILES ${UI_EVENT_SRCS})
 
 set(UI_GIZMO_SRCS
     ui_gizmo/gizmo.h
@@ -37,10 +47,9 @@ add_library(${ENGINE_UI_LIB_NAME}
     STATIC
     ${UI_CORE_SRCS}
     ${UI_GIZMO_SRCS}
+    ${UI_EVENT_SRCS}
     ${UI_INPUT_PROCESSOR_SRCS}
     ${UI_PANELS_SRCS}
-    ${UI_RESOURCES_SRCS}
-    ${UI_WIDGETS_SRCS}
 )
 
 # 设置头文件路径（供其他项目包含）
