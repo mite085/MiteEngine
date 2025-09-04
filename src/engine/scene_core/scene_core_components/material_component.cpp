@@ -17,7 +17,7 @@ void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
 {
   if (m_Material != material) {
     m_Material = material;
-    EventBus::Get().Post<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
+    EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
     MarkDirty();
   }
 }

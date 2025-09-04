@@ -48,6 +48,11 @@ class EventBus {
     static EventBus instance;
     return instance;
   }
+  // 辅助的发布函数
+  template<typename T>
+  static void Publish(T& event) {
+    Get().Post<T>(event);
+  }
 
   // 删除拷贝构造函数和赋值运算符
   EventBus(const EventBus &) = delete;

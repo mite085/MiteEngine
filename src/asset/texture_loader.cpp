@@ -54,7 +54,7 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureData(const std::string &
 
   // 8. 发布事件，委托RendererDevice创建GPU资源
   TextureLoadEvent event(rendererData, textureAsset->handle);
-  EventBus::Get().Post<TextureLoadEvent>(event);
+  EventBus::Publish<TextureLoadEvent>(event);
 
   return textureAsset;
 }

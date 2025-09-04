@@ -153,7 +153,7 @@ void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Mat
   // 1. 触发事件（旧材质即将被替换）
   Material *oldMaterial = it->second.get();
   MaterialReloadedEvent event(name, oldMaterial, newMaterial.get());
-  EventBus::Get().Post<MaterialReloadedEvent>(event);
+  EventBus::Publish<MaterialReloadedEvent>(event);
 
   // 2. 替换模板
   it->second = std::move(newMaterial);

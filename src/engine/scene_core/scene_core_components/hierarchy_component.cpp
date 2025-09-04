@@ -92,7 +92,7 @@ bool HierarchyComponent::SetParent(SceneRegistry &registry, Entity newParent)
   MarkDirty();
 
   // 发布事件
-  EventBus::Get().Post<ParentChangedEvent>(
+  EventBus::Publish<ParentChangedEvent>(
       ParentChangedEvent(GetEntity(), *this, oldParent, newParent));
 
   return true;

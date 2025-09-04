@@ -15,7 +15,7 @@ std::shared_ptr<Mesh> MeshComponent::GetMesh() const
 void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
 {
   m_Mesh = mesh;
-  EventBus::Get().Post<MeshChangedEvent>(MeshChangedEvent(GetEntity(), *this));
+  EventBus::Publish<MeshChangedEvent>(MeshChangedEvent(GetEntity(), *this));
 }
 
 bool MeshComponent::HasMesh() const
