@@ -51,12 +51,13 @@ class EventDispatcher {
    * 2. 如果匹配，将事件转换为具体类型并调用处理函数
    * 3. 将处理函数的返回值设置到事件的handled标志（该步骤删除，由func自主决定是否handled）
    */
-  template<typename T> bool Dispatch(std::function<void(T &)> func)
+  template<typename T> bool Dispatch(EventFn<T> func)
   {
+    static_assert(std::is_base_of<Event, T>::value, "T must inherit from Event");
+
     // 检查是否有有效事件且事件类型匹配
-    if (m_Event && m_Event->GetEventType() == T::GetStaticType()) {
+    if (m_Event && typeid(*m_Event) == typeid(T)) {
       // 将基类Event转换为具体事件类型T
-      // 调用处理函数
       func(static_cast<T &>(*m_Event));
       return true;  // 分发成功
     }

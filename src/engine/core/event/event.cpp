@@ -1,8 +1,10 @@
 #include "event/event.h"
+#include <typeinfo>
+
 namespace mite {
 std::string Event::ToString() const
 {
-  return GetName();
+  return typeid(*this).name();
 }
 bool Event::IsInCategory(EventCategory category)
 {

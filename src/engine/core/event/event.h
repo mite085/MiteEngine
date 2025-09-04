@@ -47,22 +47,6 @@ class Event {
 
   // 以下方法派生类无需关心 ==============================================
   /**
-   * @brief 获取事件类型Type
-   * @return 事件类型
-   *
-   * 该纯虚函数无需在子类override，
-   * 可以通过宏EVENT_CLASS_TYPE直接实现
-   */
-  virtual EventType GetEventType() const = 0;
-  /**
-   * @brief 获取事件名称Name
-   * @return 事件名称
-   *
-   * 该纯虚函数无需在子类override，
-   * 可以通过宏EVENT_CLASS_TYPE直接实现
-   */
-  virtual const char *GetName() const = 0;
-  /**
    * @brief 获取事件类别Category
    * @return 事件类别
    *
@@ -91,34 +75,11 @@ class Event {
 }  // namespace mite
 
 
-// Event派生类辅助宏
-#define EVENT_CLASS_TYPE(type) \
-  static EventType GetStaticType() \
-  { \
-    return EventType::type; \
-  } \
-  virtual EventType GetEventType() const override \
-  { \
-    return GetStaticType(); \
-  } \
-  virtual const char *GetName() const override \
-  { \
-    return #type; \
-  }
-
+// Event派生类辅助宏，用于确定Categories
 #define EVENT_CLASS_CATEGORY(category) \
   virtual int GetCategoryFlags() const override \
   { \
     return category; \
   }
-
-// 通用成员函数绑定（支持 void* 回调）
-//#define BIND_EVENT_FN(fn) \
-//  [this](void *payload) -> void { \
-//    using EventT = std::remove_reference_t<decltype(*static_cast<Event *>(payload))>; \
-//    if (auto *event = dynamic_cast<EventT *>(static_cast<Event *>(payload))) { \
-//      this->fn(*event); \
-//    } \
-//  }
 
 #endif
