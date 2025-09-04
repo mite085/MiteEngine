@@ -48,7 +48,23 @@ class UIStyle {
    * @return 属性值，如果不存在返回默认值
    */
   template<typename T>
-  T GetProperty(const std::string &propertyName, const T &defaultValue = T()) const;
+  T GetProperty(const std::string &propertyName, const T &defaultValue = T()) const
+  {
+    auto it = m_Properties.find(propertyName);
+    if (it != m_Properties.end()) {
+      try {
+        return std::get<T>(it->second.value);
+      }
+      catch (const std::bad_variant_access &) {
+        LOG_WARN("Style property {} is not of requested type", propertyName);
+      }
+    }
+    // 检查父样式
+    if (m_Parent) {
+      return m_Parent->GetProperty<T>(propertyName, defaultValue);
+    }
+    return defaultValue;
+  }
 
   /**
    * @brief 检查属性是否存在

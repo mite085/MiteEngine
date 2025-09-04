@@ -21,10 +21,14 @@ class UIBackend {
 
   /**
    * @brief 初始化后端
-   * @param uiSystem UI系统实例
    * @return 是否初始化成功
    */
-  virtual bool Initialize(UISystem *uiSystem) = 0;
+  virtual bool Initialize() = 0;
+
+  /**
+   * @brief 清理后端
+   */
+  virtual void Shutdown() = 0;
 
   /**
    * @brief 开始UI帧
