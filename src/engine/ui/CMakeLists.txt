@@ -6,7 +6,10 @@ set(ENGINE_UI_LIB_NAME MiteEngine_Engine_Ui)
 # 创建源代码组(筛选器)
 set(UI_CORE_SRCS
     ui_core/ui_backend.h        # 后端抽象接口
-    ui_core/ui_style.h          # 样式管理抽象
+    ui_core/ui_style.h          # 样式抽象
+    ui_core/ui_style.cpp
+    ui_core/ui_style_manager.h  # 样式管理
+    ui_core/ui_style_manager.cpp
     ui_core/ui_localization.h   # 本地化管理抽象
 
     ui_core/ui_system.h         # UI系统单例，管理全局UI状态
@@ -15,20 +18,20 @@ set(UI_CORE_SRCS
 source_group("ui core" FILES ${UI_CORE_SRCS})
 
 set(UI_WIDGET_SRCS
-    ui_widgets/ui_widget.h      # 控件基类（包含事件发布接口）
-    ui_widgets/ui_panel.h       # 面板基类（事件订阅管理）
+    ui_widget/ui_widget.h      # 控件基类（包含事件发布接口）
+    ui_widget/ui_panel.h       # 面板基类（事件订阅管理）
 
     # 以下为基础控件
-    ui_widgets/ui_button.h      # 发布ButtonClickEvent
-    ui_widgets/ui_slider.h      # 发布SliderChangeEvent
-    ui_widgets/ui_checkbox.h    # 发布CheckboxToggleEvent
-    ui_widgets/ui_text_input.h   # 发布TextInputEvent
-    ui_widgets/ui_combobox.h    # 发布ComboBoxSelectEvent
+    ui_widget/ui_button.h      # 发布ButtonClickEvent
+    ui_widget/ui_slider.h      # 发布SliderChangeEvent
+    ui_widget/ui_checkbox.h    # 发布CheckboxToggleEvent
+    ui_widget/ui_text_input.h   # 发布TextInputEvent
+    ui_widget/ui_combobox.h    # 发布ComboBoxSelectEvent
 
     # 以下为布局管理器
-    ui_widgets/ui_layout.h              # 布局基类
-    ui_widgets/ui_layout_horizontal.h   # 水平布局
-    ui_widgets/ui_layout_vertical.h     # 垂直布局
+    ui_widget/ui_layout.h              # 布局基类
+    ui_widget/ui_layout_horizontal.h   # 水平布局
+    ui_widget/ui_layout_vertical.h     # 垂直布局
 )
 source_group("ui widgets" FILES ${UI_WIDGET_SRCS})
 
