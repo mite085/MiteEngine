@@ -1,18 +1,4 @@
-#pragma once
-
-// 项目基本信息
-#define PROJECT_NAME "@PROJECT_NAME@"
-#define PROJECT_VERSION "@PROJECT_VERSION@"
-
-// 路径配置
-#define ASSETS_SOURCE_DIR "@CMAKE_SOURCE_DIR@/assets"
-#define ASSETS_INSTALL_DIR "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_DATADIR@/@PROJECT_NAME@/assets"
-
-// 平台检测
-#if defined(_WIN32)
-#define FS_PLATFORM_WINDOWS 1
-#elif defined(__linux__)
-#define FS_PLATFORM_LINUX 1
-#elif defined(__APPLE__)
-#define FS_PLATFORM_MACOS 1
-#endif
+#ifndef MITE_FILESYSTEM_CONFIG_H
+#define MITE_FILESYSTEM_CONFIG_H
+#define ASSETS_DIR "assets"
+#endif // MITE_FILESYSTEM_CONFIG_H

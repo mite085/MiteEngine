@@ -19,6 +19,7 @@ int main(int argc, char **argv)
 
   // 初始化日志系统
   mite::LoggerSystem::Init();
+  // 初始化文件系统（需要在日志系统之后）
   mite::FileSystem::Init(argc, argv);
   LOG_INFO("Starting Mite Engine");
 

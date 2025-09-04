@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-
+#include "logger/logger.h"
 // 通过CmakeLists的target_include_directories(PRIVATE ${CMAKE_BINARY_DIR}/src/core/filesystem)
 // 检索到build/src/core/filesystem/filesystem_config.h文件
 #include "filesystem_config.h"
@@ -23,8 +23,8 @@ class FileSystem {
   // 获取资源完整路径
   static std::filesystem::path GetAssetPath(const std::string &relativePath);
 
-  // 获取所有可能的资源根目录(按搜索优先级排序)
-  static const std::vector<std::filesystem::path> &GetAssetRoots();
+  // 获取资源根目录（exe同级目录下的assets）
+  static std::filesystem::path GetAssetsRoot();
 
   // 检查文件是否存在
   static bool Exists(const std::filesystem::path &path);
@@ -39,12 +39,9 @@ class FileSystem {
   // 获取可执行文件路径
   static std::filesystem::path GetExecutablePath();
 
-  // 初始化资源搜索路径
-  static void InitializeAssetRoots();
-
   static std::filesystem::path s_ExecutablePath;
-  static std::vector<std::filesystem::path> s_AssetRoots;
   static bool s_Initialized;
+  static Logger s_Logger;
 };
 };
 
