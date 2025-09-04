@@ -61,6 +61,8 @@ class EventBus {
    */
   template<typename T> HandlerID Subscribe(EventFn<T> handler)
   {
+    static_assert(std::is_base_of<Event, T>::value, "T must inherit from Event");
+
     // 将处理函数转换为通用事件处理函数
     auto genericHandler = [handler](Event &event) -> bool {
       // 使用Dispatcher确保类型安全
@@ -74,7 +76,7 @@ class EventBus {
 
     // 存储处理函数
     m_Subscribers[typeIndex].emplace_back(id, genericHandler);
-    m_HandlerTypes[id] = typeIndex;
+    m_HandlerTypes[id] = &typeid(T);
     return id;
   }
 
@@ -100,7 +102,7 @@ class EventBus {
   {
     // 首先尝试从类型订阅中移除
     if (auto it = m_HandlerTypes.find(id); it != m_HandlerTypes.end()) {
-      std::type_index typeIndex = it->second;
+      std::type_index typeIndex = *it->second;
       auto &handlers = m_Subscribers[typeIndex];
       handlers.erase(std::remove_if(handlers.begin(),
                                     handlers.end(),
@@ -131,6 +133,8 @@ class EventBus {
   {
     static_assert(std::is_base_of<Event, T>::value, "Must inherit from Event");
 
+    //LOG_DEBUG("Posting event: {}", e.ToString());
+
     if (immediate) {
       // 立即执行
       ProcessEvent<T>(e);
@@ -144,7 +148,7 @@ class EventBus {
       wrapper.processor = [](EventBus &bus, Event &storedEvent) {
         // 直接static_cast，如果类型不匹配会在编译时或运行时报错
         T &specificEvent = static_cast<T &>(storedEvent);
-        bus.ProcessEvent(specificEvent);
+        bus.ProcessEvent<T>(specificEvent);
       };
       // 等待异步处理(当前未验证多线程安全性)
       m_EventQueue.push_back(std::move(wrapper));
@@ -187,9 +191,8 @@ class EventBus {
   {
     std::type_index typeIndex = typeid(T);
     // 1. 首先处理特定类型订阅者
-    auto type = event.GetEventType();
-    if (m_Subscribers.find(type) != m_Subscribers.end()) {
-      for (auto &[id, handler] : m_Subscribers[type]) {
+    if (m_Subscribers.find(typeIndex) != m_Subscribers.end()) {
+      for (auto &[id, handler] : m_Subscribers[typeIndex]) {
         if (event.handled)
           break;  // 如果事件已被标记为处理，则停止传播
         handler(event);
@@ -207,6 +210,8 @@ class EventBus {
         }
       }
     }
+
+    //LOG_DEBUG("Processing event: {}", event.ToString());
   }
 
  private:
@@ -221,8 +226,8 @@ class EventBus {
   std::unordered_map<EventCategory, std::vector<std::pair<HandlerID, EventHandler>>>
       m_CategorySubscribers;
 
-  // 处理器ID到类型索引的映射
-  std::unordered_map<HandlerID, std::type_index> m_HandlerTypes;
+  // 处理器ID到类型索引的映射，注意使用 std::type_info* 而不是 std::type_index
+  std::unordered_map<HandlerID, const std::type_info *> m_HandlerTypes;
 
   // 处理器ID到事件类别的映射
   std::unordered_map<HandlerID, EventCategory> m_HandlerCategories;
