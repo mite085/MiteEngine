@@ -3,6 +3,8 @@
 
 #include "ui_core/ui_backend.h"
 #include "ui_imgui_localization_renderer.h"
+#include "ui_imgui_input_adapter.h"
+#include "ui_imgui_style_adapter.h"
 
 struct GLFWwindow;
 
@@ -60,11 +62,13 @@ class ImGuiBackend : public UIBackend {
   void ApplyCustomStyle(const ImGuiStyle &style);
   ImGuiStyleAdapter &GetStyleAdapter()
   {
-    return *m_InputAdapter;
+    return *m_StyleAdapter;
   }
 
   // 输入管理（委托给InputAdapter）
-  ImGuiInputAdapter &GetInputAdapter();
+  ImGuiInputAdapter& GetInputAdapter() {
+    return *m_InputAdapter;
+  }
 
  private:
   // 初始化ImGui上下文

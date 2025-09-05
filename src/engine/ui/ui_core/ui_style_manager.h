@@ -11,7 +11,7 @@ namespace mite {
  * 采用单例模式确保全局唯一性
  * 
  * 使用示例：
- * // 初始化
+ * // 初始化（由ImGuiStyleAdapter负责）
  * UIStyleManager::Get().Initialize();
  * 
  * // 获取当前样式

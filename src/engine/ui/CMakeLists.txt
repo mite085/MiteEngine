@@ -43,6 +43,7 @@ set(UI_IMGUI_BACKEND_SRCS
     ui_imgui_backend/ui_imgui_backend.h         # ImGui后端实现
     ui_imgui_backend/ui_imgui_backend.cpp
     ui_imgui_backend/ui_imgui_style_adapter.h   # ImGui样式适配器
+    ui_imgui_backend/ui_imgui_style_adapter.cpp
     ui_imgui_backend/ui_imgui_localization_renderer.h   # ImGui本地化渲染适配器(包含FontManager)
     ui_imgui_backend/ui_imgui_localization_renderer.cpp
     ui_imgui_backend/ui_imgui_input_adapter.h   # ImGui输入适配器（事件转换）
