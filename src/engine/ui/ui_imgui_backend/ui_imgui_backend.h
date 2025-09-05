@@ -37,11 +37,11 @@ class ImGuiBackend : public UIBackend {
   void Shutdown() override;
   void BeginFrame() override;
   void EndFrame() override;
-  void ProcessInputEvent(const Event &event) override;
+  void ProcessInputEvent(Event &event) override;
   void SetDisplaySize(int width, int height) override;
-  std::pair<int, int> GetDisplaySize() const override;
+  glm::ivec2 GetDisplaySize() const override;
   void SetFramebufferScale(float scaleX, float scaleY) override;
-  std::pair<float, float> GetFramebufferScale() const override;
+  glm::vec2 GetFramebufferScale() const override;
   void SetMouseCaptured(bool captured) override;
   bool IsMouseCaptured() const override;
   void SetMouseCursorVisible(bool visible) override;
@@ -87,8 +87,8 @@ class ImGuiBackend : public UIBackend {
   GLFWwindow *m_Window;                               // GLFW窗口句柄
   bool m_MouseCaptured;                               // 是否捕获鼠标
   bool m_MouseCursorVisible;                          // 鼠标指针是否可见
-  std::pair<int, int> m_DisplaySize;                  // 显示尺寸
-  std::pair<float, float> m_FramebufferScale;         // 帧缓冲缩放
+  glm::ivec2 m_DisplaySize;                           // 显示尺寸
+  glm::vec2 m_FramebufferScale;                       // 帧缓冲缩放
   double m_Time;                                      // 时间跟踪
   std::unique_ptr<ImGuiStyleAdapter> m_StyleAdapter;  // 样式适配器
   std::unique_ptr<ImGuiInputAdapter> m_InputAdapter;  // 输入适配器

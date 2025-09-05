@@ -44,7 +44,7 @@ class UIBackend {
    * @brief 处理输入事件
    * @param event 输入事件
    */
-  virtual void ProcessInputEvent(const Event &event) = 0;
+  virtual void ProcessInputEvent(Event &event) = 0;
 
   /**
    * @brief 设置显示尺寸
@@ -57,7 +57,7 @@ class UIBackend {
    * @brief 获取显示尺寸
    * @return 包含宽度和高度的pair
    */
-  virtual std::pair<int, int> GetDisplaySize() const = 0;
+  virtual glm::ivec2 GetDisplaySize() const = 0;
 
   /**
    * @brief 设置帧缓冲缩放
@@ -70,7 +70,7 @@ class UIBackend {
    * @brief 获取帧缓冲缩放
    * @return 包含水平和垂直缩放的pair
    */
-  virtual std::pair<float, float> GetFramebufferScale() const = 0;
+  virtual glm::vec2 GetFramebufferScale() const = 0;
 
   /**
    * @brief 设置是否捕获鼠标

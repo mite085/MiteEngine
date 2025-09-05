@@ -52,7 +52,7 @@ bool ImGuiBackend::Initialize()
   m_StyleAdapter->Initialize();
 
   // 初始化输入适配器
-  m_InputAdapter->Initialize(m_Window);
+  m_InputAdapter->Initialize();
 
   // 初始化字体
   ImGuiFontManager::LoadFonts();
@@ -155,11 +155,11 @@ void ImGuiBackend::BeginFrame()
   ImGui::GetIO().DeltaTime = Time::DeltaTime();
 
   // 更新显示尺寸（委托给输入适配器）
-  m_InputAdapter->UpdateDisplaySize();
+  m_InputAdapter->UpdateDisplaySize(GetWindow());
   m_DisplaySize = m_InputAdapter->GetDisplaySize();
 
   // 更新帧缓冲缩放
-  m_InputAdapter->UpdateFramebufferScale();
+  m_InputAdapter->UpdateFramebufferScale(GetWindow());
   m_FramebufferScale = m_InputAdapter->GetFramebufferScale();
 }
 
@@ -168,7 +168,7 @@ void ImGuiBackend::EndFrame()
   ImGui::Render();
 }
 
-void ImGuiBackend::ProcessInputEvent(const Event &event)
+void ImGuiBackend::ProcessInputEvent(Event &event)
 {
   // 委托给输入适配器处理
   m_InputAdapter->ProcessEvent(event);
@@ -189,7 +189,7 @@ void ImGuiBackend::SetDisplaySize(int width, int height)
   }
 }
 
-std::pair<int, int> ImGuiBackend::GetDisplaySize() const
+glm::ivec2 ImGuiBackend::GetDisplaySize() const
 {
   return m_DisplaySize;
 }
@@ -200,7 +200,7 @@ void ImGuiBackend::SetFramebufferScale(float scaleX, float scaleY)
   ImGui::GetIO().DisplayFramebufferScale = ImVec2(scaleX, scaleY);
 }
 
-std::pair<float, float> ImGuiBackend::GetFramebufferScale() const
+glm::vec2 ImGuiBackend::GetFramebufferScale() const
 {
   return m_FramebufferScale;
 }
