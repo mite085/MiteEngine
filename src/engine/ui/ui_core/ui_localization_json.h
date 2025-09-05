@@ -27,10 +27,6 @@ class UILocalizationJson : public UILocalization {
   std::string TranslateFormat(const std::string &key,
                               const std::vector<std::string> &args) const override;
 
-  // 区域设置
-  void SetLocale(const std::string &locale) override;
-  std::string GetCurrentLocale() const override;
-
   // 文本方向
   bool IsRTLLanguage(const std::string &languageCode) const override;
   TextDirection GetTextDirection() const override;

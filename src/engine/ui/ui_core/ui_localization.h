@@ -32,16 +32,12 @@ class UILocalization {
   virtual std::string TranslateFormat(const std::string &key,
                                       const std::vector<std::string> &args) const = 0;
 
-  // 区域设置
-  virtual void SetLocale(const std::string &locale) = 0;
-  virtual std::string GetCurrentLocale() const = 0;
-
   // 文本方向
   virtual bool IsRTLLanguage(const std::string &languageCode) const = 0;
   virtual TextDirection GetTextDirection() const = 0;
 
   // 内置语言支持
-  static constexpr const char *ENGLISH = "en";
+  static constexpr const char *ENGLISH = "en-US";
   static constexpr const char *SIMPLIFIED_CHINESE = "zh-CN";
 
  protected:

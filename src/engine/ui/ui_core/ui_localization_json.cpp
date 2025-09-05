@@ -235,22 +235,6 @@ std::string UILocalizationJson::TranslateFormat(const std::string &key,
   return FormatString(baseText, args);
 }
 
-void UILocalizationJson::SetLocale(const std::string &locale)
-{
-  // 设置区域设置，可以影响数字、日期等格式
-  m_Logger->info("Locale set to: {}", locale);
-}
-
-std::string UILocalizationJson::GetCurrentLocale() const
-{
-  if (m_CurrentLanguage.empty() ||
-      m_LanguagePacks.find(m_CurrentLanguage) == m_LanguagePacks.end())
-  {
-    return "en-US";
-  }
-  return m_LanguagePacks.at(m_CurrentLanguage).locale;
-}
-
 bool UILocalizationJson::IsRTLLanguage(const std::string &languageCode) const
 {
   if (m_LanguagePacks.find(languageCode) != m_LanguagePacks.end()) {
