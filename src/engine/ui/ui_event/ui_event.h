@@ -2,6 +2,7 @@
 #define MITE_UI_EVENT_H
 
 #include "event/event.h"
+#include "uuid/mite_uuid.h"
 #include <glm/glm.hpp>
 
 namespace mite {
@@ -16,9 +17,9 @@ class UIEvent : public Event {
   /**
    * @brief 获取事件源控件ID
    */
-  virtual uint64_t GetSourceWidgetID() const
+  virtual UUID GetSourceWidgetID() const
   {
-    return 0;
+    return {};
   }
 };
 

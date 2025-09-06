@@ -66,12 +66,12 @@ class SceneLoadEvent : public UIEvent {
  */
 class ViewportRenderEvent : public UIEvent {
  public:
-  explicit ViewportRenderEvent(uint64_t viewportId, const glm::vec2 &size)
+  explicit ViewportRenderEvent(UUID viewportId, const glm::vec2 &size)
       : m_ViewportId(viewportId), m_Size(size)
   {
   }
 
-  uint64_t GetSourceWidgetID() const override
+  UUID GetSourceWidgetID() const override
   {
     return m_ViewportId;
   }
@@ -82,7 +82,7 @@ class ViewportRenderEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "ViewportRenderEvent: ID " + std::to_string(m_ViewportId) +
+    return "ViewportRenderEvent: ID " + UUIDToString(m_ViewportId) +
            " Size: " + std::to_string(m_Size.x) + "x" + std::to_string(m_Size.y);
   }
 
@@ -94,7 +94,7 @@ class ViewportRenderEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
 
  private:
-  uint64_t m_ViewportId;
+  UUID m_ViewportId;
   glm::vec2 m_Size;
 };
 
