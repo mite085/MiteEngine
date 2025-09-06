@@ -2,6 +2,7 @@
 #define MITE_EDITOR_UI_EVENTS_H
 
 #include "ui_event.h"
+#include "scene_core/entity.h"
 
 namespace mite {
 
@@ -103,14 +104,14 @@ class ViewportRenderEvent : public UIEvent {
  */
 class EntitySelectedEvent : public UIEvent {
  public:
-  explicit EntitySelectedEvent(uint64_t entityId, const std::string &entityName = "")
-      : m_EntityId(entityId), m_EntityName(entityName)
+  explicit EntitySelectedEvent(Entity entity, const std::string &entityName = "")
+      : m_Entity(entity), m_EntityName(entityName)
   {
   }
 
-  uint64_t GetEntityId() const
+  Entity GetEntity() const
   {
-    return m_EntityId;
+    return m_Entity;
   }
   const std::string &GetEntityName() const
   {
@@ -119,18 +120,18 @@ class EntitySelectedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "EntitySelectedEvent: " + m_EntityName + " (ID: " + std::to_string(m_EntityId) + ")";
+    return "EntitySelectedEvent: " + m_EntityName + " (ID: " + m_Entity.GetUUIDString() + ")";
   }
 
   Event *Clone() const override
   {
-    return new EntitySelectedEvent(m_EntityId, m_EntityName);
+    return new EntitySelectedEvent(m_Entity, m_EntityName);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
 
  private:
-  uint64_t m_EntityId;
+  Entity m_Entity;
   std::string m_EntityName;
 };
 
@@ -139,259 +140,27 @@ class EntitySelectedEvent : public UIEvent {
  */
 class EntityDeselectedEvent : public UIEvent {
  public:
-  explicit EntityDeselectedEvent(uint64_t entityId) : m_EntityId(entityId) {}
+  explicit EntityDeselectedEvent(Entity entity) : m_Entity(entity) {}
 
-  uint64_t GetEntityId() const
+  Entity GetEntity() const
   {
-    return m_EntityId;
+    return m_Entity;
   }
 
   std::string ToString() const override
   {
-    return "EntityDeselectedEvent: ID " + std::to_string(m_EntityId);
+    return "EntityDeselectedEvent: ID " + m_Entity.GetUUIDString();
   }
 
   Event *Clone() const override
   {
-    return new EntityDeselectedEvent(m_EntityId);
+    return new EntityDeselectedEvent(m_Entity);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
 
  private:
-  uint64_t m_EntityId;
-};
-
-/**
- * @brief 组件添加事件
- */
-class ComponentAddedEvent : public UIEvent {
- public:
-  explicit ComponentAddedEvent(uint64_t entityId, const std::string &componentType)
-      : m_EntityId(entityId), m_ComponentType(componentType)
-  {
-  }
-
-  uint64_t GetEntityId() const
-  {
-    return m_EntityId;
-  }
-  const std::string &GetComponentType() const
-  {
-    return m_ComponentType;
-  }
-
-  std::string ToString() const override
-  {
-    return "ComponentAddedEvent: Entity " + std::to_string(m_EntityId) + " + " + m_ComponentType;
-  }
-
-  Event *Clone() const override
-  {
-    return new ComponentAddedEvent(m_EntityId, m_ComponentType);
-  }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
-
- private:
-  uint64_t m_EntityId;
-  std::string m_ComponentType;
-};
-
-/**
- * @brief 组件移除事件
- */
-class ComponentRemovedEvent : public UIEvent {
- public:
-  explicit ComponentRemovedEvent(uint64_t entityId, const std::string &componentType)
-      : m_EntityId(entityId), m_ComponentType(componentType)
-  {
-  }
-
-  uint64_t GetEntityId() const
-  {
-    return m_EntityId;
-  }
-  const std::string &GetComponentType() const
-  {
-    return m_ComponentType;
-  }
-
-  std::string ToString() const override
-  {
-    return "ComponentRemovedEvent: Entity " + std::to_string(m_EntityId) + " - " + m_ComponentType;
-  }
-
-  Event *Clone() const override
-  {
-    return new ComponentRemovedEvent(m_EntityId, m_ComponentType);
-  }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
-
- private:
-  uint64_t m_EntityId;
-  std::string m_ComponentType;
-};
-
-/**
- * @brief 组件修改事件
- */
-class ComponentModifiedEvent : public UIEvent {
- public:
-  explicit ComponentModifiedEvent(uint64_t entityId,
-                                  const std::string &componentType,
-                                  const std::string &propertyName)
-      : m_EntityId(entityId), m_ComponentType(componentType), m_PropertyName(propertyName)
-  {
-  }
-
-  uint64_t GetEntityId() const
-  {
-    return m_EntityId;
-  }
-  const std::string &GetComponentType() const
-  {
-    return m_ComponentType;
-  }
-  const std::string &GetPropertyName() const
-  {
-    return m_PropertyName;
-  }
-
-  std::string ToString() const override
-  {
-    return "ComponentModifiedEvent: Entity " + std::to_string(m_EntityId) + " " + m_ComponentType +
-           "." + m_PropertyName;
-  }
-
-  Event *Clone() const override
-  {
-    return new ComponentModifiedEvent(m_EntityId, m_ComponentType, m_PropertyName);
-  }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
-
- private:
-  uint64_t m_EntityId;
-  std::string m_ComponentType;
-  std::string m_PropertyName;
-};
-
-/**
- * @brief 材质编辑事件
- */
-class MaterialEditEvent : public UIEvent {
- public:
-  explicit MaterialEditEvent(uint64_t materialId,
-                             const std::string &propertyName,
-                             const std::string &newValue)
-      : m_MaterialId(materialId), m_PropertyName(propertyName), m_NewValue(newValue)
-  {
-  }
-
-  uint64_t GetMaterialId() const
-  {
-    return m_MaterialId;
-  }
-  const std::string &GetPropertyName() const
-  {
-    return m_PropertyName;
-  }
-  const std::string &GetNewValue() const
-  {
-    return m_NewValue;
-  }
-
-  std::string ToString() const override
-  {
-    return "MaterialEditEvent: Material " + std::to_string(m_MaterialId) + " " + m_PropertyName +
-           " = " + m_NewValue;
-  }
-
-  Event *Clone() const override
-  {
-    return new MaterialEditEvent(m_MaterialId, m_PropertyName, m_NewValue);
-  }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
-
- private:
-  uint64_t m_MaterialId;
-  std::string m_PropertyName;
-  std::string m_NewValue;
-};
-
-/**
- * @brief 资源导入事件
- */
-class AssetImportEvent : public UIEvent {
- public:
-  explicit AssetImportEvent(const std::string &filePath, const std::string &assetType)
-      : m_FilePath(filePath), m_AssetType(assetType)
-  {
-  }
-
-  const std::string &GetFilePath() const
-  {
-    return m_FilePath;
-  }
-  const std::string &GetAssetType() const
-  {
-    return m_AssetType;
-  }
-
-  std::string ToString() const override
-  {
-    return "AssetImportEvent: " + m_AssetType + " from " + m_FilePath;
-  }
-
-  Event *Clone() const override
-  {
-    return new AssetImportEvent(m_FilePath, m_AssetType);
-  }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
-
- private:
-  std::string m_FilePath;
-  std::string m_AssetType;
-};
-
-/**
- * @brief 资源删除事件
- */
-class AssetDeleteEvent : public UIEvent {
- public:
-  explicit AssetDeleteEvent(uint64_t assetId, const std::string &assetType)
-      : m_AssetId(assetId), m_AssetType(assetType)
-  {
-  }
-
-  uint64_t GetAssetId() const
-  {
-    return m_AssetId;
-  }
-  const std::string &GetAssetType() const
-  {
-    return m_AssetType;
-  }
-
-  std::string ToString() const override
-  {
-    return "AssetDeleteEvent: " + m_AssetType + " ID " + std::to_string(m_AssetId);
-  }
-
-  Event *Clone() const override
-  {
-    return new AssetDeleteEvent(m_AssetId, m_AssetType);
-  }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
-
- private:
-  uint64_t m_AssetId;
-  std::string m_AssetType;
+  Entity m_Entity;
 };
 
 /**
