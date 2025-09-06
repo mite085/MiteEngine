@@ -1,197 +1,259 @@
 #include "ui_system.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "ImGuizmo.h"
-#include "GLFW/glfw3.h"
+#include "ui_imgui_backend/ui_imgui_backend.h"
+#include "window.h"
+#include "renderer.h"
 
 namespace mite {
+
+UISystem &UISystem::Get()
+{
+  static UISystem instance;
+  return instance;
+}
+
 UISystem::UISystem()
+    : m_Logger("UISystem"),
+      m_Initialized(false),
+      m_Visible(true),
+      m_Renderer(nullptr),
+      m_Window(nullptr),
+      m_StyleManager(&UIStyleManager::Get()),
+      m_Localization(&UILocalization::Get())
 {
-  // 初始化LOGGER
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Engine UI");
-  m_Logger->info("Create logger for user interface");
-
-  // 订阅EventBus中的输入事件，按照EventCategory大类订阅，由ProcessEvent分发
-  // (实际事件由modular input context处理）
-  //m_EventHandlerID = EventBus::Get().SubscribeByCategory(EventCategory::EVENT_CATEGORY_INPUT,
-  //                                                       [this](Event &e) { ProcessEvent(e); });
 }
+
 UISystem::~UISystem()
-{  
-  // 取消订阅EventBus
-  //EventBus::Get().Unsubscribe(m_EventHandlerID);
+{
+  if (m_Initialized) {
+    Shutdown();
+  }
 }
 
-void UISystem::Init(GLFWwindow *window)
+bool UISystem::Initialize(Renderer *renderer, Window *window)
 {
-  // 初始化ImGui上下文
-  IMGUI_CHECKVERSION();
-  m_ImguiContext = ImGui::CreateContext();
-  ImGui::SetCurrentContext(m_ImguiContext);
-
-  // 配置ImGui
-  ImGuiIO &io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // 键盘导航
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // 停靠功能
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // 多视口支持
-
-  // 设置默认样式
-  ImGui::StyleColorsDark();
-
-  // 调整多视口样式
-  ImGuiStyle &style = ImGui::GetStyle();
-  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    style.WindowRounding = 0.0f;
-    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+  if (m_Initialized) {
+    m_Logger.Warn("UI系统已经初始化");
+    return true;
   }
 
-  // 初始化平台/渲染后端
-  ImGui_ImplGlfw_InitForOpenGL(window, true);
-  ImGui_ImplOpenGL3_Init("#version 410");
+  m_Renderer = renderer;
+  m_Window = window;
 
-  m_Logger->info("UI System initialized");
+  // 初始化事件总线
+  m_EventBus = std::make_unique<EventBus>();
+
+  // 初始化后端
+  if (!InitializeBackend()) {
+    m_Logger.Error("UI后端初始化失败");
+    return false;
+  }
+
+  // 订阅事件
+  SubscribeEvents();
+
+  m_Initialized = true;
+  m_Logger.Info("UI系统初始化成功");
+
+  // 发布初始化完成事件
+  m_EventBus->Publish<UIInitializedEvent>(UIInitializedEvent());
+
+  return true;
 }
 
 void UISystem::Shutdown()
 {
-  // 按顺序销毁面板
-  for (auto &[name, panel] : m_panels) {
-    panel->onDetach();
-  }
-  m_panels.clear();
-  m_panelOrder.clear();
-
-  // 关闭ImGui后端
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-
-  // 销毁上下文
-  if (m_ImguiContext) {
-    ImGui::DestroyContext(m_ImguiContext);
-    m_ImguiContext = nullptr;
+  if (!m_Initialized) {
+    return;
   }
 
-  m_Logger->info("UI System shutdown");
-}
+  // 发布关闭事件
+  m_EventBus->Publish<UIShutdownEvent>(UIShutdownEvent());
 
-void UISystem::BeginFrame()
-{
-  // 开始新一帧的ImGui
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
-  m_FrameStarted = true;
+  // 清理面板
+  m_Panels.clear();
 
-  // 设置主停靠空间
-  ImGui::DockSpaceOverViewport(ImGui::GetID("MainDockspace"),  // 自定义dockspace ID
-                               ImGui::GetMainViewport(),
-                               ImGuiDockNodeFlags_PassthruCentralNode  // 常用标志
-  );
+  // 取消事件订阅
+  m_EventSubscriptions.UnsubscribeAll();
 
-  // 启用Gizmo的BeginFrame
-  ImGuizmo::BeginFrame();
+  // 关闭后端
+  if (m_Backend) {
+    m_Backend->Shutdown();
+    m_Backend.reset();
+  }
+
+  m_Initialized = false;
+  m_Logger.Info("UI系统已关闭");
 }
 
 void UISystem::Update(float deltaTime)
 {
-  if (!m_FrameStarted)
-    BeginFrame();
+  if (!m_Initialized || !m_Visible) {
+    return;
+  }
 
-  // 更新所有可见面板
-  for (const auto &name : m_panelOrder) {
-    if (auto &panel = m_panels[name]; panel->isVisible()) {
-      panel->onUpdate(deltaTime);
+  // 更新所有面板
+  for (auto &[id, panel] : m_Panels) {
+    if (panel->IsVisible()) {
+      panel->Update(deltaTime);
+    }
+  }
+}
+
+void UISystem::BeginFrame()
+{
+  if (!m_Initialized || !m_Visible) {
+    return;
+  }
+
+  if (m_Backend) {
+    m_Backend->BeginFrame();
+  }
+}
+
+void UISystem::Render()
+{
+  if (!m_Initialized || !m_Visible) {
+    return;
+  }
+
+  if (m_Backend) {
+    m_Backend->Render();
+  }
+
+  // 渲染所有可见面板
+  for (auto &[id, panel] : m_Panels) {
+    if (panel->IsVisible()) {
+      panel->Render();
     }
   }
 }
 
 void UISystem::EndFrame()
 {
-  if (!m_FrameStarted)
+  if (!m_Initialized || !m_Visible) {
     return;
-
-  // 渲染所有可见面板
-  for (const auto &name : m_panelOrder) {
-    if (auto &panel = m_panels[name]; panel->isVisible()) {
-      panel->onRender();
-    }
   }
 
-  // 完成ImGui渲染
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-  // 多视口支持
-  if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    GLFWwindow *backup = glfwGetCurrentContext();
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
-    glfwMakeContextCurrent(backup);
+  if (m_Backend) {
+    m_Backend->EndFrame();
   }
-
-  m_FrameStarted = false;
 }
 
-void UISystem::RegisterPanel(const std::string &name, std::shared_ptr<UIPanel> panel)
+void UISystem::ProcessInputEvent(const Event &event)
 {
-  if (m_panels.find(name) != m_panels.end()) {
-    LOG_WARN("UI Panel '{}' already registered, replacing", name);
-    UnregisterPanel(name);
+  if (!m_Initialized || !m_Visible) {
+    return;
   }
 
-  m_panels[name] = panel;
-  m_panelOrder.push_back(name);
-  panel->onAttach();
-
-  LOG_DEBUG("Registered UI Panel: {}", name);
+  if (m_Backend) {
+    // 转换为非const引用供后端处理
+    Event &nonConstEvent = const_cast<Event &>(event);
+    m_Backend->ProcessInputEvent(nonConstEvent);
+  }
 }
 
-void UISystem::UnregisterPanel(const std::string &name)
+std::shared_ptr<UIPanel> UISystem::CreatePanel(const std::string &name)
 {
-  if (auto it = m_panels.find(name); it != m_panels.end()) {
-    it->second->onDetach();
-    m_panels.erase(it);
+  auto panel = std::make_shared<UIPanel>(name);
+  m_Panels[panel->GetID()] = panel;
 
-    // 从渲染顺序中移除
-    m_panelOrder.erase(std::remove(m_panelOrder.begin(), m_panelOrder.end(), name),
-                       m_panelOrder.end());
+  // 发布面板创建事件
+  m_EventBus->Publish<PanelOpenedEvent>(PanelOpenedEvent(panel->GetID(), name));
 
-    LOG_DEBUG("Unregistered UI Panel: {}", name);
-  }
+  return panel;
 }
 
-std::shared_ptr<UIPanel> UISystem::GetPanel(const std::string &name)
+void UISystem::DestroyPanel(UUID panelId)
 {
-  if (auto it = m_panels.find(name); it != m_panels.end()) {
-    return it->second;
+  auto it = m_Panels.find(panelId);
+  if (it != m_Panels.end()) {
+    // 发布面板关闭事件
+    m_EventBus->Publish<PanelClosedEvent>(PanelClosedEvent(panelId, it->second->GetName()));
+    m_Panels.erase(it);
   }
-  return nullptr;
 }
 
-//bool UISystem::ProcessEvent(Event &event)
-//{
-//  // 从后往前处理面板事件（保证顶层面板优先）
-//  for (auto it = m_panelOrder.rbegin(); it != m_panelOrder.rend(); ++it) {
-//    if (auto &panel = m_panels[*it]; panel->isVisible() && panel->onEvent(event)) {
-//      return true;
-//    }
-//  }
-//  return false;
-//}
-
-void UISystem::SetPanelVisible(const std::string &name, bool visible)
+std::shared_ptr<UIPanel> UISystem::GetPanel(UUID panelId) const
 {
-  if (auto panel = GetPanel(name)) {
-    panel->setVisible(visible);
+  auto it = m_Panels.find(panelId);
+  return it != m_Panels.end() ? it->second : nullptr;
+}
+
+void UISystem::SetPanelVisible(UUID panelId, bool visible)
+{
+  if (auto panel = GetPanel(panelId)) {
+    panel->SetVisible(visible);
+    // 发布可见性变更事件
+    m_EventBus->Publish<UIVisibilityChangedEvent>(
+        UIVisibilityChangedEvent(panelId, "Panel", visible));
   }
 }
 
-void UISystem::TogglePanelVisible(const std::string &name)
+UIStyleManager &UISystem::GetStyleManager() const
 {
-  if (auto panel = GetPanel(name)) {
-    panel->setVisible(!panel->isVisible());
-  }
+  return *m_StyleManager;
 }
-};  // namespace mite
+
+UILocalization &UISystem::GetLocalization() const
+{
+  return *m_Localization;
+}
+
+bool UISystem::IsVisible() const
+{
+  return m_Visible;
+}
+
+void UISystem::SetVisible(bool visible)
+{
+  m_Visible = visible;
+}
+
+EventBus &UISystem::GetEventBus() const
+{
+  return *m_EventBus;
+}
+
+bool UISystem::InitializeBackend()
+{
+  // 目前只实现ImGui后端
+  m_Backend = std::make_unique<UIImGuiBackend>();
+
+  if (!m_Backend->Initialize()) {
+    m_Logger.Error("ImGui后端初始化失败");
+    return false;
+  }
+
+  // 设置显示尺寸
+  if (m_Window) {
+    m_Backend->SetDisplaySize(m_Window->GetWidth(), m_Window->GetHeight());
+  }
+
+  m_Logger.Info("UI后端初始化成功: {}", m_Backend->GetBackendName());
+  return true;
+}
+
+void UISystem::SubscribeEvents()
+{
+  // 订阅语言变更事件
+  m_EventSubscriptions.Subscribe<LocalizationChangedEvent>(
+      [this](const LocalizationChangedEvent &event) { OnLanguageChanged(event); });
+
+  // 订阅样式变更事件
+  m_EventSubscriptions.Subscribe<UIStyleChangedEvent>(
+      [this](const UIStyleChangedEvent &event) { OnStyleChanged(event); });
+}
+
+void UISystem::OnLanguageChanged(const LocalizationChangedEvent &event)
+{
+  m_Logger.Info("语言已切换至: {}", event.GetLanguageName());
+  // 这里可以添加语言切换后的处理逻辑
+}
+
+void UISystem::OnStyleChanged(const UIStyleChangedEvent &event)
+{
+  m_Logger.Info("样式已切换至: {}", event.GetStyleName());
+  // 这里可以添加样式切换后的处理逻辑
+}
+
+}  // namespace mite

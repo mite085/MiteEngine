@@ -1,33 +1,45 @@
 #ifndef MITE_UI_SYSTEM_H
 #define MITE_UI_SYSTEM_H
 
-#include "ui_core/ui_backend.h"
-#include "ui_core/ui_localization.h"
-#include "ui_core/ui_style.h"
-#include "headers/headers.h"
+#include "input/input_manager.h"
+#include "ui_backend.h"
+#include "ui_event/ui_event.h"
+#include "ui_event/ui_events_lifecycle.h"
+#include "ui_localization.h"
+#include "ui_widget/ui_panel.h"
+#include "ui_style_manager.h"
+#include "ui_widget/ui_widget.h"
 
 namespace mite {
 
 // 前向声明
-class UIWidget;
-class UIPanel;
+class Renderer;
+class Window;
 
 /**
- * @brief UI系统单例，管理全局UI状态和事件总线
+ * @brief UI系统核心管理类
+ * 负责管理UI系统的生命周期、事件处理、渲染集成等
  */
-class UISystem : public std::enable_shared_from_this<UISystem> {
+class UISystem {
  public:
+  // 禁用拷贝和移动
+  UISystem(const UISystem &) = delete;
+  UISystem(UISystem &&) = delete;
+  UISystem &operator=(const UISystem &) = delete;
+  UISystem &operator=(UISystem &&) = delete;
+
   /**
    * @brief 获取UI系统单例实例
    */
-  static std::shared_ptr<UISystem> GetInstance();
+  static UISystem &Get();
 
   /**
    * @brief 初始化UI系统
-   * @param backend UI后端实现
+   * @param renderer 渲染器实例
+   * @param window 窗口实例
    * @return 是否初始化成功
    */
-  bool Initialize(std::unique_ptr<UIBackend> backend);
+  bool Initialize(Renderer *renderer, Window *window);
 
   /**
    * @brief 关闭UI系统
@@ -35,9 +47,20 @@ class UISystem : public std::enable_shared_from_this<UISystem> {
   void Shutdown();
 
   /**
+   * @brief 更新UI系统
+   * @param deltaTime 帧时间差
+   */
+  void Update(float deltaTime);
+
+  /**
    * @brief 开始UI帧
    */
   void BeginFrame();
+
+  /**
+   * @brief 渲染UI
+   */
+  void Render();
 
   /**
    * @brief 结束UI帧
@@ -51,175 +74,92 @@ class UISystem : public std::enable_shared_from_this<UISystem> {
   void ProcessInputEvent(const Event &event);
 
   /**
-   * @brief 渲染UI
+   * @brief 创建面板
+   * @param name 面板名称
+   * @return 面板指针
    */
-  void Render();
+  std::shared_ptr<UIPanel> CreatePanel(const std::string &name);
 
   /**
-   * @brief 获取事件总线
-   */
-  EventBus &GetEventBus()
-  {
-    return m_EventBus;
-  }
-
-  /**
-   * @brief 获取UI后端
-   */
-  UIBackend *GetBackend()
-  {
-    return m_Backend.get();
-  }
-
-  /**
-   * @brief 获取样式管理器
-   */
-  UIStyle &GetStyle()
-  {
-    return m_Style;
-  }
-
-  /**
-   * @brief 获取本地化管理器
-   */
-  UILocalization &GetLocalization()
-  {
-    return m_Localization;
-  }
-
-  /**
-   * @brief 注册控件
-   * @param widget 控件指针
-   */
-  void RegisterWidget(std::shared_ptr<UIWidget> widget);
-
-  /**
-   * @brief 注销控件
-   * @param widgetId 控件ID
-   */
-  void UnregisterWidget(uint64_t widgetId);
-
-  /**
-   * @brief 注册面板
-   * @param panel 面板指针
-   */
-  void RegisterPanel(std::shared_ptr<UIPanel> panel);
-
-  /**
-   * @brief 注销面板
+   * @brief 销毁面板
    * @param panelId 面板ID
    */
-  void UnregisterPanel(uint64_t panelId);
-
-  /**
-   * @brief 获取控件
-   * @param widgetId 控件ID
-   * @return 控件指针，如果不存在返回nullptr
-   */
-  std::shared_ptr<UIWidget> GetWidget(uint64_t widgetId) const;
+  void DestroyPanel(UUID panelId);
 
   /**
    * @brief 获取面板
    * @param panelId 面板ID
-   * @return 面板指针，如果不存在返回nullptr
+   * @return 面板指针
    */
-  std::shared_ptr<UIPanel> GetPanel(uint64_t panelId) const;
+  std::shared_ptr<UIPanel> GetPanel(UUID panelId) const;
 
   /**
-   * @brief 设置是否启用UI输入
-   * @param enabled 是否启用
+   * @brief 显示/隐藏面板
+   * @param panelId 面板ID
+   * @param visible 是否可见
    */
-  void SetInputEnabled(bool enabled)
-  {
-    m_InputEnabled = enabled;
-  }
+  void SetPanelVisible(UUID panelId, bool visible);
 
   /**
-   * @brief 获取是否启用UI输入
+   * @brief 获取样式管理器
    */
-  bool IsInputEnabled() const
-  {
-    return m_InputEnabled;
-  }
+  UIStyleManager &GetStyleManager() const;
 
   /**
-   * @brief 设置是否显示UI
-   * @param visible 是否显示
+   * @brief 获取本地化管理器
    */
-  void SetUIVisible(bool visible)
-  {
-    m_UIVisible = visible;
-  }
+  UILocalization &GetLocalization() const;
 
   /**
-   * @brief 获取是否显示UI
+   * @brief 获取UI是否可见
    */
-  bool IsUIVisible() const
-  {
-    return m_UIVisible;
-  }
+  bool IsVisible() const;
 
   /**
-   * @brief 获取UI系统是否已初始化
+   * @brief 设置UI可见性
+   * @param visible 是否可见
    */
-  bool IsInitialized() const
-  {
-    return m_Initialized;
-  }
+  void SetVisible(bool visible);
 
   /**
-   * @brief 获取帧统计信息
+   * @brief 获取事件总线
    */
-  struct FrameStats {
-    uint32_t widgetCount = 0;
-    uint32_t panelCount = 0;
-    uint32_t drawCalls = 0;
-    float frameTime = 0.0f;
-  };
-
-  const FrameStats &GetFrameStats() const
-  {
-    return m_FrameStats;
-  }
+  EventBus &GetEventBus() const;
 
  private:
   UISystem();
   ~UISystem();
 
-  // 禁止拷贝和移动
-  UISystem(const UISystem &) = delete;
-  UISystem &operator=(const UISystem &) = delete;
-  UISystem(UISystem &&) = delete;
-  UISystem &operator=(UISystem &&) = delete;
+  // 初始化后端
+  bool InitializeBackend();
 
-  // 事件处理函数
-  void OnWidgetCreated(const WidgetCreatedEvent &event);
-  void OnWidgetDestroyed(const WidgetDestroyedEvent &event);
-  void OnPanelOpened(const PanelOpenedEvent &event);
-  void OnPanelClosed(const PanelClosedEvent &event);
+  // 订阅事件
+  void SubscribeEvents();
+
+  // 处理语言变更事件
+  void OnLanguageChanged(const LocalizationChangedEvent &event);
+
+  // 处理样式变更事件
+  void OnStyleChanged(const UIStyleChangedEvent &event);
 
  private:
-  static std::shared_ptr<UISystem> s_Instance;
+  Logger m_Logger;
+  bool m_Initialized;
+  bool m_Visible;
 
-  bool m_Initialized = false;
-  bool m_InputEnabled = true;
-  bool m_UIVisible = true;
-
-  EventBus m_EventBus;
+  // 核心依赖
+  Renderer *m_Renderer;
+  Window *m_Window;
   std::unique_ptr<UIBackend> m_Backend;
-  UIStyle m_Style;
-  UILocalization m_Localization;
 
-  std::unordered_map<uint64_t, std::shared_ptr<UIWidget>> m_Widgets;
-  std::unordered_map<uint64_t, std::shared_ptr<UIPanel>> m_Panels;
+  // 管理对象
+  std::unordered_map<UUID, std::shared_ptr<UIPanel>> m_Panels;
+  std::unique_ptr<EventBus> m_EventBus;
+  SubscriptionGroup m_EventSubscriptions;
 
-  FrameStats m_FrameStats;
-
-  // 事件订阅句柄
-  EventBus::SubscriptionHandle m_WidgetCreatedHandle;
-  EventBus::SubscriptionHandle m_WidgetDestroyedHandle;
-  EventBus::SubscriptionHandle m_PanelOpenedHandle;
-  EventBus::SubscriptionHandle m_PanelClosedHandle;
+  // 管理器实例
+  UIStyleManager *m_StyleManager;
+  UILocalization *m_Localization;
 };
 
 }  // namespace mite
