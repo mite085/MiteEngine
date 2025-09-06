@@ -55,6 +55,7 @@ source_group("ui imgui backend" FILES ${UI_IMGUI_BACKEND_SRCS})
 
 set(UI_EVENT_SRCS
     ui_event/ui_event.h                 # 事件基本类型
+    ui_event/ui_events_layout.h         # 布局修改事件，包含控件位置、大小、尺寸修改等
     ui_event/ui_events_interaction.h    # 交互事件，包括按钮点击，滑块值改变等
     ui_event/ui_events_lifecycle.h      # 生命周期事件，包括窗口创建，关闭等
     ui_event/ui_events_editor.h         # 编辑器专属事件，包括Component属性编辑等
@@ -105,6 +106,7 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
     MiteEngine_Engine_Renderer
+    MiteEngine_Engine_Window
     MiteEngine_Engine_Input
 
     # 弱依赖：创建资产浏览器界面
