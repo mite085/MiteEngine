@@ -60,7 +60,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   /**
    * @brief 获取底层UUID对象
    */
-  const uuids::uuid &GetUUID() const
+  const UUID &GetUUID() const
   {
     return m_UUID;
   }
@@ -85,7 +85,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   static bool IsValid(const std::string &id);
 
  private:
-  uuids::uuid m_UUID;        // 二进制格式UUID
+  UUID m_UUID;               // 二进制格式UUID
   std::string m_UUIDString;  // 字符串缓存（优化频繁访问）
 };
 // ID组件系统 =====================================================

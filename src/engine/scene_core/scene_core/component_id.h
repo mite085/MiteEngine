@@ -37,10 +37,10 @@ class ComponentID {
   bool IsValid() const;
 
  private:
-  explicit ComponentID(uuids::uuid id);
+  explicit ComponentID(UUID id);
 
   // ÄÚ²¿UUID´æ´¢
-  uuids::uuid m_ID;
+  UUID m_ID;
 };
 
 };  // namespace mite

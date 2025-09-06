@@ -34,7 +34,7 @@ class Entity {
    * @brief 从UUID构造有效实体（内部使用）
    * @param uuid 实体UUID
    */
-  explicit Entity(const uuids::uuid &uuid);
+  explicit Entity(const UUID &uuid);
 
   /**
    * @brief 构造一个有效实体（内部和友元函数使用）
@@ -63,7 +63,7 @@ class Entity {
   /**
    * @brief 获取实体UUID
    */
-  uuids::uuid GetUUID() const
+  UUID GetUUID() const
   {
     return m_UUID;
   }
@@ -73,7 +73,7 @@ class Entity {
    */
   std::string GetUUIDString() const
   {
-    return uuids::to_string(m_UUID);
+    return UUIDToString(m_UUID);
   }
 
   //===================== 操作符重载 ========================
@@ -96,7 +96,7 @@ class Entity {
  private:
 
 
-  uuids::uuid m_UUID;  // 实体唯一标识
+  UUID m_UUID;  // 实体唯一标识
 };
 
 }  // namespace mite
@@ -106,7 +106,7 @@ namespace std {
 template<> struct hash<mite::Entity> {
   size_t operator()(const mite::Entity &entity) const
   {
-    return hash<uuids::uuid>()(entity.GetUUID());
+    return hash<mite::UUID>()(entity.GetUUID());
   }
 };
 }  // namespace std

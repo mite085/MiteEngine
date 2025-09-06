@@ -4,6 +4,23 @@
 #include <uuid.h>
 
 namespace mite {
+
+using UUID = uuids::uuid;
+
+// UUID字符串转换的本地辅助函数
+std::string UUIDToString(const UUID &id)
+{
+  return uuids::to_string(id);
+}
+UUID UUIDFromString(const std::string &id)
+{
+  auto optionalUUID = uuids::uuid::from_string(id);
+  if (optionalUUID.has_value())
+    return optionalUUID.value();
+  else 
+    return {};
+}
+
 /**
  * @brief UUID生成器
  *

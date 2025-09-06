@@ -7,7 +7,7 @@
 
 namespace mite {
 // --- 基础类型别名 ---
-using AssetID = uuids::uuid;  // 资源唯一标识符（用UUID生成）
+using AssetID = UUID;  // 资源唯一标识符（用UUID生成）
 
 // ------------------------ 纹理相关 ------------------------
 

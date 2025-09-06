@@ -2,12 +2,6 @@
 #define UUID_SYSTEM_GENERATOR
 
 namespace mite {
-// UUID×Ö·û´®×ª»»µÄ±¾µØ¸¨Öúº¯Êý
-std::string UUIDToString(const uuids::uuid &id)
-{
-  return uuids::to_string(id);
-}
-
 IDComponent::IDComponent()
     : ComponentTraits(), m_UUID(UUIDGenerator::Generate()), m_UUIDString(UUIDToString(m_UUID))
 {
@@ -20,7 +14,7 @@ IDComponent::IDComponent()
 IDComponent::IDComponent(const std::string &id) : ComponentTraits()
 {
   // ³¢ÊÔ½âÎö×Ö·û´®
-  auto optionalUUID = uuids::uuid::from_string(id);
+  auto optionalUUID = UUID::from_string(id);
   if (!optionalUUID) {
     throw std::runtime_error("Invalid UUID string: {" + id + "}");
   }
@@ -39,7 +33,7 @@ bool IDComponent::IsValid(const std::string &id)
     return false;
 
   // ³¢ÊÔ½âÎö
-  auto optionalUUID = uuids::uuid::from_string(id);
+  auto optionalUUID = UUID::from_string(id);
   return optionalUUID.has_value() && !optionalUUID->is_nil();
 }
 };  // namespace mite

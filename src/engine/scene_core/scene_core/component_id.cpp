@@ -3,7 +3,7 @@
 
 namespace mite {
 
-ComponentID::ComponentID(uuids::uuid id) : m_ID(std::move(id)) {}
+ComponentID::ComponentID(UUID id) : m_ID(std::move(id)) {}
 
 template<typename T> ComponentID ComponentID::Get()
 {
@@ -18,11 +18,11 @@ template<typename T> ComponentID ComponentID::Get()
 
 ComponentID ComponentID::FromString(const std::string &uuidStr)
 {
-  auto result = uuids::uuid::from_string(uuidStr);
+  auto result = UUID::from_string(uuidStr);
   if (result) {
     return ComponentID(*result);
   }
-  return ComponentID(uuids::uuid());
+  return ComponentID(UUID());
 }
 
 bool ComponentID::operator==(const ComponentID &other) const
@@ -42,12 +42,12 @@ bool ComponentID::operator<(const ComponentID &other) const
 
 std::string ComponentID::ToString() const
 {
-  return uuids::to_string(m_ID);
+  return UUIDToString(m_ID);
 }
 
 size_t ComponentID::Hash() const
 {
-  return std::hash<uuids::uuid>{}(m_ID);
+  return std::hash<UUID>{}(m_ID);
 }
 
 bool ComponentID::IsValid() const

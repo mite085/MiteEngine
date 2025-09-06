@@ -1,8 +1,8 @@
 #include "entity.h"
 
 namespace mite {
-Entity::Entity() : m_UUID(uuids::uuid{}) {}
-Entity::Entity(const uuids::uuid &uuid) : m_UUID(uuid) {}
+Entity::Entity() : m_UUID(UUID{}) {}
+Entity::Entity(const UUID &uuid) : m_UUID(uuid) {}
 Entity::Entity(const Entity &other) : m_UUID(other.m_UUID) {}
 Entity Entity::CreateEntity()
 {
@@ -14,6 +14,6 @@ bool Entity::IsValid() const
 }
 void Entity::Destroy()
 {
-  m_UUID = uuids::uuid();  // 设置为nil UUID
+  m_UUID = UUID();  // 设置为nil UUID
 }
 };  // namespace mite
