@@ -23,7 +23,9 @@ source_group("ui core" FILES ${UI_CORE_SRCS})
 
 set(UI_WIDGET_SRCS
     ui_widget/ui_widget.h      # 控件基类（包含事件发布接口）
+    ui_widget/ui_widget.cpp
     ui_widget/ui_panel.h       # 面板基类（事件订阅管理）
+    ui_widget/ui_panel.cpp
 
     # 以下为基础控件
     ui_widget/ui_button.h      # 发布ButtonClickEvent
@@ -47,6 +49,7 @@ set(UI_IMGUI_BACKEND_SRCS
     ui_imgui_backend/ui_imgui_localization_renderer.h   # ImGui本地化渲染适配器(包含FontManager)
     ui_imgui_backend/ui_imgui_localization_renderer.cpp
     ui_imgui_backend/ui_imgui_input_adapter.h   # ImGui输入适配器（事件转换）
+    ui_imgui_backend/ui_imgui_input_adapter.cpp
 )
 source_group("ui imgui backend" FILES ${UI_IMGUI_BACKEND_SRCS})
 
