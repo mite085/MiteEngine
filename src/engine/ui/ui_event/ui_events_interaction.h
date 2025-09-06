@@ -11,12 +11,12 @@ namespace mite {
  */
 class ButtonClickEvent : public UIEvent {
  public:
-  explicit ButtonClickEvent(uint64_t widgetId, const std::string &label = "")
+  explicit ButtonClickEvent(UUID widgetId, const std::string &label = "")
       : m_WidgetId(widgetId), m_Label(label)
   {
   }
 
-  uint64_t GetSourceWidgetID() const override
+  UUID GetSourceWidgetID() const override
   {
     return m_WidgetId;
   }
@@ -27,7 +27,7 @@ class ButtonClickEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "ButtonClickEvent: " + m_Label + " (ID: " + std::to_string(m_WidgetId) + ")";
+    return "ButtonClickEvent: " + m_Label + " (ID: " + UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -38,7 +38,7 @@ class ButtonClickEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  uint64_t m_WidgetId;
+  UUID m_WidgetId;
   std::string m_Label;
 };
 
@@ -47,12 +47,12 @@ class ButtonClickEvent : public UIEvent {
  */
 class SliderChangeEvent : public UIEvent {
  public:
-  explicit SliderChangeEvent(uint64_t widgetId, float value, const std::string &label = "")
+  explicit SliderChangeEvent(UUID widgetId, float value, const std::string &label = "")
       : m_WidgetId(widgetId), m_Value(value), m_Label(label)
   {
   }
 
-  uint64_t GetSourceWidgetID() const override
+  UUID GetSourceWidgetID() const override
   {
     return m_WidgetId;
   }
@@ -68,7 +68,7 @@ class SliderChangeEvent : public UIEvent {
   std::string ToString() const override
   {
     return "SliderChangeEvent: " + m_Label + " = " + std::to_string(m_Value) +
-           " (ID: " + std::to_string(m_WidgetId) + ")";
+           " (ID: " + UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -79,7 +79,7 @@ class SliderChangeEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  uint64_t m_WidgetId;
+  UUID m_WidgetId;
   float m_Value;
   std::string m_Label;
 };
@@ -89,12 +89,12 @@ class SliderChangeEvent : public UIEvent {
  */
 class CheckboxToggleEvent : public UIEvent {
  public:
-  explicit CheckboxToggleEvent(uint64_t widgetId, bool checked, const std::string &label = "")
+  explicit CheckboxToggleEvent(UUID widgetId, bool checked, const std::string &label = "")
       : m_WidgetId(widgetId), m_Checked(checked), m_Label(label)
   {
   }
 
-  uint64_t GetSourceWidgetID() const override
+  UUID GetSourceWidgetID() const override
   {
     return m_WidgetId;
   }
@@ -110,7 +110,7 @@ class CheckboxToggleEvent : public UIEvent {
   std::string ToString() const override
   {
     return "CheckboxToggleEvent: " + m_Label + " = " + (m_Checked ? "checked" : "unchecked") +
-           " (ID: " + std::to_string(m_WidgetId) + ")";
+           " (ID: " + UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -121,7 +121,7 @@ class CheckboxToggleEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  uint64_t m_WidgetId;
+  UUID m_WidgetId;
   bool m_Checked;
   std::string m_Label;
 };
@@ -131,14 +131,14 @@ class CheckboxToggleEvent : public UIEvent {
  */
 class TextInputEvent : public UIEvent {
  public:
-  explicit TextInputEvent(uint64_t widgetId,
+  explicit TextInputEvent(UUID widgetId,
                           const std::string &text,
                           const std::string &label = "")
       : m_WidgetId(widgetId), m_Text(text), m_Label(label)
   {
   }
 
-  uint64_t GetSourceWidgetID() const override
+  UUID GetSourceWidgetID() const override
   {
     return m_WidgetId;
   }
@@ -154,7 +154,7 @@ class TextInputEvent : public UIEvent {
   std::string ToString() const override
   {
     return "TextInputEvent: " + m_Label + " = \"" + m_Text + "\"" +
-           " (ID: " + std::to_string(m_WidgetId) + ")";
+           " (ID: " + UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -165,7 +165,7 @@ class TextInputEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  uint64_t m_WidgetId;
+  UUID m_WidgetId;
   std::string m_Text;
   std::string m_Label;
 };
@@ -175,7 +175,7 @@ class TextInputEvent : public UIEvent {
  */
 class ComboBoxSelectEvent : public UIEvent {
  public:
-  explicit ComboBoxSelectEvent(uint64_t widgetId,
+  explicit ComboBoxSelectEvent(UUID widgetId,
                                int selectedIndex,
                                const std::string &selectedItem,
                                const std::string &label = "")
@@ -186,7 +186,7 @@ class ComboBoxSelectEvent : public UIEvent {
   {
   }
 
-  uint64_t GetSourceWidgetID() const override
+  UUID GetSourceWidgetID() const override
   {
     return m_WidgetId;
   }
@@ -206,7 +206,7 @@ class ComboBoxSelectEvent : public UIEvent {
   std::string ToString() const override
   {
     return "ComboBoxSelectEvent: " + m_Label + " = " + m_SelectedItem +
-           " (Index: " + std::to_string(m_SelectedIndex) + ", ID: " + std::to_string(m_WidgetId) +
+           " (Index: " + std::to_string(m_SelectedIndex) + ", ID: " + UUIDToString(m_WidgetId) +
            ")";
   }
 
@@ -218,7 +218,7 @@ class ComboBoxSelectEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  uint64_t m_WidgetId;
+  UUID m_WidgetId;
   int m_SelectedIndex;
   std::string m_SelectedItem;
   std::string m_Label;
@@ -229,12 +229,12 @@ class ComboBoxSelectEvent : public UIEvent {
  */
 class MouseEnterEvent : public UIEvent {
  public:
-  explicit MouseEnterEvent(uint64_t widgetId, const glm::vec2 &position)
+  explicit MouseEnterEvent(UUID widgetId, const glm::vec2 &position)
       : m_WidgetId(widgetId), m_Position(position)
   {
   }
 
-  uint64_t GetSourceWidgetID() const override
+  UUID GetSourceWidgetID() const override
   {
     return m_WidgetId;
   }
@@ -245,7 +245,7 @@ class MouseEnterEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "MouseEnterEvent: ID " + std::to_string(m_WidgetId) + " at (" +
+    return "MouseEnterEvent: ID " + UUIDToString(m_WidgetId) + " at (" +
            std::to_string(m_Position.x) + ", " + std::to_string(m_Position.y) + ")";
   }
 
@@ -257,7 +257,7 @@ class MouseEnterEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  uint64_t m_WidgetId;
+  UUID m_WidgetId;
   glm::vec2 m_Position;
 };
 
@@ -266,16 +266,16 @@ class MouseEnterEvent : public UIEvent {
  */
 class MouseLeaveEvent : public UIEvent {
  public:
-  explicit MouseLeaveEvent(uint64_t widgetId) : m_WidgetId(widgetId) {}
+  explicit MouseLeaveEvent(UUID widgetId) : m_WidgetId(widgetId) {}
 
-  uint64_t GetSourceWidgetID() const override
+  UUID GetSourceWidgetID() const override
   {
     return m_WidgetId;
   }
 
   std::string ToString() const override
   {
-    return "MouseLeaveEvent: ID " + std::to_string(m_WidgetId);
+    return "MouseLeaveEvent: ID " + UUIDToString(m_WidgetId);
   }
 
   Event *Clone() const override
@@ -286,7 +286,7 @@ class MouseLeaveEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  uint64_t m_WidgetId;
+  UUID m_WidgetId;
 };
 
 /**
