@@ -2,13 +2,11 @@
 #define MITE_UI_BACKEND_H
 
 #include "event/event.h"
-#include <functional>
-#include <memory>
 
 namespace mite {
 
 // 前向声明
-class UISystem;
+class UIStyle;
 
 /**
  * @brief UI后端抽象接口
@@ -23,7 +21,7 @@ class UIBackend {
    * @brief 初始化后端
    * @return 是否初始化成功
    */
-  virtual bool Initialize() = 0;
+  virtual bool Initialize(void *window) = 0;
 
   /**
    * @brief 清理后端
@@ -115,6 +113,18 @@ class UIBackend {
    * @brief 获取后端名称（用于调试）
    */
   virtual const char *GetBackendName() const = 0;
+
+  /**
+   * @brief 样式管理
+   */
+  virtual void ApplyDarkStyle() = 0;
+  virtual void ApplyLightStyle() = 0;
+  virtual void ApplyStyle(std::shared_ptr<UIStyle>) = 0;
+
+  /**
+   * @brief 语言管理
+   */
+  virtual void ApplyLanguaged(const std::string &oldLanguageCode, const std::string &newLanguageCode) = 0;
 };
 
 }  // namespace mite
