@@ -1,16 +1,14 @@
 #include "ui_localization.h"
+#include "ui_localization_json.h"
 
 namespace mite {
 
 UILocalization &UILocalization::Get()
 {
-  // TODO: 实际实现将在具体后端中提供
-  static UILocalization *instance = nullptr;
-  if (!instance) {
-    LOG_ERROR("UILocalization instance not initialized");
-    // 返回一个默认实现或抛出异常
-  }
-  return *instance;
+  // 当前唯一后端为Json翻译系统
+  static UILocalizationJson instance;
+
+  return instance;
 }
 
 std::string UILocalization::FormatString(const std::string &format,

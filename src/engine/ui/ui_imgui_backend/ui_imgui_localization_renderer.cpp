@@ -25,24 +25,27 @@ void ImGuiFontManager::LoadFonts()
   m_LanguageFonts["zh-CN"] = m_ChineseFont;
 }
 
-void ImGuiFontManager::SetLanguageFont(const std::string &languageCode)
+bool ImGuiFontManager::SetLanguageFont(const std::string &languageCode)
 {
   auto it = m_LanguageFonts.find(languageCode);
   if (it != m_LanguageFonts.end()) {
     ImGui::GetIO().FontDefault = it->second;
+    return true;
   }
   else {
-    ImGui::GetIO().FontDefault = m_DefaultFont;
+    LOG_WARN("Language code not found: {}, set language font failed!", languageCode);
+    return false;
   }
 }
 
 void ImGuiLocalizationRenderer::Initialize()
 {
-  LOG_INFO("ImGuiLocalizationRenderer initialized");
+  LOG_INFO("ImGuiLocalizationRenderer initialized with doing nothing");
 }
 
 void ImGuiLocalizationRenderer::Shutdown()
 {
+  LOG_INFO("ImGuiLocalizationRenderer shutdown with doing nothing");
 }
 
 void ImGuiLocalizationRenderer::Text(const char *translationKey)

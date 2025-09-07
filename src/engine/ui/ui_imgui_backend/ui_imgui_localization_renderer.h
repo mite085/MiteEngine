@@ -14,7 +14,7 @@ class ImGuiFontManager {
   // 加载字体样式文件（ttf）
   static void LoadFonts();
   // 设定Imgui全局字体（目前支持"en-US"和"zh-CN"）
-  static void SetLanguageFont(const std::string &languageCode);
+  static bool SetLanguageFont(const std::string &languageCode);
 
  private:
   static ImFont *m_DefaultFont;
