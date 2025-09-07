@@ -26,17 +26,6 @@ bool ImGuiStyleAdapter::Initialize()
   // 确保样式管理器已初始化
   UIStyleManager::Get().Initialize();
 
-  // 订阅样式变更事件
-  EventBus::Get().Subscribe<StyleChangedEvent>([this](const StyleChangedEvent &event) {
-    // 当引擎样式变更时，同步应用到ImGui
-    if (event.IsGlobalChange()) {
-      auto style = UIStyleManager::Get().GetCurrentStyle();
-      if (style) {
-        ApplyUIStyle(style);
-      }
-    }
-  });
-
   m_Logger->info("ImGuiStyleAdapter initialized successfully");
   return true;
 }
@@ -447,9 +436,5 @@ void ImGuiStyleAdapter::NotifyStyleChanged(const std::string &styleName)
   for (const auto &callback : m_StyleChangeCallbacks) {
     callback(styleName);
   }
-
-  // 发布样式变更事件
-  StyleChangedEvent event(styleName, true);
-  EventBus::Publish<StyleChangedEvent>(event);
 }
 }  // namespace mite

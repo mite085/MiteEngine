@@ -304,76 +304,100 @@ class FocusLostEvent : public UIEvent {
 };
 
 /**
- * @brief UI样式改变事件
+ * @brief 样式变更事件
+ * 当样式或样式属性发生变化时触发
  */
-class UIStyleChangedEvent : public UIEvent {
+struct StyleChangedEvent : public UIEvent {
  public:
-  explicit UIStyleChangedEvent(const std::string &styleName, const std::string &themeName)
-      : m_StyleName(styleName), m_ThemeName(themeName)
+  explicit StyleChangedEvent(std::string styleName,
+                             bool isGlobalChange,
+                             std::string propertyName = {},
+                             StyleValue oldValue = {},
+                             StyleValue newValue = {})
+      : m_StyleName(styleName),
+        m_PropertyName(propertyName),
+        m_OldValue(oldValue),
+        m_NewValue(newValue),
+        m_IsGlobalChange(isGlobalChange)
   {
   }
-
   const std::string &GetStyleName() const
   {
     return m_StyleName;
   }
-  const std::string &GetThemeName() const
+  const std::string &GetPropertyName() const
   {
-    return m_ThemeName;
+    return m_PropertyName;
   }
-
+  const StyleValue &GetOldValue() const
+  {
+    return m_OldValue;
+  }
+  const StyleValue &GetNewValue() const
+  {
+    return m_NewValue;
+  }
+  const bool IsGlobalChange() const
+  {
+    return m_IsGlobalChange;
+  }
   std::string ToString() const override
   {
-    return "UIStyleChangedEvent: " + m_StyleName + " (Theme: " + m_ThemeName + ")";
+    if (m_IsGlobalChange)
+      return "StyleChangedEvent: change to " + m_StyleName;
+    else
+      return "LanguageChangedEvent: " + m_PropertyName +
+             " value changed.";  // 不方便打印std::variant
   }
-
   Event *Clone() const override
   {
-    return new UIStyleChangedEvent(m_StyleName, m_ThemeName);
+    return new StyleChangedEvent(
+        m_StyleName, m_IsGlobalChange, m_PropertyName, m_OldValue, m_NewValue);
   }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
+  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  std::string m_StyleName;
-  std::string m_ThemeName;
+  std::string m_StyleName;     // 样式名称
+  bool m_IsGlobalChange;       // 是否为全局样式变更
+  std::string m_PropertyName;  // 属性名称（如果为全局样式变更则为空）
+  StyleValue m_OldValue;       // 旧值（如果为全局样式变更则为空）
+  StyleValue m_NewValue;       // 新值（如果为全局样式变更则为空）
 };
 
 /**
- * @brief 本地化语言改变事件
+ * @brief 语言变更事件
  */
-class LocalizationChangedEvent : public UIEvent {
+class LanguageChangedEvent : public UIEvent {
  public:
-  explicit LocalizationChangedEvent(const std::string &languageCode,
-                                    const std::string &languageName)
-      : m_LanguageCode(languageCode), m_LanguageName(languageName)
+  explicit LanguageChangedEvent(const std::string &oldLanguage, const std::string &newLanguage)
+      : m_OldLanguage(oldLanguage), m_NewLanguage(newLanguage)
   {
   }
 
-  const std::string &GetLanguageCode() const
+  const std::string &GetOldLanguage() const
   {
-    return m_LanguageCode;
+    return m_OldLanguage;
   }
-  const std::string &GetLanguageName() const
+  const std::string &GetNewLanguage() const
   {
-    return m_LanguageName;
+    return m_NewLanguage;
   }
 
   std::string ToString() const override
   {
-    return "LocalizationChangedEvent: " + m_LanguageName + " (" + m_LanguageCode + ")";
+    return "LanguageChangedEvent: " + m_OldLanguage + " -> " + m_NewLanguage;
   }
 
   Event *Clone() const override
   {
-    return new LocalizationChangedEvent(m_LanguageCode, m_LanguageName);
+    return new LanguageChangedEvent(m_OldLanguage, m_NewLanguage);
   }
 
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
+  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  std::string m_LanguageCode;
-  std::string m_LanguageName;
+  std::string m_OldLanguage;
+  std::string m_NewLanguage;
 };
 
 /**

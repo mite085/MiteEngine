@@ -33,7 +33,8 @@ class ImGuiBackend : public UIBackend {
   ~ImGuiBackend() override;
 
   // UIBackend接口实现
-  bool Initialize() override;
+  // ==================== 投影参数控制 ====================
+  bool Initialize(void *window) override;
   void Shutdown() override;
   void BeginFrame() override;
   void EndFrame() override;
@@ -50,27 +51,23 @@ class ImGuiBackend : public UIBackend {
   void DestroyDeviceObjects() override;
   void Render() override;
   const char *GetBackendName() const override;
+  void ApplyDarkStyle() override;
+  void ApplyLightStyle() override;
+  void ApplyStyle(std::shared_ptr<UIStyle>) override;
+  void ApplyLanguaged(const std::string &oldLanguage, const std::string &newLanguage) override;
 
-  // ImGui特定方法
+  // ==================== ImGui特定方法 ====================
   void SetWindow(GLFWwindow *window);
   GLFWwindow *GetWindow() const;
-
-  // 样式管理（委托给StyleAdapter）
-  void ApplyDarkStyle();
-  void ApplyLightStyle();
-  void ApplyStyle(const std::string &styleName);
-  void ApplyCustomStyle(const ImGuiStyle &style);
-  ImGuiStyleAdapter &GetStyleAdapter()
-  {
-    return *m_StyleAdapter;
-  }
 
   // 输入管理（委托给InputAdapter）
   ImGuiInputAdapter& GetInputAdapter() {
     return *m_InputAdapter;
   }
 
+
  private:
+  // ==================== 内部方法 ====================
   // 初始化ImGui上下文
   bool InitializeImGuiContext();
 
@@ -80,8 +77,10 @@ class ImGuiBackend : public UIBackend {
   // 初始化渲染器后端
   bool InitializeRendererBackend();
 
-  // 处理语言切换事件
-  void OnLanguageChanged(LanguageChangedEvent &event);
+  // 样式管理（委托给StyleAdapter）
+
+  void ApplyStyle(const std::string &styleName);
+  void ApplyCustomStyle(const ImGuiStyle &style);
 
   // 成员变量
   GLFWwindow *m_Window;                               // GLFW窗口句柄
