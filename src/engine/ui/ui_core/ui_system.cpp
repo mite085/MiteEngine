@@ -5,75 +5,29 @@
 
 namespace mite {
 
-UISystem &UISystem::Get()
+UISystem::UISystem(Renderer &renderer, Window &window)
+    : m_Visible(true), m_Renderer(renderer), m_Window(window)
 {
-  static UISystem instance;
-  return instance;
-}
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Backend");
+  m_Logger->info("Initializing UI ImGui Backend");
 
-UISystem::UISystem()
-    : m_Logger("UISystem"),
-      m_Initialized(false),
-      m_Visible(true),
-      m_Renderer(nullptr),
-      m_Window(nullptr),
-      m_StyleManager(&UIStyleManager::Get()),
-      m_Localization(&UILocalization::Get())
-{
+  // 订阅事件
+  m_EventSubscriptions.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
+  m_EventSubscriptions.Subscribe<StyleChangedEvent>(BIND_DISPATCH_FN(OnStyleChanged));
+
+    // 初始化后端
+  if (!InitializeBackend()) {
+    m_Logger->error("UI Backend Initialize FAILED!");
+  }
 }
 
 UISystem::~UISystem()
 {
-  if (m_Initialized) {
-    Shutdown();
-  }
-}
-
-bool UISystem::Initialize(Renderer *renderer, Window *window)
-{
-  if (m_Initialized) {
-    m_Logger.Warn("UI系统已经初始化");
-    return true;
-  }
-
-  m_Renderer = renderer;
-  m_Window = window;
-
-  // 初始化事件总线
-  m_EventBus = std::make_unique<EventBus>();
-
-  // 初始化后端
-  if (!InitializeBackend()) {
-    m_Logger.Error("UI后端初始化失败");
-    return false;
-  }
-
-  // 订阅事件
-  SubscribeEvents();
-
-  m_Initialized = true;
-  m_Logger.Info("UI系统初始化成功");
-
-  // 发布初始化完成事件
-  m_EventBus->Publish<UIInitializedEvent>(UIInitializedEvent());
-
-  return true;
-}
-
-void UISystem::Shutdown()
-{
-  if (!m_Initialized) {
-    return;
-  }
-
   // 发布关闭事件
-  m_EventBus->Publish<UIShutdownEvent>(UIShutdownEvent());
+  EventBus::Publish<UIShutdownEvent>(UIShutdownEvent());
 
   // 清理面板
   m_Panels.clear();
-
-  // 取消事件订阅
-  m_EventSubscriptions.UnsubscribeAll();
 
   // 关闭后端
   if (m_Backend) {
@@ -81,13 +35,12 @@ void UISystem::Shutdown()
     m_Backend.reset();
   }
 
-  m_Initialized = false;
-  m_Logger.Info("UI系统已关闭");
+  m_Logger->info("UI System Shut Down");
 }
 
 void UISystem::Update(float deltaTime)
 {
-  if (!m_Initialized || !m_Visible) {
+  if (!m_Visible) {
     return;
   }
 
@@ -101,7 +54,7 @@ void UISystem::Update(float deltaTime)
 
 void UISystem::BeginFrame()
 {
-  if (!m_Initialized || !m_Visible) {
+  if (!m_Visible) {
     return;
   }
 
@@ -112,7 +65,7 @@ void UISystem::BeginFrame()
 
 void UISystem::Render()
 {
-  if (!m_Initialized || !m_Visible) {
+  if (!m_Visible) {
     return;
   }
 
@@ -130,7 +83,7 @@ void UISystem::Render()
 
 void UISystem::EndFrame()
 {
-  if (!m_Initialized || !m_Visible) {
+  if (!m_Visible) {
     return;
   }
 
@@ -141,7 +94,7 @@ void UISystem::EndFrame()
 
 void UISystem::ProcessInputEvent(const Event &event)
 {
-  if (!m_Initialized || !m_Visible) {
+  if (!m_Visible) {
     return;
   }
 
@@ -158,7 +111,7 @@ std::shared_ptr<UIPanel> UISystem::CreatePanel(const std::string &name)
   m_Panels[panel->GetID()] = panel;
 
   // 发布面板创建事件
-  m_EventBus->Publish<PanelOpenedEvent>(PanelOpenedEvent(panel->GetID(), name));
+  EventBus::Publish<PanelOpenedEvent>(PanelOpenedEvent(panel->GetID(), name));
 
   return panel;
 }
@@ -168,7 +121,7 @@ void UISystem::DestroyPanel(UUID panelId)
   auto it = m_Panels.find(panelId);
   if (it != m_Panels.end()) {
     // 发布面板关闭事件
-    m_EventBus->Publish<PanelClosedEvent>(PanelClosedEvent(panelId, it->second->GetName()));
+    EventBus::Publish<PanelClosedEvent>(PanelClosedEvent(panelId, it->second->GetName()));
     m_Panels.erase(it);
   }
 }
@@ -184,19 +137,9 @@ void UISystem::SetPanelVisible(UUID panelId, bool visible)
   if (auto panel = GetPanel(panelId)) {
     panel->SetVisible(visible);
     // 发布可见性变更事件
-    m_EventBus->Publish<UIVisibilityChangedEvent>(
+    EventBus::Publish<UIVisibilityChangedEvent>(
         UIVisibilityChangedEvent(panelId, "Panel", visible));
   }
-}
-
-UIStyleManager &UISystem::GetStyleManager() const
-{
-  return *m_StyleManager;
-}
-
-UILocalization &UISystem::GetLocalization() const
-{
-  return *m_Localization;
 }
 
 bool UISystem::IsVisible() const
@@ -209,50 +152,34 @@ void UISystem::SetVisible(bool visible)
   m_Visible = visible;
 }
 
-EventBus &UISystem::GetEventBus() const
-{
-  return *m_EventBus;
-}
-
 bool UISystem::InitializeBackend()
 {
   // 目前只实现ImGui后端
-  m_Backend = std::make_unique<UIImGuiBackend>();
+  m_Backend = std::make_unique<ImGuiBackend>();
 
-  if (!m_Backend->Initialize()) {
-    m_Logger.Error("ImGui后端初始化失败");
+  if (!m_Backend->Initialize(m_Window.GetNativeWindow())) {
+    m_Logger->error("ImGui Backend Initialize FAILED !");
     return false;
   }
 
   // 设置显示尺寸
-  if (m_Window) {
-    m_Backend->SetDisplaySize(m_Window->GetWidth(), m_Window->GetHeight());
-  }
+  m_Backend->SetDisplaySize(m_Window.GetWidth(), m_Window.GetHeight());
 
-  m_Logger.Info("UI后端初始化成功: {}", m_Backend->GetBackendName());
+  m_Logger->info("ImGui Backend Initialize Successed: {}", m_Backend->GetBackendName());
   return true;
 }
 
-void UISystem::SubscribeEvents()
-{
-  // 订阅语言变更事件
-  m_EventSubscriptions.Subscribe<LocalizationChangedEvent>(
-      [this](const LocalizationChangedEvent &event) { OnLanguageChanged(event); });
 
-  // 订阅样式变更事件
-  m_EventSubscriptions.Subscribe<UIStyleChangedEvent>(
-      [this](const UIStyleChangedEvent &event) { OnStyleChanged(event); });
-}
-
-void UISystem::OnLanguageChanged(const LocalizationChangedEvent &event)
+bool UISystem::OnLanguageChanged(const LanguageChangedEvent &event)
 {
-  m_Logger.Info("语言已切换至: {}", event.GetLanguageName());
+  m_Logger->info("Language has been changed to: {}", event.GetLanguageName());
   // 这里可以添加语言切换后的处理逻辑
+  m_Backend->lan
 }
 
-void UISystem::OnStyleChanged(const UIStyleChangedEvent &event)
+bool UISystem::OnStyleChanged(const StyleChangedEvent &event)
 {
-  m_Logger.Info("样式已切换至: {}", event.GetStyleName());
+  m_Logger->info("Style has been changed to: {}", event.GetStyleName());
   // 这里可以添加样式切换后的处理逻辑
 }
 
