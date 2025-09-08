@@ -1,5 +1,6 @@
 #include "ui_system.h"
 #include "ui_imgui_backend/ui_imgui_backend.h"
+#include "ui_localization_json.h"
 #include "window.h"
 #include "renderer.h"
 
@@ -11,14 +12,20 @@ UISystem::UISystem(Renderer &renderer, Window &window)
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Backend");
   m_Logger->info("Initializing UI ImGui Backend");
 
-  // 订阅事件
-  m_EventSubscriptions.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
-  m_EventSubscriptions.Subscribe<StyleChangedEvent>(BIND_DISPATCH_FN(OnStyleChanged));
-
-    // 初始化后端
+  // 初始化后端
   if (!InitializeBackend()) {
     m_Logger->error("UI Backend Initialize FAILED!");
   }
+
+  // 初始化Style Manager
+  m_StyleManager = std::make_unique<UIStyleManager>();
+  m_StyleManager->Initialize();
+
+  // 初始化翻译系统
+  UILocalization::Get();
+
+  // 发布初始化完成事件
+  EventBus::Publish<UIInitializedEvent>(UIInitializedEvent());
 }
 
 UISystem::~UISystem()
@@ -92,16 +99,14 @@ void UISystem::EndFrame()
   }
 }
 
-void UISystem::ProcessInputEvent(const Event &event)
+void UISystem::ProcessInputEvent(Event &event)
 {
   if (!m_Visible) {
     return;
   }
 
   if (m_Backend) {
-    // 转换为非const引用供后端处理
-    Event &nonConstEvent = const_cast<Event &>(event);
-    m_Backend->ProcessInputEvent(nonConstEvent);
+    m_Backend->ProcessInputEvent(event);
   }
 }
 
@@ -169,18 +174,5 @@ bool UISystem::InitializeBackend()
   return true;
 }
 
-
-bool UISystem::OnLanguageChanged(const LanguageChangedEvent &event)
-{
-  m_Logger->info("Language has been changed to: {}", event.GetLanguageName());
-  // 这里可以添加语言切换后的处理逻辑
-  m_Backend->lan
-}
-
-bool UISystem::OnStyleChanged(const StyleChangedEvent &event)
-{
-  m_Logger->info("Style has been changed to: {}", event.GetStyleName());
-  // 这里可以添加样式切换后的处理逻辑
-}
 
 }  // namespace mite

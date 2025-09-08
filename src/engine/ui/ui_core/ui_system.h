@@ -60,7 +60,7 @@ class UISystem {
    * @brief 处理输入事件
    * @param event 输入事件
    */
-  void ProcessInputEvent(const Event &event);
+  void ProcessInputEvent(Event &event);
 
   /**
    * @brief 创建面板
@@ -104,19 +104,13 @@ class UISystem {
   // 初始化后端
   bool InitializeBackend();
 
-  // 处理语言变更事件
-  bool OnLanguageChanged(const LanguageChangedEvent &event);
-
-  // 处理样式变更事件
-  bool OnStyleChanged(const StyleChangedEvent &event);
-
- private:
   bool m_Visible;
 
   // 核心依赖
   Renderer &m_Renderer;
   Window &m_Window;
   std::unique_ptr<UIBackend> m_Backend;
+  std::unique_ptr<UIStyleManager> m_StyleManager;
 
   // 管理对象
   std::unordered_map<UUID, std::shared_ptr<UIPanel>> m_Panels;
