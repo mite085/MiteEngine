@@ -1,4 +1,5 @@
 #include "ui_localization_json.h"
+#include "ui_event/ui_events_lifecycle.h"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
@@ -8,7 +9,10 @@ namespace mite {
 UILocalizationJson::UILocalizationJson()
 {
   InitializeBuiltinLanguages();
-  SetCurrentLanguage(ENGLISH);  // 默认英文
+  SetCurrentLanguage(SIMPLIFIED_CHINESE);  // 默认英文
+
+  // 订阅语言变更事件
+  m_SubscriptionGroup.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
 }
 
 UILocalizationJson::~UILocalizationJson() = default;
@@ -33,29 +37,22 @@ void UILocalizationJson::InitializeBuiltinLanguages()
   }
 }
 
-std::string UILocalizationJson::GetLocalizationFilePath(const std::string &languageCode) const
-{
-  try {
-    // 直接构建相对于assets的路径
-    std::string relativePath = "localization/" + languageCode + ".json";
-    fs::path fullPath = FileSystem::GetAssetPath(relativePath);
-
-    if (FileSystem::Exists(fullPath)) {
-      return fullPath.string();
-    }
-
-    return "";  // 文件不存在
-  }
-  catch (const std::exception &e) {
-    m_Logger->debug("Localization file not found: {}", e.what());
-    return "";
-  }
-}
-
 bool UILocalizationJson::LoadLanguagePack(const std::string &languageCode,
                                           const std::string &filePath)
 {
   return LoadLanguagePackFromFile(languageCode, filePath);
+}
+
+
+bool UILocalizationJson::OnLanguageChanged(LanguageChangedEvent &e)
+{
+  std::string languageCode = e.GetNewLanguage();
+  if (!SetCurrentLanguage(languageCode))
+    return false;
+
+  // 事件已消费，阻断传播
+  e.Handled();
+  return e.handled;
 }
 
 bool UILocalizationJson::LoadLanguagePackFromFile(const std::string &languageCode,
@@ -93,6 +90,25 @@ bool UILocalizationJson::LoadLanguagePackFromFile(const std::string &languageCod
   catch (const std::exception &e) {
     m_Logger->error("Failed to load language pack from {}: {}", filePath, e.what());
     return false;
+  }
+}
+
+std::string UILocalizationJson::GetLocalizationFilePath(const std::string &languageCode) const
+{
+  try {
+    // 直接构建相对于assets的路径
+    std::string relativePath = "localization/" + languageCode + ".json";
+    fs::path fullPath = FileSystem::GetAssetPath(relativePath);
+
+    if (FileSystem::Exists(fullPath)) {
+      return fullPath.string();
+    }
+
+    return "";  // 文件不存在
+  }
+  catch (const std::exception &e) {
+    m_Logger->debug("Localization file not found: {}", e.what());
+    return "";
   }
 }
 
@@ -181,10 +197,6 @@ bool UILocalizationJson::SetCurrentLanguage(const std::string &languageCode)
   std::string oldLanguage = m_CurrentLanguage;
   m_CurrentLanguage = languageCode;
 
-  // 发布语言变更事件
-  LanguageChangedEvent event(oldLanguage, languageCode);
-  EventBus::Publish<LanguageChangedEvent>(event);
-
   m_Logger->info("Language changed to: {}", languageCode);
   return true;
 }
@@ -228,12 +240,7 @@ std::string UILocalizationJson::Translate(const std::string &key) const
   return key;  // 返回键名作为默认值
 }
 
-std::string UILocalizationJson::TranslateFormat(const std::string &key,
-                                                const std::vector<std::string> &args) const
-{
-  std::string baseText = Translate(key);
-  return FormatString(baseText, args);
-}
+
 
 bool UILocalizationJson::IsRTLLanguage(const std::string &languageCode) const
 {

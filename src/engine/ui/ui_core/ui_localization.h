@@ -1,7 +1,7 @@
 #ifndef MITE_UI_LOCALIZATION_H
 #define MITE_UI_LOCALIZATION_H
 
-#include "ui_event/ui_events_interaction.h"
+#include "ui_event/ui_events_lifecycle.h"
 #include "ui_style.h"
 
 namespace mite {
@@ -29,8 +29,6 @@ class UILocalization {
 
   // 文本翻译
   virtual std::string Translate(const std::string &key) const = 0;
-  virtual std::string TranslateFormat(const std::string &key,
-                                      const std::vector<std::string> &args) const = 0;
 
   // 文本方向
   virtual bool IsRTLLanguage(const std::string &languageCode) const = 0;
@@ -40,11 +38,34 @@ class UILocalization {
   static constexpr const char *ENGLISH = "en-US";
   static constexpr const char *SIMPLIFIED_CHINESE = "zh-CN";
 
+  // 支持完美转发的翻译行为
+  // 
+  // 使用示例：
+  // TranslateFormat("Price: ${:.2f} !", 19.99) ,可以翻译为“价格：19.99美元！”
+  // 
+  // 对应Json示例：
+  // "common": {
+  //   "Price: ${:.2f} !": "价格：{:.2f}美元！"
+  // }
+  template<typename... Args>
+  std::string TranslateFormat(const std::string &key, const Args &&...args) const
+  {
+    std::string baseText = Translate(key);
+
+    try {
+      return fmt::format(baseText, std::forward<Args>(args)...);
+    }
+    catch (const std::exception &e) {
+      LOG_ERROR("String formatting failed: {}", e.what());
+      return baseText;  // 返回原始格式字符串
+    }
+  }
+
  protected:
   UILocalization() = default;
 
-  // 格式化工具函数
-  std::string FormatString(const std::string &format, const std::vector<std::string> &args) const;
+  virtual bool OnLanguageChanged(LanguageChangedEvent &e) = 0;
+
 };
 
 }  // namespace mite

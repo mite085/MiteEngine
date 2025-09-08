@@ -24,8 +24,6 @@ class UILocalizationJson : public UILocalization {
 
   // 文本翻译
   std::string Translate(const std::string &key) const override;
-  std::string TranslateFormat(const std::string &key,
-                              const std::vector<std::string> &args) const override;
 
   // 文本方向
   bool IsRTLLanguage(const std::string &languageCode) const override;
@@ -35,16 +33,16 @@ class UILocalizationJson : public UILocalization {
   void InitializeBuiltinLanguages();
 
  private:
+  // 消费语言切换事件
+  bool OnLanguageChanged(LanguageChangedEvent &e);
+
+  // 语言包定义
   struct LanguagePack {
     std::unordered_map<std::string, std::string> translations;
     std::string locale;
     TextDirection direction;
     std::string displayName;
   };
-
-  std::string m_CurrentLanguage;
-  std::unordered_map<std::string, LanguagePack> m_LanguagePacks;
-  Logger m_Logger;
 
   // 从文件加载语言包
   bool LoadLanguagePackFromFile(const std::string &languageCode, const std::string &filePath);
@@ -62,6 +60,18 @@ class UILocalizationJson : public UILocalization {
   void MergeTranslations(const nlohmann::json &source,
                          std::unordered_map<std::string, std::string> &target,
                          const std::string &prefix = "") const;
+
+  // 语言包与当前状态管理
+  std::string m_CurrentLanguage;
+  std::unordered_map<std::string, LanguagePack> m_LanguagePacks;
+
+  // 日志系统
+  Logger m_Logger;
+
+  // 事件订阅系统
+  SubscriptionGroup m_SubscriptionGroup;  
+
+
 };
 
 }  // namespace mite
