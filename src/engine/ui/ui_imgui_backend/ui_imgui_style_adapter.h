@@ -1,8 +1,8 @@
 #ifndef MITE_IMGUI_STYLE_ADAPTER_H
 #define MITE_IMGUI_STYLE_ADAPTER_H
 
-#include "ui_core/ui_style.h"
 #include "ui_core/ui_style_manager.h"
+#include "ui_event/ui_events_lifecycle.h"
 #include <imgui.h>
 
 namespace mite {
@@ -16,38 +16,11 @@ class ImGuiStyleAdapter {
   ImGuiStyleAdapter();
   ~ImGuiStyleAdapter();
 
-  // 初始化适配器
-  bool Initialize();
-
-  // 关闭适配器
-  void Shutdown();
-
-  // 应用指定名称的样式
-  bool ApplyStyle(const std::string &styleName);
-
-  // 应用暗色样式
-  void ApplyDarkStyle();
-
-  // 应用亮色样式
-  void ApplyLightStyle();
-
-  // 应用自定义ImGui样式
-  void ApplyCustomStyle(const ImGuiStyle &style);
-
   // 从UIStyle应用到ImGui
-  bool ApplyUIStyle(const std::shared_ptr<UIStyle> &uiStyle);
+  bool ApplyUIStyle(const std::shared_ptr<UIStyle> uiStyle);
 
   // 从ImGui样式导出到UIStyle
   std::shared_ptr<UIStyle> ExportToUIStyle(const std::string &styleName);
-
-  // 获取当前应用的样式名称
-  std::string GetCurrentStyleName() const;
-
-  // 检查样式是否已应用
-  bool IsStyleApplied(const std::string &styleName) const;
-
-  // 注册样式变更回调
-  void RegisterStyleChangeCallback(const std::function<void(const std::string &)> &callback);
 
   // 获取ImGui样式引用
   ImGuiStyle &GetImGuiStyle();
@@ -77,11 +50,10 @@ class ImGuiStyleAdapter {
   // 创建默认样式映射表
   void CreateDefaultStyleMappings();
 
-  // 发布样式变更事件
-  void NotifyStyleChanged(const std::string &styleName);
+  // 样式变更事件响应
+  bool OnStyleChanged(StyleChangedEvent &event);
 
   Logger m_Logger;
-  std::string m_CurrentStyleName;
   ImGuiStyle m_BackupStyle;
 
   // 样式映射配置
@@ -91,11 +63,8 @@ class ImGuiStyleAdapter {
   std::unordered_map<std::string, std::function<void(float)>> m_BorderMappings;
   std::unordered_map<std::string, std::function<void(float)>> m_SpacingMappings;
 
-  // 回调函数
-  std::vector<std::function<void(const std::string &)>> m_StyleChangeCallbacks;
-
-  // 样式应用状态
-  std::unordered_map<std::string, bool> m_StyleApplied;
+  // 事件订阅
+  SubscriptionGroup m_EventSubscriptions;
 };
 
 }  // namespace mite

@@ -1,83 +1,31 @@
 #include "ui_imgui_style_adapter.h"
-#include "ui_event/ui_events_interaction.h"
+#include "ui_event/ui_events_lifecycle.h"
 
 namespace mite {
-ImGuiStyleAdapter::ImGuiStyleAdapter() : m_CurrentStyleName("default")
+ImGuiStyleAdapter::ImGuiStyleAdapter()
 {
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Style Adapter");
+  m_Logger->info("Initializing ImGuiStyleAdapter");
 
   // 备份原始ImGui样式
   m_BackupStyle = ImGui::GetStyle();
 
   // 创建默认样式映射
   CreateDefaultStyleMappings();
+
+  // 订阅样式改变事件
+  m_EventSubscriptions.Subscribe<StyleChangedEvent>(BIND_DISPATCH_FN(OnStyleChanged));
 }
 
 ImGuiStyleAdapter::~ImGuiStyleAdapter()
 {
-  Shutdown();
-}
-
-bool ImGuiStyleAdapter::Initialize()
-{
-  m_Logger->info("Initializing ImGuiStyleAdapter");
-
-  // 确保样式管理器已初始化
-  UIStyleManager::Get().Initialize();
-
-  m_Logger->info("ImGuiStyleAdapter initialized successfully");
-  return true;
-}
-
-void ImGuiStyleAdapter::Shutdown()
-{
   m_Logger->info("Shutting down ImGuiStyleAdapter");
-
   // 恢复原始ImGui样式
   ImGui::GetStyle() = m_BackupStyle;
-
-  // 清空回调
-  m_StyleChangeCallbacks.clear();
-  m_StyleApplied.clear();
 }
 
-bool ImGuiStyleAdapter::ApplyStyle(const std::string &styleName)
-{
-  auto style = UIStyleManager::Get().GetStyle(styleName);
-  if (!style) {
-    m_Logger->warn("Style not found: {}", styleName);
-    return false;
-  }
-
-  if (ApplyUIStyle(style)) {
-    m_CurrentStyleName = styleName;
-    m_StyleApplied[styleName] = true;
-    NotifyStyleChanged(styleName);
-    return true;
-  }
-
-  return false;
-}
-
-void ImGuiStyleAdapter::ApplyDarkStyle()
-{
-  ApplyStyle("dark");
-}
-
-void ImGuiStyleAdapter::ApplyLightStyle()
-{
-  ApplyStyle("light");
-}
-
-void ImGuiStyleAdapter::ApplyCustomStyle(const ImGuiStyle &style)
-{
-  ImGui::GetStyle() = style;
-  m_CurrentStyleName = "custom";
-  NotifyStyleChanged("custom");
-}
-
-bool ImGuiStyleAdapter::ApplyUIStyle(const std::shared_ptr<UIStyle> &uiStyle)
+bool ImGuiStyleAdapter::ApplyUIStyle(const std::shared_ptr<UIStyle> uiStyle)
 {
   if (!uiStyle) {
     m_Logger->error("Cannot apply null UIStyle");
@@ -86,7 +34,6 @@ bool ImGuiStyleAdapter::ApplyUIStyle(const std::shared_ptr<UIStyle> &uiStyle)
 
   try {
     MapUIStyleToImGui(uiStyle);
-    m_CurrentStyleName = uiStyle->GetName();
     m_Logger->info("Applied UI style: {}", uiStyle->GetName());
     return true;
   }
@@ -377,8 +324,7 @@ void ImGuiStyleAdapter::CreateDefaultStyleMappings()
 
 std::shared_ptr<UIStyle> ImGuiStyleAdapter::ExportToUIStyle(const std::string &styleName)
 {
-  auto style = std::make_shared<UIStyle>();
-  style->SetName(styleName);
+  auto style = std::make_shared<UIStyle>(styleName);
 
   const auto &imguiStyle = ImGui::GetStyle();
 
@@ -409,32 +355,18 @@ std::shared_ptr<UIStyle> ImGuiStyleAdapter::ExportToUIStyle(const std::string &s
   return style;
 }
 
-std::string ImGuiStyleAdapter::GetCurrentStyleName() const
-{
-  return m_CurrentStyleName;
-}
-
-bool ImGuiStyleAdapter::IsStyleApplied(const std::string &styleName) const
-{
-  auto it = m_StyleApplied.find(styleName);
-  return it != m_StyleApplied.end() && it->second;
-}
-
-void ImGuiStyleAdapter::RegisterStyleChangeCallback(
-    const std::function<void(const std::string &)> &callback)
-{
-  m_StyleChangeCallbacks.push_back(callback);
-}
-
 ImGuiStyle &ImGuiStyleAdapter::GetImGuiStyle()
 {
   return ImGui::GetStyle();
 }
 
-void ImGuiStyleAdapter::NotifyStyleChanged(const std::string &styleName)
+bool ImGuiStyleAdapter::OnStyleChanged(StyleChangedEvent& event)
 {
-  for (const auto &callback : m_StyleChangeCallbacks) {
-    callback(styleName);
-  }
+  std::shared_ptr<UIStyle> style = event.GetUIStyle();
+  ApplyUIStyle(style);
+
+  // 标记事件已解决
+  event.Handled();
+  return event.handled;
 }
 }  // namespace mite
