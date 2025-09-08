@@ -1,20 +1,18 @@
 #ifndef MITE_GLFW_WINDOW
 #define MITE_GLFW_WINDOW
 
-#include "glad.h"
-#include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 #include "glfw_window_callback_adapter.h"
 #include "window.h"
 
 namespace mite {
-class GLFWWindow : public Window {
+class OpenGLWindow : public Window {
  public:
-  GLFWWindow();
-  virtual ~GLFWWindow() override;
+  OpenGLWindow();
+  virtual ~OpenGLWindow() override;
 
   // 禁用拷贝和移动
-  GLFWWindow(const GLFWWindow &) = delete;
-  GLFWWindow &operator=(const GLFWWindow &) = delete;
+  OpenGLWindow(const OpenGLWindow &) = delete;
+  OpenGLWindow &operator=(const OpenGLWindow &) = delete;
 
   const bool WindowShouldClose() override;
 

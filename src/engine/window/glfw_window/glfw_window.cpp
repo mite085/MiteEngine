@@ -2,23 +2,23 @@
 
 namespace mite {
 // 静态成员初始化
-uint32_t GLFWWindow::s_GLFWWindowCount = 0;
+uint32_t OpenGLWindow::s_GLFWWindowCount = 0;
 
-GLFWWindow::GLFWWindow() : m_CallbackAdapter()
+OpenGLWindow::OpenGLWindow() : m_CallbackAdapter()
 {
   // 初始化日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite GLFW Window");
   m_Logger->trace("GLFW Window constructor called");
 }
-GLFWWindow::~GLFWWindow()
+OpenGLWindow::~OpenGLWindow()
 {
   m_Logger->trace("GLFW Window destructor called");
 }
-const bool GLFWWindow::WindowShouldClose()
+const bool OpenGLWindow::WindowShouldClose()
 {
   return glfwWindowShouldClose(m_Window);
 }
-void GLFWWindow::Initialize(const WindowConfig &config)
+void OpenGLWindow::Initialize(const WindowConfig &config)
 {
   try {
     // 如果是第一个窗口，初始化GLFW库
@@ -83,7 +83,7 @@ void GLFWWindow::Initialize(const WindowConfig &config)
     throw;
   }
 }
-void GLFWWindow::Shutdown()
+void OpenGLWindow::Shutdown()
 {
   m_Logger->info("Shutting down GLFW window: {}", m_WindowData.title);
   if (m_Window) {
@@ -102,23 +102,23 @@ void GLFWWindow::Shutdown()
     }
   }
 }
-uint32_t GLFWWindow::GetWidth() const
+uint32_t OpenGLWindow::GetWidth() const
 {
   return m_WindowData.width;
 }
-uint32_t GLFWWindow::GetHeight() const
+uint32_t OpenGLWindow::GetHeight() const
 {
   return m_WindowData.height;
 }
-void *GLFWWindow::GetNativeWindow() const
+void *OpenGLWindow::GetNativeWindow() const
 {
   return m_Window;
 }
-bool GLFWWindow::IsVSync() const
+bool OpenGLWindow::IsVSync() const
 {
   return m_WindowData.vsync;
 }
-void GLFWWindow::SetVSync(bool enabled)
+void OpenGLWindow::SetVSync(bool enabled)
 {
   if (m_Window) {
     m_WindowData.vsync = enabled;
@@ -130,7 +130,7 @@ void GLFWWindow::SetVSync(bool enabled)
     m_Logger->warn("Attempt to set VSYNC on uninitialized window");
   }
 }
-void GLFWWindow::SetTitle(const std::string &title)
+void OpenGLWindow::SetTitle(const std::string &title)
 {
   if (m_Window) {
     m_WindowData.title = title;
@@ -142,7 +142,7 @@ void GLFWWindow::SetTitle(const std::string &title)
     m_Logger->warn("Attempt to set TITLE on uninitialized window");
   }
 }
-void GLFWWindow::Resize(uint32_t width, uint32_t height)
+void OpenGLWindow::Resize(uint32_t width, uint32_t height)
 {
   if (m_Window) {
     m_WindowData.width = width;
@@ -155,7 +155,7 @@ void GLFWWindow::Resize(uint32_t width, uint32_t height)
     m_Logger->warn("Attempt to RESIZE uninitialized window");
   }
 }
-void GLFWWindow::Maximize()
+void OpenGLWindow::Maximize()
 {
   if (m_Window) {
     glfwMaximizeWindow(m_Window);
@@ -170,7 +170,7 @@ void GLFWWindow::Maximize()
     m_Logger->warn("Attempt to MAXIMIZED uninitialized window");
   }
 }
-void GLFWWindow::Minimize()
+void OpenGLWindow::Minimize()
 {
   if (m_Window) {
     glfwIconifyWindow(m_Window);
@@ -180,7 +180,7 @@ void GLFWWindow::Minimize()
     m_Logger->warn("Attempt to MINIMIZED uninitialized window");
   }
 }
-void GLFWWindow::Restore()
+void OpenGLWindow::Restore()
 {
   if (m_Window) {
     glfwRestoreWindow(m_Window);
@@ -195,7 +195,7 @@ void GLFWWindow::Restore()
     m_Logger->warn("Attempt to restore uninitialized window");
   }
 }
-void GLFWWindow::Close()
+void OpenGLWindow::Close()
 {
   if (m_Window) {
     m_ShouldClose = true;
@@ -208,7 +208,7 @@ void GLFWWindow::Close()
   }
 }
 
-void GLFWWindow::PollEvents()
+void OpenGLWindow::PollEvents()
 {  // 检查窗口是否有效
   if (!m_Window) {
     m_Logger->warn("Attempted to poll events on null window");
@@ -227,7 +227,7 @@ void GLFWWindow::PollEvents()
     m_Logger->info("Window close requested: {}", m_WindowData.title);
   }
 }
-void GLFWWindow::WaitEvents()
+void OpenGLWindow::WaitEvents()
 {  // 检查窗口是否有效
   if (!m_Window) {
     m_Logger->warn("Attempted to wait for events on null window");
@@ -246,7 +246,7 @@ void GLFWWindow::WaitEvents()
     m_Logger->info("Window close requested during wait: {}", m_WindowData.title);
   }
 }
-bool GLFWWindow::IsKeyPressed(int keycode) const
+bool OpenGLWindow::IsKeyPressed(int keycode) const
 {
   // 参数检查
   if (keycode < 0 || keycode >= GLFW_KEY_LAST) {
@@ -261,7 +261,7 @@ bool GLFWWindow::IsKeyPressed(int keycode) const
   else
     return false;
 }
-bool GLFWWindow::IsMouseButtonPressed(int button) const
+bool OpenGLWindow::IsMouseButtonPressed(int button) const
 {
   // 参数检查
   if (button < 0 || button >= GLFW_MOUSE_BUTTON_LAST) {
@@ -276,14 +276,14 @@ bool GLFWWindow::IsMouseButtonPressed(int button) const
   else
     return false;
 }
-std::pair<double, double> GLFWWindow::GetMousePosition() const
+std::pair<double, double> OpenGLWindow::GetMousePosition() const
 {
   double xpos, ypos;
   // 查询并返回鼠标位置
   glfwGetCursorPos(m_Window, &xpos, &ypos);
   return {xpos, ypos};
 }
-void GLFWWindow::MakeContextCurrent()
+void OpenGLWindow::MakeContextCurrent()
 {
   if (!m_Window) {
     m_Logger->error("Attempted to make context current on null window");
@@ -299,7 +299,7 @@ void GLFWWindow::MakeContextCurrent()
     throw;
   }
 }
-void GLFWWindow::SwapBuffers()
+void OpenGLWindow::SwapBuffers()
 {
   if (!m_Window) {
     m_Logger->error("Attempted to swap buffers on null window");
@@ -316,12 +316,12 @@ void GLFWWindow::SwapBuffers()
     m_Logger->warn("OpenGL error after buffer swap: {}", err);
   }
 }
-const uint32_t GLFWWindow::GLFWWindowCount()
+const uint32_t OpenGLWindow::GLFWWindowCount()
 {
   return s_GLFWWindowCount;
 }
 
-void GLFWWindow::InitWindowData(const WindowConfig &config) {
+void OpenGLWindow::InitWindowData(const WindowConfig &config) {
   m_WindowData.title      = config.title;
   m_WindowData.width      = config.width;
   m_WindowData.height     = config.height;
@@ -329,7 +329,7 @@ void GLFWWindow::InitWindowData(const WindowConfig &config) {
   m_WindowData.fullscreen = config.fullscreen;
   m_WindowData.resizable  = config.resizable;
 }
-void GLFWWindow::InitGLFW()
+void OpenGLWindow::InitGLFW()
 {
   if (!glfwInit()) {
     LOG_CRITICAL("Failed to initialize GLFW");
@@ -344,7 +344,7 @@ void GLFWWindow::InitGLFW()
 
   LOG_INFO("GLFW initialized successfully");
 }
-void GLFWWindow::ShutdownGLFW()
+void OpenGLWindow::ShutdownGLFW()
 {
   LOG_INFO("Terminating GLFW");
   glfwTerminate();
