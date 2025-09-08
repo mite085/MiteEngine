@@ -54,7 +54,13 @@ class ImGuiLocalizationRenderer {
   static void TextWrapped(const char *translationKey);
 
   // 带参数的文本渲染
-  static void TextFormatted(const char *translationKey, const std::vector<std::string> &args = {});
+  template<typename... Args>
+  static void TextFormatted(const char *translationKey, const Args &&...args)
+  {
+    const std::string &translatedText = UILocalization::Get().TranslateFormat(translationKey,
+                                                                              args);
+    ImGui::Text("%s", translatedText.c_str());
+  }
 
   // 控件标签本地化
   static bool Button(const char *translationKey, const ImVec2 &size = ImVec2(0, 0));

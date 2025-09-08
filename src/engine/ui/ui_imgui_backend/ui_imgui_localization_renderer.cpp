@@ -10,7 +10,7 @@ void ImGuiFontManager::LoadFonts()
   m_DefaultFont = io.Fonts->AddFontDefault();
 
   // 加载中文字体
-  std::string fontPath = FileSystem::GetAssetPath("fonts/NotoSansSC-Regular.ttf").string();
+  std::string fontPath = FileSystem::GetAssetPath("localization/NotoSansSC-Regular.ttf").string();
   if (FileSystem::Exists(fontPath)) {
     m_ChineseFont = io.Fonts->AddFontFromFileTTF(
         fontPath.c_str(), 16.0f, nullptr, io.Fonts->GetGlyphRangesChineseFull());
@@ -70,13 +70,6 @@ void ImGuiLocalizationRenderer::TextWrapped(const char *translationKey)
 {
   const std::string &translatedText = UILocalization::Get().Translate(translationKey);
   ImGui::TextWrapped("%s", translatedText.c_str());
-}
-
-void ImGuiLocalizationRenderer::TextFormatted(const char *translationKey,
-                                              const std::vector<std::string> &args)
-{
-  const std::string &translatedText = UILocalization::Get().TranslateFormat(translationKey, args);
-  ImGui::Text("%s", translatedText.c_str());
 }
 
 bool ImGuiLocalizationRenderer::Button(const char *translationKey, const ImVec2 &size)
