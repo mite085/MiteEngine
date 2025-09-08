@@ -35,6 +35,7 @@ target_include_directories(${ASSET_LIB_NAME}
 
 target_link_libraries(${ASSET_LIB_NAME}
     PRIVATE 
+    glfw
     spdlog::spdlog
     assimp
     meshoptimizer

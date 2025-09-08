@@ -1,6 +1,4 @@
 #include "render_command.h"
-#include "glad.h"
-#include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 #include "render_device.h"
 
 namespace mite {

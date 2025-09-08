@@ -105,5 +105,6 @@ target_include_directories(${ENGINE_CORE_LIB_NAME}
 
 target_link_libraries(${ENGINE_CORE_LIB_NAME}
     PRIVATE 
+    glfw
     spdlog::spdlog
 )

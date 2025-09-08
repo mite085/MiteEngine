@@ -16,6 +16,7 @@ add_executable(${ENGINE_CORE_TEST_NAME} ${CORE_TEST_SRCS})
 
 target_link_libraries(${ENGINE_CORE_TEST_NAME}
     PRIVATE
+    glfw
     gtest_main
     gmock
     MiteEngine_Engine_Core

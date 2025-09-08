@@ -1,8 +1,6 @@
 #ifndef MITE_GLFW_WINDOW_CALLBACK_ADAPTER
 #define MITE_GLFW_WINDOW_CALLBACK_ADAPTER
 
-#include "glad.h"
-#include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 #include "headers/headers.h"
 
 namespace mite {

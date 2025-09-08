@@ -1,8 +1,6 @@
 #ifndef MITE_OPENGL_DEVICE
 #define MITE_OPENGL_DEVICE
 
-#include "glad.h"
-#include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 #include "render_device.h"
 #include "basic_data/mesh.h"
 

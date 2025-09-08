@@ -1,6 +1,4 @@
 #include "shader.h"
-#include "glad.h"
-#include "glfw/glfw3.h"  // 必须在GLAD加载库之后
 
 namespace mite {
 OpenGLShader::OpenGLShader() : m_RendererID(0) {}

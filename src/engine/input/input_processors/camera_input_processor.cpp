@@ -1,5 +1,4 @@
 #include "camera_input_processor.h"
-#include "GLFW/glfw3.h"
 #include "input/input_manager.h"
 
 namespace mite {
