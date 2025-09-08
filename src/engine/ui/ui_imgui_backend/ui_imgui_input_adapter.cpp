@@ -1,10 +1,10 @@
 #include "ui_imgui_input_adapter.h"
 
 namespace mite {
-ImGuiInputAdapter::ImGuiInputAdapter(const std::string &name) : ModularInputContext(name)
+ImGuiInputAdapter::ImGuiInputAdapter()
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Input Adapter");
-  m_Logger->info("Creating ImGuiInputAdapter: {}", name);
+  m_Logger->info("Creating ImGuiInputAdapter");
 }
 
 ImGuiInputAdapter::~ImGuiInputAdapter()
