@@ -83,7 +83,7 @@ class ViewportRenderEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "ViewportRenderEvent: ID " + UUIDToString(m_ViewportId) +
+    return "ViewportRenderEvent: ID " + UUIDGenerator::UUIDToString(m_ViewportId) +
            " Size: " + std::to_string(m_Size.x) + "x" + std::to_string(m_Size.y);
   }
 

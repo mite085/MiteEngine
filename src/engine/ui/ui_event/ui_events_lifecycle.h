@@ -2,6 +2,7 @@
 #define MITE_UI_LIFECYCLE_EVENTS_H
 
 #include "ui_event.h"
+#include "ui_core/ui_style.h"
 
 namespace mite {
 /**
@@ -64,7 +65,8 @@ class WidgetCreatedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "WidgetCreatedEvent: " + m_WidgetType + " (ID: " + UUIDToString(m_WidgetId) + ")";
+    return "WidgetCreatedEvent: " + m_WidgetType +
+           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -100,7 +102,8 @@ class WidgetDestroyedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "WidgetDestroyedEvent: " + m_WidgetType + " (ID: " + UUIDToString(m_WidgetId) + ")";
+    return "WidgetDestroyedEvent: " + m_WidgetType +
+           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -136,7 +139,8 @@ class PanelOpenedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "PanelOpenedEvent: " + m_PanelName + " (ID: " + UUIDToString(m_PanelId) + ")";
+    return "PanelOpenedEvent: " + m_PanelName + " (ID: " + UUIDGenerator::UUIDToString(m_PanelId) +
+           ")";
   }
 
   Event *Clone() const override
@@ -172,7 +176,8 @@ class PanelClosedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "PanelClosedEvent: " + m_PanelName + " (ID: " + UUIDToString(m_PanelId) + ")";
+    return "PanelClosedEvent: " + m_PanelName + " (ID: " + UUIDGenerator::UUIDToString(m_PanelId) +
+           ")";
   }
 
   Event *Clone() const override
@@ -215,7 +220,7 @@ class LayoutChangedEvent : public UIEvent {
   std::string ToString() const override
   {
     return "LayoutChangedEvent: " + m_LayoutType + " Size: " + std::to_string(m_NewSize.x) + "x" +
-           std::to_string(m_NewSize.y) + " (ID: " + UUIDToString(m_LayoutId) + ")";
+           std::to_string(m_NewSize.y) + " (ID: " + UUIDGenerator::UUIDToString(m_LayoutId) + ")";
   }
 
   Event *Clone() const override
@@ -252,7 +257,8 @@ class FocusGainedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "FocusGainedEvent: " + m_WidgetType + " (ID: " + UUIDToString(m_WidgetId) + ")";
+    return "FocusGainedEvent: " + m_WidgetType +
+           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -288,7 +294,8 @@ class FocusLostEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "FocusLostEvent: " + m_WidgetType + " (ID: " + UUIDToString(m_WidgetId) + ")";
+    return "FocusLostEvent: " + m_WidgetType + " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) +
+           ")";
   }
 
   Event *Clone() const override
@@ -309,59 +316,22 @@ class FocusLostEvent : public UIEvent {
  */
 struct StyleChangedEvent : public UIEvent {
  public:
-  explicit StyleChangedEvent(std::string styleName,
-                             bool isGlobalChange,
-                             std::string propertyName = {},
-                             StyleValue oldValue = {},
-                             StyleValue newValue = {})
-      : m_StyleName(styleName),
-        m_PropertyName(propertyName),
-        m_OldValue(oldValue),
-        m_NewValue(newValue),
-        m_IsGlobalChange(isGlobalChange)
+  explicit StyleChangedEvent(std::shared_ptr<UIStyle> style)
+      : m_Style(style)
   {
   }
-  const std::string &GetStyleName() const
+  std::shared_ptr<UIStyle> GetUIStyle() const
   {
-    return m_StyleName;
-  }
-  const std::string &GetPropertyName() const
-  {
-    return m_PropertyName;
-  }
-  const StyleValue &GetOldValue() const
-  {
-    return m_OldValue;
-  }
-  const StyleValue &GetNewValue() const
-  {
-    return m_NewValue;
-  }
-  const bool IsGlobalChange() const
-  {
-    return m_IsGlobalChange;
-  }
-  std::string ToString() const override
-  {
-    if (m_IsGlobalChange)
-      return "StyleChangedEvent: change to " + m_StyleName;
-    else
-      return "LanguageChangedEvent: " + m_PropertyName +
-             " value changed.";  // 不方便打印std::variant
+    return m_Style;
   }
   Event *Clone() const override
   {
-    return new StyleChangedEvent(
-        m_StyleName, m_IsGlobalChange, m_PropertyName, m_OldValue, m_NewValue);
+    return new StyleChangedEvent(m_Style);
   }
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  std::string m_StyleName;     // 样式名称
-  bool m_IsGlobalChange;       // 是否为全局样式变更
-  std::string m_PropertyName;  // 属性名称（如果为全局样式变更则为空）
-  StyleValue m_OldValue;       // 旧值（如果为全局样式变更则为空）
-  StyleValue m_NewValue;       // 新值（如果为全局样式变更则为空）
+  std::shared_ptr<UIStyle> m_Style;  // 样式名称
 };
 
 /**
@@ -369,35 +339,29 @@ struct StyleChangedEvent : public UIEvent {
  */
 class LanguageChangedEvent : public UIEvent {
  public:
-  explicit LanguageChangedEvent(const std::string &oldLanguage, const std::string &newLanguage)
-      : m_OldLanguage(oldLanguage), m_NewLanguage(newLanguage)
+  explicit LanguageChangedEvent(const std::string &newLanguageCode)
+      : m_NewLanguageCode(newLanguageCode)
   {
-  }
-
-  const std::string &GetOldLanguage() const
-  {
-    return m_OldLanguage;
   }
   const std::string &GetNewLanguage() const
   {
-    return m_NewLanguage;
+    return m_NewLanguageCode;
   }
 
   std::string ToString() const override
   {
-    return "LanguageChangedEvent: " + m_OldLanguage + " -> " + m_NewLanguage;
+    return "LanguageChangedEvent: " + m_NewLanguageCode;
   }
 
   Event *Clone() const override
   {
-    return new LanguageChangedEvent(m_OldLanguage, m_NewLanguage);
+    return new LanguageChangedEvent(m_NewLanguageCode);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  std::string m_OldLanguage;
-  std::string m_NewLanguage;
+  std::string m_NewLanguageCode;
 };
 
 /**
@@ -426,7 +390,7 @@ class UIVisibilityChangedEvent : public UIEvent {
   std::string ToString() const override
   {
     return "UIVisibilityChangedEvent: " + m_WidgetType + (m_Visible ? " SHOWN" : " HIDDEN") +
-           " (ID: " + UUIDToString(m_WidgetId) + ")";
+           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override

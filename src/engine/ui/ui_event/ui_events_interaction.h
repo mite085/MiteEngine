@@ -27,7 +27,8 @@ class ButtonClickEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "ButtonClickEvent: " + m_Label + " (ID: " + UUIDToString(m_WidgetId) + ")";
+    return "ButtonClickEvent: " + m_Label + " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) +
+           ")";
   }
 
   Event *Clone() const override
@@ -68,7 +69,7 @@ class SliderChangeEvent : public UIEvent {
   std::string ToString() const override
   {
     return "SliderChangeEvent: " + m_Label + " = " + std::to_string(m_Value) +
-           " (ID: " + UUIDToString(m_WidgetId) + ")";
+           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -110,7 +111,7 @@ class CheckboxToggleEvent : public UIEvent {
   std::string ToString() const override
   {
     return "CheckboxToggleEvent: " + m_Label + " = " + (m_Checked ? "checked" : "unchecked") +
-           " (ID: " + UUIDToString(m_WidgetId) + ")";
+           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -154,7 +155,7 @@ class TextInputEvent : public UIEvent {
   std::string ToString() const override
   {
     return "TextInputEvent: " + m_Label + " = \"" + m_Text + "\"" +
-           " (ID: " + UUIDToString(m_WidgetId) + ")";
+           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
   }
 
   Event *Clone() const override
@@ -206,7 +207,8 @@ class ComboBoxSelectEvent : public UIEvent {
   std::string ToString() const override
   {
     return "ComboBoxSelectEvent: " + m_Label + " = " + m_SelectedItem +
-           " (Index: " + std::to_string(m_SelectedIndex) + ", ID: " + UUIDToString(m_WidgetId) +
+           " (Index: " + std::to_string(m_SelectedIndex) +
+           ", ID: " + UUIDGenerator::UUIDToString(m_WidgetId) +
            ")";
   }
 
@@ -245,7 +247,7 @@ class MouseEnterEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "MouseEnterEvent: ID " + UUIDToString(m_WidgetId) + " at (" +
+    return "MouseEnterEvent: ID " + UUIDGenerator::UUIDToString(m_WidgetId) + " at (" +
            std::to_string(m_Position.x) + ", " + std::to_string(m_Position.y) + ")";
   }
 
@@ -275,7 +277,7 @@ class MouseLeaveEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "MouseLeaveEvent: ID " + UUIDToString(m_WidgetId);
+    return "MouseLeaveEvent: ID " + UUIDGenerator::UUIDToString(m_WidgetId);
   }
 
   Event *Clone() const override

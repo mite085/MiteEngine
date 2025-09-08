@@ -33,7 +33,8 @@ class WidgetPositionChangedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "WidgetPositionChangedEvent: ID " + UUIDToString(m_WidgetId) + " from (" +
+    return "WidgetPositionChangedEvent: ID " + UUIDGenerator::UUIDToString(m_WidgetId) +
+           " from (" +
            std::to_string(m_OldPosition.x) + ", " + std::to_string(m_OldPosition.y) + ") to (" +
            std::to_string(m_NewPosition.x) + ", " + std::to_string(m_NewPosition.y) + ")";
   }
@@ -79,7 +80,7 @@ class WidgetSizeChangedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "WidgetSizeChangedEvent: ID " + UUIDToString(m_WidgetId) + " from " +
+    return "WidgetSizeChangedEvent: ID " + UUIDGenerator::UUIDToString(m_WidgetId) + " from " +
            std::to_string(m_OldSize.x) + "x" + std::to_string(m_OldSize.y) + " to " +
            std::to_string(m_NewSize.x) + "x" + std::to_string(m_NewSize.y);
   }
@@ -123,7 +124,8 @@ class WidgetVisibilityChangedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "WidgetVisibilityChangedEvent: ID " + UUIDToString(m_WidgetId) + " from " +
+    return "WidgetVisibilityChangedEvent: ID " + UUIDGenerator::UUIDToString(m_WidgetId) +
+           " from " +
            (m_OldVisible ? "visible" : "hidden") + " to " + (m_NewVisible ? "visible" : "hidden");
   }
 
@@ -166,7 +168,8 @@ class WidgetEnabledStateChangedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "WidgetEnabledStateChangedEvent: ID " + UUIDToString(m_WidgetId) + " from " +
+    return "WidgetEnabledStateChangedEvent: ID " + UUIDGenerator::UUIDToString(m_WidgetId) +
+           " from " +
            (m_OldEnabled ? "enabled" : "disabled") + " to " +
            (m_NewEnabled ? "enabled" : "disabled");
   }
@@ -202,7 +205,7 @@ class LayoutUpdateRequestEvent : public UIEvent {
       return "LayoutUpdateRequestEvent: Global layout update requested";
     }
     return "LayoutUpdateRequestEvent: Layout update requested for widget ID " +
-           UUIDToString(m_WidgetId);
+           UUIDGenerator::UUIDToString(m_WidgetId);
   }
 
   Event *Clone() const override
@@ -233,7 +236,8 @@ class LayoutCompletedEvent : public UIEvent {
     if (m_WidgetId.is_nil()) {
       return "LayoutCompletedEvent: Global layout completed";
     }
-    return "LayoutCompletedEvent: Layout completed for widget ID " + UUIDToString(m_WidgetId);
+    return "LayoutCompletedEvent: Layout completed for widget ID " +
+           UUIDGenerator::UUIDToString(m_WidgetId);
   }
 
   Event *Clone() const override
