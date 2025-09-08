@@ -2,6 +2,7 @@
 #define MITE_UI_BACKEND_H
 
 #include "event/event.h"
+#include "headers/headers.h"
 
 namespace mite {
 
@@ -117,9 +118,7 @@ class UIBackend {
   /**
    * @brief 样式管理
    */
-  virtual void ApplyDarkStyle() = 0;
-  virtual void ApplyLightStyle() = 0;
-  virtual void ApplyStyle(std::shared_ptr<UIStyle>) = 0;
+  virtual void ApplyUIStyle(std::shared_ptr<UIStyle>) = 0;
 
   /**
    * @brief 语言管理

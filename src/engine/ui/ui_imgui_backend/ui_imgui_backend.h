@@ -5,9 +5,8 @@
 #include "ui_imgui_localization_renderer.h"
 #include "ui_imgui_input_adapter.h"
 #include "ui_imgui_style_adapter.h"
-
-struct GLFWwindow;
-
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
 namespace mite {
 /**
  * @brief ImGui后端实现
@@ -32,8 +31,7 @@ class ImGuiBackend : public UIBackend {
   ImGuiBackend();
   ~ImGuiBackend() override;
 
-  // UIBackend接口实现
-  // ==================== 投影参数控制 ====================
+  // ==================== UIBackend接口实现 ====================
   bool Initialize(void *window) override;
   void Shutdown() override;
   void BeginFrame() override;
@@ -51,9 +49,7 @@ class ImGuiBackend : public UIBackend {
   void DestroyDeviceObjects() override;
   void Render() override;
   const char *GetBackendName() const override;
-  void ApplyDarkStyle() override;
-  void ApplyLightStyle() override;
-  void ApplyStyle(std::shared_ptr<UIStyle>) override;
+  void ApplyUIStyle(std::shared_ptr<UIStyle> newStyle) override;
   void ApplyLanguaged(const std::string &oldLanguage, const std::string &newLanguage) override;
 
   // ==================== ImGui特定方法 ====================
@@ -64,7 +60,6 @@ class ImGuiBackend : public UIBackend {
   ImGuiInputAdapter& GetInputAdapter() {
     return *m_InputAdapter;
   }
-
 
  private:
   // ==================== 内部方法 ====================
@@ -77,23 +72,17 @@ class ImGuiBackend : public UIBackend {
   // 初始化渲染器后端
   bool InitializeRendererBackend();
 
-  // 样式管理（委托给StyleAdapter）
-
-  void ApplyStyle(const std::string &styleName);
-  void ApplyCustomStyle(const ImGuiStyle &style);
-
   // 成员变量
   GLFWwindow *m_Window;                               // GLFW窗口句柄
   bool m_MouseCaptured;                               // 是否捕获鼠标
   bool m_MouseCursorVisible;                          // 鼠标指针是否可见
   glm::ivec2 m_DisplaySize;                           // 显示尺寸
   glm::vec2 m_FramebufferScale;                       // 帧缓冲缩放
-  double m_Time;                                      // 时间跟踪
+  double m_Time = 0.0f;                               // 时间跟踪
   std::unique_ptr<ImGuiStyleAdapter> m_StyleAdapter;  // 样式适配器
   std::unique_ptr<ImGuiInputAdapter> m_InputAdapter;  // 输入适配器
 
   Logger m_Logger;                        // 日志系统
-  SubscriptionGroup m_SubscriptionGroup;  // 事件订阅系统
 };
 }  // namespace mite
 

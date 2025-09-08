@@ -1,5 +1,4 @@
 #include "ui_imgui_backend.h"
-#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -22,12 +21,14 @@ ImGuiBackend::~ImGuiBackend()
   Shutdown();
 }
 
-bool ImGuiBackend::Initialize()
+bool ImGuiBackend::Initialize(void *glfwWindow)
 {
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Backend");
   m_Logger->info("Initializing UI ImGui Backend");
 
+  // 获取窗口句柄
+  SetWindow(reinterpret_cast<GLFWwindow *>(glfwWindow));
   if (!m_Window) {
     m_Logger->error("ImGuiBackend: GLFW window not set");
     return false;
@@ -38,7 +39,7 @@ bool ImGuiBackend::Initialize()
     return false;
   }
 
-  // 初始化平台后端
+  // 初始化平台后端（使用窗口句柄）
   if (!InitializePlatformBackend()) {
     return false;
   }
@@ -48,9 +49,6 @@ bool ImGuiBackend::Initialize()
     return false;
   }
 
-  // 初始化样式适配器
-  m_StyleAdapter->Initialize();
-
   // 初始化输入适配器
   m_InputAdapter->Initialize();
 
@@ -59,12 +57,6 @@ bool ImGuiBackend::Initialize()
 
   // 初始化本地化渲染器
   ImGuiLocalizationRenderer::Initialize();
-
-  // 订阅语言变更事件
-  m_SubscriptionGroup.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
-
-  // 应用默认样式
-  ApplyDarkStyle();
 
   m_Logger->info("ImGuiBackend initialized successfully");
   return true;
@@ -78,9 +70,6 @@ void ImGuiBackend::Shutdown()
   ImGuiLocalizationRenderer::Shutdown();
   if (m_InputAdapter) {
     m_InputAdapter->Shutdown();
-  }
-  if (m_StyleAdapter) {
-    m_StyleAdapter->Shutdown();
   }
 
   // 2. 销毁渲染器后端（OpenGL3）
@@ -136,7 +125,9 @@ bool ImGuiBackend::InitializePlatformBackend()
 
 bool ImGuiBackend::InitializeRendererBackend()
 {
-  const char *glsl_version = "#version 130";
+  // 版本设定应当与GLFWWindow中设定的glfwWindowHint一致
+  // （原则上应当将版本号作为参数传入）
+  const char *glsl_version = "#version 410";
   if (!ImGui_ImplOpenGL3_Init(glsl_version)) {
     m_Logger->error("Failed to initialize ImGui OpenGL3 backend");
     return false;
@@ -151,7 +142,7 @@ void ImGuiBackend::BeginFrame()
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  // 使用自定义Time模块设置DeltaTime
+  // 使用Time模块设置DeltaTime
   ImGui::GetIO().DeltaTime = Time::DeltaTime();
 
   // 更新显示尺寸（委托给输入适配器）
@@ -172,13 +163,6 @@ void ImGuiBackend::ProcessInputEvent(Event &event)
 {
   // 委托给输入适配器处理
   m_InputAdapter->ProcessEvent(event);
-}
-
-void ImGuiBackend::OnLanguageChanged(LanguageChangedEvent &event) {
-  // 切换字体
-  ImGuiFontManager::SetLanguageFont(event.GetNewLanguage());
-
-  m_Logger->info("Language changed to: {}", event.GetNewLanguage());
 }
 
 void ImGuiBackend::SetDisplaySize(int width, int height)
@@ -246,17 +230,32 @@ void ImGuiBackend::Render()
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   // 多视口支持
-  if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    GLFWwindow *backup_current_context = glfwGetCurrentContext();
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
-    glfwMakeContextCurrent(backup_current_context);
-  }
+  //if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    //GLFWwindow *backup_current_context = glfwGetCurrentContext();
+    //ImGui::UpdatePlatformWindows();
+    //ImGui::RenderPlatformWindowsDefault();
+    //glfwMakeContextCurrent(backup_current_context);
+  //}
 }
 
 const char *ImGuiBackend::GetBackendName() const
 {
   return "ImGui (OpenGL3 + GLFW)";
+}
+
+
+void ImGuiBackend::ApplyUIStyle(std::shared_ptr<UIStyle> newStyle)
+{
+  m_StyleAdapter->ApplyUIStyle(newStyle);
+}
+
+void ImGuiBackend::ApplyLanguaged(const std::string &oldLanguage, const std::string &newLanguage)
+{
+  // 切换字体
+  if (ImGuiFontManager::SetLanguageFont(newLanguage))
+    m_Logger->info("Language changed from: {} to: {}", oldLanguage, newLanguage);
+  else
+    m_Logger->error("Language change FALIED from: {} to: {}", oldLanguage, newLanguage);
 }
 
 void ImGuiBackend::SetWindow(GLFWwindow *window)
@@ -269,31 +268,6 @@ GLFWwindow *ImGuiBackend::GetWindow() const
   return m_Window;
 }
 
-void ImGuiBackend::ApplyStyle(const std::string &styleName)
-{
-  m_StyleAdapter->ApplyStyle(styleName);
-}
-void ImGuiBackend::ApplyDarkStyle()
-{
-  m_StyleAdapter->ApplyDarkStyle();
-}
-void ImGuiBackend::ApplyLightStyle()
-{
-  m_StyleAdapter->ApplyLightStyle();
-}
-void ImGuiBackend::ApplyCustomStyle(const ImGuiStyle &style)
-{
-  m_StyleAdapter->ApplyCustomStyle(style);
-}
 
-void ImGuiBackend::Shutdown()
-{
-  ImGuiLocalizationRenderer::Shutdown();
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
-
-  m_Logger->info("ImGuiBackend shutdown");
-}
 
 }  // namespace mite
