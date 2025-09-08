@@ -29,7 +29,7 @@ struct StyleProperty {
  */
 class UIStyle {
  public:
-  UIStyle();
+  explicit UIStyle(const std::string &name);
   ~UIStyle();
 
   /**

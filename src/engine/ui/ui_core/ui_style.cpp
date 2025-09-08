@@ -2,7 +2,7 @@
 
 namespace mite {
 
-UIStyle::UIStyle() : m_Name("UnnamedStyle")
+UIStyle::UIStyle(const std::string& name) : m_Name(name)
 {
   // 构造函数保持简洁，不再包含默认样式配置
 }

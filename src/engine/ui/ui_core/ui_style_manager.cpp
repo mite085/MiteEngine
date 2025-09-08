@@ -1,15 +1,11 @@
 #include "ui_style_manager.h"
-#include "ui_event/ui_events_interaction.h"
+#include "ui_event/ui_events_lifecycle.h"
+
+static const std::string s_LightStyleName = "light";
+static const std::string s_DarkStyleName = "dark";
 
 namespace mite {
-
-UIStyleManager &UIStyleManager::Get()
-{
-  static UIStyleManager instance;
-  return instance;
-}
-
-UIStyleManager::UIStyleManager() : m_CurrentStyleName("light")
+UIStyleManager::UIStyleManager() : m_CurrentStyleName(s_LightStyleName)
 {
   // 构造函数保持简单，初始化在Initialize()中进行
 }
@@ -24,8 +20,8 @@ void UIStyleManager::Initialize()
   CreateBuiltinStyles();
 
   // 设置默认样式为当前样式
-  if (HasStyle("light")) {
-    SetCurrentStyle("light");
+  if (HasStyle(s_LightStyleName)) {
+    SetCurrentStyle(s_LightStyleName);
     m_Logger->info("Light style set as current style");
   }
   else {
@@ -92,7 +88,8 @@ bool UIStyleManager::SetCurrentStyle(const std::string &name)
   m_CurrentStyleName = name;
 
   // 发布样式变更事件
-  StyleChangedEvent event(name, true);
+  // 当后端是Imgui时，由ImGuiStyleAdapter负责消费事件，执行样式切换操作
+  StyleChangedEvent event(GetStyle(name));
   EventBus::Publish<StyleChangedEvent>(event);
 
   m_Logger->info("Current style changed from {} to {}", oldStyleName, name);
@@ -126,13 +123,13 @@ void UIStyleManager::CreateBuiltinStyles()
   // 注册暗色主题
   auto darkTheme = CreateDarkTheme();
   if (darkTheme) {
-    RegisterStyle("dark", darkTheme);
+    RegisterStyle(s_DarkStyleName, darkTheme);
   }
 
   // 注册亮色主题
   auto lightTheme = CreateLightTheme();
   if (lightTheme) {
-    RegisterStyle("light", lightTheme);
+    RegisterStyle(s_LightStyleName, lightTheme);
   }
 
   m_Logger->info("Built-in styles created and registered");
@@ -140,8 +137,7 @@ void UIStyleManager::CreateBuiltinStyles()
 
 std::shared_ptr<UIStyle> UIStyleManager::CreateDarkTheme()
 {
-  auto style = std::make_shared<UIStyle>();
-  style->SetName("dark");
+  auto style = std::make_shared<UIStyle>(s_DarkStyleName);
 
   // 暗色主题配置
   style->SetProperty(
@@ -159,8 +155,7 @@ std::shared_ptr<UIStyle> UIStyleManager::CreateDarkTheme()
 
 std::shared_ptr<UIStyle> UIStyleManager::CreateLightTheme()
 {
-  auto style = std::make_shared<UIStyle>();
-  style->SetName("light");
+  auto style = std::make_shared<UIStyle>(s_LightStyleName);
 
   // 亮色主题配置
   style->SetProperty(
