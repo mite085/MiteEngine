@@ -42,7 +42,7 @@ bool ComponentID::operator<(const ComponentID &other) const
 
 std::string ComponentID::ToString() const
 {
-  return UUIDToString(m_ID);
+  return UUIDGenerator::UUIDToString(m_ID);
 }
 
 size_t ComponentID::Hash() const

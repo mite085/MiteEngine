@@ -3,7 +3,9 @@
 
 namespace mite {
 IDComponent::IDComponent()
-    : ComponentTraits(), m_UUID(UUIDGenerator::Generate()), m_UUIDString(UUIDToString(m_UUID))
+    : ComponentTraits(),
+      m_UUID(UUIDGenerator::Generate()),
+      m_UUIDString(UUIDGenerator::UUIDToString(m_UUID))
 {
   // 确保生成的UUID有效
   if (m_UUID.is_nil()) {
@@ -23,7 +25,7 @@ IDComponent::IDComponent(const std::string &id) : ComponentTraits()
   m_UUIDString = id;  // 使用原始字符串保持格式一致
 
   // 标准化字符串表示（小写、无花括号等）
-  m_UUIDString = UUIDToString(m_UUID);
+  m_UUIDString = UUIDGenerator::UUIDToString(m_UUID);
 }
 
 bool IDComponent::IsValid(const std::string &id)

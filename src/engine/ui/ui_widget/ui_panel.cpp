@@ -21,13 +21,8 @@ void UIPanel::AddWidget(std::shared_ptr<UIWidget> widget)
 
   UUID widgetId = widget->GetID();
   if (m_WidgetMap.find(widgetId) != m_WidgetMap.end()) {
-    LOG_WARN("Widget with ID {} already exists in panel: {}", widgetId, m_Name);
+    LOG_WARN("Widget with ID {} already exists in panel: {}", UUIDGenerator::UUIDToString(widgetId), m_Name);
     return;
-  }
-
-  // 设置事件总线
-  if (m_EventBus) {
-    widget->SetEventBus(m_EventBus);
   }
 
   m_Widgets.push_back(widget);
@@ -40,7 +35,7 @@ void UIPanel::RemoveWidget(UUID widgetId)
 {
   auto it = m_WidgetMap.find(widgetId);
   if (it == m_WidgetMap.end()) {
-    LOG_WARN("Widget with ID {} not found in panel: {}", widgetId, m_Name);
+    LOG_WARN("Widget with ID {} not found in panel: {}", UUIDGenerator::UUIDToString(widgetId), m_Name);
     return;
   }
 
@@ -57,7 +52,7 @@ void UIPanel::RemoveWidget(UUID widgetId)
   // 从map中移除
   m_WidgetMap.erase(it);
 
-  LOG_DEBUG("Removed widget ID {} from panel: {}", widgetId, m_Name);
+  LOG_DEBUG("Removed widget ID {} from panel: {}", UUIDGenerator::UUIDToString(widgetId), m_Name);
 }
 
 std::shared_ptr<UIWidget> UIPanel::GetWidget(UUID widgetId) const
@@ -95,7 +90,7 @@ void UIPanel::Render()
     return;
   }
 
-  // 渲染面板背景和边框
+  // TODO: 渲染面板背景和边框
   // 这里会调用具体的后端渲染实现
 
   // 渲染所有子控件
@@ -110,6 +105,7 @@ void UIPanel::CalculateLayout()
 {
   // 基础布局计算实现
   // 子类可以重写此方法实现特定的布局算法
+  // TODO: 使用ui_layout.h实现布局
 
   glm::vec2 currentPos = m_Position;
   float maxWidth = 0.0f;

@@ -73,7 +73,7 @@ class Entity {
    */
   std::string GetUUIDString() const
   {
-    return UUIDToString(m_UUID);
+    return UUIDGenerator::UUIDToString(m_UUID);
   }
 
   //===================== ВйзїЗћжиди ========================
