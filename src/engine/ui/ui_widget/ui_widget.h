@@ -18,34 +18,22 @@ class UIWidget {
   /**
    * @brief 获取控件唯一ID
    */
-  UUID GetID() const
-  {
-    return m_ID;
-  }
+  UUID GetID() const;
 
   /**
    * @brief 获取控件名称
    */
-  const std::string &GetName() const
-  {
-    return m_Name;
-  }
+  const std::string &GetName() const;
 
   /**
    * @brief 设置控件名称
    */
-  void SetName(const std::string &name)
-  {
-    m_Name = name;
-  }
+  void SetName(const std::string &name);
 
   /**
    * @brief 获取控件位置
    */
-  glm::vec2 GetPosition() const
-  {
-    return m_Position;
-  }
+  glm::vec2 GetPosition() const;
 
   /**
    * @brief 设置控件位置
@@ -55,10 +43,7 @@ class UIWidget {
   /**
    * @brief 获取控件尺寸
    */
-  glm::vec2 GetSize() const
-  {
-    return m_Size;
-  }
+  glm::vec2 GetSize() const;
 
   /**
    * @brief 设置控件尺寸
@@ -68,10 +53,7 @@ class UIWidget {
   /**
    * @brief 获取控件可见性
    */
-  bool IsVisible() const
-  {
-    return m_Visible;
-  }
+  bool& IsVisible();
 
   /**
    * @brief 设置控件可见性
@@ -81,10 +63,7 @@ class UIWidget {
   /**
    * @brief 获取控件是否启用
    */
-  bool IsEnabled() const
-  {
-    return m_Enabled;
-  }
+  bool IsEnabled() const;
 
   /**
    * @brief 设置控件是否启用
@@ -94,10 +73,7 @@ class UIWidget {
   /**
    * @brief 获取控件样式
    */
-  std::shared_ptr<UIStyle> GetStyle() const
-  {
-    return m_Style;
-  }
+  std::shared_ptr<UIStyle> GetStyle() const;
 
   /**
    * @brief 设置控件样式
@@ -128,17 +104,6 @@ class UIWidget {
    * @brief 渲染控件
    */
   virtual void Render() = 0;
-
-  /**
-   * @brief 发布UI事件
-   */
-  template<typename EventType, typename... Args> void PublishEvent(Args &&...args)
-  {
-    if (m_EventBus) {
-      auto event = std::make_shared<EventType>(std::forward<Args>(args)...);
-      m_EventBus->Publish(event);
-    }
-  }
 
  protected:
   UUID m_ID;

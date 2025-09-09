@@ -2,7 +2,6 @@
 #include "ui_event/ui_events_layout.h"
 
 namespace mite {
-
 UIWidget::UIWidget(const std::string &name)
     : m_ID(UUIDGenerator::Generate()),
       m_Name(name),
@@ -19,6 +18,26 @@ UIWidget::~UIWidget()
   // 清理资源
 }
 
+UUID UIWidget::GetID() const
+{
+  return m_ID;
+}
+
+const std::string &UIWidget::GetName() const
+{
+  return m_Name;
+}
+
+void UIWidget::SetName(const std::string &name)
+{
+  m_Name = name;
+}
+
+glm::vec2 UIWidget::GetPosition() const
+{
+  return m_Position;
+}
+
 void UIWidget::SetPosition(const glm::vec2 &position)
 {
   if (m_Position != position) {
@@ -28,6 +47,12 @@ void UIWidget::SetPosition(const glm::vec2 &position)
         WidgetPositionChangedEvent(m_ID, oldPosition, position));
   }
 }
+
+glm::vec2 UIWidget::GetSize() const
+{
+  return m_Size;
+}
+
 void UIWidget::SetSize(const glm::vec2 &size)
 {
   if (m_Size != size) {
@@ -37,6 +62,12 @@ void UIWidget::SetSize(const glm::vec2 &size)
     EventBus::Publish<WidgetSizeChangedEvent>(WidgetSizeChangedEvent(m_ID, oldSize, size));
   }
 }
+
+bool& UIWidget::IsVisible() 
+{
+  return m_Visible;
+}
+
 void UIWidget::SetVisible(bool visible)
 {
   if (m_Visible != visible) {
@@ -47,6 +78,12 @@ void UIWidget::SetVisible(bool visible)
         WidgetVisibilityChangedEvent(m_ID, oldVisible, visible));
   }
 }
+
+bool UIWidget::IsEnabled() const
+{
+  return m_Enabled;
+}
+
 void UIWidget::SetEnabled(bool enabled)
 {
   if (m_Enabled != enabled) {
@@ -57,6 +94,12 @@ void UIWidget::SetEnabled(bool enabled)
         WidgetEnabledStateChangedEvent(m_ID, oldEnabled, enabled));
   }
 }
+
+std::shared_ptr<UIStyle> UIWidget::GetStyle() const
+{
+  return m_Style;
+}
+
 void UIWidget::SetStyle(std::shared_ptr<UIStyle> style)
 {
   m_Style = style;
@@ -86,5 +129,4 @@ void UIWidget::Update(float deltaTime)
 {
   // 基类实现为空，子类可以重写处理动画或其他状态更新
 }
-
 }  // namespace mite

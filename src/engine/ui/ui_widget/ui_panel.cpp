@@ -64,6 +64,11 @@ std::shared_ptr<UIWidget> UIPanel::GetWidget(UUID widgetId) const
   return nullptr;
 }
 
+const std::vector<std::shared_ptr<UIWidget>> &UIPanel::GetWidgets() const
+{
+  return m_Widgets;
+}
+
 void UIPanel::ClearWidgets()
 {
   m_Widgets.clear();
@@ -130,6 +135,36 @@ void UIPanel::CalculateLayout()
   }
 
   LOG_DEBUG("Calculated layout for panel: {}, size: {}x{}", m_Name, m_Size.x, m_Size.y);
+}
+
+const std::string &UIPanel::GetTitle() const
+{
+  return m_Title;
+}
+
+void UIPanel::SetTitle(const std::string &title)
+{
+  m_Title = title;
+}
+
+bool UIPanel::IsDraggable() const
+{
+  return m_Draggable;
+}
+
+void UIPanel::SetDraggable(bool draggable)
+{
+  m_Draggable = draggable;
+}
+
+bool UIPanel::IsResizable() const
+{
+  return m_Resizable;
+}
+
+void UIPanel::SetResizable(bool resizable)
+{
+  m_Resizable = resizable;
 }
 
 }  // namespace mite

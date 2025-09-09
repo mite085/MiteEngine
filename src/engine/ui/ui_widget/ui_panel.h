@@ -7,6 +7,10 @@ namespace mite {
 
 /**
  * @brief UI面板基类，用于管理一组控件
+ * 
+ * Panel应当继承自Widget，因为Panel是一个特殊的Widget：
+ * 1. Panel具有Widget的所有基本特性（位置、尺寸、可见性、渲染能力等）
+ * 2. Panel在Widget的基础上扩展了容器功能（管理子元素、布局等）
  */
 class UIPanel : public UIWidget {
  public:
@@ -31,29 +35,12 @@ class UIPanel : public UIWidget {
   /**
    * @brief 获取所有子控件
    */
-  const std::vector<std::shared_ptr<UIWidget>> &GetWidgets() const
-  {
-    return m_Widgets;
-  }
+  const std::vector<std::shared_ptr<UIWidget>> &GetWidgets() const;
 
   /**
    * @brief 清空所有子控件
    */
   virtual void ClearWidgets();
-
-  /**
-   * @brief 订阅事件
-   */
-  template<typename EventType> void SubscribeEvent(std::function<void(const EventType &)> callback)
-  {
-    if (m_EventBus) {
-      m_EventBus->Subscribe<EventType>([callback](const std::shared_ptr<Event> &event) {
-        if (auto typedEvent = std::dynamic_pointer_cast<EventType>(event)) {
-          callback(*typedEvent);
-        }
-      });
-    }
-  }
 
   /**
    * @brief 更新面板状态
@@ -73,50 +60,32 @@ class UIPanel : public UIWidget {
   /**
    * @brief 获取面板标题
    */
-  const std::string &GetTitle() const
-  {
-    return m_Title;
-  }
+  const std::string &GetTitle() const;
 
   /**
    * @brief 设置面板标题
    */
-  void SetTitle(const std::string &title)
-  {
-    m_Title = title;
-  }
+  void SetTitle(const std::string &title);
 
   /**
    * @brief 获取面板是否可拖动
    */
-  bool IsDraggable() const
-  {
-    return m_Draggable;
-  }
+  bool IsDraggable() const;
 
   /**
    * @brief 设置面板是否可拖动
    */
-  void SetDraggable(bool draggable)
-  {
-    m_Draggable = draggable;
-  }
+  void SetDraggable(bool draggable);
 
   /**
    * @brief 获取面板是否可调整大小
    */
-  bool IsResizable() const
-  {
-    return m_Resizable;
-  }
+  bool IsResizable() const;
 
   /**
    * @brief 设置面板是否可调整大小
    */
-  void SetResizable(bool resizable)
-  {
-    m_Resizable = resizable;
-  }
+  void SetResizable(bool resizable);
 
  protected:
   std::string m_Title;
