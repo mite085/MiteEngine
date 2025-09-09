@@ -1,10 +1,10 @@
 #include "ui_imgui_backend.h"
-#include <imgui.h>
+#include "ui_for_editor/ui_editor_viewport_panel.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui.h>
 
 namespace mite {
-
 ImGuiBackend::ImGuiBackend()
     : m_Window(nullptr),
       m_MouseCaptured(false),
@@ -96,44 +96,6 @@ void ImGuiBackend::Shutdown()
 
   m_Logger->info("ImGuiBackend shutdown completed");
 }
-bool ImGuiBackend::InitializeImGuiContext()
-{
-  // 创建ImGui上下文
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-
-  ImGuiIO &io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // 启用键盘导航
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // 启用游戏手柄导航
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // 启用停靠
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // 启用多视口
-
-  // 设置ini文件位置
-  // io.IniFilename = "imgui.ini";
-
-  return true;
-}
-
-bool ImGuiBackend::InitializePlatformBackend()
-{
-  if (!ImGui_ImplGlfw_InitForOpenGL(m_Window, true)) {
-    m_Logger->error("Failed to initialize ImGui GLFW backend");
-    return false;
-  }
-  return true;
-}
-
-bool ImGuiBackend::InitializeRendererBackend()
-{
-  // 版本设定应当与GLFWWindow中设定的glfwWindowHint一致
-  // （原则上应当将版本号作为参数传入）
-  const char *glsl_version = "#version 410";
-  if (!ImGui_ImplOpenGL3_Init(glsl_version)) {
-    m_Logger->error("Failed to initialize ImGui OpenGL3 backend");
-    return false;
-  }
-  return true;
-}
 
 void ImGuiBackend::BeginFrame()
 {
@@ -157,6 +119,21 @@ void ImGuiBackend::BeginFrame()
 void ImGuiBackend::EndFrame()
 {
   ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+  // 多视口支持
+  // （Copy from imgui/examples/example_glfw_opengl3）
+  //
+  // Update and Render additional Platform Windows
+  // (Platform functions may change the current OpenGL context, so we save/restore it to make it
+  // easier to paste this code elsewhere.
+  //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
+  if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    GLFWwindow *backup_current_context = glfwGetCurrentContext();
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
+    glfwMakeContextCurrent(backup_current_context);
+  }
 }
 
 void ImGuiBackend::ProcessInputEvent(Event &event)
@@ -225,24 +202,22 @@ void ImGuiBackend::DestroyDeviceObjects()
   ImGui_ImplOpenGL3_DestroyDeviceObjects();
 }
 
-void ImGuiBackend::Render()
+void ImGuiBackend::RenderPanel(std::shared_ptr<UIPanel> panel)
 {
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-  // 多视口支持
-  //if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    //GLFWwindow *backup_current_context = glfwGetCurrentContext();
-    //ImGui::UpdatePlatformWindows();
-    //ImGui::RenderPlatformWindowsDefault();
-    //glfwMakeContextCurrent(backup_current_context);
-  //}
+  // 将面板转换为具体的实现类型进行渲染
+  if (auto viewportPanel = std::dynamic_pointer_cast<ViewportPanel>(panel)) {
+    RenderViewportPanel(viewportPanel);
+  }
+  else {
+    // 其他类型面板的渲染
+    panel->Render();
+  }
 }
 
 const char *ImGuiBackend::GetBackendName() const
 {
   return "ImGui (OpenGL3 + GLFW)";
 }
-
 
 void ImGuiBackend::ApplyUIStyle(std::shared_ptr<UIStyle> newStyle)
 {
@@ -268,6 +243,70 @@ GLFWwindow *ImGuiBackend::GetWindow() const
   return m_Window;
 }
 
+ImGuiInputAdapter &ImGuiBackend::GetInputAdapter()
+{
+  return *m_InputAdapter;
+}
 
+bool ImGuiBackend::InitializeImGuiContext()
+{
+  // 创建ImGui上下文
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
 
+  ImGuiIO &io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // 启用键盘导航
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // 启用游戏手柄导航
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // 启用停靠
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // 启用多视口
+
+  // 设置ini文件位置
+  // io.IniFilename = "imgui.ini";
+
+  return true;
+}
+
+bool ImGuiBackend::InitializePlatformBackend()
+{
+  if (!ImGui_ImplGlfw_InitForOpenGL(m_Window, true)) {
+    m_Logger->error("Failed to initialize ImGui GLFW backend");
+    return false;
+  }
+  return true;
+}
+
+bool ImGuiBackend::InitializeRendererBackend()
+{
+  // 版本设定应当与GLFWWindow中设定的glfwWindowHint一致
+  // （原则上应当将版本号作为参数传入）
+  const char *glsl_version = "#version 410";
+  if (!ImGui_ImplOpenGL3_Init(glsl_version)) {
+    m_Logger->error("Failed to initialize ImGui OpenGL3 backend");
+    return false;
+  }
+  return true;
+}
+
+void ImGuiBackend::RenderViewportPanel(std::shared_ptr<ViewportPanel> panel)
+{  
+  // 设置视口窗口样式(无内边距)
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+  ImGui::Begin(panel->GetTitle().c_str(), &panel->IsVisible());
+
+  // ===== 1. 更新视口状态 =====
+  m_ViewportFocused = ImGui::IsWindowFocused();
+  m_ViewportHovered = ImGui::IsWindowHovered();
+  updateViewportSize();
+
+  // ===== 2. 渲染场景内容 =====
+  if (m_Framebuffer && m_Framebuffer->IsComplete()) {
+    // 显示帧缓冲内容(注意UV坐标翻转)
+    ImGui::Image(m_Framebuffer->GetColorAttachmentID(),
+                 ImVec2(m_ViewportSize.x, m_ViewportSize.y),
+                 ImVec2(0, 1),  // UV起点(左下角)
+                 ImVec2(1, 0)   // UV终点(右上角)
+    );
+  }
+
+}
 }  // namespace mite
