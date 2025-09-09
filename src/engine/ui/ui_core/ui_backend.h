@@ -3,6 +3,7 @@
 
 #include "event/event.h"
 #include "headers/headers.h"
+#include "ui_widget/ui_panel.h"
 
 namespace mite {
 
@@ -108,7 +109,7 @@ class UIBackend {
   /**
    * @brief 渲染UI
    */
-  virtual void Render() = 0;
+  virtual void RenderPanel(std::shared_ptr<UIPanel> panel) = 0;
 
   /**
    * @brief 获取后端名称（用于调试）

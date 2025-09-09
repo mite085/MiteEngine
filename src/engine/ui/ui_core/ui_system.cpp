@@ -17,9 +17,10 @@ UISystem::UISystem(Renderer &renderer, Window &window)
     m_Logger->error("UI Backend Initialize FAILED!");
   }
 
-  // 初始化Style Manager
+  // 初始化Style Manager，并将CurrentStyle作用于后端
   m_StyleManager = std::make_unique<UIStyleManager>();
   m_StyleManager->Initialize();
+  m_Backend->ApplyUIStyle(m_StyleManager->GetCurrentStyle());
 
   // 初始化翻译系统
   UILocalization::Get();
@@ -77,13 +78,11 @@ void UISystem::Render()
   }
 
   if (m_Backend) {
-    m_Backend->Render();
-  }
-
-  // 渲染所有可见面板
-  for (auto &[id, panel] : m_Panels) {
-    if (panel->IsVisible()) {
-      panel->Render();
+    // 渲染所有可见面板
+    for (auto &[id, panel] : m_Panels) {
+      if (panel->IsVisible()) {
+        m_Backend->RenderPanel(panel);
+      }
     }
   }
 }

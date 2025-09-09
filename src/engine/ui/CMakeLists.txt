@@ -70,6 +70,9 @@ source_group("ui events" FILES ${UI_EVENT_SRCS})
 
 set(UI_FOR_EDITOR_SRCS
     ui_for_editor/ui_editor_system.h    # 编辑器UI系统扩展（事件订阅中心）
+    
+    ui_for_editor/ui_editor_viewport_panel.h     # 编辑器专属Panel: Viewport视口
+    ui_for_editor/ui_editor_viewport_panel.cpp
 )
 source_group("ui for editor" FILES ${UI_FOR_EDITOR_SRCS})
 
