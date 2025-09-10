@@ -3,7 +3,7 @@
 namespace mite {
 
 UIPanel::UIPanel(const std::string &name)
-    : UIWidget(name), m_Title("Panel"), m_Draggable(true), m_Resizable(false)
+    : UIWidget(name), m_Title(name), m_Draggable(true), m_Resizable(false)
 {
 }
 
@@ -87,23 +87,6 @@ void UIPanel::Update(float deltaTime)
 
   // 面板自身的更新逻辑
   UIWidget::Update(deltaTime);
-}
-
-void UIPanel::Render()
-{
-  if (!m_Visible) {
-    return;
-  }
-
-  // TODO: 渲染面板背景和边框
-  // 这里会调用具体的后端渲染实现
-
-  // 渲染所有子控件
-  for (auto &widget : m_Widgets) {
-    if (widget->IsVisible()) {
-      widget->Render();
-    }
-  }
 }
 
 void UIPanel::CalculateLayout()

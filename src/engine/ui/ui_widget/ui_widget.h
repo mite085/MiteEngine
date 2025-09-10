@@ -52,8 +52,9 @@ class UIWidget {
 
   /**
    * @brief 获取控件可见性
+   * 
    */
-  bool& IsVisible();
+  bool IsVisible();
 
   /**
    * @brief 设置控件可见性

@@ -63,7 +63,7 @@ void UIWidget::SetSize(const glm::vec2 &size)
   }
 }
 
-bool& UIWidget::IsVisible() 
+bool UIWidget::IsVisible() 
 {
   return m_Visible;
 }

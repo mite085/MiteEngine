@@ -50,7 +50,7 @@ class UIPanel : public UIWidget {
   /**
    * @brief 渲染面板及其子控件
    */
-  virtual void Render() override;
+  virtual void Render() = 0;
 
   /**
    * @brief 处理布局计算
