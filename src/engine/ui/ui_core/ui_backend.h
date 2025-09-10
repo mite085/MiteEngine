@@ -107,11 +107,6 @@ class UIBackend {
   virtual void DestroyDeviceObjects() = 0;
 
   /**
-   * @brief 渲染UI
-   */
-  virtual void RenderPanel(std::shared_ptr<UIPanel> panel) = 0;
-
-  /**
    * @brief 获取后端名称（用于调试）
    */
   virtual const char *GetBackendName() const = 0;

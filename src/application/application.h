@@ -11,7 +11,7 @@
 #include "scene_view.h"
 #include "glfw_window/glfw_window.h"
 #include "ui_core/ui_system.h"
-#include "ui_panels/viewport_panel.h"
+#include "ui_for_editor/ui_editor_viewport_panel.h"
 
 namespace mite {
 

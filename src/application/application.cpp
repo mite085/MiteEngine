@@ -1,5 +1,6 @@
 #include "application.h"
 #include "scene_core_components/component_headers.h"
+#include "ui_core/ui_localization.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -84,17 +85,10 @@ void MiteApplication::LoadDefaultScene()
   m_SceneCore->SetMainCamera(mainCameraEntity);
 
   // 0. 创建ViewportPanel并设置FrameBuffer
-  auto viewportPanel = std::make_shared<ViewportPanel>("Viewport");
+  auto viewportPanel = std::make_shared<ViewportPanel>();
   viewportPanel->setFramebuffer(m_Renderer->GetViewportFrameBuffer());
-  // 绑定MainCamera
-  // 注意：
-  // 该步骤需要在RegisterPanel之前执行，
-  // 因为调用OnAttach创建InputContext需要使用到Camera
-  if (viewportPanel) {
-    viewportPanel->setCamera(m_SceneCore->GetMainCamera());
-  }
   // 注册面板到UI系统
-  m_UISystem->RegisterPanel("Viewport", viewportPanel);
+  m_UISystem->RegisterPanel(viewportPanel);
 
   // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
   AssetID plane_model_asset_id = m_AssetManager->LoadModel(
@@ -200,9 +194,9 @@ void MiteApplication::InitializeUI()
 {
   m_Logger->info("Initializing user interface");
 
-  // 初始化UI系统
+  // 初始化UI系统，依赖Window
   m_UISystem = std::make_unique<UISystem>();
-  m_UISystem->Init(reinterpret_cast<GLFWwindow *>(m_Window->GetNativeWindow()));
+  m_UISystem->Initialize(m_Window->GetNativeWindow());
 }
 
 void MiteApplication::InitializeAssertManager()
@@ -275,7 +269,6 @@ void MiteApplication::CleanUpUI()
 {
   m_Logger->info("Cleaning up UI");
 
-  // 清理所有UI资源
   m_UISystem->Shutdown();
 }
 
@@ -404,6 +397,9 @@ void MiteApplication::RenderUI()
   m_UISystem->Update(Time::DeltaTime());
 
   // 渲染所有UI面板
+  m_UISystem->Render();
+
+  // 结束当前帧
   m_UISystem->EndFrame();
 }
 
