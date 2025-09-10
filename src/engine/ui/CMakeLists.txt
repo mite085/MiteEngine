@@ -21,25 +21,36 @@ set(UI_CORE_SRCS
 )
 source_group("ui core" FILES ${UI_CORE_SRCS})
 
-set(UI_WIDGET_SRCS
-    ui_widget/ui_widget.h      # 控件基类（包含事件发布接口）
-    ui_widget/ui_widget.cpp
-    ui_widget/ui_panel.h       # 面板基类（事件订阅管理）
-    ui_widget/ui_panel.cpp
+set(UI_ELEMENT_SRCS
+    ui_element/ui_element.h     # 元素基类（所有UI可交互元素的抽象基类）
+    ui_element/ui_element.cpp
 
-    # 以下为基础控件
-    ui_widget/ui_button.h      # 发布ButtonClickEvent
-    ui_widget/ui_slider.h      # 发布SliderChangeEvent
-    ui_widget/ui_checkbox.h    # 发布CheckboxToggleEvent
-    ui_widget/ui_text_input.h   # 发布TextInputEvent
-    ui_widget/ui_combobox.h    # 发布ComboBoxSelectEvent
+    # 以下为基本控件
+    ui_element/ui_button.h      # 发布ButtonClickEvent
+    ui_element/ui_slider.h      # 发布SliderChangeEvent
+    ui_element/ui_checkbox.h    # 发布CheckboxToggleEvent
+    ui_element/ui_text_input.h   # 发布TextInputEvent
+    ui_element/ui_combobox.h    # 发布ComboBoxSelectEvent
 
-    # 以下为布局管理器
-    ui_widget/ui_layout.h              # 布局基类
-    ui_widget/ui_layout_horizontal.h   # 水平布局
-    ui_widget/ui_layout_vertical.h     # 垂直布局
+    # 以下为部件与面板
+    ui_element/ui_menu.h        # 菜单栏（原则上仅Editor顶部应当存在）
+    ui_element/ui_menu.cpp
+    ui_element/ui_widget.h      # 控件基类（包含事件发布接口）
+    ui_element/ui_widget.cpp
+    ui_element/ui_panel.h       # 面板基类（事件订阅管理）
+    ui_element/ui_panel.cpp
 )
-source_group("ui widgets" FILES ${UI_WIDGET_SRCS})
+source_group("ui elements" FILES ${UI_ELEMENT_SRCS})
+
+set(UI_LAYOUT_SRCS
+    ui_layout/ui_layout.h              # 布局基类
+    ui_layout/ui_layout.cpp
+    ui_layout/ui_layout_horizontal.h   # 水平布局
+    ui_layout/ui_layout_horizontal.cpp
+    ui_layout/ui_layout_vertical.h     # 垂直布局
+    ui_layout/ui_layout_vertical.cpp
+)
+source_group("ui layouts" FILES ${UI_LAYOUT_SRCS})
 
 set(UI_IMGUI_BACKEND_SRCS
     ui_imgui_backend/ui_imgui_backend.h         # ImGui后端实现
@@ -89,7 +100,8 @@ source_group("ui for runtime" FILES ${UI_FOR_RUNTIME_SRCS})
 add_library(${ENGINE_UI_LIB_NAME}
     STATIC
     ${UI_CORE_SRCS}
-    ${UI_WIDGET_SRCS}
+    ${UI_ELEMENT_SRCS}
+    ${UI_LAYOUT_SRCS}
     ${UI_IMGUI_BACKEND_SRCS}
     ${UI_EVENT_SRCS}
     ${UI_FOR_EDITOR_SRCS}
