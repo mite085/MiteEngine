@@ -12,8 +12,8 @@
     "button_cancel": "取消"
   },
   "editor": {
-    "viewport_title": "视口",
-    "hierarchy_title": "层级"
+    "viewport": "视口",
+    "hierarchy": "层级"
   },
   "errors": {
     "load_failed": "加载文件失败: {0}"

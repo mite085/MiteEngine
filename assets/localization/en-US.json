@@ -12,8 +12,8 @@
     "button_cancel": "Cancel"
   },
   "editor": {
-    "viewport_title": "Viewport",
-    "hierarchy_title": "Hierarchy"
+    "viewport": "Viewport",
+    "hierarchy": "Hierarchy"
   },
   "errors": {
     "load_failed": "Failed to load file: {0}"
