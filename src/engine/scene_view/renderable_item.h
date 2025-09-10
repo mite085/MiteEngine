@@ -7,30 +7,30 @@
 
 namespace mite {
 /**
- * ¿ÉäÖÈ¾ÊµÌåµÄÊı¾İ½á¹¹£¬ÓÃÓÚSceneViewÏòRenderer´«µİäÖÈ¾Êı¾İ
- * ×¢£º½ö°üº¬äÖÈ¾ËùĞèµÄ×îĞ¡×Ö¶Î£¬Î´À´¿ÉÀ©Õ¹£¨ÈçLOD¡¢¹Ç÷À¶¯»­µÈ£©
+ * å¯æ¸²æŸ“å®ä½“çš„æ•°æ®ç»“æ„ï¼Œç”¨äºSceneViewå‘Rendererä¼ é€’æ¸²æŸ“æ•°æ®
+ * æ³¨ï¼šä»…åŒ…å«æ¸²æŸ“æ‰€éœ€çš„æœ€å°å­—æ®µï¼Œæœªæ¥å¯æ‰©å±•ï¼ˆå¦‚LODã€éª¨éª¼åŠ¨ç”»ç­‰ï¼‰
  */
 struct RenderableItem {
-  Entity entity;               // ¶ÔÓ¦µÄECSÊµÌåID
-  glm::mat4 worldTransform;    // ÊÀ½ç¿Õ¼ä±ä»»¾ØÕó£¨´ÓTransform×é¼ş¼ÆËã£©
-  std::shared_ptr<Mesh> mesh;  // Íø¸ñGPU¾ä±ú£¨´ÓMesh×é¼ş»ñÈ¡£©
-  std::shared_ptr<MaterialInstance> material;  // ²ÄÖÊÊµÀı£¨´ÓMaterial×é¼ş»ñÈ¡£©
+  Entity entity;               // å¯¹åº”çš„ECSå®ä½“ID
+  glm::mat4 worldTransform;    // ä¸–ç•Œç©ºé—´å˜æ¢çŸ©é˜µï¼ˆä»Transformç»„ä»¶è®¡ç®—ï¼‰
+  std::shared_ptr<Mesh> mesh;  // ç½‘æ ¼GPUå¥æŸ„ï¼ˆä»Meshç»„ä»¶è·å–ï¼‰
+  std::shared_ptr<MaterialInstance> material;  // æè´¨å®ä¾‹ï¼ˆä»Materialç»„ä»¶è·å–ï¼‰
 
-  // äÖÈ¾ÅÅĞòÏà¹Ø×Ö¶Î
-  float distanceToCamera;  // ÓëÉãÏñ»úµÄ¾àÀë£¨ÓÃÓÚÍ¸Ã÷ÎïÌåÅÅĞò£©
-  uint32_t renderLayer;    // äÖÈ¾²ã¼¶£¨ÓÃÓÚ×Ô¶¨ÒåäÖÈ¾Ë³Ğò£©
+  // æ¸²æŸ“æ’åºç›¸å…³å­—æ®µ
+  float distanceToCamera;  // ä¸æ‘„åƒæœºçš„è·ç¦»ï¼ˆç”¨äºé€æ˜ç‰©ä½“æ’åºï¼‰
+  uint32_t renderLayer;    // æ¸²æŸ“å±‚çº§ï¼ˆç”¨äºè‡ªå®šä¹‰æ¸²æŸ“é¡ºåºï¼‰
 
 
 
   /**
-   * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+   * @brief é»˜è®¤æ„é€ å‡½æ•°
    */
   RenderableItem()
       : entity(Entity()), worldTransform(glm::mat4(1.0f)), distanceToCamera(0.0f), renderLayer(0)
   {
   }
   /**
-   * @brief ²ÎÊı»¯¹¹Ôìº¯Êı
+   * @brief å‚æ•°åŒ–æ„é€ å‡½æ•°
    */
   RenderableItem(Entity ent,
                  const glm::mat4 &transform,

@@ -5,38 +5,38 @@
 
 namespace mite {
 /**
- * @brief ÊäÈë´¦ÀíÆ÷ÓÅÏÈ¼¶¶¨Òå
+ * @brief è¾“å…¥å¤„ç†å™¨ä¼˜å…ˆçº§å®šä¹‰
  *
- * ÊıÖµÔ½´óÓÅÏÈ¼¶Ô½¸ß£¬ÏàÍ¬ÓÅÏÈ¼¶°´×¢²áË³Ğò´¦Àí
+ * æ•°å€¼è¶Šå¤§ä¼˜å…ˆçº§è¶Šé«˜ï¼Œç›¸åŒä¼˜å…ˆçº§æŒ‰æ³¨å†Œé¡ºåºå¤„ç†
  *
  */
 namespace InputPriority {
-const int SYSTEM = 1000;   // ÏµÍ³¼¶ÊäÈë£¨Èçµ÷ÊÔ¿ØÖÆÌ¨£©
-const int UI_MODAL = 800;  // Ä£Ì¬UI£¨Èçµ¯´°£©
-const int GIZMO = 600;    // Transform¿Ø¼ş
-const int UI_FORM = 500;  // ÆÕÍ¨±à¼­Æ÷UI£¨ÈçViewportInput£©
-const int CAMERA = 200;   // Ïà»ú¿ØÖÆ
+const int SYSTEM = 1000;   // ç³»ç»Ÿçº§è¾“å…¥ï¼ˆå¦‚è°ƒè¯•æ§åˆ¶å°ï¼‰
+const int UI_MODAL = 800;  // æ¨¡æ€UIï¼ˆå¦‚å¼¹çª—ï¼‰
+const int GIZMO = 600;    // Transformæ§ä»¶
+const int UI_FORM = 500;  // æ™®é€šç¼–è¾‘å™¨UIï¼ˆå¦‚ViewportInputï¼‰
+const int CAMERA = 200;   // ç›¸æœºæ§åˆ¶
 }  // namespace InputPriority
 
 /**
- * @brief Ä£¿é»¯ÊäÈë´¦ÀíÆ÷³éÏó»ùÀà
+ * @brief æ¨¡å—åŒ–è¾“å…¥å¤„ç†å™¨æŠ½è±¡åŸºç±»
  *
- * ÅÉÉúÀàĞèÊµÏÖ¾ßÌåÊäÈëÊÂ¼ş´¦ÀíÂß¼­
+ * æ´¾ç”Ÿç±»éœ€å®ç°å…·ä½“è¾“å…¥äº‹ä»¶å¤„ç†é€»è¾‘
  */
 class InputProcessor {
  public:
   InputProcessor() = default;
   virtual ~InputProcessor() = default;
 
-  // === ±ØĞëÊµÏÖµÄ½Ó¿Ú ===
+  // === å¿…é¡»å®ç°çš„æ¥å£ ===
   virtual int GetPriority() const = 0;
   virtual const std::string GetID() const = 0;
 
-  // === ¿ÉÑ¡ÖØĞ´µÄ½Ó¿Ú ===
+  // === å¯é€‰é‡å†™çš„æ¥å£ ===
   virtual bool IsEnabled() const;
   virtual void SetEnabled(bool enabled);
 
-  // === ´¦ÀíÊÂ¼şÍ³Ò»½Ó¿Ú ===
+  // === å¤„ç†äº‹ä»¶ç»Ÿä¸€æ¥å£ ===
   virtual bool HandleEvent(Event &e) = 0;
 
  protected:

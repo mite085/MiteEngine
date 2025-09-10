@@ -7,68 +7,68 @@
 
 namespace mite {
 /**
- * @brief Ö¡»º³åÀà£¬·â×°OpenGL FBO¹¦ÄÜ
+ * @brief å¸§ç¼“å†²ç±»ï¼Œå°è£…OpenGL FBOåŠŸèƒ½
  *
- * Ö°Ôğ£º
- * 1. ¹ÜÀíÖ¡»º³å¶ÔÏó(FBO)µÄÉúÃüÖÜÆÚ
- * 2. ¹ÜÀíÑÕÉ«/Éî¶È/Ä£°å¸½¼ş
- * 3. Ìá¹©äÖÈ¾Ä¿±ê°ó¶¨½Ó¿Ú
- * 4. Ö§³Ö¶àäÖÈ¾Ä¿±ê(MRT)ºÍHDR(ÎªÎ´À´À©Õ¹±£Áô)
+ * èŒè´£ï¼š
+ * 1. ç®¡ç†å¸§ç¼“å†²å¯¹è±¡(FBO)çš„ç”Ÿå‘½å‘¨æœŸ
+ * 2. ç®¡ç†é¢œè‰²/æ·±åº¦/æ¨¡æ¿é™„ä»¶
+ * 3. æä¾›æ¸²æŸ“ç›®æ ‡ç»‘å®šæ¥å£
+ * 4. æ”¯æŒå¤šæ¸²æŸ“ç›®æ ‡(MRT)å’ŒHDR(ä¸ºæœªæ¥æ‰©å±•ä¿ç•™)
  */
 class FrameBuffer {
  public:
   using Ptr = std::shared_ptr<FrameBuffer>;
 
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param spec Ö¡»º³å¹æ¸ñ
+   * @brief æ„é€ å‡½æ•°
+   * @param spec å¸§ç¼“å†²è§„æ ¼
    */
   explicit FrameBuffer(const FrameBufferSpec &spec);
   ~FrameBuffer();
 
-  // ½ûÖ¹¿½±´ºÍ¸³Öµ
+  // ç¦æ­¢æ‹·è´å’Œèµ‹å€¼
   FrameBuffer(const FrameBuffer &) = delete;
   FrameBuffer &operator=(const FrameBuffer &) = delete;
 
   /**
-   * @brief ÖØĞÂÉèÖÃÖ¡»º³å´óĞ¡
-   * @param width ĞÂ¿í¶È
-   * @param height ĞÂ¸ß¶È
+   * @brief é‡æ–°è®¾ç½®å¸§ç¼“å†²å¤§å°
+   * @param width æ–°å®½åº¦
+   * @param height æ–°é«˜åº¦
    */
   void Resize(uint32_t width, uint32_t height);
 
   /**
-   * @brief °ó¶¨Ö¡»º³åÎªµ±Ç°äÖÈ¾Ä¿±ê
+   * @brief ç»‘å®šå¸§ç¼“å†²ä¸ºå½“å‰æ¸²æŸ“ç›®æ ‡
    */
   void Bind() const;
 
   /**
-   * @brief ½â°óÖ¡»º³å(°ó¶¨»ØÄ¬ÈÏÖ¡»º³å)
+   * @brief è§£ç»‘å¸§ç¼“å†²(ç»‘å®šå›é»˜è®¤å¸§ç¼“å†²)
    */
   void Unbind() const;
 
   /**
-   * @brief »ñÈ¡Ö¡»º³å¶ÔÏóID
-   * @return Ö¡»º³å¶ÔÏóID
+   * @brief è·å–å¸§ç¼“å†²å¯¹è±¡ID
+   * @return å¸§ç¼“å†²å¯¹è±¡ID
    */
   uint32_t GetID() const;
 
   /**
-   * @brief »ñÈ¡ÑÕÉ«¸½¼şÎÆÀíID
-   * @param index ÑÕÉ«¸½¼şË÷Òı(Ä¬ÈÏÎª0)
-   * @return ÎÆÀíID
+   * @brief è·å–é¢œè‰²é™„ä»¶çº¹ç†ID
+   * @param index é¢œè‰²é™„ä»¶ç´¢å¼•(é»˜è®¤ä¸º0)
+   * @return çº¹ç†ID
    */
   uint32_t GetColorAttachmentID(uint32_t index = 0) const;
 
   /**
-   * @brief »ñÈ¡Éî¶È¸½¼şÎÆÀíID
-   * @return ÎÆÀíID£¬Èç¹ûÃ»ÓĞÉî¶È¸½¼şÔò·µ»Ø0
+   * @brief è·å–æ·±åº¦é™„ä»¶çº¹ç†ID
+   * @return çº¹ç†IDï¼Œå¦‚æœæ²¡æœ‰æ·±åº¦é™„ä»¶åˆ™è¿”å›0
    */
   uint32_t GetDepthAttachmentID() const;
 
   /**
-   * @brief »ñÈ¡Ö¡»º³å¹æ¸ñ
-   * @return Ö¡»º³å¹æ¸ñÒıÓÃ
+   * @brief è·å–å¸§ç¼“å†²è§„æ ¼
+   * @return å¸§ç¼“å†²è§„æ ¼å¼•ç”¨
    */
   const FrameBufferSpec &GetSpecification() const
   {
@@ -76,31 +76,31 @@ class FrameBuffer {
   }
 
   /**
-   * @brief ¼ì²éÖ¡»º³åÊÇ·ñÍêÕû
-   * @return Èç¹ûÍêÕû·µ»Øtrue£¬·ñÔò·µ»Øfalse
+   * @brief æ£€æŸ¥å¸§ç¼“å†²æ˜¯å¦å®Œæ•´
+   * @return å¦‚æœå®Œæ•´è¿”å›trueï¼Œå¦åˆ™è¿”å›false
    */
   bool IsComplete() const;
 
  private:
   /**
-   * @brief ³õÊ¼»¯Ö¡»º³åºÍ¸½¼ş
+   * @brief åˆå§‹åŒ–å¸§ç¼“å†²å’Œé™„ä»¶
    */
   void Invalidate();
 
   /**
-   * @brief ÇåÀíÖ¡»º³å×ÊÔ´
+   * @brief æ¸…ç†å¸§ç¼“å†²èµ„æº
    */
   void Release();
 
  private:
-  uint32_t m_RendererID = 0;  // Ö¡»º³å¶ÔÏóID
-  FrameBufferSpec m_Spec;     // Ö¡»º³å¹æ¸ñ
+  uint32_t m_RendererID = 0;  // å¸§ç¼“å†²å¯¹è±¡ID
+  FrameBufferSpec m_Spec;     // å¸§ç¼“å†²è§„æ ¼
 
-  // ¸½¼şÎÆÀíIDÓ³Éä±í
-  // key: ¸½¼şË÷Òı(¶ÔÓÚÑÕÉ«¸½¼ş)»ò¸½¼şÀàĞÍ(¶ÔÓÚÉî¶È/Ä£°å¸½¼ş)
-  // value: ÎÆÀíID
+  // é™„ä»¶çº¹ç†IDæ˜ å°„è¡¨
+  // key: é™„ä»¶ç´¢å¼•(å¯¹äºé¢œè‰²é™„ä»¶)æˆ–é™„ä»¶ç±»å‹(å¯¹äºæ·±åº¦/æ¨¡æ¿é™„ä»¶)
+  // value: çº¹ç†ID
   std::unordered_map<uint32_t, uint32_t> m_ColorAttachments;
-  uint32_t m_DepthAttachment = 0;  // Éî¶È¸½¼şÎÆÀíID
+  uint32_t m_DepthAttachment = 0;  // æ·±åº¦é™„ä»¶çº¹ç†ID
 };
 
 }  // namespace mite

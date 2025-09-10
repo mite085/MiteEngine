@@ -7,7 +7,7 @@ ComponentSystemManager::ComponentSystemManager(SceneRegistry &registry)
 }
 ComponentSystemManager::~ComponentSystemManager()
 {
-  // È·±£ËùÓĞÏµÍ³¶¼ÒÑÏú»Ù
+  // ç¡®ä¿æ‰€æœ‰ç³»ç»Ÿéƒ½å·²é”€æ¯
   for (auto &entry : m_SystemMap) {
     entry.second->Shutdown();
   }
@@ -15,12 +15,12 @@ ComponentSystemManager::~ComponentSystemManager()
 
 void ComponentSystemManager::InitializeAll()
 {
-  // È·±£ÏµÍ³ÒÑÅÅĞò
+  // ç¡®ä¿ç³»ç»Ÿå·²æ’åº
   if (!m_SystemsSorted) {
     SortSystems();
   }
 
-  // °´Ë³Ğò³õÊ¼»¯
+  // æŒ‰é¡ºåºåˆå§‹åŒ–
   for (auto &system : m_Systems) {
     system->Initialize();
   }
@@ -28,7 +28,7 @@ void ComponentSystemManager::InitializeAll()
 
 void ComponentSystemManager::UpdateAll(float deltaTime)
 {
-  // °´Ë³Ğò¸üĞÂ
+  // æŒ‰é¡ºåºæ›´æ–°
   for (auto &system : m_Systems) {
     auto entry = m_SystemMap.find(system->GetSystemType());
     if (entry != m_SystemMap.end()) {
@@ -39,7 +39,7 @@ void ComponentSystemManager::UpdateAll(float deltaTime)
 
 void ComponentSystemManager::ShutdownAll()
 {
-  // ÄæĞòÏú»Ù
+  // é€†åºé”€æ¯
   for (auto it = m_Systems.rbegin(); it != m_Systems.rend(); ++it) {
     (*it)->Shutdown();
   }
@@ -47,39 +47,39 @@ void ComponentSystemManager::ShutdownAll()
 
 void ComponentSystemManager::SortSystems()
 {
-  // 1. ÏÈ°´Ö´ĞĞË³ĞòÅÅĞò£¨³õ²½ÅÅĞò£©
+  // 1. å…ˆæŒ‰æ‰§è¡Œé¡ºåºæ’åºï¼ˆåˆæ­¥æ’åºï¼‰
   std::sort(m_Systems.begin(), m_Systems.end(), [](const auto &a, const auto &b) {
     return a->GetExecutionOrder() < b->GetExecutionOrder();
   });
 
-  // 2. ÍØÆËÅÅĞòµ÷ÕûÒÀÀµ¹ØÏµ
+  // 2. æ‹“æ‰‘æ’åºè°ƒæ•´ä¾èµ–å…³ç³»
   bool changed;
   size_t iterations = 0;
-  const size_t maxIterations = m_Systems.size();  // ·ÀÖ¹ÎŞÏŞÑ­»·
+  const size_t maxIterations = m_Systems.size();  // é˜²æ­¢æ— é™å¾ªç¯
 
   do {
     changed = false;
     for (size_t i = 0; i < m_Systems.size(); ++i) {
       auto &system = m_Systems[i];
       for (const auto &depType : system->GetSystemDependencies()) {
-        // ²éÕÒÒÀÀµµÄÏµÍ³
+        // æŸ¥æ‰¾ä¾èµ–çš„ç³»ç»Ÿ
         auto depIt = std::find_if(m_Systems.begin(), m_Systems.end(), [&depType](const auto &s) {
           return std::type_index(typeid(*s)) == depType;
         });
 
-        // Èç¹ûÒÀÀµµÄÏµÍ³ÔÚµ±Ç°ÏµÍ³Ö®ºó£¬µ÷ÕûË³Ğò
+        // å¦‚æœä¾èµ–çš„ç³»ç»Ÿåœ¨å½“å‰ç³»ç»Ÿä¹‹åï¼Œè°ƒæ•´é¡ºåº
         if (depIt != m_Systems.end() && depIt > m_Systems.begin() + i) {
-          // °Ñµ±Ç°ÏµÍ³ÒÆµ½ÒÀÀµÏµÍ³Ö®ºó
+          // æŠŠå½“å‰ç³»ç»Ÿç§»åˆ°ä¾èµ–ç³»ç»Ÿä¹‹å
           std::rotate(m_Systems.begin() + i, m_Systems.begin() + i + 1, depIt + 1);
           changed = true;
-          --i;  // ÖØĞÂ¼ì²éµ±Ç°Î»ÖÃ
+          --i;  // é‡æ–°æ£€æŸ¥å½“å‰ä½ç½®
           break;
         }
       }
     }
   } while (changed && ++iterations < maxIterations);
 
-  // 3. ÖØ½¨ÀàĞÍÓ³Éä
+  // 3. é‡å»ºç±»å‹æ˜ å°„
   m_SystemMap.clear();
   for (auto &system : m_Systems) {
     m_SystemMap[typeid(*system)] = system.get();

@@ -3,7 +3,7 @@
 namespace mite {
 ShaderCache &ShaderCache::Get()
 {
-  static ShaderCache instance;  // Ïß³Ì°²È«µÄµ¥Àı£¨C++11±£Ö¤£©
+  static ShaderCache instance;  // çº¿ç¨‹å®‰å…¨çš„å•ä¾‹ï¼ˆC++11ä¿è¯ï¼‰
   return instance;
 }
 
@@ -11,22 +11,22 @@ std::shared_ptr<OpenGLShader> ShaderCache::GetOpenGLShader(const std::string &ve
                                          const std::string &fragmentPath,
                                          const std::string &geometryPath)
 {
-  // 1. Éú³ÉÎ¨Ò»»º´æ¼ü
+  // 1. ç”Ÿæˆå”¯ä¸€ç¼“å­˜é”®
   const std::string key = GenerateCacheKey(vertexPath, fragmentPath, geometryPath);
 
-  // 2. Ïß³Ì°²È«·ÃÎÊ»º´æ
+  // 2. çº¿ç¨‹å®‰å…¨è®¿é—®ç¼“å­˜
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // 3. ¼ì²é»º´æÊÇ·ñ´æÔÚÇÒÎ´¹ıÆÚ
+  // 3. æ£€æŸ¥ç¼“å­˜æ˜¯å¦å­˜åœ¨ä¸”æœªè¿‡æœŸ
   if (auto it = m_Cache.find(key); it != m_Cache.end()) {
     if (auto shader = it->second.lock()) {
-      return shader;  // ·µ»Ø»º´æµÄ¿ÉÓÃShader
+      return shader;  // è¿”å›ç¼“å­˜çš„å¯ç”¨Shader
     }
-    // ÈõÒıÓÃÒÑÊ§Ğ§£¬ÒÆ³ı¾ÉÌõÄ¿
+    // å¼±å¼•ç”¨å·²å¤±æ•ˆï¼Œç§»é™¤æ—§æ¡ç›®
     m_Cache.erase(it);
   }
 
-  // 4. ´´½¨ĞÂShader²¢¼ÓÈë»º´æ
+  // 4. åˆ›å»ºæ–°Shaderå¹¶åŠ å…¥ç¼“å­˜
   auto shader = std::make_shared<OpenGLShader>();
   try {
     if (geometryPath.empty()) {
@@ -40,27 +40,27 @@ std::shared_ptr<OpenGLShader> ShaderCache::GetOpenGLShader(const std::string &ve
     throw std::runtime_error("ShaderCache: Failed to compile shader - " + std::string(e.what()));
   }
 
-  m_Cache[key] = shader;  // ´æ´¢ÈõÒıÓÃ
+  m_Cache[key] = shader;  // å­˜å‚¨å¼±å¼•ç”¨
   return shader;
 }
 
 void ShaderCache::Clear()
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-  m_Cache.clear();  // ÈõÒıÓÃ»á×Ô¶¯ÊÍ·Å£¬ÎŞĞè¶îÍâ²Ù×÷
+  m_Cache.clear();  // å¼±å¼•ç”¨ä¼šè‡ªåŠ¨é‡Šæ”¾ï¼Œæ— éœ€é¢å¤–æ“ä½œ
 }
 
 std::string ShaderCache::GenerateCacheKey(const std::string &vertexPath,
                                           const std::string &fragmentPath,
                                           const std::string &geometryPath) const
 {
-  // ¼òµ¥Æ´½ÓÂ·¾¶×÷Îª¼ü£¨È·±£Â·¾¶¹æ·¶»¯£©
+  // ç®€å•æ‹¼æ¥è·¯å¾„ä½œä¸ºé”®ï¼ˆç¡®ä¿è·¯å¾„è§„èŒƒåŒ–ï¼‰
   std::string key = vertexPath + "|" + fragmentPath;
   if (!geometryPath.empty()) {
     key += "|" + geometryPath;
   }
 
-  // TODO£º¶ÔÂ·¾¶½øĞĞ±ê×¼»¯´¦Àí£¨ÈçÍ³Ò»×ªÎª¾ø¶ÔÂ·¾¶£©
+  // TODOï¼šå¯¹è·¯å¾„è¿›è¡Œæ ‡å‡†åŒ–å¤„ç†ï¼ˆå¦‚ç»Ÿä¸€è½¬ä¸ºç»å¯¹è·¯å¾„ï¼‰
   // std::filesystem::canonical(vertexPath)
 
   return key;

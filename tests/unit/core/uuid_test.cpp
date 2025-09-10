@@ -6,90 +6,90 @@
 #include <vector>
 
 namespace mite_test {
-// ²âÊÔ¼Ğ¾ßÀà£¬ÓÃÓÚÉèÖÃ²âÊÔ»·¾³ºÍ¹²Ïí×ÊÔ´
+// æµ‹è¯•å¤¹å…·ç±»ï¼Œç”¨äºè®¾ç½®æµ‹è¯•ç¯å¢ƒå’Œå…±äº«èµ„æº
 class UUIDTest : public ::testing::Test {
  protected:
   void SetUp() override
   {
-    // Ã¿¸ö²âÊÔÓÃÀıÖ´ĞĞÇ°µÄ³õÊ¼»¯´úÂë
+    // æ¯ä¸ªæµ‹è¯•ç”¨ä¾‹æ‰§è¡Œå‰çš„åˆå§‹åŒ–ä»£ç 
   }
   void TearDown() override
   {
-    // Ã¿¸ö²âÊÔÓÃÀıÖ´ĞĞºóµÄÇåÀí´úÂë
+    // æ¯ä¸ªæµ‹è¯•ç”¨ä¾‹æ‰§è¡Œåçš„æ¸…ç†ä»£ç 
   }
-  // ¸¨Öúº¯Êı£ºÑéÖ¤UUIDÊÇ·ñÓĞĞ§
+  // è¾…åŠ©å‡½æ•°ï¼šéªŒè¯UUIDæ˜¯å¦æœ‰æ•ˆ
   static bool IsValidUUID(const uuids::uuid &id)
   {
     return !id.is_nil() && id.version() != uuids::uuid_version::none;
   }
-  // ¸¨Öúº¯Êı£ºÑéÖ¤Á½¸öUUIDÊÇ·ñ²»Í¬
+  // è¾…åŠ©å‡½æ•°ï¼šéªŒè¯ä¸¤ä¸ªUUIDæ˜¯å¦ä¸åŒ
   static bool AreUUIDsDifferent(const uuids::uuid &id1, const uuids::uuid &id2)
   {
     return id1 != id2;
   }
 };
 
-// ²âÊÔÓÃÀı1£º»ù±¾¹¦ÄÜ²âÊÔ - Éú³ÉÓĞĞ§µÄUUID
+// æµ‹è¯•ç”¨ä¾‹1ï¼šåŸºæœ¬åŠŸèƒ½æµ‹è¯• - ç”Ÿæˆæœ‰æ•ˆçš„UUID
 TEST_F(UUIDTest, GenerateValidUUID)
 {
-  // ²âÊÔÉú³ÉËæ»úUUID
+  // æµ‹è¯•ç”ŸæˆéšæœºUUID
   auto uuid = mite::UUIDGenerator::Generate();
 
-  // ÑéÖ¤UUID²»Îª¿ÕÇÒ°æ±¾ÓĞĞ§
+  // éªŒè¯UUIDä¸ä¸ºç©ºä¸”ç‰ˆæœ¬æœ‰æ•ˆ
   EXPECT_FALSE(uuid.is_nil());
   EXPECT_NE(uuid.version(), uuids::uuid_version::none);
 
-  // ÑéÖ¤UUIDµÄ°æ±¾Ó¦¸ÃÊÇËæ»ú°æ±¾£¨°æ±¾4£©
+  // éªŒè¯UUIDçš„ç‰ˆæœ¬åº”è¯¥æ˜¯éšæœºç‰ˆæœ¬ï¼ˆç‰ˆæœ¬4ï¼‰
   EXPECT_EQ(uuid.version(), uuids::uuid_version::random_number_based);
 }
 
-// ²âÊÔÓÃÀı2£ºÎ¨Ò»ĞÔ²âÊÔ - È·±£Éú³ÉµÄUUID¶¼ÊÇÎ¨Ò»µÄ
+// æµ‹è¯•ç”¨ä¾‹2ï¼šå”¯ä¸€æ€§æµ‹è¯• - ç¡®ä¿ç”Ÿæˆçš„UUIDéƒ½æ˜¯å”¯ä¸€çš„
 TEST_F(UUIDTest, GenerateUniqueUUIDs)
 {
   constexpr int NUM_UUIDS = 1000;
   std::unordered_set<std::string> uuid_set;
 
-  // Éú³É´óÁ¿UUID²¢¼ì²éÎ¨Ò»ĞÔ
+  // ç”Ÿæˆå¤§é‡UUIDå¹¶æ£€æŸ¥å”¯ä¸€æ€§
   for (int i = 0; i < NUM_UUIDS; ++i) {
     auto uuid = mite::UUIDGenerator::Generate();
     std::string uuid_str = uuids::to_string(uuid);
 
-    // ÑéÖ¤UUID²»ÔÚ¼¯ºÏÖĞ£¨Î¨Ò»ĞÔ£©
+    // éªŒè¯UUIDä¸åœ¨é›†åˆä¸­ï¼ˆå”¯ä¸€æ€§ï¼‰
     EXPECT_EQ(uuid_set.find(uuid_str), uuid_set.end());
     uuid_set.insert(uuid_str);
 
-    // ÑéÖ¤UUIDÓĞĞ§ĞÔ
+    // éªŒè¯UUIDæœ‰æ•ˆæ€§
     EXPECT_TRUE(IsValidUUID(uuid));
   }
 
-  // ÑéÖ¤Éú³ÉÁËÕıÈ·ÊıÁ¿µÄÎ¨Ò»UUID
+  // éªŒè¯ç”Ÿæˆäº†æ­£ç¡®æ•°é‡çš„å”¯ä¸€UUID
   EXPECT_EQ(uuid_set.size(), NUM_UUIDS);
 }
 
-// ²âÊÔÓÃÀı3£º»ùÓÚË÷ÒıµÄÈ·¶¨ĞÔÉú³É²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹3ï¼šåŸºäºç´¢å¼•çš„ç¡®å®šæ€§ç”Ÿæˆæµ‹è¯•
 TEST_F(UUIDTest, GenerateFromIndexDeterministic)
 {
   const size_t test_index = 42;
 
-  // Ê¹ÓÃÏàÍ¬Ë÷ÒıÉú³ÉÁ½´ÎUUID
+  // ä½¿ç”¨ç›¸åŒç´¢å¼•ç”Ÿæˆä¸¤æ¬¡UUID
   auto uuid1 = mite::UUIDGenerator::Generate(test_index);
   auto uuid2 = mite::UUIDGenerator::Generate(test_index);
 
-  // ÑéÖ¤Á½´ÎÉú³ÉµÄ½á¹ûÏàÍ¬£¨È·¶¨ĞÔ£©
+  // éªŒè¯ä¸¤æ¬¡ç”Ÿæˆçš„ç»“æœç›¸åŒï¼ˆç¡®å®šæ€§ï¼‰
   EXPECT_EQ(uuid1, uuid2);
   EXPECT_TRUE(IsValidUUID(uuid1));
   EXPECT_TRUE(IsValidUUID(uuid2));
 }
 
-// ²âÊÔÓÃÀı4£º²»Í¬Ë÷ÒıÉú³É²»Í¬UUID
+// æµ‹è¯•ç”¨ä¾‹4ï¼šä¸åŒç´¢å¼•ç”Ÿæˆä¸åŒUUID
 TEST_F(UUIDTest, GenerateFromDifferentIndexes)
 {
-  // Ê¹ÓÃ²»Í¬Ë÷ÒıÉú³ÉUUID
+  // ä½¿ç”¨ä¸åŒç´¢å¼•ç”ŸæˆUUID
   auto uuid1 = mite::UUIDGenerator::Generate(1);
   auto uuid2 = mite::UUIDGenerator::Generate(2);
   auto uuid3 = mite::UUIDGenerator::Generate(3);
 
-  // ÑéÖ¤ËùÓĞUUID¶¼ÊÇÓĞĞ§ÇÒ²»Í¬µÄ
+  // éªŒè¯æ‰€æœ‰UUIDéƒ½æ˜¯æœ‰æ•ˆä¸”ä¸åŒçš„
   EXPECT_TRUE(IsValidUUID(uuid1));
   EXPECT_TRUE(IsValidUUID(uuid2));
   EXPECT_TRUE(IsValidUUID(uuid3));
@@ -98,30 +98,30 @@ TEST_F(UUIDTest, GenerateFromDifferentIndexes)
   EXPECT_TRUE(AreUUIDsDifferent(uuid2, uuid3));
 }
 
-// ²âÊÔÓÃÀı5£º»ùÓÚ×Ö·û´®µÄÈ·¶¨ĞÔÉú³É²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹5ï¼šåŸºäºå­—ç¬¦ä¸²çš„ç¡®å®šæ€§ç”Ÿæˆæµ‹è¯•
 TEST_F(UUIDTest, GenerateFromStringDeterministic)
 {
   const char *test_string = "test_string_123";
 
-  // Ê¹ÓÃÏàÍ¬×Ö·û´®Éú³ÉÁ½´ÎUUID
+  // ä½¿ç”¨ç›¸åŒå­—ç¬¦ä¸²ç”Ÿæˆä¸¤æ¬¡UUID
   auto uuid1 = mite::UUIDGenerator::Generate(test_string);
   auto uuid2 = mite::UUIDGenerator::Generate(test_string);
 
-  // ÑéÖ¤Á½´ÎÉú³ÉµÄ½á¹ûÏàÍ¬£¨È·¶¨ĞÔ£©
+  // éªŒè¯ä¸¤æ¬¡ç”Ÿæˆçš„ç»“æœç›¸åŒï¼ˆç¡®å®šæ€§ï¼‰
   EXPECT_EQ(uuid1, uuid2);
   EXPECT_TRUE(IsValidUUID(uuid1));
   EXPECT_TRUE(IsValidUUID(uuid2));
 }
 
-// ²âÊÔÓÃÀı6£º²»Í¬×Ö·û´®Éú³É²»Í¬UUID
+// æµ‹è¯•ç”¨ä¾‹6ï¼šä¸åŒå­—ç¬¦ä¸²ç”Ÿæˆä¸åŒUUID
 TEST_F(UUIDTest, GenerateFromDifferentStrings)
 {
-  // Ê¹ÓÃ²»Í¬×Ö·û´®Éú³ÉUUID
+  // ä½¿ç”¨ä¸åŒå­—ç¬¦ä¸²ç”ŸæˆUUID
   auto uuid1 = mite::UUIDGenerator::Generate("string1");
   auto uuid2 = mite::UUIDGenerator::Generate("string2");
   auto uuid3 = mite::UUIDGenerator::Generate("string3");
 
-  // ÑéÖ¤ËùÓĞUUID¶¼ÊÇÓĞĞ§ÇÒ²»Í¬µÄ
+  // éªŒè¯æ‰€æœ‰UUIDéƒ½æ˜¯æœ‰æ•ˆä¸”ä¸åŒçš„
   EXPECT_TRUE(IsValidUUID(uuid1));
   EXPECT_TRUE(IsValidUUID(uuid2));
   EXPECT_TRUE(IsValidUUID(uuid3));
@@ -130,36 +130,36 @@ TEST_F(UUIDTest, GenerateFromDifferentStrings)
   EXPECT_TRUE(AreUUIDsDifferent(uuid2, uuid3));
 }
 
-// ²âÊÔÓÃÀı7£º¿Õ×Ö·û´®´¦Àí²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹7ï¼šç©ºå­—ç¬¦ä¸²å¤„ç†æµ‹è¯•
 TEST_F(UUIDTest, GenerateFromEmptyString)
 {
-  // ²âÊÔ¿Õ×Ö·û´®Éú³ÉUUID
+  // æµ‹è¯•ç©ºå­—ç¬¦ä¸²ç”ŸæˆUUID
   auto uuid = mite::UUIDGenerator::Generate("");
 
-  // ÑéÖ¤Éú³ÉµÄUUIDÓĞĞ§
+  // éªŒè¯ç”Ÿæˆçš„UUIDæœ‰æ•ˆ
   EXPECT_TRUE(IsValidUUID(uuid));
 
-  // ÑéÖ¤¶à´ÎÉú³É¿Õ×Ö·û´®µÃµ½ÏàÍ¬½á¹û
+  // éªŒè¯å¤šæ¬¡ç”Ÿæˆç©ºå­—ç¬¦ä¸²å¾—åˆ°ç›¸åŒç»“æœ
   auto uuid2 = mite::UUIDGenerator::Generate("");
   EXPECT_EQ(uuid, uuid2);
 }
 
-// ²âÊÔÓÃÀı8£ºÌØÊâ×Ö·û×Ö·û´®²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹8ï¼šç‰¹æ®Šå­—ç¬¦å­—ç¬¦ä¸²æµ‹è¯•
 TEST_F(UUIDTest, GenerateFromSpecialCharacters)
 {
   const char *special_chars = "!@#$%^&*()_+-=[]{}|;:',.<>/?";
 
-  // ²âÊÔÌØÊâ×Ö·û×Ö·û´®Éú³ÉUUID
+  // æµ‹è¯•ç‰¹æ®Šå­—ç¬¦å­—ç¬¦ä¸²ç”ŸæˆUUID
   auto uuid1 = mite::UUIDGenerator::Generate(special_chars);
   auto uuid2 = mite::UUIDGenerator::Generate(special_chars);
 
-  // ÑéÖ¤UUIDÓĞĞ§ÇÒÈ·¶¨ĞÔ
+  // éªŒè¯UUIDæœ‰æ•ˆä¸”ç¡®å®šæ€§
   EXPECT_TRUE(IsValidUUID(uuid1));
   EXPECT_TRUE(IsValidUUID(uuid2));
   EXPECT_EQ(uuid1, uuid2);
 }
 
-// ²âÊÔÓÃÀı9£º¶àÏß³Ì°²È«ĞÔ²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹9ï¼šå¤šçº¿ç¨‹å®‰å…¨æ€§æµ‹è¯•
 TEST_F(UUIDTest, ThreadSafety)
 {
   constexpr int NUM_THREADS = 10;
@@ -169,7 +169,7 @@ TEST_F(UUIDTest, ThreadSafety)
   std::vector<std::vector<uuids::uuid>> thread_results(NUM_THREADS);
   std::atomic<int> completed_threads(0);
 
-  // ´´½¨¶à¸öÏß³ÌÍ¬Ê±Éú³ÉUUID
+  // åˆ›å»ºå¤šä¸ªçº¿ç¨‹åŒæ—¶ç”ŸæˆUUID
   for (int i = 0; i < NUM_THREADS; ++i) {
     threads.emplace_back([i, &thread_results, &completed_threads, UUIDS_PER_THREAD]() {
       for (int j = 0; j < UUIDS_PER_THREAD; ++j) {
@@ -179,41 +179,41 @@ TEST_F(UUIDTest, ThreadSafety)
     });
   }
 
-  // µÈ´ıËùÓĞÏß³ÌÍê³É
+  // ç­‰å¾…æ‰€æœ‰çº¿ç¨‹å®Œæˆ
   for (auto &thread : threads) {
     if (thread.joinable()) {
       thread.join();
     }
   }
 
-  // ÑéÖ¤ËùÓĞÏß³Ì¶¼ÒÑÍê³É
+  // éªŒè¯æ‰€æœ‰çº¿ç¨‹éƒ½å·²å®Œæˆ
   EXPECT_EQ(completed_threads, NUM_THREADS);
 
-  // ÊÕ¼¯ËùÓĞÉú³ÉµÄUUID²¢ÑéÖ¤Î¨Ò»ĞÔ
+  // æ”¶é›†æ‰€æœ‰ç”Ÿæˆçš„UUIDå¹¶éªŒè¯å”¯ä¸€æ€§
   std::unordered_set<std::string> all_uuids;
   for (const auto &thread_uuids : thread_results) {
     for (const auto &uuid : thread_uuids) {
       std::string uuid_str = uuids::to_string(uuid);
       EXPECT_TRUE(IsValidUUID(uuid));
 
-      // ÑéÖ¤UUIDÎ¨Ò»ĞÔ
+      // éªŒè¯UUIDå”¯ä¸€æ€§
       EXPECT_EQ(all_uuids.find(uuid_str), all_uuids.end());
       all_uuids.insert(uuid_str);
     }
   }
 
-  // ÑéÖ¤×ÜUUIDÊıÁ¿ÕıÈ·
+  // éªŒè¯æ€»UUIDæ•°é‡æ­£ç¡®
   EXPECT_EQ(all_uuids.size(), NUM_THREADS * UUIDS_PER_THREAD);
 }
 
-// ²âÊÔÓÃÀı10£ºĞÔÄÜ²âÊÔ - ÅúÁ¿Éú³ÉUUID
+// æµ‹è¯•ç”¨ä¾‹10ï¼šæ€§èƒ½æµ‹è¯• - æ‰¹é‡ç”ŸæˆUUID
 TEST_F(UUIDTest, PerformanceBatchGeneration)
 {
   constexpr int BATCH_SIZE = 10000;
   std::vector<uuids::uuid> uuids;
   uuids.reserve(BATCH_SIZE);
 
-  // ÅúÁ¿Éú³ÉUUID²¢²âÁ¿Ê±¼ä
+  // æ‰¹é‡ç”ŸæˆUUIDå¹¶æµ‹é‡æ—¶é—´
   auto start_time = std::chrono::high_resolution_clock::now();
 
   for (int i = 0; i < BATCH_SIZE; ++i) {
@@ -223,7 +223,7 @@ TEST_F(UUIDTest, PerformanceBatchGeneration)
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
-  // ÑéÖ¤ËùÓĞUUIDÓĞĞ§ÇÒÎ¨Ò»
+  // éªŒè¯æ‰€æœ‰UUIDæœ‰æ•ˆä¸”å”¯ä¸€
   std::unordered_set<std::string> uuid_set;
   for (const auto &uuid : uuids) {
     EXPECT_TRUE(IsValidUUID(uuid));
@@ -232,80 +232,80 @@ TEST_F(UUIDTest, PerformanceBatchGeneration)
     uuid_set.insert(uuid_str);
   }
 
-  // Êä³öĞÔÄÜĞÅÏ¢£¨ÔÚ²âÊÔ±¨¸æÖĞ¿É¼û£©
+  // è¾“å‡ºæ€§èƒ½ä¿¡æ¯ï¼ˆåœ¨æµ‹è¯•æŠ¥å‘Šä¸­å¯è§ï¼‰
   std::cout << "Generated " << BATCH_SIZE << " UUIDs in " << duration.count() << " ms"
             << std::endl;
-  std::cout << "Average time per UUID: " << (duration.count() * 1000.0 / BATCH_SIZE) << " ¦Ìs"
+  std::cout << "Average time per UUID: " << (duration.count() * 1000.0 / BATCH_SIZE) << " Î¼s"
             << std::endl;
 
-  // ÑéÖ¤Éú³ÉÁËÕıÈ·ÊıÁ¿µÄUUID
+  // éªŒè¯ç”Ÿæˆäº†æ­£ç¡®æ•°é‡çš„UUID
   EXPECT_EQ(uuid_set.size(), BATCH_SIZE);
 }
 
-// ²âÊÔÓÃÀı11£º±ß½çÌõ¼ş²âÊÔ - ¼«´óË÷ÒıÖµ
+// æµ‹è¯•ç”¨ä¾‹11ï¼šè¾¹ç•Œæ¡ä»¶æµ‹è¯• - æå¤§ç´¢å¼•å€¼
 TEST_F(UUIDTest, LargeIndexValue)
 {
   constexpr size_t large_index = std::numeric_limits<size_t>::max();
 
-  // ²âÊÔ¼«´óË÷ÒıÖµÉú³ÉUUID
+  // æµ‹è¯•æå¤§ç´¢å¼•å€¼ç”ŸæˆUUID
   auto uuid = mite::UUIDGenerator::Generate(large_index);
 
-  // ÑéÖ¤UUIDÓĞĞ§
+  // éªŒè¯UUIDæœ‰æ•ˆ
   EXPECT_TRUE(IsValidUUID(uuid));
 
-  // ÑéÖ¤ÏàÍ¬Ë÷ÒıÉú³ÉÏàÍ¬UUID
+  // éªŒè¯ç›¸åŒç´¢å¼•ç”Ÿæˆç›¸åŒUUID
   auto uuid2 = mite::UUIDGenerator::Generate(large_index);
   EXPECT_EQ(uuid, uuid2);
 }
 
-// ²âÊÔÓÃÀı12£º×Ö·û´®¹şÏ£Ò»ÖÂĞÔ²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹12ï¼šå­—ç¬¦ä¸²å“ˆå¸Œä¸€è‡´æ€§æµ‹è¯•
 TEST_F(UUIDTest, StringHashConsistency)
 {
-  // ²âÊÔÏàÍ¬ÄÚÈİ²»Í¬Ö¸ÕëµÄ×Ö·û´®Éú³ÉÏàÍ¬UUID
+  // æµ‹è¯•ç›¸åŒå†…å®¹ä¸åŒæŒ‡é’ˆçš„å­—ç¬¦ä¸²ç”Ÿæˆç›¸åŒUUID
   const char *str1 = "hello_world";
   std::string str2 = "hello_world";
 
   auto uuid1 = mite::UUIDGenerator::Generate(str1);
   auto uuid2 = mite::UUIDGenerator::Generate(str2.c_str());
 
-  // ÑéÖ¤ÏàÍ¬ÄÚÈİµÄ×Ö·û´®Éú³ÉÏàÍ¬UUID
+  // éªŒè¯ç›¸åŒå†…å®¹çš„å­—ç¬¦ä¸²ç”Ÿæˆç›¸åŒUUID
   EXPECT_EQ(uuid1, uuid2);
   EXPECT_TRUE(IsValidUUID(uuid1));
   EXPECT_TRUE(IsValidUUID(uuid2));
 }
 
-// ²âÊÔÓÃÀı13£ºUUID×Ö·û´®×ª»»²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹13ï¼šUUIDå­—ç¬¦ä¸²è½¬æ¢æµ‹è¯•
 TEST_F(UUIDTest, UUIDStringConversion)
 {
-  // Éú³ÉUUID²¢²âÊÔ×Ö·û´®×ª»»
+  // ç”ŸæˆUUIDå¹¶æµ‹è¯•å­—ç¬¦ä¸²è½¬æ¢
   auto uuid = mite::UUIDGenerator::Generate();
   std::string uuid_str = uuids::to_string(uuid);
 
-  // ÑéÖ¤×Ö·û´®¸ñÊ½·ûºÏUUID±ê×¼
-  EXPECT_EQ(uuid_str.length(), 36);  // UUID×Ö·û´®³¤¶ÈÓ¦Îª36×Ö·û
+  // éªŒè¯å­—ç¬¦ä¸²æ ¼å¼ç¬¦åˆUUIDæ ‡å‡†
+  EXPECT_EQ(uuid_str.length(), 36);  // UUIDå­—ç¬¦ä¸²é•¿åº¦åº”ä¸º36å­—ç¬¦
   EXPECT_EQ(uuid_str[8], '-');
   EXPECT_EQ(uuid_str[13], '-');
   EXPECT_EQ(uuid_str[18], '-');
   EXPECT_EQ(uuid_str[23], '-');
 
-  // ÑéÖ¤¿ÉÒÔ´Ó×Ö·û´®½âÎö»ØUUID
+  // éªŒè¯å¯ä»¥ä»å­—ç¬¦ä¸²è§£æå›UUID
   auto parsed_uuid = uuids::uuid::from_string(uuid_str);
   EXPECT_TRUE(parsed_uuid.has_value());
   EXPECT_EQ(uuid, parsed_uuid.value());
 }
 
-// ²âÊÔÓÃÀı14£ºnil UUID ´¦Àí²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹14ï¼šnil UUID å¤„ç†æµ‹è¯•
 TEST_F(UUIDTest, NonNilUUID)
 {
-  // ÑéÖ¤Éú³ÉµÄUUID²»ÊÇnil UUID
+  // éªŒè¯ç”Ÿæˆçš„UUIDä¸æ˜¯nil UUID
   auto uuid = mite::UUIDGenerator::Generate();
   EXPECT_FALSE(uuid.is_nil());
 
-  // ÑéÖ¤»ùÓÚË÷ÒıµÄUUIDÒ²²»ÊÇnil
+  // éªŒè¯åŸºäºç´¢å¼•çš„UUIDä¹Ÿä¸æ˜¯nil
   auto indexed_uuid = mite::UUIDGenerator::Generate(123);
   EXPECT_FALSE(indexed_uuid.is_nil());
 
-  // ÑéÖ¤»ùÓÚ×Ö·û´®µÄUUIDÒ²²»ÊÇnil
+  // éªŒè¯åŸºäºå­—ç¬¦ä¸²çš„UUIDä¹Ÿä¸æ˜¯nil
   auto string_uuid = mite::UUIDGenerator::Generate("test");
   EXPECT_FALSE(string_uuid.is_nil());
 }

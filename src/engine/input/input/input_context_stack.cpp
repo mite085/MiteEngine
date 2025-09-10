@@ -16,7 +16,7 @@ void InputContextStack::Push(const std::shared_ptr<InputContext> &context)
 
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // ·ÀÖ¹ÖØ¸´ÍÆÈëÏàÍ¬ÊµÀı
+  // é˜²æ­¢é‡å¤æ¨å…¥ç›¸åŒå®ä¾‹
   if (!m_Stack.empty() && m_Stack.back() == context) {
     m_Logger->warn("Duplicate context pushed: {}", context->GetName());
     return;
@@ -53,7 +53,7 @@ bool InputContextStack::IsInContext(const std::string &name)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // ´ÓÕ»¶¥ÏòÏÂËÑË÷
+  // ä»æ ˆé¡¶å‘ä¸‹æœç´¢
   auto it = std::find_if(
       m_Stack.rbegin(), m_Stack.rend(), [&name](const std::shared_ptr<InputContext> &ctx) {
         return ctx->GetName() == name;
@@ -66,17 +66,17 @@ bool InputContextStack::ProcessEvent(Event &event)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // ´ÓÕ»¶¥ÏòÏÂ´¦Àí
+  // ä»æ ˆé¡¶å‘ä¸‹å¤„ç†
   for (auto it = m_Stack.rbegin(); it != m_Stack.rend(); ++it) {
     const auto &context = *it;
 
-    // 1. ¼ì²éÊÇ·ñ×èÈûÊäÈë
+    // 1. æ£€æŸ¥æ˜¯å¦é˜»å¡è¾“å…¥
     if (context->IsInputBlocked()) {
       m_Logger->trace("Event blocked by context: {}", context->GetName());
       return true;
     }
 
-    // 2. ³¢ÊÔ´¦ÀíÊÂ¼ş
+    // 2. å°è¯•å¤„ç†äº‹ä»¶
     if (context->ProcessEvent(event)) {
       m_Logger->trace("Event consumed by context: {}", context->GetName());
       return true;
@@ -92,7 +92,7 @@ bool InputContextStack::IsEmpty()
   return m_Stack.empty();
 }
 
-// ¸¨Öú·½·¨£ºÇå¿ÕÕ»£¨ÓÃÓÚ³¡¾°ÇĞ»»µÈ£©
+// è¾…åŠ©æ–¹æ³•ï¼šæ¸…ç©ºæ ˆï¼ˆç”¨äºåœºæ™¯åˆ‡æ¢ç­‰ï¼‰
 void InputContextStack::Clear()
 {
   std::lock_guard<std::mutex> lock(m_Mutex);

@@ -7,29 +7,29 @@
 #include "imgui.h"
 namespace mite {
 /**
- * @brief ImGuiÊäÈëÊÊÅäÆ÷ - ¸ºÔğImGuiÓëÒıÇæÊäÈëÏµÍ³µÄÇÅ½Ó
+ * @brief ImGuiè¾“å…¥é€‚é…å™¨ - è´Ÿè´£ImGuiä¸å¼•æ“è¾“å…¥ç³»ç»Ÿçš„æ¡¥æ¥
  *
- * ¹¦ÄÜ£º
- * 1. ÊäÈëÊÂ¼şÇÅ½Ó£º½«ÒıÇæÊäÈëÊÂ¼ş×ª»»ÎªImGui IO×´Ì¬
- * 2. ÊäÈëÓÅÏÈ¼¶¹ÜÀí£º×÷Îª×î¸ßÓÅÏÈ¼¶µÄÊäÈëÉÏÏÂÎÄ£¬¸ù¾İImGui×´Ì¬¾ö¶¨ÊÇ·ñ×èÖ¹ÊÂ¼ş´«µİ
- * 3. ÊäÈë×´Ì¬Í¬²½£ºÎ¬»¤ImGuiÊäÈë×´Ì¬ÓëÒıÇæÊäÈë×´Ì¬µÄÒ»ÖÂĞÔ
+ * åŠŸèƒ½ï¼š
+ * 1. è¾“å…¥äº‹ä»¶æ¡¥æ¥ï¼šå°†å¼•æ“è¾“å…¥äº‹ä»¶è½¬æ¢ä¸ºImGui IOçŠ¶æ€
+ * 2. è¾“å…¥ä¼˜å…ˆçº§ç®¡ç†ï¼šä½œä¸ºæœ€é«˜ä¼˜å…ˆçº§çš„è¾“å…¥ä¸Šä¸‹æ–‡ï¼Œæ ¹æ®ImGuiçŠ¶æ€å†³å®šæ˜¯å¦é˜»æ­¢äº‹ä»¶ä¼ é€’
+ * 3. è¾“å…¥çŠ¶æ€åŒæ­¥ï¼šç»´æŠ¤ImGuiè¾“å…¥çŠ¶æ€ä¸å¼•æ“è¾“å…¥çŠ¶æ€çš„ä¸€è‡´æ€§
  */
 class ImGuiInputAdapter{
  public:
   ImGuiInputAdapter();
   ~ImGuiInputAdapter();
 
-  // InputContext½Ó¿Ú
+  // InputContextæ¥å£
   bool ProcessEvent(Event &e);
 
-  // ³õÊ¼»¯·½·¨
+  // åˆå§‹åŒ–æ–¹æ³•
   void Initialize();
   void Shutdown();
 
-  // Ã¿Ö¡¸üĞÂImGui IO×´Ì¬
+  // æ¯å¸§æ›´æ–°ImGui IOçŠ¶æ€
   void UpdateImGuiIO();
 
-  // ÏÔÊ¾³ß´çºÍËõ·ÅÏà¹Ø·½·¨
+  // æ˜¾ç¤ºå°ºå¯¸å’Œç¼©æ”¾ç›¸å…³æ–¹æ³•
   void UpdateDisplaySize(GLFWwindow *window);
   void UpdateFramebufferScale(GLFWwindow *window);
 
@@ -43,7 +43,7 @@ class ImGuiInputAdapter{
   }
 
  private:
-  // ¾ßÌåÊÂ¼ş´¦Àí·½·¨
+  // å…·ä½“äº‹ä»¶å¤„ç†æ–¹æ³•
   bool ProcessMouseMoveEvent(MouseMoveEvent &e);
   bool ProcessMouseButtonEvent(MouseButtonPressedEvent &e);
   bool ProcessMouseButtonEvent(MouseButtonReleasedEvent &e);
@@ -52,16 +52,16 @@ class ImGuiInputAdapter{
   bool ProcessKeyEvent(KeyReleasedEvent &e);
   bool ProcessKeyTypedEvent(KeyTypedEvent &e);
 
-  // GLFW¼üÂëµ½ImGuiKeyµÄ×ª»»
+  // GLFWé”®ç åˆ°ImGuiKeyçš„è½¬æ¢
   ImGuiKey ConvertGlfwKeyToImGuiKey(int glfwKey);
   ImGuiKey ConvertGlfwMouseButtonToImGuiKey(int glfwButton);
 
   Logger m_Logger;
 
-  // ÊäÈë×´Ì¬¸ú×Ù
+  // è¾“å…¥çŠ¶æ€è·Ÿè¸ª
   glm::vec2 m_LastMousePos;
 
-  // ÏÔÊ¾Ïà¹Ø×´Ì¬
+  // æ˜¾ç¤ºç›¸å…³çŠ¶æ€
   glm::ivec2 m_DisplaySize = glm::ivec2(0);
   glm::vec2 m_FramebufferScale = glm::vec2(1.0f);
 };

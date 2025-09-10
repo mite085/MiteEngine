@@ -6,22 +6,22 @@
 #include "material_param_variant.h"
 
 namespace mite {
-// ¶¨ÒåÎÆÀí°ó¶¨º¯ÊıÀàĞÍ
+// å®šä¹‰çº¹ç†ç»‘å®šå‡½æ•°ç±»å‹
 using TextureBindFunc = std::function<void(TextureGPUHandle, uint32_t)>;
 
 /**
- * @brief ²ÄÖÊÊµÀı£¨ÔËĞĞÊ±°ó¶¨¾ßÌåShaderºÍ²ÎÊı£©
- * @note Ö°Ôğ£º
- * 1. ¹ØÁªMaterialÂß¼­²ÎÊıÓë¾ßÌåShader
- * 2. ¹ÜÀíUniform×´Ì¬ºÍÎÆÀí°ó¶¨
- * 3. Ìá¹©äÖÈ¾Ç°µÄApply½Ó¿Ú
+ * @brief æè´¨å®ä¾‹ï¼ˆè¿è¡Œæ—¶ç»‘å®šå…·ä½“Shaderå’Œå‚æ•°ï¼‰
+ * @note èŒè´£ï¼š
+ * 1. å…³è”Materialé€»è¾‘å‚æ•°ä¸å…·ä½“Shader
+ * 2. ç®¡ç†UniformçŠ¶æ€å’Œçº¹ç†ç»‘å®š
+ * 3. æä¾›æ¸²æŸ“å‰çš„Applyæ¥å£
  */
 class MaterialInstance {
  public:
   explicit MaterialInstance(std::shared_ptr<OpenGLShader> shader);
   ~MaterialInstance();
 
-  // ---- ²ÎÊıÉèÖÃ ----
+  // ---- å‚æ•°è®¾ç½® ----
   void SetFloat(const std::string &name, float value);
   void SetInt(const std::string &name, int value);
   void SetVector2(const std::string &name, const glm::vec2 &value);
@@ -30,25 +30,25 @@ class MaterialInstance {
   void SetMatrix3(const std::string &name, const glm::mat3 &value);
   void SetMatrix4(const std::string &name, const glm::mat4 &value);
 
-  // ---- ²ÎÊıÊı×éÉèÖÃ ----
+  // ---- å‚æ•°æ•°ç»„è®¾ç½® ----
   void SetIntArray(const std::string &name, const int *values, size_t count);
   void SetFloatArray(const std::string &name, const float *values, size_t count);
   void SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count);
 
-  // ---- ÎÆÀíÉèÖÃ ----
+  // ---- çº¹ç†è®¾ç½® ----
   void SetTexture(const std::string &name, std::shared_ptr<Texture> texture);
   void SetTextureArray(const std::string &name,
                        const std::vector<std::shared_ptr<Texture>> &textures);
 
-  // ---- ×´Ì¬¿ØÖÆ ----
+  // ---- çŠ¶æ€æ§åˆ¶ ----
   /**
-   * @brief Ó¦ÓÃ²ÄÖÊµ½äÖÈ¾¹ÜÏß£¨°ó¶¨Shader+ÉÏ´«Uniforms+°ó¶¨ÎÆÀí£©
-   * @param textureBindFunc ÎÆÀí°ó¶¨º¯Êı£¨ÓëRender deviceÏà¹Ø£©
-   * @param overrideShader ¿ÉÑ¡¸²¸ÇShader£¨ÓÃÓÚÌØÊâäÖÈ¾Ğ§¹û£©
+   * @brief åº”ç”¨æè´¨åˆ°æ¸²æŸ“ç®¡çº¿ï¼ˆç»‘å®šShader+ä¸Šä¼ Uniforms+ç»‘å®šçº¹ç†ï¼‰
+   * @param textureBindFunc çº¹ç†ç»‘å®šå‡½æ•°ï¼ˆä¸Render deviceç›¸å…³ï¼‰
+   * @param overrideShader å¯é€‰è¦†ç›–Shaderï¼ˆç”¨äºç‰¹æ®Šæ¸²æŸ“æ•ˆæœï¼‰
    */
   void Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader = nullptr) const;
 
-  // ---- ÊôĞÔ·ÃÎÊ ----
+  // ---- å±æ€§è®¿é—® ----
   std::shared_ptr<OpenGLShader> GetShader() const
   {
     return m_Shader;
@@ -59,11 +59,11 @@ class MaterialInstance {
   }
 
  private:
-  std::shared_ptr<OpenGLShader> m_Shader;                                // ¹ØÁªµÄShader³ÌĞò
-  std::unordered_map<std::string, UniformVariant> m_Uniforms;            // UniformÖµ´æ´¢
-  std::unordered_map<std::string, std::shared_ptr<Texture>> m_Textures;  // ÎÆÀí°ó¶¨
+  std::shared_ptr<OpenGLShader> m_Shader;                                // å…³è”çš„Shaderç¨‹åº
+  std::unordered_map<std::string, UniformVariant> m_Uniforms;            // Uniformå€¼å­˜å‚¨
+  std::unordered_map<std::string, std::shared_ptr<Texture>> m_Textures;  // çº¹ç†ç»‘å®š
   std::unordered_map<std::string, std::vector<std::shared_ptr<Texture>>>
-      m_TextureArrays;  // ÎÆÀíÊı×é
+      m_TextureArrays;  // çº¹ç†æ•°ç»„
 };
 };  // namespace mite
 

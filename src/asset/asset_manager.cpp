@@ -4,12 +4,12 @@ namespace mite {
 
 AssetManager::~AssetManager()
 {
-  // Îö¹¹Ê±×Ô¶¯ÇåÀíËùÓĞ»º´æ×ÊÔ´
+  // ææ„æ—¶è‡ªåŠ¨æ¸…ç†æ‰€æœ‰ç¼“å­˜èµ„æº
   m_TextureCache.PurgeUnused();
   m_ModelCache.PurgeUnused();
 }
 
-// ===================== ÎÆÀí¹ÜÀí =====================
+// ===================== çº¹ç†ç®¡ç† =====================
 AssetID AssetManager::LoadTexture(const std::string &path)
 {
   AssetID id = UUIDGenerator::Generate(path.c_str());
@@ -17,13 +17,13 @@ AssetID AssetManager::LoadTexture(const std::string &path)
 
   auto cachedTex = m_TextureCache.Get(id);
 
-  // »º´æ²»´æÔÚÔòÖ´ĞĞ¼ÓÔØ
+  // ç¼“å­˜ä¸å­˜åœ¨åˆ™æ‰§è¡ŒåŠ è½½
   if (!cachedTex) {
     LoadTextureInternalToCache(path);
     cachedTex = m_TextureCache.Get(id);
   }
 
-  m_TextureCache.AddRefCount(id);  // Ôö¼ÓÒıÓÃ¼ÆÊı
+  m_TextureCache.AddRefCount(id);  // å¢åŠ å¼•ç”¨è®¡æ•°
   return cachedTex->id;
   
 }
@@ -36,10 +36,10 @@ std::shared_ptr<TextureAsset> AssetManager::GetTexture(AssetID id) const
 void AssetManager::LoadTextureInternalToCache(const std::string &path)
 {
   try {
-    // 1. Ê¹ÓÃTextureLoader¼ÓÔØÔ­Ê¼Êı¾İ
+    // 1. ä½¿ç”¨TextureLoaderåŠ è½½åŸå§‹æ•°æ®
     std::shared_ptr<TextureAsset> textureAsset = TextureLoader::LoadTextureData(path);
 
-    // 2. »º´æ×ÊÔ´£¨textureAssetµÄËùÓĞÈ¨×ªÈÃ¸øTextureAsset£©
+    // 2. ç¼“å­˜èµ„æºï¼ˆtextureAssetçš„æ‰€æœ‰æƒè½¬è®©ç»™TextureAssetï¼‰
     m_TextureCache.Store(textureAsset);
   }
   catch (const std::exception &e) {
@@ -55,7 +55,7 @@ void AssetManager::ReleaseTexture(AssetID id)
   }
 }
 
-// ===================== Ä£ĞÍ¹ÜÀí =====================
+// ===================== æ¨¡å‹ç®¡ç† =====================
 AssetID AssetManager::LoadModel(const std::string &path,
                                 bool flipUVs,
                                 bool generateLODs,
@@ -67,13 +67,13 @@ AssetID AssetManager::LoadModel(const std::string &path,
   AssetID id = UUIDGenerator::Generate(path.c_str());
   auto cachedModel = m_ModelCache.Get(id);
 
-  // »º´æ²»´æÔÚÔòÖ´ĞĞ¼ÓÔØ
+  // ç¼“å­˜ä¸å­˜åœ¨åˆ™æ‰§è¡ŒåŠ è½½
   if (!cachedModel) {
     LoadModelInternalToCache(path ,flipUVs, generateLODs, lodLevels);
     cachedModel = m_ModelCache.Get(id);
   }
 
-  m_ModelCache.AddRefCount(id);  // Ôö¼ÓÒıÓÃ¼ÆÊı
+  m_ModelCache.AddRefCount(id);  // å¢åŠ å¼•ç”¨è®¡æ•°
   return cachedModel->id;
 }
 
@@ -88,11 +88,11 @@ void AssetManager::LoadModelInternalToCache(const std::string &path,
                                             const std::vector<float> &lodLevels)
 {
   try {
-    // 1. Ê¹ÓÃModelLoader¼ÓÔØÄ£ĞÍÊı¾İ
+    // 1. ä½¿ç”¨ModelLoaderåŠ è½½æ¨¡å‹æ•°æ®
     std::shared_ptr<ModelAsset> model = ModelLoader::LoadModel(
         path, flipUVs, generateLODs, lodLevels);
 
-    // 2. »º´æ×ÊÔ´
+    // 2. ç¼“å­˜èµ„æº
     AssetID id = UUIDGenerator::Generate(path.c_str());
     m_ModelCache.Store(model);
   }

@@ -5,22 +5,22 @@
 #include "scene_graph.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class MeshComponent;
 
 /**
  * @class SceneGraphSystem
- * @brief ³¡¾°Í¼ÏµÍ³ - ¸ºÔğECSÓëSceneGraphÖ®¼äµÄÊı¾İÍ¬²½ºÍĞ­µ÷
+ * @brief åœºæ™¯å›¾ç³»ç»Ÿ - è´Ÿè´£ECSä¸SceneGraphä¹‹é—´çš„æ•°æ®åŒæ­¥å’Œåè°ƒ
  *
- * ºËĞÄÖ°Ôğ£º
- * 1. ¼àÌıECSÊÂ¼ş£¬Î¬»¤SceneGraphÖĞµÄ½ÚµãÉúÃüÖÜÆÚ
- * 2. ´¦Àí×é¼ş±ä»¯¶Ô³¡¾°Í¼µÄÓ°Ïì
- * 3. ×÷ÎªECSÓëSceneGraphÖ®¼äµÄÇÅÁº
+ * æ ¸å¿ƒèŒè´£ï¼š
+ * 1. ç›‘å¬ECSäº‹ä»¶ï¼Œç»´æŠ¤SceneGraphä¸­çš„èŠ‚ç‚¹ç”Ÿå‘½å‘¨æœŸ
+ * 2. å¤„ç†ç»„ä»¶å˜åŒ–å¯¹åœºæ™¯å›¾çš„å½±å“
+ * 3. ä½œä¸ºECSä¸SceneGraphä¹‹é—´çš„æ¡¥æ¢
  *
- * Éè¼ÆÔ­Ôò£º
- * - ´¿´âµÄComponentSystem£¬²»°üº¬³¡¾°¹ÜÀíÂß¼­
- * - ×¨×¢ÓÚECSÊÂ¼şÏìÓ¦ºÍÊı¾İÍ¬²½
- * - ÒÀÀµSceneGraph·şÎñÍê³ÉÊµ¼Ê³¡¾°²Ù×÷
+ * è®¾è®¡åŸåˆ™ï¼š
+ * - çº¯ç²¹çš„ComponentSystemï¼Œä¸åŒ…å«åœºæ™¯ç®¡ç†é€»è¾‘
+ * - ä¸“æ³¨äºECSäº‹ä»¶å“åº”å’Œæ•°æ®åŒæ­¥
+ * - ä¾èµ–SceneGraphæœåŠ¡å®Œæˆå®é™…åœºæ™¯æ“ä½œ
  */
 class SceneGraphSystem : public ComponentSystem {
  public:
@@ -29,7 +29,7 @@ class SceneGraphSystem : public ComponentSystem {
   SceneGraphSystem();
   ~SceneGraphSystem() override = default;
 
-  // ==================== ComponentSystem ½Ó¿ÚÊµÏÖ ====================
+  // ==================== ComponentSystem æ¥å£å®ç° ====================
   Component::Family GetExecutionOrder() const override;
   void Initialize() override;
   void Update(float deltaTime, SceneRegistry &registry) override;
@@ -38,83 +38,83 @@ class SceneGraphSystem : public ComponentSystem {
   std::vector<std::type_index> GetComponentTypes() const override;
   std::vector<std::type_index> GetSystemDependencies() const override;
 
-  // ==================== SceneGraph ·ÃÎÊ½Ó¿Ú ====================
+  // ==================== SceneGraph è®¿é—®æ¥å£ ====================
 
   /**
-   * @brief »ñÈ¡SceneGraph·şÎñÊµÀı
-   * @return SceneGraphÖ¸Õë£¬¿ÉÄÜÎªnullptr£¨Èç¹ûÎ´³õÊ¼»¯£©
+   * @brief è·å–SceneGraphæœåŠ¡å®ä¾‹
+   * @return SceneGraphæŒ‡é’ˆï¼Œå¯èƒ½ä¸ºnullptrï¼ˆå¦‚æœæœªåˆå§‹åŒ–ï¼‰
    */
   SceneGraph *GetSceneGraph() const;
 
   /**
-   * @brief ÉèÖÃÍâ²¿SceneGraph·şÎñÊµÀı
-   * @param sceneGraph Íâ²¿µÄSceneGraphÊµÀı
+   * @brief è®¾ç½®å¤–éƒ¨SceneGraphæœåŠ¡å®ä¾‹
+   * @param sceneGraph å¤–éƒ¨çš„SceneGraphå®ä¾‹
    */
   void SetSceneGraph(SceneGraph *sceneGraph);
 
-  // ==================== µ÷ÊÔºÍÍ³¼Æ½Ó¿Ú ====================
+  // ==================== è°ƒè¯•å’Œç»Ÿè®¡æ¥å£ ====================
 
   /**
-   * @brief »ñÈ¡ÏµÍ³Í³¼ÆĞÅÏ¢
-   * @return Í³¼ÆĞÅÏ¢×Ö·û´®
+   * @brief è·å–ç³»ç»Ÿç»Ÿè®¡ä¿¡æ¯
+   * @return ç»Ÿè®¡ä¿¡æ¯å­—ç¬¦ä¸²
    */
   std::string GetStats() const;
 
  private:
-  // ==================== ECSÊÂ¼ş´¦Àí»Øµ÷ ====================
+  // ==================== ECSäº‹ä»¶å¤„ç†å›è°ƒ ====================
 
   bool OnEntityCreated(EntityCreatedEvent &e);
   bool OnEntityDestroyed(EntityDestroyedEvent &e);
   bool OnMeshComponentAdded(ComponentAddedEvent<MeshComponent> &e);
   bool OnMeshComponentRemoved(ComponentRemovedEvent<MeshComponent> &e);
 
-  // ==================== ÄÚ²¿¹¤¾ß·½·¨ ====================
+  // ==================== å†…éƒ¨å·¥å…·æ–¹æ³• ====================
 
   /**
-   * @brief ÎªÊµÌå´´½¨³¡¾°½Úµã£¨Èç¹ûÂú×ãÌõ¼ş£©
-   * @param entity Ä¿±êÊµÌå
+   * @brief ä¸ºå®ä½“åˆ›å»ºåœºæ™¯èŠ‚ç‚¹ï¼ˆå¦‚æœæ»¡è¶³æ¡ä»¶ï¼‰
+   * @param entity ç›®æ ‡å®ä½“
    */
   void CreateNodeForEntity(SceneRegistry &registry, Entity entity);
 
   /**
-   * @brief ¼ì²éÊµÌåÊÇ·ñĞèÒª³¡¾°½Úµã
-   * @param entity Ä¿±êÊµÌå
-   * @return ÊÇ·ñĞèÒª´´½¨³¡¾°½Úµã
+   * @brief æ£€æŸ¥å®ä½“æ˜¯å¦éœ€è¦åœºæ™¯èŠ‚ç‚¹
+   * @param entity ç›®æ ‡å®ä½“
+   * @return æ˜¯å¦éœ€è¦åˆ›å»ºåœºæ™¯èŠ‚ç‚¹
    */
   bool ShouldCreateNodeForEntity(SceneRegistry &registry, Entity entity) const;
 
   /**
-   * @brief Í¬²½°üÎ§ºĞÊı¾İµ½SceneGraph
-   * @param entity Ä¿±êÊµÌå
+   * @brief åŒæ­¥åŒ…å›´ç›’æ•°æ®åˆ°SceneGraph
+   * @param entity ç›®æ ‡å®ä½“
    */
   void SyncBoundsToSceneGraph(SceneRegistry &registry, Entity entity);
 
  private:
   /**
-   * @brief ´¦ÀíÊµÌåÔİ´æ¶ÓÁĞ
-   * @param registry ×¢²á±í
+   * @brief å¤„ç†å®ä½“æš‚å­˜é˜Ÿåˆ—
+   * @param registry æ³¨å†Œè¡¨
    */
   void ProcessPendingOperations(SceneRegistry &registry);
 
-  // ÊµÌåÔİ´æ¶ÓÁĞ
-  std::vector<Entity> m_PendingCreateNodes;   // ´ı´´½¨µÄ½Úµã
-  std::vector<Entity> m_PendingDestroyNodes;  // ´ıÏú»ÙµÄ½Úµã
-  std::vector<Entity> m_PendingSyncBounds;    // ´ıÍ¬²½°üÎ§ºĞµÄ½Úµã
+  // å®ä½“æš‚å­˜é˜Ÿåˆ—
+  std::vector<Entity> m_PendingCreateNodes;   // å¾…åˆ›å»ºçš„èŠ‚ç‚¹
+  std::vector<Entity> m_PendingDestroyNodes;  // å¾…é”€æ¯çš„èŠ‚ç‚¹
+  std::vector<Entity> m_PendingSyncBounds;    // å¾…åŒæ­¥åŒ…å›´ç›’çš„èŠ‚ç‚¹
 
-  // SceneGraph·şÎñÒıÓÃ£¨Íâ²¿×¢Èë£©
+  // SceneGraphæœåŠ¡å¼•ç”¨ï¼ˆå¤–éƒ¨æ³¨å…¥ï¼‰
   SceneGraph *m_SceneGraph;
 
-  // ÊÂ¼ş¶©ÔÄ¹ÜÀí
+  // äº‹ä»¶è®¢é˜…ç®¡ç†
   SubscriptionGroup m_EventSubscriptions;
 
-  // ĞÔÄÜÍ³¼Æ
+  // æ€§èƒ½ç»Ÿè®¡
   struct {
     uint32_t nodesCreated = 0;
     uint32_t nodesDestroyed = 0;
     uint32_t boundsSyncs = 0;
   } m_Stats;
 
-  // ÈÕÖ¾Æ÷
+  // æ—¥å¿—å™¨
   Logger m_Logger;
 };
 }  // namespace mite

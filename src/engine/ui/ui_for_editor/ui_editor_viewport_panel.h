@@ -6,10 +6,10 @@
 
 namespace mite {
 /**
- * @brief 3DÊÓ¿ÚÃæ°å£¬¸ºÔğ³¡¾°äÖÈ¾ºÍ½»»¥
+ * @brief 3Dè§†å£é¢æ¿ï¼Œè´Ÿè´£åœºæ™¯æ¸²æŸ“å’Œäº¤äº’
  *
- * ºËĞÄ¹¦ÄÜ£º
- * ÏÔÊ¾3D³¡¾°äÖÈ¾½á¹û£¨Í¨¹ıUIBackendºó¶Ë»æÖÆFramebuffer£©
+ * æ ¸å¿ƒåŠŸèƒ½ï¼š
+ * æ˜¾ç¤º3Dåœºæ™¯æ¸²æŸ“ç»“æœï¼ˆé€šè¿‡UIBackendåç«¯ç»˜åˆ¶Framebufferï¼‰
  */
 class ViewportPanel : public UIPanel {
  public:
@@ -17,24 +17,24 @@ class ViewportPanel : public UIPanel {
   explicit ViewportPanel(const std::string &key = "editor.viewport");
   ~ViewportPanel();
 
-  // ==================== UIPanel½Ó¿ÚÊµÏÖ ====================
+  // ==================== UIPanelæ¥å£å®ç° ====================
   void Render() override;
 
-  // ==================== ViewportPanel×¨Êô·½·¨ ====================
+  // ==================== ViewportPanelä¸“å±æ–¹æ³• ====================
   /**
-   * @brief ÉèÖÃÊÓ¿ÚµÄÖ¡»º³å¶ÔÏó
-   * @param framebuffer °üº¬³¡¾°äÖÈ¾½á¹ûµÄÖ¡»º³å
+   * @brief è®¾ç½®è§†å£çš„å¸§ç¼“å†²å¯¹è±¡
+   * @param framebuffer åŒ…å«åœºæ™¯æ¸²æŸ“ç»“æœçš„å¸§ç¼“å†²
    */
   void setFramebuffer(std::shared_ptr<FrameBuffer> framebuffer);
 
  private:
 
-  // äÖÈ¾×ÊÔ´
-  std::shared_ptr<FrameBuffer> m_Framebuffer = nullptr;  // ³¡¾°Ö¡»º³å
+  // æ¸²æŸ“èµ„æº
+  std::shared_ptr<FrameBuffer> m_Framebuffer = nullptr;  // åœºæ™¯å¸§ç¼“å†²
 
-  // ÊÓ¿Ú×´Ì¬
-  glm::vec2 m_ViewportSize = {100.0f, 100.0f};                           // ÊÓ¿Úµ±Ç°³ß´ç
-  glm::vec2 m_ViewportBounds[2] = {{100.0f, 100.0f}, {100.0f, 100.0f}};  // ÊÓ¿ÚÆÁÄ»±ß½ç×ø±ê
+  // è§†å£çŠ¶æ€
+  glm::vec2 m_ViewportSize = {100.0f, 100.0f};                           // è§†å£å½“å‰å°ºå¯¸
+  glm::vec2 m_ViewportBounds[2] = {{100.0f, 100.0f}, {100.0f, 100.0f}};  // è§†å£å±å¹•è¾¹ç•Œåæ ‡
 };
 
 }  // namespace mite

@@ -4,13 +4,13 @@ namespace mite {
 
 Transform::Transform()
 {
-  // Ä¬ÈÏ¹¹ÔìÒÑ¾­ÊÇµ¥Î»±ä»»
+  // é»˜è®¤æ„é€ å·²ç»æ˜¯å•ä½å˜æ¢
 }
 
 Transform::Transform(const glm::vec3 &position, const glm::vec3 &rotation, const glm::vec3 &scale)
     : m_Position(position), m_RotationEuler(rotation), m_Scale(scale)
 {
-  // ´ÓÅ·À­½Ç³õÊ¼»¯ËÄÔªÊı
+  // ä»æ¬§æ‹‰è§’åˆå§‹åŒ–å››å…ƒæ•°
   UpdateRotationFromEuler();
   m_MatrixDirty = true;
 }
@@ -20,7 +20,7 @@ Transform::Transform(const glm::mat4 &matrix)
   SetLocalMatrix(matrix);
 }
 
-// ==================== Î»ÖÃÏà¹Ø·½·¨ÊµÏÖ ====================
+// ==================== ä½ç½®ç›¸å…³æ–¹æ³•å®ç° ====================
 
 const glm::vec3 &Transform::GetPosition() const
 {
@@ -41,7 +41,7 @@ void Transform::Translate(const glm::vec3 &direction)
   m_MatrixDirty = true;
 }
 
-// ==================== Ğı×ªÏà¹Ø·½·¨ÊµÏÖ ====================
+// ==================== æ—‹è½¬ç›¸å…³æ–¹æ³•å®ç° ====================
 
 glm::vec3 Transform::GetRotation() const
 {
@@ -64,19 +64,19 @@ void Transform::SetRotation(float x, float y, float z)
 
 void Transform::Rotate(const glm::vec3 &axis, float angle)
 {
-  // ×ª»»Îª»¡¶È
+  // è½¬æ¢ä¸ºå¼§åº¦
   float radians = glm::radians(angle);
 
-  // È·±£Ğı×ªÖáÊÇµ¥Î»ÏòÁ¿
+  // ç¡®ä¿æ—‹è½¬è½´æ˜¯å•ä½å‘é‡
   const glm::vec3 normalizedAxis = glm::normalize(axis);
 
-  // ´´½¨Ğı×ªËÄÔªÊı
+  // åˆ›å»ºæ—‹è½¬å››å…ƒæ•°
   const glm::quat rotation = glm::angleAxis(radians, normalizedAxis);
 
-  // Ó¦ÓÃĞı×ª£¨ÊÀ½ç¿Õ¼ä£©
+  // åº”ç”¨æ—‹è½¬ï¼ˆä¸–ç•Œç©ºé—´ï¼‰
   m_Rotation = glm::normalize(rotation * m_Rotation);
 
-  // ¸üĞÂÅ·À­½Ç
+  // æ›´æ–°æ¬§æ‹‰è§’
   UpdateEulerFromRotation();
   m_MatrixDirty = true;
 }
@@ -98,26 +98,26 @@ void Transform::RotateZ(float angle)
 
 void Transform::RotateAround(const glm::vec3 &point, const glm::vec3 &axis, float angle)
 {
-  // ×ª»»Îª»¡¶È
+  // è½¬æ¢ä¸ºå¼§åº¦
   float radians = glm::radians(angle);
 
-  // ´´½¨Ğı×ªËÄÔªÊı
+  // åˆ›å»ºæ—‹è½¬å››å…ƒæ•°
   const glm::vec3 normalizedAxis = glm::normalize(axis);
   const glm::quat rotation = glm::angleAxis(radians, normalizedAxis);
 
-  // ¼ÆËã´ÓĞı×ªÖĞĞÄµ½µ±Ç°Î»ÖÃµÄÏòÁ¿
+  // è®¡ç®—ä»æ—‹è½¬ä¸­å¿ƒåˆ°å½“å‰ä½ç½®çš„å‘é‡
   const glm::vec3 toObject = m_Position - point;
 
-  // Ğı×ª¸ÃÏòÁ¿
+  // æ—‹è½¬è¯¥å‘é‡
   const glm::vec3 rotatedVec = rotation * toObject;
 
-  // ¼ÆËãĞÂÎ»ÖÃ
+  // è®¡ç®—æ–°ä½ç½®
   m_Position = point + rotatedVec;
 
-  // Ó¦ÓÃĞı×ªµ½µ±Ç°Ğı×ª
+  // åº”ç”¨æ—‹è½¬åˆ°å½“å‰æ—‹è½¬
   m_Rotation = glm::normalize(rotation * m_Rotation);
 
-  // ¸üĞÂÅ·À­½Ç
+  // æ›´æ–°æ¬§æ‹‰è§’
   UpdateEulerFromRotation();
   m_MatrixDirty = true;
 }
@@ -126,23 +126,23 @@ void Transform::LookAt(const glm::vec3 &position, const glm::vec3 &target, const
 {
   m_Position = position;
 
-  // ¼ÆËã¿´ÏòÄ¿±êµÄ·½ÏòÏòÁ¿
+  // è®¡ç®—çœ‹å‘ç›®æ ‡çš„æ–¹å‘å‘é‡
   glm::vec3 direction = glm::normalize(target - position);
 
-  // Ö±½Ó´Ó·½ÏòÏòÁ¿¼ÆËãÅ·À­½Ç£¨¸´ÓÃCameraµÄËã·¨£©
+  // ç›´æ¥ä»æ–¹å‘å‘é‡è®¡ç®—æ¬§æ‹‰è§’ï¼ˆå¤ç”¨Cameraçš„ç®—æ³•ï¼‰
   m_RotationEuler.y = glm::degrees(atan2(-direction.x, -direction.z));  // yaw
   m_RotationEuler.x = glm::degrees(asin(direction.y));                  // pitch
   m_RotationEuler.z = 0.0f;
 
-  // ÏŞÖÆ¸©Ñö½Ç¶È±ÜÃâ·­×ª
+  // é™åˆ¶ä¿¯ä»°è§’åº¦é¿å…ç¿»è½¬
   m_RotationEuler.x = glm::clamp(m_RotationEuler.x, -89.0f, 89.0f);
 
-  // ¸üĞÂËÄÔªÊıĞı×ª
+  // æ›´æ–°å››å…ƒæ•°æ—‹è½¬
   UpdateRotationFromEuler();
   m_MatrixDirty = true;
 }
 
-// ==================== Ëõ·ÅÏà¹Ø·½·¨ÊµÏÖ ====================
+// ==================== ç¼©æ”¾ç›¸å…³æ–¹æ³•å®ç° ====================
 
 const glm::vec3 &Transform::GetScale() const
 {
@@ -162,7 +162,7 @@ void Transform::SetScale(float scale)
   SetScale(glm::vec3(scale, scale, scale));
 }
 
-// ==================== ¾ØÕóÏà¹Ø·½·¨ÊµÏÖ ====================
+// ==================== çŸ©é˜µç›¸å…³æ–¹æ³•å®ç° ====================
 
 glm::mat4 Transform::GetLocalMatrix() const
 {
@@ -174,26 +174,26 @@ glm::mat4 Transform::GetLocalMatrix() const
 
 void Transform::SetLocalMatrix(const glm::mat4 &matrix)
 {
-  // ·Ö½â¾ØÕóµ½TRS×é¼ş
+  // åˆ†è§£çŸ©é˜µåˆ°TRSç»„ä»¶
   glm::vec3 skew;
   glm::vec4 perspective;
   glm::decompose(matrix, m_Scale, m_Rotation, m_Position, skew, perspective);
 
-  // ¸üĞÂÅ·À­½Ç
+  // æ›´æ–°æ¬§æ‹‰è§’
   UpdateEulerFromRotation();
 
-  // Ö±½Ó¸üĞÂ»º´æ¾ØÕó
+  // ç›´æ¥æ›´æ–°ç¼“å­˜çŸ©é˜µ
   m_LocalMatrix = matrix;
   m_MatrixDirty = false;
 }
 
 glm::mat4 Transform::GetWorldMatrix() const
 {
-  // ¶ÔÓÚ¶ÀÁ¢Transform£¬ÊÀ½ç¾ØÕó¾ÍÊÇ¾Ö²¿¾ØÕó
+  // å¯¹äºç‹¬ç«‹Transformï¼Œä¸–ç•ŒçŸ©é˜µå°±æ˜¯å±€éƒ¨çŸ©é˜µ
   return GetLocalMatrix();
 }
 
-// ==================== ·½ÏòÏòÁ¿·½·¨ÊµÏÖ ====================
+// ==================== æ–¹å‘å‘é‡æ–¹æ³•å®ç° ====================
 
 glm::vec3 Transform::GetForward() const
 {
@@ -210,7 +210,7 @@ glm::vec3 Transform::GetRight() const
   return m_Rotation * glm::vec3(1.0f, 0.0f, 0.0f);
 }
 
-// ==================== ¸¨Öú·½·¨ÊµÏÖ ====================
+// ==================== è¾…åŠ©æ–¹æ³•å®ç° ====================
 
 void Transform::Reset()
 {
@@ -227,7 +227,7 @@ bool Transform::IsIdentity() const
          m_Scale == glm::vec3(1.0f);
 }
 
-// ==================== Ë½ÓĞ·½·¨ÊµÏÖ ====================
+// ==================== ç§æœ‰æ–¹æ³•å®ç° ====================
 
 void Transform::UpdateLocalMatrix() const
 {
@@ -240,19 +240,19 @@ void Transform::UpdateLocalMatrix() const
 
 void Transform::UpdateRotationFromEuler()
 {
-  // ½«Å·À­½Ç×ª»»Îª»¡¶È
+  // å°†æ¬§æ‹‰è§’è½¬æ¢ä¸ºå¼§åº¦
   glm::vec3 radians = glm::radians(m_RotationEuler);
 
-  // Ê¹ÓÃYXZË³Ğò£¨Æ«º½-¸©Ñö-¹ö×ª£©´´½¨ËÄÔªÊı
+  // ä½¿ç”¨YXZé¡ºåºï¼ˆåèˆª-ä¿¯ä»°-æ»šè½¬ï¼‰åˆ›å»ºå››å…ƒæ•°
   m_Rotation = glm::quat(radians);
 }
 
 void Transform::UpdateEulerFromRotation()
 {
-  // ´ÓËÄÔªÊıÌáÈ¡Å·À­½Ç£¨»¡¶È£©
+  // ä»å››å…ƒæ•°æå–æ¬§æ‹‰è§’ï¼ˆå¼§åº¦ï¼‰
   glm::vec3 radians = glm::eulerAngles(m_Rotation);
 
-  // ×ª»»Îª¶È
+  // è½¬æ¢ä¸ºåº¦
   m_RotationEuler = glm::degrees(radians);
 }
 

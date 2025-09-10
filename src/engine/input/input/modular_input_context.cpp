@@ -3,14 +3,14 @@
 namespace mite {
 ModularInputContext::ModularInputContext(const std::string &name) : InputContext(name)
 {
-  // ¶©ÔÄEventBusÖĞµÄÊäÈëÊÂ¼ş£¬°´ÕÕEventCategory´óÀà¶©ÔÄ£¬ÓÉProcessEvent·Ö·¢
+  // è®¢é˜…EventBusä¸­çš„è¾“å…¥äº‹ä»¶ï¼ŒæŒ‰ç…§EventCategoryå¤§ç±»è®¢é˜…ï¼Œç”±ProcessEventåˆ†å‘
   m_EventHandlerID = EventBus::Get().SubscribeByCategory(EventCategory::EVENT_CATEGORY_INPUT,
                                                          [this](Event &e) { ProcessEvent(e); });
 }
 
 ModularInputContext::~ModularInputContext()
 {
-  // È¡Ïû¶©ÔÄEventBus
+  // å–æ¶ˆè®¢é˜…EventBus
   EventBus::Get().Unsubscribe(m_EventHandlerID);
 }
 
@@ -38,7 +38,7 @@ void ModularInputContext::RemoveProcessor(const std::string &id)
   m_Processors.erase(m_Processors.begin() + index);
   m_ProcessorIndexMap.erase(it);
 
-  // ¸üĞÂË÷ÒıÓ³Éä
+  // æ›´æ–°ç´¢å¼•æ˜ å°„
   for (auto &pair : m_ProcessorIndexMap) {
     if (pair.second > index)
       pair.second--;
@@ -63,19 +63,19 @@ std::shared_ptr<InputProcessor> ModularInputContext::GetProcessor(const std::str
 
 bool ModularInputContext::ProcessEvent(Event &e)
 {
-  // ×èÈûÇé¿öÏÂÖ±½Ó·µ»Ø
+  // é˜»å¡æƒ…å†µä¸‹ç›´æ¥è¿”å›
   if (m_BlockInput)
     return true;
 
-  // Processor¸Ä°æÊ±ÖØĞÂÅÅĞò
+  // Processoræ”¹ç‰ˆæ—¶é‡æ–°æ’åº
   if (m_Dirty)
     _SortProcessors();
 
-  // °´ÓÅÏÈ¼¶´Ó¸ßµ½µÍ£¬±éÀúProcessor
+  // æŒ‰ä¼˜å…ˆçº§ä»é«˜åˆ°ä½ï¼Œéå†Processor
   for (auto processor : m_SortedProcessors) {
-    if (processor->IsEnabled() && processor->HandleEvent(e)) {  // ×î¸ßÓÅÏÈ¼¶µÄ´¦ÀíÆ÷Ö´ĞĞ´¦Àí²Ù×÷
+    if (processor->IsEnabled() && processor->HandleEvent(e)) {  // æœ€é«˜ä¼˜å…ˆçº§çš„å¤„ç†å™¨æ‰§è¡Œå¤„ç†æ“ä½œ
       e.handled = true;
-      break;  // ¸ßÓÅÏÈ¼¶´¦ÀíÆ÷ÒÑ´¦Àí£¬ÖÕÖ¹´«²¥
+      break;  // é«˜ä¼˜å…ˆçº§å¤„ç†å™¨å·²å¤„ç†ï¼Œç»ˆæ­¢ä¼ æ’­
     }
   }
   return e.handled;
@@ -90,7 +90,7 @@ void ModularInputContext::_SortProcessors()
     m_SortedProcessors.push_back(processor.get());
   }
 
-  // °´ÓÅÏÈ¼¶½µĞòÅÅĞò
+  // æŒ‰ä¼˜å…ˆçº§é™åºæ’åº
   std::sort(m_SortedProcessors.begin(),
             m_SortedProcessors.end(),
             [](const InputProcessor *a, const InputProcessor *b) {

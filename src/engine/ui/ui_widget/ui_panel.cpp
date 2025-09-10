@@ -39,7 +39,7 @@ void UIPanel::RemoveWidget(UUID widgetId)
     return;
   }
 
-  // ´ÓvectorÖĞÒÆ³ı
+  // ä»vectorä¸­ç§»é™¤
   auto widgetIt = std::remove_if(
       m_Widgets.begin(), m_Widgets.end(), [widgetId](const std::shared_ptr<UIWidget> &widget) {
         return widget->GetID() == widgetId;
@@ -49,7 +49,7 @@ void UIPanel::RemoveWidget(UUID widgetId)
     m_Widgets.erase(widgetIt, m_Widgets.end());
   }
 
-  // ´ÓmapÖĞÒÆ³ı
+  // ä»mapä¸­ç§»é™¤
   m_WidgetMap.erase(it);
 
   LOG_DEBUG("Removed widget ID {} from panel: {}", UUIDGenerator::UUIDToString(widgetId), m_Name);
@@ -78,22 +78,22 @@ void UIPanel::ClearWidgets()
 
 void UIPanel::Update(float deltaTime)
 {
-  // ¸üĞÂËùÓĞ×Ó¿Ø¼ş
+  // æ›´æ–°æ‰€æœ‰å­æ§ä»¶
   for (auto &widget : m_Widgets) {
     if (widget->IsVisible() && widget->IsEnabled()) {
       widget->Update(deltaTime);
     }
   }
 
-  // Ãæ°å×ÔÉíµÄ¸üĞÂÂß¼­
+  // é¢æ¿è‡ªèº«çš„æ›´æ–°é€»è¾‘
   UIWidget::Update(deltaTime);
 }
 
 void UIPanel::CalculateLayout()
 {
-  // »ù´¡²¼¾Ö¼ÆËãÊµÏÖ
-  // ×ÓÀà¿ÉÒÔÖØĞ´´Ë·½·¨ÊµÏÖÌØ¶¨µÄ²¼¾ÖËã·¨
-  // TODO: Ê¹ÓÃui_layout.hÊµÏÖ²¼¾Ö
+  // åŸºç¡€å¸ƒå±€è®¡ç®—å®ç°
+  // å­ç±»å¯ä»¥é‡å†™æ­¤æ–¹æ³•å®ç°ç‰¹å®šçš„å¸ƒå±€ç®—æ³•
+  // TODO: ä½¿ç”¨ui_layout.hå®ç°å¸ƒå±€
 
   glm::vec2 currentPos = m_Position;
   float maxWidth = 0.0f;
@@ -104,17 +104,17 @@ void UIPanel::CalculateLayout()
       continue;
     }
 
-    // ¼òµ¥´¹Ö±²¼¾Ö
+    // ç®€å•å‚ç›´å¸ƒå±€
     widget->SetPosition(currentPos);
-    currentPos.y += widget->GetSize().y + 5.0f;  // 5px¼ä¾à
+    currentPos.y += widget->GetSize().y + 5.0f;  // 5pxé—´è·
 
     maxWidth = std::max(maxWidth, widget->GetSize().x);
     totalHeight += widget->GetSize().y + 5.0f;
   }
 
-  // ¸üĞÂÃæ°å³ß´çÒÔÊÊÓ¦ÄÚÈİ
+  // æ›´æ–°é¢æ¿å°ºå¯¸ä»¥é€‚åº”å†…å®¹
   if (!m_Widgets.empty()) {
-    m_Size = glm::vec2(maxWidth, totalHeight - 5.0f);  // ¼õÈ¥×îºóÒ»¸ö¼ä¾à
+    m_Size = glm::vec2(maxWidth, totalHeight - 5.0f);  // å‡å»æœ€åä¸€ä¸ªé—´è·
   }
 
   LOG_DEBUG("Calculated layout for panel: {}, size: {}x{}", m_Name, m_Size.x, m_Size.y);

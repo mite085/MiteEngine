@@ -7,13 +7,13 @@
 
 namespace mite {
 
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class UIStyle;
 
 /**
- * @brief UIºó¶Ë³éÏó½Ó¿Ú
+ * @brief UIåç«¯æŠ½è±¡æ¥å£
  *
- * ¶¨ÒåUIÏµÍ³ÓëäÖÈ¾ºó¶ËÖ®¼äµÄÆõÔ¼£¬Ö§³Ö¶àÖÖUIºó¶ËÊµÏÖ
+ * å®šä¹‰UIç³»ç»Ÿä¸æ¸²æŸ“åç«¯ä¹‹é—´çš„å¥‘çº¦ï¼Œæ”¯æŒå¤šç§UIåç«¯å®ç°
  */
 class UIBackend {
  public:
@@ -21,99 +21,99 @@ class UIBackend {
   virtual bool Initialize(void *window) = 0;
   virtual void Shutdown() = 0;
 
-  // ==================== äÖÈ¾½Ó¿ÚÓëÊÂ¼ş´¦Àí ====================
+  // ==================== æ¸²æŸ“æ¥å£ä¸äº‹ä»¶å¤„ç† ====================
   /**
-   * @brief ¿ªÊ¼UIÖ¡
+   * @brief å¼€å§‹UIå¸§
    */
   virtual void BeginFrame() = 0;
 
   /**
-   * @brief ½áÊøUIÖ¡
+   * @brief ç»“æŸUIå¸§
    */
   virtual void EndFrame() = 0;
 
   /**
-   * @brief ´¦ÀíÊäÈëÊÂ¼ş
-   * @param event ÊäÈëÊÂ¼ş
+   * @brief å¤„ç†è¾“å…¥äº‹ä»¶
+   * @param event è¾“å…¥äº‹ä»¶
    */
   virtual void ProcessInputEvent(Event &event) = 0;
 
-  // ==================== ²ÎÊı½Ó¿Ú ====================
+  // ==================== å‚æ•°æ¥å£ ====================
   /**
-   * @brief ÉèÖÃÏÔÊ¾³ß´ç
-   * @param width ¿í¶È
-   * @param height ¸ß¶È
+   * @brief è®¾ç½®æ˜¾ç¤ºå°ºå¯¸
+   * @param width å®½åº¦
+   * @param height é«˜åº¦
    */
   virtual void SetDisplaySize(int width, int height) = 0;
 
   /**
-   * @brief »ñÈ¡ÏÔÊ¾³ß´ç
-   * @return °üº¬¿í¶ÈºÍ¸ß¶ÈµÄpair
+   * @brief è·å–æ˜¾ç¤ºå°ºå¯¸
+   * @return åŒ…å«å®½åº¦å’Œé«˜åº¦çš„pair
    */
   virtual glm::ivec2 GetDisplaySize() const = 0;
 
   /**
-   * @brief ÉèÖÃÖ¡»º³åËõ·Å
-   * @param scaleX Ë®Æ½Ëõ·Å
-   * @param scaleY ´¹Ö±Ëõ·Å
+   * @brief è®¾ç½®å¸§ç¼“å†²ç¼©æ”¾
+   * @param scaleX æ°´å¹³ç¼©æ”¾
+   * @param scaleY å‚ç›´ç¼©æ”¾
    */
   virtual void SetFramebufferScale(float scaleX, float scaleY) = 0;
 
   /**
-   * @brief »ñÈ¡Ö¡»º³åËõ·Å
-   * @return °üº¬Ë®Æ½ºÍ´¹Ö±Ëõ·ÅµÄpair
+   * @brief è·å–å¸§ç¼“å†²ç¼©æ”¾
+   * @return åŒ…å«æ°´å¹³å’Œå‚ç›´ç¼©æ”¾çš„pair
    */
   virtual glm::vec2 GetFramebufferScale() const = 0;
 
   /**
-   * @brief ÉèÖÃÊÇ·ñ²¶»ñÊó±ê
-   * @param captured ÊÇ·ñ²¶»ñ
+   * @brief è®¾ç½®æ˜¯å¦æ•è·é¼ æ ‡
+   * @param captured æ˜¯å¦æ•è·
    */
   virtual void SetMouseCaptured(bool captured) = 0;
 
   /**
-   * @brief »ñÈ¡ÊÇ·ñ²¶»ñÊó±ê
-   * @return ÊÇ·ñ²¶»ñ
+   * @brief è·å–æ˜¯å¦æ•è·é¼ æ ‡
+   * @return æ˜¯å¦æ•è·
    */
   virtual bool IsMouseCaptured() const = 0;
 
   /**
-   * @brief ÉèÖÃÊÇ·ñÏÔÊ¾Êó±ê¹â±ê
-   * @param visible ÊÇ·ñÏÔÊ¾
+   * @brief è®¾ç½®æ˜¯å¦æ˜¾ç¤ºé¼ æ ‡å…‰æ ‡
+   * @param visible æ˜¯å¦æ˜¾ç¤º
    */
   virtual void SetMouseCursorVisible(bool visible) = 0;
 
   /**
-   * @brief »ñÈ¡ÊÇ·ñÏÔÊ¾Êó±ê¹â±ê
-   * @return ÊÇ·ñÏÔÊ¾
+   * @brief è·å–æ˜¯å¦æ˜¾ç¤ºé¼ æ ‡å…‰æ ‡
+   * @return æ˜¯å¦æ˜¾ç¤º
    */
   virtual bool IsMouseCursorVisible() const = 0;
 
-  // ==================== äÖÈ¾×ÊÔ´¹ÜÀí£¨ÔİÊ±Ã»ÓĞÓÃµ½£© ====================
+  // ==================== æ¸²æŸ“èµ„æºç®¡ç†ï¼ˆæš‚æ—¶æ²¡æœ‰ç”¨åˆ°ï¼‰ ====================
   /**
-   * @brief ´´½¨ºó¶ËÌØ¶¨µÄäÖÈ¾×ÊÔ´
+   * @brief åˆ›å»ºåç«¯ç‰¹å®šçš„æ¸²æŸ“èµ„æº
    */
   virtual void CreateDeviceObjects() = 0;
 
   /**
-   * @brief Ïú»Ùºó¶ËÌØ¶¨µÄäÖÈ¾×ÊÔ´
+   * @brief é”€æ¯åç«¯ç‰¹å®šçš„æ¸²æŸ“èµ„æº
    */
   virtual void DestroyDeviceObjects() = 0;
 
   /**
-   * @brief »ñÈ¡ºó¶ËÃû³Æ£¨ÓÃÓÚµ÷ÊÔ£©
+   * @brief è·å–åç«¯åç§°ï¼ˆç”¨äºè°ƒè¯•ï¼‰
    */
   virtual const char *GetBackendName() const = 0;
 
 
-  // ==================== ÑùÊ½ÓïÑÔ¹ÜÀí ====================
+  // ==================== æ ·å¼è¯­è¨€ç®¡ç† ====================
   /**
-   * @brief ÑùÊ½¹ÜÀí
+   * @brief æ ·å¼ç®¡ç†
    */
   virtual void ApplyUIStyle(std::shared_ptr<UIStyle>) = 0;
 
   /**
-   * @brief ÓïÑÔ¹ÜÀí
+   * @brief è¯­è¨€ç®¡ç†
    */
   virtual void ApplyLanguaged(const std::string &oldLanguageCode, const std::string &newLanguageCode) = 0;
 };

@@ -7,100 +7,100 @@ namespace mite {
 
 /**
  * @class BoundingVolumes
- * @brief °üÎ§ºĞ¹¤¾ßÀà£¬Ìá¹©¸÷ÖÖ°üÎ§ÌåµÄ´´½¨¡¢±ä»»ºÍÏà½»²âÊÔ·½·¨
+ * @brief åŒ…å›´ç›’å·¥å…·ç±»ï¼Œæä¾›å„ç§åŒ…å›´ä½“çš„åˆ›å»ºã€å˜æ¢å’Œç›¸äº¤æµ‹è¯•æ–¹æ³•
  */
 class BoundingVolumes {
  public:
   /**
-   * @brief Í¨¹ıµã¼¯´´½¨AABB
-   * @param points µã¼¯Êı×é
-   * @param count µãµÄÊıÁ¿
-   * @return °üº¬ËùÓĞµãµÄ×îĞ¡AABB
+   * @brief é€šè¿‡ç‚¹é›†åˆ›å»ºAABB
+   * @param points ç‚¹é›†æ•°ç»„
+   * @param count ç‚¹çš„æ•°é‡
+   * @return åŒ…å«æ‰€æœ‰ç‚¹çš„æœ€å°AABB
    */
   static AABB CreateAABBFromPoints(const glm::vec3 *points, uint32_t count);
 
   /**
-   * @brief Í¨¹ı±ä»»¾ØÕó¸üĞÂAABB
-   * @param original Ô­Ê¼AABB
-   * @param transform ±ä»»¾ØÕó
-   * @return ±ä»»ºóµÄAABB
+   * @brief é€šè¿‡å˜æ¢çŸ©é˜µæ›´æ–°AABB
+   * @param original åŸå§‹AABB
+   * @param transform å˜æ¢çŸ©é˜µ
+   * @return å˜æ¢åçš„AABB
    */
   static AABB TransformAABB(const AABB &original, const glm::mat4 &transform);
 
   /**
-   * @brief ¼ÆËãÁ½¸öAABBµÄºÏ²¢½á¹û
-   * @param a µÚÒ»¸öAABB
-   * @param b µÚ¶ş¸öAABB
-   * @return °üº¬Á½¸öAABBµÄ×îĞ¡AABB
+   * @brief è®¡ç®—ä¸¤ä¸ªAABBçš„åˆå¹¶ç»“æœ
+   * @param a ç¬¬ä¸€ä¸ªAABB
+   * @param b ç¬¬äºŒä¸ªAABB
+   * @return åŒ…å«ä¸¤ä¸ªAABBçš„æœ€å°AABB
    */
   static AABB MergeAABBs(const AABB &a, const AABB &b);
 
   /**
-   * @brief ÅĞ¶ÏµãÊÇ·ñÔÚAABBÄÚ²¿
-   * @param point ²âÊÔµã
-   * @param aabb °üÎ§ºĞ
-   * @return ÊÇ·ñÔÚÄÚ²¿
+   * @brief åˆ¤æ–­ç‚¹æ˜¯å¦åœ¨AABBå†…éƒ¨
+   * @param point æµ‹è¯•ç‚¹
+   * @param aabb åŒ…å›´ç›’
+   * @return æ˜¯å¦åœ¨å†…éƒ¨
    */
   static bool PointInAABB(const glm::vec3 &point, const AABB &aabb);
 
   /**
-   * @brief ÅĞ¶ÏÁ½¸öAABBÊÇ·ñÏà½»
-   * @param a µÚÒ»¸öAABB
-   * @param b µÚ¶ş¸öAABB
-   * @return ÊÇ·ñÏà½»
+   * @brief åˆ¤æ–­ä¸¤ä¸ªAABBæ˜¯å¦ç›¸äº¤
+   * @param a ç¬¬ä¸€ä¸ªAABB
+   * @param b ç¬¬äºŒä¸ªAABB
+   * @return æ˜¯å¦ç›¸äº¤
    */
   static bool AABBIntersectsAABB(const AABB &a, const AABB &b);
 
   /**
-   * @brief ÅĞ¶ÏÇòÊÇ·ñÓëAABBÏà½»
-   * @param sphere Çò
-   * @param aabb °üÎ§ºĞ
-   * @return ÊÇ·ñÏà½»
+   * @brief åˆ¤æ–­çƒæ˜¯å¦ä¸AABBç›¸äº¤
+   * @param sphere çƒ
+   * @param aabb åŒ…å›´ç›’
+   * @return æ˜¯å¦ç›¸äº¤
    */
   static bool SphereIntersectsAABB(const Sphere &sphere, const AABB &aabb);
 
   /**
-   * @brief ÅĞ¶ÏÁ½¸öÇòÊÇ·ñÏà½»
-   * @param a µÚÒ»¸öÇò
-   * @param b µÚ¶ş¸öÇò
-   * @return ÊÇ·ñÏà½»
+   * @brief åˆ¤æ–­ä¸¤ä¸ªçƒæ˜¯å¦ç›¸äº¤
+   * @param a ç¬¬ä¸€ä¸ªçƒ
+   * @param b ç¬¬äºŒä¸ªçƒ
+   * @return æ˜¯å¦ç›¸äº¤
    */
   static bool SphereIntersectsSphere(const Sphere &a, const Sphere &b);
 
   /**
-   * @brief Í¨¹ıAABB´´½¨°üÎ§Çò
-   * @param aabb °üÎ§ºĞ
-   * @return °üº¬AABBµÄ×îĞ¡Çò
+   * @brief é€šè¿‡AABBåˆ›å»ºåŒ…å›´çƒ
+   * @param aabb åŒ…å›´ç›’
+   * @return åŒ…å«AABBçš„æœ€å°çƒ
    */
   static Sphere CreateSphereFromAABB(const AABB &aabb);
 
   /**
-   * @brief ±ä»»ÇòÌå£¨Ö§³ÖÆ½ÒÆºÍ¾ùÔÈËõ·Å£©
-   * @param sphere Ô­Ê¼Çò
-   * @param transform ±ä»»¾ØÕó
-   * @return ±ä»»ºóµÄÇò
+   * @brief å˜æ¢çƒä½“ï¼ˆæ”¯æŒå¹³ç§»å’Œå‡åŒ€ç¼©æ”¾ï¼‰
+   * @param sphere åŸå§‹çƒ
+   * @param transform å˜æ¢çŸ©é˜µ
+   * @return å˜æ¢åçš„çƒ
    */
   static Sphere TransformSphere(const Sphere &sphere, const glm::mat4 &transform);
 
   /**
-   * @brief Í¨¹ıAABB´´½¨OBB
-   * @param aabb °üÎ§ºĞ
-   * @return ³õÊ¼·½ÏòµÄOBB
+   * @brief é€šè¿‡AABBåˆ›å»ºOBB
+   * @param aabb åŒ…å›´ç›’
+   * @return åˆå§‹æ–¹å‘çš„OBB
    */
   static OBB CreateOBBFromAABB(const AABB &aabb);
 
   /**
-   * @brief ±ä»»OBB
-   * @param obb Ô­Ê¼OBB
-   * @param transform ±ä»»¾ØÕó
-   * @return ±ä»»ºóµÄOBB
+   * @brief å˜æ¢OBB
+   * @param obb åŸå§‹OBB
+   * @param transform å˜æ¢çŸ©é˜µ
+   * @return å˜æ¢åçš„OBB
    */
   static OBB TransformOBB(const OBB &obb, const glm::mat4 &transform);
 
   /**
-   * @brief »ñÈ¡OBBµÄAABB½üËÆ£¨ÓÃÓÚ¿ìËÙÌŞ³ı£©
-   * @param obb ÓĞÏò°üÎ§ºĞ
-   * @return °üº¬OBBµÄÖá¶ÔÆë°üÎ§ºĞ
+   * @brief è·å–OBBçš„AABBè¿‘ä¼¼ï¼ˆç”¨äºå¿«é€Ÿå‰”é™¤ï¼‰
+   * @param obb æœ‰å‘åŒ…å›´ç›’
+   * @return åŒ…å«OBBçš„è½´å¯¹é½åŒ…å›´ç›’
    */
   static AABB GetAABBFromOBB(const OBB &obb);
 };

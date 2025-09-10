@@ -10,49 +10,49 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureData(const std::string &
                                                              int desiredChannels,
                                                              bool flipVertical)
 {
-  // 1. ³õÊ¼»¯stb_imageÅäÖÃ
-  stbi_set_flip_vertically_on_load(flipVertical);  // OpenGL×ø±êÏµĞèÒª·­×ªYÖá
+  // 1. åˆå§‹åŒ–stb_imageé…ç½®
+  stbi_set_flip_vertically_on_load(flipVertical);  // OpenGLåæ ‡ç³»éœ€è¦ç¿»è½¬Yè½´
 
   TextureMetadata metadata;
   metadata.path = path;
-  metadata.isHDR = false;  // Ã÷È·±ê¼ÇÎª·ÇHDR
+  metadata.isHDR = false;  // æ˜ç¡®æ ‡è®°ä¸ºéHDR
 
-  // 2. ¼ÓÔØÍ¼ÏñÊı¾İ£¨×Ô¶¯¸ù¾İdesiredChannels×ª»»¸ñÊ½£©
+  // 2. åŠ è½½å›¾åƒæ•°æ®ï¼ˆè‡ªåŠ¨æ ¹æ®desiredChannelsè½¬æ¢æ ¼å¼ï¼‰
   uint8_t *pixelData = stbi_load(
       path.c_str(), &metadata.width, &metadata.height, &metadata.channels, desiredChannels);
 
-  // 3. ¼ì²é¼ÓÔØ½á¹û
+  // 3. æ£€æŸ¥åŠ è½½ç»“æœ
   if (!pixelData) {
     LOG_ERROR("Failed to load texture: " + path + ", reason: " + stbi_failure_reason());
   }
 
-  // 4. ¸üĞÂÊµ¼ÊÍ¨µÀÊı£¨Èç¹ûdesiredChannelsÎª0Ôò±£ÁôÔ­Í¨µÀ£©
+  // 4. æ›´æ–°å®é™…é€šé“æ•°ï¼ˆå¦‚æœdesiredChannelsä¸º0åˆ™ä¿ç•™åŸé€šé“ï¼‰
   if (desiredChannels > 0) {
     metadata.channels = desiredChannels;
   }
 
-  // 5. Ê¹ÓÃº¯ÊıÖ¸ÕëÀàĞÍµÄÉ¾³ıÆ÷
+  // 5. ä½¿ç”¨å‡½æ•°æŒ‡é’ˆç±»å‹çš„åˆ é™¤å™¨
   auto deleter = [](uint8_t *data) { stbi_image_free(data); };
   std::unique_ptr<uint8_t[], decltype(deleter)> managedData(pixelData, deleter);
 
-  // 6. ¹¹½¨×Ê²ú
+  // 6. æ„å»ºèµ„äº§
   std::shared_ptr<TextureAsset> textureAsset;
   textureAsset->id = UUIDGenerator::Generate(path.c_str());
   textureAsset->metadata = metadata;
   textureAsset->textureData.textureData = std::move(managedData);
 
-  // 7. ×ª»»ÎªRendererÄ£¿éµÄTextureSourceData
+  // 7. è½¬æ¢ä¸ºRendereræ¨¡å—çš„TextureSourceData
   std::shared_ptr<TextureSourceData> rendererData = std::make_shared<TextureSourceData>();
   rendererData->path = textureAsset->metadata.path;
   rendererData->pixelData = textureAsset->textureData.textureData.get();
   rendererData->width = textureAsset->metadata.width;
   rendererData->height = textureAsset->metadata.height;
   rendererData->format = textureAsset->metadata.format;
-  rendererData->wrapMode = TextureWrapMode::Repeat;  // Ä¬ÈÏÖµ»ò´ÓÅäÖÃ¶ÁÈ¡
+  rendererData->wrapMode = TextureWrapMode::Repeat;  // é»˜è®¤å€¼æˆ–ä»é…ç½®è¯»å–
   rendererData->filterMode = TextureFilterMode::Linear;
   rendererData->generateMipmaps = true;
 
-  // 8. ·¢²¼ÊÂ¼ş£¬Î¯ÍĞRendererDevice´´½¨GPU×ÊÔ´
+  // 8. å‘å¸ƒäº‹ä»¶ï¼Œå§”æ‰˜RendererDeviceåˆ›å»ºGPUèµ„æº
   TextureLoadEvent event(rendererData, textureAsset->handle);
   EventBus::Publish<TextureLoadEvent>(event);
 

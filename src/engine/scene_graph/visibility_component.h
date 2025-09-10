@@ -9,40 +9,40 @@
 namespace mite {
 /**
  * @class VisibilityComponent
- * @brief ¿É¼ûĞÔ×é¼ş£¬ÓÃÓÚ¹ÜÀíÊµÌåµÄ¿É¼ûĞÔ×´Ì¬ºÍ¿Õ¼äÌŞ³ı
+ * @brief å¯è§æ€§ç»„ä»¶ï¼Œç”¨äºç®¡ç†å®ä½“çš„å¯è§æ€§çŠ¶æ€å’Œç©ºé—´å‰”é™¤
  *
- * ¹¦ÄÜÌØĞÔ£º
- * 1. Ö§³ÖÊÓ×¶Ìå²Ã¼ôºÍÕÚµ²ÌŞ³ı
- * 2. Î¬»¤ÊÀ½ç¿Õ¼ä°üÎ§ºĞÓÃÓÚ¿ìËÙÏà½»²âÊÔ
- * 3. Ìá¹©¿É¼ûĞÔÑÚÂëÖ§³Ö·Ö²ãäÖÈ¾
- * 4. ÓëSceneGraphĞ­Í¬¹¤×÷ÊµÏÖ¸ßĞ§µÄ¿Õ¼ä²éÑ¯
+ * åŠŸèƒ½ç‰¹æ€§ï¼š
+ * 1. æ”¯æŒè§†é”¥ä½“è£å‰ªå’Œé®æŒ¡å‰”é™¤
+ * 2. ç»´æŠ¤ä¸–ç•Œç©ºé—´åŒ…å›´ç›’ç”¨äºå¿«é€Ÿç›¸äº¤æµ‹è¯•
+ * 3. æä¾›å¯è§æ€§æ©ç æ”¯æŒåˆ†å±‚æ¸²æŸ“
+ * 4. ä¸SceneGraphååŒå·¥ä½œå®ç°é«˜æ•ˆçš„ç©ºé—´æŸ¥è¯¢
  */
 class VisibilityComponent
     : public ComponentTraits<VisibilityComponent, Component::Family::Visibility> {
  public:
   /**
-   * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+   * @brief é»˜è®¤æ„é€ å‡½æ•°
    */
   VisibilityComponent();
 
   /**
-   * @brief ´ø³õÊ¼°üÎ§ºĞµÄ¹¹Ôìº¯Êı
-   * @param localAABB ¾Ö²¿¿Õ¼ä°üÎ§ºĞ
+   * @brief å¸¦åˆå§‹åŒ…å›´ç›’çš„æ„é€ å‡½æ•°
+   * @param localAABB å±€éƒ¨ç©ºé—´åŒ…å›´ç›’
    */
   explicit VisibilityComponent(const AABB &localAABB);
 
   ~VisibilityComponent() override = default;
 
   /**
-   * @brief ´¦ÀíÔà±ê¼Ç£¬¸üĞÂ¿É¼ûĞÔ×´Ì¬
+   * @brief å¤„ç†è„æ ‡è®°ï¼Œæ›´æ–°å¯è§æ€§çŠ¶æ€
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
-  // ==================== ¿É¼ûĞÔ²Ù×÷ ====================
+  // ==================== å¯è§æ€§æ“ä½œ ====================
 
   /**
-   * @brief »ñÈ¡µ±Ç°¿É¼ûĞÔ×´Ì¬
-   * @return ÊÇ·ñ¿É¼û
+   * @brief è·å–å½“å‰å¯è§æ€§çŠ¶æ€
+   * @return æ˜¯å¦å¯è§
    */
   bool IsVisible() const
   {
@@ -50,14 +50,14 @@ class VisibilityComponent
   }
 
   /**
-   * @brief ÉèÖÃ¿É¼ûĞÔ×´Ì¬£¨ÊÖ¶¯¸²¸Ç£©
-   * @param visible ÊÇ·ñ¿É¼û
+   * @brief è®¾ç½®å¯è§æ€§çŠ¶æ€ï¼ˆæ‰‹åŠ¨è¦†ç›–ï¼‰
+   * @param visible æ˜¯å¦å¯è§
    */
   void SetVisible(bool visible);
 
   /**
-   * @brief »ñÈ¡ÉÏÒ»Ö¡µÄ¿É¼ûĞÔ×´Ì¬
-   * @return ÉÏÒ»Ö¡ÊÇ·ñ¿É¼û
+   * @brief è·å–ä¸Šä¸€å¸§çš„å¯è§æ€§çŠ¶æ€
+   * @return ä¸Šä¸€å¸§æ˜¯å¦å¯è§
    */
   bool WasVisible() const
   {
@@ -65,28 +65,28 @@ class VisibilityComponent
   }
 
   /**
-   * @brief ¼ì²é¿É¼ûĞÔ×´Ì¬ÊÇ·ñ·¢Éú±ä»¯
-   * @return ÊÇ·ñ·¢Éú±ä»¯
+   * @brief æ£€æŸ¥å¯è§æ€§çŠ¶æ€æ˜¯å¦å‘ç”Ÿå˜åŒ–
+   * @return æ˜¯å¦å‘ç”Ÿå˜åŒ–
    */
   bool VisibilityChanged() const
   {
     return m_IsVisible != m_WasVisible;
   }
 
-  // ==================== ÊÓ×¶Ìå²Ù×÷ ====================
+  // ==================== è§†é”¥ä½“æ“ä½œ ====================
 
   /**
-   * @brief Ö´ĞĞÊÓ×¶Ìå²Ã¼ô²âÊÔ
-   * @param frustum Ïà»úÊÓ×¶Ìå
-   * @return Ïà½»ÀàĞÍ
+   * @brief æ‰§è¡Œè§†é”¥ä½“è£å‰ªæµ‹è¯•
+   * @param frustum ç›¸æœºè§†é”¥ä½“
+   * @return ç›¸äº¤ç±»å‹
    */
   IntersectionType TestFrustum(const Frustum &frustum) const;
 
-  // ==================== °üÎ§ºĞ²Ù×÷ ====================
+  // ==================== åŒ…å›´ç›’æ“ä½œ ====================
 
   /**
-   * @brief »ñÈ¡¾Ö²¿¿Õ¼ä°üÎ§ºĞ
-   * @return ¾Ö²¿AABB
+   * @brief è·å–å±€éƒ¨ç©ºé—´åŒ…å›´ç›’
+   * @return å±€éƒ¨AABB
    */
   const AABB &GetLocalAABB() const
   {
@@ -94,14 +94,14 @@ class VisibilityComponent
   }
 
   /**
-   * @brief ÉèÖÃ¾Ö²¿¿Õ¼ä°üÎ§ºĞ
-   * @param aabb ĞÂµÄ¾Ö²¿AABB
+   * @brief è®¾ç½®å±€éƒ¨ç©ºé—´åŒ…å›´ç›’
+   * @param aabb æ–°çš„å±€éƒ¨AABB
    */
   void SetLocalAABB(const AABB &aabb);
 
   /**
-   * @brief »ñÈ¡ÊÀ½ç¿Õ¼ä°üÎ§ºĞ
-   * @return ÊÀ½çAABB
+   * @brief è·å–ä¸–ç•Œç©ºé—´åŒ…å›´ç›’
+   * @return ä¸–ç•ŒAABB
    */
   const AABB &GetWorldAABB() const
   {
@@ -109,22 +109,22 @@ class VisibilityComponent
   }
 
   /**
-   * @brief »ñÈ¡ÊÀ½ç¿Õ¼ä°üÎ§Çò£¨ÓÃÓÚ¿ìËÙÌŞ³ı£©
-   * @return ÊÀ½ç°üÎ§Çò
+   * @brief è·å–ä¸–ç•Œç©ºé—´åŒ…å›´çƒï¼ˆç”¨äºå¿«é€Ÿå‰”é™¤ï¼‰
+   * @return ä¸–ç•ŒåŒ…å›´çƒ
    */
   Sphere GetWorldSphere() const;
 
   /**
-   * @brief ¸üĞÂÊÀ½ç¿Õ¼ä°üÎ§ºĞ
-   * @param reg ³¡¾°×¢²á±í
+   * @brief æ›´æ–°ä¸–ç•Œç©ºé—´åŒ…å›´ç›’
+   * @param reg åœºæ™¯æ³¨å†Œè¡¨
    */
   void UpdateWorldAABB(SceneRegistry &reg);
 
-  // ==================== ÑÚÂë²Ù×÷ ====================
+  // ==================== æ©ç æ“ä½œ ====================
 
   /**
-   * @brief »ñÈ¡¿É¼ûĞÔÑÚÂë
-   * @return 32Î»ÑÚÂë
+   * @brief è·å–å¯è§æ€§æ©ç 
+   * @return 32ä½æ©ç 
    */
   uint32_t GetVisibilityMask() const
   {
@@ -132,35 +132,35 @@ class VisibilityComponent
   }
 
   /**
-   * @brief ÉèÖÃ¿É¼ûĞÔÑÚÂë
-   * @param mask ĞÂµÄÑÚÂë
+   * @brief è®¾ç½®å¯è§æ€§æ©ç 
+   * @param mask æ–°çš„æ©ç 
    */
   void SetVisibilityMask(uint32_t mask);
 
   /**
-   * @brief ¼ì²éÊÇ·ñÓë¸ø¶¨ÑÚÂëÆ¥Åä
-   * @param cameraMask Ïà»úÑÚÂë
-   * @return ÊÇ·ñÆ¥Åä
+   * @brief æ£€æŸ¥æ˜¯å¦ä¸ç»™å®šæ©ç åŒ¹é…
+   * @param cameraMask ç›¸æœºæ©ç 
+   * @return æ˜¯å¦åŒ¹é…
    */
   bool MatchesMask(uint32_t cameraMask) const
   {
     return (m_VisibilityMask & cameraMask) != 0;
   }
 
-  // ==================== ×é¼ş½Ó¿Ú ====================
+  // ==================== ç»„ä»¶æ¥å£ ====================
 
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
   /**
-   * @brief ±ê¼Ç°üÎ§ºĞÎªÔà×´Ì¬£¨µ±±ä»»¸Ä±äÊ±µ÷ÓÃ£©
+   * @brief æ ‡è®°åŒ…å›´ç›’ä¸ºè„çŠ¶æ€ï¼ˆå½“å˜æ¢æ”¹å˜æ—¶è°ƒç”¨ï¼‰
    */
   void MarkBoundsDirty();
 
   /**
-   * @brief ¼ì²é°üÎ§ºĞÊÇ·ñĞèÒª¸üĞÂ
-   * @return ÊÇ·ñÎªÔà×´Ì¬
+   * @brief æ£€æŸ¥åŒ…å›´ç›’æ˜¯å¦éœ€è¦æ›´æ–°
+   * @return æ˜¯å¦ä¸ºè„çŠ¶æ€
    */
   bool IsBoundsDirty() const
   {
@@ -168,22 +168,22 @@ class VisibilityComponent
   }
 
  private:
-  AABB m_LocalAABB;  // ¾Ö²¿¿Õ¼ä°üÎ§ºĞ
-  AABB m_WorldAABB;  // ÊÀ½ç¿Õ¼ä°üÎ§ºĞ£¨»º´æ£©
+  AABB m_LocalAABB;  // å±€éƒ¨ç©ºé—´åŒ…å›´ç›’
+  AABB m_WorldAABB;  // ä¸–ç•Œç©ºé—´åŒ…å›´ç›’ï¼ˆç¼“å­˜ï¼‰
 
-  bool m_IsVisible = true;    // µ±Ç°¿É¼ûĞÔ×´Ì¬
-  bool m_WasVisible = false;  // ÉÏÒ»Ö¡¿É¼ûĞÔ×´Ì¬£¨ÓÃÓÚ¼ì²â±ä»¯£©
+  bool m_IsVisible = true;    // å½“å‰å¯è§æ€§çŠ¶æ€
+  bool m_WasVisible = false;  // ä¸Šä¸€å¸§å¯è§æ€§çŠ¶æ€ï¼ˆç”¨äºæ£€æµ‹å˜åŒ–ï¼‰
 
-  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // ¿É¼ûĞÔÑÚÂë
-  bool m_BoundsDirty = true;                              // °üÎ§ºĞÔà±ê¼Ç
-  bool m_ManualOverride = false;                          // ÊÖ¶¯¸²¸Ç±êÖ¾
+  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // å¯è§æ€§æ©ç 
+  bool m_BoundsDirty = true;                              // åŒ…å›´ç›’è„æ ‡è®°
+  bool m_ManualOverride = false;                          // æ‰‹åŠ¨è¦†ç›–æ ‡å¿—
 };
 
-// ==================== ×é¼şÏµÍ³ ====================
+// ==================== ç»„ä»¶ç³»ç»Ÿ ====================
 
 /**
  * @class VisibilityComponentSystem
- * @brief ¿É¼ûĞÔ×é¼şÏµÍ³£¬¸ºÔğÅúÁ¿´¦Àí¿É¼ûĞÔ¼ÆËãºÍÌŞ³ı
+ * @brief å¯è§æ€§ç»„ä»¶ç³»ç»Ÿï¼Œè´Ÿè´£æ‰¹é‡å¤„ç†å¯è§æ€§è®¡ç®—å’Œå‰”é™¤
  */
 class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponent> {
   DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
@@ -193,20 +193,20 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
   std::vector<std::type_index> GetSystemDependencies() const override;
 
   /**
-   * @brief ÉèÖÃÖ÷Ïà»úÊÓ×¶Ìå
-   * @param frustum Ïà»úÊÓ×¶Ìå
+   * @brief è®¾ç½®ä¸»ç›¸æœºè§†é”¥ä½“
+   * @param frustum ç›¸æœºè§†é”¥ä½“
    */
   //void SetMainCameraFrustum(const Frustum &frustum);
 
   /**
-   * @brief ÉèÖÃÏà»ú¿É¼ûĞÔÑÚÂë
-   * @param mask Ïà»úÑÚÂë
+   * @brief è®¾ç½®ç›¸æœºå¯è§æ€§æ©ç 
+   * @param mask ç›¸æœºæ©ç 
    */
   //void SetCameraVisibilityMask(uint32_t mask);
 
   /**
-   * @brief »ñÈ¡µ±Ç°¿É¼ûÊµÌåÊıÁ¿
-   * @return ¿É¼ûÊµÌåÊı
+   * @brief è·å–å½“å‰å¯è§å®ä½“æ•°é‡
+   * @return å¯è§å®ä½“æ•°
    */
   //size_t GetVisibleCount() const
   //{
@@ -219,17 +219,17 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
   //bool OnCameraVisibilityMaskChanged(CameraVisibilityMaskChangedEvent &e);
 
  private:
-  //Frustum mainCameraFrustum;  // Ö÷Ïà»úÊÓ×¶Ìå
+  //Frustum mainCameraFrustum;  // ä¸»ç›¸æœºè§†é”¥ä½“
   //uint32_t cameraVisibilityMask =
-  //    CameraVisibilityMask::ALL;  // Ïà»ú¿É¼ûĞÔÑÚÂë£¨Í¨¹ıÑÚÂëÅĞ¶Ï£¬Ö§³Ö²»Í¬Í¨µÀäÖÈ¾£©
-  //size_t visibleCount = 0;  // µ±Ç°¿É¼ûÊµÌå¼ÆÊı
+  //    CameraVisibilityMask::ALL;  // ç›¸æœºå¯è§æ€§æ©ç ï¼ˆé€šè¿‡æ©ç åˆ¤æ–­ï¼Œæ”¯æŒä¸åŒé€šé“æ¸²æŸ“ï¼‰
+  //size_t visibleCount = 0;  // å½“å‰å¯è§å®ä½“è®¡æ•°
 };
 
-// ==================== ÊÂ¼ş¶¨Òå ====================
+// ==================== äº‹ä»¶å®šä¹‰ ====================
 
 /**
  * @class VisibilityChangedEvent
- * @brief ¿É¼ûĞÔ¸Ä±äÊÂ¼ş
+ * @brief å¯è§æ€§æ”¹å˜äº‹ä»¶
  */
 class VisibilityChangedEvent : public ComponentEvent<VisibilityComponent> {
  public:

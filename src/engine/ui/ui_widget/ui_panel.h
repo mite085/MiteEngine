@@ -6,11 +6,11 @@
 namespace mite {
 
 /**
- * @brief UIÃæ°å»ùÀà£¬ÓÃÓÚ¹ÜÀíÒ»×é¿Ø¼ş
+ * @brief UIé¢æ¿åŸºç±»ï¼Œç”¨äºç®¡ç†ä¸€ç»„æ§ä»¶
  * 
- * PanelÓ¦µ±¼Ì³Ğ×ÔWidget£¬ÒòÎªPanelÊÇÒ»¸öÌØÊâµÄWidget£º
- * 1. Panel¾ßÓĞWidgetµÄËùÓĞ»ù±¾ÌØĞÔ£¨Î»ÖÃ¡¢³ß´ç¡¢¿É¼ûĞÔ¡¢äÖÈ¾ÄÜÁ¦µÈ£©
- * 2. PanelÔÚWidgetµÄ»ù´¡ÉÏÀ©Õ¹ÁËÈİÆ÷¹¦ÄÜ£¨¹ÜÀí×ÓÔªËØ¡¢²¼¾ÖµÈ£©
+ * Panelåº”å½“ç»§æ‰¿è‡ªWidgetï¼Œå› ä¸ºPanelæ˜¯ä¸€ä¸ªç‰¹æ®Šçš„Widgetï¼š
+ * 1. Panelå…·æœ‰Widgetçš„æ‰€æœ‰åŸºæœ¬ç‰¹æ€§ï¼ˆä½ç½®ã€å°ºå¯¸ã€å¯è§æ€§ã€æ¸²æŸ“èƒ½åŠ›ç­‰ï¼‰
+ * 2. Panelåœ¨Widgetçš„åŸºç¡€ä¸Šæ‰©å±•äº†å®¹å™¨åŠŸèƒ½ï¼ˆç®¡ç†å­å…ƒç´ ã€å¸ƒå±€ç­‰ï¼‰
  */
 class UIPanel : public UIWidget {
  public:
@@ -18,72 +18,72 @@ class UIPanel : public UIWidget {
   virtual ~UIPanel();
 
   /**
-   * @brief Ìí¼Ó×Ó¿Ø¼ş
+   * @brief æ·»åŠ å­æ§ä»¶
    */
   virtual void AddWidget(std::shared_ptr<UIWidget> widget);
 
   /**
-   * @brief ÒÆ³ı×Ó¿Ø¼ş
+   * @brief ç§»é™¤å­æ§ä»¶
    */
   virtual void RemoveWidget(UUID widgetId);
 
   /**
-   * @brief »ñÈ¡×Ó¿Ø¼ş
+   * @brief è·å–å­æ§ä»¶
    */
   std::shared_ptr<UIWidget> GetWidget(UUID widgetId) const;
 
   /**
-   * @brief »ñÈ¡ËùÓĞ×Ó¿Ø¼ş
+   * @brief è·å–æ‰€æœ‰å­æ§ä»¶
    */
   const std::vector<std::shared_ptr<UIWidget>> &GetWidgets() const;
 
   /**
-   * @brief Çå¿ÕËùÓĞ×Ó¿Ø¼ş
+   * @brief æ¸…ç©ºæ‰€æœ‰å­æ§ä»¶
    */
   virtual void ClearWidgets();
 
   /**
-   * @brief ¸üĞÂÃæ°å×´Ì¬
+   * @brief æ›´æ–°é¢æ¿çŠ¶æ€
    */
   virtual void Update(float deltaTime) override;
 
   /**
-   * @brief äÖÈ¾Ãæ°å¼°Æä×Ó¿Ø¼ş
+   * @brief æ¸²æŸ“é¢æ¿åŠå…¶å­æ§ä»¶
    */
   virtual void Render() = 0;
 
   /**
-   * @brief ´¦Àí²¼¾Ö¼ÆËã
+   * @brief å¤„ç†å¸ƒå±€è®¡ç®—
    */
   virtual void CalculateLayout();
 
   /**
-   * @brief »ñÈ¡Ãæ°å±êÌâ
+   * @brief è·å–é¢æ¿æ ‡é¢˜
    */
   const std::string &GetTitle() const;
 
   /**
-   * @brief ÉèÖÃÃæ°å±êÌâ
+   * @brief è®¾ç½®é¢æ¿æ ‡é¢˜
    */
   void SetTitle(const std::string &title);
 
   /**
-   * @brief »ñÈ¡Ãæ°åÊÇ·ñ¿ÉÍÏ¶¯
+   * @brief è·å–é¢æ¿æ˜¯å¦å¯æ‹–åŠ¨
    */
   bool IsDraggable() const;
 
   /**
-   * @brief ÉèÖÃÃæ°åÊÇ·ñ¿ÉÍÏ¶¯
+   * @brief è®¾ç½®é¢æ¿æ˜¯å¦å¯æ‹–åŠ¨
    */
   void SetDraggable(bool draggable);
 
   /**
-   * @brief »ñÈ¡Ãæ°åÊÇ·ñ¿Éµ÷Õû´óĞ¡
+   * @brief è·å–é¢æ¿æ˜¯å¦å¯è°ƒæ•´å¤§å°
    */
   bool IsResizable() const;
 
   /**
-   * @brief ÉèÖÃÃæ°åÊÇ·ñ¿Éµ÷Õû´óĞ¡
+   * @brief è®¾ç½®é¢æ¿æ˜¯å¦å¯è°ƒæ•´å¤§å°
    */
   void SetResizable(bool resizable);
 

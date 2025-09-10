@@ -6,85 +6,85 @@
 
 namespace mite {
 /**
- * ×ÊÔ´»º´æºËĞÄÀà£¨Ïß³Ì°²È«£©
- * Ö°Ôğ£º
- * 1. ¹ÜÀíËùÓĞÒÑ¼ÓÔØ×ÊÔ´µÄÉúÃüÖÜÆÚ£¨Ä£ĞÍ/ÎÆÀíµÈ£©
- * 2. ÊµÏÖÒıÓÃ¼ÆÊı×Ô¶¯ÊÍ·Å
- * 3. Ö§³ÖLRU»º´æÌÔÌ­²ßÂÔ
+ * èµ„æºç¼“å­˜æ ¸å¿ƒç±»ï¼ˆçº¿ç¨‹å®‰å…¨ï¼‰
+ * èŒè´£ï¼š
+ * 1. ç®¡ç†æ‰€æœ‰å·²åŠ è½½èµ„æºçš„ç”Ÿå‘½å‘¨æœŸï¼ˆæ¨¡å‹/çº¹ç†ç­‰ï¼‰
+ * 2. å®ç°å¼•ç”¨è®¡æ•°è‡ªåŠ¨é‡Šæ”¾
+ * 3. æ”¯æŒLRUç¼“å­˜æ·˜æ±°ç­–ç•¥
  * 
- * ×¢Òâ£º
- * AssetCache»º´æµÄ¶ÔÏó¾ùÎªshared_ptr£¬ÆäËûÈÎºÎ
- * Ä£¿é¾ù½«AssetPtr×÷ÎªÁÙÊ±±äÁ¿µ÷ÓÃ£¬ËùÒÔµ±cache_
- * ¹şÏ£±íÏß³Ì°²È«µÄÉ¾³ıAssetPtrÊ±£¬Íâ²¿²»¿ÉÄÜ´æÔÚ
- * ÆäËûAssetPtr£¬ËùÒÔ»á´¥·¢shared_ptr×Ô¶¯ÊÍ·Å×ÊÔ´¡£
+ * æ³¨æ„ï¼š
+ * AssetCacheç¼“å­˜çš„å¯¹è±¡å‡ä¸ºshared_ptrï¼Œå…¶ä»–ä»»ä½•
+ * æ¨¡å—å‡å°†AssetPträ½œä¸ºä¸´æ—¶å˜é‡è°ƒç”¨ï¼Œæ‰€ä»¥å½“cache_
+ * å“ˆå¸Œè¡¨çº¿ç¨‹å®‰å…¨çš„åˆ é™¤AssetPtræ—¶ï¼Œå¤–éƒ¨ä¸å¯èƒ½å­˜åœ¨
+ * å…¶ä»–AssetPtrï¼Œæ‰€ä»¥ä¼šè§¦å‘shared_ptrè‡ªåŠ¨é‡Šæ”¾èµ„æºã€‚
  */
 template<typename AssetType> class AssetCache {
  public:
   using AssetPtr = std::shared_ptr<AssetType>;
 
   /**
-   * @brief Ìí¼Ó×ÊÔ´µ½»º´æ
-   * @param asset ×ÊÔ´Êı¾İÖ¸Õë
-   * @return ÊÇ·ñ»º´æ³É¹¦£¨ÈôidÒÑ´æÔÚÔòÊ§°Ü£©
+   * @brief æ·»åŠ èµ„æºåˆ°ç¼“å­˜
+   * @param asset èµ„æºæ•°æ®æŒ‡é’ˆ
+   * @return æ˜¯å¦ç¼“å­˜æˆåŠŸï¼ˆè‹¥idå·²å­˜åœ¨åˆ™å¤±è´¥ï¼‰
    */
   bool Store(AssetPtr asset);
 
   /**
-   * @brief »ñÈ¡»º´æ×ÊÔ´
-   * @param id ×ÊÔ´ID
-   * @return ×ÊÔ´Ö¸Õë£¨²»´æÔÚ·µ»Ønullptr£©
+   * @brief è·å–ç¼“å­˜èµ„æº
+   * @param id èµ„æºID
+   * @return èµ„æºæŒ‡é’ˆï¼ˆä¸å­˜åœ¨è¿”å›nullptrï¼‰
    */
   AssetPtr Get(AssetID id) const;
 
   /**
-   * @brief ÊÍ·Å×ÊÔ´ÒıÓÃ
-   * @param id ×ÊÔ´ID
-   * @return µ±Ç°Ê£ÓàÒıÓÃ¼ÆÊı£¨-1±íÊ¾×ÊÔ´²»´æÔÚ£©
+   * @brief é‡Šæ”¾èµ„æºå¼•ç”¨
+   * @param id èµ„æºID
+   * @return å½“å‰å‰©ä½™å¼•ç”¨è®¡æ•°ï¼ˆ-1è¡¨ç¤ºèµ„æºä¸å­˜åœ¨ï¼‰
    */
   int Release(AssetID id);
 
   /**
-   * @brief »ñÈ¡µ±Ç°×ÊÔ´ÒıÓÃ¼ÆÊı
+   * @brief è·å–å½“å‰èµ„æºå¼•ç”¨è®¡æ•°
    */
   int GetRefCount(AssetID id) const;
 
   /**
-   * @brief Ôö¼Óµ±Ç°×ÊÔ´ÒıÓÃ¼ÆÊı
+   * @brief å¢åŠ å½“å‰èµ„æºå¼•ç”¨è®¡æ•°
    */
   void AddRefCount(AssetID id);
 
   /**
-   * @brief ÇåÀíËùÓĞÎ´±»ÒıÓÃµÄ×ÊÔ´
-   * @return ±»ÊÍ·ÅµÄ×ÊÔ´ÊıÁ¿
+   * @brief æ¸…ç†æ‰€æœ‰æœªè¢«å¼•ç”¨çš„èµ„æº
+   * @return è¢«é‡Šæ”¾çš„èµ„æºæ•°é‡
    */
   size_t PurgeUnused();
 
   /**
-   * @brief Ç¿ÖÆÒÆ³ı×ÊÔ´£¨ÎŞÊÓÒıÓÃ¼ÆÊı£©
-   * @return ÊÇ·ñ³É¹¦ÒÆ³ı
+   * @brief å¼ºåˆ¶ç§»é™¤èµ„æºï¼ˆæ— è§†å¼•ç”¨è®¡æ•°ï¼‰
+   * @return æ˜¯å¦æˆåŠŸç§»é™¤
    */
   bool ForceRemove(AssetID id);
 
  private:
-  // ---- ÄÚ²¿Êı¾İ½á¹¹ ----
+  // ---- å†…éƒ¨æ•°æ®ç»“æ„ ----
   struct CachedAsset {
     AssetPtr data;
     int refCount = 0;
-    typename std::list<AssetID>::iterator lruIt;  // ÓÃÓÚLRUÁ´±í
+    typename std::list<AssetID>::iterator lruIt;  // ç”¨äºLRUé“¾è¡¨
   };
 
-  // ---- ³ÉÔ±±äÁ¿ ----
+  // ---- æˆå‘˜å˜é‡ ----
   mutable std::mutex m_Mutex;
   std::unordered_map<AssetID, CachedAsset> m_Cache;
 
-  // LRUÊµÏÖ£º£¨Least recently used£¬×î½ü×îÉÙÊ¹ÓÃ£©
-  // ¸ÃËã·¨¸ù¾İÊı¾İµÄÀúÊ··ÃÎÊ¼ÇÂ¼À´½øĞĞÌÔÌ­Êı¾İ£¬
-  // È·±£»º´æÕ¼ÓÃĞ¡£¬ÇÒ±»ÖØ¸´·ÃÎÊµÄĞ§ÂÊ¸ß.
-  mutable std::list<AssetID> m_LruList;  // ×î½üÊ¹ÓÃË³Ğò
-  mutable size_t m_MaxSize = 1000;       // ×î´ó»º´æÊıÁ¿
+  // LRUå®ç°ï¼šï¼ˆLeast recently usedï¼Œæœ€è¿‘æœ€å°‘ä½¿ç”¨ï¼‰
+  // è¯¥ç®—æ³•æ ¹æ®æ•°æ®çš„å†å²è®¿é—®è®°å½•æ¥è¿›è¡Œæ·˜æ±°æ•°æ®ï¼Œ
+  // ç¡®ä¿ç¼“å­˜å ç”¨å°ï¼Œä¸”è¢«é‡å¤è®¿é—®çš„æ•ˆç‡é«˜.
+  mutable std::list<AssetID> m_LruList;  // æœ€è¿‘ä½¿ç”¨é¡ºåº
+  mutable size_t m_MaxSize = 1000;       // æœ€å¤§ç¼“å­˜æ•°é‡
 };
 
-// ³£ÓÃ»º´æÀàĞÍ±ğÃû
+// å¸¸ç”¨ç¼“å­˜ç±»å‹åˆ«å
 using TextureCache = AssetCache<TextureAsset>;
 using ModelCache = AssetCache<ModelAsset>;
 };  // namespace mite

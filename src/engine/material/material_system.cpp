@@ -4,18 +4,18 @@
 namespace mite {
 MaterialSystem::MaterialSystem()
 {
-  // ³õÊ¼»¯LOGGER
+  // åˆå§‹åŒ–LOGGER
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
   m_Logger->info("Create logger for material system");
 }
 
 void MaterialSystem::Initialize()
 {
-  // ×¢²á²ÄÖÊ
+  // æ³¨å†Œæè´¨
   m_Logger->info("Registering material templates");
 
-  // ×¢²á»ù´¡²ÄÖÊ
-  // TODO: shaderµÄ´´½¨·ÅÔÚ´Ë´¦ÊÇ·ñºÏÀí£¿´ıºóĞøµ÷Õû
+  // æ³¨å†ŒåŸºç¡€æè´¨
+  // TODO: shaderçš„åˆ›å»ºæ”¾åœ¨æ­¤å¤„æ˜¯å¦åˆç†ï¼Ÿå¾…åç»­è°ƒæ•´
   auto pureColorShader = ShaderCache::Get().GetOpenGLShader(
       FileSystem::GetAssetPath("shaders/pure_color.vert").string(),
       FileSystem::GetAssetPath("shaders/pure_color.frag").string());
@@ -23,7 +23,7 @@ void MaterialSystem::Initialize()
   std::string basicType = pureColorMaterialTemplate->GetMaterialType();
   RegisterTemplate(basicType, std::move(pureColorMaterialTemplate));
 
-  // ×¢²áPBR²ÄÖÊ
+  // æ³¨å†ŒPBRæè´¨
   auto pbrShader = ShaderCache::Get().GetOpenGLShader(
       FileSystem::GetAssetPath("shaders/pbr.vert").string(),
       FileSystem::GetAssetPath("shaders/pbr.frag").string());
@@ -35,18 +35,18 @@ void MaterialSystem::Initialize()
 void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<Material> material)
 {
   if (name.empty()) {
-    // ²ÄÖÊÄ£°åÃû³Æ²»ÄÜÎª¿Õ
+    // æè´¨æ¨¡æ¿åç§°ä¸èƒ½ä¸ºç©º
     m_Logger->error("Material template name cannot be empty");
     throw std::invalid_argument("Material template name cannot be empty");
   }
 
   auto it = m_Templates.find(name);
   if (it != m_Templates.end()) {
-    // ²ÄÖÊÄ£°åÒÑ´æÔÚ£¬Ìø¹ı×¢²á²½Öè¡£
+    // æè´¨æ¨¡æ¿å·²å­˜åœ¨ï¼Œè·³è¿‡æ³¨å†Œæ­¥éª¤ã€‚
     m_Logger->error("Existing material template: {}, registing failed", name);
     return;
   }
-  // ×¢²á²ÄÖÊÄ£°å
+  // æ³¨å†Œæè´¨æ¨¡æ¿
   m_Logger->info("Register material template: {}", name);
   m_Templates.emplace(name, std::move(material));
 }
@@ -59,21 +59,21 @@ bool MaterialSystem::HasTemplate(const std::string &name) const
 std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::string &templateName)
 {
   m_Logger->info("Creating material instance with material template: {}.", templateName);
-  // 1. ²éÕÒÄ£°å
+  // 1. æŸ¥æ‰¾æ¨¡æ¿
   auto it = m_Templates.find(templateName);
   if (it == m_Templates.end()) {
-    // ²ÄÖÊÄ£°å²»´æÔÚ, Ê¹ÓÃ»ØÍË²ÄÖÊ
+    // æè´¨æ¨¡æ¿ä¸å­˜åœ¨, ä½¿ç”¨å›é€€æè´¨
     m_Logger->warn("Invalid material template: {}, trying to use fallback material.",
                    templateName);
     if (!m_FallbackMaterial) {
-      // ÎŞ¿ÉÓÃ»ØÍË²ÄÖÊ
+      // æ— å¯ç”¨å›é€€æè´¨
       m_Logger->error("There has not any fallback material to use.");
       throw std::out_of_range("There has not any fallback material to use.");
     }
     return m_FallbackMaterial->CreateInstance();
   }
 
-  // 2. ´´½¨ÊµÀı£¨Í¨¹ıÄ£°å¹¤³§·½·¨£©
+  // 2. åˆ›å»ºå®ä¾‹ï¼ˆé€šè¿‡æ¨¡æ¿å·¥å‚æ–¹æ³•ï¼‰
   return it->second->CreateInstance();
 }
 
@@ -81,15 +81,15 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
     const std::string &templateName,
     const std::unordered_map<std::string, UniformVariant> &overrides)
 {
-  // 1. ´´½¨»ù´¡²ÄÖÊÊµÀı£¨¸´ÓÃÒÑÓĞÂß¼­£©
+  // 1. åˆ›å»ºåŸºç¡€æè´¨å®ä¾‹ï¼ˆå¤ç”¨å·²æœ‰é€»è¾‘ï¼‰
   auto instance = CreateInstance(templateName);
   if (!instance) {
-    // ÎŞ·¨´´½¨²ÄÖÊÊµÀı
+    // æ— æ³•åˆ›å»ºæè´¨å®ä¾‹
     m_Logger->error("Cannot create material instance: {}", templateName);
     return nullptr;
   }
 
-  // 2. Ó¦ÓÃ¸²¸Ç²ÎÊı£¨ÀàĞÍ°²È«´¦Àí£©
+  // 2. åº”ç”¨è¦†ç›–å‚æ•°ï¼ˆç±»å‹å®‰å…¨å¤„ç†ï¼‰
   for (const auto &[name, value] : overrides) {
     switch (value.GetType()) {
       case UniformVariant::Type::Float:
@@ -145,31 +145,31 @@ void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Mat
 {
   auto it = m_Templates.find(name);
   if (it == m_Templates.end()) {
-    // Î´ÄÜÔÚ×¢²áÁĞ±íÖĞÑ°ÕÒµ½ĞèÒª±»reloadµÄmaterial
-    m_Logger->error("Reload failed£¬reloaded material name invalid: {}", name);
+    // æœªèƒ½åœ¨æ³¨å†Œåˆ—è¡¨ä¸­å¯»æ‰¾åˆ°éœ€è¦è¢«reloadçš„material
+    m_Logger->error("Reload failedï¼Œreloaded material name invalid: {}", name);
     return;
   }
 
-  // 1. ´¥·¢ÊÂ¼ş£¨¾É²ÄÖÊ¼´½«±»Ìæ»»£©
+  // 1. è§¦å‘äº‹ä»¶ï¼ˆæ—§æè´¨å³å°†è¢«æ›¿æ¢ï¼‰
   Material *oldMaterial = it->second.get();
   MaterialReloadedEvent event(name, oldMaterial, newMaterial.get());
   EventBus::Publish<MaterialReloadedEvent>(event);
 
-  // 2. Ìæ»»Ä£°å
+  // 2. æ›¿æ¢æ¨¡æ¿
   it->second = std::move(newMaterial);
-  // ²ÄÖÊÄ£°åÒÑÖØÔØ
+  // æè´¨æ¨¡æ¿å·²é‡è½½
   m_Logger->info("Material template has been reloaded: {}", name);
 }
 
 void MaterialSystem::SetFallbackMaterial(std::unique_ptr<Material> material)
 {
   if (!material) {
-    // »ØÍË²ÄÖÊ²»ÄÜÎª¿Õ
+    // å›é€€æè´¨ä¸èƒ½ä¸ºç©º
     m_Logger->error("Fallback material cannot be nullptr.");
     return;
   }
   m_FallbackMaterial = std::move(material);
-  // ÉèÖÃ»ØÍË²ÄÖÊ
+  // è®¾ç½®å›é€€æè´¨
   m_Logger->debug("Setting fallback material: {}", m_FallbackMaterial->GetName());
 }
 };  // namespace mite

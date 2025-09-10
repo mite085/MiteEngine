@@ -9,148 +9,148 @@
 
 namespace mite {
 
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class MeshComponent;
 class MaterialComponent;
 class TransformComponent;
 
 /**
- * @brief RenderableItem¹¹½¨Æ÷
- * @note Ö°Ôğ£º½«SceneNode×ª»»ÎªRenderableItem£¬´¦ÀíÊı¾İÌáÈ¡ºÍ×ª»»Âß¼­
- * @note µ¥Ò»Ö°Ôğ£º×¨×¢ÓÚSceneNodeµ½äÖÈ¾Êı¾İµÄ×ª»»£¬²»Éæ¼°äÖÈ¾×´Ì¬¹ÜÀí
+ * @brief RenderableItemæ„å»ºå™¨
+ * @note èŒè´£ï¼šå°†SceneNodeè½¬æ¢ä¸ºRenderableItemï¼Œå¤„ç†æ•°æ®æå–å’Œè½¬æ¢é€»è¾‘
+ * @note å•ä¸€èŒè´£ï¼šä¸“æ³¨äºSceneNodeåˆ°æ¸²æŸ“æ•°æ®çš„è½¬æ¢ï¼Œä¸æ¶‰åŠæ¸²æŸ“çŠ¶æ€ç®¡ç†
  */
 class RenderableItemBuilder {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param registry ³¡¾°×¢²á±íÒıÓÃ£¨ÓÃÓÚ×é¼ş²éÑ¯£©
+   * @brief æ„é€ å‡½æ•°
+   * @param registry åœºæ™¯æ³¨å†Œè¡¨å¼•ç”¨ï¼ˆç”¨äºç»„ä»¶æŸ¥è¯¢ï¼‰
    */
   explicit RenderableItemBuilder();
 
   /**
-   * @brief Îö¹¹º¯Êı
+   * @brief ææ„å‡½æ•°
    */
   ~RenderableItemBuilder();
 
-  // ==================== ÓëSceneGraph¶Ô½ÓµÄ½Ó¿Ú ====================
+  // ==================== ä¸SceneGraphå¯¹æ¥çš„æ¥å£ ====================
   /**
-   * @brief ÅúÁ¿¹¹½¨RenderableItem
-   * @param sceneNodes ³¡¾°½ÚµãÁĞ±í
-   * @return ¹¹½¨³É¹¦µÄRenderableItemÁĞ±í
+   * @brief æ‰¹é‡æ„å»ºRenderableItem
+   * @param sceneNodes åœºæ™¯èŠ‚ç‚¹åˆ—è¡¨
+   * @return æ„å»ºæˆåŠŸçš„RenderableItemåˆ—è¡¨
    * 
-   * ¿ª·¢Ç°ÆÚ£¬Ã¿Ö¡¶ÔËùÓĞSceneNode¹¹½¨RenderableItem
-   * ÓÅµã£º
-   * 1. ÊµÏÖ¼òµ¥£¬±ãÓÚµ÷ÊÔ
-   * 2. ¹¦ÄÜÕıÈ·ĞÔÓÅÏÈÓÚĞÔÄÜÓÅ»¯
-   * 3. ±ãÓÚºóĞøÌí¼Ó¸ü¸´ÔÓµÄÓÅ»¯²ßÂÔ
+   * å¼€å‘å‰æœŸï¼Œæ¯å¸§å¯¹æ‰€æœ‰SceneNodeæ„å»ºRenderableItem
+   * ä¼˜ç‚¹ï¼š
+   * 1. å®ç°ç®€å•ï¼Œä¾¿äºè°ƒè¯•
+   * 2. åŠŸèƒ½æ­£ç¡®æ€§ä¼˜å…ˆäºæ€§èƒ½ä¼˜åŒ–
+   * 3. ä¾¿äºåç»­æ·»åŠ æ›´å¤æ‚çš„ä¼˜åŒ–ç­–ç•¥
    * 
-   * µ±ĞÔÄÜ³ÉÎªÆ¿¾±Ê±£¬ÔÙÖğ²½ÒıÈë£º
-   * 1. Ôà±ê¼ÇÏµÍ³
-   * 2. ¶ÔÏó³Ø
-   * 3. »º´æ»úÖÆ
-   * 4. ÔöÁ¿¸üĞÂ
+   * å½“æ€§èƒ½æˆä¸ºç“¶é¢ˆæ—¶ï¼Œå†é€æ­¥å¼•å…¥ï¼š
+   * 1. è„æ ‡è®°ç³»ç»Ÿ
+   * 2. å¯¹è±¡æ± 
+   * 3. ç¼“å­˜æœºåˆ¶
+   * 4. å¢é‡æ›´æ–°
    * 
-   * £¨RenderableItem¹¹½¨³É±¾½öÓĞÖÇÄÜÖ¸Õë¹¹½¨µÄ¿ªÏú£¬¶ÌÆÚÄÚ²»»á³ÉÎª½ÏÎªÑÏÖØµÄÆ¿¾±£©
+   * ï¼ˆRenderableItemæ„å»ºæˆæœ¬ä»…æœ‰æ™ºèƒ½æŒ‡é’ˆæ„å»ºçš„å¼€é”€ï¼ŒçŸ­æœŸå†…ä¸ä¼šæˆä¸ºè¾ƒä¸ºä¸¥é‡çš„ç“¶é¢ˆï¼‰
    */
   std::vector<RenderableItem> BuildFromSceneNodes(SceneRegistry& registry, const std::vector<SceneNode *> &sceneNodes);
 
-  // ==================== ºËĞÄ¹¹½¨½Ó¿Ú ====================
+  // ==================== æ ¸å¿ƒæ„å»ºæ¥å£ ====================
   /**
-   * @brief ´ÓSceneNode¹¹½¨RenderableItem
-   * @param sceneNode ³¡¾°½Úµã
-   * @return ¹¹½¨³É¹¦µÄRenderableItem£¬Èç¹û¹¹½¨Ê§°Ü·µ»Ø¿Õ¶ÔÏó
+   * @brief ä»SceneNodeæ„å»ºRenderableItem
+   * @param sceneNode åœºæ™¯èŠ‚ç‚¹
+   * @return æ„å»ºæˆåŠŸçš„RenderableItemï¼Œå¦‚æœæ„å»ºå¤±è´¥è¿”å›ç©ºå¯¹è±¡
    */
   RenderableItem BuildFromSceneNode(SceneRegistry &registry, SceneNode *sceneNode);
 
   /**
-   * @brief ´ÓEntity¹¹½¨RenderableItem
-   * @param entity ECSÊµÌå
-   * @return ¹¹½¨³É¹¦µÄRenderableItem£¬Èç¹û¹¹½¨Ê§°Ü·µ»Ø¿Õ¶ÔÏó
+   * @brief ä»Entityæ„å»ºRenderableItem
+   * @param entity ECSå®ä½“
+   * @return æ„å»ºæˆåŠŸçš„RenderableItemï¼Œå¦‚æœæ„å»ºå¤±è´¥è¿”å›ç©ºå¯¹è±¡
    */
   RenderableItem BuildFromEntity(SceneRegistry &registry, Entity entity);
 
   /**
-   * @brief ÅúÁ¿¹¹½¨RenderableItem
-   * @param entities ECSÊµÌåÁĞ±í
-   * @return ¹¹½¨³É¹¦µÄRenderableItemÁĞ±í
+   * @brief æ‰¹é‡æ„å»ºRenderableItem
+   * @param entities ECSå®ä½“åˆ—è¡¨
+   * @return æ„å»ºæˆåŠŸçš„RenderableItemåˆ—è¡¨
    */
   std::vector<RenderableItem> BuildFromEntities(SceneRegistry &registry,
                                                 const std::vector<Entity> &entities);
 
-  // ==================== ÅäÖÃ½Ó¿Ú ====================
+  // ==================== é…ç½®æ¥å£ ====================
   /**
-   * @brief ÉèÖÃ×Ô¶¨Òå²ÄÖÊ¸²¸Çº¯Êı
-   * @param func ²ÄÖÊ¸²¸Ç»Øµ÷º¯Êı
-   * @note ¿ÉÓÃÓÚÌØÊâäÖÈ¾Ğ§¹û»òµ÷ÊÔÄ¿µÄ
+   * @brief è®¾ç½®è‡ªå®šä¹‰æè´¨è¦†ç›–å‡½æ•°
+   * @param func æè´¨è¦†ç›–å›è°ƒå‡½æ•°
+   * @note å¯ç”¨äºç‰¹æ®Šæ¸²æŸ“æ•ˆæœæˆ–è°ƒè¯•ç›®çš„
    */
   void SetMaterialOverrideFunction(
       std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>
           func);
 
   /**
-   * @brief ÉèÖÃ×Ô¶¨Òå±ä»»¸²¸Çº¯Êı
-   * @param func ±ä»»¸²¸Ç»Øµ÷º¯Êı
-   * @note ¿ÉÓÃÓÚÌØÊâ±ä»»Ğ§¹û»òµ÷ÊÔÄ¿µÄ
+   * @brief è®¾ç½®è‡ªå®šä¹‰å˜æ¢è¦†ç›–å‡½æ•°
+   * @param func å˜æ¢è¦†ç›–å›è°ƒå‡½æ•°
+   * @note å¯ç”¨äºç‰¹æ®Šå˜æ¢æ•ˆæœæˆ–è°ƒè¯•ç›®çš„
    */
   void SetTransformOverrideFunction(std::function<glm::mat4(Entity, const glm::mat4 &)> func);
 
   /**
-   * @brief ÉèÖÃLODÑ¡Ôñº¯Êı
-   * @param func LODÑ¡Ôñ»Øµ÷º¯Êı
-   * @note ¿ÉÓÃÓÚ×Ô¶¨ÒåLODÑ¡Ôñ²ßÂÔ
+   * @brief è®¾ç½®LODé€‰æ‹©å‡½æ•°
+   * @param func LODé€‰æ‹©å›è°ƒå‡½æ•°
+   * @note å¯ç”¨äºè‡ªå®šä¹‰LODé€‰æ‹©ç­–ç•¥
    */
   void SetLODSelectorFunction(std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> func);
 
-  // ==================== ¹¤¾ß½Ó¿Ú ====================
+  // ==================== å·¥å…·æ¥å£ ====================
   /**
-   * @brief ¼ì²éSceneNodeÊÇ·ñ¿ÉäÖÈ¾
-   * @param sceneNode ³¡¾°½Úµã
-   * @return ÊÇ·ñ°üº¬äÖÈ¾ËùĞèµÄ×é¼ş
+   * @brief æ£€æŸ¥SceneNodeæ˜¯å¦å¯æ¸²æŸ“
+   * @param sceneNode åœºæ™¯èŠ‚ç‚¹
+   * @return æ˜¯å¦åŒ…å«æ¸²æŸ“æ‰€éœ€çš„ç»„ä»¶
    */
   bool IsRenderable(SceneRegistry &registry, SceneNode *sceneNode) const;
 
   /**
-   * @brief ¼ì²éEntityÊÇ·ñ¿ÉäÖÈ¾
-   * @param entity ECSÊµÌå
-   * @return ÊÇ·ñ°üº¬äÖÈ¾ËùĞèµÄ×é¼ş
+   * @brief æ£€æŸ¥Entityæ˜¯å¦å¯æ¸²æŸ“
+   * @param entity ECSå®ä½“
+   * @return æ˜¯å¦åŒ…å«æ¸²æŸ“æ‰€éœ€çš„ç»„ä»¶
    */
   bool IsRenderable(SceneRegistry &registry, Entity entity) const;
 
  private:
   /**
-   * @brief ´ÓÊµÌåÌáÈ¡Íø¸ñ×é¼ş
-   * @param entity ECSÊµÌå
-   * @return Íø¸ñ×é¼ş¹²ÏíÖ¸Õë£¬Èç¹û²»´æÔÚ·µ»Ønullptr
+   * @brief ä»å®ä½“æå–ç½‘æ ¼ç»„ä»¶
+   * @param entity ECSå®ä½“
+   * @return ç½‘æ ¼ç»„ä»¶å…±äº«æŒ‡é’ˆï¼Œå¦‚æœä¸å­˜åœ¨è¿”å›nullptr
    */
   std::shared_ptr<Mesh> ExtractMeshComponent(SceneRegistry &registry, Entity entity);
 
   /**
-   * @brief ´ÓÊµÌåÌáÈ¡²ÄÖÊ×é¼ş
-   * @param entity ECSÊµÌå
-   * @return ²ÄÖÊÊµÀı¹²ÏíÖ¸Õë£¬Èç¹û²»´æÔÚ·µ»Ønullptr
+   * @brief ä»å®ä½“æå–æè´¨ç»„ä»¶
+   * @param entity ECSå®ä½“
+   * @return æè´¨å®ä¾‹å…±äº«æŒ‡é’ˆï¼Œå¦‚æœä¸å­˜åœ¨è¿”å›nullptr
    */
   std::shared_ptr<MaterialInstance> ExtractMaterialComponent(SceneRegistry &registry,
                                                              Entity entity);
 
   /**
-   * @brief ´ÓÊµÌåÌáÈ¡±ä»»×é¼ş
-   * @param entity ECSÊµÌå
-   * @return ÊÀ½ç±ä»»¾ØÕó
+   * @brief ä»å®ä½“æå–å˜æ¢ç»„ä»¶
+   * @param entity ECSå®ä½“
+   * @return ä¸–ç•Œå˜æ¢çŸ©é˜µ
    */
   glm::mat4 ExtractTransformComponent(SceneRegistry &registry, Entity entity);
 
-  // ×Ô¶¨Òå»Øµ÷º¯Êı£¨ÓÃÓÚÀ©Õ¹¹¦ÄÜ£©
+  // è‡ªå®šä¹‰å›è°ƒå‡½æ•°ï¼ˆç”¨äºæ‰©å±•åŠŸèƒ½ï¼‰
   std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>
       m_MaterialOverrideFunc;
   std::function<glm::mat4(Entity, const glm::mat4 &)> m_TransformOverrideFunc;
   std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> m_LODSelectorFunc;
 
-  // ½ûÓÃ¿½±´¹¹ÔìºÍ¸³Öµ
+  // ç¦ç”¨æ‹·è´æ„é€ å’Œèµ‹å€¼
   RenderableItemBuilder(const RenderableItemBuilder &) = delete;
   RenderableItemBuilder &operator=(const RenderableItemBuilder &) = delete;
 
   
-  // ÈÕÖ¾Æ÷
+  // æ—¥å¿—å™¨
   Logger m_Logger;
 };
 

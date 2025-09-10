@@ -11,7 +11,7 @@ MaterialInstance::MaterialInstance(std::shared_ptr<OpenGLShader> shader) : m_Sha
 MaterialInstance::~MaterialInstance() {
 }
 
-// ===================== ²ÎÊıÉèÖÃ·½·¨ =====================
+// ===================== å‚æ•°è®¾ç½®æ–¹æ³• =====================
 void MaterialInstance::SetFloat(const std::string &name, float value)
 {
   m_Uniforms[name] = value;
@@ -47,7 +47,7 @@ void MaterialInstance::SetMatrix4(const std::string &name, const glm::mat4 &valu
   m_Uniforms[name] = value;
 }
 
-// ===================== ²ÎÊıÊı×éÉèÖÃ·½·¨ =====================
+// ===================== å‚æ•°æ•°ç»„è®¾ç½®æ–¹æ³• =====================
 
 void MaterialInstance::SetIntArray(const std::string &name, const int *values, size_t count)
 {
@@ -66,7 +66,7 @@ void MaterialInstance::SetVector3Array(const std::string &name,
   m_Uniforms[name] = std::vector<glm::vec3>(values, values + count);
 }
 
-// ===================== ÎÆÀíÉèÖÃ·½·¨ =====================
+// ===================== çº¹ç†è®¾ç½®æ–¹æ³• =====================
 void MaterialInstance::SetTexture(const std::string &name, std::shared_ptr<Texture> texture)
 {
   if (texture) {
@@ -90,7 +90,7 @@ void MaterialInstance::SetTextureArray(const std::string &name,
   }
 }
 
-// ===================== ºËĞÄApply·½·¨ =====================
+// ===================== æ ¸å¿ƒApplyæ–¹æ³• =====================
 void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader) const
 {
   OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
@@ -101,7 +101,7 @@ void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *over
 
   targetShader->Bind();
 
-  // ---- ÉÏ´«UniformÖµ£¨²»°üº¬ÎÆÀí£¬ÎÆÀíµ¥¶À´¦Àí£© ----
+  // ---- ä¸Šä¼ Uniformå€¼ï¼ˆä¸åŒ…å«çº¹ç†ï¼Œçº¹ç†å•ç‹¬å¤„ç†ï¼‰ ----
   for (const auto &[name, value] : m_Uniforms) {
     switch (value.GetType()) {
       case UniformVariant::Type::Float:
@@ -146,20 +146,20 @@ void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *over
     }
   }
 
-  // ---- °ó¶¨ÎÆÀí£¨ÎÆÀíµ¥¶À´¦Àí²¿·Ö£© ----
+  // ---- ç»‘å®šçº¹ç†ï¼ˆçº¹ç†å•ç‹¬å¤„ç†éƒ¨åˆ†ï¼‰ ----
   uint32_t textureSlot = 0;
   for (const auto &[name, texture] : m_Textures) {
-    // Ê¹ÓÃ´«ÈëµÄÎÆÀí°ó¶¨º¯Êı½øĞĞÎÆÀí°ó¶¨
+    // ä½¿ç”¨ä¼ å…¥çš„çº¹ç†ç»‘å®šå‡½æ•°è¿›è¡Œçº¹ç†ç»‘å®š
     textureBindFunc(texture->GetHandle(), textureSlot);
     targetShader->SetInt(name, static_cast<int>(textureSlot));
     textureSlot++;
   }
 
-  // ---- °ó¶¨ÎÆÀíÊı×é ----
+  // ---- ç»‘å®šçº¹ç†æ•°ç»„ ----
   for (const auto &[name, textures] : m_TextureArrays) {
     std::vector<int> slots;
     for (const auto &texture : textures) {
-      // Ê¹ÓÃ´«ÈëµÄÎÆÀí°ó¶¨º¯Êı½øĞĞÎÆÀí°ó¶¨
+      // ä½¿ç”¨ä¼ å…¥çš„çº¹ç†ç»‘å®šå‡½æ•°è¿›è¡Œçº¹ç†ç»‘å®š
       textureBindFunc(texture->GetHandle(), textureSlot);
       slots.push_back(static_cast<int>(textureSlot));
       textureSlot++;

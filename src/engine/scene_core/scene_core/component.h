@@ -4,101 +4,101 @@
 #include "entity.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class SceneRegistry;
 
 /**
- * @brief ×é¼ş»ùÀà£¬ËùÓĞ³¡¾°×é¼ş¶¼Ó¦¼Ì³Ğ×Ô´ËÀà
+ * @brief ç»„ä»¶åŸºç±»ï¼Œæ‰€æœ‰åœºæ™¯ç»„ä»¶éƒ½åº”ç»§æ‰¿è‡ªæ­¤ç±»
  *
- * Éè¼ÆÔ­Ôò£º
- * 1. ÇáÁ¿¼¶ - ×é¼şÓ¦ÊÇ¼òµ¥µÄÊı¾İÈİÆ÷
- * 2. ¿ÉĞòÁĞ»¯ - Ö§³Ö±£´æºÍ¼ÓÔØ
- * 3. ÀàĞÍ°²È« - Ìá¹©ÔËĞĞÊ±ÀàĞÍĞÅÏ¢
- * 4. ¿É¿ËÂ¡ - Ö§³ÖÉî¿½±´
- * 5. ¿É¹Û²ì - Ö§³Ö±ä¸üÍ¨Öª
+ * è®¾è®¡åŸåˆ™ï¼š
+ * 1. è½»é‡çº§ - ç»„ä»¶åº”æ˜¯ç®€å•çš„æ•°æ®å®¹å™¨
+ * 2. å¯åºåˆ—åŒ– - æ”¯æŒä¿å­˜å’ŒåŠ è½½
+ * 3. ç±»å‹å®‰å…¨ - æä¾›è¿è¡Œæ—¶ç±»å‹ä¿¡æ¯
+ * 4. å¯å…‹éš† - æ”¯æŒæ·±æ‹·è´
+ * 5. å¯è§‚å¯Ÿ - æ”¯æŒå˜æ›´é€šçŸ¥
  */
 class Component {
  public:
-  // ×é¼ş¼Ò×åÀàĞÍ±êÊ¶£¬ÓÃÓÚ×é¼ş·ÖÀà£¬ÒÔ¼°ÓÅÏÈ¼¶ÅĞ¶Ï
+  // ç»„ä»¶å®¶æ—ç±»å‹æ ‡è¯†ï¼Œç”¨äºç»„ä»¶åˆ†ç±»ï¼Œä»¥åŠä¼˜å…ˆçº§åˆ¤æ–­
   enum class Family : uint8_t {
-    Core = 0,         // ºËĞÄ»ù´¡×é¼ş£¨±ØĞë×îÏÈÖ´ĞĞ£©
-    Hierarchy = 10,   // ²ã¼¶¹ØÏµ×é¼ş
-    Transform = 20,   // ±ä»»Ïà¹Ø×é¼ş
-    Geometry = 30,    // ¼¸ºÎÊı¾İ×é¼ş
-    Visibility = 40,  // ¿É¼ûĞÔ¼ÆËã×é¼ş
-    SceneGraph = 50,  // ³¡¾°Í¼Í¬²½×é¼ş
-    Render = 60,      // äÖÈ¾×¼±¸×é¼ş
-    Logic = 70,       // Âß¼­/ĞĞÎª×é¼ş(Î´À´À©Õ¹)
-    Cleanup = 80,     // ÇåÀíÏà¹Ø×é¼ş
-    Custom = 100,     // ×Ô¶¨Òå×é¼şÆğÊ¼Öµ(ÔİÎ´¹æ»®)
-    PostUpdate = 255  // È·±£×îºó¸üĞÂµÄ×é¼ş(ÌØÊâÓÃÍ¾)
+    Core = 0,         // æ ¸å¿ƒåŸºç¡€ç»„ä»¶ï¼ˆå¿…é¡»æœ€å…ˆæ‰§è¡Œï¼‰
+    Hierarchy = 10,   // å±‚çº§å…³ç³»ç»„ä»¶
+    Transform = 20,   // å˜æ¢ç›¸å…³ç»„ä»¶
+    Geometry = 30,    // å‡ ä½•æ•°æ®ç»„ä»¶
+    Visibility = 40,  // å¯è§æ€§è®¡ç®—ç»„ä»¶
+    SceneGraph = 50,  // åœºæ™¯å›¾åŒæ­¥ç»„ä»¶
+    Render = 60,      // æ¸²æŸ“å‡†å¤‡ç»„ä»¶
+    Logic = 70,       // é€»è¾‘/è¡Œä¸ºç»„ä»¶(æœªæ¥æ‰©å±•)
+    Cleanup = 80,     // æ¸…ç†ç›¸å…³ç»„ä»¶
+    Custom = 100,     // è‡ªå®šä¹‰ç»„ä»¶èµ·å§‹å€¼(æš‚æœªè§„åˆ’)
+    PostUpdate = 255  // ç¡®ä¿æœ€åæ›´æ–°çš„ç»„ä»¶(ç‰¹æ®Šç”¨é€”)
   };
 
   virtual ~Component() = default;
 
   /**
-   * @brief »ñÈ¡×é¼şÀàĞÍ¼Ò×å
+   * @brief è·å–ç»„ä»¶ç±»å‹å®¶æ—
    */
   virtual Family GetFamily() const = 0;
 
   /**
-   * @brief »ñÈ¡×é¼şÀàĞÍÎ¨Ò»ID
+   * @brief è·å–ç»„ä»¶ç±»å‹å”¯ä¸€ID
    */
   virtual std::type_index GetType() const = 0;
 
   /**
-   * @brief ±ê¼Ç×é¼şÎªÒÑĞŞ¸Ä
+   * @brief æ ‡è®°ç»„ä»¶ä¸ºå·²ä¿®æ”¹
    */
   void MarkDirty();
   /**
-   * @brief ¼ì²é×é¼şÊÇ·ñ±»ĞŞ¸Ä¹ı
+   * @brief æ£€æŸ¥ç»„ä»¶æ˜¯å¦è¢«ä¿®æ”¹è¿‡
    */
   bool IsDirty() const;
   /**
-   * @brief ÇåÀí×é¼şĞŞ¸Ä×´Ì¬
+   * @brief æ¸…ç†ç»„ä»¶ä¿®æ”¹çŠ¶æ€
    */
   void ClearDirty();
   /**
-   * @brief ¸üĞÂ·½·¨£¬Í¨³£Ã¿Ö¡µ÷ÓÃ
+   * @brief æ›´æ–°æ–¹æ³•ï¼Œé€šå¸¸æ¯å¸§è°ƒç”¨
    */
   void Update(float deltaTime, SceneRegistry &reg);
   /**
-   * @brief Õë¶Ôdirty¶ÔÏó½øĞĞ´¦Àí
+   * @brief é’ˆå¯¹dirtyå¯¹è±¡è¿›è¡Œå¤„ç†
    */
   virtual void ProcessDirty(float deltaTime, SceneRegistry &reg) = 0;
 
   /**
-   * @brief ×é¼şÆôÓÃ×´Ì¬
+   * @brief ç»„ä»¶å¯ç”¨çŠ¶æ€
    */
   void SetEnabled(bool enabled);
   bool IsEnabled() const;
 
   /**
-   * @brief ĞòÁĞ»¯×é¼şÊı¾İ
-   * @param output Êä³öÁ÷
-   * @return ÊÇ·ñ³É¹¦
+   * @brief åºåˆ—åŒ–ç»„ä»¶æ•°æ®
+   * @param output è¾“å‡ºæµ
+   * @return æ˜¯å¦æˆåŠŸ
    */
   virtual bool Serialize(std::ostream &output) const;
 
   /**
-   * @brief ·´ĞòÁĞ»¯×é¼şÊı¾İ
-   * @param input ÊäÈëÁ÷
-   * @return ÊÇ·ñ³É¹¦
+   * @brief ååºåˆ—åŒ–ç»„ä»¶æ•°æ®
+   * @param input è¾“å…¥æµ
+   * @return æ˜¯å¦æˆåŠŸ
    */
   virtual bool Deserialize(std::istream &input);
 
   /**
-   * @brief ·µ»Ø×é¼şÊÇ·ñÒÀÀµÓÚÆäËû×é¼ş
-   * @return ÒÀÀµµÄ×é¼şÀàĞÍÁĞ±í
+   * @brief è¿”å›ç»„ä»¶æ˜¯å¦ä¾èµ–äºå…¶ä»–ç»„ä»¶
+   * @return ä¾èµ–çš„ç»„ä»¶ç±»å‹åˆ—è¡¨
    *
-   * ×¢Òâ:
-   * Óë³¡¾°Ê÷Ö±½ÓÏà¹ØµÄ×é¼ş(ÈçTransformComponent¡¢
-   * LightComponent¡¢CameraComponentµÈ)£¬ĞèÒªÒÀÀµ
-   * HierarchyComponent£¬Ëü¾ÍÊÇ×é³É³¡¾°Ê÷µÄºËĞÄ¡£
+   * æ³¨æ„:
+   * ä¸åœºæ™¯æ ‘ç›´æ¥ç›¸å…³çš„ç»„ä»¶(å¦‚TransformComponentã€
+   * LightComponentã€CameraComponentç­‰)ï¼Œéœ€è¦ä¾èµ–
+   * HierarchyComponentï¼Œå®ƒå°±æ˜¯ç»„æˆåœºæ™¯æ ‘çš„æ ¸å¿ƒã€‚
    *
-   * »òÕßÍ¨¹ı¶ÔTransformComponentµÄÒÀÀµ£¬ÊµÏÖ¶Ô
-   * HierarchyComponentµÄ¼ä½ÓÒÀÀµ(ÈçMeshComponent¡¢
-   * AnimationComponentµÈ)¡£
+   * æˆ–è€…é€šè¿‡å¯¹TransformComponentçš„ä¾èµ–ï¼Œå®ç°å¯¹
+   * HierarchyComponentçš„é—´æ¥ä¾èµ–(å¦‚MeshComponentã€
+   * AnimationComponentç­‰)ã€‚
    */
   virtual std::vector<std::type_index> GetDependencies() const
   {
@@ -106,64 +106,64 @@ class Component {
   }
 
   /**
-   * @brief ÅĞ¶Ï¸Ã×é¼şËùÊôµÄÊµÌåÊÇ·ñ´æÔÚparent
-   * @param reg ×¢²á±í£¬ÓÃÓÚ²éÑ¯
-   * @return ÊÇ·ñ´æÔÚparent
+   * @brief åˆ¤æ–­è¯¥ç»„ä»¶æ‰€å±çš„å®ä½“æ˜¯å¦å­˜åœ¨parent
+   * @param reg æ³¨å†Œè¡¨ï¼Œç”¨äºæŸ¥è¯¢
+   * @return æ˜¯å¦å­˜åœ¨parent
    */
   bool HasParent(SceneRegistry &reg);
 
   /**
-   * @brief »ñÈ¡¸Ã×é¼şËùÊôµÄÊµÌåµÄparentÊµÌå
-   * @param reg ×¢²á±í£¬ÓÃÓÚ²éÑ¯
-   * @return parentÊµÌå
+   * @brief è·å–è¯¥ç»„ä»¶æ‰€å±çš„å®ä½“çš„parentå®ä½“
+   * @param reg æ³¨å†Œè¡¨ï¼Œç”¨äºæŸ¥è¯¢
+   * @return parentå®ä½“
    * 
-   * ×¢Òâ£º
-   * Ê¹ÓÃÊ±Ó¦µ±ÓëComponent::HasParentÅäºÏÊ¹ÓÃ
+   * æ³¨æ„ï¼š
+   * ä½¿ç”¨æ—¶åº”å½“ä¸Component::HasParenté…åˆä½¿ç”¨
    * 
-   * ×¢Òâ2£º
-   * HierarchyComponentµÄGetParent()·½·¨ÎŞ²ÎÊı£¬
-   * Óë»ùÀàComponentµÄGetParent(SceneRegistry &)
-   * ²¢²»´æÔÚ¼Ì³Ğ¹ØÏµ¡£ÎŞĞè¹¹½¨VirtualĞéº¯Êı
+   * æ³¨æ„2ï¼š
+   * HierarchyComponentçš„GetParent()æ–¹æ³•æ— å‚æ•°ï¼Œ
+   * ä¸åŸºç±»Componentçš„GetParent(SceneRegistry &)
+   * å¹¶ä¸å­˜åœ¨ç»§æ‰¿å…³ç³»ã€‚æ— éœ€æ„å»ºVirtualè™šå‡½æ•°
    */
   Entity GetParent(SceneRegistry &reg);
 
   /**
-   * @brief Éè¶¨ËùÊôÊµÌå¶ÔÏó
-   * @param entity ÊµÌå¶ÔÏó
+   * @brief è®¾å®šæ‰€å±å®ä½“å¯¹è±¡
+   * @param entity å®ä½“å¯¹è±¡
    *
-   * ×¢Òâ£º
-   * ÓÉÓÚSceneRegistry::AddComponentËùµ÷ÓÃµÄ
+   * æ³¨æ„ï¼š
+   * ç”±äºSceneRegistry::AddComponentæ‰€è°ƒç”¨çš„
    * m_Registry.emplace<T>(entt::entity, Args &&...args)
-   * ·½·¨¶ÔÍêÃÀ×ª·¢µÄ²ÎÊı°üµÄÒªÇó£¬ComponentµÄ¹¹Ôìº¯Êı
-   * Ëù´«ÈëµÄ²ÎÊı±ØĞëºÍ²ÎÊı°üµÄ²ÎÊıÀàĞÍÒ»ÖÂ£¬
-   * ¹ÊĞèÒªµ¥¶À½«SetOwnerEntity·ÖÀë¿ªÖ´ĞĞ¡£
+   * æ–¹æ³•å¯¹å®Œç¾è½¬å‘çš„å‚æ•°åŒ…çš„è¦æ±‚ï¼ŒComponentçš„æ„é€ å‡½æ•°
+   * æ‰€ä¼ å…¥çš„å‚æ•°å¿…é¡»å’Œå‚æ•°åŒ…çš„å‚æ•°ç±»å‹ä¸€è‡´ï¼Œ
+   * æ•…éœ€è¦å•ç‹¬å°†SetOwnerEntityåˆ†ç¦»å¼€æ‰§è¡Œã€‚
    *
-   * TODO: entt¶ÔÕâ²¿·ÖµÄÉè¶¨£¬ËµÃ÷ÁËComponentµÄ
-   * ÄÚ²¿Âß¼­²»Ó¦µ±ÒÀÀµÓÚEntity¶ÔÏó¡£ËùÒÔ¸Ãº¯Êı
-   * ÊÇÎ¥±³enttµÄÉè¼ÆÀíÄîµÄ¡£ºóĞøÓ¦µ±¿¼ÂÇÉ¾³ı
+   * TODO: enttå¯¹è¿™éƒ¨åˆ†çš„è®¾å®šï¼Œè¯´æ˜äº†Componentçš„
+   * å†…éƒ¨é€»è¾‘ä¸åº”å½“ä¾èµ–äºEntityå¯¹è±¡ã€‚æ‰€ä»¥è¯¥å‡½æ•°
+   * æ˜¯è¿èƒŒenttçš„è®¾è®¡ç†å¿µçš„ã€‚åç»­åº”å½“è€ƒè™‘åˆ é™¤
    *
    */
   void SetOwnerEntity(Entity entity);
 
   /**
-   * @brief »ñÈ¡×é¼ş°ó¶¨µÄÊµÌå
+   * @brief è·å–ç»„ä»¶ç»‘å®šçš„å®ä½“
    */
   Entity GetEntity() const;
 
  protected:
-  // ±£»¤¹¹Ôìº¯Êı£¬È·±£Ö»ÄÜÍ¨¹ı×ÓÀàÊµÀı»¯£¬
+  // ä¿æŠ¤æ„é€ å‡½æ•°ï¼Œç¡®ä¿åªèƒ½é€šè¿‡å­ç±»å®ä¾‹åŒ–ï¼Œ
   explicit Component() = default;
 
   Entity m_Entity;
 
-  std::atomic<bool> m_Dirty{false};  // Ôà±ê¼Ç£¬±êÊ¶×é¼şÊÇ·ñ±»ĞŞ¸Ä
-  bool m_Enabled = true;             // ×é¼şÊÇ·ñÆôÓÃ
+  std::atomic<bool> m_Dirty{false};  // è„æ ‡è®°ï¼Œæ ‡è¯†ç»„ä»¶æ˜¯å¦è¢«ä¿®æ”¹
+  bool m_Enabled = true;             // ç»„ä»¶æ˜¯å¦å¯ç”¨
 };
 
 /**
- * @brief ×é¼şÀàĞÍÌØÕ÷Ä£°å£¬ÓÃÓÚ¼ò»¯×é¼ş¶¨Òå
- * @tparam T ×é¼şÀàĞÍ
- * @tparam F ×é¼ş¼Ò×å
+ * @brief ç»„ä»¶ç±»å‹ç‰¹å¾æ¨¡æ¿ï¼Œç”¨äºç®€åŒ–ç»„ä»¶å®šä¹‰
+ * @tparam T ç»„ä»¶ç±»å‹
+ * @tparam F ç»„ä»¶å®¶æ—
  */
 template<typename T, Component::Family F> class ComponentTraits : public Component {
  public:
@@ -181,16 +181,16 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
   }
 
   /**
-   * ×¢Òâ£ºComponent¿ËÂ¡·½·¨£¬ºÍHierarchyComponentµÄ½ûÓÃ¿½±´¹¹Ôìº¯Êı£¬
-   * Ïà»¥³åÍ»£¬Òı·¢±àÒë´íÎó¡£ÏÖ½×¶ÎÓÅÏÈÈ·±£HierarchyComponent½ûÖ¹¿½±´£¬
-   * ºóĞøĞèÒªÉî¿½±´Ê±Ìí¼Óclone·½·¨
+   * æ³¨æ„ï¼šComponentå…‹éš†æ–¹æ³•ï¼Œå’ŒHierarchyComponentçš„ç¦ç”¨æ‹·è´æ„é€ å‡½æ•°ï¼Œ
+   * ç›¸äº’å†²çªï¼Œå¼•å‘ç¼–è¯‘é”™è¯¯ã€‚ç°é˜¶æ®µä¼˜å…ˆç¡®ä¿HierarchyComponentç¦æ­¢æ‹·è´ï¼Œ
+   * åç»­éœ€è¦æ·±æ‹·è´æ—¶æ·»åŠ cloneæ–¹æ³•
    */
   // std::shared_ptr<Component> Clone() const override
   //{
   //   return std::make_shared<T>(static_cast<const T &>(*this));
   // }
 
-  // ÆôÓÃ¾²Ì¬ÀàĞÍ¼ì²éµÄ×é¼şID»ñÈ¡
+  // å¯ç”¨é™æ€ç±»å‹æ£€æŸ¥çš„ç»„ä»¶IDè·å–
   static std::type_index GetStaticType()
   {
     return typeid(T);

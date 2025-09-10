@@ -5,52 +5,52 @@
 
 namespace mite {
 /**
- * @brief ¶©ÔÄ×é - ÓÃÓÚ¼¯ÖĞ¹ÜÀí¶à¸öÊÂ¼ş¶©ÔÄ
+ * @brief è®¢é˜…ç»„ - ç”¨äºé›†ä¸­ç®¡ç†å¤šä¸ªäº‹ä»¶è®¢é˜…
  *
- * Ìá¹©RAII·ç¸ñµÄÊÂ¼ş¶©ÔÄ¹ÜÀí£¬×Ô¶¯ÔÚÎö¹¹Ê±È¡ÏûËùÓĞ¶©ÔÄ
- * ÊÊÓÃÓÚĞèÒª¹ÜÀí¶à¸öÊÂ¼ş¶©ÔÄµÄÀà£¬±ÜÃâÊÖ¶¯¸ú×ÙºÍÈ¡Ïû¶©ÔÄ
+ * æä¾›RAIIé£æ ¼çš„äº‹ä»¶è®¢é˜…ç®¡ç†ï¼Œè‡ªåŠ¨åœ¨ææ„æ—¶å–æ¶ˆæ‰€æœ‰è®¢é˜…
+ * é€‚ç”¨äºéœ€è¦ç®¡ç†å¤šä¸ªäº‹ä»¶è®¢é˜…çš„ç±»ï¼Œé¿å…æ‰‹åŠ¨è·Ÿè¸ªå’Œå–æ¶ˆè®¢é˜…
  * 
- * Ê¹ÓÃÊ¾Àı£º
+ * ä½¿ç”¨ç¤ºä¾‹ï¼š
  *
- * 1. ´´½¨²¢·¢²¼ÊÂ¼ş£¨´¥·¢ÊÂ¼ş£©£º
+ * 1. åˆ›å»ºå¹¶å‘å¸ƒäº‹ä»¶ï¼ˆè§¦å‘äº‹ä»¶ï¼‰ï¼š
  *      mite::EventBus::Get().Post(event);
- * 2. ¶©ÔÄÊÂ¼ş£¨ÔÚÄ£¿éInitializeÊ±¶©ÔÄ£¬onXxxEventÎª´¦Àí¸ÃÊÂ¼şµÄÂß¼­£©£º
+ * 2. è®¢é˜…äº‹ä»¶ï¼ˆåœ¨æ¨¡å—Initializeæ—¶è®¢é˜…ï¼ŒonXxxEventä¸ºå¤„ç†è¯¥äº‹ä»¶çš„é€»è¾‘ï¼‰ï¼š
  *      m_EventSubscriptions.Subscribe<XxxEvent>(BIND_DISPATCH_FN(onXxxEvent));
- * 3. ´¥·¢ÊÂ¼ş£¨Ö÷Ñ­»·µ÷ÓÃProcessQueue()×Ô¶¯´¥·¢onEventº¯Êı£©
+ * 3. è§¦å‘äº‹ä»¶ï¼ˆä¸»å¾ªç¯è°ƒç”¨ProcessQueue()è‡ªåŠ¨è§¦å‘onEventå‡½æ•°ï¼‰
  *      while (window.IsRunning()) {
  *          mite::EventBus::Get().ProcessQueue();
  *      }
- * 4. È¡Ïû¶©ÔÄ£¨ÔÚÄ£¿éShutDownÊ±È¡Ïû£©£º
+ * 4. å–æ¶ˆè®¢é˜…ï¼ˆåœ¨æ¨¡å—ShutDownæ—¶å–æ¶ˆï¼‰ï¼š
  *      m_EventSubscriptions.UnsubscribeAll();
  */
 class SubscriptionGroup {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param bus ÊÂ¼ş×ÜÏßÒıÓÃ
+   * @brief æ„é€ å‡½æ•°
+   * @param bus äº‹ä»¶æ€»çº¿å¼•ç”¨
    */
   SubscriptionGroup() : m_EventBus(EventBus::Get()) {}
 
   /**
-   * @brief Îö¹¹º¯Êı - ×Ô¶¯È¡ÏûËùÓĞ¶©ÔÄ
+   * @brief ææ„å‡½æ•° - è‡ªåŠ¨å–æ¶ˆæ‰€æœ‰è®¢é˜…
    */
   ~SubscriptionGroup()
   {
     UnsubscribeAll();
   }
 
-  // ½ûÖ¹¿½±´¹¹ÔìºÍ¸³Öµ
+  // ç¦æ­¢æ‹·è´æ„é€ å’Œèµ‹å€¼
   SubscriptionGroup(const SubscriptionGroup &) = delete;
   SubscriptionGroup &operator=(const SubscriptionGroup &) = delete;
 
-  // ÔÊĞíÒÆ¶¯ÓïÒå
+  // å…è®¸ç§»åŠ¨è¯­ä¹‰
   SubscriptionGroup(SubscriptionGroup &&) = default;
   SubscriptionGroup &operator=(SubscriptionGroup &&) = default;
 
   /**
-   * @brief Ìí¼ÓÊÂ¼ş¶©ÔÄµ½×éÄÚ
-   * @tparam T ÊÂ¼şÀàĞÍ
-   * @param handler ÊÂ¼ş´¦Àíº¯Êı
+   * @brief æ·»åŠ äº‹ä»¶è®¢é˜…åˆ°ç»„å†…
+   * @tparam T äº‹ä»¶ç±»å‹
+   * @param handler äº‹ä»¶å¤„ç†å‡½æ•°
    */
   template<typename T> void Subscribe(EventFn<T> handler)
   {
@@ -58,7 +58,7 @@ class SubscriptionGroup {
   }
 
   /**
-   * @brief È¡Ïû×éÄÚËùÓĞ¶©ÔÄ
+   * @brief å–æ¶ˆç»„å†…æ‰€æœ‰è®¢é˜…
    */
   void UnsubscribeAll()
   {
@@ -69,8 +69,8 @@ class SubscriptionGroup {
   }
 
   /**
-   * @brief ¼ì²é¶©ÔÄ×éÊÇ·ñÎª¿Õ
-   * @return bool ÊÇ·ñÃ»ÓĞÈÎºÎ¶©ÔÄ
+   * @brief æ£€æŸ¥è®¢é˜…ç»„æ˜¯å¦ä¸ºç©º
+   * @return bool æ˜¯å¦æ²¡æœ‰ä»»ä½•è®¢é˜…
    */
   bool IsEmpty() const
   {
@@ -78,8 +78,8 @@ class SubscriptionGroup {
   }
 
   /**
-   * @brief »ñÈ¡¶©ÔÄÊıÁ¿
-   * @return size_t µ±Ç°¹ÜÀíµÄ¶©ÔÄÊı
+   * @brief è·å–è®¢é˜…æ•°é‡
+   * @return size_t å½“å‰ç®¡ç†çš„è®¢é˜…æ•°
    */
   size_t Count() const
   {
@@ -87,8 +87,8 @@ class SubscriptionGroup {
   }
 
  private:
-  EventBus &m_EventBus;                         // ÊÂ¼ş×ÜÏßÒıÓÃ
-  std::vector<EventBus::HandlerID> m_Handlers;  // ´æ´¢ËùÓĞ¶©ÔÄID
+  EventBus &m_EventBus;                         // äº‹ä»¶æ€»çº¿å¼•ç”¨
+  std::vector<EventBus::HandlerID> m_Handlers;  // å­˜å‚¨æ‰€æœ‰è®¢é˜…ID
 };
 
 };

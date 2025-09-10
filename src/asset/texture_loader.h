@@ -8,20 +8,20 @@ namespace mite {
 class TextureLoader {
  public:
   /**
-   * ¼ÓÔØ±ê×¼LDRÎÆÀí£¨PNG/JPG/BMPµÈ£©
-   * @param path ÎÆÀíÎÄ¼şÂ·¾¶£¨Ö§³ÖÏà¶Ô/¾ø¶ÔÂ·¾¶£©
-   * @param desiredChannels Ç¿ÖÆ×ª»»µÄÍ¨µÀÊı£¨0=±£³ÖÔ­Ñù£¬3=RGB£¬4=RGBA£©
-   * @param flipVertical ÊÇ·ñ´¹Ö±·­×ªÍ¼Ïñ£¨ÊÊÅäOpenGL×ø±êÏµ£©
-   * @return ÎÆÀíÔªÊı¾İ + Ô­Ê¼ÏñËØÊı¾İ£¨ĞèÓÉµ÷ÓÃÕßÉÏ´«ÖÁGPU£©
-   * @throws std::runtime_error µ±ÎÄ¼ş¼ÓÔØÊ§°ÜÊ±Å×³öÒì³£
+   * åŠ è½½æ ‡å‡†LDRçº¹ç†ï¼ˆPNG/JPG/BMPç­‰ï¼‰
+   * @param path çº¹ç†æ–‡ä»¶è·¯å¾„ï¼ˆæ”¯æŒç›¸å¯¹/ç»å¯¹è·¯å¾„ï¼‰
+   * @param desiredChannels å¼ºåˆ¶è½¬æ¢çš„é€šé“æ•°ï¼ˆ0=ä¿æŒåŸæ ·ï¼Œ3=RGBï¼Œ4=RGBAï¼‰
+   * @param flipVertical æ˜¯å¦å‚ç›´ç¿»è½¬å›¾åƒï¼ˆé€‚é…OpenGLåæ ‡ç³»ï¼‰
+   * @return çº¹ç†å…ƒæ•°æ® + åŸå§‹åƒç´ æ•°æ®ï¼ˆéœ€ç”±è°ƒç”¨è€…ä¸Šä¼ è‡³GPUï¼‰
+   * @throws std::runtime_error å½“æ–‡ä»¶åŠ è½½å¤±è´¥æ—¶æŠ›å‡ºå¼‚å¸¸
    */
   static std::shared_ptr<TextureAsset> LoadTextureData(const std::string &path,
                                                        int desiredChannels = 4,
                                                        bool flipVertical = true);
 
   /**
-   * ÊÍ·Åstb_image·ÖÅäµÄÏñËØÄÚ´æ
-   * @param data stb_image·µ»ØµÄÏñËØÊı¾İÖ¸Õë
+   * é‡Šæ”¾stb_imageåˆ†é…çš„åƒç´ å†…å­˜
+   * @param data stb_imageè¿”å›çš„åƒç´ æ•°æ®æŒ‡é’ˆ
    */
   static void FreeTextureData(void *data);
 };

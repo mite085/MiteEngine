@@ -8,7 +8,7 @@
 namespace mite {
 
 /**
- * @brief UI¿Ø¼ş»ùÀà£¬ËùÓĞUI¿Ø¼şµÄ³éÏó»ùÀà
+ * @brief UIæ§ä»¶åŸºç±»ï¼Œæ‰€æœ‰UIæ§ä»¶çš„æŠ½è±¡åŸºç±»
  */
 class UIWidget {
  public:
@@ -16,93 +16,93 @@ class UIWidget {
   virtual ~UIWidget();
 
   /**
-   * @brief »ñÈ¡¿Ø¼şÎ¨Ò»ID
+   * @brief è·å–æ§ä»¶å”¯ä¸€ID
    */
   UUID GetID() const;
 
   /**
-   * @brief »ñÈ¡¿Ø¼şÃû³Æ
+   * @brief è·å–æ§ä»¶åç§°
    */
   const std::string &GetName() const;
 
   /**
-   * @brief ÉèÖÃ¿Ø¼şÃû³Æ
+   * @brief è®¾ç½®æ§ä»¶åç§°
    */
   void SetName(const std::string &name);
 
   /**
-   * @brief »ñÈ¡¿Ø¼şÎ»ÖÃ
+   * @brief è·å–æ§ä»¶ä½ç½®
    */
   glm::vec2 GetPosition() const;
 
   /**
-   * @brief ÉèÖÃ¿Ø¼şÎ»ÖÃ
+   * @brief è®¾ç½®æ§ä»¶ä½ç½®
    */
   virtual void SetPosition(const glm::vec2 &position);
 
   /**
-   * @brief »ñÈ¡¿Ø¼ş³ß´ç
+   * @brief è·å–æ§ä»¶å°ºå¯¸
    */
   glm::vec2 GetSize() const;
 
   /**
-   * @brief ÉèÖÃ¿Ø¼ş³ß´ç
+   * @brief è®¾ç½®æ§ä»¶å°ºå¯¸
    */
   virtual void SetSize(const glm::vec2 &size);
 
   /**
-   * @brief »ñÈ¡¿Ø¼ş¿É¼ûĞÔ
+   * @brief è·å–æ§ä»¶å¯è§æ€§
    * 
    */
   bool IsVisible();
 
   /**
-   * @brief ÉèÖÃ¿Ø¼ş¿É¼ûĞÔ
+   * @brief è®¾ç½®æ§ä»¶å¯è§æ€§
    */
   virtual void SetVisible(bool visible);
 
   /**
-   * @brief »ñÈ¡¿Ø¼şÊÇ·ñÆôÓÃ
+   * @brief è·å–æ§ä»¶æ˜¯å¦å¯ç”¨
    */
   bool IsEnabled() const;
 
   /**
-   * @brief ÉèÖÃ¿Ø¼şÊÇ·ñÆôÓÃ
+   * @brief è®¾ç½®æ§ä»¶æ˜¯å¦å¯ç”¨
    */
   virtual void SetEnabled(bool enabled);
 
   /**
-   * @brief »ñÈ¡¿Ø¼şÑùÊ½
+   * @brief è·å–æ§ä»¶æ ·å¼
    */
   std::shared_ptr<UIStyle> GetStyle() const;
 
   /**
-   * @brief ÉèÖÃ¿Ø¼şÑùÊ½
+   * @brief è®¾ç½®æ§ä»¶æ ·å¼
    */
   virtual void SetStyle(std::shared_ptr<UIStyle> style);
 
   /**
-   * @brief ¼ì²éµãÊÇ·ñÔÚ¿Ø¼şÇøÓòÄÚ
+   * @brief æ£€æŸ¥ç‚¹æ˜¯å¦åœ¨æ§ä»¶åŒºåŸŸå†…
    */
   virtual bool ContainsPoint(const glm::vec2 &point) const;
 
   /**
-   * @brief ´¦ÀíÊó±ê½øÈëÊÂ¼ş
+   * @brief å¤„ç†é¼ æ ‡è¿›å…¥äº‹ä»¶
    */
   virtual void OnMouseEnter(const MouseEnterEvent &event);
 
   /**
-   * @brief ´¦ÀíÊó±êÀë¿ªÊÂ¼ş
+   * @brief å¤„ç†é¼ æ ‡ç¦»å¼€äº‹ä»¶
    */
   virtual void OnMouseLeave(const MouseLeaveEvent &event);
 
   /**
-   * @brief ¸üĞÂ¿Ø¼ş×´Ì¬
+   * @brief æ›´æ–°æ§ä»¶çŠ¶æ€
    */
   virtual void Update(float deltaTime);
 
   /**
-   * @brief äÖÈ¾¿Ø¼ş
+   * @brief æ¸²æŸ“æ§ä»¶
    */
   virtual void Render() = 0;
 

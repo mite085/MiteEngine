@@ -7,7 +7,7 @@
 namespace mite {
 
 /**
- * @brief 场景保存事件
+ * @brief 鍦烘櫙淇濆瓨浜嬩欢
  */
 class SceneSaveEvent : public UIEvent {
  public:
@@ -35,7 +35,7 @@ class SceneSaveEvent : public UIEvent {
 };
 
 /**
- * @brief 场景加载事件
+ * @brief 鍦烘櫙鍔犺浇浜嬩欢
  */
 class SceneLoadEvent : public UIEvent {
  public:
@@ -63,7 +63,7 @@ class SceneLoadEvent : public UIEvent {
 };
 
 /**
- * @brief 视口渲染事件
+ * @brief 瑙嗗彛娓叉煋浜嬩欢
  */
 class ViewportRenderEvent : public UIEvent {
  public:
@@ -100,7 +100,7 @@ class ViewportRenderEvent : public UIEvent {
 };
 
 /**
- * @brief 实体选择事件
+ * @brief 瀹炰綋閫夋嫨浜嬩欢
  */
 class EntitySelectedEvent : public UIEvent {
  public:
@@ -136,7 +136,7 @@ class EntitySelectedEvent : public UIEvent {
 };
 
 /**
- * @brief 实体取消选择事件
+ * @brief 瀹炰綋鍙栨秷閫夋嫨浜嬩欢
  */
 class EntityDeselectedEvent : public UIEvent {
  public:
@@ -164,7 +164,7 @@ class EntityDeselectedEvent : public UIEvent {
 };
 
 /**
- * @brief Gizmo操作事件
+ * @brief Gizmo鎿嶄綔浜嬩欢
  */
 class GizmoOperationEvent : public UIEvent {
  public:

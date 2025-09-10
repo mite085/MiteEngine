@@ -8,95 +8,95 @@
 namespace mite {
 
 /**
- * @brief ImGui¿Ø¼şäÖÈ¾Æ÷ - ¸ºÔğ·Ç±¾µØ»¯¿Ø¼şµÄäÖÈ¾·â×°
+ * @brief ImGuiæ§ä»¶æ¸²æŸ“å™¨ - è´Ÿè´£éæœ¬åœ°åŒ–æ§ä»¶çš„æ¸²æŸ“å°è£…
  * 
- * °üº¬ÁË
- * 1. »ù´¡¿Ø¼ş£º°´Å¥
- * 2. ²¼¾Ö¿Ø¼ş£º·Ö¸îÏß
- * 3. ·Ö×é¿Ø¼ş£ºGroup
- * 4. ½ø¶È¿Ø¼ş£º½ø¶ÈÌõ
- * 5. ÑÕÉ«¿Ø¼ş£º´øÑÕÉ«µÄ°´Å¥£¬ÑÕÉ«Ñ¡ÔñÆ÷
- * 6. Í¼Ïñ¿Ø¼ş£ºÍ¼Ïñ£¬´øÍ¼ÏñµÄ°´Å¥
- * 7. ĞÎ×´¿Ø¼ş£º³¤·½ĞÎ£¬Ô²ĞÎ£¨Ö§³ÖÌî³äÑÕÉ«£©
+ * åŒ…å«äº†
+ * 1. åŸºç¡€æ§ä»¶ï¼šæŒ‰é’®
+ * 2. å¸ƒå±€æ§ä»¶ï¼šåˆ†å‰²çº¿
+ * 3. åˆ†ç»„æ§ä»¶ï¼šGroup
+ * 4. è¿›åº¦æ§ä»¶ï¼šè¿›åº¦æ¡
+ * 5. é¢œè‰²æ§ä»¶ï¼šå¸¦é¢œè‰²çš„æŒ‰é’®ï¼Œé¢œè‰²é€‰æ‹©å™¨
+ * 6. å›¾åƒæ§ä»¶ï¼šå›¾åƒï¼Œå¸¦å›¾åƒçš„æŒ‰é’®
+ * 7. å½¢çŠ¶æ§ä»¶ï¼šé•¿æ–¹å½¢ï¼Œåœ†å½¢ï¼ˆæ”¯æŒå¡«å……é¢œè‰²ï¼‰
  *
- * Ìá¹©ËùÓĞ²»ĞèÒªÎÄ±¾·­ÒëµÄImGui¿Ø¼şäÖÈ¾½Ó¿Ú
- * ÓëImGuiLocalizationRenderer»¥²¹£¬¹¹³ÉÍêÕûµÄ¿Ø¼şäÖÈ¾ÌåÏµ
+ * æä¾›æ‰€æœ‰ä¸éœ€è¦æ–‡æœ¬ç¿»è¯‘çš„ImGuiæ§ä»¶æ¸²æŸ“æ¥å£
+ * ä¸ImGuiLocalizationRendereräº’è¡¥ï¼Œæ„æˆå®Œæ•´çš„æ§ä»¶æ¸²æŸ“ä½“ç³»
  */
 class ImGuiControlRenderer {
  public:
-  // ==================== »ù´¡¿Ø¼ş ====================
+  // ==================== åŸºç¡€æ§ä»¶ ====================
 
   /**
-   * @brief äÖÈ¾°´Å¥£¨ÎŞÎÄ±¾£©
+   * @brief æ¸²æŸ“æŒ‰é’®ï¼ˆæ— æ–‡æœ¬ï¼‰
    */
   static bool Button(const glm::vec2 &size = glm::vec2(0, 0));
 
   /**
-   * @brief äÖÈ¾´øÓĞÍ¼±êµÄ°´Å¥
+   * @brief æ¸²æŸ“å¸¦æœ‰å›¾æ ‡çš„æŒ‰é’®
    */
   static bool ButtonWithIcon(const char *icon, const glm::vec2 &size = glm::vec2(0, 0));
 
   /**
-   * @brief äÖÈ¾Ğ¡°´Å¥
+   * @brief æ¸²æŸ“å°æŒ‰é’®
    */
   static bool SmallButton(const char *label);
 
   /**
-   * @brief äÖÈ¾¼ıÍ·°´Å¥
+   * @brief æ¸²æŸ“ç®­å¤´æŒ‰é’®
    */
   static bool ArrowButton(const char *str_id, ImGuiDir dir);
 
-  // ==================== ²¼¾Ö¿Ø¼ş ====================
+  // ==================== å¸ƒå±€æ§ä»¶ ====================
 
   /**
-   * @brief äÖÈ¾·Ö¸ôÏß
+   * @brief æ¸²æŸ“åˆ†éš”çº¿
    */
   static void Separator();
 
   /**
-   * @brief äÖÈ¾ÏàÍ¬µÄĞĞ£¨½Ó×ÅÉÏÒ»¸ö¿Ø¼ş¼ÌĞø£©
+   * @brief æ¸²æŸ“ç›¸åŒçš„è¡Œï¼ˆæ¥ç€ä¸Šä¸€ä¸ªæ§ä»¶ç»§ç»­ï¼‰
    */
   static void SameLine(float offset_from_start_x = 0.0f, float spacing = -1.0f);
 
   /**
-   * @brief äÖÈ¾»»ĞĞ
+   * @brief æ¸²æŸ“æ¢è¡Œ
    */
   static void NewLine();
 
   /**
-   * @brief äÖÈ¾¼ä¸ô
+   * @brief æ¸²æŸ“é—´éš”
    */
   static void Spacing();
 
   /**
-   * @brief äÖÈ¾¿Éµ÷ÕûµÄ¼ä¸ô
+   * @brief æ¸²æŸ“å¯è°ƒæ•´çš„é—´éš”
    */
   static void Dummy(const glm::vec2 &size);
 
   /**
-   * @brief ¿ªÊ¼Ëõ½ø
+   * @brief å¼€å§‹ç¼©è¿›
    */
   static void Indent(float indent_w = 0.0f);
 
   /**
-   * @brief ½áÊøËõ½ø
+   * @brief ç»“æŸç¼©è¿›
    */
   static void Unindent(float indent_w = 0.0f);
 
-  // ==================== ·Ö×é¿Ø¼ş ====================
+  // ==================== åˆ†ç»„æ§ä»¶ ====================
 
   /**
-   * @brief ¿ªÊ¼·Ö×é
+   * @brief å¼€å§‹åˆ†ç»„
    */
   static void BeginGroup();
 
   /**
-   * @brief ½áÊø·Ö×é
+   * @brief ç»“æŸåˆ†ç»„
    */
   static void EndGroup();
 
   /**
-   * @brief ¿ªÊ¼×Ó´°¿Ú
+   * @brief å¼€å§‹å­çª—å£
    */
   static bool BeginChild(const char *str_id,
                          const glm::vec2 &size = glm::vec2(0, 0),
@@ -104,23 +104,23 @@ class ImGuiControlRenderer {
                          ImGuiWindowFlags flags = 0);
 
   /**
-   * @brief ½áÊø×Ó´°¿Ú
+   * @brief ç»“æŸå­çª—å£
    */
   static void EndChild();
 
-  // ==================== ½ø¶ÈÖ¸Ê¾Æ÷ ====================
+  // ==================== è¿›åº¦æŒ‡ç¤ºå™¨ ====================
 
   /**
-   * @brief äÖÈ¾½ø¶ÈÌõ
+   * @brief æ¸²æŸ“è¿›åº¦æ¡
    */
   static void ProgressBar(float fraction,
                           const glm::vec2 &size_arg = glm::vec2(-1, 0),
                           const char *overlay = nullptr);
 
-  // ==================== ÑÕÉ«¿Ø¼ş ====================
+  // ==================== é¢œè‰²æ§ä»¶ ====================
 
   /**
-   * @brief äÖÈ¾ÑÕÉ«°´Å¥
+   * @brief æ¸²æŸ“é¢œè‰²æŒ‰é’®
    */
   static bool ColorButton(const char *desc_id,
                           const ImVec4 &col,
@@ -128,14 +128,14 @@ class ImGuiControlRenderer {
                           const glm::vec2 &size = glm::vec2(0, 0));
 
   /**
-   * @brief äÖÈ¾ÑÕÉ«±à¼­Æ÷
+   * @brief æ¸²æŸ“é¢œè‰²ç¼–è¾‘å™¨
    */
   static bool ColorEdit3(const char *label, float col[3], ImGuiColorEditFlags flags = 0);
 
   static bool ColorEdit4(const char *label, float col[4], ImGuiColorEditFlags flags = 0);
 
   /**
-   * @brief äÖÈ¾ÑÕÉ«Ñ¡ÔñÆ÷
+   * @brief æ¸²æŸ“é¢œè‰²é€‰æ‹©å™¨
    */
   static bool ColorPicker3(const char *label, float col[3], ImGuiColorEditFlags flags = 0);
 
@@ -144,12 +144,12 @@ class ImGuiControlRenderer {
                            ImGuiColorEditFlags flags = 0,
                            const float *ref_col = nullptr);
 
-  // ==================== Í¼Ïñ¿Ø¼ş ====================
+  // ==================== å›¾åƒæ§ä»¶ ====================
 
   /**
-   * @brief äÖÈ¾Í¼Ïñ
+   * @brief æ¸²æŸ“å›¾åƒ
    * 
-   * (×¢ÒâOpenGL UV×ø±ê·­×ª)
+   * (æ³¨æ„OpenGL UVåæ ‡ç¿»è½¬)
    */
   static void Image(ImTextureID user_texture_id,
                     const glm::vec2 &size,
@@ -159,7 +159,7 @@ class ImGuiControlRenderer {
                     const ImVec4 &border_col = ImVec4(0, 0, 0, 0));
 
   /**
-   * @brief äÖÈ¾¿Éµã»÷µÄÍ¼Ïñ°´Å¥
+   * @brief æ¸²æŸ“å¯ç‚¹å‡»çš„å›¾åƒæŒ‰é’®
    */
   static bool ImageButton(const char *str_id,
                           ImTextureID user_texture_id,
@@ -169,10 +169,10 @@ class ImGuiControlRenderer {
                           const ImVec4 &bg_col,
                           const ImVec4 &tint_col);
 
-  // ==================== ×Ô¶¨ÒåĞÎ×´ ====================
+  // ==================== è‡ªå®šä¹‰å½¢çŠ¶ ====================
 
   /**
-   * @brief äÖÈ¾¾ØĞÎ
+   * @brief æ¸²æŸ“çŸ©å½¢
    */
   static void DrawRect(const glm::vec2 &min,
                        const glm::vec2 &max,
@@ -182,7 +182,7 @@ class ImGuiControlRenderer {
                        float thickness = 1.0f);
 
   /**
-   * @brief äÖÈ¾Ìî³ä¾ØĞÎ
+   * @brief æ¸²æŸ“å¡«å……çŸ©å½¢
    */
   static void DrawRectFilled(const glm::vec2 &min,
                              const glm::vec2 &max,
@@ -191,7 +191,7 @@ class ImGuiControlRenderer {
                              ImDrawFlags flags = 0);
 
   /**
-   * @brief äÖÈ¾Ô²ĞÎ
+   * @brief æ¸²æŸ“åœ†å½¢
    */
   static void DrawCircle(const glm::vec2 &center,
                          float radius,
@@ -200,39 +200,39 @@ class ImGuiControlRenderer {
                          float thickness = 1.0f);
 
   /**
-   * @brief äÖÈ¾Ìî³äÔ²ĞÎ
+   * @brief æ¸²æŸ“å¡«å……åœ†å½¢
    */
   static void DrawCircleFilled(const glm::vec2 &center,
                                float radius,
                                ImU32 col,
                                int num_segments = 0);
 
-  // ==================== Ê÷ĞÎ¿Ø¼ş ====================
+  // ==================== æ ‘å½¢æ§ä»¶ ====================
 
   /**
-   * @brief ¿ªÊ¼Ê÷½Úµã
+   * @brief å¼€å§‹æ ‘èŠ‚ç‚¹
    */
   static bool TreeNode(const char *label, ImGuiTreeNodeFlags flags = 0);
 
   /**
-   * @brief ¿ªÊ¼Ê÷½Úµã£¨´øID£©
+   * @brief å¼€å§‹æ ‘èŠ‚ç‚¹ï¼ˆå¸¦IDï¼‰
    */
   static bool TreeNodeEx(const char *str_id, ImGuiTreeNodeFlags flags, const char *fmt, ...);
 
   /**
-   * @brief ½áÊøÊ÷½Úµã
+   * @brief ç»“æŸæ ‘èŠ‚ç‚¹
    */
   static void TreePop();
 
   /**
-   * @brief ÉèÖÃÏÂÒ»¸öÊ÷½ÚµãÊÇ·ñ´ò¿ª
+   * @brief è®¾ç½®ä¸‹ä¸€ä¸ªæ ‘èŠ‚ç‚¹æ˜¯å¦æ‰“å¼€
    */
   static void SetNextItemOpen(bool is_open, ImGuiCond cond = 0);
 
-  // ==================== ±í¸ñ¿Ø¼ş ====================
+  // ==================== è¡¨æ ¼æ§ä»¶ ====================
 
   /**
-   * @brief ¿ªÊ¼±í¸ñ
+   * @brief å¼€å§‹è¡¨æ ¼
    */
   static bool BeginTable(const char *str_id,
                          int column,
@@ -241,66 +241,66 @@ class ImGuiControlRenderer {
                          float inner_width = 0.0f);
 
   /**
-   * @brief ½áÊø±í¸ñ
+   * @brief ç»“æŸè¡¨æ ¼
    */
   static void EndTable();
 
   /**
-   * @brief ÏÂÒ»ĞĞ
+   * @brief ä¸‹ä¸€è¡Œ
    */
   static void TableNextRow(ImGuiTableRowFlags flags = 0, float min_row_height = 0.0f);
 
   /**
-   * @brief ÏÂÒ»ÁĞ
+   * @brief ä¸‹ä¸€åˆ—
    */
   static void TableNextColumn();
 
   /**
-   * @brief ÉèÖÃÁĞË÷Òı
+   * @brief è®¾ç½®åˆ—ç´¢å¼•
    */
   static void TableSetColumnIndex(int column_n);
 
-  // ==================== µ¯³ö´°¿Ú ====================
+  // ==================== å¼¹å‡ºçª—å£ ====================
 
   /**
-   * @brief ¿ªÊ¼µ¯³ö´°¿Ú
+   * @brief å¼€å§‹å¼¹å‡ºçª—å£
    */
   static void OpenPopup(const char *str_id, ImGuiPopupFlags popup_flags = 0);
 
   /**
-   * @brief ¿ªÊ¼µ¯³ö´°¿Ú£¨´øID£©
+   * @brief å¼€å§‹å¼¹å‡ºçª—å£ï¼ˆå¸¦IDï¼‰
    */
   static bool BeginPopup(const char *str_id, ImGuiWindowFlags flags = 0);
 
   /**
-   * @brief ¿ªÊ¼µ¯³öÉÏÏÂÎÄ²Ëµ¥
+   * @brief å¼€å§‹å¼¹å‡ºä¸Šä¸‹æ–‡èœå•
    */
   static bool BeginPopupContextItem(const char *str_id = NULL, ImGuiPopupFlags popup_flags = 1);
 
   /**
-   * @brief ¿ªÊ¼µ¯³öÉÏÏÂÎÄ´°¿Ú
+   * @brief å¼€å§‹å¼¹å‡ºä¸Šä¸‹æ–‡çª—å£
    */
   static bool BeginPopupContextWindow(const char *str_id = NULL, ImGuiPopupFlags popup_flags = 1);
 
   /**
-   * @brief ¿ªÊ¼µ¯³öÉÏÏÂÎÄ´°¿Ú£¨ÎŞID£©
+   * @brief å¼€å§‹å¼¹å‡ºä¸Šä¸‹æ–‡çª—å£ï¼ˆæ— IDï¼‰
    */
   static bool BeginPopupContextVoid(const char *str_id = NULL, ImGuiPopupFlags popup_flags = 1);
 
   /**
-   * @brief ½áÊøµ¯³ö´°¿Ú
+   * @brief ç»“æŸå¼¹å‡ºçª—å£
    */
   static void EndPopup();
 
   /**
-   * @brief ¹Ø±Õµ±Ç°µ¯³ö´°¿Ú
+   * @brief å…³é—­å½“å‰å¼¹å‡ºçª—å£
    */
   static void CloseCurrentPopup();
 
-  // ==================== ÍÏ×§¿Ø¼ş ====================
+  // ==================== æ‹–æ‹½æ§ä»¶ ====================
 
   /**
-   * @brief äÖÈ¾ÍÏ×§¸¡µãÊı
+   * @brief æ¸²æŸ“æ‹–æ‹½æµ®ç‚¹æ•°
    */
   static bool DragFloat(const char *label,
                         float *v,
@@ -335,7 +335,7 @@ class ImGuiControlRenderer {
                          ImGuiSliderFlags flags = 0);
 
   /**
-   * @brief äÖÈ¾ÍÏ×§ÕûÊı
+   * @brief æ¸²æŸ“æ‹–æ‹½æ•´æ•°
    */
   static bool DragInt(const char *label,
                       int *v,
@@ -369,10 +369,10 @@ class ImGuiControlRenderer {
                        const char *format = "%d",
                        ImGuiSliderFlags flags = 0);
 
-  // ==================== »¬¿é¿Ø¼ş ====================
+  // ==================== æ»‘å—æ§ä»¶ ====================
 
   /**
-   * @brief äÖÈ¾»¬¿é¸¡µãÊı
+   * @brief æ¸²æŸ“æ»‘å—æµ®ç‚¹æ•°
    */
   static bool SliderFloat(const char *label,
                           float *v,
@@ -403,7 +403,7 @@ class ImGuiControlRenderer {
                            ImGuiSliderFlags flags = 0);
 
   /**
-   * @brief äÖÈ¾»¬¿éÕûÊı
+   * @brief æ¸²æŸ“æ»‘å—æ•´æ•°
    */
   static bool SliderInt(const char *label,
                         int *v,
@@ -434,7 +434,7 @@ class ImGuiControlRenderer {
                          ImGuiSliderFlags flags = 0);
 
   /**
-   * @brief äÖÈ¾½Ç¶È»¬¿é
+   * @brief æ¸²æŸ“è§’åº¦æ»‘å—
    */
   static bool SliderAngle(const char *label,
                           float *v_rad,
@@ -443,75 +443,75 @@ class ImGuiControlRenderer {
                           const char *format = "%.0f deg",
                           ImGuiSliderFlags flags = 0);
 
-  // ==================== Ê¸Á¿¿Ø¼ş ====================
+  // ==================== çŸ¢é‡æ§ä»¶ ====================
 
   /**
-   * @brief äÖÈ¾2DÊ¸Á¿±à¼­Æ÷
+   * @brief æ¸²æŸ“2DçŸ¢é‡ç¼–è¾‘å™¨
    */
   static bool DragVector2(
       const char *label, glm::vec2 &value, float speed = 1.0f, float min = 0.0f, float max = 0.0f);
 
   /**
-   * @brief äÖÈ¾3DÊ¸Á¿±à¼­Æ÷
+   * @brief æ¸²æŸ“3DçŸ¢é‡ç¼–è¾‘å™¨
    */
   static bool DragVector3(
       const char *label, glm::vec3 &value, float speed = 1.0f, float min = 0.0f, float max = 0.0f);
 
   /**
-   * @brief äÖÈ¾4DÊ¸Á¿±à¼­Æ÷
+   * @brief æ¸²æŸ“4DçŸ¢é‡ç¼–è¾‘å™¨
    */
   static bool DragVector4(
       const char *label, glm::vec4 &value, float speed = 1.0f, float min = 0.0f, float max = 0.0f);
 
-  // ==================== ¹¤¾ßº¯Êı ====================
+  // ==================== å·¥å…·å‡½æ•° ====================
 
   /**
-   * @brief »ñÈ¡¹â±êÎ»ÖÃ
+   * @brief è·å–å…‰æ ‡ä½ç½®
    */
   static glm::vec2 GetCursorPos();
 
   /**
-   * @brief ÉèÖÃ¹â±êÎ»ÖÃ
+   * @brief è®¾ç½®å…‰æ ‡ä½ç½®
    */
   static void SetCursorPos(const glm::vec2 &pos);
 
   /**
-   * @brief »ñÈ¡¹â±êÆÁÄ»Î»ÖÃ
+   * @brief è·å–å…‰æ ‡å±å¹•ä½ç½®
    */
   static glm::vec2 GetCursorScreenPos();
 
   /**
-   * @brief ÉèÖÃ¹â±êÆÁÄ»Î»ÖÃ
+   * @brief è®¾ç½®å…‰æ ‡å±å¹•ä½ç½®
    */
   static void SetCursorScreenPos(const glm::vec2 &pos);
 
   /**
-   * @brief »ñÈ¡¿ÉÓÃÄÚÈİÇøÓò
+   * @brief è·å–å¯ç”¨å†…å®¹åŒºåŸŸ
    */
   static glm::vec2 GetContentRegionAvail();
 
   /**
-   * @brief »ñÈ¡´°¿Ú´óĞ¡
+   * @brief è·å–çª—å£å¤§å°
    */
   static glm::vec2 GetWindowSize();
 
   /**
-   * @brief »ñÈ¡´°¿ÚÎ»ÖÃ
+   * @brief è·å–çª—å£ä½ç½®
    */
   static glm::vec2 GetWindowPos();
 
   /**
-   * @brief »ñÈ¡´°¿ÚÄÚÈİÇøÓò×îĞ¡Î»ÖÃ
+   * @brief è·å–çª—å£å†…å®¹åŒºåŸŸæœ€å°ä½ç½®
    */
   static glm::vec2 GetWindowContentRegionMin();
 
   /**
-   * @brief »ñÈ¡´°¿ÚÄÚÈİÇøÓò×î´óÎ»ÖÃ
+   * @brief è·å–çª—å£å†…å®¹åŒºåŸŸæœ€å¤§ä½ç½®
    */
   static glm::vec2 GetWindowContentRegionMax();
 
   /**
-   * @brief »ñÈ¡ÎÄ±¾³ß´ç
+   * @brief è·å–æ–‡æœ¬å°ºå¯¸
    */
   static glm::vec2 CalcTextSize(const char *text,
                                 const char *text_end = NULL,
@@ -519,7 +519,7 @@ class ImGuiControlRenderer {
                                 float wrap_width = -1.0f);
 };
 
-// ºê¶¨Òå¼ò»¯µ÷ÓÃ
+// å®å®šä¹‰ç®€åŒ–è°ƒç”¨
 #define IMGUI_BUTTON_ICON(icon) mite::ImGuiControlRenderer::ButtonWithIcon(icon)
 #define IMGUI_SEPARATOR() mite::ImGuiControlRenderer::Separator()
 #define IMGUI_SAME_LINE() mite::ImGuiControlRenderer::SameLine()

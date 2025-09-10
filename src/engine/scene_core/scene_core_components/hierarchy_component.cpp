@@ -10,7 +10,7 @@ void HierarchyComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
   if (!IsDirty())
     return;
 
-  // ±ê¼ÇÏà¹ØµÄTransformComponentĞèÒª¸üĞÂ
+  // æ ‡è®°ç›¸å…³çš„TransformComponentéœ€è¦æ›´æ–°
   UpdateTransformDirtyState(reg);
 
   ClearDirty();
@@ -37,28 +37,28 @@ bool HierarchyComponent::IsRoot() const
 }
 size_t HierarchyComponent::GetDepth(SceneRegistry &registry)
 {
-  // Èç¹ûÒÑ¾­ÊÇ¸ù½Úµã£¬Éî¶ÈÎª0
+  // å¦‚æœå·²ç»æ˜¯æ ¹èŠ‚ç‚¹ï¼Œæ·±åº¦ä¸º0
   if (IsRoot()) {
     return 0;
   }
 
-  // µİ¹é¼ÆËãÉî¶È
+  // é€’å½’è®¡ç®—æ·±åº¦
   size_t depth = 0;
   Entity current = m_Parent;
 
   while (current.IsValid()) {
     if (!registry.IsValid(current)) {
-      break;  // Óöµ½ÎŞĞ§ÊµÌåÖÕÖ¹
+      break;  // é‡åˆ°æ— æ•ˆå®ä½“ç»ˆæ­¢
     }
 
     auto parentHierarchy = registry.TryGetComponent<HierarchyComponent>(current);
     if (!parentHierarchy) {
-      break;  // ¸¸ÊµÌåÃ»ÓĞ²ã´Î×é¼ş£¬ÅĞ¶Ïµ±Ç°Îªµİ¹éÖÕµã
+      break;  // çˆ¶å®ä½“æ²¡æœ‰å±‚æ¬¡ç»„ä»¶ï¼Œåˆ¤æ–­å½“å‰ä¸ºé€’å½’ç»ˆç‚¹
     }
     current = parentHierarchy->GetParent();
     ++depth;
 
-    // ·ÀÖ¹ÎŞÏŞÑ­»·
+    // é˜²æ­¢æ— é™å¾ªç¯
     if (depth > 1000)
       break;
   }
@@ -74,16 +74,16 @@ bool HierarchyComponent::SetParent(SceneRegistry &registry, Entity newParent)
 
   Entity oldParent = m_Parent;
 
-  // ´Ó¾É¸¸½ÚµãÒÆ³ı
+  // ä»æ—§çˆ¶èŠ‚ç‚¹ç§»é™¤
   if (oldParent.IsValid() && registry.HasComponent<HierarchyComponent>(oldParent)) {
     auto &oldParentHierarchy = registry.GetComponent<HierarchyComponent>(oldParent);
     oldParentHierarchy.RemoveChild(registry, GetEntity());
   }
 
-  // ÉèÖÃĞÂ¸¸½Úµã
+  // è®¾ç½®æ–°çˆ¶èŠ‚ç‚¹
   m_Parent = newParent;
 
-  // Ìí¼Óµ½ĞÂ¸¸½Úµã
+  // æ·»åŠ åˆ°æ–°çˆ¶èŠ‚ç‚¹
   if (newParent.IsValid() && registry.HasComponent<HierarchyComponent>(newParent)) {
     auto &newParentHierarchy = registry.GetComponent<HierarchyComponent>(newParent);
     newParentHierarchy.AddChild(registry, GetEntity());
@@ -91,7 +91,7 @@ bool HierarchyComponent::SetParent(SceneRegistry &registry, Entity newParent)
 
   MarkDirty();
 
-  // ·¢²¼ÊÂ¼ş
+  // å‘å¸ƒäº‹ä»¶
   EventBus::Publish<ParentChangedEvent>(
       ParentChangedEvent(GetEntity(), *this, oldParent, newParent));
 
@@ -104,12 +104,12 @@ bool HierarchyComponent::AddChild(SceneRegistry &registry, Entity child)
     return false;
   }
 
-  // ¼ì²éÊÇ·ñÒÑ¾­ÊÇ×Ó½Úµã
+  // æ£€æŸ¥æ˜¯å¦å·²ç»æ˜¯å­èŠ‚ç‚¹
   if (std::find(m_Children.begin(), m_Children.end(), child) != m_Children.end()) {
-    return true;  // ÒÑ¾­ÊÇ×Ó½Úµã£¬²»ËãÊ§°Ü
+    return true;  // å·²ç»æ˜¯å­èŠ‚ç‚¹ï¼Œä¸ç®—å¤±è´¥
   }
 
-  // ÉèÖÃ×Ó½ÚµãµÄ¸¸½Úµã
+  // è®¾ç½®å­èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹
   if (registry.HasComponent<HierarchyComponent>(child)) {
     auto &childHierarchy = registry.GetComponent<HierarchyComponent>(child);
     if (!childHierarchy.SetParent(registry, GetEntity())) {
@@ -117,7 +117,7 @@ bool HierarchyComponent::AddChild(SceneRegistry &registry, Entity child)
     }
   }
 
-  // ÉèÖÃ×Ó½Úµã
+  // è®¾ç½®å­èŠ‚ç‚¹
   m_Children.push_back(child);
   MarkDirty();
 
@@ -131,7 +131,7 @@ bool HierarchyComponent::RemoveChild(SceneRegistry &registry, Entity child)
     return false;
   }
 
-  // Çå³ı×Ó½ÚµãµÄ¸¸½Úµã
+  // æ¸…é™¤å­èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹
   if (registry.HasComponent<HierarchyComponent>(child)) {
     auto &childHierarchy = registry.GetComponent<HierarchyComponent>(child);
     childHierarchy.SetParent(registry, Entity());
@@ -158,12 +158,12 @@ void HierarchyComponent::ClearChildren(SceneRegistry &registry)
 
 bool HierarchyComponent::ValidateHierarchy(SceneRegistry &registry, Entity newParent) const
 {
-  // ¼ì²é×ÔÒıÓÃ
+  // æ£€æŸ¥è‡ªå¼•ç”¨
   if (newParent == GetEntity()) {
     return false;
   }
 
-  // ¼ì²éÑ­»·ÒıÓÃ
+  // æ£€æŸ¥å¾ªç¯å¼•ç”¨
   Entity current = newParent;
   while (current.IsValid() && registry.IsValid(current)) {
     if (current == GetEntity()) {
@@ -184,13 +184,13 @@ bool HierarchyComponent::ValidateHierarchy(SceneRegistry &registry, Entity newPa
 
 void HierarchyComponent::UpdateTransformDirtyState(SceneRegistry &registry)
 {
-  // ±ê¼Ç×Ô¼ºµÄTransformComponentĞèÒª¸üĞÂ
+  // æ ‡è®°è‡ªå·±çš„TransformComponentéœ€è¦æ›´æ–°
   if (registry.HasComponent<TransformComponent>(GetEntity())) {
     auto &transform = registry.GetComponent<TransformComponent>(GetEntity());
     transform.MarkDirty();
   }
 
-  // µİ¹é±ê¼ÇËùÓĞ×Ó½ÚµãµÄTransformComponent
+  // é€’å½’æ ‡è®°æ‰€æœ‰å­èŠ‚ç‚¹çš„TransformComponent
   for (auto child : m_Children) {
     if (registry.HasComponent<HierarchyComponent>(child)) {
       auto &childHierarchy = registry.GetComponent<HierarchyComponent>(child);
@@ -206,7 +206,7 @@ void HierarchyComponentSystem::Initialize()
 
 void HierarchyComponentSystem::Shutdown()
 {
-  // Çå¿Õ´ı´¦Àí¶ÓÁĞ
+  // æ¸…ç©ºå¾…å¤„ç†é˜Ÿåˆ—
   {
     std::lock_guard<std::mutex> lock(m_RemovalMutex);
     m_PendingRemovals.clear();
@@ -217,14 +217,14 @@ void HierarchyComponentSystem::Shutdown()
 
 std::vector<std::type_index> HierarchyComponentSystem::GetSystemDependencies() const
 {
-  return {typeid(IDComponentSystem)};  // ĞèÒªÊµÌåIDĞÅÏ¢
+  return {typeid(IDComponentSystem)};  // éœ€è¦å®ä½“IDä¿¡æ¯
 }
 
 bool HierarchyComponentSystem::OnComponentAdded(ComponentAddedEvent<HierarchyComponent> &e)
 {
   Register(&e.GetComponent());
 
-  // ²»Ó¦µ±±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬¼ÌĞø´«²¥¸øSceneGraphµÄHierarchySceneNodeSystem
+  // ä¸åº”å½“æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œç»§ç»­ä¼ æ’­ç»™SceneGraphçš„HierarchySceneNodeSystem
   // e.Handled();
   return e.handled;
 }
@@ -234,47 +234,47 @@ bool HierarchyComponentSystem::OnComponentRemoved(ComponentRemovedEvent<Hierarch
   auto &oldComponent = e.GetComponent();
   Entity entity = e.GetEntity();
 
-  // Ö»±£´æ±ØÒªµÄ²ã¼¶¹ØÏµÊı¾İ
+  // åªä¿å­˜å¿…è¦çš„å±‚çº§å…³ç³»æ•°æ®
   Entity parent = oldComponent.GetParent();
-  std::vector<Entity> children = oldComponent.GetChildren();  // ¿½±´×Ó½ÚµãÁĞ±í
+  std::vector<Entity> children = oldComponent.GetChildren();  // æ‹·è´å­èŠ‚ç‚¹åˆ—è¡¨
 
-  // ½«ÒÆ³ı²Ù×÷¼ÓÈë´ı´¦Àí¶ÓÁĞ£¬´ıÏÂÒ»Ö¡µÄ
-  // ProcessDirtyComponents´¦Àí´ıÒÆ³ıµÄ¸¸×Ó¹ØÏµ
+  // å°†ç§»é™¤æ“ä½œåŠ å…¥å¾…å¤„ç†é˜Ÿåˆ—ï¼Œå¾…ä¸‹ä¸€å¸§çš„
+  // ProcessDirtyComponentså¤„ç†å¾…ç§»é™¤çš„çˆ¶å­å…³ç³»
   //
-  // ·Ö¶Î´¦ÀíÔ­Òò£º´Ë´¦ÎŞ·¨·ÃÎÊµ½SceneRegistry£¬
-  // ComponentSystemÒ²²»Ó¦µ±Î¬»¤SceneRegistry¶ÔÏó
-  // £¨¸Ã²Ù×÷¸´ÔÓ¶È½Ï¸ß£¬¶à´òLOG·½±ãºóĞøµ÷ÊÔ£©
+  // åˆ†æ®µå¤„ç†åŸå› ï¼šæ­¤å¤„æ— æ³•è®¿é—®åˆ°SceneRegistryï¼Œ
+  // ComponentSystemä¹Ÿä¸åº”å½“ç»´æŠ¤SceneRegistryå¯¹è±¡
+  // ï¼ˆè¯¥æ“ä½œå¤æ‚åº¦è¾ƒé«˜ï¼Œå¤šæ‰“LOGæ–¹ä¾¿åç»­è°ƒè¯•ï¼‰
   {
     std::lock_guard<std::mutex> lock(m_RemovalMutex);
     m_PendingRemovals.emplace_back(entity, parent, children);
   }
 
-  // ´Ó×é¼şÁĞ±íÖĞÒÆ³ı
+  // ä»ç»„ä»¶åˆ—è¡¨ä¸­ç§»é™¤
   Unregister(&oldComponent);
   m_Logger->debug("Hierarchy component removal queued for entity {}", entity.GetUUIDString());
   m_Logger->trace(
       "Queued removal: parent={}, children_count={}", parent.GetUUIDString(), children.size());
 
-  // ²»Ó¦µ±±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬¼ÌĞø´«²¥¸øSceneGraphµÄHierarchySceneNodeSystem
+  // ä¸åº”å½“æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œç»§ç»­ä¼ æ’­ç»™SceneGraphçš„HierarchySceneNodeSystem
   // e.Handled();
   return true;
 }
 
 void HierarchyComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
-  // 1. Ê×ÏÈ´¦Àí´ıÒÆ³ıµÄ×é¼ş
+  // 1. é¦–å…ˆå¤„ç†å¾…ç§»é™¤çš„ç»„ä»¶
   ProcessPendingRemovals(registry);
 
-  // 2. ÑéÖ¤²¢ĞŞ¸´ËùÓĞ²ã¼¶¹ØÏµµÄÍêÕûĞÔ
+  // 2. éªŒè¯å¹¶ä¿®å¤æ‰€æœ‰å±‚çº§å…³ç³»çš„å®Œæ•´æ€§
   ValidateAndRepairHierarchy(registry);
 
-  // 3. ´¦ÀíÔà×é¼ş
+  // 3. å¤„ç†è„ç»„ä»¶
   for (auto *comp : m_DirtyComponents) {
     comp->ProcessDirty(deltaTime, registry);
     comp->ClearDirty();
   }
 
-  // 4. Çå¿ÕÔà×é¼şÁĞ±í
+  // 4. æ¸…ç©ºè„ç»„ä»¶åˆ—è¡¨
   m_DirtyComponents.clear();
 }
 
@@ -283,11 +283,11 @@ void HierarchyComponentSystem::ValidateAndRepairHierarchy(SceneRegistry &registr
   auto view = registry.GetEntitiesWith<HierarchyComponent>();
   std::vector<std::pair<Entity, Entity>> invalidRelations;
 
-  // ÑéÖ¤ËùÓĞ²ã¼¶¹ØÏµµÄÍêÕûĞÔ
+  // éªŒè¯æ‰€æœ‰å±‚çº§å…³ç³»çš„å®Œæ•´æ€§
   for (auto entity : view) {
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
 
-    // ÑéÖ¤¸¸½Úµã£¬½öµ±parent´æÔÚ£¬µ«Invalid»òÕßÃ»ÓĞHierarchy×é¼şÊ±£¬ÈÏÎªĞèÒªĞŞ¸´
+    // éªŒè¯çˆ¶èŠ‚ç‚¹ï¼Œä»…å½“parentå­˜åœ¨ï¼Œä½†Invalidæˆ–è€…æ²¡æœ‰Hierarchyç»„ä»¶æ—¶ï¼Œè®¤ä¸ºéœ€è¦ä¿®å¤
     Entity parent = hierarchy.GetParent();
     if (parent.IsValid() &&
         (!registry.IsValid(parent) || !registry.HasComponent<HierarchyComponent>(parent)))
@@ -295,7 +295,7 @@ void HierarchyComponentSystem::ValidateAndRepairHierarchy(SceneRegistry &registr
       invalidRelations.emplace_back(entity, parent);
     }
 
-    // ÑéÖ¤×Ó½Úµã£¬½öµ±child´æÔÚ£¬µ«Invalid»òÕßÃ»ÓĞHierarchy×é¼şÊ±£¬ÈÏÎªĞèÒªĞŞ¸´
+    // éªŒè¯å­èŠ‚ç‚¹ï¼Œä»…å½“childå­˜åœ¨ï¼Œä½†Invalidæˆ–è€…æ²¡æœ‰Hierarchyç»„ä»¶æ—¶ï¼Œè®¤ä¸ºéœ€è¦ä¿®å¤
     for (auto child : hierarchy.GetChildren()) {
       if (!registry.IsValid(child) || !registry.HasComponent<HierarchyComponent>(child)) {
         invalidRelations.emplace_back(entity, child);
@@ -303,7 +303,7 @@ void HierarchyComponentSystem::ValidateAndRepairHierarchy(SceneRegistry &registr
     }
   }
 
-  // Ê¹ÓÃHierarchyComponent½Ó¿ÚĞŞ¸´
+  // ä½¿ç”¨HierarchyComponentæ¥å£ä¿®å¤
   for (auto &[entity, invalidRef] : invalidRelations) {
     auto &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
 
@@ -326,16 +326,16 @@ void HierarchyComponentSystem::ProcessPendingRemovals(SceneRegistry &registry)
       return;
     }
 
-    // ½»»»Êı¾İÒÔ¼õÉÙËø³ÖÓĞÊ±¼ä
+    // äº¤æ¢æ•°æ®ä»¥å‡å°‘é”æŒæœ‰æ—¶é—´
     processingRemovals.swap(m_PendingRemovals);
   }
-  // ´¦ÀíËùÓĞ´ıÒÆ³ıµÄ×é¼ş
+  // å¤„ç†æ‰€æœ‰å¾…ç§»é™¤çš„ç»„ä»¶
   for (const auto &removal : processingRemovals) {
     Entity entity = removal.entity;
 
     m_Logger->debug("Processing hierarchy component removal for entity {}",
                     entity.GetUUIDString());
-    // 1. ´Ó¸¸½ÚµãÖĞÒÆ³ı×Ô¼º£¨Èç¹û¸¸½Úµã´æÔÚÇÒÓĞĞ§£©
+    // 1. ä»çˆ¶èŠ‚ç‚¹ä¸­ç§»é™¤è‡ªå·±ï¼ˆå¦‚æœçˆ¶èŠ‚ç‚¹å­˜åœ¨ä¸”æœ‰æ•ˆï¼‰
     if (removal.parent.IsValid() && registry.IsValid(removal.parent)) {
       if (registry.HasComponent<HierarchyComponent>(removal.parent)) {
         try {
@@ -353,13 +353,13 @@ void HierarchyComponentSystem::ProcessPendingRemovals(SceneRegistry &registry)
         }
       }
     }
-    // 2. Çå³ıËùÓĞ×Ó½ÚµãµÄ¸¸½Úµã£¨Èç¹û×Ó½Úµã´æÔÚÇÒÓĞĞ§£©
+    // 2. æ¸…é™¤æ‰€æœ‰å­èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹ï¼ˆå¦‚æœå­èŠ‚ç‚¹å­˜åœ¨ä¸”æœ‰æ•ˆï¼‰
     for (auto child : removal.children) {
       if (child.IsValid() && registry.IsValid(child)) {
         if (registry.HasComponent<HierarchyComponent>(child)) {
           try {
             auto &childHierarchy = registry.GetComponent<HierarchyComponent>(child);
-            // Ö»ÓĞµ±µ±Ç°¸¸½ÚµãÈ·ÊµÊÇÕâ¸ö±»ÒÆ³ıµÄÊµÌåÊ±²ÅÇå³ı
+            // åªæœ‰å½“å½“å‰çˆ¶èŠ‚ç‚¹ç¡®å®æ˜¯è¿™ä¸ªè¢«ç§»é™¤çš„å®ä½“æ—¶æ‰æ¸…é™¤
             if (childHierarchy.GetParent() == entity) {
               childHierarchy.SetParent(registry, Entity());
               m_Logger->trace("Cleared parent for child entity {}", child.GetUUIDString());

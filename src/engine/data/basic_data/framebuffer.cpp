@@ -5,37 +5,37 @@ namespace mite {
 
 FrameBuffer::FrameBuffer(const FrameBufferSpec &spec) : m_Spec(spec)
 {
-  // ´´½¨Ê±Á¢¼´³õÊ¼»¯Ö¡»º³å
+  // åˆ›å»ºæ—¶ç«‹å³åˆå§‹åŒ–å¸§ç¼“å†²
   Invalidate();
 }
 
 FrameBuffer::~FrameBuffer()
 {
-  // Îö¹¹Ê±ÊÍ·Å×ÊÔ´
+  // ææ„æ—¶é‡Šæ”¾èµ„æº
   Release();
 }
 
 void FrameBuffer::Invalidate()
 {
-  // Èç¹ûÒÑÓĞÖ¡»º³å£¬ÏÈÊÍ·Å
+  // å¦‚æœå·²æœ‰å¸§ç¼“å†²ï¼Œå…ˆé‡Šæ”¾
   if (m_RendererID) {
     Release();
   }
 
-  // ´´½¨Ö¡»º³å¶ÔÏó
+  // åˆ›å»ºå¸§ç¼“å†²å¯¹è±¡
   glCreateFramebuffers(1, &m_RendererID);
   glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
-  // ´¦Àí¶à²ÉÑù
+  // å¤„ç†å¤šé‡‡æ ·
   const bool multisample = m_Spec.samples > 1;
 
-  // ´´½¨¸½¼ş
+  // åˆ›å»ºé™„ä»¶
   for (size_t i = 0; i < m_Spec.attachments.size(); ++i) {
     const auto &attachmentSpec = m_Spec.attachments[i];
 
     switch (attachmentSpec.type) {
       case FrameBufferAttachmentType::Color: {
-        // ´´½¨ÑÕÉ«¸½¼şÎÆÀí
+        // åˆ›å»ºé¢œè‰²é™„ä»¶çº¹ç†
         uint32_t textureID;
         glCreateTextures(multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &textureID);
 
@@ -51,7 +51,7 @@ void FrameBuffer::Invalidate()
           glTextureStorage2D(
               textureID, 1, attachmentSpec.internalFormat, m_Spec.width, m_Spec.height);
 
-          // ÉèÖÃÎÆÀí²ÎÊı(·Ç¶à²ÉÑùÊ±²ÅĞèÒª)
+          // è®¾ç½®çº¹ç†å‚æ•°(éå¤šé‡‡æ ·æ—¶æ‰éœ€è¦)
           glTextureParameteri(textureID,
                               GL_TEXTURE_MIN_FILTER,
                               attachmentSpec.generateMipmaps ? GL_LINEAR_MIPMAP_LINEAR :
@@ -60,25 +60,25 @@ void FrameBuffer::Invalidate()
           glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
           glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-          // Èç¹ûĞèÒªÉú³Émipmaps
+          // å¦‚æœéœ€è¦ç”Ÿæˆmipmaps
           if (attachmentSpec.generateMipmaps) {
             glGenerateTextureMipmap(textureID);
           }
         }
 
-        // ½«ÎÆÀí¸½¼Óµ½Ö¡»º³å
+        // å°†çº¹ç†é™„åŠ åˆ°å¸§ç¼“å†²
         glFramebufferTexture2D(GL_FRAMEBUFFER,
                                GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(i),
                                multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
                                textureID,
                                0);
 
-        // ±£´æÑÕÉ«¸½¼ş
+        // ä¿å­˜é¢œè‰²é™„ä»¶
         m_ColorAttachments[static_cast<uint32_t>(i)] = textureID;
         break;
       }
       case FrameBufferAttachmentType::Depth: {
-        // ´´½¨Éî¶È¸½¼şÎÆÀí
+        // åˆ›å»ºæ·±åº¦é™„ä»¶çº¹ç†
         uint32_t textureID;
         glCreateTextures(multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &textureID);
 
@@ -93,26 +93,26 @@ void FrameBuffer::Invalidate()
         else {
           glTextureStorage2D(textureID, 1, GL_DEPTH_COMPONENT24, m_Spec.width, m_Spec.height);
 
-          // ÉèÖÃÎÆÀí²ÎÊı
+          // è®¾ç½®çº¹ç†å‚æ•°
           glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
           glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
           glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }
 
-        // ½«ÎÆÀí¸½¼Óµ½Ö¡»º³å
+        // å°†çº¹ç†é™„åŠ åˆ°å¸§ç¼“å†²
         glFramebufferTexture2D(GL_FRAMEBUFFER,
                                GL_DEPTH_ATTACHMENT,
                                multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
                                textureID,
                                0);
 
-        // ±£´æÉî¶È¸½¼ş
+        // ä¿å­˜æ·±åº¦é™„ä»¶
         m_DepthAttachment = textureID;
         break;
       }
       case FrameBufferAttachmentType::DepthStencil: {
-        // ´´½¨Éî¶ÈÄ£°å¸½¼şÎÆÀí
+        // åˆ›å»ºæ·±åº¦æ¨¡æ¿é™„ä»¶çº¹ç†
         uint32_t textureID;
         glCreateTextures(multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &textureID);
 
@@ -127,21 +127,21 @@ void FrameBuffer::Invalidate()
         else {
           glTextureStorage2D(textureID, 1, GL_DEPTH24_STENCIL8, m_Spec.width, m_Spec.height);
 
-          // ÉèÖÃÎÆÀí²ÎÊı
+          // è®¾ç½®çº¹ç†å‚æ•°
           glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
           glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
           glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }
 
-        // ½«ÎÆÀí¸½¼Óµ½Ö¡»º³å
+        // å°†çº¹ç†é™„åŠ åˆ°å¸§ç¼“å†²
         glFramebufferTexture2D(GL_FRAMEBUFFER,
                                GL_DEPTH_STENCIL_ATTACHMENT,
                                multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
                                textureID,
                                0);
 
-        // ±£´æÉî¶È¸½¼ş(¹²ÓÃÍ¬Ò»¸öÎÆÀí)
+        // ä¿å­˜æ·±åº¦é™„ä»¶(å…±ç”¨åŒä¸€ä¸ªçº¹ç†)
         m_DepthAttachment = textureID;
         break;
       }
@@ -151,7 +151,7 @@ void FrameBuffer::Invalidate()
     }
   }
 
-  // ÉèÖÃ»æÖÆ»º³åÇø(ÑÕÉ«¸½¼ş)
+  // è®¾ç½®ç»˜åˆ¶ç¼“å†²åŒº(é¢œè‰²é™„ä»¶)
   if (!m_ColorAttachments.empty()) {
     std::vector<GLenum> buffers;
     buffers.reserve(m_ColorAttachments.size());
@@ -161,35 +161,35 @@ void FrameBuffer::Invalidate()
     glDrawBuffers(static_cast<GLsizei>(buffers.size()), buffers.data());
   }
   else {
-    // Ö»ÓĞÉî¶È»º³åÊ±£¬ÏÔÊ½¸æËßOpenGLÎÒÃÇ²»äÖÈ¾µ½ÈÎºÎÑÕÉ«»º³å
+    // åªæœ‰æ·±åº¦ç¼“å†²æ—¶ï¼Œæ˜¾å¼å‘Šè¯‰OpenGLæˆ‘ä»¬ä¸æ¸²æŸ“åˆ°ä»»ä½•é¢œè‰²ç¼“å†²
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
   }
 
-  // ¼ì²éÖ¡»º³åÍêÕûĞÔ
+  // æ£€æŸ¥å¸§ç¼“å†²å®Œæ•´æ€§
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
     LOG_ERROR("Framebuffer is incomplete!");
   }
 
-  // ½â°óÖ¡»º³å
+  // è§£ç»‘å¸§ç¼“å†²
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void FrameBuffer::Release()
 {
-  // É¾³ıÑÕÉ«¸½¼şÎÆÀí
+  // åˆ é™¤é¢œè‰²é™„ä»¶çº¹ç†
   for (auto &[index, textureID] : m_ColorAttachments) {
     glDeleteTextures(1, &textureID);
   }
   m_ColorAttachments.clear();
 
-  // É¾³ıÉî¶È¸½¼şÎÆÀí
+  // åˆ é™¤æ·±åº¦é™„ä»¶çº¹ç†
   if (m_DepthAttachment) {
     glDeleteTextures(1, &m_DepthAttachment);
     m_DepthAttachment = 0;
   }
 
-  // É¾³ıÖ¡»º³å¶ÔÏó
+  // åˆ é™¤å¸§ç¼“å†²å¯¹è±¡
   if (m_RendererID) {
     glDeleteFramebuffers(1, &m_RendererID);
     m_RendererID = 0;
@@ -198,13 +198,13 @@ void FrameBuffer::Release()
 
 void FrameBuffer::Resize(uint32_t width, uint32_t height)
 {
-  // ¼ì²é³ß´çÊÇ·ñÓĞĞ§
+  // æ£€æŸ¥å°ºå¯¸æ˜¯å¦æœ‰æ•ˆ
   if (width == 0 || height == 0) {
     LOG_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
     return;
   }
 
-  // ¸üĞÂ¹æ¸ñ²¢ÖØĞÂ³õÊ¼»¯
+  // æ›´æ–°è§„æ ¼å¹¶é‡æ–°åˆå§‹åŒ–
   m_Spec.width = width;
   m_Spec.height = height;
   Invalidate();
@@ -214,7 +214,7 @@ void FrameBuffer::Bind() const
 {
   glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
-  // ÉèÖÃÊÓ¿Ú´óĞ¡Æ¥ÅäÖ¡»º³å´óĞ¡
+  // è®¾ç½®è§†å£å¤§å°åŒ¹é…å¸§ç¼“å†²å¤§å°
   glViewport(0, 0, m_Spec.width, m_Spec.height);
 }
 

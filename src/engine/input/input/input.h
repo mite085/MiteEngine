@@ -13,13 +13,13 @@ class Input {
   static void Shutdown();
   static void Update();
 
-  // ¼üÅÌ×´Ì¬²éÑ¯
+  // é”®ç›˜çŠ¶æ€æŸ¥è¯¢
   static bool IsKeyPressed(KeyCode key);
   static bool IsKeyReleased(KeyCode key);
   static bool IsKeyHeld(KeyCode key);
   static float GetKeyHeldDuration(KeyCode key);
 
-  // Êó±ê×´Ì¬²éÑ¯
+  // é¼ æ ‡çŠ¶æ€æŸ¥è¯¢
   static bool IsMouseButtonPressed(MouseCode button);
   static bool IsMouseButtonReleased(MouseCode button);
   static bool IsMouseButtonHeld(MouseCode button);
@@ -27,7 +27,7 @@ class Input {
   static glm::vec2 GetMouseDelta();
   static float GetMouseScrollDelta(MouseCode button);
 
-  // ÊäÈëÉÏÏÂÎÄ¹ÜÀí
+  // è¾“å…¥ä¸Šä¸‹æ–‡ç®¡ç†
   static void PushContext(std::shared_ptr<InputContext> contextName);
   static void PopContext();
   static bool IsCurrentContext(const std::string &contextName);

@@ -5,44 +5,44 @@
 
 namespace mite {
 /**
- * @brief Shader»º´æ¹ÜÀíÆ÷£¨µ¥ÀıÄ£Ê½£©
- * @note Ö°Ôğ£º
- * 1. ±ÜÃâÖØ¸´±àÒëÏàÍ¬Â·¾¶µÄShader
- * 2. ×Ô¶¯¹ÜÀíShader×ÊÔ´µÄÉúÃüÖÜÆÚ£¨ÒıÓÃ¼ÆÊı£©
- * 3. Ïß³Ì°²È«µÄ»º´æ²Ù×÷
+ * @brief Shaderç¼“å­˜ç®¡ç†å™¨ï¼ˆå•ä¾‹æ¨¡å¼ï¼‰
+ * @note èŒè´£ï¼š
+ * 1. é¿å…é‡å¤ç¼–è¯‘ç›¸åŒè·¯å¾„çš„Shader
+ * 2. è‡ªåŠ¨ç®¡ç†Shaderèµ„æºçš„ç”Ÿå‘½å‘¨æœŸï¼ˆå¼•ç”¨è®¡æ•°ï¼‰
+ * 3. çº¿ç¨‹å®‰å…¨çš„ç¼“å­˜æ“ä½œ
  * 
  */
 class ShaderCache {
  public:
-  // É¾³ı¿½±´¹¹ÔìºÍ¸³Öµ
+  // åˆ é™¤æ‹·è´æ„é€ å’Œèµ‹å€¼
   ShaderCache(const ShaderCache &) = delete;
   ShaderCache &operator=(const ShaderCache &) = delete;
 
-  // »ñÈ¡µ¥ÀıÊµÀı
+  // è·å–å•ä¾‹å®ä¾‹
   static ShaderCache &Get();
 
   /**
-   * @brief »ñÈ¡»ò´´½¨Shader
-   * @param vertexPath   ¶¥µã×ÅÉ«Æ÷ÎÄ¼şÂ·¾¶
-   * @param fragmentPath Æ¬¶Î×ÅÉ«Æ÷ÎÄ¼şÂ·¾¶
-   * @param geometryPath ¿ÉÑ¡¼¸ºÎ×ÅÉ«Æ÷Â·¾¶£¨¿Õ×Ö·û´®±íÊ¾ºöÂÔ£©
-   * @return std::shared_ptr<Shader> »º´æµÄShaderÖÇÄÜÖ¸Õë
-   * @throws std::runtime_error ×ÅÉ«Æ÷±àÒëÊ§°ÜÊ±Å×³ö
+   * @brief è·å–æˆ–åˆ›å»ºShader
+   * @param vertexPath   é¡¶ç‚¹ç€è‰²å™¨æ–‡ä»¶è·¯å¾„
+   * @param fragmentPath ç‰‡æ®µç€è‰²å™¨æ–‡ä»¶è·¯å¾„
+   * @param geometryPath å¯é€‰å‡ ä½•ç€è‰²å™¨è·¯å¾„ï¼ˆç©ºå­—ç¬¦ä¸²è¡¨ç¤ºå¿½ç•¥ï¼‰
+   * @return std::shared_ptr<Shader> ç¼“å­˜çš„Shaderæ™ºèƒ½æŒ‡é’ˆ
+   * @throws std::runtime_error ç€è‰²å™¨ç¼–è¯‘å¤±è´¥æ—¶æŠ›å‡º
    */
   std::shared_ptr<OpenGLShader> GetOpenGLShader(const std::string &vertexPath,
                               const std::string &fragmentPath,
                               const std::string &geometryPath = "");
 
   /**
-   * @brief Çå¿ÕËùÓĞ»º´æ£¨Ç¿ÖÆÊÍ·ÅGPU×ÊÔ´£©
-   * @note ½öÓ¦ÔÚäÖÈ¾Ïß³ÌÎŞ²Ù×÷Ê±µ÷ÓÃ
+   * @brief æ¸…ç©ºæ‰€æœ‰ç¼“å­˜ï¼ˆå¼ºåˆ¶é‡Šæ”¾GPUèµ„æºï¼‰
+   * @note ä»…åº”åœ¨æ¸²æŸ“çº¿ç¨‹æ— æ“ä½œæ—¶è°ƒç”¨
    */
   void Clear();
 
  private:
-  ShaderCache() = default;  // ½ûÖ¹Íâ²¿¹¹Ôì
+  ShaderCache() = default;  // ç¦æ­¢å¤–éƒ¨æ„é€ 
 
-  // Éú³É»º´æ¼ü£¨±£Ö¤ÏàÍ¬×ÅÉ«Æ÷×éºÏµÄÎ¨Ò»ĞÔ£©
+  // ç”Ÿæˆç¼“å­˜é”®ï¼ˆä¿è¯ç›¸åŒç€è‰²å™¨ç»„åˆçš„å”¯ä¸€æ€§ï¼‰
   std::string GenerateCacheKey(const std::string &vertexPath,
                                const std::string &fragmentPath,
                                const std::string &geometryPath) const;

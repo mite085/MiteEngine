@@ -17,7 +17,7 @@ void SimpleBVH::Insert(SceneNode *node)
   if (!node)
     return;
 
-  // ¼ì²éÊÇ·ñÒÑ´æÔÚ
+  // æ£€æŸ¥æ˜¯å¦å·²å­˜åœ¨
   if (std::find(m_AllNodes.begin(), m_AllNodes.end(), node) != m_AllNodes.end()) {
     return;
   }
@@ -43,8 +43,8 @@ void SimpleBVH::Update(SceneNode *node)
   if (!node)
     return;
 
-  // ¼òµ¥ÊµÏÖ£º±ê¼ÇĞèÒªÖØ½¨
-  // ÓÅ»¯ÊµÏÖ£º¿ÉÔöÁ¿¸üĞÂ£¬ÕâÀïÎª¼ò»¯ÏÈÖØ½¨
+  // ç®€å•å®ç°ï¼šæ ‡è®°éœ€è¦é‡å»º
+  // ä¼˜åŒ–å®ç°ï¼šå¯å¢é‡æ›´æ–°ï¼Œè¿™é‡Œä¸ºç®€åŒ–å…ˆé‡å»º
   m_NeedsRebuild = true;
 }
 
@@ -71,12 +71,12 @@ void SimpleBVH::Rebuild()
     return;
   }
 
-  // ÊÍ·Å¾ÉÊ÷
+  // é‡Šæ”¾æ—§æ ‘
   if (m_Root) {
     FreeNode(m_Root);
   }
 
-  // ¹¹½¨ĞÂÊ÷
+  // æ„å»ºæ–°æ ‘
   std::vector<SceneNode *> nodesToBuild = m_AllNodes;
   m_Root = BuildTree(nodesToBuild, 0, static_cast<int>(nodesToBuild.size()), 0);
   m_NeedsRebuild = false;
@@ -91,42 +91,42 @@ BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int en
 
   const int count = end - start;
 
-  // ´´½¨ĞÂ½Úµã
+  // åˆ›å»ºæ–°èŠ‚ç‚¹
   BVHNode *node = new BVHNode();
   node->depth = depth;
   m_NodeCount++;
 
-  // ¼ÆËãËùÓĞ½ÚµãµÄºÏ²¢°üÎ§ºĞ
+  // è®¡ç®—æ‰€æœ‰èŠ‚ç‚¹çš„åˆå¹¶åŒ…å›´ç›’
   AABB totalBounds;
   for (int i = start; i < end; ++i) {
     totalBounds.Expand(nodes[i]->GetWorldBounds());
   }
   node->bounds = totalBounds;
 
-  // Èç¹û½ÚµãÊı½ÏÉÙ»ò´ïµ½×î´óÉî¶È£¬´´½¨Ò¶×Ó½Úµã
+  // å¦‚æœèŠ‚ç‚¹æ•°è¾ƒå°‘æˆ–è¾¾åˆ°æœ€å¤§æ·±åº¦ï¼Œåˆ›å»ºå¶å­èŠ‚ç‚¹
   if (count <= m_MinLeafSize || depth >= m_MaxDepth) {
-    // ´æ´¢¸Ã·¶Î§ÄÚµÄËùÓĞ³¡¾°½Úµã
+    // å­˜å‚¨è¯¥èŒƒå›´å†…çš„æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹
     for (int i = start; i < end; ++i) {
       node->sceneNodes.push_back(nodes[i]);
     }
     return node;
   }
 
-  // Ñ°ÕÒ×î¼Ñ·Ö¸î
+  // å¯»æ‰¾æœ€ä½³åˆ†å‰²
   int bestAxis = 0;
   float bestSplitPos = 0.0f;
   if (!FindBestSplit(nodes, start, end, bestAxis, bestSplitPos)) {
-    // ÎŞ·¨·Ö¸î£¬´´½¨Ò¶×Ó½Úµã
+    // æ— æ³•åˆ†å‰²ï¼Œåˆ›å»ºå¶å­èŠ‚ç‚¹
     for (int i = start; i < end; ++i) {
       node->sceneNodes.push_back(nodes[i]);
     }
     return node;
   }
 
-  // ·Ö¸î½Úµã
+  // åˆ†å‰²èŠ‚ç‚¹
   int splitIndex = PartitionNodes(nodes, start, end, bestAxis, bestSplitPos);
 
-  // µİ¹é¹¹½¨×óÓÒ×ÓÊ÷
+  // é€’å½’æ„å»ºå·¦å³å­æ ‘
   node->left = BuildTree(nodes, start, splitIndex, depth + 1);
   node->right = BuildTree(nodes, splitIndex, end, depth + 1);
 
@@ -140,13 +140,13 @@ bool SimpleBVH::FindBestSplit(
   if (count <= 1)
     return false;
 
-  // ¼ÆËãËùÓĞ½ÚµãµÄÖĞĞÄµã°üÎ§ºĞ
+  // è®¡ç®—æ‰€æœ‰èŠ‚ç‚¹çš„ä¸­å¿ƒç‚¹åŒ…å›´ç›’
   AABB centerBounds;
   for (int i = start; i < end; ++i) {
     centerBounds.Expand(nodes[i]->GetWorldBounds().GetCenter());
   }
 
-  // Ñ¡Ôñ×î³¤µÄÖá
+  // é€‰æ‹©æœ€é•¿çš„è½´
   glm::vec3 size = centerBounds.GetSize();
   axis = 0;
   if (size.y > size.x)
@@ -154,7 +154,7 @@ bool SimpleBVH::FindBestSplit(
   if (size.z > size[axis])
     axis = 2;
 
-  // ¼òµ¥Ñ¡ÔñÖĞĞÄµãÖĞÎ»Êı
+  // ç®€å•é€‰æ‹©ä¸­å¿ƒç‚¹ä¸­ä½æ•°
   std::vector<float> centers;
   centers.reserve(count);
   for (int i = start; i < end; ++i) {
@@ -198,7 +198,7 @@ void SimpleBVH::FreeNode(BVHNode *node)
   FreeNode(node->left);
   FreeNode(node->right);
 
-  // ÊÍ·Å sceneNodes ÏòÁ¿£¨²»ĞèÒªÊÍ·Å SceneNode ¶ÔÏó±¾Éí£¬ËüÃÇÓÉ³¡¾°¹ÜÀí£©
+  // é‡Šæ”¾ sceneNodes å‘é‡ï¼ˆä¸éœ€è¦é‡Šæ”¾ SceneNode å¯¹è±¡æœ¬èº«ï¼Œå®ƒä»¬ç”±åœºæ™¯ç®¡ç†ï¼‰
   node->sceneNodes.clear();
 
   delete node;
@@ -278,7 +278,7 @@ void SimpleBVH::RaycastFirstRecursive(BVHNode *node,
     }
   }
   else {
-    // ÏÈ¼ì²â¾àÀë¸ü½üµÄ×Ó½Úµã
+    // å…ˆæ£€æµ‹è·ç¦»æ›´è¿‘çš„å­èŠ‚ç‚¹
     float leftDist, rightDist;
     bool leftHit = RayIntersectsAABB(ray, node->left->bounds, leftDist);
     bool rightHit = RayIntersectsAABB(ray, node->right->bounds, rightDist);
@@ -421,7 +421,7 @@ size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &r
     return 0;
 
   results.clear();
-  AABB pointAABB(point, point);  // ´´½¨Áã´óĞ¡µÄAABB
+  AABB pointAABB(point, point);  // åˆ›å»ºé›¶å¤§å°çš„AABB
   AABBQueryRecursive(m_Root, pointAABB, results);
   return results.size();
 }
@@ -437,14 +437,14 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, floa
   float bestDistance = maxDistance;
   float bestDistanceSq = bestDistance * bestDistance;
 
-  // Ê¹ÓÃÓÅÏÈ¶ÓÁĞ½øĞĞ×î½üÁÚËÑË÷
+  // ä½¿ç”¨ä¼˜å…ˆé˜Ÿåˆ—è¿›è¡Œæœ€è¿‘é‚»æœç´¢
   struct QueueElement {
     BVHNode *node;
     float distanceSq;
 
     bool operator<(const QueueElement &other) const
     {
-      return distanceSq > other.distanceSq;  // ×îĞ¡¶Ñ
+      return distanceSq > other.distanceSq;  // æœ€å°å †
     }
   };
 
@@ -460,7 +460,7 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, floa
     }
 
     if (current.node->IsLeaf()) {
-      // ±éÀúÒ¶×Ó½ÚµãÖĞµÄËùÓĞ³¡¾°½Úµã
+      // éå†å¶å­èŠ‚ç‚¹ä¸­çš„æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹
       for (SceneNode *sceneNode : current.node->sceneNodes) {
         float distSq = glm::distance2(point, sceneNode->GetWorldBounds().GetCenter());
         if (distSq < bestDistanceSq) {

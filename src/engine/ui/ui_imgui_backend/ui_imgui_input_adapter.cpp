@@ -16,7 +16,7 @@ void ImGuiInputAdapter::Initialize()
 {
   m_Logger->info("Initializing ImGuiInputAdapter");
 
-  // ³õÊ¼»¯Êó±ê×´Ì¬
+  // åˆå§‹åŒ–é¼ æ ‡çŠ¶æ€
   m_LastMousePos = glm::vec2(0.0f);
 }
 
@@ -27,7 +27,7 @@ void ImGuiInputAdapter::Shutdown()
 
 bool ImGuiInputAdapter::ProcessEvent(Event &e)
 {
-  // ¼ì²éImGuiÊÇ·ñÏëÒª²¶»ñ¸ÃÀàĞÍÊäÈë
+  // æ£€æŸ¥ImGuiæ˜¯å¦æƒ³è¦æ•è·è¯¥ç±»å‹è¾“å…¥
   ImGuiIO &io = ImGui::GetIO();
   bool shouldCapture = false;
 
@@ -67,7 +67,7 @@ bool ImGuiInputAdapter::ProcessEvent(Event &e)
     return ProcessKeyTypedEvent(event);
   });
 
-  // Èç¹ûImGuiÏëÒª²¶»ñ¸ÃÊÂ¼ş£¬±ê¼ÇÎªÒÑ´¦Àí
+  // å¦‚æœImGuiæƒ³è¦æ•è·è¯¥äº‹ä»¶ï¼Œæ ‡è®°ä¸ºå·²å¤„ç†
   if (shouldCapture && e.handled) {
     e.handled = true;
   }
@@ -77,8 +77,8 @@ bool ImGuiInputAdapter::ProcessEvent(Event &e)
 
 void ImGuiInputAdapter::UpdateImGuiIO()
 {
-  // 1.87Ö®ºóµÄImGui£¬²»ĞèÒªÃ¿Ö¡ÊÖ¶¯¸üĞÂ¼üÅÌ×´Ì¬
-  // ËùÓĞ¼üÅÌ×´Ì¬Í¨¹ıAddKeyEvent()ÊµÊ±Ìí¼Ó
+  // 1.87ä¹‹åçš„ImGuiï¼Œä¸éœ€è¦æ¯å¸§æ‰‹åŠ¨æ›´æ–°é”®ç›˜çŠ¶æ€
+  // æ‰€æœ‰é”®ç›˜çŠ¶æ€é€šè¿‡AddKeyEvent()å®æ—¶æ·»åŠ 
 }
 
 void ImGuiInputAdapter::UpdateDisplaySize(GLFWwindow *window)
@@ -90,7 +90,7 @@ void ImGuiInputAdapter::UpdateDisplaySize(GLFWwindow *window)
   int width, height;
   glfwGetWindowSize(window, &width, &height);
   m_DisplaySize = glm::ivec2(width, height);
-  // ¸üĞÂImGuiµÄÏÔÊ¾³ß´ç
+  // æ›´æ–°ImGuiçš„æ˜¾ç¤ºå°ºå¯¸
   ImGuiIO &io = ImGui::GetIO();
   io.DisplaySize = ImVec2(static_cast<float>(m_DisplaySize.x),
                           static_cast<float>(m_DisplaySize.y));
@@ -103,14 +103,14 @@ void ImGuiInputAdapter::UpdateFramebufferScale(GLFWwindow *window)
     m_Logger->warn("GLFW window not available, cannot update framebuffer scale");
     return;
   }
-  // »ñÈ¡Ö¡»º³å³ß´ç£¨Êµ¼ÊäÖÈ¾·Ö±æÂÊ£©
+  // è·å–å¸§ç¼“å†²å°ºå¯¸ï¼ˆå®é™…æ¸²æŸ“åˆ†è¾¨ç‡ï¼‰
   int framebufferWidth, framebufferHeight;
   glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
 
-  // »ñÈ¡´°¿Ú³ß´ç£¨Âß¼­·Ö±æÂÊ£©
+  // è·å–çª—å£å°ºå¯¸ï¼ˆé€»è¾‘åˆ†è¾¨ç‡ï¼‰
   int windowWidth, windowHeight;
   glfwGetWindowSize(window, &windowWidth, &windowHeight);
-  // ¼ÆËãËõ·Å±ÈÀı£¨´¦Àí¸ßDPIÏÔÊ¾£©
+  // è®¡ç®—ç¼©æ”¾æ¯”ä¾‹ï¼ˆå¤„ç†é«˜DPIæ˜¾ç¤ºï¼‰
   if (windowWidth > 0 && windowHeight > 0) {
     m_FramebufferScale = glm::vec2(
         static_cast<float>(framebufferWidth) / static_cast<float>(windowWidth),
@@ -119,20 +119,20 @@ void ImGuiInputAdapter::UpdateFramebufferScale(GLFWwindow *window)
   else {
     m_FramebufferScale = glm::vec2(1.0f);
   }
-  // ¸üĞÂImGuiµÄÏÔÊ¾Ëõ·Å
+  // æ›´æ–°ImGuiçš„æ˜¾ç¤ºç¼©æ”¾
   ImGuiIO &io = ImGui::GetIO();
   io.DisplayFramebufferScale = ImVec2(m_FramebufferScale.x, m_FramebufferScale.y);
   //m_Logger->debug(
   //    "Framebuffer scale updated: {:.2f}x{:.2f}", m_FramebufferScale.x, m_FramebufferScale.y);
 }
 
-// ¾ßÌåÊÂ¼ş´¦ÀíÊµÏÖ
+// å…·ä½“äº‹ä»¶å¤„ç†å®ç°
 bool ImGuiInputAdapter::ProcessMouseMoveEvent(MouseMoveEvent &e)
 {
   ImGuiIO &io = ImGui::GetIO();
   io.AddMousePosEvent(static_cast<float>(e.GetXPos()), static_cast<float>(e.GetYPos()));
   m_LastMousePos = glm::vec2(e.GetXPos(), e.GetYPos());
-  return false;  // ²»×èÖ¹ÊÂ¼ş¼ÌĞø´«µİ
+  return false;  // ä¸é˜»æ­¢äº‹ä»¶ç»§ç»­ä¼ é€’
 }
 
 bool ImGuiInputAdapter::ProcessMouseButtonEvent(MouseButtonPressedEvent &e)
@@ -167,7 +167,7 @@ bool ImGuiInputAdapter::ProcessKeyEvent(KeyPressedEvent &e)
     ImGuiIO &io = ImGui::GetIO();
     io.AddKeyEvent(key, true);
 
-    // ´¦ÀíĞŞÊÎ¼ü×´Ì¬
+    // å¤„ç†ä¿®é¥°é”®çŠ¶æ€
     io.AddKeyEvent(ImGuiKey_ModCtrl, (e.GetMods() & GLFW_MOD_CONTROL) != 0);
     io.AddKeyEvent(ImGuiKey_ModShift, (e.GetMods() & GLFW_MOD_SHIFT) != 0);
     io.AddKeyEvent(ImGuiKey_ModAlt, (e.GetMods() & GLFW_MOD_ALT) != 0);
@@ -193,7 +193,7 @@ bool ImGuiInputAdapter::ProcessKeyTypedEvent(KeyTypedEvent &e)
   return false;
 }
 
-// GLFW¼üÂëµ½ImGuiKeyµÄ×ª»»
+// GLFWé”®ç åˆ°ImGuiKeyçš„è½¬æ¢
 ImGuiKey ImGuiInputAdapter::ConvertGlfwKeyToImGuiKey(int glfwKey)
 {
   switch (glfwKey) {

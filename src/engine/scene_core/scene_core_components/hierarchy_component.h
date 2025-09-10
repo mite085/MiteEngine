@@ -5,59 +5,59 @@
 
 namespace mite {
 /**
- * @brief ÊµÌå²ã´Î½á¹¹×é¼ş£¬
- * ¹ÜÀíÊµÌå¼äµÄ¸¸×Ó¹ØÏµ£¬¹¹³É³¡¾°Ê÷µÄ»ù´¡½á¹¹
+ * @brief å®ä½“å±‚æ¬¡ç»“æ„ç»„ä»¶ï¼Œ
+ * ç®¡ç†å®ä½“é—´çš„çˆ¶å­å…³ç³»ï¼Œæ„æˆåœºæ™¯æ ‘çš„åŸºç¡€ç»“æ„
  *
- * ×¢Òâ£º
- * Êµ¼Ê¸¸×Ó¹ØÏµÂß¼­ÓÉEntityÀà¹ÜÀí£¬´ËÀà½ö´æ´¢Êı¾İ
+ * æ³¨æ„ï¼š
+ * å®é™…çˆ¶å­å…³ç³»é€»è¾‘ç”±Entityç±»ç®¡ç†ï¼Œæ­¤ç±»ä»…å­˜å‚¨æ•°æ®
  */
 class HierarchyComponent
     : public ComponentTraits<HierarchyComponent, Component::Family::Hierarchy> {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı£¨´´½¨ÎŞ¸¸½ÚµãµÄ¸ùÊµÌå£©
+   * @brief æ„é€ å‡½æ•°ï¼ˆåˆ›å»ºæ— çˆ¶èŠ‚ç‚¹çš„æ ¹å®ä½“ï¼‰
    */
   HierarchyComponent();
   ~HierarchyComponent() override = default;
 
-  // ½ûÖ¹¿½±´ÓëÒÆ¶¯
+  // ç¦æ­¢æ‹·è´ä¸ç§»åŠ¨
   HierarchyComponent(const HierarchyComponent &) = delete;
   HierarchyComponent &operator=(const HierarchyComponent &) = delete;
   HierarchyComponent(HierarchyComponent &&) = delete;
   HierarchyComponent &operator=(HierarchyComponent &&) = delete;
 
   /**
-   * @brief ´¦ÀíÔà±ê¼Ç£¬Ö÷Òª´¦Àí²ã¼¶¹ØÏµ±ä»¯
+   * @brief å¤„ç†è„æ ‡è®°ï¼Œä¸»è¦å¤„ç†å±‚çº§å…³ç³»å˜åŒ–
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
-  // ==================== ²éÑ¯½Ó¿Ú ====================
+  // ==================== æŸ¥è¯¢æ¥å£ ====================
 
-  Entity GetParent() const;                        // »ñÈ¡¸¸ÊµÌå¾ä±ú
-  const std::vector<Entity> &GetChildren() const;  // »ñÈ¡ËùÓĞ×ÓÊµÌå¾ä±ú
-  size_t GetChildCount() const;                    // »ñÈ¡×ÓÊµÌåÊıÁ¿
-  bool IsLeaf() const;                             // ¼ì²éÊÇ·ñÎªÒ¶½Úµã£¨ÎŞ×Ó½Úµã£©
-  bool IsRoot() const;                             // ¼ì²éÊÇ·ñÎª¸ù½Úµã£¨ÎŞ¸¸½Úµã£©
-  size_t GetDepth(SceneRegistry &registry);        // »ñÈ¡Éî¶È£¨¾àÀë¸ù½ÚµãµÄ²ã¼¶Êı£©
+  Entity GetParent() const;                        // è·å–çˆ¶å®ä½“å¥æŸ„
+  const std::vector<Entity> &GetChildren() const;  // è·å–æ‰€æœ‰å­å®ä½“å¥æŸ„
+  size_t GetChildCount() const;                    // è·å–å­å®ä½“æ•°é‡
+  bool IsLeaf() const;                             // æ£€æŸ¥æ˜¯å¦ä¸ºå¶èŠ‚ç‚¹ï¼ˆæ— å­èŠ‚ç‚¹ï¼‰
+  bool IsRoot() const;                             // æ£€æŸ¥æ˜¯å¦ä¸ºæ ¹èŠ‚ç‚¹ï¼ˆæ— çˆ¶èŠ‚ç‚¹ï¼‰
+  size_t GetDepth(SceneRegistry &registry);        // è·å–æ·±åº¦ï¼ˆè·ç¦»æ ¹èŠ‚ç‚¹çš„å±‚çº§æ•°ï¼‰
 
-  // ==================== ²Ù×÷½Ó¿Ú ====================
+  // ==================== æ“ä½œæ¥å£ ====================
 
-  bool SetParent(SceneRegistry &registry, Entity newParent);  // ÉèÖÃ¸¸½Úµã
-  bool AddChild(SceneRegistry &registry, Entity child);       // Ìí¼Ó×Ó½Úµã
-  bool RemoveChild(SceneRegistry &registry, Entity child);    // ÒÆ³ı×Ó½Úµã
-  void ClearChildren(SceneRegistry &registry);                // Çå¿ÕËùÓĞ×Ó½Úµã
+  bool SetParent(SceneRegistry &registry, Entity newParent);  // è®¾ç½®çˆ¶èŠ‚ç‚¹
+  bool AddChild(SceneRegistry &registry, Entity child);       // æ·»åŠ å­èŠ‚ç‚¹
+  bool RemoveChild(SceneRegistry &registry, Entity child);    // ç§»é™¤å­èŠ‚ç‚¹
+  void ClearChildren(SceneRegistry &registry);                // æ¸…ç©ºæ‰€æœ‰å­èŠ‚ç‚¹
 
  private:
-  // ==================== ÄÚ²¿·½·¨ ====================
+  // ==================== å†…éƒ¨æ–¹æ³• ====================
   bool ValidateHierarchy(SceneRegistry &registry, Entity newParent) const;
   void UpdateTransformDirtyState(SceneRegistry &registry);
 
  private:
-  Entity m_Parent;                 // ¸¸ÊµÌå¾ä±ú
-  std::vector<Entity> m_Children;  // ×ÓÊµÌåÁĞ±í
+  Entity m_Parent;                 // çˆ¶å®ä½“å¥æŸ„
+  std::vector<Entity> m_Children;  // å­å®ä½“åˆ—è¡¨
 };
 
-// ==================== ×é¼şÏµÍ³ ====================
+// ==================== ç»„ä»¶ç³»ç»Ÿ ====================
 
 class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent> {
   DECLARE_COMPONENT_SYSTEM(HierarchyComponentSystem)
@@ -68,23 +68,23 @@ class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent>
   std::vector<std::type_index> GetSystemDependencies() const override;
 
  private:
-  // ×é¼şÌí¼ÓÓëÒÆ³ıÊÂ¼şÏìÓ¦º¯ÊıÖØĞ´£º
-  // ºóĞøSceneGraphÄ£¿éµÄTransformSceneNodeSystem¸ºÔğ´¦ÀíEntityºÍSceneNodeµÄTransformÍ¬²½£¬²»Ó¦µ±×è¶ÏÊÂ¼ş´«²¥
+  // ç»„ä»¶æ·»åŠ ä¸ç§»é™¤äº‹ä»¶å“åº”å‡½æ•°é‡å†™ï¼š
+  // åç»­SceneGraphæ¨¡å—çš„TransformSceneNodeSystemè´Ÿè´£å¤„ç†Entityå’ŒSceneNodeçš„TransformåŒæ­¥ï¼Œä¸åº”å½“é˜»æ–­äº‹ä»¶ä¼ æ’­
   bool OnComponentAdded(ComponentAddedEvent<HierarchyComponent> &e) override;
   bool OnComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e) override;
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
 
   /**
-   * @brief ÑéÖ¤²¢ĞŞ¸´²ã¼¶¹ØÏµÍêÕûĞÔ
+   * @brief éªŒè¯å¹¶ä¿®å¤å±‚çº§å…³ç³»å®Œæ•´æ€§
    */
   void ValidateAndRepairHierarchy(SceneRegistry &registry);
   /**
-   * @brief ´¦ÀíÑÓ³ÙµÄ×é¼şÒÆ³ı²Ù×÷
+   * @brief å¤„ç†å»¶è¿Ÿçš„ç»„ä»¶ç§»é™¤æ“ä½œ
    */
   void ProcessPendingRemovals(SceneRegistry &registry);
 
   private:
-  // ´ı´¦ÀíµÄ×é¼şÒÆ³ı²Ù×÷¶ÓÁĞ
+  // å¾…å¤„ç†çš„ç»„ä»¶ç§»é™¤æ“ä½œé˜Ÿåˆ—
    struct PendingRemoval {
      Entity entity;
      Entity parent;
@@ -99,10 +99,10 @@ class HierarchyComponentSystem : public DirtyComponentSystem<HierarchyComponent>
    std::vector<PendingRemoval> m_PendingRemovals;
    std::mutex m_RemovalMutex;
 };
-// ==================== ÊÂ¼ş¶¨Òå ====================
+// ==================== äº‹ä»¶å®šä¹‰ ====================
 /**
  * @class ParentChangedEvent
- * @brief ¸¸½Úµã¸Ä±äÊÂ¼ş
+ * @brief çˆ¶èŠ‚ç‚¹æ”¹å˜äº‹ä»¶
  */
 class ParentChangedEvent : public ComponentEvent<HierarchyComponent> {
  public:

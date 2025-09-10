@@ -10,46 +10,46 @@
 
 namespace mite {
 /**
- * OpenGLäÖÈ¾Æ÷ÊµÏÖÀà
- * Ö°Ôğ£º
- * 1. ÊµÏÖ»ùÀà¶¨ÒåµÄäÖÈ¾½Ó¿Ú
- * 2. ¹ÜÀíOpenGL×¨Êô×´Ì¬£¨ÈçVAO¡¢Shader Program£©
- * 3. ¼¯³ÉFrameBufferÏµÍ³
+ * OpenGLæ¸²æŸ“å™¨å®ç°ç±»
+ * èŒè´£ï¼š
+ * 1. å®ç°åŸºç±»å®šä¹‰çš„æ¸²æŸ“æ¥å£
+ * 2. ç®¡ç†OpenGLä¸“å±çŠ¶æ€ï¼ˆå¦‚VAOã€Shader Programï¼‰
+ * 3. é›†æˆFrameBufferç³»ç»Ÿ
  */
 class OpenGLRenderer : public Renderer {
  public:
   explicit OpenGLRenderer();
   ~OpenGLRenderer() override;
 
-  // ---- ³õÊ¼»¯ ----
+  // ---- åˆå§‹åŒ– ----
   void Initialize() override;
 
-  // ---- Ö¡¿ØÖÆ ----
+  // ---- å¸§æ§åˆ¶ ----
   void BeginFrame() override;
   void EndFrame() override;
 
-  // ---- ³¡¾°äÖÈ¾ ----
+  // ---- åœºæ™¯æ¸²æŸ“ ----
   void RenderScene(const std::shared_ptr<Camera> mainCamera,
                    std::shared_ptr<RenderQueue> renderQueue) override;
 
-  // ---- ×´Ì¬ÉèÖÃ ----
+  // ---- çŠ¶æ€è®¾ç½® ----
   void SetClearColor(const glm::vec4 &color) override;
   void SetViewport(uint32_t width, uint32_t height) override;
 
-  // ---- UI½Ó¿Ú ----
+  // ---- UIæ¥å£ ----
   std::shared_ptr<FrameBuffer> GetViewportFrameBuffer() const override;
   intptr_t GetViewportFramebufferID() const override;
 
  private:
-  // ---- Ë½ÓĞ·½·¨ ----
+  // ---- ç§æœ‰æ–¹æ³• ----
   /**
-   * @brief ´´½¨Ä¬ÈÏFrameBuffer
+   * @brief åˆ›å»ºé»˜è®¤FrameBuffer
    */
   void CreateDefaultFrameBuffer();
 
-  // ---- ³ÉÔ±±äÁ¿ ----
-  std::shared_ptr<FrameBuffer> m_ViewportFrameBuffer;  // ÊÓ¿ÚFrameBuffer
-  Logger m_Logger;                                     // ÈÕÖ¾ÏµÍ³
+  // ---- æˆå‘˜å˜é‡ ----
+  std::shared_ptr<FrameBuffer> m_ViewportFrameBuffer;  // è§†å£FrameBuffer
+  Logger m_Logger;                                     // æ—¥å¿—ç³»ç»Ÿ
 };
 }  // namespace mite
 

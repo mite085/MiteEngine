@@ -16,12 +16,12 @@ SceneNode::SceneNode(Entity entity) : m_Entity(entity)
 
 SceneNode::~SceneNode()
 {
-  // ´Ó¸¸½ÚµãÖĞÒÆ³ı×Ô¼º
+  // ä»çˆ¶èŠ‚ç‚¹ä¸­ç§»é™¤è‡ªå·±
   if (m_Parent) {
     m_Parent->RemoveChild(this);
   }
 
-  // Çå¿Õ×Ó½Úµã£¨×Ó½Úµã»á×Ô¶¯ÉèÖÃ¸¸½ÚµãÎªnullptr£©
+  // æ¸…ç©ºå­èŠ‚ç‚¹ï¼ˆå­èŠ‚ç‚¹ä¼šè‡ªåŠ¨è®¾ç½®çˆ¶èŠ‚ç‚¹ä¸ºnullptrï¼‰
   for (auto child : m_Children) {
     child->m_Parent = nullptr;
   }
@@ -33,19 +33,19 @@ void SceneNode::SetParent(SceneNode *parent)
   if (m_Parent == parent)
     return;
 
-  // ´ÓÔ­¸¸½ÚµãÒÆ³ı
+  // ä»åŸçˆ¶èŠ‚ç‚¹ç§»é™¤
   if (m_Parent) {
     m_Parent->RemoveChild(this);
   }
 
   m_Parent = parent;
 
-  // Ìí¼Óµ½ĞÂ¸¸½Úµã
+  // æ·»åŠ åˆ°æ–°çˆ¶èŠ‚ç‚¹
   if (m_Parent) {
     m_Parent->AddChild(this);
   }
 
-  // ±ê¼ÇĞèÒª¸üĞÂ±ä»»
+  // æ ‡è®°éœ€è¦æ›´æ–°å˜æ¢
   MarkTransformDirty();
   MarkBoundsDirty();
 }
@@ -55,7 +55,7 @@ void SceneNode::AddChild(SceneNode *child)
   if (child == nullptr || child == this)
     return;
 
-  // ¼ì²éÊÇ·ñÒÑ¾­ÊÇ×Ó½Úµã
+  // æ£€æŸ¥æ˜¯å¦å·²ç»æ˜¯å­èŠ‚ç‚¹
   if (std::find(m_Children.begin(), m_Children.end(), child) != m_Children.end()) {
     return;
   }
@@ -63,7 +63,7 @@ void SceneNode::AddChild(SceneNode *child)
   m_Children.push_back(child);
   child->m_Parent = this;
 
-  // ±ê¼Ç×Ó½ÚµãĞèÒª¸üĞÂ
+  // æ ‡è®°å­èŠ‚ç‚¹éœ€è¦æ›´æ–°
   child->MarkTransformDirty();
   child->MarkBoundsDirty();
 }
@@ -78,7 +78,7 @@ bool SceneNode::RemoveChild(SceneNode *child)
     m_Children.erase(it);
     child->m_Parent = nullptr;
 
-    // ±ê¼Ç×Ó½ÚµãĞèÒª¸üĞÂ
+    // æ ‡è®°å­èŠ‚ç‚¹éœ€è¦æ›´æ–°
     child->MarkTransformDirty();
     child->MarkBoundsDirty();
     return true;
@@ -146,7 +146,7 @@ void SceneNode::Update(bool force)
     m_BoundsDirty = false;
   }
 
-  // µİ¹é¸üĞÂ×Ó½Úµã
+  // é€’å½’æ›´æ–°å­èŠ‚ç‚¹
   for (auto child : m_Children) {
     child->Update(force);
   }
@@ -155,11 +155,11 @@ void SceneNode::Update(bool force)
 void SceneNode::UpdateWorldTransform()
 {
   if (m_Parent && !m_Parent->IsRoot()) {
-    // ÓĞ¸¸½Úµã£ºÊÀ½ç±ä»» = ¸¸ÊÀ½ç±ä»» ¡Á ¾Ö²¿±ä»»
+    // æœ‰çˆ¶èŠ‚ç‚¹ï¼šä¸–ç•Œå˜æ¢ = çˆ¶ä¸–ç•Œå˜æ¢ Ã— å±€éƒ¨å˜æ¢
     m_WorldTransform = m_Parent->GetWorldTransform() * m_LocalTransform;
   }
   else {
-    // ¸ù½Úµã£ºÊÀ½ç±ä»» = ¾Ö²¿±ä»»
+    // æ ¹èŠ‚ç‚¹ï¼šä¸–ç•Œå˜æ¢ = å±€éƒ¨å˜æ¢
     m_WorldTransform = m_LocalTransform;
   }
 }
@@ -167,11 +167,11 @@ void SceneNode::UpdateWorldTransform()
 void SceneNode::UpdateWorldBounds()
 {
   if (m_LocalBounds.IsValid()) {
-    // ±ä»»¾Ö²¿°üÎ§ºĞµ½ÊÀ½ç¿Õ¼ä
+    // å˜æ¢å±€éƒ¨åŒ…å›´ç›’åˆ°ä¸–ç•Œç©ºé—´
     m_WorldBounds = m_LocalBounds.Transform(m_WorldTransform);
   }
   else {
-    // ÎŞĞ§µÄ¾Ö²¿°üÎ§ºĞ£¬Ê¹ÓÃÄ¬ÈÏÖµ
+    // æ— æ•ˆçš„å±€éƒ¨åŒ…å›´ç›’ï¼Œä½¿ç”¨é»˜è®¤å€¼
     m_WorldBounds = AABB(glm::vec3(0.0f), glm::vec3(0.0f));
   }
 }
@@ -221,7 +221,7 @@ bool SceneNode::IsNodeVisible(SceneRegistry &registry,
     return visibilityComp.IsVisible() && visibilityComp.MatchesMask(visibilityMask);
   }
 
-  // Ã»ÓĞVisibilityComponentµÄ½ÚµãÄ¬ÈÏ¿É¼û
+  // æ²¡æœ‰VisibilityComponentçš„èŠ‚ç‚¹é»˜è®¤å¯è§
   return true;
 }
 

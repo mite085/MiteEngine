@@ -1,7 +1,7 @@
 #include "material_template.h"
 
 namespace mite {
-// ---- BasicMaterialTemplate ÊµÏÖ ----
+// ---- BasicMaterialTemplate å®ç° ----
 PureColorMaterialTemplate::PureColorMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
                                              const glm::vec3 &color)
     : m_Shader(std::move(shader)), m_Color(color)
@@ -10,7 +10,7 @@ PureColorMaterialTemplate::PureColorMaterialTemplate(std::shared_ptr<OpenGLShade
 
 std::shared_ptr<MaterialInstance> PureColorMaterialTemplate::CreateInstance() const
 {
-  // ´´½¨²ÄÖÊÊµÀı²¢Ó¦ÓÃÄ¬ÈÏ²ÎÊı
+  // åˆ›å»ºæè´¨å®ä¾‹å¹¶åº”ç”¨é»˜è®¤å‚æ•°
   auto instance = std::make_shared<MaterialInstance>(m_Shader);
   ApplyParameters(*instance);
   return instance;
@@ -18,11 +18,11 @@ std::shared_ptr<MaterialInstance> PureColorMaterialTemplate::CreateInstance() co
 
 void PureColorMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
 {
-  // ÉèÖÃ»ù´¡ÑÕÉ«²ÎÊı("u_Color")
+  // è®¾ç½®åŸºç¡€é¢œè‰²å‚æ•°("u_Color")
   instance.SetVector3("u_Color", m_Color);
 }
 
-// ---- PBRMaterialTemplate ÊµÏÖ ----
+// ---- PBRMaterialTemplate å®ç° ----
 PBRMaterialTemplate::PBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
                                          const glm::vec3 &defaultAlbedo,
                                          float defaultRoughness,
@@ -32,7 +32,7 @@ PBRMaterialTemplate::PBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
       m_DefaultRoughness(defaultRoughness),
       m_DefaultMetallic(defaultMetallic)
 {
-  // ²ÎÊıºÏ·¨ĞÔĞ£Ñé
+  // å‚æ•°åˆæ³•æ€§æ ¡éªŒ
   assert(m_Shader != nullptr && "PBRMaterialTemplate: Shader cannot be nullptr");
   assert((defaultRoughness >= 0.0f && defaultRoughness <= 1.0f) &&
          "Roughness must be in range [0,1]");
@@ -42,7 +42,7 @@ PBRMaterialTemplate::PBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
 
 std::shared_ptr<MaterialInstance> PBRMaterialTemplate::CreateInstance() const
 {
-  // ´´½¨²ÄÖÊÊµÀı²¢Ó¦ÓÃÄ¬ÈÏ²ÎÊı
+  // åˆ›å»ºæè´¨å®ä¾‹å¹¶åº”ç”¨é»˜è®¤å‚æ•°
   auto instance = std::make_shared<MaterialInstance>(m_Shader);
   ApplyParameters(*instance);
   return instance;
@@ -50,12 +50,12 @@ std::shared_ptr<MaterialInstance> PBRMaterialTemplate::CreateInstance() const
 
 void PBRMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
 {
-  // ÉèÖÃPBR»ù´¡²ÎÊı
+  // è®¾ç½®PBRåŸºç¡€å‚æ•°
   instance.SetVector3("u_Albedo", m_DefaultAlbedo);
   instance.SetFloat("u_Roughness", m_DefaultRoughness);
   instance.SetFloat("u_Metallic", m_DefaultMetallic);
 
-  // °ó¶¨Ä¬ÈÏÎÆÀí£¨Èç¹û´æÔÚ£©
+  // ç»‘å®šé»˜è®¤çº¹ç†ï¼ˆå¦‚æœå­˜åœ¨ï¼‰
   for (const auto &[paramName, texture] : m_DefaultTextures) {
     instance.SetTexture(paramName, texture);
   }
@@ -68,7 +68,7 @@ void PBRMaterialTemplate::SetDefaultTexture(const std::string &paramName,
   m_DefaultTextures[paramName] = std::move(texture);
 }
 
-// ---- TransparentMaterialTemplate ÊµÏÖ ----
+// ---- TransparentMaterialTemplate å®ç° ----
 
 TransparentMaterialTemplate::TransparentMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
                                                          float defaultAlpha)
@@ -80,18 +80,18 @@ TransparentMaterialTemplate::TransparentMaterialTemplate(std::shared_ptr<OpenGLS
 std::shared_ptr<MaterialInstance> TransparentMaterialTemplate::CreateInstance() const
 {
   auto instance = PBRMaterialTemplate::CreateInstance();
-  ApplyParameters(*instance);  // ²¹³äÍ¸Ã÷²ÎÊı
+  ApplyParameters(*instance);  // è¡¥å……é€æ˜å‚æ•°
   return instance;
 }
 
 void TransparentMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
 {
-  // ÏÈµ÷ÓÃ¸¸ÀàÉèÖÃPBR²ÎÊı
+  // å…ˆè°ƒç”¨çˆ¶ç±»è®¾ç½®PBRå‚æ•°
   PBRMaterialTemplate::ApplyParameters(instance);
 
-  // ÉèÖÃÍ¸Ã÷Ïà¹Ø²ÎÊı
+  // è®¾ç½®é€æ˜ç›¸å…³å‚æ•°
   instance.SetFloat("u_Alpha", m_DefaultAlpha);
-  instance.SetInt("u_EnableBlend", 1);  // ÆôÓÃ»ìºÏ
+  instance.SetInt("u_EnableBlend", 1);  // å¯ç”¨æ··åˆ
 }
 
 };  // namespace mite

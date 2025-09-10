@@ -6,57 +6,57 @@
 
 namespace mite {
 /**
- * @brief Íø¸ñ×é¼ş£¬¹ÜÀíÊµÌåµÄÍø¸ñäÖÈ¾Êı¾İ
+ * @brief ç½‘æ ¼ç»„ä»¶ï¼Œç®¡ç†å®ä½“çš„ç½‘æ ¼æ¸²æŸ“æ•°æ®
  *
- * ¹¦ÄÜÌØĞÔ£º
- * 1. ¹ÜÀíÍø¸ñÊı¾İÒıÓÃ
- * 2. ¹ØÁª²ÄÖÊÊı¾İ
- * 3. Ö§³ÖLOD(Ï¸½Ú²ã´Î)¿ØÖÆ
- * 4. Ìá¹©¿É¼ûĞÔ¿ØÖÆ
+ * åŠŸèƒ½ç‰¹æ€§ï¼š
+ * 1. ç®¡ç†ç½‘æ ¼æ•°æ®å¼•ç”¨
+ * 2. å…³è”æè´¨æ•°æ®
+ * 3. æ”¯æŒLOD(ç»†èŠ‚å±‚æ¬¡)æ§åˆ¶
+ * 4. æä¾›å¯è§æ€§æ§åˆ¶
  *
- * Éè¼Æ¿¼ÂÇ£º
- * - Ê¹ÓÃ¹²ÏíÖ¸Õë¹ÜÀíÍø¸ñºÍ²ÄÖÊ×ÊÔ´
- * - ÓëRendererSystemĞ­Í¬¹¤×÷
- * - Ö§³ÖÊµÀı»¯äÖÈ¾
+ * è®¾è®¡è€ƒè™‘ï¼š
+ * - ä½¿ç”¨å…±äº«æŒ‡é’ˆç®¡ç†ç½‘æ ¼å’Œæè´¨èµ„æº
+ * - ä¸RendererSystemååŒå·¥ä½œ
+ * - æ”¯æŒå®ä¾‹åŒ–æ¸²æŸ“
  */
 class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::Geometry> {
  public:
 
   /**
-   * @brief ´ø³õÊ¼ÖµµÄ¹¹Ôìº¯Êı
-   * @param mesh Íø¸ñÊı¾İ
-   * @param material ²ÄÖÊÊı¾İ
+   * @brief å¸¦åˆå§‹å€¼çš„æ„é€ å‡½æ•°
+   * @param mesh ç½‘æ ¼æ•°æ®
+   * @param material æè´¨æ•°æ®
    */
   explicit MeshComponent(std::shared_ptr<Mesh> mesh);
 
   ~MeshComponent() override = default;
 
   /**
-   * @brief Õë¶Ôdirty¶ÔÏó½øĞĞ´¦Àí
+   * @brief é’ˆå¯¹dirtyå¯¹è±¡è¿›è¡Œå¤„ç†
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
-  // Íø¸ñ²Ù×÷ ==============================================
+  // ç½‘æ ¼æ“ä½œ ==============================================
   /**
-   * @brief »ñÈ¡Íø¸ñÊı¾İ
-   * @return ¹²ÏíÖ¸ÕëÖ¸ÏòµÄÍø¸ñÊı¾İ
+   * @brief è·å–ç½‘æ ¼æ•°æ®
+   * @return å…±äº«æŒ‡é’ˆæŒ‡å‘çš„ç½‘æ ¼æ•°æ®
    */
   std::shared_ptr<Mesh> GetMesh() const;
 
   /**
-   * @brief ÉèÖÃÍø¸ñÊı¾İ
-   * @param mesh ĞÂµÄÍø¸ñÊı¾İ
+   * @brief è®¾ç½®ç½‘æ ¼æ•°æ®
+   * @param mesh æ–°çš„ç½‘æ ¼æ•°æ®
    */
   void SetMesh(std::shared_ptr<Mesh> mesh);
 
   /**
-   * @brief ¼ì²éÊÇ·ñÓĞÓĞĞ§Íø¸ñÊı¾İ
-   * @return ÊÇ·ñÓĞĞ§
+   * @brief æ£€æŸ¥æ˜¯å¦æœ‰æœ‰æ•ˆç½‘æ ¼æ•°æ®
+   * @return æ˜¯å¦æœ‰æ•ˆ
    */
   bool HasMesh() const;
 
   /**
-   * @brief »ñÈ¡MeshµÄ°üÎ§ºĞ
+   * @brief è·å–Meshçš„åŒ…å›´ç›’
    * @return 
    */
   const std::pair<glm::vec3, glm::vec3> GetBoundingBox() const
@@ -64,60 +64,60 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::G
     return m_Mesh->GetBoundingBox();
   }
 
-  // äÖÈ¾ÊôĞÔ¿ØÖÆ ==========================================
+  // æ¸²æŸ“å±æ€§æ§åˆ¶ ==========================================
 
   /**
-   * @brief ÉèÖÃÊÇ·ñÍ¶ÉäÒõÓ°
-   * @param castShadows ÒõÓ°±êÖ¾
+   * @brief è®¾ç½®æ˜¯å¦æŠ•å°„é˜´å½±
+   * @param castShadows é˜´å½±æ ‡å¿—
    */
   void SetCastShadows(bool castShadows);
 
   /**
-   * @brief ¼ì²éÊÇ·ñÍ¶ÉäÒõÓ°
-   * @return ÒõÓ°±êÖ¾
+   * @brief æ£€æŸ¥æ˜¯å¦æŠ•å°„é˜´å½±
+   * @return é˜´å½±æ ‡å¿—
    */
   bool CastsShadows() const;
 
   /**
-   * @brief ÉèÖÃÊÇ·ñ½ÓÊÕÒõÓ°
-   * @param receiveShadows ½ÓÊÕÒõÓ°±êÖ¾
+   * @brief è®¾ç½®æ˜¯å¦æ¥æ”¶é˜´å½±
+   * @param receiveShadows æ¥æ”¶é˜´å½±æ ‡å¿—
    */
   void SetReceiveShadows(bool receiveShadows);
 
   /**
-   * @brief ¼ì²éÊÇ·ñ½ÓÊÕÒõÓ°
-   * @return ½ÓÊÕÒõÓ°±êÖ¾
+   * @brief æ£€æŸ¥æ˜¯å¦æ¥æ”¶é˜´å½±
+   * @return æ¥æ”¶é˜´å½±æ ‡å¿—
    */
   bool ReceivesShadows() const;
 
-  // LOD¿ØÖÆ ==============================================
+  // LODæ§åˆ¶ ==============================================
   /**
-   * @brief ÉèÖÃLOD¼¶±ğ
-   * @param lodLevel LOD¼¶±ğ(0Îª×î¸ßÏ¸½Ú)
+   * @brief è®¾ç½®LODçº§åˆ«
+   * @param lodLevel LODçº§åˆ«(0ä¸ºæœ€é«˜ç»†èŠ‚)
    */
   void SetLODLevel(int lodLevel);
 
   /**
-   * @brief »ñÈ¡µ±Ç°LOD¼¶±ğ
-   * @return LOD¼¶±ğ
+   * @brief è·å–å½“å‰LODçº§åˆ«
+   * @return LODçº§åˆ«
    */
   int GetLODLevel() const;
 
-  // ×é¼ş½Ó¿ÚÊµÏÖ ==========================================
+  // ç»„ä»¶æ¥å£å®ç° ==========================================
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
  private:
-  std::shared_ptr<Mesh> m_Mesh;  // Íø¸ñÊı¾İ
+  std::shared_ptr<Mesh> m_Mesh;  // ç½‘æ ¼æ•°æ®
 
-  bool m_IsVisible = true;       // ¿É¼ûĞÔ±êÖ¾
-  bool m_CastShadows = true;     // ÊÇ·ñÍ¶ÉäÒõÓ°
-  bool m_ReceiveShadows = true;  // ÊÇ·ñ½ÓÊÕÒõÓ°
-  int m_LODLevel = 0;            // LOD¼¶±ğ
+  bool m_IsVisible = true;       // å¯è§æ€§æ ‡å¿—
+  bool m_CastShadows = true;     // æ˜¯å¦æŠ•å°„é˜´å½±
+  bool m_ReceiveShadows = true;  // æ˜¯å¦æ¥æ”¶é˜´å½±
+  int m_LODLevel = 0;            // LODçº§åˆ«
 };
 
-// Mesh×é¼şÏµÍ³ =====================================================
+// Meshç»„ä»¶ç³»ç»Ÿ =====================================================
 class MeshComponentSystem : public DirtyComponentSystem<MeshComponent> {
   DECLARE_COMPONENT_SYSTEM(MeshComponentSystem)
  public:
@@ -128,10 +128,10 @@ class MeshComponentSystem : public DirtyComponentSystem<MeshComponent> {
   void Update(float deltaTime, SceneRegistry &registry) override;
 };
 
-// Mesh×é¼şÊÂ¼ş =====================================================
+// Meshç»„ä»¶äº‹ä»¶ =====================================================
 /**
  * @class MeshChangedEvent
- * @brief Íø¸ñ¸Ä±äÊÂ¼ş
+ * @brief ç½‘æ ¼æ”¹å˜äº‹ä»¶
  */
 class MeshChangedEvent : public ComponentEvent<MeshComponent> {
  public:

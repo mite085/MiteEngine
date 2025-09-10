@@ -9,12 +9,12 @@ namespace mite {
 
 /**
  * @class HierarchySceneNodeSystem
- * @brief ²ã¼¶³¡¾°½ÚµãÏµÍ³ - ×¨ÃÅ´¦ÀíECS²ã¼¶×é¼şÓë³¡¾°Í¼½Úµã¸¸×Ó¹ØÏµµÄÍ¬²½
+ * @brief å±‚çº§åœºæ™¯èŠ‚ç‚¹ç³»ç»Ÿ - ä¸“é—¨å¤„ç†ECSå±‚çº§ç»„ä»¶ä¸åœºæ™¯å›¾èŠ‚ç‚¹çˆ¶å­å…³ç³»çš„åŒæ­¥
  *
- * Ö°Ôğ£º
- * 1. ¼àÌıHierarchyComponent±ä»¯£¬Î¬»¤SceneNodeµÄ¸¸×Ó¹ØÏµ
- * 2. ´¦Àí²ã¼¶½á¹¹±ä»¯¶Ô³¡¾°Í¼µÄÓ°Ïì
- * 3. È·±£³¡¾°Í¼½Úµã½á¹¹ÓëECS²ã¼¶½á¹¹Ò»ÖÂ
+ * èŒè´£ï¼š
+ * 1. ç›‘å¬HierarchyComponentå˜åŒ–ï¼Œç»´æŠ¤SceneNodeçš„çˆ¶å­å…³ç³»
+ * 2. å¤„ç†å±‚çº§ç»“æ„å˜åŒ–å¯¹åœºæ™¯å›¾çš„å½±å“
+ * 3. ç¡®ä¿åœºæ™¯å›¾èŠ‚ç‚¹ç»“æ„ä¸ECSå±‚çº§ç»“æ„ä¸€è‡´
  */
 class HierarchySceneNodeSystem : public ComponentSystem {
  public:
@@ -23,7 +23,7 @@ class HierarchySceneNodeSystem : public ComponentSystem {
   HierarchySceneNodeSystem();
   ~HierarchySceneNodeSystem() override = default;
 
-  // ==================== ComponentSystem ½Ó¿ÚÊµÏÖ ====================
+  // ==================== ComponentSystem æ¥å£å®ç° ====================
   Component::Family GetExecutionOrder() const override;
   void Initialize() override;
   void Update(float deltaTime, SceneRegistry &registry) override;
@@ -32,16 +32,16 @@ class HierarchySceneNodeSystem : public ComponentSystem {
   std::vector<std::type_index> GetComponentTypes() const override;
   std::vector<std::type_index> GetSystemDependencies() const override;
 
-  // ==================== SceneGraph ·ÃÎÊ½Ó¿Ú ====================
+  // ==================== SceneGraph è®¿é—®æ¥å£ ====================
   void SetSceneGraph(SceneGraph *sceneGraph);
 
  private:
-  // ==================== ÊÂ¼ş´¦Àí»Øµ÷ ====================
+  // ==================== äº‹ä»¶å¤„ç†å›è°ƒ ====================
   bool OnHierarchyComponentAdded(ComponentAddedEvent<HierarchyComponent> &e);
   bool OnHierarchyComponentRemoved(ComponentRemovedEvent<HierarchyComponent> &e);
   bool OnParentChanged(ParentChangedEvent &e);
 
-  // ==================== ÄÚ²¿´¦Àí·½·¨ ====================
+  // ==================== å†…éƒ¨å¤„ç†æ–¹æ³• ====================
   void UpdateSceneNodeParent(SceneRegistry &registry, Entity entity);
   void ProcessPendingHierarchyChanges(SceneRegistry &registry);
 

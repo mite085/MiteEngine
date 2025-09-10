@@ -1,7 +1,7 @@
 #include "time.h"
 
 namespace mite {
-// ³õÊ¼»¯¾²Ì¬³ÉÔ±±äÁ¿
+// åˆå§‹åŒ–é™æ€æˆå‘˜å˜é‡
 float Time::s_DeltaTime = 0.0f;
 size_t Time::s_DeltaTimeMS = 0;
 float Time::s_CurrentTime = 0.0f;
@@ -11,7 +11,7 @@ Time::Clock::time_point Time::s_LastFrameTime = Time::s_StartTime;
 
 void Time::Reset()
 {
-  // ÖØÖÃ¾²Ì¬³ÉÔ±±äÁ¿
+  // é‡ç½®é™æ€æˆå‘˜å˜é‡
   s_DeltaTime = 0.0f;
   s_DeltaTimeMS = 0;
   s_CurrentTime = 0.0f;
@@ -21,18 +21,18 @@ void Time::Reset()
 }
 void Time::Update()
 {
-  // »ñÈ¡µ±Ç°Ê±¼äµã
+  // è·å–å½“å‰æ—¶é—´ç‚¹
   auto currentTime = Clock::now();
 
-  // Ê¹ÓÃÎ¢Ãë¾«¶È¼ÆËãÊ±¼ä²î£¨±ÜÃâ¾«¶ÈËğÊ§£©
+  // ä½¿ç”¨å¾®ç§’ç²¾åº¦è®¡ç®—æ—¶é—´å·®ï¼ˆé¿å…ç²¾åº¦æŸå¤±ï¼‰
   auto deltaMicro = std::chrono::duration_cast<Microseconds>(currentTime - s_LastFrameTime);
 
-  // ×ª»»ÎªºÁÃëºÍÃë£¨±£³Ö¸ß¾«¶È£©
+  // è½¬æ¢ä¸ºæ¯«ç§’å’Œç§’ï¼ˆä¿æŒé«˜ç²¾åº¦ï¼‰
   size_t deltaMicroCount = deltaMicro.count();
-  s_DeltaTimeMS = static_cast<size_t>(deltaMicroCount / 1000);     // Î¢Ãë×ªºÁÃë
-  s_DeltaTime = static_cast<float>(deltaMicroCount) / 1000000.0f;  // Î¢Ãë×ªÃë
+  s_DeltaTimeMS = static_cast<size_t>(deltaMicroCount / 1000);     // å¾®ç§’è½¬æ¯«ç§’
+  s_DeltaTime = static_cast<float>(deltaMicroCount) / 1000000.0f;  // å¾®ç§’è½¬ç§’
 
-  // ¼ÆËã×ÜÊ±¼ä£¨Í¬ÑùÊ¹ÓÃÎ¢Ãë¾«¶È£©
+  // è®¡ç®—æ€»æ—¶é—´ï¼ˆåŒæ ·ä½¿ç”¨å¾®ç§’ç²¾åº¦ï¼‰
   auto totalDuration = currentTime - s_StartTime;
   auto totalMicro = std::chrono::duration_cast<Microseconds>(totalDuration);
   int64_t totalMicroCount = totalMicro.count();

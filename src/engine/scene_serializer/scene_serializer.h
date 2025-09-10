@@ -4,54 +4,54 @@
 #include "scene_core/scene_registry.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class SceneCore;
 
 /**
- * @brief ³¡¾°ĞòÁĞ»¯Æ÷£¬¸ºÔğ½«³¡¾°Êı¾İĞòÁĞ»¯Îª¸÷ÖÖ¸ñÊ½ÒÔ¼°·´ĞòÁĞ»¯
+ * @brief åœºæ™¯åºåˆ—åŒ–å™¨ï¼Œè´Ÿè´£å°†åœºæ™¯æ•°æ®åºåˆ—åŒ–ä¸ºå„ç§æ ¼å¼ä»¥åŠååºåˆ—åŒ–
  *
- * Ö§³Ö JSON ºÍ¶ş½øÖÆ¸ñÊ½£¬»ùÓÚ Cereal ¿âÊµÏÖ¡£´¦ÀíºËĞÄ³¡¾°Êı¾İ¡¢
- * ÊµÌå¡¢×é¼şÒÔ¼°×Ê²úÒıÓÃµÈµÄĞòÁĞ»¯¡£
+ * æ”¯æŒ JSON å’ŒäºŒè¿›åˆ¶æ ¼å¼ï¼ŒåŸºäº Cereal åº“å®ç°ã€‚å¤„ç†æ ¸å¿ƒåœºæ™¯æ•°æ®ã€
+ * å®ä½“ã€ç»„ä»¶ä»¥åŠèµ„äº§å¼•ç”¨ç­‰çš„åºåˆ—åŒ–ã€‚
  */
 class SceneSerializer {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param scene ÒªĞòÁĞ»¯µÄ³¡¾°ÒıÓÃ
+   * @brief æ„é€ å‡½æ•°
+   * @param scene è¦åºåˆ—åŒ–çš„åœºæ™¯å¼•ç”¨
    */
   explicit SceneSerializer(SceneCore &scene);
 
   /**
-   * @brief ĞòÁĞ»¯³¡¾°µ½ÎÄ¼ş£¨JSON¸ñÊ½£©
-   * @param filepath ÎÄ¼şÂ·¾¶
-   * @return ÊÇ·ñ³É¹¦
+   * @brief åºåˆ—åŒ–åœºæ™¯åˆ°æ–‡ä»¶ï¼ˆJSONæ ¼å¼ï¼‰
+   * @param filepath æ–‡ä»¶è·¯å¾„
+   * @return æ˜¯å¦æˆåŠŸ
    */
   bool SerializeToJson(const std::string &filepath);
 
   /**
-   * @brief ´ÓJSONÎÄ¼ş·´ĞòÁĞ»¯³¡¾°
-   * @param filepath ÎÄ¼şÂ·¾¶
-   * @return ÊÇ·ñ³É¹¦
+   * @brief ä»JSONæ–‡ä»¶ååºåˆ—åŒ–åœºæ™¯
+   * @param filepath æ–‡ä»¶è·¯å¾„
+   * @return æ˜¯å¦æˆåŠŸ
    */
   bool DeserializeFromJson(const std::string &filepath);
 
   /**
-   * @brief ĞòÁĞ»¯³¡¾°µ½ÎÄ¼ş£¨¶ş½øÖÆ¸ñÊ½£©
-   * @param filepath ÎÄ¼şÂ·¾¶
-   * @return ÊÇ·ñ³É¹¦
+   * @brief åºåˆ—åŒ–åœºæ™¯åˆ°æ–‡ä»¶ï¼ˆäºŒè¿›åˆ¶æ ¼å¼ï¼‰
+   * @param filepath æ–‡ä»¶è·¯å¾„
+   * @return æ˜¯å¦æˆåŠŸ
    */
   bool SerializeToBinary(const std::string &filepath);
 
   /**
-   * @brief ´Ó¶ş½øÖÆÎÄ¼ş·´ĞòÁĞ»¯³¡¾°
-   * @param filepath ÎÄ¼şÂ·¾¶
-   * @return ÊÇ·ñ³É¹¦
+   * @brief ä»äºŒè¿›åˆ¶æ–‡ä»¶ååºåˆ—åŒ–åœºæ™¯
+   * @param filepath æ–‡ä»¶è·¯å¾„
+   * @return æ˜¯å¦æˆåŠŸ
    */
   bool DeserializeFromBinary(const std::string &filepath);
 
   /**
-   * @brief »ñÈ¡×îºóÒ»´ÎĞòÁĞ»¯/·´ĞòÁĞ»¯µÄ´íÎóĞÅÏ¢
-   * @return ´íÎóĞÅÏ¢×Ö·û´®
+   * @brief è·å–æœ€åä¸€æ¬¡åºåˆ—åŒ–/ååºåˆ—åŒ–çš„é”™è¯¯ä¿¡æ¯
+   * @return é”™è¯¯ä¿¡æ¯å­—ç¬¦ä¸²
    */
   const std::string &GetLastError() const
   {
@@ -59,38 +59,38 @@ class SceneSerializer {
   }
 
  private:
-  // ³¡¾°ÒıÓÃ
+  // åœºæ™¯å¼•ç”¨
   SceneCore &m_scene;
 
-  // ´æ´¢×îºóÒ»´Î´íÎóĞÅÏ¢
+  // å­˜å‚¨æœ€åä¸€æ¬¡é”™è¯¯ä¿¡æ¯
   std::string m_lastError;
 
   /**
-   * @brief ×¢²áËùÓĞ¿ÉĞòÁĞ»¯µÄ×é¼şÀàĞÍ
-   * @tparam Archive Cereal´æµµÀàĞÍ(Json/Binary)
-   * @param archive Cereal´æµµ¶ÔÏó
+   * @brief æ³¨å†Œæ‰€æœ‰å¯åºåˆ—åŒ–çš„ç»„ä»¶ç±»å‹
+   * @tparam Archive Cerealå­˜æ¡£ç±»å‹(Json/Binary)
+   * @param archive Cerealå­˜æ¡£å¯¹è±¡
    */
   template<typename Archive> void RegisterComponentTypes(Archive &archive);
 
   /**
-   * @brief ĞòÁĞ»¯ÊµÌå¼°Æä×é¼ş
-   * @tparam Archive Cereal´æµµÀàĞÍ(Json/Binary)
-   * @param archive Cereal´æµµ¶ÔÏó
-   * @param registry EnTT×¢²á±í
+   * @brief åºåˆ—åŒ–å®ä½“åŠå…¶ç»„ä»¶
+   * @tparam Archive Cerealå­˜æ¡£ç±»å‹(Json/Binary)
+   * @param archive Cerealå­˜æ¡£å¯¹è±¡
+   * @param registry EnTTæ³¨å†Œè¡¨
    */
   template<typename Archive> void SerializeEntities(Archive &archive, SceneRegistry &registry);
 
   /**
-   * @brief ·´ĞòÁĞ»¯ÊµÌå¼°Æä×é¼ş
-   * @tparam Archive Cereal´æµµÀàĞÍ(Json/Binary)
-   * @param archive Cereal´æµµ¶ÔÏó
-   * @param registry EnTT×¢²á±í
+   * @brief ååºåˆ—åŒ–å®ä½“åŠå…¶ç»„ä»¶
+   * @tparam Archive Cerealå­˜æ¡£ç±»å‹(Json/Binary)
+   * @param archive Cerealå­˜æ¡£å¯¹è±¡
+   * @param registry EnTTæ³¨å†Œè¡¨
    */
   template<typename Archive> void DeserializeEntities(Archive &archive, SceneRegistry &registry);
 
   /**
-   * @brief ÀàĞÍÃû³Æ¸¨Öúº¯Êı
-   * @return ComponentµÄÀàĞÍÃû³Æ£¬Èç"Transform"¡¢"Tag"µÈ
+   * @brief ç±»å‹åç§°è¾…åŠ©å‡½æ•°
+   * @return Componentçš„ç±»å‹åç§°ï¼Œå¦‚"Transform"ã€"Tag"ç­‰
    */
   template<typename T> const char *component_type_name();
 };

@@ -6,30 +6,30 @@
 namespace mite {
 
 /**
- * @brief Öá¶ÔÆë°üÎ§ºĞ (AABB)
- * Ê¹ÓÃmin-max±íÊ¾·¨£¬ÊÊÓÃÓÚ¿ìËÙÏà½»²âÊÔºÍ¿Õ¼ä»®·Ö
+ * @brief è½´å¯¹é½åŒ…å›´ç›’ (AABB)
+ * ä½¿ç”¨min-maxè¡¨ç¤ºæ³•ï¼Œé€‚ç”¨äºå¿«é€Ÿç›¸äº¤æµ‹è¯•å’Œç©ºé—´åˆ’åˆ†
  */
 struct AABB {
   glm::vec3 min;
   glm::vec3 max;
 
   /**
-   * @brief Ä¬ÈÏ¹¹Ôìº¯Êı£¬´´½¨ÎŞĞ§µÄAABB
+   * @brief é»˜è®¤æ„é€ å‡½æ•°ï¼Œåˆ›å»ºæ— æ•ˆçš„AABB
    */
   AABB() : min(FLT_MAX), max(-FLT_MAX) {}
 
   /**
-   * @brief Í¨¹ı×îĞ¡×î´óµã¹¹ÔìAABB
+   * @brief é€šè¿‡æœ€å°æœ€å¤§ç‚¹æ„é€ AABB
    */
   AABB(const glm::vec3 &min, const glm::vec3 &max) : min(min), max(max) {}
 
   /**
-   * @brief Í¨¹ıÖĞĞÄµãºÍ°ë³¤¹¹ÔìAABB
+   * @brief é€šè¿‡ä¸­å¿ƒç‚¹å’ŒåŠé•¿æ„é€ AABB
    */
   AABB(const glm::vec3 &center, float halfExtent);
 
   /**
-   * @brief ÅĞ¶ÏAABBÊÇ·ñÓĞĞ§£¨min <= max£©
+   * @brief åˆ¤æ–­AABBæ˜¯å¦æœ‰æ•ˆï¼ˆmin <= maxï¼‰
    */
   bool IsValid() const
   {
@@ -37,7 +37,7 @@ struct AABB {
   }
 
   /**
-   * @brief »ñÈ¡AABBÖĞĞÄµã
+   * @brief è·å–AABBä¸­å¿ƒç‚¹
    */
   glm::vec3 GetCenter() const
   {
@@ -45,7 +45,7 @@ struct AABB {
   }
 
   /**
-   * @brief »ñÈ¡AABB³ß´ç
+   * @brief è·å–AABBå°ºå¯¸
    */
   glm::vec3 GetSize() const
   {
@@ -53,7 +53,7 @@ struct AABB {
   }
 
   /**
-   * @brief »ñÈ¡AABB°ë³¤
+   * @brief è·å–AABBåŠé•¿
    */
   glm::vec3 GetHalfExtents() const
   {
@@ -61,64 +61,64 @@ struct AABB {
   }
 
   /**
-   * @brief À©Õ¹AABBÒÔ°üº¬¸ø¶¨µã
+   * @brief æ‰©å±•AABBä»¥åŒ…å«ç»™å®šç‚¹
    */
   void Expand(const glm::vec3 &point);
 
   /**
-   * @brief À©Õ¹AABBÒÔ°üº¬ÁíÒ»¸öAABB
+   * @brief æ‰©å±•AABBä»¥åŒ…å«å¦ä¸€ä¸ªAABB
    */
   void Expand(const AABB &other);
 
   /**
-   * @brief ¶ÔAABBÓ¦ÓÃ±ä»»¾ØÕó
+   * @brief å¯¹AABBåº”ç”¨å˜æ¢çŸ©é˜µ
    */
   AABB Transform(const glm::mat4 &matrix) const;
 
   /**
-   * @brief ¼ÆËãAABBµÄ±íÃæ»ı£¨ÓÃÓÚBVH¹¹½¨£©
+   * @brief è®¡ç®—AABBçš„è¡¨é¢ç§¯ï¼ˆç”¨äºBVHæ„å»ºï¼‰
    */
   float GetSurfaceArea() const;
 
   /**
-   * @brief ¼ÆËãAABBµÄÌå»ı
+   * @brief è®¡ç®—AABBçš„ä½“ç§¯
    */
   float GetVolume() const;
 
   /**
-   * @brief ÅĞ¶ÏµãÊÇ·ñÔÚAABBÄÚ²¿
+   * @brief åˆ¤æ–­ç‚¹æ˜¯å¦åœ¨AABBå†…éƒ¨
    */
   bool Contains(const glm::vec3 &point) const;
 
   /**
-   * @brief ÅĞ¶ÏAABBÊÇ·ñÍêÈ«°üº¬ÁíÒ»¸öAABB
+   * @brief åˆ¤æ–­AABBæ˜¯å¦å®Œå…¨åŒ…å«å¦ä¸€ä¸ªAABB
    */
   bool Contains(const AABB &other) const;
 
   /**
-   * @brief ÅĞ¶ÏÁ½¸öAABBÊÇ·ñÏà½»
+   * @brief åˆ¤æ–­ä¸¤ä¸ªAABBæ˜¯å¦ç›¸äº¤
    */
   bool Intersects(const AABB &other) const;
 
   /**
-   * @brief ¼ÆËãµãµ½AABBµÄÆ½·½¾àÀë
+   * @brief è®¡ç®—ç‚¹åˆ°AABBçš„å¹³æ–¹è·ç¦»
    */
   float DistanceToPointSq(const glm::vec3 &point) const;
 
   /**
-   * @brief ºÏ²¢Á½¸öAABB
+   * @brief åˆå¹¶ä¸¤ä¸ªAABB
    */
   static AABB Merge(const AABB &a, const AABB &b);
 
   /**
-   * @brief ´´½¨Ò»¸öAABB
+   * @brief åˆ›å»ºä¸€ä¸ªAABB
    */
   static AABB CreateAABBFromPoints(const glm::vec3 *points, uint32_t count);
 };
 
 /**
- * @brief °üÎ§Çò
- * Ê¹ÓÃÖĞĞÄºÍ°ë¾¶±íÊ¾£¬ÊÊÓÃÓÚĞı×ª²»±äĞÎµÄÎïÌå
+ * @brief åŒ…å›´çƒ
+ * ä½¿ç”¨ä¸­å¿ƒå’ŒåŠå¾„è¡¨ç¤ºï¼Œé€‚ç”¨äºæ—‹è½¬ä¸å˜å½¢çš„ç‰©ä½“
  */
 struct Sphere {
   glm::vec3 center;
@@ -128,39 +128,39 @@ struct Sphere {
   Sphere(const glm::vec3 &center, float radius) : center(center), radius(radius) {}
 
   /**
-   * @brief Í¨¹ıAABB¹¹Ôì°üÎ§Çò
+   * @brief é€šè¿‡AABBæ„é€ åŒ…å›´çƒ
    */
   static Sphere FromAABB(const AABB &aabb);
 
   /**
-   * @brief ÅĞ¶ÏµãÊÇ·ñÔÚÇòÄÚ²¿
+   * @brief åˆ¤æ–­ç‚¹æ˜¯å¦åœ¨çƒå†…éƒ¨
    */
   bool Contains(const glm::vec3 &point) const;
 
   /**
-   * @brief ÅĞ¶ÏÇòÊÇ·ñÍêÈ«°üº¬ÁíÒ»¸öÇò
+   * @brief åˆ¤æ–­çƒæ˜¯å¦å®Œå…¨åŒ…å«å¦ä¸€ä¸ªçƒ
    */
   bool Contains(const Sphere &other) const;
 
   /**
-   * @brief ÅĞ¶ÏÁ½¸öÇòÊÇ·ñÏà½»
+   * @brief åˆ¤æ–­ä¸¤ä¸ªçƒæ˜¯å¦ç›¸äº¤
    */
   bool Intersects(const Sphere &other) const;
 
   /**
-   * @brief ¶ÔÇòÓ¦ÓÃ±ä»»£¨Æ½ÒÆºÍ¾ùÔÈËõ·Å£©
+   * @brief å¯¹çƒåº”ç”¨å˜æ¢ï¼ˆå¹³ç§»å’Œå‡åŒ€ç¼©æ”¾ï¼‰
    */
   Sphere Transform(const glm::mat4 &matrix) const;
 };
 
 /**
- * @brief ÓĞÏò°üÎ§ºĞ (OBB)
- * Ê¹ÓÃÖĞĞÄ¡¢°ë³¤ºÍ·½Ïò¾ØÕó±íÊ¾£¬ÊÊÓÃÓÚ¾«È·µÄĞı×ªÎïÌåÅö×²¼ì²â
+ * @brief æœ‰å‘åŒ…å›´ç›’ (OBB)
+ * ä½¿ç”¨ä¸­å¿ƒã€åŠé•¿å’Œæ–¹å‘çŸ©é˜µè¡¨ç¤ºï¼Œé€‚ç”¨äºç²¾ç¡®çš„æ—‹è½¬ç‰©ä½“ç¢°æ’æ£€æµ‹
  */
 struct OBB {
   glm::vec3 center;
-  glm::vec3 extents;      // °ë³¤
-  glm::mat3 orientation;  // 3x3Ğı×ª¾ØÕó
+  glm::vec3 extents;      // åŠé•¿
+  glm::mat3 orientation;  // 3x3æ—‹è½¬çŸ©é˜µ
 
   OBB() : center(0.0f), extents(0.0f), orientation(1.0f) {}
   OBB(const glm::vec3 &center, const glm::vec3 &extents, const glm::mat3 &orientation)
@@ -169,38 +169,38 @@ struct OBB {
   }
 
   /**
-   * @brief Í¨¹ıAABB¹¹ÔìOBB£¨³õÊ¼·½ÏòÎªµ¥Î»¾ØÕó£©
+   * @brief é€šè¿‡AABBæ„é€ OBBï¼ˆåˆå§‹æ–¹å‘ä¸ºå•ä½çŸ©é˜µï¼‰
    */
   static OBB FromAABB(const AABB &aabb);
 
   /**
-   * @brief »ñÈ¡OBBµÄ8¸ö¶¥µã
+   * @brief è·å–OBBçš„8ä¸ªé¡¶ç‚¹
    */
   void GetVertices(glm::vec3 vertices[8]) const;
 
   /**
-   * @brief »ñÈ¡OBBµÄAABB½üËÆ£¨ÓÃÓÚ¿ìËÙÌŞ³ı£©
+   * @brief è·å–OBBçš„AABBè¿‘ä¼¼ï¼ˆç”¨äºå¿«é€Ÿå‰”é™¤ï¼‰
    */
   AABB GetAABB() const;
 
   /**
-   * @brief ¶ÔOBBÓ¦ÓÃ±ä»»
+   * @brief å¯¹OBBåº”ç”¨å˜æ¢
    */
   OBB Transform(const glm::mat4 &matrix) const;
 
   /**
-   * @brief ÅĞ¶ÏµãÊÇ·ñÔÚOBBÄÚ²¿
+   * @brief åˆ¤æ–­ç‚¹æ˜¯å¦åœ¨OBBå†…éƒ¨
    */
   bool Contains(const glm::vec3 &point) const;
 };
 
 /**
- * @brief Æ½Ãæ¶¨Òå
- * ÓÃÓÚÊÓ×¶Ìå²Ã¼ôºÍÅö×²¼ì²â
+ * @brief å¹³é¢å®šä¹‰
+ * ç”¨äºè§†é”¥ä½“è£å‰ªå’Œç¢°æ’æ£€æµ‹
  * 
- * ×¢Òâ£º
- * ÓÒÊÖÏµÆ½Ãæ¶¨Òå£ºnormal¡¤point + d = 0
- * SideµÄÕıÖµ£ºµãÔÚÆ½ÃæÕı²à£¨·¨ÏßÖ¸ÏòµÄÒ»²à£©
+ * æ³¨æ„ï¼š
+ * å³æ‰‹ç³»å¹³é¢å®šä¹‰ï¼šnormalÂ·point + d = 0
+ * Sideçš„æ­£å€¼ï¼šç‚¹åœ¨å¹³é¢æ­£ä¾§ï¼ˆæ³•çº¿æŒ‡å‘çš„ä¸€ä¾§ï¼‰
  */
 struct Plane {
   glm::vec3 normal;
@@ -214,23 +214,23 @@ struct Plane {
   Plane(const glm::vec3 &point, const glm::vec3 &normal);
 
   /**
-   * @brief ¼ÆËãµãµ½Æ½ÃæµÄ¾àÀë
+   * @brief è®¡ç®—ç‚¹åˆ°å¹³é¢çš„è·ç¦»
    */
   float DistanceToPoint(const glm::vec3 &point) const;
 
   /**
-   * @brief ÅĞ¶ÏµãÔÚÆ½ÃæµÄÄÄÒ»²à
+   * @brief åˆ¤æ–­ç‚¹åœ¨å¹³é¢çš„å“ªä¸€ä¾§
    */
   int GetSide(const glm::vec3 &point) const;
 };
 
 /**
- * @brief Ïà½»²âÊÔ½á¹ûÃ¶¾Ù
+ * @brief ç›¸äº¤æµ‹è¯•ç»“æœæšä¸¾
  */
 enum class IntersectionType {
-  Outside,   // ÍêÈ«ÔÚÍâ
-  Inside,    // ÍêÈ«ÔÚÄÚ
-  Intersect  // Ïà½»
+  Outside,   // å®Œå…¨åœ¨å¤–
+  Inside,    // å®Œå…¨åœ¨å†…
+  Intersect  // ç›¸äº¤
 };
 
 }  // namespace mite

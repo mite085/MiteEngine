@@ -5,57 +5,57 @@
 
 namespace mite {
 /**
- * ÍêÕûÄ£ĞÍ·â×°£¨°üº¬¶à¸ö×ÓÍø¸ñ£©
- * Ö°Ôğ£º
- * - ¹ÜÀíÄ£ĞÍËùÓĞGPU×ÊÔ´
- * - Ìá¹©×ÓÍø¸ñ·ÃÎÊ½Ó¿Ú
+ * å®Œæ•´æ¨¡å‹å°è£…ï¼ˆåŒ…å«å¤šä¸ªå­ç½‘æ ¼ï¼‰
+ * èŒè´£ï¼š
+ * - ç®¡ç†æ¨¡å‹æ‰€æœ‰GPUèµ„æº
+ * - æä¾›å­ç½‘æ ¼è®¿é—®æ¥å£
  */
 class Model {
  public:
   /**
-   * ¹¹Ôìº¯Êı
-   * @param modelHandle Õû¸öÄ£ĞÍµÄGPU×ÊÔ´¾ä±ú
+   * æ„é€ å‡½æ•°
+   * @param modelHandle æ•´ä¸ªæ¨¡å‹çš„GPUèµ„æºå¥æŸ„
    */
   explicit Model(std::shared_ptr<ModelGPUHandle> modelHandle);
 
   /**
-   * »ñÈ¡×ÓÍø¸ñÊıÁ¿
+   * è·å–å­ç½‘æ ¼æ•°é‡
    */
   size_t GetSubMeshCount() const;
 
   /**
-   * »ñÈ¡Ö¸¶¨×ÓÍø¸ñ
-   * @param index ×ÓÍø¸ñË÷Òı
-   * @return ¹²ÏíÖ¸ÕëÖ¸ÏòMesh¶ÔÏó£¬ÎŞĞ§Ë÷Òı·µ»Ønullptr
+   * è·å–æŒ‡å®šå­ç½‘æ ¼
+   * @param index å­ç½‘æ ¼ç´¢å¼•
+   * @return å…±äº«æŒ‡é’ˆæŒ‡å‘Meshå¯¹è±¡ï¼Œæ— æ•ˆç´¢å¼•è¿”å›nullptr
    */
   std::shared_ptr<Mesh> GetSubMesh(size_t index) const;
   /**
-   * »ñÈ¡ËùÓĞ×ÓÍø¸ñ
+   * è·å–æ‰€æœ‰å­ç½‘æ ¼
    */
   const std::vector<std::shared_ptr<Mesh>> &GetAllSubMeshes() const;
   /**
-   * »ñÈ¡Ö§³ÖµÄLOD¼¶±ğÁĞ±í
+   * è·å–æ”¯æŒçš„LODçº§åˆ«åˆ—è¡¨
    */
   std::vector<uint32_t> GetSupportedLODLevels() const;
 
   /**
-   * »ñÈ¡Ä£ĞÍ¼¶°üÎ§ºĞ
+   * è·å–æ¨¡å‹çº§åŒ…å›´ç›’
    */
   const std::pair<glm::vec3, glm::vec3> &GetBoundingBox() const;
   /**
-   * »ñÈ¡ÎÄ¼şÂ·¾¶£¬ÓÃÓÚµ÷ÊÔ
+   * è·å–æ–‡ä»¶è·¯å¾„ï¼Œç”¨äºè°ƒè¯•
    */
   const std::string GetPath() const;
   /**
-   * ¼ì²éÄ£ĞÍÊÇ·ñ°üº¬LOD
+   * æ£€æŸ¥æ¨¡å‹æ˜¯å¦åŒ…å«LOD
    */
   bool HasLOD() const;
 
  private:
-  std::shared_ptr<ModelGPUHandle> m_ModelHandle;   // Õû¸öÄ£ĞÍµÄGPU×ÊÔ´
-  std::vector<std::shared_ptr<Mesh>> m_SubMeshes;  // ×ÓÍø¸ñ¼¯ºÏ
-  std::pair<glm::vec3, glm::vec3> m_BoundingBox;   // Ä£ĞÍ¼¶°üÎ§ºĞ(min, max)
-  bool m_HasLOD = false;                           // ÊÇ·ñ°üº¬LOD
+  std::shared_ptr<ModelGPUHandle> m_ModelHandle;   // æ•´ä¸ªæ¨¡å‹çš„GPUèµ„æº
+  std::vector<std::shared_ptr<Mesh>> m_SubMeshes;  // å­ç½‘æ ¼é›†åˆ
+  std::pair<glm::vec3, glm::vec3> m_BoundingBox;   // æ¨¡å‹çº§åŒ…å›´ç›’(min, max)
+  bool m_HasLOD = false;                           // æ˜¯å¦åŒ…å«LOD
 };
 };  // namespace mite
 

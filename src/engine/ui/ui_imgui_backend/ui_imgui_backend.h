@@ -8,22 +8,22 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class ViewportPanel;
 
 /**
- * @brief ImGuiºó¶ËÊµÏÖ
+ * @brief ImGuiåç«¯å®ç°
  *
- * ³õÊ¼»¯£ºÓÉUISystem::Initialize()¸ºÔğ
+ * åˆå§‹åŒ–ï¼šç”±UISystem::Initialize()è´Ÿè´£
  *
- * 1. ´´½¨ImGuiºó¶Ë
+ * 1. åˆ›å»ºImGuiåç«¯
  *   m_Backend = std::make_unique<ImGuiBackend>();
  *
- * 2. ÉèÖÃGLFW´°¿Ú£¨´ÓWindowÄ£¿é»ñÈ¡£©
- *   GLFWwindow *window = // »ñÈ¡GLFW´°¿Ú ;
+ * 2. è®¾ç½®GLFWçª—å£ï¼ˆä»Windowæ¨¡å—è·å–ï¼‰
+ *   GLFWwindow *window = // è·å–GLFWçª—å£ ;
  *   static_cast<ImGuiBackend *>(m_Backend.get())->SetWindow(window);
  *
- * 3. ³õÊ¼»¯ºó¶Ë
+ * 3. åˆå§‹åŒ–åç«¯
  *   if (!m_Backend->Initialize(this)) {
  *     Logger::Get().Error("Failed to initialize UI backend");
  *     return false;
@@ -34,7 +34,7 @@ class ImGuiBackend : public UIBackend {
   ImGuiBackend();
   ~ImGuiBackend() = default;
 
-  // ==================== UIBackend½Ó¿ÚÊµÏÖ ====================
+  // ==================== UIBackendæ¥å£å®ç° ====================
   bool Initialize(void *window) override;
   void Shutdown() override;
   void BeginFrame() override;
@@ -54,35 +54,35 @@ class ImGuiBackend : public UIBackend {
   void ApplyUIStyle(std::shared_ptr<UIStyle> newStyle) override;
   void ApplyLanguaged(const std::string &oldLanguage, const std::string &newLanguage) override;
 
-  // ==================== ImGuiÌØ¶¨·½·¨ ====================
+  // ==================== ImGuiç‰¹å®šæ–¹æ³• ====================
   void SetWindow(GLFWwindow *window);
   GLFWwindow *GetWindow() const;
 
-  // ÊäÈë¹ÜÀí£¨Î¯ÍĞ¸øInputAdapter£©
+  // è¾“å…¥ç®¡ç†ï¼ˆå§”æ‰˜ç»™InputAdapterï¼‰
   ImGuiInputAdapter &GetInputAdapter();
 
  private:
-  // ==================== ÄÚ²¿·½·¨ ====================
-  // ³õÊ¼»¯ImGuiÉÏÏÂÎÄ
+  // ==================== å†…éƒ¨æ–¹æ³• ====================
+  // åˆå§‹åŒ–ImGuiä¸Šä¸‹æ–‡
   bool InitializeImGuiContext();
 
-  // ³õÊ¼»¯Æ½Ì¨ºó¶Ë
+  // åˆå§‹åŒ–å¹³å°åç«¯
   bool InitializePlatformBackend();
 
-  // ³õÊ¼»¯äÖÈ¾Æ÷ºó¶Ë
+  // åˆå§‹åŒ–æ¸²æŸ“å™¨åç«¯
   bool InitializeRendererBackend();
 
-  // ³ÉÔ±±äÁ¿
-  GLFWwindow *m_Window;                               // GLFW´°¿Ú¾ä±ú
-  bool m_MouseCaptured;                               // ÊÇ·ñ²¶»ñÊó±ê
-  bool m_MouseCursorVisible;                          // Êó±êÖ¸ÕëÊÇ·ñ¿É¼û
-  glm::ivec2 m_DisplaySize;                           // ÏÔÊ¾³ß´ç
-  glm::vec2 m_FramebufferScale;                       // Ö¡»º³åËõ·Å
-  double m_Time = 0.0f;                               // Ê±¼ä¸ú×Ù
-  std::unique_ptr<ImGuiStyleAdapter> m_StyleAdapter;  // ÑùÊ½ÊÊÅäÆ÷
-  std::unique_ptr<ImGuiInputAdapter> m_InputAdapter;  // ÊäÈëÊÊÅäÆ÷
+  // æˆå‘˜å˜é‡
+  GLFWwindow *m_Window;                               // GLFWçª—å£å¥æŸ„
+  bool m_MouseCaptured;                               // æ˜¯å¦æ•è·é¼ æ ‡
+  bool m_MouseCursorVisible;                          // é¼ æ ‡æŒ‡é’ˆæ˜¯å¦å¯è§
+  glm::ivec2 m_DisplaySize;                           // æ˜¾ç¤ºå°ºå¯¸
+  glm::vec2 m_FramebufferScale;                       // å¸§ç¼“å†²ç¼©æ”¾
+  double m_Time = 0.0f;                               // æ—¶é—´è·Ÿè¸ª
+  std::unique_ptr<ImGuiStyleAdapter> m_StyleAdapter;  // æ ·å¼é€‚é…å™¨
+  std::unique_ptr<ImGuiInputAdapter> m_InputAdapter;  // è¾“å…¥é€‚é…å™¨
 
-  Logger m_Logger;                        // ÈÕÖ¾ÏµÍ³
+  Logger m_Logger;                        // æ—¥å¿—ç³»ç»Ÿ
 };
 }  // namespace mite
 

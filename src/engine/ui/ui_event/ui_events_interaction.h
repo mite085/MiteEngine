@@ -7,7 +7,7 @@
 
 namespace mite {
 /**
- * @brief °´Å¥µã»÷ÊÂ¼ş
+ * @brief æŒ‰é’®ç‚¹å‡»äº‹ä»¶
  */
 class ButtonClickEvent : public UIEvent {
  public:
@@ -44,7 +44,7 @@ class ButtonClickEvent : public UIEvent {
 };
 
 /**
- * @brief »¬¿éÖµ¸Ä±äÊÂ¼ş
+ * @brief æ»‘å—å€¼æ”¹å˜äº‹ä»¶
  */
 class SliderChangeEvent : public UIEvent {
  public:
@@ -86,7 +86,7 @@ class SliderChangeEvent : public UIEvent {
 };
 
 /**
- * @brief ¸´Ñ¡¿òÇĞ»»ÊÂ¼ş
+ * @brief å¤é€‰æ¡†åˆ‡æ¢äº‹ä»¶
  */
 class CheckboxToggleEvent : public UIEvent {
  public:
@@ -128,7 +128,7 @@ class CheckboxToggleEvent : public UIEvent {
 };
 
 /**
- * @brief ÎÄ±¾ÊäÈëÊÂ¼ş
+ * @brief æ–‡æœ¬è¾“å…¥äº‹ä»¶
  */
 class TextInputEvent : public UIEvent {
  public:
@@ -172,7 +172,7 @@ class TextInputEvent : public UIEvent {
 };
 
 /**
- * @brief ÏÂÀ­¿òÑ¡ÔñÊÂ¼ş
+ * @brief ä¸‹æ‹‰æ¡†é€‰æ‹©äº‹ä»¶
  */
 class ComboBoxSelectEvent : public UIEvent {
  public:
@@ -227,7 +227,7 @@ class ComboBoxSelectEvent : public UIEvent {
 };
 
 /**
- * @brief Êó±ê½øÈë¿Ø¼şÇøÓòÊÂ¼ş
+ * @brief é¼ æ ‡è¿›å…¥æ§ä»¶åŒºåŸŸäº‹ä»¶
  */
 class MouseEnterEvent : public UIEvent {
  public:
@@ -264,7 +264,7 @@ class MouseEnterEvent : public UIEvent {
 };
 
 /**
- * @brief Êó±êÀë¿ª¿Ø¼şÇøÓòÊÂ¼ş
+ * @brief é¼ æ ‡ç¦»å¼€æ§ä»¶åŒºåŸŸäº‹ä»¶
  */
 class MouseLeaveEvent : public UIEvent {
  public:

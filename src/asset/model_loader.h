@@ -7,22 +7,22 @@
 
 namespace mite {
 /**
- * Ä£ĞÍ¼ÓÔØÆ÷£¨´¿Êı¾İ½âÎö£¬²»Éæ¼°GPU×ÊÔ´´´½¨£©
- * Ö°Ôğ£º
- * 1. ½âÎöÄ£ĞÍÎÄ¼ş£¨FBX/OBJ/GLTFµÈ£©ÎªÒıÇæÖĞ¼ä¸ñÊ½
- * 2. ×ª»»¶¥µãÊı¾İÎªÍ³Ò»²¼¾Ö
- * 3. ÌáÈ¡²ÄÖÊºÍ²ã¼¶¹ØÏµ
+ * æ¨¡å‹åŠ è½½å™¨ï¼ˆçº¯æ•°æ®è§£æï¼Œä¸æ¶‰åŠGPUèµ„æºåˆ›å»ºï¼‰
+ * èŒè´£ï¼š
+ * 1. è§£ææ¨¡å‹æ–‡ä»¶ï¼ˆFBX/OBJ/GLTFç­‰ï¼‰ä¸ºå¼•æ“ä¸­é—´æ ¼å¼
+ * 2. è½¬æ¢é¡¶ç‚¹æ•°æ®ä¸ºç»Ÿä¸€å¸ƒå±€
+ * 3. æå–æè´¨å’Œå±‚çº§å…³ç³»
  */
 class ModelLoader {
  public:
   /**
-   * @brief LoadModel ¼ÓÔØÄ£ĞÍÎÄ¼ş
-   * @param path Ä£ĞÍÎÄ¼şÂ·¾¶
-   * @param flipUVs ÊÇ·ñ·­×ªUV´¹Ö±×ø±ê£¨ÊÊÅäOpenGL×ø±êÏµ£©
-   * @param generateLODs ÊÇ·ñÉú³É¶à¼¶LOD
-   * @param lodLevels LOD¼¶±ğÅäÖÃ£¨Ã¿¸ö¼¶±ğµÄ¼ò»¯±ÈÀı£©
-   * @return °üº¬Ä£ĞÍÔªÊı¾İºÍËùÓĞ×ÓÍø¸ñÊı¾İµÄ½á¹¹Ìå
-   * @throws std::runtime_error µ±Ä£ĞÍ¼ÓÔØÊ§°ÜÊ±Å×³öÒì³£
+   * @brief LoadModel åŠ è½½æ¨¡å‹æ–‡ä»¶
+   * @param path æ¨¡å‹æ–‡ä»¶è·¯å¾„
+   * @param flipUVs æ˜¯å¦ç¿»è½¬UVå‚ç›´åæ ‡ï¼ˆé€‚é…OpenGLåæ ‡ç³»ï¼‰
+   * @param generateLODs æ˜¯å¦ç”Ÿæˆå¤šçº§LOD
+   * @param lodLevels LODçº§åˆ«é…ç½®ï¼ˆæ¯ä¸ªçº§åˆ«çš„ç®€åŒ–æ¯”ä¾‹ï¼‰
+   * @return åŒ…å«æ¨¡å‹å…ƒæ•°æ®å’Œæ‰€æœ‰å­ç½‘æ ¼æ•°æ®çš„ç»“æ„ä½“
+   * @throws std::runtime_error å½“æ¨¡å‹åŠ è½½å¤±è´¥æ—¶æŠ›å‡ºå¼‚å¸¸
    */
   static std::shared_ptr<ModelAsset> LoadModel(const std::string &path,
                                                bool flipUVs = true,
@@ -31,23 +31,23 @@ class ModelLoader {
                                                    1.0f, 0.5f, 0.25f, 0.1f});
 
  private:
-  // ´´½¨Ä£ĞÍ×ÊÔ´Êı¾İ
+  // åˆ›å»ºæ¨¡å‹èµ„æºæ•°æ®
   static std::shared_ptr<ModelSourceData> CreateModelSourceData(std::shared_ptr<ModelAsset> model);
 
-  // ´¦ÀíAssimpµÄMeshÊı¾İ
+  // å¤„ç†Assimpçš„Meshæ•°æ®
   static MeshData ProcessMesh(const aiMesh *aiMesh, const aiScene *scene);
 
-  // ´¦Àí¶¥µã²¼¾ÖÃèÊö£¨¹©RendererÄ£¿éÊ¹ÓÃ£©
+  // å¤„ç†é¡¶ç‚¹å¸ƒå±€æè¿°ï¼ˆä¾›Rendereræ¨¡å—ä½¿ç”¨ï¼‰
   static VertexLayout GenerateVertexLayout(const aiMesh *aiMesh);
 
-  // Ê¹ÓÃmeshoptimizer¼ò»¯Íø¸ñ
+  // ä½¿ç”¨meshoptimizerç®€åŒ–ç½‘æ ¼
   static MeshData SimplifyMesh(const MeshData &originalMesh, float targetRatio);
 
-  // ¼ÆËãÄ£ĞÍµÄ°üÎ§ºĞ
+  // è®¡ç®—æ¨¡å‹çš„åŒ…å›´ç›’
   static void CalculateBoundingBox(const std::vector<MeshDataLODChain> &subMeshes,
                                    glm::vec3 &outMin,
                                    glm::vec3 &outMax);
-  // ÌáÈ¡²ÄÖÊÂ·¾¶ÁĞ±í
+  // æå–æè´¨è·¯å¾„åˆ—è¡¨
   static std::vector<std::string> ExtractMaterialPaths(const aiScene *scene);
 };
 };  // namespace mite

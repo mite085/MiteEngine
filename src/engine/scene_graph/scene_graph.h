@@ -5,203 +5,203 @@
 #include "scene_node_manager.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class ComponentSystemManager;
 class SceneRegistry;
 class Entity;
 
 /**
- * @class SceneGraph£¨¸ºÔğĞ­µ÷Óë±©Â¶½Ó¿Ú£¬²»Ö±½ÓÊµÏÖ£©
- * @brief ³¡¾°Í¼¶ÀÁ¢·şÎñ - ¸ºÔğ³¡¾°½Úµã²ã¼¶¹ÜÀíºÍ¿Õ¼ä²éÑ¯ÓÅ»¯
+ * @class SceneGraphï¼ˆè´Ÿè´£åè°ƒä¸æš´éœ²æ¥å£ï¼Œä¸ç›´æ¥å®ç°ï¼‰
+ * @brief åœºæ™¯å›¾ç‹¬ç«‹æœåŠ¡ - è´Ÿè´£åœºæ™¯èŠ‚ç‚¹å±‚çº§ç®¡ç†å’Œç©ºé—´æŸ¥è¯¢ä¼˜åŒ–
  *
- * ºËĞÄÖ°Ôğ£º
- * 1. ¹ÜÀí³¡¾°½ÚµãµÄ²ã¼¶Ê÷½á¹¹
- * 2. Î¬»¤¿Õ¼ä»®·ÖÊı¾İ½á¹¹£¨BVH¡¢OctreeµÈ£©
- * 3. Ìá¹©¸ßĞ§µÄ¿Õ¼ä²éÑ¯½Ó¿Ú
- * 4. ×÷Îª±à¼­Æ÷³¡¾°Ê÷µÄÎ¨Ò»Êı¾İÔ´
- * 5. Ğ­ÖúSceneView½øĞĞÊÓ×¶Ìå²Ã¼ôÓÅ»¯
+ * æ ¸å¿ƒèŒè´£ï¼š
+ * 1. ç®¡ç†åœºæ™¯èŠ‚ç‚¹çš„å±‚çº§æ ‘ç»“æ„
+ * 2. ç»´æŠ¤ç©ºé—´åˆ’åˆ†æ•°æ®ç»“æ„ï¼ˆBVHã€Octreeç­‰ï¼‰
+ * 3. æä¾›é«˜æ•ˆçš„ç©ºé—´æŸ¥è¯¢æ¥å£
+ * 4. ä½œä¸ºç¼–è¾‘å™¨åœºæ™¯æ ‘çš„å”¯ä¸€æ•°æ®æº
+ * 5. ååŠ©SceneViewè¿›è¡Œè§†é”¥ä½“è£å‰ªä¼˜åŒ–
  *
- * Éè¼ÆÔ­Ôò£º
- * - ¶ÀÁ¢ÓÚECS¼Ü¹¹£¬×÷Îª´¿·şÎñÀà´æÔÚ
- * - ×¨×¢ÓÚ¿Õ¼äÊı¾İ½á¹¹ºÍËã·¨ÓÅ»¯
- * - Ìá¹©ÎÈ¶¨¡¢¸ßĞ§µÄ²éÑ¯½Ó¿Ú
- * - Ö§³Ö±à¼­Æ÷µÄ³¡¾°Ê÷²Ù×÷
+ * è®¾è®¡åŸåˆ™ï¼š
+ * - ç‹¬ç«‹äºECSæ¶æ„ï¼Œä½œä¸ºçº¯æœåŠ¡ç±»å­˜åœ¨
+ * - ä¸“æ³¨äºç©ºé—´æ•°æ®ç»“æ„å’Œç®—æ³•ä¼˜åŒ–
+ * - æä¾›ç¨³å®šã€é«˜æ•ˆçš„æŸ¥è¯¢æ¥å£
+ * - æ”¯æŒç¼–è¾‘å™¨çš„åœºæ™¯æ ‘æ“ä½œ
  */
 class SceneGraph {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param spatialPartitionType ¿Õ¼ä»®·ÖÀàĞÍ£¨Ä¬ÈÏBVH£©
+   * @brief æ„é€ å‡½æ•°
+   * @param spatialPartitionType ç©ºé—´åˆ’åˆ†ç±»å‹ï¼ˆé»˜è®¤BVHï¼‰
    */
   explicit SceneGraph(SpatialPartitionType spatialPartitionType = SpatialPartitionType::BVH);
   ~SceneGraph();
 
-  // ½ûÖ¹¿½±´ºÍÒÆ¶¯
+  // ç¦æ­¢æ‹·è´å’Œç§»åŠ¨
   SceneGraph(const SceneGraph &) = delete;
   SceneGraph &operator=(const SceneGraph &) = delete;
   SceneGraph(SceneGraph &&) = delete;
   SceneGraph &operator=(SceneGraph &&) = delete;
 
-  // ³õÊ¼»¯ÓëÇåÀí¾ùĞèÒªÒÀÀµSceneCoreÄ£¿éµÄ×é¼şÏµÍ³¹ÜÀíÆ÷×¢²á×é¼ş
+  // åˆå§‹åŒ–ä¸æ¸…ç†å‡éœ€è¦ä¾èµ–SceneCoreæ¨¡å—çš„ç»„ä»¶ç³»ç»Ÿç®¡ç†å™¨æ³¨å†Œç»„ä»¶
   void Initialize(ComponentSystemManager &manager);
   void CleanUp(ComponentSystemManager &manager);
 
-  // ==================== ³¡¾°½ÚµãÉúÃüÖÜÆÚ¹ÜÀí ====================
+  // ==================== åœºæ™¯èŠ‚ç‚¹ç”Ÿå‘½å‘¨æœŸç®¡ç† ====================
 
   /**
-   * @brief ÎªÊµÌå´´½¨³¡¾°½Úµã
-   * @param entity Ä¿±êÊµÌå
-   * @return ´´½¨µÄ³¡¾°½ÚµãÖ¸Õë£¬Ê§°Ü·µ»Ønullptr
+   * @brief ä¸ºå®ä½“åˆ›å»ºåœºæ™¯èŠ‚ç‚¹
+   * @param entity ç›®æ ‡å®ä½“
+   * @return åˆ›å»ºçš„åœºæ™¯èŠ‚ç‚¹æŒ‡é’ˆï¼Œå¤±è´¥è¿”å›nullptr
    */
   SceneNode *CreateNode(SceneRegistry &registry, Entity entity);
 
   /**
-   * @brief Ïú»ÙÊµÌåµÄ³¡¾°½Úµã
-   * @param entity Ä¿±êÊµÌå
-   * @return ÊÇ·ñ³É¹¦Ïú»Ù
+   * @brief é”€æ¯å®ä½“çš„åœºæ™¯èŠ‚ç‚¹
+   * @param entity ç›®æ ‡å®ä½“
+   * @return æ˜¯å¦æˆåŠŸé”€æ¯
    */
   bool DestroyNode(SceneRegistry &registry, Entity entity);
 
-  // ==================== ³¡¾°½Úµã²éÑ¯½Ó¿Ú ====================
+  // ==================== åœºæ™¯èŠ‚ç‚¹æŸ¥è¯¢æ¥å£ ====================
 
   /**
-   * @brief »ñÈ¡ÊµÌå¶ÔÓ¦µÄ³¡¾°½Úµã
-   * @param entity ÊµÌå¾ä±ú
-   * @return ³¡¾°½ÚµãÖ¸Õë£¬²»´æÔÚÊ±·µ»Ønullptr
+   * @brief è·å–å®ä½“å¯¹åº”çš„åœºæ™¯èŠ‚ç‚¹
+   * @param entity å®ä½“å¥æŸ„
+   * @return åœºæ™¯èŠ‚ç‚¹æŒ‡é’ˆï¼Œä¸å­˜åœ¨æ—¶è¿”å›nullptr
    */
   SceneNode *GetNode(Entity entity) const;
 
   /**
-   * @brief ¼ì²éÊµÌåÊÇ·ñÓĞ¶ÔÓ¦µÄ³¡¾°½Úµã
-   * @param entity ÊµÌå¾ä±ú
-   * @return ÊÇ·ñ´æÔÚ³¡¾°½Úµã
+   * @brief æ£€æŸ¥å®ä½“æ˜¯å¦æœ‰å¯¹åº”çš„åœºæ™¯èŠ‚ç‚¹
+   * @param entity å®ä½“å¥æŸ„
+   * @return æ˜¯å¦å­˜åœ¨åœºæ™¯èŠ‚ç‚¹
    */
   bool HasNode(Entity entity) const;
 
   /**
-   * @brief »ñÈ¡¸ù½ÚµãÁĞ±í£¨Ã»ÓĞ¸¸½ÚµãµÄ½Úµã£©
-   * @return ¸ù½ÚµãÖ¸ÕëÁĞ±í
+   * @brief è·å–æ ¹èŠ‚ç‚¹åˆ—è¡¨ï¼ˆæ²¡æœ‰çˆ¶èŠ‚ç‚¹çš„èŠ‚ç‚¹ï¼‰
+   * @return æ ¹èŠ‚ç‚¹æŒ‡é’ˆåˆ—è¡¨
    */
   std::vector<SceneNode *> GetRootNodes() const;
 
   /**
-   * @brief »ñÈ¡ËùÓĞ³¡¾°½Úµã
-   * @return ËùÓĞ³¡¾°½ÚµãÖ¸ÕëÁĞ±í
+   * @brief è·å–æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹
+   * @return æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹æŒ‡é’ˆåˆ—è¡¨
    */
   std::vector<SceneNode *> GetAllNodes() const;
 
   /**
-   * @brief »ñÈ¡³¡¾°½ÚµãÊıÁ¿
-   * @return ½Úµã×ÜÊı
+   * @brief è·å–åœºæ™¯èŠ‚ç‚¹æ•°é‡
+   * @return èŠ‚ç‚¹æ€»æ•°
    */
   size_t GetNodeCount() const;
 
   /**
-   * @brief ÅĞ¶Ï³¡¾°Í¼ÊÇ·ñÎª¿Õ
-   * @return ÊÇ·ñÎª¿Õ
+   * @brief åˆ¤æ–­åœºæ™¯å›¾æ˜¯å¦ä¸ºç©º
+   * @return æ˜¯å¦ä¸ºç©º
    */
   bool IsEmpty() const;
 
-  // ==================== ³¡¾°Ê÷²Ù×÷½Ó¿Ú£¨±à¼­Æ÷Ö§³Ö£© ====================
+  // ==================== åœºæ™¯æ ‘æ“ä½œæ¥å£ï¼ˆç¼–è¾‘å™¨æ”¯æŒï¼‰ ====================
 
   /**
-   * @brief ÉèÖÃ½ÚµãµÄ¸¸½Úµã
-   * @param node Ä¿±ê½Úµã
-   * @param newParent ĞÂµÄ¸¸½Úµã£¨nullptr±íÊ¾ÉèÎª¸ù½Úµã£©
-   * @return ÊÇ·ñ³É¹¦ÉèÖÃ
+   * @brief è®¾ç½®èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹
+   * @param node ç›®æ ‡èŠ‚ç‚¹
+   * @param newParent æ–°çš„çˆ¶èŠ‚ç‚¹ï¼ˆnullptrè¡¨ç¤ºè®¾ä¸ºæ ¹èŠ‚ç‚¹ï¼‰
+   * @return æ˜¯å¦æˆåŠŸè®¾ç½®
    */
   bool SetParent(SceneNode *node, SceneNode *newParent);
 
   /**
-   * @brief »ñÈ¡½ÚµãµÄÍêÕûÂ·¾¶£¨ÓÃÓÚ±à¼­Æ÷ĞòÁĞ»¯£©
-   * @param node Ä¿±ê½Úµã
-   * @return ½ÚµãÂ·¾¶×Ö·û´®£¨Èç"Root/Camera/Light"£©
+   * @brief è·å–èŠ‚ç‚¹çš„å®Œæ•´è·¯å¾„ï¼ˆç”¨äºç¼–è¾‘å™¨åºåˆ—åŒ–ï¼‰
+   * @param node ç›®æ ‡èŠ‚ç‚¹
+   * @return èŠ‚ç‚¹è·¯å¾„å­—ç¬¦ä¸²ï¼ˆå¦‚"Root/Camera/Light"ï¼‰
    */
   std::string GetNodePath(SceneNode *node) const;
 
   /**
-   * @brief Í¨¹ıÂ·¾¶²éÕÒ³¡¾°½Úµã
-   * @param path ½ÚµãÂ·¾¶
-   * @return ³¡¾°½ÚµãÖ¸Õë£¬ÕÒ²»µ½·µ»Ønullptr
+   * @brief é€šè¿‡è·¯å¾„æŸ¥æ‰¾åœºæ™¯èŠ‚ç‚¹
+   * @param path èŠ‚ç‚¹è·¯å¾„
+   * @return åœºæ™¯èŠ‚ç‚¹æŒ‡é’ˆï¼Œæ‰¾ä¸åˆ°è¿”å›nullptr
    */
   SceneNode *FindNodeByPath(const std::string &path) const;
 
   /**
-   * @brief ±éÀú³¡¾°Ê÷Ö´ĞĞ»Øµ÷º¯Êı
-   * @param callback »Øµ÷º¯Êı£¬·µ»Øfalse¿ÉÖĞ¶Ï±éÀú
+   * @brief éå†åœºæ™¯æ ‘æ‰§è¡Œå›è°ƒå‡½æ•°
+   * @param callback å›è°ƒå‡½æ•°ï¼Œè¿”å›falseå¯ä¸­æ–­éå†
    */
   void TraverseTree(std::function<bool(SceneNode *)> callback) const;
 
-  // ==================== ¿Õ¼ä»®·Ö¹ÜÀí½Ó¿Ú ====================
+  // ==================== ç©ºé—´åˆ’åˆ†ç®¡ç†æ¥å£ ====================
 
   /**
-   * @brief ÉèÖÃ¿Õ¼ä»®·ÖÀàĞÍ
-   * @param type ¿Õ¼ä»®·ÖÀàĞÍ
+   * @brief è®¾ç½®ç©ºé—´åˆ’åˆ†ç±»å‹
+   * @param type ç©ºé—´åˆ’åˆ†ç±»å‹
    */
   void SetSpatialPartitionType(SpatialPartitionType type);
 
   /**
-   * @brief »ñÈ¡µ±Ç°¿Õ¼ä»®·ÖÀàĞÍ
-   * @return ¿Õ¼ä»®·ÖÀàĞÍ
+   * @brief è·å–å½“å‰ç©ºé—´åˆ’åˆ†ç±»å‹
+   * @return ç©ºé—´åˆ’åˆ†ç±»å‹
    */
   SpatialPartitionType GetSpatialPartitionType() const;
 
   /**
-   * @brief ÖØĞÂ¹¹½¨¿Õ¼ä»®·Ö½á¹¹£¨ÓÅ»¯ĞÔÄÜ£©
+   * @brief é‡æ–°æ„å»ºç©ºé—´åˆ’åˆ†ç»“æ„ï¼ˆä¼˜åŒ–æ€§èƒ½ï¼‰
    */
   void RebuildSpatialPartition(std::vector<SceneNode *> nodelist);
 
   /**
-   * @brief »ñÈ¡¿Õ¼ä»®·ÖÍ³¼ÆĞÅÏ¢
-   * @return Í³¼ÆĞÅÏ¢×Ö·û´®
+   * @brief è·å–ç©ºé—´åˆ’åˆ†ç»Ÿè®¡ä¿¡æ¯
+   * @return ç»Ÿè®¡ä¿¡æ¯å­—ç¬¦ä¸²
    */
   std::string GetSpatialPartitionStats() const;
 
   /**
-   * @brief µ÷ÊÔ»æÖÆ½Ó¿Ú
-   * @param drawCallback »æÖÆ»Øµ÷º¯Êı
+   * @brief è°ƒè¯•ç»˜åˆ¶æ¥å£
+   * @param drawCallback ç»˜åˆ¶å›è°ƒå‡½æ•°
    */
   void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback);
 
-  // ==================== ¿Õ¼ä²éÑ¯½Ó¿Ú£¨ÎªSceneViewÌá¹©ÓÅ»¯£© ====================
+  // ==================== ç©ºé—´æŸ¥è¯¢æ¥å£ï¼ˆä¸ºSceneViewæä¾›ä¼˜åŒ–ï¼‰ ====================
   /**
-   * @brief ¿ìËÙ¿É¼ûĞÔ¼ì²é£¨²»·µ»Ø¾ßÌå½Úµã£¬Ö»¼ÆÊı£©
-   * @return ¿É¼û½ÚµãÊıÁ¿
+   * @brief å¿«é€Ÿå¯è§æ€§æ£€æŸ¥ï¼ˆä¸è¿”å›å…·ä½“èŠ‚ç‚¹ï¼Œåªè®¡æ•°ï¼‰
+   * @return å¯è§èŠ‚ç‚¹æ•°é‡
    */
   size_t QueryVisibleCount(SceneRegistry &registry,
                            const Frustum &frustum,
                            uint32_t visibilityMask);
 
   /**
-   * @brief »ñÈ¡¿É¼û½ÚµãÊıÁ¿£¨²»Ö´ĞĞ¿É¼ûĞÔ¼ì²é£¬Ö»»ñÈ¡ÉÏ´Î¼ì²é½á¹û£©
-   * @return ¿É¼û½ÚµãÊıÁ¿
+   * @brief è·å–å¯è§èŠ‚ç‚¹æ•°é‡ï¼ˆä¸æ‰§è¡Œå¯è§æ€§æ£€æŸ¥ï¼Œåªè·å–ä¸Šæ¬¡æ£€æŸ¥ç»“æœï¼‰
+   * @return å¯è§èŠ‚ç‚¹æ•°é‡
    */
   size_t GetVisibleNodeCount() const;
 
   /**
-   * @brief ÊÓ×¶Ìå²Ã¼ô²éÑ¯ - Ö÷Òª¸øSceneViewÊ¹ÓÃ
-   * @param frustum ÊÓ×¶Ìå
-   * @return ¿É¼û½ÚµãÁĞ±í
+   * @brief è§†é”¥ä½“è£å‰ªæŸ¥è¯¢ - ä¸»è¦ç»™SceneViewä½¿ç”¨
+   * @param frustum è§†é”¥ä½“
+   * @return å¯è§èŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> QueryVisibleNodes(SceneRegistry &registry,
                                              const Frustum &frustum,
                                              uint32_t visibilityMask);
 
   /**
-   * @brief ÉäÏß¼ì²â²éÑ¯
-   * @param ray ¼ì²âÉäÏß
-   * @return Ïà½»½ÚµãÁĞ±í
+   * @brief å°„çº¿æ£€æµ‹æŸ¥è¯¢
+   * @param ray æ£€æµ‹å°„çº¿
+   * @return ç›¸äº¤èŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> QueryRaycast(SceneRegistry &registry,
                                         const Ray &ray,
                                         uint32_t visibilityMask);
 
   /**
-   * @brief ÉäÏß¼ì²â²éÑ¯£¨µÚÒ»¸öÃüÖĞ£©
-   * @param ray ¼ì²âÉäÏß
-   * @param result ÃüÖĞµÄ½Úµã£¨Êä³ö²ÎÊı£©
-   * @param distance Ïà½»¾àÀë£¨Êä³ö²ÎÊı£©
-   * @return ÊÇ·ñÃüÖĞ
+   * @brief å°„çº¿æ£€æµ‹æŸ¥è¯¢ï¼ˆç¬¬ä¸€ä¸ªå‘½ä¸­ï¼‰
+   * @param ray æ£€æµ‹å°„çº¿
+   * @param result å‘½ä¸­çš„èŠ‚ç‚¹ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @param distance ç›¸äº¤è·ç¦»ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return æ˜¯å¦å‘½ä¸­
    */
   bool QueryRaycastFirst(SceneRegistry &registry,
                          const Ray &ray,
@@ -210,55 +210,55 @@ class SceneGraph {
                          uint32_t visibilityMask);
 
   /**
-   * @brief ÇòÌå²éÑ¯
-   * @param sphere ²éÑ¯ÇòÌå
-   * @return ½á¹û½ÚµãÁĞ±í
+   * @brief çƒä½“æŸ¥è¯¢
+   * @param sphere æŸ¥è¯¢çƒä½“
+   * @return ç»“æœèŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> QuerySphere(SceneRegistry &registry,
                                        const Sphere &sphere,
                                        uint32_t visibilityMask);
 
   /**
-   * @brief AABB²éÑ¯
-   * @param aabb ²éÑ¯AABB
-   * @return ½á¹û½ÚµãÁĞ±í
+   * @brief AABBæŸ¥è¯¢
+   * @param aabb æŸ¥è¯¢AABB
+   * @return ç»“æœèŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> QueryAABB(SceneRegistry &registry,
                                      const AABB &aabb,
                                      uint32_t visibilityMask);
 
-  // ==================== ½Úµã¸üĞÂ½Ó¿Ú£¨ÓÉSceneGraphSystemµ÷ÓÃ£© ====================
+  // ==================== èŠ‚ç‚¹æ›´æ–°æ¥å£ï¼ˆç”±SceneGraphSystemè°ƒç”¨ï¼‰ ====================
   /**
-   * @brief ¸üĞÂ³¡¾°½ÚµãµÄ°üÎ§ºĞÊı¾İ
-   * @param entity Ä¿±êÊµÌå
-   * @param localBounds ¾Ö²¿°üÎ§ºĞ
+   * @brief æ›´æ–°åœºæ™¯èŠ‚ç‚¹çš„åŒ…å›´ç›’æ•°æ®
+   * @param entity ç›®æ ‡å®ä½“
+   * @param localBounds å±€éƒ¨åŒ…å›´ç›’
    */
   void UpdateNodeBounds(SceneRegistry &registry, Entity entity, const AABB &localBounds);
 
   /**
-   * @brief ±ê¼Ç½ÚµãĞèÒª¸üĞÂ£¨±ä»»»ò°üÎ§ºĞ±ä»¯£©
-   * @param entity Ä¿±êÊµÌå
+   * @brief æ ‡è®°èŠ‚ç‚¹éœ€è¦æ›´æ–°ï¼ˆå˜æ¢æˆ–åŒ…å›´ç›’å˜åŒ–ï¼‰
+   * @param entity ç›®æ ‡å®ä½“
    */
   void MarkNodeDirty(Entity entity);
 
   /**
-   * @brief ÅúÁ¿¸üĞÂËùÓĞÔà½Úµã
+   * @brief æ‰¹é‡æ›´æ–°æ‰€æœ‰è„èŠ‚ç‚¹
    */
   void Update(SceneRegistry &registry);
 
-  // ==================== ĞòÁĞ»¯Ö§³Ö£¨Îª±à¼­Æ÷±£´æ/¼ÓÔØ£© ====================
+  // ==================== åºåˆ—åŒ–æ”¯æŒï¼ˆä¸ºç¼–è¾‘å™¨ä¿å­˜/åŠ è½½ï¼‰ ====================
 
   /**
-   * @brief ĞòÁĞ»¯³¡¾°Í¼Êı¾İ
-   * @param output Êä³öÁ÷
-   * @return ÊÇ·ñ³É¹¦ĞòÁĞ»¯
+   * @brief åºåˆ—åŒ–åœºæ™¯å›¾æ•°æ®
+   * @param output è¾“å‡ºæµ
+   * @return æ˜¯å¦æˆåŠŸåºåˆ—åŒ–
    */
   bool Serialize(std::ostream &output) const;
 
   /**
-   * @brief ·´ĞòÁĞ»¯³¡¾°Í¼Êı¾İ
-   * @param input ÊäÈëÁ÷
-   * @return ÊÇ·ñ³É¹¦·´ĞòÁĞ»¯
+   * @brief ååºåˆ—åŒ–åœºæ™¯å›¾æ•°æ®
+   * @param input è¾“å…¥æµ
+   * @return æ˜¯å¦æˆåŠŸååºåˆ—åŒ–
    */
   bool Deserialize(std::istream &input);
 
@@ -266,7 +266,7 @@ class SceneGraph {
   SceneNodeManager m_NodeManager;
   SpatialPartitionManager m_SpatialPartitionManager;
 
-  // ÈÕÖ¾Æ÷
+  // æ—¥å¿—å™¨
   Logger m_Logger;
 };
 }  // namespace mite

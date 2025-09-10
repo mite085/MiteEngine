@@ -1,7 +1,7 @@
 #ifndef MITE_INCLUDED_HEADERS
 #define MITE_INCLUDED_HEADERS
 
-// C++±ê×¼¿â
+// C++æ ‡å‡†åº“
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -26,15 +26,15 @@
 #include <variant>
 #include <vector>
 
-// C++17 ±ê×¼¿â
+// C++17 æ ‡å‡†åº“
 #include <any>
 #include <optional>
 
 // GLAD+GLFW
 #include <glad.h>
-#include <glfw/glfw3.h>  // ±ØĞëÔÚGLAD¼ÓÔØ¿âÖ®ºó
+#include <glfw/glfw3.h>  // å¿…é¡»åœ¨GLADåŠ è½½åº“ä¹‹å
 
-// ÊıÑ§¿â£¨Ê¹ÓÃgtxÏà¹Øº¯Êı£¬ĞèÒªÆôÓÃEXPERIMENTAL£©
+// æ•°å­¦åº“ï¼ˆä½¿ç”¨gtxç›¸å…³å‡½æ•°ï¼Œéœ€è¦å¯ç”¨EXPERIMENTALï¼‰
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -44,19 +44,19 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/transform.hpp>
 
-// ÎÄ¼şÏµÍ³
+// æ–‡ä»¶ç³»ç»Ÿ
 #include "filesystem/filesystem.h"
 
-// ÈÕÖ¾ÏµÍ³
+// æ—¥å¿—ç³»ç»Ÿ
 #include "logger/logger.h"
 
-// UUIDÏµÍ³
+// UUIDç³»ç»Ÿ
 #include "uuid/mite_uuid.h"
 
-// Ê±¼äÏµÍ³
+// æ—¶é—´ç³»ç»Ÿ
 #include "time/time.h"
 
-// ÊÂ¼şÏµÍ³
+// äº‹ä»¶ç³»ç»Ÿ
 #include "event/subscription_group.h"
 #include "event/callback_adapter.h"
 

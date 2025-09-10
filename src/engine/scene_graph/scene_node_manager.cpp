@@ -10,11 +10,11 @@ SceneNodeManager::SceneNodeManager(SpatialPartitionManager &spatialPartition)
 }
 void SceneNodeManager::Clear()
 {
-  // Çå¿ÕËùÓĞ½Úµã£¨»á×Ô¶¯´¦Àí¸¸×Ó¹ØÏµ£©
+  // æ¸…ç©ºæ‰€æœ‰èŠ‚ç‚¹ï¼ˆä¼šè‡ªåŠ¨å¤„ç†çˆ¶å­å…³ç³»ï¼‰
   m_EntityToNodeMap.clear();
   m_DirtyNodes.clear();
 }
-// ==================== ³¡¾°½ÚµãÉúÃüÖÜÆÚ¹ÜÀí ====================
+// ==================== åœºæ™¯èŠ‚ç‚¹ç”Ÿå‘½å‘¨æœŸç®¡ç† ====================
 SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
 {
   if (!entity.IsValid()) {
@@ -24,28 +24,28 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
 
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // ¼ì²éÊÇ·ñÒÑ´æÔÚ½Úµã
+  // æ£€æŸ¥æ˜¯å¦å·²å­˜åœ¨èŠ‚ç‚¹
   if (m_EntityToNodeMap.find(entity) != m_EntityToNodeMap.end()) {
     m_Logger->warn("Scene node already exists for entity {}", entity.GetUUIDString());
     return m_EntityToNodeMap[entity].get();
   }
 
   try {
-    // ´´½¨ĞÂµÄ³¡¾°½Úµã
+    // åˆ›å»ºæ–°çš„åœºæ™¯èŠ‚ç‚¹
     auto node = std::make_unique<SceneNode>(entity);
     SceneNode *nodePtr = node.get();
 
-    // Ìí¼Óµ½Ó³Éä±í
+    // æ·»åŠ åˆ°æ˜ å°„è¡¨
     m_EntityToNodeMap[entity] = std::move(node);
 
-    // Èç¹ûÊµÌåÓĞVisibilityComponent£¬³õÊ¼»¯Æä¾Ö²¿°üÎ§ºĞ
+    // å¦‚æœå®ä½“æœ‰VisibilityComponentï¼Œåˆå§‹åŒ–å…¶å±€éƒ¨åŒ…å›´ç›’
     if (registry.HasComponent<VisibilityComponent>(entity)) {
       auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
       visibilityComp.SetLocalAABB(nodePtr->GetLocalBounds());
       visibilityComp.MarkBoundsDirty();
     }
 
-    // Ìí¼Óµ½¿Õ¼ä»®·Ö½á¹¹
+    // æ·»åŠ åˆ°ç©ºé—´åˆ’åˆ†ç»“æ„
     m_SpatialPartition.AddNodeToSpatialPartition(nodePtr);
 
     m_Logger->debug("Created scene node for entity {}", entity.GetUUIDString());
@@ -70,30 +70,30 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
 
   SceneNode *node = it->second.get();
 
-  // ´Ó¿Õ¼ä»®·Ö½á¹¹ÖĞÒÆ³ı
+  // ä»ç©ºé—´åˆ’åˆ†ç»“æ„ä¸­ç§»é™¤
   m_SpatialPartition.RemoveNodeFromSpatialPartition(node);
 
-  // ´¦Àí¸¸×Ó¹ØÏµ£º½«ËùÓĞ×Ó½ÚµãÌáÉıÎª¸ù½Úµã
+  // å¤„ç†çˆ¶å­å…³ç³»ï¼šå°†æ‰€æœ‰å­èŠ‚ç‚¹æå‡ä¸ºæ ¹èŠ‚ç‚¹
   auto children = node->GetChildren();
   for (SceneNode *child : children) {
     SetParent(child, nullptr);
   }
 
-  // Èç¹û×ÔÉíÓĞ¸¸½Úµã£¬´Ó¸¸½ÚµãÖĞÒÆ³ı
+  // å¦‚æœè‡ªèº«æœ‰çˆ¶èŠ‚ç‚¹ï¼Œä»çˆ¶èŠ‚ç‚¹ä¸­ç§»é™¤
   if (node->GetParent()) {
     node->GetParent()->RemoveChild(node);
   }
 
-  // ÇåÀíVisibilityComponentÏà¹Ø×´Ì¬
+  // æ¸…ç†VisibilityComponentç›¸å…³çŠ¶æ€
   if (registry.HasComponent<VisibilityComponent>(entity)) {
     auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
-    visibilityComp.SetVisible(false);  // ±ê¼ÇÎª²»¿É¼û
+    visibilityComp.SetVisible(false);  // æ ‡è®°ä¸ºä¸å¯è§
   }
 
-  // ´ÓÓ³Éä±íÖĞÒÆ³ı
+  // ä»æ˜ å°„è¡¨ä¸­ç§»é™¤
   m_EntityToNodeMap.erase(it);
 
-  // ´ÓÔà½ÚµãÁĞ±íÖĞÒÆ³ı
+  // ä»è„èŠ‚ç‚¹åˆ—è¡¨ä¸­ç§»é™¤
   m_DirtyNodes.erase(std::remove(m_DirtyNodes.begin(), m_DirtyNodes.end(), entity),
                      m_DirtyNodes.end());
 
@@ -101,7 +101,7 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   return true;
 }
 
-// ==================== ³¡¾°½Úµã²éÑ¯½Ó¿Ú ====================
+// ==================== åœºæ™¯èŠ‚ç‚¹æŸ¥è¯¢æ¥å£ ====================
 SceneNode *SceneNodeManager::GetNode(Entity entity) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
@@ -157,7 +157,7 @@ std::string SceneNodeManager::GetNodePath(SceneNode *node) const
   std::vector<std::string> pathSegments;
   SceneNode *current = node;
 
-  // ÏòÉÏ±éÀú¹¹½¨Â·¾¶
+  // å‘ä¸Šéå†æ„å»ºè·¯å¾„
   while (current) {
     std::stringstream ss;
     ss << "Entity_" << current->GetEntity().GetUUIDString();
@@ -165,10 +165,10 @@ std::string SceneNodeManager::GetNodePath(SceneNode *node) const
     current = current->GetParent();
   }
 
-  // ·´×ªÂ·¾¶£¨´Ó¸ùµ½µ±Ç°½Úµã£©
+  // åè½¬è·¯å¾„ï¼ˆä»æ ¹åˆ°å½“å‰èŠ‚ç‚¹ï¼‰
   std::reverse(pathSegments.begin(), pathSegments.end());
 
-  // Æ´½ÓÂ·¾¶×Ö·û´®
+  // æ‹¼æ¥è·¯å¾„å­—ç¬¦ä¸²
   std::string path;
   for (size_t i = 0; i < pathSegments.size(); ++i) {
     if (i > 0)
@@ -183,7 +183,7 @@ SceneNode *SceneNodeManager::FindNodeByPath(const std::string &path) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // ¼òµ¥µÄÂ·¾¶²éÕÒÊµÏÖ£¨¿É¸ù¾İĞèÒªÓÅ»¯£©
+  // ç®€å•çš„è·¯å¾„æŸ¥æ‰¾å®ç°ï¼ˆå¯æ ¹æ®éœ€è¦ä¼˜åŒ–ï¼‰
   for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (GetNodePath(node.get()) == path) {
       return node.get();
@@ -197,11 +197,11 @@ void SceneNodeManager::TraverseTree(std::function<bool(SceneNode *)> callback) c
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // ´ÓËùÓĞ¸ù½Úµã¿ªÊ¼±éÀú
+  // ä»æ‰€æœ‰æ ¹èŠ‚ç‚¹å¼€å§‹éå†
   for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (node->IsRoot()) {
       if (!TraverseRecursive(node.get(), callback)) {
-        break;  // »Øµ÷º¯ÊıÒªÇóÖĞ¶Ï±éÀú
+        break;  // å›è°ƒå‡½æ•°è¦æ±‚ä¸­æ–­éå†
       }
     }
   }
@@ -213,7 +213,7 @@ bool SceneNodeManager::IsEmpty() const
   return m_EntityToNodeMap.empty();
 }
 
-// ==================== ½Úµã¸üĞÂ½Ó¿Ú ====================
+// ==================== èŠ‚ç‚¹æ›´æ–°æ¥å£ ====================
 bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
 {
   if (!node) {
@@ -221,7 +221,7 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
     return false;
   }
 
-  // ¼ì²éÑ­»·ÒıÓÃ
+  // æ£€æŸ¥å¾ªç¯å¼•ç”¨
   if (!ValidateParenting(node, newParent)) {
     m_Logger->warn("Invalid parenting operation: cyclic reference detected");
     return false;
@@ -229,21 +229,21 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
 
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // ´ÓÔ­¸¸½ÚµãÒÆ³ı
+  // ä»åŸçˆ¶èŠ‚ç‚¹ç§»é™¤
   SceneNode *oldParent = node->GetParent();
   if (oldParent) {
     oldParent->RemoveChild(node);
   }
 
-  // ÉèÖÃĞÂ¸¸½Úµã
+  // è®¾ç½®æ–°çˆ¶èŠ‚ç‚¹
   if (newParent) {
     newParent->AddChild(node);
   }
 
-  // ÉèÖÃ½ÚµãµÄ¸¸½ÚµãÒıÓÃ
+  // è®¾ç½®èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹å¼•ç”¨
   node->SetParent(newParent);
 
-  // ±ê¼Ç½ÚµãĞèÒª¸üĞÂ£¨¸¸×Ó¹ØÏµ±ä»¯Ó°ÏìÊÀ½ç±ä»»£©
+  // æ ‡è®°èŠ‚ç‚¹éœ€è¦æ›´æ–°ï¼ˆçˆ¶å­å…³ç³»å˜åŒ–å½±å“ä¸–ç•Œå˜æ¢ï¼‰
   MarkNodeDirty(node->GetEntity());
 
   m_Logger->debug("Reparented node {}.", node->GetEntity().GetUUIDString());
@@ -266,7 +266,7 @@ void SceneNodeManager::UpdateNodeBounds(SceneRegistry &registry,
 
 void SceneNodeManager::MarkNodeDirty(Entity entity)
 {
-  // ±ÜÃâÖØ¸´Ìí¼Ó
+  // é¿å…é‡å¤æ·»åŠ 
   if (std::find(m_DirtyNodes.begin(), m_DirtyNodes.end(), entity) == m_DirtyNodes.end()) {
     m_DirtyNodes.push_back(entity);
   }
@@ -276,9 +276,9 @@ void SceneNodeManager::Update(SceneRegistry &registry)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // ¸üĞÂÖ÷Ïà»úµÄÊÓ×¶ÌåºÍ¿É¼ûĞÔÑÚÂë
+  // æ›´æ–°ä¸»ç›¸æœºçš„è§†é”¥ä½“å’Œå¯è§æ€§æ©ç 
 
-  // ¸üĞÂËùÓĞÔà½Úµã
+  // æ›´æ–°æ‰€æœ‰è„èŠ‚ç‚¹
   if (m_DirtyNodes.empty()) {
     return;
   }
@@ -288,7 +288,7 @@ void SceneNodeManager::Update(SceneRegistry &registry)
     if (it != m_EntityToNodeMap.end()) {
       it->second->Update();
 
-      // ¸üĞÂ¿Õ¼ä»®·Ö½á¹¹ÖĞµÄ½ÚµãÎ»ÖÃ
+      // æ›´æ–°ç©ºé—´åˆ’åˆ†ç»“æ„ä¸­çš„èŠ‚ç‚¹ä½ç½®
       m_SpatialPartition.Update(it->second.get());
     }
   }
@@ -296,7 +296,7 @@ void SceneNodeManager::Update(SceneRegistry &registry)
   m_Logger->trace("Updated {} dirty nodes", m_DirtyNodes.size());
   m_DirtyNodes.clear();
 }
-// ==================== Ë½ÓĞ¹¤¾ß·½·¨ ====================
+// ==================== ç§æœ‰å·¥å…·æ–¹æ³• ====================
 
 bool SceneNodeManager::TraverseRecursive(SceneNode *node,
                                          std::function<bool(SceneNode *)> callback) const
@@ -305,12 +305,12 @@ bool SceneNodeManager::TraverseRecursive(SceneNode *node,
     return true;
   }
 
-  // ÏÈ´¦Àíµ±Ç°½Úµã
+  // å…ˆå¤„ç†å½“å‰èŠ‚ç‚¹
   if (!callback(node)) {
-    return false;  // »Øµ÷ÒªÇóÖĞ¶Ï±éÀú
+    return false;  // å›è°ƒè¦æ±‚ä¸­æ–­éå†
   }
 
-  // µİ¹é´¦ÀíËùÓĞ×Ó½Úµã
+  // é€’å½’å¤„ç†æ‰€æœ‰å­èŠ‚ç‚¹
   for (SceneNode *child : node->GetChildren()) {
     if (!TraverseRecursive(child, callback)) {
       return false;
@@ -323,14 +323,14 @@ bool SceneNodeManager::TraverseRecursive(SceneNode *node,
 bool SceneNodeManager::ValidateParenting(SceneNode *node, SceneNode *newParent) const
 {
   if (!node || node == newParent) {
-    return false;  // ²»ÄÜÉèÖÃ×Ô¼ºÎª¸¸½Úµã
+    return false;  // ä¸èƒ½è®¾ç½®è‡ªå·±ä¸ºçˆ¶èŠ‚ç‚¹
   }
 
-  // ¼ì²éÑ­»·ÒıÓÃ£ºÈ·±£newParent²»ÊÇnodeµÄ×ÓËï
+  // æ£€æŸ¥å¾ªç¯å¼•ç”¨ï¼šç¡®ä¿newParentä¸æ˜¯nodeçš„å­å­™
   SceneNode *current = newParent;
   while (current) {
     if (current == node) {
-      return false;  // Ñ­»·ÒıÓÃ¼ì²â
+      return false;  // å¾ªç¯å¼•ç”¨æ£€æµ‹
     }
     current = current->GetParent();
   }

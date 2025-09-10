@@ -6,11 +6,11 @@
 #include "entity.h"
 
 namespace mite {
-// 1. ³¡¾°ÊÂ¼ş	=====================================================
+// 1. åœºæ™¯äº‹ä»¶	=====================================================
 
 /**
  * @class SceneLoadedEvent
- * @brief ³¡¾°¼ÓÔØÊÂ¼ş
+ * @brief åœºæ™¯åŠ è½½äº‹ä»¶
  */
 class SceneLoadedEvent : public Event {
  public:
@@ -24,7 +24,7 @@ class SceneLoadedEvent : public Event {
 };
 /**
  * @class SceneLoadedEvent
- * @brief ³¡¾°Çå¿ÕÊÂ¼ş
+ * @brief åœºæ™¯æ¸…ç©ºäº‹ä»¶
  */
 class SceneClearedEvent : public Event {
  public:
@@ -37,11 +37,11 @@ class SceneClearedEvent : public Event {
   }
 };
 
-// 2. ÊµÌåÊÂ¼ş	=====================================================
+// 2. å®ä½“äº‹ä»¶	=====================================================
 
 /**
  * @class EntityEvent
- * @brief ÊµÌåÊÂ¼ş»ùÀà(³éÏóÀà)
+ * @brief å®ä½“äº‹ä»¶åŸºç±»(æŠ½è±¡ç±»)
  */
 class EntityEvent : public Event {
  public:
@@ -52,12 +52,12 @@ class EntityEvent : public Event {
   }
 
  protected:
-  Entity entity;  // ¹ØÁªµÄÊµÌå
+  Entity entity;  // å…³è”çš„å®ä½“
 };
 
 /**
  * @class EntityCreatedEvent
- * @brief ´´½¨ÊµÌåÊÂ¼ş
+ * @brief åˆ›å»ºå®ä½“äº‹ä»¶
  */
 class EntityCreatedEvent : public EntityEvent {
  public:
@@ -71,7 +71,7 @@ class EntityCreatedEvent : public EntityEvent {
 };
 /**
  * @class EntityPreDestroyedEvent
- * @brief Ïú»ÙÊµÌåÊÂ¼ş
+ * @brief é”€æ¯å®ä½“äº‹ä»¶
  */
 class EntityDestroyedEvent : public EntityEvent {
  public:
@@ -86,7 +86,7 @@ class EntityDestroyedEvent : public EntityEvent {
 
 /**
  * @class EntityParentChangedEvent
- * @brief ÊµÌåParentĞŞ¸ÄÊÂ¼ş
+ * @brief å®ä½“Parentä¿®æ”¹äº‹ä»¶
  */
 class EntityParentChangedEvent : public EntityEvent {
  public:
@@ -100,7 +100,7 @@ class EntityParentChangedEvent : public EntityEvent {
 };
 /**
  * @class EntityTagChangedEvent
- * @brief ÊµÌåTagĞŞ¸ÄÊÂ¼ş
+ * @brief å®ä½“Tagä¿®æ”¹äº‹ä»¶
  */
 class EntityTagChangedEvent : public EntityEvent {
  public:
@@ -113,10 +113,10 @@ class EntityTagChangedEvent : public EntityEvent {
   }
 };
 
-// 3. ×é¼şÊÂ¼ş	=====================================================
+// 3. ç»„ä»¶äº‹ä»¶	=====================================================
 /**
  * @class ComponentEvent
- * @brief ×é¼şÊÂ¼ş»ùÀà(³éÏóÀà)
+ * @brief ç»„ä»¶äº‹ä»¶åŸºç±»(æŠ½è±¡ç±»)
  */
 template<typename T> class ComponentEvent : public Event {
  public:
@@ -133,14 +133,14 @@ template<typename T> class ComponentEvent : public Event {
     return component;
   }
  protected:
-  Entity entity;   // ¹ØÁªµÄÊµÌå
-  T &component;    // ×é¼ş
-  ComponentID id;  // ×é¼şÀàĞÍ±êÊ¶·û
+  Entity entity;   // å…³è”çš„å®ä½“
+  T &component;    // ç»„ä»¶
+  ComponentID id;  // ç»„ä»¶ç±»å‹æ ‡è¯†ç¬¦
 };
 
 /**
  * @class ComponentAddedEvent
- * @brief ×é¼şÌí¼ÓÊÂ¼ş
+ * @brief ç»„ä»¶æ·»åŠ äº‹ä»¶
  */
 template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
  public:
@@ -156,7 +156,7 @@ template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
 
 /**
  * @class ComponentRemovedEvent
- * @brief ×é¼şÉ¾³ıÊÂ¼ş
+ * @brief ç»„ä»¶åˆ é™¤äº‹ä»¶
  */
 template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
  public:
@@ -170,7 +170,7 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
 };
 ///**
 // * @class ComponentChangedEvent
-// * @brief ×é¼şÌæ»»ÊÂ¼ş
+// * @brief ç»„ä»¶æ›¿æ¢äº‹ä»¶
 // */
 // template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
 // public:
@@ -190,7 +190,7 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
 //  }
 //
 // private:
-//  T &oldComponent;  // ×é¼ş
+//  T &oldComponent;  // ç»„ä»¶
 //};
 };  // namespace mite
 

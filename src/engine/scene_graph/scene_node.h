@@ -8,27 +8,27 @@ namespace mite {
 
 /**
  * @class SceneNode
- * @brief ³¡¾°½ÚµãÀà£¬¹ÜÀí³¡¾°ÖĞÊµÌåµÄ²ã¼¶¹ØÏµºÍ¿Õ¼äĞÅÏ¢
+ * @brief åœºæ™¯èŠ‚ç‚¹ç±»ï¼Œç®¡ç†åœºæ™¯ä¸­å®ä½“çš„å±‚çº§å…³ç³»å’Œç©ºé—´ä¿¡æ¯
  *
- * Ã¿¸öSceneNode¶ÔÓ¦Ò»¸öECSÊµÌå£¬Î¬»¤¸¸×Ó¹ØÏµ¡¢¾Ö²¿±ä»»ºÍ°üÎ§ÌåĞÅÏ¢
- * ÓÃÓÚ³¡¾°Í¼¹ÜÀíºÍ¿Õ¼ä²éÑ¯ÓÅ»¯
+ * æ¯ä¸ªSceneNodeå¯¹åº”ä¸€ä¸ªECSå®ä½“ï¼Œç»´æŠ¤çˆ¶å­å…³ç³»ã€å±€éƒ¨å˜æ¢å’ŒåŒ…å›´ä½“ä¿¡æ¯
+ * ç”¨äºåœºæ™¯å›¾ç®¡ç†å’Œç©ºé—´æŸ¥è¯¢ä¼˜åŒ–
  */
 class SceneNode {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param entity ¹ØÁªµÄECSÊµÌå
+   * @brief æ„é€ å‡½æ•°
+   * @param entity å…³è”çš„ECSå®ä½“
    */
   explicit SceneNode(Entity entity);
 
   /**
-   * @brief Îö¹¹º¯Êı
+   * @brief ææ„å‡½æ•°
    */
   ~SceneNode();
 
   /**
-   * @brief »ñÈ¡¹ØÁªµÄECSÊµÌå
-   * @return ECSÊµÌåÒıÓÃ
+   * @brief è·å–å…³è”çš„ECSå®ä½“
+   * @return ECSå®ä½“å¼•ç”¨
    */
   Entity GetEntity() const
   {
@@ -36,14 +36,14 @@ class SceneNode {
   }
 
   /**
-   * @brief ÉèÖÃ¸¸½Úµã
-   * @param parent ¸¸½ÚµãÖ¸Õë
+   * @brief è®¾ç½®çˆ¶èŠ‚ç‚¹
+   * @param parent çˆ¶èŠ‚ç‚¹æŒ‡é’ˆ
    */
   void SetParent(SceneNode *parent);
 
   /**
-   * @brief »ñÈ¡¸¸½Úµã
-   * @return ¸¸½ÚµãÖ¸Õë£¨¿ÉÄÜÎªnullptr£©
+   * @brief è·å–çˆ¶èŠ‚ç‚¹
+   * @return çˆ¶èŠ‚ç‚¹æŒ‡é’ˆï¼ˆå¯èƒ½ä¸ºnullptrï¼‰
    */
   SceneNode *GetParent() const
   {
@@ -51,21 +51,21 @@ class SceneNode {
   }
 
   /**
-   * @brief Ìí¼Ó×Ó½Úµã
-   * @param child ×Ó½ÚµãÖ¸Õë
+   * @brief æ·»åŠ å­èŠ‚ç‚¹
+   * @param child å­èŠ‚ç‚¹æŒ‡é’ˆ
    */
   void AddChild(SceneNode *child);
 
   /**
-   * @brief ÒÆ³ı×Ó½Úµã
-   * @param child ÒªÒÆ³ıµÄ×Ó½ÚµãÖ¸Õë
-   * @return ÊÇ·ñ³É¹¦ÒÆ³ı
+   * @brief ç§»é™¤å­èŠ‚ç‚¹
+   * @param child è¦ç§»é™¤çš„å­èŠ‚ç‚¹æŒ‡é’ˆ
+   * @return æ˜¯å¦æˆåŠŸç§»é™¤
    */
   bool RemoveChild(SceneNode *child);
 
   /**
-   * @brief »ñÈ¡ËùÓĞ×Ó½Úµã
-   * @return ×Ó½ÚµãÖ¸ÕëÁĞ±í
+   * @brief è·å–æ‰€æœ‰å­èŠ‚ç‚¹
+   * @return å­èŠ‚ç‚¹æŒ‡é’ˆåˆ—è¡¨
    */
   const std::vector<SceneNode *> &GetChildren() const
   {
@@ -73,14 +73,14 @@ class SceneNode {
   }
 
   /**
-   * @brief ÉèÖÃ¾Ö²¿±ä»»¾ØÕó
-   * @param localTransform ¾Ö²¿±ä»»¾ØÕó
+   * @brief è®¾ç½®å±€éƒ¨å˜æ¢çŸ©é˜µ
+   * @param localTransform å±€éƒ¨å˜æ¢çŸ©é˜µ
    */
   void SetLocalTransform(const glm::mat4 &localTransform);
 
   /**
-   * @brief »ñÈ¡¾Ö²¿±ä»»¾ØÕó
-   * @return ¾Ö²¿±ä»»¾ØÕó
+   * @brief è·å–å±€éƒ¨å˜æ¢çŸ©é˜µ
+   * @return å±€éƒ¨å˜æ¢çŸ©é˜µ
    */
   const glm::mat4 &GetLocalTransform() const
   {
@@ -88,8 +88,8 @@ class SceneNode {
   }
 
   /**
-   * @brief »ñÈ¡ÊÀ½ç±ä»»¾ØÕó
-   * @return ÊÀ½ç±ä»»¾ØÕó
+   * @brief è·å–ä¸–ç•Œå˜æ¢çŸ©é˜µ
+   * @return ä¸–ç•Œå˜æ¢çŸ©é˜µ
    */
   const glm::mat4 &GetWorldTransform() const
   {
@@ -97,14 +97,14 @@ class SceneNode {
   }
 
   /**
-   * @brief ÉèÖÃ¾Ö²¿°üÎ§ºĞ£¨Ä£ĞÍ¿Õ¼ä£©
-   * @param localBounds ¾Ö²¿°üÎ§ºĞ
+   * @brief è®¾ç½®å±€éƒ¨åŒ…å›´ç›’ï¼ˆæ¨¡å‹ç©ºé—´ï¼‰
+   * @param localBounds å±€éƒ¨åŒ…å›´ç›’
    */
   void SetLocalBounds(const AABB &localBounds);
 
   /**
-   * @brief »ñÈ¡¾Ö²¿°üÎ§ºĞ£¨Ä£ĞÍ¿Õ¼ä£©
-   * @return ¾Ö²¿°üÎ§ºĞ
+   * @brief è·å–å±€éƒ¨åŒ…å›´ç›’ï¼ˆæ¨¡å‹ç©ºé—´ï¼‰
+   * @return å±€éƒ¨åŒ…å›´ç›’
    */
   const AABB &GetLocalBounds() const
   {
@@ -112,8 +112,8 @@ class SceneNode {
   }
 
   /**
-   * @brief »ñÈ¡ÊÀ½ç°üÎ§ºĞ£¨ÊÀ½ç¿Õ¼ä£©
-   * @return ÊÀ½ç°üÎ§ºĞ
+   * @brief è·å–ä¸–ç•ŒåŒ…å›´ç›’ï¼ˆä¸–ç•Œç©ºé—´ï¼‰
+   * @return ä¸–ç•ŒåŒ…å›´ç›’
    */
   const AABB &GetWorldBounds() const
   {
@@ -121,24 +121,24 @@ class SceneNode {
   }
 
   /**
-   * @brief ±ê¼Ç±ä»»ÎªÔà×´Ì¬£¬ĞèÒªÖØĞÂ¼ÆËãÊÀ½ç¾ØÕó
+   * @brief æ ‡è®°å˜æ¢ä¸ºè„çŠ¶æ€ï¼Œéœ€è¦é‡æ–°è®¡ç®—ä¸–ç•ŒçŸ©é˜µ
    */
   void MarkTransformDirty();
 
   /**
-   * @brief ±ê¼Ç°üÎ§ºĞÎªÔà×´Ì¬£¬ĞèÒªÖØĞÂ¼ÆËãÊÀ½ç°üÎ§ºĞ
+   * @brief æ ‡è®°åŒ…å›´ç›’ä¸ºè„çŠ¶æ€ï¼Œéœ€è¦é‡æ–°è®¡ç®—ä¸–ç•ŒåŒ…å›´ç›’
    */
   void MarkBoundsDirty();
 
   /**
-   * @brief ¸üĞÂÊÀ½ç±ä»»ºÍ°üÎ§ºĞ£¨Èç¹ûÎªÔà×´Ì¬£©
-   * @param force Ç¿ÖÆ¸üĞÂ£¨¼´Ê¹²»ÊÇÔà×´Ì¬£©
+   * @brief æ›´æ–°ä¸–ç•Œå˜æ¢å’ŒåŒ…å›´ç›’ï¼ˆå¦‚æœä¸ºè„çŠ¶æ€ï¼‰
+   * @param force å¼ºåˆ¶æ›´æ–°ï¼ˆå³ä½¿ä¸æ˜¯è„çŠ¶æ€ï¼‰
    */
   void Update(bool force = false);
 
   /**
-   * @brief ÅĞ¶Ï½ÚµãÊÇ·ñÎªÔà×´Ì¬£¨ĞèÒª¸üĞÂ£©
-   * @return ÊÇ·ñÎªÔà×´Ì¬
+   * @brief åˆ¤æ–­èŠ‚ç‚¹æ˜¯å¦ä¸ºè„çŠ¶æ€ï¼ˆéœ€è¦æ›´æ–°ï¼‰
+   * @return æ˜¯å¦ä¸ºè„çŠ¶æ€
    */
   bool IsDirty() const
   {
@@ -146,14 +146,14 @@ class SceneNode {
   }
 
   /**
-   * @brief »ñÈ¡½ÚµãÔÚ³¡¾°Ê÷ÖĞµÄÉî¶È£¨¸ù½ÚµãÎª0£©
-   * @return ½ÚµãÉî¶È
+   * @brief è·å–èŠ‚ç‚¹åœ¨åœºæ™¯æ ‘ä¸­çš„æ·±åº¦ï¼ˆæ ¹èŠ‚ç‚¹ä¸º0ï¼‰
+   * @return èŠ‚ç‚¹æ·±åº¦
    */
   int GetDepth() const;
 
   /**
-   * @brief ÅĞ¶Ï½ÚµãÊÇ·ñÎª¸ù½Úµã
-   * @return ÊÇ·ñÎª¸ù½Úµã
+   * @brief åˆ¤æ–­èŠ‚ç‚¹æ˜¯å¦ä¸ºæ ¹èŠ‚ç‚¹
+   * @return æ˜¯å¦ä¸ºæ ¹èŠ‚ç‚¹
    */
   bool IsRoot() const
   {
@@ -161,8 +161,8 @@ class SceneNode {
   }
 
   /**
-   * @brief ÅĞ¶Ï½ÚµãÊÇ·ñÎªÒ¶×Ó½Úµã
-   * @return ÊÇ·ñÎªÒ¶×Ó½Úµã
+   * @brief åˆ¤æ–­èŠ‚ç‚¹æ˜¯å¦ä¸ºå¶å­èŠ‚ç‚¹
+   * @return æ˜¯å¦ä¸ºå¶å­èŠ‚ç‚¹
    */
   bool IsLeaf() const
   {
@@ -170,54 +170,54 @@ class SceneNode {
   }
 
   /**
-   * @brief »ñÈ¡½ÚµãµÄÍêÕûÂ·¾¶£¨ÓÃÓÚµ÷ÊÔ£©
-   * @return ½ÚµãÂ·¾¶×Ö·û´®
+   * @brief è·å–èŠ‚ç‚¹çš„å®Œæ•´è·¯å¾„ï¼ˆç”¨äºè°ƒè¯•ï¼‰
+   * @return èŠ‚ç‚¹è·¯å¾„å­—ç¬¦ä¸²
    */
   std::string GetPath() const;
 
   /**
-   * @brief ¼ì²é½ÚµãÊÇ·ñ¿É¼û
-   * @param registry ³¡¾°×¢²á±í
-   * @return ÊÇ·ñ¿É¼û
+   * @brief æ£€æŸ¥èŠ‚ç‚¹æ˜¯å¦å¯è§
+   * @param registry åœºæ™¯æ³¨å†Œè¡¨
+   * @return æ˜¯å¦å¯è§
    */
   bool IsNodeVisible(SceneRegistry &registry, uint32_t visibilityMask) const;
 
  private:
   /**
-   * @brief µİ¹é¸üĞÂ×Ó½ÚµãµÄ±ä»»×´Ì¬
+   * @brief é€’å½’æ›´æ–°å­èŠ‚ç‚¹çš„å˜æ¢çŠ¶æ€
    */
   void MarkChildrenTransformDirty();
 
   /**
-   * @brief µİ¹é¸üĞÂ×Ó½ÚµãµÄ°üÎ§ºĞ×´Ì¬
+   * @brief é€’å½’æ›´æ–°å­èŠ‚ç‚¹çš„åŒ…å›´ç›’çŠ¶æ€
    */
   void MarkChildrenBoundsDirty();
 
   /**
-   * @brief ¼ÆËãÊÀ½ç±ä»»¾ØÕó
+   * @brief è®¡ç®—ä¸–ç•Œå˜æ¢çŸ©é˜µ
    */
   void UpdateWorldTransform();
 
   /**
-   * @brief ¼ÆËãÊÀ½ç°üÎ§ºĞ
+   * @brief è®¡ç®—ä¸–ç•ŒåŒ…å›´ç›’
    */
   void UpdateWorldBounds();
 
  private:
-  Entity m_Entity;                      // ¹ØÁªµÄECSÊµÌå
-  SceneNode *m_Parent = nullptr;        // ¸¸½ÚµãÖ¸Õë
-  std::vector<SceneNode *> m_Children;  // ×Ó½ÚµãÁĞ±í
+  Entity m_Entity;                      // å…³è”çš„ECSå®ä½“
+  SceneNode *m_Parent = nullptr;        // çˆ¶èŠ‚ç‚¹æŒ‡é’ˆ
+  std::vector<SceneNode *> m_Children;  // å­èŠ‚ç‚¹åˆ—è¡¨
 
-  glm::mat4 m_LocalTransform = glm::mat4(1.0f);  // ¾Ö²¿±ä»»¾ØÕó
-  glm::mat4 m_WorldTransform = glm::mat4(1.0f);  // ÊÀ½ç±ä»»¾ØÕó
+  glm::mat4 m_LocalTransform = glm::mat4(1.0f);  // å±€éƒ¨å˜æ¢çŸ©é˜µ
+  glm::mat4 m_WorldTransform = glm::mat4(1.0f);  // ä¸–ç•Œå˜æ¢çŸ©é˜µ
 
-  AABB m_LocalBounds;  // ¾Ö²¿¿Õ¼ä°üÎ§ºĞ
-  AABB m_WorldBounds;  // ÊÀ½ç¿Õ¼ä°üÎ§ºĞ
+  AABB m_LocalBounds;  // å±€éƒ¨ç©ºé—´åŒ…å›´ç›’
+  AABB m_WorldBounds;  // ä¸–ç•Œç©ºé—´åŒ…å›´ç›’
 
-  bool m_TransformDirty = true;  // ±ä»»Ôà±ê¼Ç
-  bool m_BoundsDirty = true;     // °üÎ§ºĞÔà±ê¼Ç
+  bool m_TransformDirty = true;  // å˜æ¢è„æ ‡è®°
+  bool m_BoundsDirty = true;     // åŒ…å›´ç›’è„æ ‡è®°
 
-  // ½ûÖ¹¿½±´ºÍ¸³Öµ
+  // ç¦æ­¢æ‹·è´å’Œèµ‹å€¼
   SceneNode(const SceneNode &) = delete;
   SceneNode &operator=(const SceneNode &) = delete;
 };

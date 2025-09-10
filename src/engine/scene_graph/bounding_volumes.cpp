@@ -28,7 +28,7 @@ bool BoundingVolumes::AABBIntersectsAABB(const AABB &a, const AABB &b)
 
 bool BoundingVolumes::SphereIntersectsAABB(const Sphere &sphere, const AABB &aabb)
 {
-  // ¼ÆËãÇòĞÄµ½AABB×î½üµãµÄ¾àÀëÆ½·½
+  // è®¡ç®—çƒå¿ƒåˆ°AABBæœ€è¿‘ç‚¹çš„è·ç¦»å¹³æ–¹
   glm::vec3 closestPoint = glm::clamp(sphere.center, aabb.min, aabb.max);
   float distSq = glm::distance(sphere.center, closestPoint) *
                  glm::distance(sphere.center, closestPoint);

@@ -58,7 +58,7 @@ std::string UniformVariant::GetTypeName() const
 }
 std::string UniformVariant::ToShaderString() const
 {
-  // ¶¨ÒåÒ»¸ö¾Ö²¿¸¨Öúº¯ÊıÀ´´¦Àíµİ¹éµ÷ÓÃ
+  // å®šä¹‰ä¸€ä¸ªå±€éƒ¨è¾…åŠ©å‡½æ•°æ¥å¤„ç†é€’å½’è°ƒç”¨
   auto ToStringHelper = [](const auto &arg) -> std::string {
     using T = std::decay_t<decltype(arg)>;
 
@@ -69,7 +69,7 @@ std::string UniformVariant::ToShaderString() const
       return std::to_string(arg);
     }
     else if constexpr (std::is_same_v<T, float>) {
-      // ±£Áô3Î»Ğ¡Êı
+      // ä¿ç•™3ä½å°æ•°
       std::string s = std::to_string(arg);
       s.erase(s.find_last_not_of('0') + 1, std::string::npos);
       if (s.back() == '.')

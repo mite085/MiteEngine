@@ -11,116 +11,116 @@
 #include "ui_widget/ui_widget.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class Renderer;
 class Window;
 
 /**
- * @brief UIÏµÍ³ºËĞÄ¹ÜÀíÀà
- * ¸ºÔğ¹ÜÀíUIÏµÍ³µÄÉúÃüÖÜÆÚ¡¢ÊÂ¼ş´¦Àí¡¢äÖÈ¾¼¯³ÉµÈ
+ * @brief UIç³»ç»Ÿæ ¸å¿ƒç®¡ç†ç±»
+ * è´Ÿè´£ç®¡ç†UIç³»ç»Ÿçš„ç”Ÿå‘½å‘¨æœŸã€äº‹ä»¶å¤„ç†ã€æ¸²æŸ“é›†æˆç­‰
  */
 class UISystem {
  public:
   /**
-   * @brief UIÏµÍ³¹¹Ôìº¯Êı
-   * @param renderer äÖÈ¾Æ÷ÒÀÀµ×¢Èë
-   * @param window ´°¿ÚÒÀÀµ×¢Èë
+   * @brief UIç³»ç»Ÿæ„é€ å‡½æ•°
+   * @param renderer æ¸²æŸ“å™¨ä¾èµ–æ³¨å…¥
+   * @param window çª—å£ä¾èµ–æ³¨å…¥
    */
   UISystem();
   ~UISystem() = default;
 
-  // ½ûÓÃ¿½±´ºÍÒÆ¶¯
+  // ç¦ç”¨æ‹·è´å’Œç§»åŠ¨
   UISystem(const UISystem &) = delete;
   UISystem(UISystem &&) = delete;
   UISystem &operator=(const UISystem &) = delete;
   UISystem &operator=(UISystem &&) = delete;
 
-  // Ê¹ÓÃ´°¿Ú¾ä±ú³õÊ¼»¯£¨ÈçGLFWwindow£©
+  // ä½¿ç”¨çª—å£å¥æŸ„åˆå§‹åŒ–ï¼ˆå¦‚GLFWwindowï¼‰
   void Initialize(void *nativeWindow);
   void Shutdown();
 
   /**
-   * @brief ¸üĞÂUIÏµÍ³
-   * @param deltaTime Ö¡Ê±¼ä²î
+   * @brief æ›´æ–°UIç³»ç»Ÿ
+   * @param deltaTime å¸§æ—¶é—´å·®
    */
   void Update(float deltaTime);
 
   /**
-   * @brief ¿ªÊ¼UIÖ¡
+   * @brief å¼€å§‹UIå¸§
    */
   void BeginFrame();
 
   /**
-   * @brief äÖÈ¾UI
+   * @brief æ¸²æŸ“UI
    */
   void Render();
 
   /**
-   * @brief ½áÊøUIÖ¡
+   * @brief ç»“æŸUIå¸§
    */
   void EndFrame();
 
   /**
-   * @brief ´¦ÀíÊäÈëÊÂ¼ş
-   * @param event ÊäÈëÊÂ¼ş
+   * @brief å¤„ç†è¾“å…¥äº‹ä»¶
+   * @param event è¾“å…¥äº‹ä»¶
    */
   void ProcessInputEvent(Event &event);
 
   /**
-   * @brief ´´½¨Ãæ°å
-   * @param name Ãæ°åÃû³Æ
-   * @return Ãæ°åÖ¸Õë
+   * @brief åˆ›å»ºé¢æ¿
+   * @param name é¢æ¿åç§°
+   * @return é¢æ¿æŒ‡é’ˆ
    */
   void RegisterPanel(std::shared_ptr<UIPanel>);
 
   /**
-   * @brief Ïú»ÙÃæ°å
-   * @param panelId Ãæ°åID
+   * @brief é”€æ¯é¢æ¿
+   * @param panelId é¢æ¿ID
    */
   void DestroyPanel(UUID panelId);
 
   /**
-   * @brief »ñÈ¡Ãæ°å
-   * @param panelId Ãæ°åID
-   * @return Ãæ°åÖ¸Õë
+   * @brief è·å–é¢æ¿
+   * @param panelId é¢æ¿ID
+   * @return é¢æ¿æŒ‡é’ˆ
    */
   std::shared_ptr<UIPanel> GetPanel(UUID panelId) const;
 
   /**
-   * @brief ÏÔÊ¾/Òş²ØÃæ°å
-   * @param panelId Ãæ°åID
-   * @param visible ÊÇ·ñ¿É¼û
+   * @brief æ˜¾ç¤º/éšè—é¢æ¿
+   * @param panelId é¢æ¿ID
+   * @param visible æ˜¯å¦å¯è§
    */
   void SetPanelVisible(UUID panelId, bool visible);
 
   /**
-   * @brief »ñÈ¡UIÊÇ·ñ¿É¼û
+   * @brief è·å–UIæ˜¯å¦å¯è§
    */
   bool IsVisible() const;
 
   /**
-   * @brief ÉèÖÃUI¿É¼ûĞÔ
-   * @param visible ÊÇ·ñ¿É¼û
+   * @brief è®¾ç½®UIå¯è§æ€§
+   * @param visible æ˜¯å¦å¯è§
    */
   void SetVisible(bool visible);
 
  private:
-  // Ê¹ÓÃ´°¿Ú¾ä±ú³õÊ¼»¯ºó¶Ë
+  // ä½¿ç”¨çª—å£å¥æŸ„åˆå§‹åŒ–åç«¯
   bool InitializeBackend(void *nativeWindow);
 
   bool m_Visible;
 
-  // ºËĞÄÒÀÀµ
+  // æ ¸å¿ƒä¾èµ–
   std::unique_ptr<UIBackend> m_Backend;
   std::unique_ptr<UIStyleManager> m_StyleManager;
 
-  // ¹ÜÀí¶ÔÏó
+  // ç®¡ç†å¯¹è±¡
   std::unordered_map<UUID, std::shared_ptr<UIPanel>> m_Panels;
 
-  // ÊÂ¼ş¶©ÔÄ
+  // äº‹ä»¶è®¢é˜…
   SubscriptionGroup m_EventSubscriptions;
 
-  // ÈÕÖ¾ÏµÍ³
+  // æ—¥å¿—ç³»ç»Ÿ
   Logger m_Logger;
 };
 }  // namespace mite

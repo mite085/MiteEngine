@@ -4,7 +4,7 @@ namespace mite {
 TagComponent::TagComponent() : ComponentTraits() {}
 TagComponent::TagComponent(const std::string &tag) : ComponentTraits(), m_Tag(tag)
 {
-  // ÑéÖ¤±êÇ©ÓĞĞ§ĞÔ
+  // éªŒè¯æ ‡ç­¾æœ‰æ•ˆæ€§
   if (m_Tag.empty()) {
     m_Tag = "Entity";
   }
@@ -23,48 +23,48 @@ bool StringMatchWildcard(const std::string &str, const std::string &pattern)
   size_t m = str.size();
   size_t n = pattern.size();
 
-  // ´´½¨¶¯Ì¬¹æ»®±í£¬dp[i][j] ±íÊ¾ str µÄÇ° i ¸ö×Ö·ûÓë pattern µÄÇ° j ¸ö×Ö·ûÊÇ·ñÆ¥Åä
+  // åˆ›å»ºåŠ¨æ€è§„åˆ’è¡¨ï¼Œdp[i][j] è¡¨ç¤º str çš„å‰ i ä¸ªå­—ç¬¦ä¸ pattern çš„å‰ j ä¸ªå­—ç¬¦æ˜¯å¦åŒ¹é…
   std::vector<std::vector<bool>> dp(m + 1, std::vector<bool>(n + 1, false));
 
-  // ³õÊ¼»¯£º¿Õ×Ö·û´®Óë¿ÕÄ£Ê½Æ¥Åä
+  // åˆå§‹åŒ–ï¼šç©ºå­—ç¬¦ä¸²ä¸ç©ºæ¨¡å¼åŒ¹é…
   dp[0][0] = true;
 
-  // ´¦ÀíÄ£Ê½ÒÔ '*' ¿ªÍ·µÄÇé¿ö£º¿Õ×Ö·û´®¿ÉÒÔÓëÁ¬ĞøµÄ '*' Æ¥Åä
+  // å¤„ç†æ¨¡å¼ä»¥ '*' å¼€å¤´çš„æƒ…å†µï¼šç©ºå­—ç¬¦ä¸²å¯ä»¥ä¸è¿ç»­çš„ '*' åŒ¹é…
   for (size_t j = 1; j <= n; ++j) {
     if (pattern[j - 1] == '*') {
-      // µ±Ç° '*' ¿ÉÒÔÆ¥Åä¿Õ×Ö·û´®£¬¼Ì³ĞÇ°Ò»¸öÄ£Ê½×Ö·ûµÄÆ¥Åä×´Ì¬
+      // å½“å‰ '*' å¯ä»¥åŒ¹é…ç©ºå­—ç¬¦ä¸²ï¼Œç»§æ‰¿å‰ä¸€ä¸ªæ¨¡å¼å­—ç¬¦çš„åŒ¹é…çŠ¶æ€
       dp[0][j] = dp[0][j - 1];
     }
   }
-  // Ìî³ä¶¯Ì¬¹æ»®±í
-  for (size_t i = 1; i <= m; ++i) {  // ±éÀú×Ö·û´®µÄÃ¿¸ö×Ö·û
-    for (size_t j = 1; j <= n; ++j) {  // ±éÀúÄ£Ê½µÄÃ¿¸ö×Ö·û
+  // å¡«å……åŠ¨æ€è§„åˆ’è¡¨
+  for (size_t i = 1; i <= m; ++i) {  // éå†å­—ç¬¦ä¸²çš„æ¯ä¸ªå­—ç¬¦
+    for (size_t j = 1; j <= n; ++j) {  // éå†æ¨¡å¼çš„æ¯ä¸ªå­—ç¬¦
 
       if (pattern[j - 1] == '*') {
-        // Çé¿ö1£ºÓöµ½ '*' Í¨Åä·û
-        // ¿ÉÒÔÑ¡Ôñ£º1) ºöÂÔ '*'£¨Æ¥Åä0¸ö×Ö·û£© 2) Ê¹ÓÃ '*' Æ¥Åäµ±Ç°×Ö·û£¨²¢¼ÌĞøÊ¹ÓÃ¸Ã '*'£©
+        // æƒ…å†µ1ï¼šé‡åˆ° '*' é€šé…ç¬¦
+        // å¯ä»¥é€‰æ‹©ï¼š1) å¿½ç•¥ '*'ï¼ˆåŒ¹é…0ä¸ªå­—ç¬¦ï¼‰ 2) ä½¿ç”¨ '*' åŒ¹é…å½“å‰å­—ç¬¦ï¼ˆå¹¶ç»§ç»­ä½¿ç”¨è¯¥ '*'ï¼‰
         dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
       }
       else if (pattern[j - 1] == '?' || str[i - 1] == pattern[j - 1]) {
-        // Çé¿ö2£º×Ö·û¾«È·Æ¥Åä»òÊ¹ÓÃ '?' Í¨Åä·û
-        // ¼Ì³ĞÇ°Ò»¸ö×Ö·ûµÄÆ¥Åä×´Ì¬
+        // æƒ…å†µ2ï¼šå­—ç¬¦ç²¾ç¡®åŒ¹é…æˆ–ä½¿ç”¨ '?' é€šé…ç¬¦
+        // ç»§æ‰¿å‰ä¸€ä¸ªå­—ç¬¦çš„åŒ¹é…çŠ¶æ€
         dp[i][j] = dp[i - 1][j - 1];
       }
-      // ÆäËûÇé¿ö£¨×Ö·û²»Æ¥Åä£©±£³Ö dp[i][j] = false µÄ³õÊ¼Öµ
+      // å…¶ä»–æƒ…å†µï¼ˆå­—ç¬¦ä¸åŒ¹é…ï¼‰ä¿æŒ dp[i][j] = false çš„åˆå§‹å€¼
     }
   }
-  // ·µ»ØÕû¸ö×Ö·û´®ÓëÕû¸öÄ£Ê½µÄÆ¥Åä½á¹û
+  // è¿”å›æ•´ä¸ªå­—ç¬¦ä¸²ä¸æ•´ä¸ªæ¨¡å¼çš„åŒ¹é…ç»“æœ
   return dp[m][n];
 }
 
 bool TagComponent::MatchSearch(const std::string &searchStr) const
 {
-  // ¿ÕËÑË÷×Ö·û´®Æ¥ÅäËùÓĞ
+  // ç©ºæœç´¢å­—ç¬¦ä¸²åŒ¹é…æ‰€æœ‰
   if (searchStr.empty()) {
     return true;
   }
 
-  // ¼òµ¥Í¨Åä·ûÆ¥Åä
+  // ç®€å•é€šé…ç¬¦åŒ¹é…
   return StringMatchWildcard(m_Tag, searchStr);
 }
 
@@ -72,7 +72,7 @@ bool TagComponent::MatchSearch(const std::string &searchStr) const
 
 std::string TagComponent::GetDisplayName() const
 {
-  // Èç¹û±êÇ©°üº¬²ã¼¶·Ö¸ô·û(/)£¬Ö»È¡×îºóÒ»²¿·Ö
+  // å¦‚æœæ ‡ç­¾åŒ…å«å±‚çº§åˆ†éš”ç¬¦(/)ï¼Œåªå–æœ€åä¸€éƒ¨åˆ†
   size_t pos = m_Tag.find_last_of('/');
   if (pos != std::string::npos) {
     return m_Tag.substr(pos + 1);
@@ -86,12 +86,12 @@ bool TagComponent::HasSubTag(const std::string &subTag) const
     return false;
   }
 
-  // ¶èĞÔ¸üĞÂ×Ó±êÇ©»º´æ
+  // æƒ°æ€§æ›´æ–°å­æ ‡ç­¾ç¼“å­˜
   if (!m_CachedSubTags.has_value()) {
     UpdateSubTagsCache();
   }
 
-  // ¼ì²é×Ó±êÇ©ÊÇ·ñ´æÔÚ
+  // æ£€æŸ¥å­æ ‡ç­¾æ˜¯å¦å­˜åœ¨
   return std::find(m_CachedSubTags->begin(), m_CachedSubTags->end(), subTag) !=
          m_CachedSubTags->end();
 }
@@ -101,7 +101,7 @@ void TagComponent::UpdateSubTagsCache() const
   m_CachedSubTags.emplace();
   std::vector<std::string> &subTags = *m_CachedSubTags;
 
-  // °´·Ö¸ô·û²ğ·Ö±êÇ©
+  // æŒ‰åˆ†éš”ç¬¦æ‹†åˆ†æ ‡ç­¾
   size_t start = 0;
   size_t end = m_Tag.find('.');
 
@@ -111,11 +111,11 @@ void TagComponent::UpdateSubTagsCache() const
     end = m_Tag.find('.', start);
   }
 
-  // Ìí¼Ó×îºóÒ»²¿·Ö
+  // æ·»åŠ æœ€åä¸€éƒ¨åˆ†
   subTags.push_back(m_Tag.substr(start));
 }
 
-// »ùÓÚcereal¿âµÄĞòÁĞ»¯ÊµÏÖ
+// åŸºäºcerealåº“çš„åºåˆ—åŒ–å®ç°
 template<typename Archive> void TagComponent::serialize(Archive &archive)
 {
   archive(cereal::make_nvp("Tag", m_Tag), cereal::make_nvp("Color", m_Color));

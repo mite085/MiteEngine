@@ -4,27 +4,27 @@
 namespace mite {
 ImGuiStyleAdapter::ImGuiStyleAdapter()
 {
-  // ´´½¨ÈÕÖ¾ÏµÍ³
+  // åˆ›å»ºæ—¥å¿—ç³»ç»Ÿ
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Style Adapter");
   m_Logger->info("Initializing ImGuiStyleAdapter");
 }
 
 void ImGuiStyleAdapter::Initialize()
 { 
-  // ±¸·İÔ­Ê¼ImGuiÑùÊ½
+  // å¤‡ä»½åŸå§‹ImGuiæ ·å¼
   m_BackupStyle = ImGui::GetStyle();
 
-  // ´´½¨Ä¬ÈÏÑùÊ½Ó³Éä
+  // åˆ›å»ºé»˜è®¤æ ·å¼æ˜ å°„
   CreateDefaultStyleMappings();
 
-  // ¶©ÔÄÑùÊ½¸Ä±äÊÂ¼ş
+  // è®¢é˜…æ ·å¼æ”¹å˜äº‹ä»¶
   m_EventSubscriptions.Subscribe<StyleChangedEvent>(BIND_DISPATCH_FN(OnStyleChanged));
 }
 
 void ImGuiStyleAdapter::Shutdown()
 {
   m_Logger->info("Shutting down ImGuiStyleAdapter");
-  // »Ö¸´Ô­Ê¼ImGuiÑùÊ½
+  // æ¢å¤åŸå§‹ImGuiæ ·å¼
   ImGui::GetStyle() = m_BackupStyle;
 }
 
@@ -48,10 +48,10 @@ bool ImGuiStyleAdapter::ApplyUIStyle(const std::shared_ptr<UIStyle> uiStyle)
 
 void ImGuiStyleAdapter::MapUIStyleToImGui(const std::shared_ptr<UIStyle> &uiStyle)
 {
-  // ÖØÖÃµ½Ä¬ÈÏÑùÊ½
+  // é‡ç½®åˆ°é»˜è®¤æ ·å¼
   ImGui::StyleColorsDark();
 
-  // Ó³Éä¸÷ÀàÊôĞÔ
+  // æ˜ å°„å„ç±»å±æ€§
   MapColorProperties(uiStyle);
   MapEnumProperties(uiStyle);
   MapSizeProperties(uiStyle);
@@ -170,7 +170,7 @@ void ImGuiStyleAdapter::SetImGuiColor(ImGuiCol colorIndex, const glm::vec4 &colo
 
 void ImGuiStyleAdapter::CreateDefaultStyleMappings()
 {
-  // ÑÕÉ«Ó³Éä
+  // é¢œè‰²æ˜ å°„
   m_ColorMappings = {
       {StyleProperties::COLOR_BACKGROUND, ImGuiCol_WindowBg},
       {StyleProperties::COLOR_TEXT, ImGuiCol_Text},
@@ -225,7 +225,7 @@ void ImGuiStyleAdapter::CreateDefaultStyleMappings()
       {StyleProperties::COLOR_NAV_WINDOWING_DIM_BG, ImGuiCol_NavWindowingDimBg},
       {StyleProperties::COLOR_MODAL_WINDOW_DIM_BG, ImGuiCol_ModalWindowDimBg}};
 
-  // ³ß´çÓ³Éä
+  // å°ºå¯¸æ˜ å°„
   ImGuiStyle &style = ImGui::GetStyle();
   m_SizeMappings = {
       {StyleProperties::SIZE_WINDOW_PADDING_X, [&](float v) { style.WindowPadding.x = v; }},
@@ -288,13 +288,13 @@ void ImGuiStyleAdapter::CreateDefaultStyleMappings()
       {StyleProperties::SIZE_CIRCLE_TESSELLATION_MAX_ERROR,
        [&](float v) { style.CircleTessellationMaxError = v; }}};
 
-  // Ã¶¾ÙÓ³Éä
+  // æšä¸¾æ˜ å°„
   m_EnumMappings = {{StyleProperties::LAYOUT_COLOR_BUTTON_POSITION,
                      [&](ImGuiDir dir) { style.ColorButtonPosition = dir; }},
                     {StyleProperties::LAYOUT_WINDOW_MENU_BUTTON_POSITION,
                      [&](ImGuiDir dir) { style.WindowMenuButtonPosition = dir; }}};
 
-  // ±ß¿òÓ³Éä
+  // è¾¹æ¡†æ˜ å°„
   m_BorderMappings = {
       {StyleProperties::BORDER_WINDOW, [&](float v) { style.WindowBorderSize = v; }},
       {StyleProperties::BORDER_CHILD, [&](float v) { style.ChildBorderSize = v; }},
@@ -302,7 +302,7 @@ void ImGuiStyleAdapter::CreateDefaultStyleMappings()
       {StyleProperties::BORDER_FRAME, [&](float v) { style.FrameBorderSize = v; }},
       {StyleProperties::BORDER_TAB, [&](float v) { style.TabBorderSize = v; }}};
 
-  // ¼ä¾àÓ³Éä
+  // é—´è·æ˜ å°„
   m_SpacingMappings = {
       {StyleProperties::SPACING_WINDOW_PADDING_X, [&](float v) { style.WindowPadding.x = v; }},
       {StyleProperties::SPACING_WINDOW_PADDING_Y, [&](float v) { style.WindowPadding.y = v; }},
@@ -331,13 +331,13 @@ std::shared_ptr<UIStyle> ImGuiStyleAdapter::ExportToUIStyle(const std::string &s
 
   const auto &imguiStyle = ImGui::GetStyle();
 
-  // µ¼³öÑÕÉ«ÊôĞÔ
+  // å¯¼å‡ºé¢œè‰²å±æ€§
   for (const auto &[propertyName, colorIndex] : m_ColorMappings) {
     const ImVec4 &color = imguiStyle.Colors[colorIndex];
     style->SetProperty(propertyName, glm::vec4(color.x, color.y, color.z, color.w));
   }
 
-  // µ¼³ö³ß´çÊôĞÔ
+  // å¯¼å‡ºå°ºå¯¸å±æ€§
   style->SetProperty(StyleProperties::SIZE_WINDOW_PADDING_X, imguiStyle.WindowPadding.x);
   style->SetProperty(StyleProperties::SIZE_WINDOW_PADDING_Y, imguiStyle.WindowPadding.y);
   style->SetProperty(StyleProperties::SIZE_FRAME_PADDING_X, imguiStyle.FramePadding.x);
@@ -346,10 +346,10 @@ std::shared_ptr<UIStyle> ImGuiStyleAdapter::ExportToUIStyle(const std::string &s
   style->SetProperty(StyleProperties::SIZE_ITEM_SPACING_Y, imguiStyle.ItemSpacing.y);
   style->SetProperty(StyleProperties::SIZE_WINDOW_ROUNDING, imguiStyle.WindowRounding);
   style->SetProperty(StyleProperties::SIZE_FRAME_ROUNDING, imguiStyle.FrameRounding);
-  // µ¼³ö±ß¿òÊôĞÔ
+  // å¯¼å‡ºè¾¹æ¡†å±æ€§
   style->SetProperty(StyleProperties::BORDER_WINDOW, imguiStyle.WindowBorderSize);
   style->SetProperty(StyleProperties::BORDER_FRAME, imguiStyle.FrameBorderSize);
-  // µ¼³öÃ¶¾ÙÊôĞÔ
+  // å¯¼å‡ºæšä¸¾å±æ€§
   style->SetProperty(StyleProperties::LAYOUT_COLOR_BUTTON_POSITION,
                      static_cast<int>(imguiStyle.ColorButtonPosition));
   style->SetProperty(StyleProperties::LAYOUT_WINDOW_MENU_BUTTON_POSITION,
@@ -368,7 +368,7 @@ bool ImGuiStyleAdapter::OnStyleChanged(StyleChangedEvent& event)
   std::shared_ptr<UIStyle> style = event.GetUIStyle();
   ApplyUIStyle(style);
 
-  // ±ê¼ÇÊÂ¼şÒÑ½â¾ö
+  // æ ‡è®°äº‹ä»¶å·²è§£å†³
   event.Handled();
   return event.handled;
 }

@@ -6,156 +6,156 @@
 namespace mite {
 
 /**
- * @brief äÖÈ¾¶ÓÁĞ¹ÜÀíÆ÷
- * @note Ö°Ôğ£º¹ÜÀíäÖÈ¾ÏîµÄÊÕ¼¯¡¢ÅÅĞòºÍÌá½»£¬ÎªRendererÌá¹©±ê×¼»¯µÄäÖÈ¾Êı¾İ½Ó¿Ú
- * @note À©Õ¹ĞÔ¿¼ÂÇ£ºÖ§³Ö¶àÖÖÅÅĞò²ßÂÔ£¬Ô¤Áô¶à¶ÓÁĞ¹ÜÀíºÍÅú´¦ÀíÓÅ»¯½Ó¿Ú
+ * @brief æ¸²æŸ“é˜Ÿåˆ—ç®¡ç†å™¨
+ * @note èŒè´£ï¼šç®¡ç†æ¸²æŸ“é¡¹çš„æ”¶é›†ã€æ’åºå’Œæäº¤ï¼Œä¸ºRendereræä¾›æ ‡å‡†åŒ–çš„æ¸²æŸ“æ•°æ®æ¥å£
+ * @note æ‰©å±•æ€§è€ƒè™‘ï¼šæ”¯æŒå¤šç§æ’åºç­–ç•¥ï¼Œé¢„ç•™å¤šé˜Ÿåˆ—ç®¡ç†å’Œæ‰¹å¤„ç†ä¼˜åŒ–æ¥å£
  */
 class RenderQueue {
  public:
   /**
-   * @brief äÖÈ¾¶ÓÁĞÀàĞÍÃ¶¾Ù
+   * @brief æ¸²æŸ“é˜Ÿåˆ—ç±»å‹æšä¸¾
    */
   enum class QueueType {
-    Opaque,       // ²»Í¸Ã÷ÎïÌå¶ÓÁĞ
-    Transparent,  // Í¸Ã÷ÎïÌå¶ÓÁĞ
-    AlphaTest,    // Alpha²âÊÔÎïÌå¶ÓÁĞ
-    Custom        // ×Ô¶¨Òå¶ÓÁĞ£¨Ô¤Áô£©
+    Opaque,       // ä¸é€æ˜ç‰©ä½“é˜Ÿåˆ—
+    Transparent,  // é€æ˜ç‰©ä½“é˜Ÿåˆ—
+    AlphaTest,    // Alphaæµ‹è¯•ç‰©ä½“é˜Ÿåˆ—
+    Custom        // è‡ªå®šä¹‰é˜Ÿåˆ—ï¼ˆé¢„ç•™ï¼‰
   };
 
   /**
-   * @brief ÅÅĞò²ßÂÔÃ¶¾Ù
+   * @brief æ’åºç­–ç•¥æšä¸¾
    */
   enum class SortStrategy {
-    None,         // ²»ÅÅĞò
-    FrontToBack,  // ´ÓÇ°µ½ºó£¨ÓÃÓÚ²»Í¸Ã÷ÎïÌå£©
-    BackToFront,  // ´Óºóµ½Ç°£¨ÓÃÓÚÍ¸Ã÷ÎïÌå£©
-    ByMaterial,   // °´²ÄÖÊÅÅĞò£¨¼õÉÙ×´Ì¬ÇĞ»»£©
-    ByShader      // °´ShaderÅÅĞò£¨¼õÉÙ×´Ì¬ÇĞ»»£©
+    None,         // ä¸æ’åº
+    FrontToBack,  // ä»å‰åˆ°åï¼ˆç”¨äºä¸é€æ˜ç‰©ä½“ï¼‰
+    BackToFront,  // ä»ååˆ°å‰ï¼ˆç”¨äºé€æ˜ç‰©ä½“ï¼‰
+    ByMaterial,   // æŒ‰æè´¨æ’åºï¼ˆå‡å°‘çŠ¶æ€åˆ‡æ¢ï¼‰
+    ByShader      // æŒ‰Shaderæ’åºï¼ˆå‡å°‘çŠ¶æ€åˆ‡æ¢ï¼‰
   };
 
   /**
-   * @brief ¹¹Ôìº¯Êı
+   * @brief æ„é€ å‡½æ•°
    */
   RenderQueue();
 
   /**
-   * @brief Îö¹¹º¯Êı
+   * @brief ææ„å‡½æ•°
    */
   ~RenderQueue();
 
-  // ==================== ¶ÓÁĞ¹ÜÀí½Ó¿Ú ====================
+  // ==================== é˜Ÿåˆ—ç®¡ç†æ¥å£ ====================
   /**
-   * @brief Ìí¼ÓäÖÈ¾Ïîµ½Ö¸¶¨¶ÓÁĞ
-   * @param item äÖÈ¾Ïî
-   * @param queueType ¶ÓÁĞÀàĞÍ
+   * @brief æ·»åŠ æ¸²æŸ“é¡¹åˆ°æŒ‡å®šé˜Ÿåˆ—
+   * @param item æ¸²æŸ“é¡¹
+   * @param queueType é˜Ÿåˆ—ç±»å‹
    */
   void AddItem(const RenderableItem &item, QueueType queueType = QueueType::Opaque);
 
   /**
-   * @brief ÅúÁ¿Ìí¼ÓäÖÈ¾Ïî
-   * @param items äÖÈ¾ÏîÁĞ±í
-   * @param queueType ¶ÓÁĞÀàĞÍ
+   * @brief æ‰¹é‡æ·»åŠ æ¸²æŸ“é¡¹
+   * @param items æ¸²æŸ“é¡¹åˆ—è¡¨
+   * @param queueType é˜Ÿåˆ—ç±»å‹
    */
   void AddItems(const std::vector<RenderableItem> &items, QueueType queueType = QueueType::Opaque);
 
   /**
-   * @brief Çå¿ÕÖ¸¶¨¶ÓÁĞ
-   * @param queueType ¶ÓÁĞÀàĞÍ
+   * @brief æ¸…ç©ºæŒ‡å®šé˜Ÿåˆ—
+   * @param queueType é˜Ÿåˆ—ç±»å‹
    */
   void ClearQueue(QueueType queueType);
 
   /**
-   * @brief Çå¿ÕËùÓĞ¶ÓÁĞ
+   * @brief æ¸…ç©ºæ‰€æœ‰é˜Ÿåˆ—
    */
   void ClearAll();
 
-  // ==================== ÅÅĞò½Ó¿Ú ====================
+  // ==================== æ’åºæ¥å£ ====================
   /**
-   * @brief ÉèÖÃ¶ÓÁĞÅÅĞò²ßÂÔ
-   * @param queueType ¶ÓÁĞÀàĞÍ
-   * @param strategy ÅÅĞò²ßÂÔ
+   * @brief è®¾ç½®é˜Ÿåˆ—æ’åºç­–ç•¥
+   * @param queueType é˜Ÿåˆ—ç±»å‹
+   * @param strategy æ’åºç­–ç•¥
    */
   void SetSortStrategy(QueueType queueType, SortStrategy strategy);
 
   /**
-   * @brief ¶ÔÖ¸¶¨¶ÓÁĞ½øĞĞÅÅĞò
-   * @param queueType ¶ÓÁĞÀàĞÍ
+   * @brief å¯¹æŒ‡å®šé˜Ÿåˆ—è¿›è¡Œæ’åº
+   * @param queueType é˜Ÿåˆ—ç±»å‹
    */
   void SortQueue(QueueType queueType);
 
   /**
-   * @brief ¶ÔËùÓĞ¶ÓÁĞ½øĞĞÅÅĞò
+   * @brief å¯¹æ‰€æœ‰é˜Ÿåˆ—è¿›è¡Œæ’åº
    */
   void SortAll();
 
-  // ==================== Êı¾İ·ÃÎÊ½Ó¿Ú ====================
+  // ==================== æ•°æ®è®¿é—®æ¥å£ ====================
   /**
-   * @brief »ñÈ¡Ö¸¶¨¶ÓÁĞµÄäÖÈ¾ÏîÁĞ±í£¨Ö»¶Á£©
-   * @param queueType ¶ÓÁĞÀàĞÍ
-   * @return äÖÈ¾ÏîÁĞ±íµÄ³£Á¿ÒıÓÃ
+   * @brief è·å–æŒ‡å®šé˜Ÿåˆ—çš„æ¸²æŸ“é¡¹åˆ—è¡¨ï¼ˆåªè¯»ï¼‰
+   * @param queueType é˜Ÿåˆ—ç±»å‹
+   * @return æ¸²æŸ“é¡¹åˆ—è¡¨çš„å¸¸é‡å¼•ç”¨
    */
   const std::vector<RenderableItem> &GetItems(QueueType queueType) const;
 
   /**
-   * @brief »ñÈ¡Ö¸¶¨¶ÓÁĞµÄäÖÈ¾ÏîÊıÁ¿
-   * @param queueType ¶ÓÁĞÀàĞÍ
-   * @return ¶ÓÁĞÖĞµÄÏîÊı
+   * @brief è·å–æŒ‡å®šé˜Ÿåˆ—çš„æ¸²æŸ“é¡¹æ•°é‡
+   * @param queueType é˜Ÿåˆ—ç±»å‹
+   * @return é˜Ÿåˆ—ä¸­çš„é¡¹æ•°
    */
   size_t GetItemCount(QueueType queueType) const;
 
   /**
-   * @brief »ñÈ¡ËùÓĞ¶ÓÁĞµÄ×ÜäÖÈ¾ÏîÊıÁ¿
-   * @return ×ÜÏîÊı
+   * @brief è·å–æ‰€æœ‰é˜Ÿåˆ—çš„æ€»æ¸²æŸ“é¡¹æ•°é‡
+   * @return æ€»é¡¹æ•°
    */
   size_t GetTotalItemCount() const;
 
-  // ==================== À©Õ¹½Ó¿Ú£¨Ô¤Áô£© ====================
+  // ==================== æ‰©å±•æ¥å£ï¼ˆé¢„ç•™ï¼‰ ====================
   /**
-   * @brief ÉèÖÃ×Ô¶¨ÒåÅÅĞòº¯Êı
-   * @param queueType ¶ÓÁĞÀàĞÍ
-   * @param sortFunc ×Ô¶¨ÒåÅÅĞòº¯Êı
+   * @brief è®¾ç½®è‡ªå®šä¹‰æ’åºå‡½æ•°
+   * @param queueType é˜Ÿåˆ—ç±»å‹
+   * @param sortFunc è‡ªå®šä¹‰æ’åºå‡½æ•°
    */
   void SetCustomSortFunction(
       QueueType queueType,
       std::function<bool(const RenderableItem &, const RenderableItem &)> sortFunc);
 
   /**
-   * @brief ÉèÖÃ¶ÓÁĞ¿É¼ûĞÔ£¨Ô¤Áô¶àÊÓ¿ÚÖ§³Ö£©
-   * @param queueType ¶ÓÁĞÀàĞÍ
-   * @param visible ÊÇ·ñ¿É¼û
+   * @brief è®¾ç½®é˜Ÿåˆ—å¯è§æ€§ï¼ˆé¢„ç•™å¤šè§†å£æ”¯æŒï¼‰
+   * @param queueType é˜Ÿåˆ—ç±»å‹
+   * @param visible æ˜¯å¦å¯è§
    */
   void SetQueueVisibility(QueueType queueType, bool visible);
 
  private:
   /**
-   * @brief ¶ÓÁĞÊı¾İ½á¹¹
+   * @brief é˜Ÿåˆ—æ•°æ®ç»“æ„
    */
   struct QueueData {
-    std::vector<RenderableItem> items;  // äÖÈ¾ÏîÁĞ±í
-    SortStrategy sortStrategy;          // ÅÅĞò²ßÂÔ
-    bool isVisible;                     // ¶ÓÁĞ¿É¼ûĞÔ
+    std::vector<RenderableItem> items;  // æ¸²æŸ“é¡¹åˆ—è¡¨
+    SortStrategy sortStrategy;          // æ’åºç­–ç•¥
+    bool isVisible;                     // é˜Ÿåˆ—å¯è§æ€§
     std::function<bool(const RenderableItem &, const RenderableItem &)>
-        customSortFunc;  // ×Ô¶¨ÒåÅÅĞòº¯Êı
+        customSortFunc;  // è‡ªå®šä¹‰æ’åºå‡½æ•°
 
     QueueData() : sortStrategy(SortStrategy::None), isVisible(true) {}
   };
 
-  QueueData m_OpaqueQueue;       // ²»Í¸Ã÷ÎïÌå¶ÓÁĞ
-  QueueData m_TransparentQueue;  // Í¸Ã÷ÎïÌå¶ÓÁĞ
-  QueueData m_AlphaTestQueue;    // Alpha²âÊÔÎïÌå¶ÓÁĞ
-  QueueData m_CustomQueue;       // ×Ô¶¨Òå¶ÓÁĞ£¨Ô¤Áô£©
+  QueueData m_OpaqueQueue;       // ä¸é€æ˜ç‰©ä½“é˜Ÿåˆ—
+  QueueData m_TransparentQueue;  // é€æ˜ç‰©ä½“é˜Ÿåˆ—
+  QueueData m_AlphaTestQueue;    // Alphaæµ‹è¯•ç‰©ä½“é˜Ÿåˆ—
+  QueueData m_CustomQueue;       // è‡ªå®šä¹‰é˜Ÿåˆ—ï¼ˆé¢„ç•™ï¼‰
 
   /**
-   * @brief ¸ù¾İ¶ÓÁĞÀàĞÍ»ñÈ¡¶ÔÓ¦µÄ¶ÓÁĞÊı¾İ
-   * @param queueType ¶ÓÁĞÀàĞÍ
-   * @return ¶ÓÁĞÊı¾İµÄÒıÓÃ
+   * @brief æ ¹æ®é˜Ÿåˆ—ç±»å‹è·å–å¯¹åº”çš„é˜Ÿåˆ—æ•°æ®
+   * @param queueType é˜Ÿåˆ—ç±»å‹
+   * @return é˜Ÿåˆ—æ•°æ®çš„å¼•ç”¨
    */
   QueueData &GetQueueData(QueueType queueType);
 
   /**
-   * @brief ¸ù¾İ¶ÓÁĞÀàĞÍ»ñÈ¡¶ÔÓ¦µÄ¶ÓÁĞÊı¾İ£¨³£Á¿°æ±¾£©
-   * @param queueType ¶ÓÁĞÀàĞÍ
-   * @return ¶ÓÁĞÊı¾İµÄ³£Á¿ÒıÓÃ
+   * @brief æ ¹æ®é˜Ÿåˆ—ç±»å‹è·å–å¯¹åº”çš„é˜Ÿåˆ—æ•°æ®ï¼ˆå¸¸é‡ç‰ˆæœ¬ï¼‰
+   * @param queueType é˜Ÿåˆ—ç±»å‹
+   * @return é˜Ÿåˆ—æ•°æ®çš„å¸¸é‡å¼•ç”¨
    */
   const QueueData &GetQueueData(QueueType queueType) const;
 };

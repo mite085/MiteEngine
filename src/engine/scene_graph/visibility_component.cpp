@@ -22,23 +22,23 @@ void VisibilityComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
     return;
   }
 
-  // ¸üĞÂÊÀ½ç¿Õ¼ä°üÎ§ºĞ
+  // æ›´æ–°ä¸–ç•Œç©ºé—´åŒ…å›´ç›’
   if (m_BoundsDirty) {
     UpdateWorldAABB(reg);
     m_BoundsDirty = false;
   }
 
-  // ±£´æÉÏÒ»Ö¡×´Ì¬
+  // ä¿å­˜ä¸Šä¸€å¸§çŠ¶æ€
   m_WasVisible = m_IsVisible;
 
-  // Èç¹ûÃ»ÓĞÊÖ¶¯¸²¸Ç£¬Ö´ĞĞ×Ô¶¯¿É¼ûĞÔ¼ÆËã
+  // å¦‚æœæ²¡æœ‰æ‰‹åŠ¨è¦†ç›–ï¼Œæ‰§è¡Œè‡ªåŠ¨å¯è§æ€§è®¡ç®—
   if (!m_ManualOverride) {
-    // ÕâÀï¿ÉÒÔÌí¼Ó¸ü¸´ÔÓµÄ¿É¼ûĞÔ¼ÆËãÂß¼­
-    // Ä¿Ç°¼òµ¥ÉèÖÃÎª×ÜÊÇ¿É¼û£¬ºóĞø¿ÉÒÔÀ©Õ¹Îª»ùÓÚÏà»úÎ»ÖÃµÄ²âÊÔ
+    // è¿™é‡Œå¯ä»¥æ·»åŠ æ›´å¤æ‚çš„å¯è§æ€§è®¡ç®—é€»è¾‘
+    // ç›®å‰ç®€å•è®¾ç½®ä¸ºæ€»æ˜¯å¯è§ï¼Œåç»­å¯ä»¥æ‰©å±•ä¸ºåŸºäºç›¸æœºä½ç½®çš„æµ‹è¯•
     m_IsVisible = true;
   }
 
-  // Èç¹û¿É¼ûĞÔ·¢Éú±ä»¯£¬·¢²¼ÊÂ¼ş
+  // å¦‚æœå¯è§æ€§å‘ç”Ÿå˜åŒ–ï¼Œå‘å¸ƒäº‹ä»¶
   if (VisibilityChanged()) {
     EventBus::Publish<VisibilityChangedEvent>(
         VisibilityChangedEvent(GetEntity(), *this, m_IsVisible));
@@ -51,7 +51,7 @@ void VisibilityComponent::SetVisible(bool visible)
 {
   if (m_IsVisible != visible) {
     m_IsVisible = visible;
-    m_ManualOverride = true;  // ÉèÖÃÎªÊÖ¶¯¸²¸ÇÄ£Ê½
+    m_ManualOverride = true;  // è®¾ç½®ä¸ºæ‰‹åŠ¨è¦†ç›–æ¨¡å¼
     MarkDirty();
   }
 }
@@ -86,16 +86,16 @@ std::vector<std::type_index> VisibilityComponent::GetDependencies() const
 bool VisibilityComponent::Serialize(std::ostream &output) const
 {
   Component::Serialize(output);
-  // ĞòÁĞ»¯»ù´¡Êı¾İ
-  // TODO: ÊµÏÖ¾ßÌåµÄĞòÁĞ»¯Âß¼­
+  // åºåˆ—åŒ–åŸºç¡€æ•°æ®
+  // TODO: å®ç°å…·ä½“çš„åºåˆ—åŒ–é€»è¾‘
   return !output.fail();
 }
 
 bool VisibilityComponent::Deserialize(std::istream &input)
 {
   Component::Deserialize(input);
-  // ·´ĞòÁĞ»¯»ù´¡Êı¾İ
-  // TODO: ÊµÏÖ¾ßÌåµÄ·´ĞòÁĞ»¯Âß¼­
+  // ååºåˆ—åŒ–åŸºç¡€æ•°æ®
+  // TODO: å®ç°å…·ä½“çš„ååºåˆ—åŒ–é€»è¾‘
   return !input.fail();
 }
 
@@ -111,11 +111,11 @@ void VisibilityComponent::UpdateWorldAABB(SceneRegistry &reg)
     auto &transform = reg.GetComponent<TransformComponent>(GetEntity());
     glm::mat4 worldMatrix = transform.GetWorldMatrix(reg);
 
-    // Ê¹ÓÃBoundingVolumes¹¤¾ßÀà±ä»»AABB
+    // ä½¿ç”¨BoundingVolumeså·¥å…·ç±»å˜æ¢AABB
     m_WorldAABB = BoundingVolumes::TransformAABB(m_LocalAABB, worldMatrix);
   }
   else {
-    // Ã»ÓĞ±ä»»×é¼ş£¬Ê¹ÓÃ¾Ö²¿AABB×÷ÎªÊÀ½çAABB
+    // æ²¡æœ‰å˜æ¢ç»„ä»¶ï¼Œä½¿ç”¨å±€éƒ¨AABBä½œä¸ºä¸–ç•ŒAABB
     m_WorldAABB = m_LocalAABB;
   }
 }
@@ -129,10 +129,10 @@ IntersectionType VisibilityComponent::TestFrustum(const Frustum &frustum) const
 
 void VisibilityComponentSystem::Initialize()
 {
-  // ¶©ÔÄÔ­ÏÈ×é¼şÍ¨ÓÃÊÂ¼ş
+  // è®¢é˜…åŸå…ˆç»„ä»¶é€šç”¨äº‹ä»¶
   DirtyComponentSystem<VisibilityComponent>::Initialize();
 
-  //// ¶©ÔÄÖ÷Ïà»úĞŞ¸ÄÊÂ¼şºÍÏà»ú¿É¼ûĞÔÑÚÂëĞŞ¸ÄÊÂ¼ş
+  //// è®¢é˜…ä¸»ç›¸æœºä¿®æ”¹äº‹ä»¶å’Œç›¸æœºå¯è§æ€§æ©ç ä¿®æ”¹äº‹ä»¶
   //m_EventSubscriptions.Subscribe<MainCameraChangedEvent>(BIND_DISPATCH_FN(OnMainCameraChanged));
   //m_EventSubscriptions.Subscribe<CameraVisibilityMaskChangedEvent>(
   //    BIND_DISPATCH_FN(OnCameraVisibilityMaskChanged));
@@ -140,7 +140,7 @@ void VisibilityComponentSystem::Initialize()
 
 std::vector<std::type_index> VisibilityComponentSystem::GetSystemDependencies() const
 {
-  return {typeid(TransformComponentSystem), typeid(TransformSceneNodeSystem)};  // ĞèÒªÊÀ½ç±ä»»ĞÅÏ¢
+  return {typeid(TransformComponentSystem), typeid(TransformSceneNodeSystem)};  // éœ€è¦ä¸–ç•Œå˜æ¢ä¿¡æ¯
 }
 
 //void VisibilityComponentSystem::SetMainCameraFrustum(const Frustum &frustum)
@@ -155,7 +155,7 @@ std::vector<std::type_index> VisibilityComponentSystem::GetSystemDependencies() 
 
 void VisibilityComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
-  // ÊÕ¼¯ËùÓĞĞèÒª´¦ÀíµÄ¿É¼ûĞÔ×é¼ş
+  // æ”¶é›†æ‰€æœ‰éœ€è¦å¤„ç†çš„å¯è§æ€§ç»„ä»¶
   std::vector<VisibilityComponent *> componentsToProcess;
 
   for (auto *comp : m_DirtyComponents) {
@@ -166,15 +166,15 @@ void VisibilityComponentSystem::ProcessDirtyComponents(float deltaTime, SceneReg
 
   //visibleCount = 0;
 
-  // ²¢ĞĞ´¦Àí¿É¼ûĞÔ¼ÆËã
+  // å¹¶è¡Œå¤„ç†å¯è§æ€§è®¡ç®—
   std::for_each(std::execution::par,
                 componentsToProcess.begin(),
                 componentsToProcess.end(),
                 [&](VisibilityComponent *comp) {
-                  // ´¦ÀíÔà±ê¼Ç
+                  // å¤„ç†è„æ ‡è®°
                   comp->ProcessDirty(deltaTime, registry);
 
-                  // Í³¼Æ¿É¼ûÊµÌå
+                  // ç»Ÿè®¡å¯è§å®ä½“
                   //if (comp->IsVisible() && comp->MatchesMask(cameraVisibilityMask)) {
                   //  visibleCount++;
                   //}
@@ -183,10 +183,10 @@ void VisibilityComponentSystem::ProcessDirtyComponents(float deltaTime, SceneReg
 
 //bool VisibilityComponentSystem::OnMainCameraChanged(MainCameraChangedEvent &e)
 //{
-//  // »ñÈ¡ĞŞ¸ÄºóµÄÖ÷Ïà»ú
+//  // è·å–ä¿®æ”¹åçš„ä¸»ç›¸æœº
 //  auto &mainCamera = e.GetComponent();
 //
-//  // ¸ù¾İÖ÷Ïà»ú£¬ĞŞ¸ÄÏà»ú¿É¼ûĞÔÑÚÂë
+//  // æ ¹æ®ä¸»ç›¸æœºï¼Œä¿®æ”¹ç›¸æœºå¯è§æ€§æ©ç 
 //  cameraVisibilityMask = mainCamera.GetVisibilityMask();
 //
 //  e.Handled();
@@ -195,11 +195,11 @@ void VisibilityComponentSystem::ProcessDirtyComponents(float deltaTime, SceneReg
 //
 //bool VisibilityComponentSystem::OnCameraVisibilityMaskChanged(CameraVisibilityMaskChangedEvent &e)
 //{
-//  // ÅĞ¶ÏĞŞ¸ÄºóµÄÏà»úÊÇ·ñÎªÖ÷Ïà»ú
+//  // åˆ¤æ–­ä¿®æ”¹åçš„ç›¸æœºæ˜¯å¦ä¸ºä¸»ç›¸æœº
 //  auto &mainCamera = e.GetComponent();
 //
 //  if (mainCamera.GetUsage() == CameraUsage::MainView) {
-//    // ¸ù¾İÖ÷Ïà»ú£¬ĞŞ¸ÄÏà»ú¿É¼ûĞÔÑÚÂë
+//    // æ ¹æ®ä¸»ç›¸æœºï¼Œä¿®æ”¹ç›¸æœºå¯è§æ€§æ©ç 
 //    cameraVisibilityMask = mainCamera.GetVisibilityMask();
 //  }
 //
@@ -209,7 +209,7 @@ void VisibilityComponentSystem::ProcessDirtyComponents(float deltaTime, SceneReg
 
 template<> ComponentID ComponentID::Get<VisibilityComponent>()
 {
-  // Ê¹ÓÃÀàĞÍĞÅÏ¢Éú³ÉÈ·¶¨ĞÔUUID
+  // ä½¿ç”¨ç±»å‹ä¿¡æ¯ç”Ÿæˆç¡®å®šæ€§UUID
   const std::type_index typeIdx(typeid(VisibilityComponent));
   const size_t hash = typeIdx.hash_code();
 

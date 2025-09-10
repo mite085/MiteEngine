@@ -8,29 +8,29 @@
 namespace mite {
 
 /**
- * @brief Ïà»ú¿ØÖÆÊäÈë´¦ÀíÆ÷
+ * @brief ç›¸æœºæ§åˆ¶è¾“å…¥å¤„ç†å™¨
  *
- * ¹¦ÄÜ£º
- * - Êó±êÓÒ¼üÍÏ×§Ğı×ªÊÓ½Ç
- * - Êó±êÖĞ¼üÍÏ×§Æ½ÒÆÊÓ½Ç
- * - ¹öÂÖËõ·Å
- * - WASD¼üÅÌÒÆ¶¯
+ * åŠŸèƒ½ï¼š
+ * - é¼ æ ‡å³é”®æ‹–æ‹½æ—‹è½¬è§†è§’
+ * - é¼ æ ‡ä¸­é”®æ‹–æ‹½å¹³ç§»è§†è§’
+ * - æ»šè½®ç¼©æ”¾
+ * - WASDé”®ç›˜ç§»åŠ¨
  * 
- * ×¢Òâ£º
- * Moving£¨ÒÆ¶¯£©ĞĞÎªÒªÇó³ÖĞøÊäÈë£¨°´×¡¼üÊ±Ã¿Ö¡´¥·¢£©£¬
- * handleº¯Êı½ö½öÎ¬»¤InputState£¬
- * ÕæÕı¸ºÔğĞŞ¸ÄCameraÊı¾İµÄ£¬
- * ÊÇÃ¿Ö¡µ÷ÓÃµÄUpdateCameraTransformº¯Êı
+ * æ³¨æ„ï¼š
+ * Movingï¼ˆç§»åŠ¨ï¼‰è¡Œä¸ºè¦æ±‚æŒç»­è¾“å…¥ï¼ˆæŒ‰ä½é”®æ—¶æ¯å¸§è§¦å‘ï¼‰ï¼Œ
+ * handleå‡½æ•°ä»…ä»…ç»´æŠ¤InputStateï¼Œ
+ * çœŸæ­£è´Ÿè´£ä¿®æ”¹Cameraæ•°æ®çš„ï¼Œ
+ * æ˜¯æ¯å¸§è°ƒç”¨çš„UpdateCameraTransformå‡½æ•°
  * 
- * Rotating£¨Ğı×ª£©ºÍPanning£¨Æ½ÒÆ£©ĞĞÎª
- * ÔòÒªÇóË²Ê±Ïà¶ÔÎ»ÒÆ£¨Ã¿Ö¡»ñÈ¡Êó±êÆ«ÒÆÁ¿£©
- * handleº¯Êı¿ÉÒÔÖ±½ÓÖ´ĞĞRotateºÍPan
+ * Rotatingï¼ˆæ—‹è½¬ï¼‰å’ŒPanningï¼ˆå¹³ç§»ï¼‰è¡Œä¸º
+ * åˆ™è¦æ±‚ç¬æ—¶ç›¸å¯¹ä½ç§»ï¼ˆæ¯å¸§è·å–é¼ æ ‡åç§»é‡ï¼‰
+ * handleå‡½æ•°å¯ä»¥ç›´æ¥æ‰§è¡ŒRotateå’ŒPan
  */
 class CameraInputProcessor : public InputProcessor {
  public:
   explicit CameraInputProcessor(std::shared_ptr<Camera> camera);
 
-  // InputProcessor½Ó¿ÚÊµÏÖ
+  // InputProcessoræ¥å£å®ç°
   int GetPriority() const override
   {
     return InputPriority::CAMERA;
@@ -40,7 +40,7 @@ class CameraInputProcessor : public InputProcessor {
     return "CameraProcessor";
   }
 
-  // ÅäÖÃ·½·¨
+  // é…ç½®æ–¹æ³•
   void SetMoveSpeed(float speed)
   {
     m_MoveSpeed = speed;
@@ -54,10 +54,10 @@ class CameraInputProcessor : public InputProcessor {
     m_ZoomSpeed = speed;
   }
 
-  // Ïà»ú¿ØÖÆ·½·¨
+  // ç›¸æœºæ§åˆ¶æ–¹æ³•
   void UpdateCameraTransform(float deltaTime);
 
-  // ´¦ÀíÊÂ¼şµÄ·½·¨
+  // å¤„ç†äº‹ä»¶çš„æ–¹æ³•
   bool HandleEvent(Event &e) override
   {
     EventDispatcher dispatcher(e);
@@ -71,7 +71,7 @@ class CameraInputProcessor : public InputProcessor {
   }
 
  protected:
-  // ÊÂ¼ş´¦Àí¸¨Öú·½·¨
+  // äº‹ä»¶å¤„ç†è¾…åŠ©æ–¹æ³•
   virtual bool handleMouseMove(MouseMoveEvent &e);
   virtual bool handleMouseButtonPressed(MouseButtonPressedEvent &e);
   virtual bool handleMouseButtonReleased(MouseButtonReleasedEvent &e);
@@ -79,27 +79,27 @@ class CameraInputProcessor : public InputProcessor {
   virtual bool handleKeyPressedEvent(KeyPressedEvent &e);
   virtual bool handleKeyReleasedEvent(KeyReleasedEvent &e);
 
-  // ¸üĞÂÒÆ¶¯·½Ïò
+  // æ›´æ–°ç§»åŠ¨æ–¹å‘
   void UpdateMoveDirection();
 
   std::shared_ptr<Camera> m_Camera;
   glm::vec2 m_LastMousePos{0.0f, 0.0f};
 
-  // ¿ØÖÆ²ÎÊı
+  // æ§åˆ¶å‚æ•°
   float m_MoveSpeed = 5.0f;
   float m_RotationSpeed = 0.5f;
   float m_ZoomSpeed = 2.0f;
 
-  // ÊäÈë×´Ì¬
+  // è¾“å…¥çŠ¶æ€
   struct {
-    bool rotating = false;  // Êó±êÓÒ¼ü¿ØÖÆĞı×ª
-    bool panning = false;   // Êó±êÖĞ¼ü¿ØÖÆÆ½ÒÆ
+    bool rotating = false;  // é¼ æ ‡å³é”®æ§åˆ¶æ—‹è½¬
+    bool panning = false;   // é¼ æ ‡ä¸­é”®æ§åˆ¶å¹³ç§»
 
-    glm::vec3 moveDirection{0.0f}; // ¼ÇÂ¼¼üÅÌÔË¶¯·½Ïò
-    std::unordered_map<int, bool> keyStates;  // ´æ´¢Ã¿¸ö°´¼üµÄ×´Ì¬
+    glm::vec3 moveDirection{0.0f}; // è®°å½•é”®ç›˜è¿åŠ¨æ–¹å‘
+    std::unordered_map<int, bool> keyStates;  // å­˜å‚¨æ¯ä¸ªæŒ‰é”®çš„çŠ¶æ€
   } m_InputState;
 
-  // ¾²Ì¬ÈÕÖ¾¶ÔÏó
+  // é™æ€æ—¥å¿—å¯¹è±¡
   static Logger s_Logger;
 };
 

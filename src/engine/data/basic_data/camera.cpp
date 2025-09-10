@@ -7,7 +7,7 @@ Camera::Camera()
   RecalculateProjection();
 }
 
-// === Í¶Ó°²ÎÊıÉèÖÃ ===
+// === æŠ•å½±å‚æ•°è®¾ç½® ===
 
 void Camera::SetPerspective(float fov, float aspect, float near, float far)
 {
@@ -45,35 +45,35 @@ void Camera::LookAt(const glm::vec3 &position, const glm::vec3 &target, const gl
 {
   m_Position = position;
 
-  // ¼ÆËã¿´ÏòÄ¿±êµÄ·½ÏòÏòÁ¿
+  // è®¡ç®—çœ‹å‘ç›®æ ‡çš„æ–¹å‘å‘é‡
   glm::vec3 direction = glm::normalize(target - position);
 
-  // Ö±½Ó´Ó·½ÏòÏòÁ¿¼ÆËãÅ·À­½Ç
+  // ç›´æ¥ä»æ–¹å‘å‘é‡è®¡ç®—æ¬§æ‹‰è§’
   m_RotationEuler.y = glm::degrees(atan2(-direction.x, -direction.z));  // yaw
   m_RotationEuler.x = glm::degrees(asin(direction.y));               // pitch
   m_RotationEuler.z = 0.0f;
 
-  // È»ºóÓÃÅ·À­½Ç¹¹½¨ÊÓÍ¼¾ØÕó
+  // ç„¶åç”¨æ¬§æ‹‰è§’æ„å»ºè§†å›¾çŸ©é˜µ
   RecalculateViewFromRotation();
 }
 void Camera::SetViewMatrix(const glm::mat4 &view)
 {
   m_ViewMatrix = view;
 
-  // ¸üĞÂÎ»ÖÃ£ºÊÓÍ¼¾ØÕóµÄÄæ¾ØÕóµÄÆ½ÒÆ·ÖÁ¿¾ÍÊÇÏà»úÎ»ÖÃ
+  // æ›´æ–°ä½ç½®ï¼šè§†å›¾çŸ©é˜µçš„é€†çŸ©é˜µçš„å¹³ç§»åˆ†é‡å°±æ˜¯ç›¸æœºä½ç½®
   glm::mat4 inverseView = glm::inverse(view);
   m_Position = glm::vec3(inverseView[3]);
 
-  // ´ÓÊÓÍ¼¾ØÕóÌáÈ¡Ğı×ª¾ØÕó£¨ÊÓÍ¼¾ØÕóµÄ×óÉÏ3x3ÊÇÏà»úµ½ÊÀ½çµÄĞı×ª£©
+  // ä»è§†å›¾çŸ©é˜µæå–æ—‹è½¬çŸ©é˜µï¼ˆè§†å›¾çŸ©é˜µçš„å·¦ä¸Š3x3æ˜¯ç›¸æœºåˆ°ä¸–ç•Œçš„æ—‹è½¬ï¼‰
   glm::mat3 rotationMat = glm::mat3(view);
 
-  // ¸üĞÂÅ·À­½Ç
+  // æ›´æ–°æ¬§æ‹‰è§’
   m_RotationEuler.y = glm::degrees(atan2(rotationMat[0][2], rotationMat[2][2]));  // yaw
   m_RotationEuler.x = glm::degrees(asin(-rotationMat[1][2]));                     // pitch
   m_RotationEuler.z = glm::degrees(atan2(rotationMat[1][0], rotationMat[1][1]));  // roll
 }
 
-// === ¾ØÕó»ñÈ¡ ===
+// === çŸ©é˜µè·å– ===
 
 const glm::mat4 &Camera::GetProjectionMatrix() const
 {
@@ -88,7 +88,7 @@ glm::mat4 Camera::GetViewProjectionMatrix() const
   return m_ProjectionMatrix * m_ViewMatrix;
 }
 
-// === ²ÎÊı·ÃÎÊ ===
+// === å‚æ•°è®¿é—® ===
 
 Camera::ProjectionType Camera::GetProjectionType() const
 {
@@ -123,14 +123,14 @@ glm::vec3 Camera::GetRotationEuler() const
 
 glm::vec3 Camera::GetRightVector() const
 {
-  // £¨¸´ÓÃRecalculateViewFromRotation´úÂë¶Î£©
-  // ´ÓÅ·À­½Ç¼ÆËãĞı×ªËÄÔªÊı
+  // ï¼ˆå¤ç”¨RecalculateViewFromRotationä»£ç æ®µï¼‰
+  // ä»æ¬§æ‹‰è§’è®¡ç®—æ—‹è½¬å››å…ƒæ•°
   glm::quat rotation = glm::quat(glm::radians(m_RotationEuler));
-  // ¼ÆËã·½ÏòÏòÁ¿
+  // è®¡ç®—æ–¹å‘å‘é‡
   glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
   glm::vec3 up = rotation * glm::vec3(0, 1, 0);
 
-  // ·ÀÖ¹Ïà»ú·­¹ö£¬Ç¿ÖÆÉÏÏòÁ¿ÓëÊÀ½çYÖá¶ÔÆë
+  // é˜²æ­¢ç›¸æœºç¿»æ»šï¼Œå¼ºåˆ¶ä¸Šå‘é‡ä¸ä¸–ç•ŒYè½´å¯¹é½
   glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
   up = glm::normalize(glm::cross(right, forward));
 
@@ -139,14 +139,14 @@ glm::vec3 Camera::GetRightVector() const
 
 glm::vec3 Camera::GetUpVector() const
 {
-  // £¨¸´ÓÃRecalculateViewFromRotation´úÂë¶Î£©
-  // ´ÓÅ·À­½Ç¼ÆËãĞı×ªËÄÔªÊı
+  // ï¼ˆå¤ç”¨RecalculateViewFromRotationä»£ç æ®µï¼‰
+  // ä»æ¬§æ‹‰è§’è®¡ç®—æ—‹è½¬å››å…ƒæ•°
   glm::quat rotation = glm::quat(glm::radians(m_RotationEuler));
-  // ¼ÆËã·½ÏòÏòÁ¿
+  // è®¡ç®—æ–¹å‘å‘é‡
   glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
   glm::vec3 up = rotation * glm::vec3(0, 1, 0);
 
-  // ·ÀÖ¹Ïà»ú·­¹ö£¬Ç¿ÖÆÉÏÏòÁ¿ÓëÊÀ½çYÖá¶ÔÆë
+  // é˜²æ­¢ç›¸æœºç¿»æ»šï¼Œå¼ºåˆ¶ä¸Šå‘é‡ä¸ä¸–ç•ŒYè½´å¯¹é½
   glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
   up = glm::normalize(glm::cross(right, forward));
 
@@ -155,14 +155,14 @@ glm::vec3 Camera::GetUpVector() const
 
 glm::vec3 Camera::GetForwardVector() const
 {
-  // £¨¸´ÓÃRecalculateViewFromRotation´úÂë¶Î£©
-  // ´ÓÅ·À­½Ç¼ÆËãĞı×ªËÄÔªÊı
+  // ï¼ˆå¤ç”¨RecalculateViewFromRotationä»£ç æ®µï¼‰
+  // ä»æ¬§æ‹‰è§’è®¡ç®—æ—‹è½¬å››å…ƒæ•°
   glm::quat rotation = glm::quat(glm::radians(m_RotationEuler));
-  // ¼ÆËã·½ÏòÏòÁ¿
+  // è®¡ç®—æ–¹å‘å‘é‡
   glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
   glm::vec3 up = rotation * glm::vec3(0, 1, 0);
 
-  // ·ÀÖ¹Ïà»ú·­¹ö£¬Ç¿ÖÆÉÏÏòÁ¿ÓëÊÀ½çYÖá¶ÔÆë
+  // é˜²æ­¢ç›¸æœºç¿»æ»šï¼Œå¼ºåˆ¶ä¸Šå‘é‡ä¸ä¸–ç•ŒYè½´å¯¹é½
   glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
   up = glm::normalize(glm::cross(right, forward));
 
@@ -171,19 +171,19 @@ glm::vec3 Camera::GetForwardVector() const
 
  float Camera::GetDistance() const
 {
-  // ¼ÆËãÏà»úÎ»ÖÃµ½ÊÀ½çÔ­µãµÄ¾àÀë
+  // è®¡ç®—ç›¸æœºä½ç½®åˆ°ä¸–ç•ŒåŸç‚¹çš„è·ç¦»
   return glm::length(GetPosition());
 }
 
-// === Ïà»ú¿ØÖÆ·½·¨ÊµÏÖ ===
+// === ç›¸æœºæ§åˆ¶æ–¹æ³•å®ç° ===
 
  
 void Camera::Translate(const glm::vec3 position)
 {
-  // Ö±½Ó¸üĞÂÎ»ÖÃ×´Ì¬
+  // ç›´æ¥æ›´æ–°ä½ç½®çŠ¶æ€
   m_Position = position;
 
-  // Ê¹ÓÃµ±Ç°Ğı×ªÖØĞÂ¹¹½¨ÊÓÍ¼¾ØÕó
+  // ä½¿ç”¨å½“å‰æ—‹è½¬é‡æ–°æ„å»ºè§†å›¾çŸ©é˜µ
   RecalculateViewFromRotation();
 }
 
@@ -193,21 +193,21 @@ void Camera::Rotate(const glm::vec3 rotation) {
 
 void Camera::Rotate(float yaw, float pitch, float roll)
 {
-  // ÀÛ»ıĞı×ª½Ç¶È
-  m_RotationEuler.y += yaw;    // Æ«º½£¨ÈÆYÖá£©
-  m_RotationEuler.x += pitch;  // ¸©Ñö£¨ÈÆXÖá£©
-  m_RotationEuler.z += roll;   // ¹ö×ª£¨ÈÆZÖá£©
+  // ç´¯ç§¯æ—‹è½¬è§’åº¦
+  m_RotationEuler.y += yaw;    // åèˆªï¼ˆç»•Yè½´ï¼‰
+  m_RotationEuler.x += pitch;  // ä¿¯ä»°ï¼ˆç»•Xè½´ï¼‰
+  m_RotationEuler.z += roll;   // æ»šè½¬ï¼ˆç»•Zè½´ï¼‰
 
-  // ÏŞÖÆ¸©Ñö½Ç¶È±ÜÃâ·­×ª
+  // é™åˆ¶ä¿¯ä»°è§’åº¦é¿å…ç¿»è½¬
   m_RotationEuler.x = glm::clamp(m_RotationEuler.x, -89.0f, 89.0f);
 
-  // ´ÓĞı×ªÖØ½¨ÊÓÍ¼¾ØÕó
+  // ä»æ—‹è½¬é‡å»ºè§†å›¾çŸ©é˜µ
   RecalculateViewFromRotation();
 }
 
 void Camera::Pan(float right, float up)
 {
-  // ÆÁÄ»¿Õ¼äÆ½ÒÆ×ª»»ÎªÊÀ½ç¿Õ¼äÒÆ¶¯
+  // å±å¹•ç©ºé—´å¹³ç§»è½¬æ¢ä¸ºä¸–ç•Œç©ºé—´ç§»åŠ¨
   const glm::vec3 worldRight = GetRightVector() * right;
   const glm::vec3 worldUp = GetUpVector() * up;
   Move(worldRight + worldUp);
@@ -216,12 +216,12 @@ void Camera::Pan(float right, float up)
 void Camera::Zoom(float amount)
 {
   if (m_ProjectionType == ProjectionType::Perspective) {
-    // Í¸ÊÓÄ£Ê½£ºµ÷ÕûFOV
+    // é€è§†æ¨¡å¼ï¼šè°ƒæ•´FOV
     m_FOV = glm::clamp(m_FOV - amount, 1.0f, 170.0f);
     RecalculateProjection();
   }
   else {
-    // Õı½»Ä£Ê½£ºµ÷ÕûÊÓ¿Ú´óĞ¡
+    // æ­£äº¤æ¨¡å¼ï¼šè°ƒæ•´è§†å£å¤§å°
     m_OrthoSize = glm::max(m_OrthoSize - amount * 0.1f, 0.1f);
     RecalculateProjection();
   }
@@ -229,40 +229,40 @@ void Camera::Zoom(float amount)
 
 void Camera::Move(const glm::vec3 direction)
 {
-  // Ö±½Ó¸üĞÂÎ»ÖÃ×´Ì¬
+  // ç›´æ¥æ›´æ–°ä½ç½®çŠ¶æ€
   m_Position += direction;
 
-  // Ê¹ÓÃµ±Ç°Ğı×ªÖØĞÂ¹¹½¨ÊÓÍ¼¾ØÕó
+  // ä½¿ç”¨å½“å‰æ—‹è½¬é‡æ–°æ„å»ºè§†å›¾çŸ©é˜µ
   RecalculateViewFromRotation();
 }
 
 
-// === ¸¨Öú·½·¨ ===
+// === è¾…åŠ©æ–¹æ³• ===
 
 void Camera::RecalculateViewFromRotation()
 {
-  // ´ÓÅ·À­½Ç¼ÆËãĞı×ªËÄÔªÊı
+  // ä»æ¬§æ‹‰è§’è®¡ç®—æ—‹è½¬å››å…ƒæ•°
   glm::quat rotation = glm::quat(glm::radians(m_RotationEuler));
 
-  // ¼ÆËã·½ÏòÏòÁ¿
+  // è®¡ç®—æ–¹å‘å‘é‡
   glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
   glm::vec3 up = rotation * glm::vec3(0, 1, 0);
 
-  // ·ÀÖ¹Ïà»ú·­¹ö£¬Ç¿ÖÆÉÏÏòÁ¿ÓëÊÀ½çYÖá¶ÔÆë
+  // é˜²æ­¢ç›¸æœºç¿»æ»šï¼Œå¼ºåˆ¶ä¸Šå‘é‡ä¸ä¸–ç•ŒYè½´å¯¹é½
   glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
   up = glm::normalize(glm::cross(right, forward));
 
-  // ¹¹½¨ÊÓÍ¼¾ØÕó
+  // æ„å»ºè§†å›¾çŸ©é˜µ
   m_ViewMatrix = glm::lookAt(m_Position, m_Position + forward, up);
 }
 
 void Camera::RecalculateProjection()
 {
-  // Í¸ÊÓÏà»ú
+  // é€è§†ç›¸æœº
   if (m_ProjectionType == ProjectionType::Perspective) {
     m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_Aspect, m_Near, m_Far);
   }
-  // Õı½»Ïà»ú
+  // æ­£äº¤ç›¸æœº
   else if (m_ProjectionType == ProjectionType::Orthographic) {
     float width = m_OrthoSize * m_Aspect;
     float height = m_OrthoSize;

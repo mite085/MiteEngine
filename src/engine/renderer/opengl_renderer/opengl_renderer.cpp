@@ -3,7 +3,7 @@
 namespace mite {
 OpenGLRenderer::OpenGLRenderer()
 {
-  // ´´½¨ÈÕÖ¾ÏµÍ³
+  // åˆ›å»ºæ—¥å¿—ç³»ç»Ÿ
   m_Logger = LoggerSystem::CreateModuleLogger("Mite OpenGL Renderer");
   m_Logger->info("OpenGL Renderer created");
 }
@@ -15,10 +15,10 @@ OpenGLRenderer::~OpenGLRenderer()
 
 void OpenGLRenderer::Initialize()
 {
-  // ³õÊ¼»¯Ä¬ÈÏFrameBuffer
+  // åˆå§‹åŒ–é»˜è®¤FrameBuffer
   CreateDefaultFrameBuffer();
 
-  // Í¨¹ıRenderCommand³õÊ¼»¯OpenGL×´Ì¬
+  // é€šè¿‡RenderCommandåˆå§‹åŒ–OpenGLçŠ¶æ€
   RenderCommand::Init();
 
   m_Logger->info("OpenGL Renderer initialized");
@@ -26,16 +26,16 @@ void OpenGLRenderer::Initialize()
 
 void OpenGLRenderer::CreateDefaultFrameBuffer()
 {
-  // ´´½¨FrameBuffer¹æ¸ñ
+  // åˆ›å»ºFrameBufferè§„æ ¼
   FrameBufferSpec spec;
   spec.width = m_ViewportSize.x;
   spec.height = m_ViewportSize.y;
   spec.attachments = {
-      {FrameBufferAttachmentType::Color, GL_RGBA8},  // ÑÕÉ«¸½¼ş
-      {FrameBufferAttachmentType::Depth}             // Éî¶È¸½¼ş
+      {FrameBufferAttachmentType::Color, GL_RGBA8},  // é¢œè‰²é™„ä»¶
+      {FrameBufferAttachmentType::Depth}             // æ·±åº¦é™„ä»¶
   };
 
-  // ´´½¨FrameBuffer
+  // åˆ›å»ºFrameBuffer
   m_ViewportFrameBuffer = std::make_shared<FrameBuffer>(spec);
 
   if (!m_ViewportFrameBuffer->IsComplete()) {
@@ -48,25 +48,25 @@ void OpenGLRenderer::CreateDefaultFrameBuffer()
 
 void OpenGLRenderer::BeginFrame()
 {
-  // Í¨¹ıRenderCommandÌá½»ÇåÆÁÃüÁî
+  // é€šè¿‡RenderCommandæäº¤æ¸…å±å‘½ä»¤
   RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, m_ClearColor);
 
-  // °ó¶¨ÊÓ¿ÚFrameBuffer
+  // ç»‘å®šè§†å£FrameBuffer
   RenderCommand::BindFrameBuffer(m_ViewportFrameBuffer);
 
-  // ±¾´Î»æÖÆÊ×´Î°ó¶¨FrameBuffer£¬Ìá½»FrameBufferµÄÇåÆÁÃüÁî
+  // æœ¬æ¬¡ç»˜åˆ¶é¦–æ¬¡ç»‘å®šFrameBufferï¼Œæäº¤FrameBufferçš„æ¸…å±å‘½ä»¤
   RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, m_ClearColor);
 
-  // ÉèÖÃÊÓ¿Ú´óĞ¡
+  // è®¾ç½®è§†å£å¤§å°
   RenderCommand::SetViewport(0, 0, m_ViewportSize.x, m_ViewportSize.y);
 }
 
 void OpenGLRenderer::EndFrame()
 {
-  // ½â°óFrameBuffer
+  // è§£ç»‘FrameBuffer
   RenderCommand::UnbindFrameBuffer();
 
-  // ÖØÖÃOpenGL×´Ì¬
+  // é‡ç½®OpenGLçŠ¶æ€
   RenderCommand::PushCustomCommand(
       [] {
         glBindVertexArray(0);
@@ -75,7 +75,7 @@ void OpenGLRenderer::EndFrame()
       },
       "ResetGLState");
 
-  // Ö´ĞĞËùÓĞÃüÁî
+  // æ‰§è¡Œæ‰€æœ‰å‘½ä»¤
   RenderCommand::Flush();
 }
 
@@ -87,30 +87,30 @@ void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
     return;
   }
 
-  // 1. »ñÈ¡ÊÓÍ¼ºÍÍ¶Ó°¾ØÕó
+  // 1. è·å–è§†å›¾å’ŒæŠ•å½±çŸ©é˜µ
   const glm::mat4 viewMatrix = mainCamera->GetViewMatrix();
   const glm::mat4 projectionMatrix = mainCamera->GetProjectionMatrix();
 
-  // 2. °´¶ÓÁĞÀàĞÍË³ĞòäÖÈ¾£¨Í¨³££º²»Í¸Ã÷ -> Alpha²âÊÔ -> Í¸Ã÷£©
+  // 2. æŒ‰é˜Ÿåˆ—ç±»å‹é¡ºåºæ¸²æŸ“ï¼ˆé€šå¸¸ï¼šä¸é€æ˜ -> Alphaæµ‹è¯• -> é€æ˜ï¼‰
   const std::vector<RenderQueue::QueueType> renderOrder = {RenderQueue::QueueType::Opaque,
                                                            RenderQueue::QueueType::AlphaTest,
                                                            RenderQueue::QueueType::Transparent,
                                                            RenderQueue::QueueType::Custom};
 
-  // 3. ±éÀúËùÓĞ¶ÓÁĞÀàĞÍ
+  // 3. éå†æ‰€æœ‰é˜Ÿåˆ—ç±»å‹
   for (auto queueType : renderOrder) {
     const auto &items = renderQueue->GetItems(queueType);
     if (items.empty())
       continue;
 
-    // 4. äÖÈ¾µ±Ç°¶ÓÁĞµÄËùÓĞÏî
+    // 4. æ¸²æŸ“å½“å‰é˜Ÿåˆ—çš„æ‰€æœ‰é¡¹
     for (const auto &item : items) {
       if (!item.material || !item.mesh) {
         m_Logger->warn("Invalid renderable item - missing material or mesh");
         continue;
       }
 
-      // Í¨¹ıRenderCommandÌá½»»æÖÆÃüÁî
+      // é€šè¿‡RenderCommandæäº¤ç»˜åˆ¶å‘½ä»¤
       RenderCommand::Submit(item, viewMatrix, projectionMatrix);
     }
   }
@@ -125,12 +125,12 @@ void OpenGLRenderer::SetViewport(uint32_t width, uint32_t height)
 {
   m_ViewportSize = {width, height};
 
-  // µ÷ÕûFrameBuffer´óĞ¡
+  // è°ƒæ•´FrameBufferå¤§å°
   if (m_ViewportFrameBuffer) {
     m_ViewportFrameBuffer->Resize(width, height);
   }
 
-  // Ìá½»ÊÓ¿ÚÉèÖÃÃüÁî
+  // æäº¤è§†å£è®¾ç½®å‘½ä»¤
   RenderCommand::SetViewport(0, 0, width, height);
 }
 
@@ -141,7 +141,7 @@ std::shared_ptr<FrameBuffer> OpenGLRenderer::GetViewportFrameBuffer() const
 
 intptr_t OpenGLRenderer::GetViewportFramebufferID() const
 {
-  // ·µ»ØÑÕÉ«¸½¼ş0µÄÎÆÀíID
+  // è¿”å›é¢œè‰²é™„ä»¶0çš„çº¹ç†ID
   return static_cast<intptr_t>(m_ViewportFrameBuffer->GetColorAttachmentID());
 }
 

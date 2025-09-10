@@ -21,17 +21,17 @@ void TransformComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 {
   if (!IsDirty() && !m_HierarchyDirty)
     return;
-  // ¸üĞÂÊÀ½ç¾ØÕó
+  // æ›´æ–°ä¸–ç•ŒçŸ©é˜µ
   UpdateWorldMatrix(reg);
 
-  // ·¢²¼¸üĞÂÊÂ¼ş
+  // å‘å¸ƒæ›´æ–°äº‹ä»¶
   EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
 
-  // Çå³ı±ê¼Ç
+  // æ¸…é™¤æ ‡è®°
   m_HierarchyDirty = false;
   ClearDirty();
 }
-// Î»ÖÃÏà¹Ø·½·¨ ==============================================
+// ä½ç½®ç›¸å…³æ–¹æ³• ==============================================
 
 const glm::vec3 &TransformComponent::GetLocalPosition() const
 {
@@ -51,19 +51,19 @@ void TransformComponent::SetLocalPosition(const glm::vec3 &position)
 
 glm::vec3 TransformComponent::GetWorldPosition(SceneRegistry &reg) const
 {
-  // ÓÉGetWorldMatrixÈ·±£ÊÀ½ç¾ØÕóÊÇ×îĞÂµÄ
+  // ç”±GetWorldMatrixç¡®ä¿ä¸–ç•ŒçŸ©é˜µæ˜¯æœ€æ–°çš„
   const glm::mat4 &worldMat = GetWorldMatrix(reg);
   return glm::vec3(worldMat[3]);
 }
 
 void TransformComponent::SetWorldPosition(SceneRegistry &reg, const glm::vec3 &position)
 {
-  // ×ª»»ÎªLocalPositionºóµ÷ÓÃSetLocalPosition
-  // ×¢Òâ£ºMarkDirtyºÍEventPost¾ùÓÉSetLocalº¯Êı¸ºÔğ£¬´Ë´¦µ÷ÓÃSetLocalº¯Êıºó£¬ÎŞĞèÖ´ĞĞÕâĞ©²Ù×÷
+  // è½¬æ¢ä¸ºLocalPositionåè°ƒç”¨SetLocalPosition
+  // æ³¨æ„ï¼šMarkDirtyå’ŒEventPostå‡ç”±SetLocalå‡½æ•°è´Ÿè´£ï¼Œæ­¤å¤„è°ƒç”¨SetLocalå‡½æ•°åï¼Œæ— éœ€æ‰§è¡Œè¿™äº›æ“ä½œ
   if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
     auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
-      // Èç¹ûÓĞ¸¸½Úµã£¬×ª»»Îª¾Ö²¿¿Õ¼ä
+      // å¦‚æœæœ‰çˆ¶èŠ‚ç‚¹ï¼Œè½¬æ¢ä¸ºå±€éƒ¨ç©ºé—´
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
       glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix(reg);
@@ -73,11 +73,11 @@ void TransformComponent::SetWorldPosition(SceneRegistry &reg, const glm::vec3 &p
       return;
     }
   }
-  // ÎŞ¸¸½Úµã£¬»ò¸¸½Úµã²»¿ÉÓÃ£¬¼´´Ë½ÚµãÎª¸ù½Úµã
+  // æ— çˆ¶èŠ‚ç‚¹ï¼Œæˆ–çˆ¶èŠ‚ç‚¹ä¸å¯ç”¨ï¼Œå³æ­¤èŠ‚ç‚¹ä¸ºæ ¹èŠ‚ç‚¹
   SetLocalPosition(position);
 }
 
-// Ğı×ªÏà¹Ø·½·¨ ==============================================
+// æ—‹è½¬ç›¸å…³æ–¹æ³• ==============================================
 
 glm::vec3 TransformComponent::GetLocalRotation() const
 {
@@ -119,18 +119,18 @@ glm::vec3 TransformComponent::GetWorldRotation(SceneRegistry &reg) const
 
 void TransformComponent::SetWorldRotation(SceneRegistry &reg, const glm::vec3 &rotation)
 {
-  // ×ª»»ÎªLocalRotationºóµ÷ÓÃSetLocalRotation
-  // ×¢Òâ£ºMarkDirtyºÍEventPost¾ùÓÉSetLocalº¯Êı¸ºÔğ£¬´Ë´¦µ÷ÓÃSetLocalº¯Êıºó£¬ÎŞĞèÖ´ĞĞÕâĞ©²Ù×÷
+  // è½¬æ¢ä¸ºLocalRotationåè°ƒç”¨SetLocalRotation
+  // æ³¨æ„ï¼šMarkDirtyå’ŒEventPostå‡ç”±SetLocalå‡½æ•°è´Ÿè´£ï¼Œæ­¤å¤„è°ƒç”¨SetLocalå‡½æ•°åï¼Œæ— éœ€æ‰§è¡Œè¿™äº›æ“ä½œ
   if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
     auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
-      // ×ª»»Îª¾Ö²¿Ğı×ª
+      // è½¬æ¢ä¸ºå±€éƒ¨æ—‹è½¬
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
       glm::vec3 parentWorldRot = parentTransform.GetWorldRotation(reg);
 
-      // ¼ÆËãÏà¶ÔĞı×ª£¨Å·À­½Ç¼õ·¨¿ÉÄÜ²»×¼È·£¬½¨ÒéÊ¹ÓÃËÄÔªÊı£©
-      // ÕâÀïÊ¹ÓÃËÄÔªÊı½øĞĞ¾«È·¼ÆËã
+      // è®¡ç®—ç›¸å¯¹æ—‹è½¬ï¼ˆæ¬§æ‹‰è§’å‡æ³•å¯èƒ½ä¸å‡†ç¡®ï¼Œå»ºè®®ä½¿ç”¨å››å…ƒæ•°ï¼‰
+      // è¿™é‡Œä½¿ç”¨å››å…ƒæ•°è¿›è¡Œç²¾ç¡®è®¡ç®—
       glm::quat targetWorldQuat = EulerDegreesToQuat(rotation);
       glm::quat parentWorldQuat = EulerDegreesToQuat(parentWorldRot);
       glm::quat localQuat = targetWorldQuat * glm::inverse(parentWorldQuat);
@@ -149,7 +149,7 @@ void TransformComponent::SetWorldRotationQuat(SceneRegistry &reg, const glm::qua
 
 void TransformComponent::Rotate(const glm::vec3 &axis, float angle)
 {
-  // Ê¹ÓÃTransformÄÚÖÃµÄRotate·½·¨£¨deg£©
+  // ä½¿ç”¨Transformå†…ç½®çš„Rotateæ–¹æ³•ï¼ˆdegï¼‰
   m_Transform.Rotate(axis, angle);
   MarkDirty();
 }
@@ -159,33 +159,33 @@ void TransformComponent::RotateAround(SceneRegistry &reg,
                                       const glm::vec3 &worldAxis,
                                       float angle)
 {
-  // »ñÈ¡µ±Ç°ÊÀ½çÎ»ÖÃºÍĞı×ª
+  // è·å–å½“å‰ä¸–ç•Œä½ç½®å’Œæ—‹è½¬
   glm::vec3 worldPos = GetWorldPosition(reg);
   glm::vec3 worldRot = GetWorldRotation(reg);
 
-  // Èç¹ûÓĞ¸¸½Úµã£¬ĞèÒª½«ÊÀ½ç×ø±ê×ª»»Îª¾Ö²¿×ø±ê
+  // å¦‚æœæœ‰çˆ¶èŠ‚ç‚¹ï¼Œéœ€è¦å°†ä¸–ç•Œåæ ‡è½¬æ¢ä¸ºå±€éƒ¨åæ ‡
   if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
     auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
 
-      // ½«ÊÀ½ç×ø±êµã×ª»»µ½¸¸½Úµã¾Ö²¿¿Õ¼ä
+      // å°†ä¸–ç•Œåæ ‡ç‚¹è½¬æ¢åˆ°çˆ¶èŠ‚ç‚¹å±€éƒ¨ç©ºé—´
       glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix(reg);
       glm::mat4 inverseParent = glm::inverse(parentWorldMat);
       glm::vec4 localPoint = inverseParent * glm::vec4(worldPoint, 1.0f);
 
-      // ½«ÊÀ½çÖá×ª»»µ½¸¸½Úµã¾Ö²¿¿Õ¼ä
+      // å°†ä¸–ç•Œè½´è½¬æ¢åˆ°çˆ¶èŠ‚ç‚¹å±€éƒ¨ç©ºé—´
       glm::vec3 localAxis = glm::vec3(glm::inverse(glm::mat3(parentWorldMat)) * worldAxis);
 
-      // ÔÚ¾Ö²¿¿Õ¼äÖ´ĞĞĞı×ª
+      // åœ¨å±€éƒ¨ç©ºé—´æ‰§è¡Œæ—‹è½¬
       m_Transform.RotateAround(glm::vec3(localPoint), localAxis, angle);
       MarkDirty();
       return;
     }
   }
 
-  // Ã»ÓĞ¸¸½Úµã£¬Ö±½ÓÔÚÊÀ½ç¿Õ¼äÖ´ĞĞ
+  // æ²¡æœ‰çˆ¶èŠ‚ç‚¹ï¼Œç›´æ¥åœ¨ä¸–ç•Œç©ºé—´æ‰§è¡Œ
   m_Transform.RotateAround(worldPoint, worldAxis, angle);
   MarkDirty();
 }
@@ -197,7 +197,7 @@ void TransformComponent::LookAt(SceneRegistry &reg, const glm::vec3 &target, con
   MarkDirty();
 }
 
-// Ëõ·ÅÏà¹Ø·½·¨ ==============================================
+// ç¼©æ”¾ç›¸å…³æ–¹æ³• ==============================================
 
 const glm::vec3 &TransformComponent::GetLocalScale() const
 {
@@ -227,7 +227,7 @@ glm::vec3 TransformComponent::GetWorldScale(SceneRegistry &reg) const
                    glm::length(glm::vec3(worldMat[2])));
 }
 
-// ¾ØÕóÏà¹Ø·½·¨ ==============================================
+// çŸ©é˜µç›¸å…³æ–¹æ³• ==============================================
 
 glm::mat4 TransformComponent::GetLocalMatrix() const
 {
@@ -256,7 +256,7 @@ void TransformComponent::SetWorldMatrix(SceneRegistry &reg, const glm::mat4 &mat
   if (reg.HasComponent<HierarchyComponent>(GetEntity())) {
     auto &hierarchy = reg.GetComponent<HierarchyComponent>(GetEntity());
     if (hierarchy.GetParent().IsValid()) {
-      // ×ª»»Îª¾Ö²¿¿Õ¼ä
+      // è½¬æ¢ä¸ºå±€éƒ¨ç©ºé—´
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
       glm::mat4 parentWorldMat = parentTransform.GetWorldMatrix(reg);
@@ -265,11 +265,11 @@ void TransformComponent::SetWorldMatrix(SceneRegistry &reg, const glm::mat4 &mat
       return;
     }
   }
-  // Ã»ÓĞ¸¸½ÚµãÊ±Ö±½ÓÉèÖÃ±¾µØ¾ØÕó
+  // æ²¡æœ‰çˆ¶èŠ‚ç‚¹æ—¶ç›´æ¥è®¾ç½®æœ¬åœ°çŸ©é˜µ
   SetLocalMatrix(matrix);
 }
 
-// ·½ÏòÏòÁ¿ ==============================================
+// æ–¹å‘å‘é‡ ==============================================
 
 glm::vec3 TransformComponent::Forward() const
 {
@@ -286,7 +286,7 @@ glm::vec3 TransformComponent::Right() const
   return m_Transform.GetRight();
 }
 
-// ×é¼ş½Ó¿ÚÊµÏÖ ==========================================
+// ç»„ä»¶æ¥å£å®ç° ==========================================
 
 std::vector<std::type_index> TransformComponent::GetDependencies() const
 {
@@ -296,13 +296,13 @@ std::vector<std::type_index> TransformComponent::GetDependencies() const
 bool TransformComponent::Serialize(std::ostream &output) const
 {
   Component::Serialize(output);
-  // ĞòÁĞ»¯Áô¿Õ£¬µÈ´ıĞòÁĞ»¯Ä£¿é
+  // åºåˆ—åŒ–ç•™ç©ºï¼Œç­‰å¾…åºåˆ—åŒ–æ¨¡å—
   return !output.fail();
 }
 bool TransformComponent::Deserialize(std::istream &input)
 {
   Component::Deserialize(input);
-  // ·´ĞòÁĞ»¯Áô¿Õ£¬µÈ´ıĞòÁĞ»¯Ä£¿é
+  // ååºåˆ—åŒ–ç•™ç©ºï¼Œç­‰å¾…åºåˆ—åŒ–æ¨¡å—
   return !input.fail();
 }
 
@@ -327,7 +327,7 @@ bool TransformComponent::IsHierarchyDirty() const
   return m_HierarchyDirty;
 }
 
-// Ë½ÓĞ·½·¨ ==============================================
+// ç§æœ‰æ–¹æ³• ==============================================
 
 void TransformComponent::UpdateWorldMatrix(SceneRegistry &reg) const
 {
@@ -338,17 +338,17 @@ void TransformComponent::UpdateWorldMatrix(SceneRegistry &reg) const
     if (hierarchy.GetParent().IsValid()) {
       TransformComponent &parentTransform = reg.GetComponent<TransformComponent>(
           hierarchy.GetParent());
-      // GetWorldMatrixµİ¹é¼ÆËãÈ·±£×îĞÂ
-      // ÕâÀïÈ·±£ÏòÉÏ´«µİÕıÈ·£¬SceneGraphÈ·±£ÏòÏÂ´«µİÕıÈ·¡£
+      // GetWorldMatrixé€’å½’è®¡ç®—ç¡®ä¿æœ€æ–°
+      // è¿™é‡Œç¡®ä¿å‘ä¸Šä¼ é€’æ­£ç¡®ï¼ŒSceneGraphç¡®ä¿å‘ä¸‹ä¼ é€’æ­£ç¡®ã€‚
       m_WorldMatrix = parentTransform.GetWorldMatrix(reg) * localMat;
     }
     else {
-      // Ã»ÓĞ¸¸½Úµã£¬¾Ö²¿¾ØÕó¾ÍÊÇÊÀ½ç¾ØÕó
+      // æ²¡æœ‰çˆ¶èŠ‚ç‚¹ï¼Œå±€éƒ¨çŸ©é˜µå°±æ˜¯ä¸–ç•ŒçŸ©é˜µ
       m_WorldMatrix = localMat;
     }
   }
   else {
-    // Ã»ÓĞ²ã´Î×é¼ş£¬¾Ö²¿¾ØÕó¾ÍÊÇÊÀ½ç¾ØÕó
+    // æ²¡æœ‰å±‚æ¬¡ç»„ä»¶ï¼Œå±€éƒ¨çŸ©é˜µå°±æ˜¯ä¸–ç•ŒçŸ©é˜µ
     m_WorldMatrix = localMat;
   }
 }
@@ -364,41 +364,41 @@ glm::quat TransformComponent::EulerDegreesToQuat(const glm::vec3 &euler)
   return glm::quat(radians);
 }
 
-// ==================== ×é¼şÏµÍ³ÊµÏÖ ====================
+// ==================== ç»„ä»¶ç³»ç»Ÿå®ç° ====================
 
 std::vector<std::type_index> TransformComponentSystem::GetSystemDependencies() const
 {
-  return {typeid(HierarchyComponentSystem)};  // ÒÀÀµ²ã¼¶ĞÅÏ¢
+  return {typeid(HierarchyComponentSystem)};  // ä¾èµ–å±‚çº§ä¿¡æ¯
 }
 
 bool TransformComponentSystem::OnComponentAdded(ComponentAddedEvent<TransformComponent> &e)
 {
   Register(&e.GetComponent());
 
-  // ²»Ó¦µ±±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬¼ÌĞø´«²¥¸øSceneGraphµÄTransformSceneNodeSystem
+  // ä¸åº”å½“æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œç»§ç»­ä¼ æ’­ç»™SceneGraphçš„TransformSceneNodeSystem
   // e.Handled();
   return e.handled;
 }
 
 /**
- * @brief ´¦Àí×é¼şÒÆ³ıÊÂ¼ş
+ * @brief å¤„ç†ç»„ä»¶ç§»é™¤äº‹ä»¶
  */
 bool TransformComponentSystem::OnComponentRemoved(ComponentRemovedEvent<TransformComponent> &e)
 {
   Unregister(&e.GetComponent());
 
-  // ²»Ó¦µ±±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬¼ÌĞø´«²¥¸øSceneGraphµÄTransformSceneNodeSystem
+  // ä¸åº”å½“æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œç»§ç»­ä¼ æ’­ç»™SceneGraphçš„TransformSceneNodeSystem
   // e.Handled();
   return e.handled;
 }
 
 void TransformComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
-  // Ê¹ÓÃÔ¤·ÖÅäµÄÄÚ´æ³Ø£¨¼«¶ËÌõ¼şÏÂ¸Ãº¯ÊıÃ¿Ö¡¶¼ĞèÒªµ÷ÓÃ£¬ĞèÒª¼õÉÙ¶à´Î·ÖÅä´øÀ´µÄĞÔÄÜ¿ªÏú£©
+  // ä½¿ç”¨é¢„åˆ†é…çš„å†…å­˜æ± ï¼ˆæç«¯æ¡ä»¶ä¸‹è¯¥å‡½æ•°æ¯å¸§éƒ½éœ€è¦è°ƒç”¨ï¼Œéœ€è¦å‡å°‘å¤šæ¬¡åˆ†é…å¸¦æ¥çš„æ€§èƒ½å¼€é”€ï¼‰
   thread_local static std::vector<Entity> processingBuffer;
   processingBuffer.clear();
 
-  // µÚÒ»½×¶Î£ºÊÕ¼¯ËùÓĞĞèÒª´¦ÀíµÄÊµÌå
+  // ç¬¬ä¸€é˜¶æ®µï¼šæ”¶é›†æ‰€æœ‰éœ€è¦å¤„ç†çš„å®ä½“
   auto view = registry.GetEntitiesWithAllOf<TransformComponent, HierarchyComponent>();
   for (auto entity : view) {
     auto &transform = registry.GetComponent<TransformComponent>(entity);
@@ -407,7 +407,7 @@ void TransformComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegi
     }
   }
 
-  // ¶¨ÒåÉî¶È»ñÈ¡Lambdaº¯Êı
+  // å®šä¹‰æ·±åº¦è·å–Lambdaå‡½æ•°
   auto GetDepth = [](Entity entity, SceneRegistry &registry) -> size_t {
     if (registry.HasComponent<HierarchyComponent>(entity)) {
       auto &hierarchy = registry.GetComponent<HierarchyComponent>(entity);
@@ -418,20 +418,20 @@ void TransformComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegi
     }
   };
 
-  // °´²ã¼¶Éî¶ÈÅÅĞò£¨È·±£¸¸ÏÈ×Óºó£©
+  // æŒ‰å±‚çº§æ·±åº¦æ’åºï¼ˆç¡®ä¿çˆ¶å…ˆå­åï¼‰
   std::sort(processingBuffer.begin(),
             processingBuffer.end(),
             [&registry, &GetDepth](Entity a, Entity b) {
               return GetDepth(a, registry) < GetDepth(b, registry);
             });
 
-  // °´ÕÕ¸¸ÏÈ×ÓºóµÄÅÅĞò½á¹ûÅúÁ¿´¦Àí
+  // æŒ‰ç…§çˆ¶å…ˆå­åçš„æ’åºç»“æœæ‰¹é‡å¤„ç†
   for (auto entity : processingBuffer) {
     auto &transform = registry.GetComponent<TransformComponent>(entity);
     transform.ProcessDirty(deltaTime, registry);
   }
 
-  // ´¦Àí¶ÀÁ¢ÊµÌå£¨ÕâÒ»²½¿ÉÒÔ¶àÏß³Ì£¬¶ÀÁ¢ÊµÌåÖ®¼ä»¥Ïà²»Ó°Ïì£©
+  // å¤„ç†ç‹¬ç«‹å®ä½“ï¼ˆè¿™ä¸€æ­¥å¯ä»¥å¤šçº¿ç¨‹ï¼Œç‹¬ç«‹å®ä½“ä¹‹é—´äº’ç›¸ä¸å½±å“ï¼‰
   auto independentView = registry.GetEntitiesWith<TransformComponent>();
   for (auto entity : independentView) {
     auto &transform = registry.GetComponent<TransformComponent>(entity);

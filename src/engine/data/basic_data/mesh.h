@@ -6,66 +6,66 @@
 
 namespace mite {
 /**
- * ×ÓÍø¸ñ·â×°
- * Ö°Ôğ£º
- * - ÒıÓÃ¸¸Ä£ĞÍµÄGPU×ÊÔ´
- * - Ìá¹©×ÓÍø¸ñÌØ¶¨Êı¾İ£¨Æ«ÒÆÁ¿¡¢¼ÆÊıµÈ£©
- * - ¹ÜÀí²»Í¬LOD¼¶±ğµÄÍø¸ñÊı¾İ
+ * å­ç½‘æ ¼å°è£…
+ * èŒè´£ï¼š
+ * - å¼•ç”¨çˆ¶æ¨¡å‹çš„GPUèµ„æº
+ * - æä¾›å­ç½‘æ ¼ç‰¹å®šæ•°æ®ï¼ˆåç§»é‡ã€è®¡æ•°ç­‰ï¼‰
+ * - ç®¡ç†ä¸åŒLODçº§åˆ«çš„ç½‘æ ¼æ•°æ®
  */
 class Mesh {
  public:
   /**
-   * ¹¹Ôìº¯Êı
-   * @param modelHandle ¸¸Ä£ĞÍµÄGPU×ÊÔ´
-   * @param baseSection »ù´¡LOD¼¶±ğµÄÍø¸ñÊı¾İ¶ÎĞÅÏ¢
-   * @param lodSections_ ËùÓĞLOD¼¶±ğµÄÍø¸ñÊı¾İ¶ÎĞÅÏ¢
+   * æ„é€ å‡½æ•°
+   * @param modelHandle çˆ¶æ¨¡å‹çš„GPUèµ„æº
+   * @param baseSection åŸºç¡€LODçº§åˆ«çš„ç½‘æ ¼æ•°æ®æ®µä¿¡æ¯
+   * @param lodSections_ æ‰€æœ‰LODçº§åˆ«çš„ç½‘æ ¼æ•°æ®æ®µä¿¡æ¯
    */
   explicit Mesh(std::shared_ptr<ModelGPUHandle> modelHandle, const MeshSectionLODChain &lodChain);
 
   /**
-   * »ñÈ¡Ö¸¶¨LOD¼¶±ğµÄ¶¥µãÊıÁ¿
+   * è·å–æŒ‡å®šLODçº§åˆ«çš„é¡¶ç‚¹æ•°é‡
    */
   uint32_t GetVertexCount(uint32_t lodLevel = 0) const;
   /**
-   * »ñÈ¡Ö¸¶¨LOD¼¶±ğµÄË÷ÒıÊıÁ¿
+   * è·å–æŒ‡å®šLODçº§åˆ«çš„ç´¢å¼•æ•°é‡
    */
   uint32_t GetIndexCount(uint32_t lodLevel = 0) const;
   /**
-   * »ñÈ¡Ö¸¶¨LOD¼¶±ğµÄË÷ÒıÆ«ÒÆ
+   * è·å–æŒ‡å®šLODçº§åˆ«çš„ç´¢å¼•åç§»
    */
   uint32_t GetIndexOffset(uint32_t lodLevel = 0) const;
   /**
-   * »ñÈ¡Ö¸¶¨LOD¼¶±ğµÄÍø¸ñÊı¾İ¶ÎĞÅÏ¢
+   * è·å–æŒ‡å®šLODçº§åˆ«çš„ç½‘æ ¼æ•°æ®æ®µä¿¡æ¯
    */
   const MeshSection &GetSection(uint32_t lodLevel = 0) const;
   /**
-   * »ñÈ¡»ù´¡LOD¼¶±ğµÄÍø¸ñÊı¾İ¶ÎĞÅÏ¢
+   * è·å–åŸºç¡€LODçº§åˆ«çš„ç½‘æ ¼æ•°æ®æ®µä¿¡æ¯
    */
   const MeshSection &GetBaseSection() const;
   /**
-   * »ñÈ¡ËùÓĞLOD¼¶±ğµÄÍø¸ñÊı¾İ¶ÎĞÅÏ¢
+   * è·å–æ‰€æœ‰LODçº§åˆ«çš„ç½‘æ ¼æ•°æ®æ®µä¿¡æ¯
    */
   const std::vector<MeshSection> &GetAllLODSections() const;
   /**
-   * »ñÈ¡Ö§³ÖµÄLOD¼¶±ğÊıÁ¿
+   * è·å–æ”¯æŒçš„LODçº§åˆ«æ•°é‡
    */
   uint32_t GetLODCount() const;
   /**
-   * »ñÈ¡¸¸Ä£ĞÍGPU×ÊÔ´
+   * è·å–çˆ¶æ¨¡å‹GPUèµ„æº
    */
   std::shared_ptr<ModelGPUHandle> GetModelHandle() const;
   /**
-   * »ñÈ¡×ÓÍø¸ñ¼¶°üÎ§ºĞ
+   * è·å–å­ç½‘æ ¼çº§åŒ…å›´ç›’
    */
   const std::pair<glm::vec3, glm::vec3> GetBoundingBox(uint32_t lodLevel = 0) const;
   /**
-   * »ñÈ¡²ÄÖÊË÷Òı
+   * è·å–æè´¨ç´¢å¼•
    */
   uint32_t GetMaterialIndex() const;
 
  private:
-  std::shared_ptr<ModelGPUHandle> m_ModelGPUHandle;  // ¸¸Ä£ĞÍ×ÊÔ´
-  MeshSectionLODChain m_LODChain;  // °üº¬Íø¸ñÌåSectionµÄLODChain¶ÔÏó£¬¿É´ÓÖĞÌáÈ¡µ½OffsetĞÅÏ¢
+  std::shared_ptr<ModelGPUHandle> m_ModelGPUHandle;  // çˆ¶æ¨¡å‹èµ„æº
+  MeshSectionLODChain m_LODChain;  // åŒ…å«ç½‘æ ¼ä½“Sectionçš„LODChainå¯¹è±¡ï¼Œå¯ä»ä¸­æå–åˆ°Offsetä¿¡æ¯
 };
 };  // namespace mite
 

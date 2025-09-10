@@ -5,16 +5,16 @@
 #include "spatial_partition_manager.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class SceneRegistry;
 
 /**
  * @class SceneNodeManager
- * @brief ¸ºÔğ³¡¾°½ÚµãµÄÉúÃüÖÜÆÚ¹ÜÀí
+ * @brief è´Ÿè´£åœºæ™¯èŠ‚ç‚¹çš„ç”Ÿå‘½å‘¨æœŸç®¡ç†
  *
- * ³¡¾°½Úµã¸üĞÂ±ØÈ»»áÒıÆğ¿Õ¼ä»®·Ö½á¹¹¸üĞÂ£¬
- * ËùÒÔÓ¦µ±ÒÀÀµSpatialPartitionManager£¬
- * Ê¹ÓÃÒÀÀµ×¢ÈëµÄ·½Ê½½øĞĞ¹¹Ôì
+ * åœºæ™¯èŠ‚ç‚¹æ›´æ–°å¿…ç„¶ä¼šå¼•èµ·ç©ºé—´åˆ’åˆ†ç»“æ„æ›´æ–°ï¼Œ
+ * æ‰€ä»¥åº”å½“ä¾èµ–SpatialPartitionManagerï¼Œ
+ * ä½¿ç”¨ä¾èµ–æ³¨å…¥çš„æ–¹å¼è¿›è¡Œæ„é€ 
  */
 class SceneNodeManager {
  public:
@@ -22,132 +22,132 @@ class SceneNodeManager {
   ~SceneNodeManager() = default;
   void Clear();
 
-  // ==================== ³¡¾°½ÚµãÉúÃüÖÜÆÚ¹ÜÀí ====================
+  // ==================== åœºæ™¯èŠ‚ç‚¹ç”Ÿå‘½å‘¨æœŸç®¡ç† ====================
   /**
-   * @brief ÎªÊµÌå´´½¨³¡¾°½Úµã
-   * @param entity Ä¿±êÊµÌå
-   * @return ´´½¨µÄ³¡¾°½ÚµãÖ¸Õë£¬Ê§°Ü·µ»Ønullptr
+   * @brief ä¸ºå®ä½“åˆ›å»ºåœºæ™¯èŠ‚ç‚¹
+   * @param entity ç›®æ ‡å®ä½“
+   * @return åˆ›å»ºçš„åœºæ™¯èŠ‚ç‚¹æŒ‡é’ˆï¼Œå¤±è´¥è¿”å›nullptr
    */
   SceneNode *CreateNode(SceneRegistry &registry, Entity entity);
 
   /**
-   * @brief Ïú»ÙÊµÌåµÄ³¡¾°½Úµã
-   * @param entity Ä¿±êÊµÌå
-   * @return ÊÇ·ñ³É¹¦Ïú»Ù
+   * @brief é”€æ¯å®ä½“çš„åœºæ™¯èŠ‚ç‚¹
+   * @param entity ç›®æ ‡å®ä½“
+   * @return æ˜¯å¦æˆåŠŸé”€æ¯
    */
   bool DestroyNode(SceneRegistry &registry, Entity entity);
 
-  // ==================== ³¡¾°½Úµã²éÑ¯½Ó¿Ú ====================
+  // ==================== åœºæ™¯èŠ‚ç‚¹æŸ¥è¯¢æ¥å£ ====================
   /**
-   * @brief »ñÈ¡ÊµÌå¶ÔÓ¦µÄ³¡¾°½Úµã
-   * @param entity ÊµÌå¾ä±ú
-   * @return ³¡¾°½ÚµãÖ¸Õë£¬²»´æÔÚÊ±·µ»Ønullptr
+   * @brief è·å–å®ä½“å¯¹åº”çš„åœºæ™¯èŠ‚ç‚¹
+   * @param entity å®ä½“å¥æŸ„
+   * @return åœºæ™¯èŠ‚ç‚¹æŒ‡é’ˆï¼Œä¸å­˜åœ¨æ—¶è¿”å›nullptr
    */
   SceneNode *GetNode(Entity entity) const;
 
   /**
-   * @brief ¼ì²éÊµÌåÊÇ·ñÓĞ¶ÔÓ¦µÄ³¡¾°½Úµã
-   * @param entity ÊµÌå¾ä±ú
-   * @return ÊÇ·ñ´æÔÚ³¡¾°½Úµã
+   * @brief æ£€æŸ¥å®ä½“æ˜¯å¦æœ‰å¯¹åº”çš„åœºæ™¯èŠ‚ç‚¹
+   * @param entity å®ä½“å¥æŸ„
+   * @return æ˜¯å¦å­˜åœ¨åœºæ™¯èŠ‚ç‚¹
    */
   bool HasNode(Entity entity) const;
 
   /**
-   * @brief »ñÈ¡¸ù½ÚµãÁĞ±í£¨Ã»ÓĞ¸¸½ÚµãµÄ½Úµã£©
-   * @return ¸ù½ÚµãÖ¸ÕëÁĞ±í
+   * @brief è·å–æ ¹èŠ‚ç‚¹åˆ—è¡¨ï¼ˆæ²¡æœ‰çˆ¶èŠ‚ç‚¹çš„èŠ‚ç‚¹ï¼‰
+   * @return æ ¹èŠ‚ç‚¹æŒ‡é’ˆåˆ—è¡¨
    */
   std::vector<SceneNode *> GetRootNodes() const;
 
   /**
-   * @brief »ñÈ¡ËùÓĞ³¡¾°½Úµã
-   * @return ËùÓĞ³¡¾°½ÚµãÖ¸ÕëÁĞ±í
+   * @brief è·å–æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹
+   * @return æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹æŒ‡é’ˆåˆ—è¡¨
    */
   std::vector<SceneNode *> GetAllNodes() const;
 
   /**
-   * @brief »ñÈ¡³¡¾°½ÚµãÊıÁ¿
-   * @return ½Úµã×ÜÊı
+   * @brief è·å–åœºæ™¯èŠ‚ç‚¹æ•°é‡
+   * @return èŠ‚ç‚¹æ€»æ•°
    */
   size_t GetNodeCount() const;
 
   /**
-   * @brief »ñÈ¡½ÚµãµÄÍêÕûÂ·¾¶£¨ÓÃÓÚ±à¼­Æ÷ĞòÁĞ»¯£©
-   * @param node Ä¿±ê½Úµã
-   * @return ½ÚµãÂ·¾¶×Ö·û´®£¨Èç"Root/Camera/Light"£©
+   * @brief è·å–èŠ‚ç‚¹çš„å®Œæ•´è·¯å¾„ï¼ˆç”¨äºç¼–è¾‘å™¨åºåˆ—åŒ–ï¼‰
+   * @param node ç›®æ ‡èŠ‚ç‚¹
+   * @return èŠ‚ç‚¹è·¯å¾„å­—ç¬¦ä¸²ï¼ˆå¦‚"Root/Camera/Light"ï¼‰
    */
   std::string GetNodePath(SceneNode *node) const;
 
   /**
-   * @brief Í¨¹ıÂ·¾¶²éÕÒ³¡¾°½Úµã
-   * @param path ½ÚµãÂ·¾¶
-   * @return ³¡¾°½ÚµãÖ¸Õë£¬ÕÒ²»µ½·µ»Ønullptr
+   * @brief é€šè¿‡è·¯å¾„æŸ¥æ‰¾åœºæ™¯èŠ‚ç‚¹
+   * @param path èŠ‚ç‚¹è·¯å¾„
+   * @return åœºæ™¯èŠ‚ç‚¹æŒ‡é’ˆï¼Œæ‰¾ä¸åˆ°è¿”å›nullptr
    */
   SceneNode *FindNodeByPath(const std::string &path) const;
 
   /**
-   * @brief ±éÀú³¡¾°Ê÷Ö´ĞĞ»Øµ÷º¯Êı
-   * @param callback »Øµ÷º¯Êı£¬·µ»Øfalse¿ÉÖĞ¶Ï±éÀú
+   * @brief éå†åœºæ™¯æ ‘æ‰§è¡Œå›è°ƒå‡½æ•°
+   * @param callback å›è°ƒå‡½æ•°ï¼Œè¿”å›falseå¯ä¸­æ–­éå†
    */
   void TraverseTree(std::function<bool(SceneNode *)> callback) const;
 
   /**
-   * @brief ÅĞ¶Ï³¡¾°Í¼ÊÇ·ñÎª¿Õ
-   * @return ÊÇ·ñÎª¿Õ
+   * @brief åˆ¤æ–­åœºæ™¯å›¾æ˜¯å¦ä¸ºç©º
+   * @return æ˜¯å¦ä¸ºç©º
    */
   bool IsEmpty() const;
 
-  // ==================== ½Úµã¸üĞÂ½Ó¿Ú ====================
+  // ==================== èŠ‚ç‚¹æ›´æ–°æ¥å£ ====================
   /**
-   * @brief ÉèÖÃ½ÚµãµÄ¸¸½Úµã
-   * @param node Ä¿±ê½Úµã
-   * @param newParent ĞÂµÄ¸¸½Úµã£¨nullptr±íÊ¾ÉèÎª¸ù½Úµã£©
-   * @return ÊÇ·ñ³É¹¦ÉèÖÃ
+   * @brief è®¾ç½®èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹
+   * @param node ç›®æ ‡èŠ‚ç‚¹
+   * @param newParent æ–°çš„çˆ¶èŠ‚ç‚¹ï¼ˆnullptrè¡¨ç¤ºè®¾ä¸ºæ ¹èŠ‚ç‚¹ï¼‰
+   * @return æ˜¯å¦æˆåŠŸè®¾ç½®
    */
   bool SetParent(SceneNode *node, SceneNode *newParent);
 
   /**
-   * @brief ¸üĞÂ³¡¾°½ÚµãµÄ°üÎ§ºĞÊı¾İ
-   * @param entity Ä¿±êÊµÌå
-   * @param localBounds ¾Ö²¿°üÎ§ºĞ
+   * @brief æ›´æ–°åœºæ™¯èŠ‚ç‚¹çš„åŒ…å›´ç›’æ•°æ®
+   * @param entity ç›®æ ‡å®ä½“
+   * @param localBounds å±€éƒ¨åŒ…å›´ç›’
    */
   void UpdateNodeBounds(SceneRegistry &registry, Entity entity, const AABB &localBounds);
 
   /**
-   * @brief ±ê¼Ç½ÚµãĞèÒª¸üĞÂ£¨±ä»»»ò°üÎ§ºĞ±ä»¯£©
-   * @param entity Ä¿±êÊµÌå
+   * @brief æ ‡è®°èŠ‚ç‚¹éœ€è¦æ›´æ–°ï¼ˆå˜æ¢æˆ–åŒ…å›´ç›’å˜åŒ–ï¼‰
+   * @param entity ç›®æ ‡å®ä½“
    */
   void MarkNodeDirty(Entity entity);
 
   /**
-   * @brief ÅúÁ¿¸üĞÂËùÓĞÔà½Úµã
+   * @brief æ‰¹é‡æ›´æ–°æ‰€æœ‰è„èŠ‚ç‚¹
    */
   void Update(SceneRegistry &registry);
 
  private:
-  // ==================== ÄÚ²¿¹¤¾ß·½·¨ ====================
+  // ==================== å†…éƒ¨å·¥å…·æ–¹æ³• ====================
   /**
-   * @brief µİ¹é±éÀú³¡¾°Ê÷¸¨Öúº¯Êı
+   * @brief é€’å½’éå†åœºæ™¯æ ‘è¾…åŠ©å‡½æ•°
    */
   bool TraverseRecursive(SceneNode *node, std::function<bool(SceneNode *)> callback) const;
 
   /**
-   * @brief ÑéÖ¤¸¸×Ó¹ØÏµÊÇ·ñÓĞĞ§£¨·ÀÖ¹Ñ­»·ÒıÓÃ£©
+   * @brief éªŒè¯çˆ¶å­å…³ç³»æ˜¯å¦æœ‰æ•ˆï¼ˆé˜²æ­¢å¾ªç¯å¼•ç”¨ï¼‰
    */
   bool ValidateParenting(SceneNode *node, SceneNode *newParent) const;
 
-  // ÊµÌåµ½³¡¾°½ÚµãµÄÓ³Éä±í
+  // å®ä½“åˆ°åœºæ™¯èŠ‚ç‚¹çš„æ˜ å°„è¡¨
   std::unordered_map<Entity, std::unique_ptr<SceneNode>> m_EntityToNodeMap;
 
-  // ĞèÒª¸üĞÂµÄÔà½ÚµãÁĞ±í
+  // éœ€è¦æ›´æ–°çš„è„èŠ‚ç‚¹åˆ—è¡¨
   std::vector<Entity> m_DirtyNodes;
 
-  // ¿Õ¼ä»®·Ö½á¹¹
+  // ç©ºé—´åˆ’åˆ†ç»“æ„
   SpatialPartitionManager &m_SpatialPartition;
 
-  // Ïß³Ì°²È«±£»¤
+  // çº¿ç¨‹å®‰å…¨ä¿æŠ¤
   mutable std::mutex m_Mutex;
 
-  // ÈÕÖ¾Æ÷
+  // æ—¥å¿—å™¨
   Logger m_Logger;
 };
 }  // namespace mite

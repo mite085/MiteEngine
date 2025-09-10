@@ -3,11 +3,11 @@
 
 namespace mite {
 
-// ÊäÈëÉè±¸Óë×´Ì¬Ã¶¾Ù¶¨Òå
+// è¾“å…¥è®¾å¤‡ä¸çŠ¶æ€æšä¸¾å®šä¹‰
 enum class InputDevice { Keyboard, Mouse };
 enum class InputState { Released, Pressed, Held, Repeated };
 
-// ÊäÈë¼üÂë±ğÃû
+// è¾“å…¥é”®ç åˆ«å
 using KeyCode = int;
 using MouseCode = int;
 

@@ -10,23 +10,23 @@ class OpenGLWindow : public Window {
   OpenGLWindow();
   virtual ~OpenGLWindow() override;
 
-  // ½ûÓÃ¿½±´ºÍÒÆ¶¯
+  // ç¦ç”¨æ‹·è´å’Œç§»åŠ¨
   OpenGLWindow(const OpenGLWindow &) = delete;
   OpenGLWindow &operator=(const OpenGLWindow &) = delete;
 
   const bool WindowShouldClose() override;
 
-  // ÉúÃüÖÜÆÚ¹ÜÀí
+  // ç”Ÿå‘½å‘¨æœŸç®¡ç†
   void Initialize(const WindowConfig &config) override;
   void Shutdown() override;
 
-  // ´°¿ÚÊôĞÔ
+  // çª—å£å±æ€§
   uint32_t GetWidth() const override;
   uint32_t GetHeight() const override;
   void *GetNativeWindow() const override;
   bool IsVSync() const override;
 
-  // ´°¿Ú²Ù×÷
+  // çª—å£æ“ä½œ
   void SetVSync(bool enabled) override;
   void SetTitle(const std::string &title) override;
   void Resize(uint32_t width, uint32_t height) override;
@@ -35,45 +35,45 @@ class OpenGLWindow : public Window {
   void Restore() override;
   void Close() override;
 
-  // ÊÂ¼ş´¦Àí
+  // äº‹ä»¶å¤„ç†
   void PollEvents() override;
   void WaitEvents() override;
 
-  // ÊäÈë´¦Àí
+  // è¾“å…¥å¤„ç†
   bool IsKeyPressed(int keycode) const override;
   bool IsMouseButtonPressed(int button) const override;
   std::pair<double, double> GetMousePosition() const override;
 
-  // äÖÈ¾ÉÏÏÂÎÄ
+  // æ¸²æŸ“ä¸Šä¸‹æ–‡
   void MakeContextCurrent() override;
   void SwapBuffers() override;
 
-  // ´°¿ÚÊıÁ¿¼ÆÊı
+  // çª—å£æ•°é‡è®¡æ•°
   static const uint32_t GLFWWindowCount();
 
  private:
-  // ³õÊ¼»¯GLFW¿â£¨¾²Ì¬£©
+  // åˆå§‹åŒ–GLFWåº“ï¼ˆé™æ€ï¼‰
   static void InitGLFW();
   static void ShutdownGLFW();
-  static uint32_t s_GLFWWindowCount;  // ¸ú×Ù´´½¨µÄGLFW´°¿ÚÊıÁ¿
+  static uint32_t s_GLFWWindowCount;  // è·Ÿè¸ªåˆ›å»ºçš„GLFWçª—å£æ•°é‡
 
  private:
-  // GLFW´°¿Ú¾ä±ú
+  // GLFWçª—å£å¥æŸ„
   GLFWwindow *m_Window = nullptr;
 
   struct GLFWWindowData {
-    std::string title = "Mite Engine";  // ±êÌâ
-    uint32_t width = 1920;              // ¿í¶È
-    uint32_t height = 1080;             // ¸ß¶È
-    bool vsync = false;                 // ´¹Ö±Í¬²½
-    bool fullscreen = false;            // È«ÆÁÏÔÊ¾
-    bool resizable = true;              // ¿ÉÀ­Éì
-  } m_WindowData;                       // ´°¿Ú»Øµ÷Êı¾İ
+    std::string title = "Mite Engine";  // æ ‡é¢˜
+    uint32_t width = 1920;              // å®½åº¦
+    uint32_t height = 1080;             // é«˜åº¦
+    bool vsync = false;                 // å‚ç›´åŒæ­¥
+    bool fullscreen = false;            // å…¨å±æ˜¾ç¤º
+    bool resizable = true;              // å¯æ‹‰ä¼¸
+  } m_WindowData;                       // çª—å£å›è°ƒæ•°æ®
 
-  // Ê¹ÓÃconfigÊı¾İ³õÊ¼»¯window data
+  // ä½¿ç”¨configæ•°æ®åˆå§‹åŒ–window data
   void InitWindowData(const WindowConfig &config);
 
-  // GLFW»Øµ÷ÊÊÅäÆ÷ - ½«GLFWÔ­ÉúÊÂ¼ş×ª»»Îª×Ô¶¨ÒåÊÂ¼ş
+  // GLFWå›è°ƒé€‚é…å™¨ - å°†GLFWåŸç”Ÿäº‹ä»¶è½¬æ¢ä¸ºè‡ªå®šä¹‰äº‹ä»¶
   GLFWWindowCallbackAdapter m_CallbackAdapter;
 };
 }  // namespace mite

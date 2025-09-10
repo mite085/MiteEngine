@@ -13,11 +13,11 @@ void RenderCommand::Init()
   auto &instance = Get();
   std::lock_guard<std::mutex> lock(instance.m_QueueMutex);
 
-  // ´´½¨ÈÕÖ¾ÏµÍ³
+  // åˆ›å»ºæ—¥å¿—ç³»ç»Ÿ
   instance.m_Logger = LoggerSystem::CreateModuleLogger("Mite OpenGL Render Command");
   instance.m_Logger->info("OpenGL Renderer Command created");
 
-  // ÉèÖÃÄ¬ÈÏäÖÈ¾×´Ì¬
+  // è®¾ç½®é»˜è®¤æ¸²æŸ“çŠ¶æ€
   instance.m_CurrentState = {
       true,                    // depthTest
       GL_LESS,                 // depthFunc
@@ -28,16 +28,16 @@ void RenderCommand::Init()
       GL_BACK                  // cullFaceMode
   };
 
-  // Ìá½»³õÊ¼»¯ÃüÁî£¨È·±£ÔÚäÖÈ¾Ïß³ÌÖ´ĞĞ£©
+  // æäº¤åˆå§‹åŒ–å‘½ä»¤ï¼ˆç¡®ä¿åœ¨æ¸²æŸ“çº¿ç¨‹æ‰§è¡Œï¼‰
   instance.m_CommandQueue.push({CommandType::SetRenderState,
                                 [] {
-                                  glEnable(GL_DEPTH_TEST);  // Éî¶È²âÊÔ
+                                  glEnable(GL_DEPTH_TEST);  // æ·±åº¦æµ‹è¯•
                                   glDepthFunc(GL_LESS);
                                   glEnable(GL_BLEND);
                                   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                                  glEnable(GL_CULL_FACE);  // ÃæÌŞ³ı
-                                  glCullFace(GL_BACK);     // ÌŞ³ı±³Ãæ
-                                  glFrontFace(GL_CCW);     // ÄæÊ±ÕëÎªÕıÃæ
+                                  glEnable(GL_CULL_FACE);  // é¢å‰”é™¤
+                                  glCullFace(GL_BACK);     // å‰”é™¤èƒŒé¢
+                                  glFrontFace(GL_CCW);     // é€†æ—¶é’ˆä¸ºæ­£é¢
                                 },
                                 "InitRenderState"});
 
@@ -52,15 +52,15 @@ void RenderCommand::Clear(uint32_t clearFlags,
   auto &instance = Get();
   std::lock_guard<std::mutex> lock(instance.m_QueueMutex);
 
-  // ¸üĞÂÇå³ı²ÎÊı
+  // æ›´æ–°æ¸…é™¤å‚æ•°
   instance.m_ClearColor = clearColor;
   instance.m_DepthClearValue = depthClear;
   instance.m_StencilClearValue = stencilClear;
   instance.m_ClearFlags = clearFlags;
 
-  // Ìá½»Çå³ıÃüÁî
+  // æäº¤æ¸…é™¤å‘½ä»¤
   instance.m_CommandQueue.push({CommandType::Clear,
-                                [] {},  // Êµ¼ÊÇå³ı²Ù×÷ÔÚFlushÊ±Ö´ĞĞ
+                                [] {},  // å®é™…æ¸…é™¤æ“ä½œåœ¨Flushæ—¶æ‰§è¡Œ
                                 "Clear"});
 }
 
@@ -103,10 +103,10 @@ void RenderCommand::Submit(RenderableItem item,
   instance.m_CommandQueue.push(
       {CommandType::DrawIndexed,
        [=]() {
-          // 1. Ó¦ÓÃ²ÄÖÊ£¨°ó¶¨×ÅÉ«Æ÷¡¢ÉÏ´«uniforms¡¢°ó¶¨ÎÆÀí£©
+          // 1. åº”ç”¨æè´¨ï¼ˆç»‘å®šç€è‰²å™¨ã€ä¸Šä¼ uniformsã€ç»‘å®šçº¹ç†ï¼‰
          item.material->Apply(bindTextureFunc);
 
-         // 2. ÉèÖÃÄ£ĞÍ¾ØÕó£¨´ÓÊÀ½ç±ä»»»ñÈ¡£©
+         // 2. è®¾ç½®æ¨¡å‹çŸ©é˜µï¼ˆä»ä¸–ç•Œå˜æ¢è·å–ï¼‰
          auto shader = item.material->GetShader();
          if (shader) {
            shader->SetMat4("u_Model", item.worldTransform);
@@ -114,11 +114,11 @@ void RenderCommand::Submit(RenderableItem item,
            shader->SetMat4("u_Projection", projectionMatrix);
          }
 
-         // 3. °ó¶¨Íø¸ñVAO
+         // 3. ç»‘å®šç½‘æ ¼VAO
          IRenderDevice::Current().BindMesh(item.mesh);
 
-         // 4. »æÖÆÍø¸ñ:
-         // TODO: Éî¶È²âÊÔ»òÄ£°å²âÊÔ³åÍ»£¬Èç¹û´ËÊ±ÆôÓÃÁËÉî¶È²âÊÔ£¬ÓÉÓÚÉî¶È¸½¼şÎ´ÕıÈ·³õÊ¼»¯£¬»áµ¼ÖÂ»æÖÆ±»¶ªÆú¡£
+         // 4. ç»˜åˆ¶ç½‘æ ¼:
+         // TODO: æ·±åº¦æµ‹è¯•æˆ–æ¨¡æ¿æµ‹è¯•å†²çªï¼Œå¦‚æœæ­¤æ—¶å¯ç”¨äº†æ·±åº¦æµ‹è¯•ï¼Œç”±äºæ·±åº¦é™„ä»¶æœªæ­£ç¡®åˆå§‹åŒ–ï¼Œä¼šå¯¼è‡´ç»˜åˆ¶è¢«ä¸¢å¼ƒã€‚
          IRenderDevice::Current().DrawIndexed(item.mesh->GetIndexCount(),
                                               item.mesh->GetIndexOffset(),
                                               GL_TRIANGLES,
@@ -147,7 +147,7 @@ void RenderCommand::SetRenderState(const RenderState &state)
 
   instance.m_CommandQueue.push({CommandType::SetRenderState,
                                 [state] {
-                                  // Éî¶È²âÊÔÉèÖÃ
+                                  // æ·±åº¦æµ‹è¯•è®¾ç½®
                                   if (state.depthTest) {
                                     glEnable(GL_DEPTH_TEST);
                                     glDepthFunc(state.depthFunc);
@@ -156,7 +156,7 @@ void RenderCommand::SetRenderState(const RenderState &state)
                                     glDisable(GL_DEPTH_TEST);
                                   }
 
-                                  // »ìºÏÉèÖÃ
+                                  // æ··åˆè®¾ç½®
                                   if (state.blend) {
                                     glEnable(GL_BLEND);
                                     glBlendFunc(state.blendSrc, state.blendDst);
@@ -165,7 +165,7 @@ void RenderCommand::SetRenderState(const RenderState &state)
                                     glDisable(GL_BLEND);
                                   }
 
-                                  // ÃæÌŞ³ıÉèÖÃ
+                                  // é¢å‰”é™¤è®¾ç½®
                                   if (state.cullFace) {
                                     glEnable(GL_CULL_FACE);
                                     glCullFace(state.cullFaceMode);

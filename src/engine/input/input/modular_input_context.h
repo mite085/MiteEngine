@@ -5,39 +5,39 @@
 
 namespace mite {
 /**
- * @brief Ä£¿é»¯ÊäÈëÉÏÏÂÎÄ
+ * @brief æ¨¡å—åŒ–è¾“å…¥ä¸Šä¸‹æ–‡
  *
- * ¹¦ÄÜ£º
- * 1. ´¦ÀíÆ÷£¨Processor£©¹ÜÀí
- * 2. ÊÂ¼ş·Ö·¢ÓÅ»¯
+ * åŠŸèƒ½ï¼š
+ * 1. å¤„ç†å™¨ï¼ˆProcessorï¼‰ç®¡ç†
+ * 2. äº‹ä»¶åˆ†å‘ä¼˜åŒ–
  */
 class ModularInputContext : public InputContext {
  public:
   explicit ModularInputContext(const std::string &name);
   ~ModularInputContext();
 
-  // ´¦ÀíÆ÷¹ÜÀí
+  // å¤„ç†å™¨ç®¡ç†
   void AddProcessor(std::shared_ptr<InputProcessor> processor);
   void RemoveProcessor(const std::string &id);
   void SetProcessorEnabled(const std::string &id, bool enabled);
   std::shared_ptr<InputProcessor> GetProcessor(const std::string &id) const;
 
-  // µ÷ÊÔ¹¤¾ß
+  // è°ƒè¯•å·¥å…·
   void DebugPrintProcessors();
 
-  // ÊÂ¼ş´¦Àíº¯Êı£¨¹©EventBusµ÷ÓÃ£©
+  // äº‹ä»¶å¤„ç†å‡½æ•°ï¼ˆä¾›EventBusè°ƒç”¨ï¼‰
   bool ProcessEvent(Event &e) override;
 
  private:
-  // ÅÅĞò
+  // æ’åº
   void _SortProcessors();
 
   std::vector<std::shared_ptr<InputProcessor>> m_Processors;
-  std::vector<InputProcessor *> m_SortedProcessors;  // °´ÓÅÏÈ¼¶ÅÅĞòµÄ´¦ÀíÆ÷
+  std::vector<InputProcessor *> m_SortedProcessors;  // æŒ‰ä¼˜å…ˆçº§æ’åºçš„å¤„ç†å™¨
   std::unordered_map<std::string, size_t> m_ProcessorIndexMap;
-  bool m_Dirty = false;  // ĞèÒªÖØĞÂÅÅĞò±êÖ¾
+  bool m_Dirty = false;  // éœ€è¦é‡æ–°æ’åºæ ‡å¿—
 
-  EventBus::HandlerID m_EventHandlerID;  // ÓÃÓÚÈ¡Ïû¶©ÔÄEventBus
+  EventBus::HandlerID m_EventHandlerID;  // ç”¨äºå–æ¶ˆè®¢é˜…EventBus
 };
 };  // namespace mite
 

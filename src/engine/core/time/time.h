@@ -4,28 +4,28 @@
 #include <chrono>
 
 namespace mite {
-// Time¼ÇÂ¼Ã¿Ö¡µÄË¢ĞÂÊ±¼ä£¬
-// È·±£¶¯»­¡¢ÎïÀíÄ£ÄâºÍÊäÈëÏìÓ¦µÈÏµÍ³
-// ÄÜ¹»ÒÔÓëÖ¡ÂÊÎŞ¹ØµÄËÙ¶ÈÔËĞĞ
+// Timeè®°å½•æ¯å¸§çš„åˆ·æ–°æ—¶é—´ï¼Œ
+// ç¡®ä¿åŠ¨ç”»ã€ç‰©ç†æ¨¡æ‹Ÿå’Œè¾“å…¥å“åº”ç­‰ç³»ç»Ÿ
+// èƒ½å¤Ÿä»¥ä¸å¸§ç‡æ— å…³çš„é€Ÿåº¦è¿è¡Œ
 class Time {
  public:
-  // ÄÚ²¿Ê¹ÓÃ¸ß¾«¶È¼ÆÊ±
+  // å†…éƒ¨ä½¿ç”¨é«˜ç²¾åº¦è®¡æ—¶
   using Clock = std::chrono::high_resolution_clock;
   using Milliseconds = std::chrono::milliseconds;
   using Microseconds = std::chrono::microseconds;
 
-  static void Reset(); // ÖØÖÃÀÛ»ıÊ±¼ä
+  static void Reset(); // é‡ç½®ç´¯ç§¯æ—¶é—´
 
-  static void Update();  // Ã¿Ö¡µ÷ÓÃ£¬¸üĞÂÊ±¼ä
+  static void Update();  // æ¯å¸§è°ƒç”¨ï¼Œæ›´æ–°æ—¶é—´
 
-  // ¶ÔÍâÌá¹©Á½ÖÖ½Ó¿Ú£ºÃëºÍºÁÃë
+  // å¯¹å¤–æä¾›ä¸¤ç§æ¥å£ï¼šç§’å’Œæ¯«ç§’
   static float DeltaTime();
   static size_t DeltaTimeMS();
   static float CurrentTime();
   static size_t CurrentTimeMS();
 
  private:
-  // ÄÚ²¿´æ´¢Á½ÖÖ±íÊ¾
+  // å†…éƒ¨å­˜å‚¨ä¸¤ç§è¡¨ç¤º
   static float s_DeltaTime;
   static size_t s_DeltaTimeMS;
 

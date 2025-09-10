@@ -17,43 +17,43 @@ ImGuiBackend::ImGuiBackend()
 
 bool ImGuiBackend::Initialize(void *glfwWindow)
 {
-  // ´´½¨ÈÕÖ¾ÏµÍ³
+  // åˆ›å»ºæ—¥å¿—ç³»ç»Ÿ
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Backend");
   m_Logger->info("Initializing UI ImGui Backend");
 
-  // »ñÈ¡´°¿Ú¾ä±ú
+  // è·å–çª—å£å¥æŸ„
   SetWindow(reinterpret_cast<GLFWwindow *>(glfwWindow));
   if (!m_Window) {
     m_Logger->error("ImGuiBackend: GLFW window not set");
     return false;
   }
 
-  // ³õÊ¼»¯ImGuiÉÏÏÂÎÄ
+  // åˆå§‹åŒ–ImGuiä¸Šä¸‹æ–‡
   if (!InitializeImGuiContext()) {
     return false;
   }
 
-  // ³õÊ¼»¯Æ½Ì¨ºó¶Ë£¨Ê¹ÓÃ´°¿Ú¾ä±ú£©
+  // åˆå§‹åŒ–å¹³å°åç«¯ï¼ˆä½¿ç”¨çª—å£å¥æŸ„ï¼‰
   if (!InitializePlatformBackend()) {
     return false;
   }
 
-  // ³õÊ¼»¯äÖÈ¾Æ÷ºó¶Ë
+  // åˆå§‹åŒ–æ¸²æŸ“å™¨åç«¯
   if (!InitializeRendererBackend()) {
     return false;
   }
 
-  // ³õÊ¼»¯ÑùÊ½ÊÊÅäÆ÷
+  // åˆå§‹åŒ–æ ·å¼é€‚é…å™¨
   m_StyleAdapter->Initialize();
 
-  // ³õÊ¼»¯ÊäÈëÊÊÅäÆ÷
+  // åˆå§‹åŒ–è¾“å…¥é€‚é…å™¨
   m_InputAdapter->Initialize();
 
-  // ³õÊ¼»¯×ÖÌåÎªÖĞÎÄ
+  // åˆå§‹åŒ–å­—ä½“ä¸ºä¸­æ–‡
   ImGuiFontManager::LoadFonts();
   ImGuiFontManager::SetLanguageFont("zh-CN");
 
-  // ³õÊ¼»¯±¾µØ»¯äÖÈ¾Æ÷
+  // åˆå§‹åŒ–æœ¬åœ°åŒ–æ¸²æŸ“å™¨
   ImGuiLocalizationRenderer::Initialize();
 
   m_Logger->info("ImGuiBackend initialized successfully");
@@ -64,7 +64,7 @@ void ImGuiBackend::Shutdown()
 {
   m_Logger->debug("ImGuiBackend shutdown started");
 
-  // 1. ÇåÀí±¾µØ»¯Ïà¹Ø×ÊÔ´ÓëÊÊÅäÆ÷
+  // 1. æ¸…ç†æœ¬åœ°åŒ–ç›¸å…³èµ„æºä¸é€‚é…å™¨
   ImGuiLocalizationRenderer::Shutdown();
   if (m_InputAdapter) {
     m_InputAdapter->Shutdown();
@@ -73,22 +73,22 @@ void ImGuiBackend::Shutdown()
     m_StyleAdapter->Shutdown();
   }
 
-  // 2. Ïú»ÙäÖÈ¾Æ÷ºó¶Ë£¨OpenGL3£©
+  // 2. é”€æ¯æ¸²æŸ“å™¨åç«¯ï¼ˆOpenGL3ï¼‰
   if (ImGui::GetCurrentContext()) {
     ImGui_ImplOpenGL3_Shutdown();
   }
 
-  // 3. Ïú»ÙÆ½Ì¨ºó¶Ë£¨GLFW£©
+  // 3. é”€æ¯å¹³å°åç«¯ï¼ˆGLFWï¼‰
   if (ImGui::GetCurrentContext()) {
     ImGui_ImplGlfw_Shutdown();
   }
 
-  // 4. ×îºóÏú»ÙImGuiÉÏÏÂÎÄ
+  // 4. æœ€åé”€æ¯ImGuiä¸Šä¸‹æ–‡
   if (ImGui::GetCurrentContext()) {
     ImGui::DestroyContext();
   }
 
-  // 5. ÖØÖÃ×´Ì¬±äÁ¿
+  // 5. é‡ç½®çŠ¶æ€å˜é‡
   m_Window = nullptr;
   m_MouseCaptured = false;
   m_MouseCursorVisible = true;
@@ -100,19 +100,19 @@ void ImGuiBackend::Shutdown()
 
 void ImGuiBackend::BeginFrame()
 {
-  // ¿ªÊ¼ImGuiÖ¡
+  // å¼€å§‹ImGuiå¸§
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  // Ê¹ÓÃTimeÄ£¿éÉèÖÃDeltaTime
+  // ä½¿ç”¨Timeæ¨¡å—è®¾ç½®DeltaTime
   ImGui::GetIO().DeltaTime = Time::DeltaTime();
 
-  // ¸üĞÂÏÔÊ¾³ß´ç£¨Î¯ÍĞ¸øÊäÈëÊÊÅäÆ÷£©
+  // æ›´æ–°æ˜¾ç¤ºå°ºå¯¸ï¼ˆå§”æ‰˜ç»™è¾“å…¥é€‚é…å™¨ï¼‰
   m_InputAdapter->UpdateDisplaySize(GetWindow());
   m_DisplaySize = m_InputAdapter->GetDisplaySize();
 
-  // ¸üĞÂÖ¡»º³åËõ·Å
+  // æ›´æ–°å¸§ç¼“å†²ç¼©æ”¾
   m_InputAdapter->UpdateFramebufferScale(GetWindow());
   m_FramebufferScale = m_InputAdapter->GetFramebufferScale();
 }
@@ -122,8 +122,8 @@ void ImGuiBackend::EndFrame()
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-  // ¶àÊÓ¿ÚÖ§³Ö
-  // £¨Copy from imgui/examples/example_glfw_opengl3£©
+  // å¤šè§†å£æ”¯æŒ
+  // ï¼ˆCopy from imgui/examples/example_glfw_opengl3ï¼‰
   //
   // Update and Render additional Platform Windows
   // (Platform functions may change the current OpenGL context, so we save/restore it to make it
@@ -139,7 +139,7 @@ void ImGuiBackend::EndFrame()
 
 void ImGuiBackend::ProcessInputEvent(Event &event)
 {
-  // Î¯ÍĞ¸øÊäÈëÊÊÅäÆ÷´¦Àí
+  // å§”æ‰˜ç»™è¾“å…¥é€‚é…å™¨å¤„ç†
   m_InputAdapter->ProcessEvent(event);
 }
 
@@ -215,7 +215,7 @@ void ImGuiBackend::ApplyUIStyle(std::shared_ptr<UIStyle> newStyle)
 
 void ImGuiBackend::ApplyLanguaged(const std::string &oldLanguage, const std::string &newLanguage)
 {
-  // ÇĞ»»×ÖÌå
+  // åˆ‡æ¢å­—ä½“
   if (ImGuiFontManager::SetLanguageFont(newLanguage))
     m_Logger->info("Language changed from: {} to: {}", oldLanguage, newLanguage);
   else
@@ -239,17 +239,17 @@ ImGuiInputAdapter &ImGuiBackend::GetInputAdapter()
 
 bool ImGuiBackend::InitializeImGuiContext()
 {
-  // ´´½¨ImGuiÉÏÏÂÎÄ
+  // åˆ›å»ºImGuiä¸Šä¸‹æ–‡
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
 
   ImGuiIO &io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // ÆôÓÃ¼üÅÌµ¼º½
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // ÆôÓÃÓÎÏ·ÊÖ±úµ¼º½
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // ÆôÓÃÍ£¿¿
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // ÆôÓÃ¶àÊÓ¿Ú
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // å¯ç”¨é”®ç›˜å¯¼èˆª
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // å¯ç”¨æ¸¸æˆæ‰‹æŸ„å¯¼èˆª
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // å¯ç”¨åœé 
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // å¯ç”¨å¤šè§†å£
 
-  // ÉèÖÃiniÎÄ¼şÎ»ÖÃ
+  // è®¾ç½®iniæ–‡ä»¶ä½ç½®
   // io.IniFilename = "imgui.ini";
 
   return true;
@@ -266,8 +266,8 @@ bool ImGuiBackend::InitializePlatformBackend()
 
 bool ImGuiBackend::InitializeRendererBackend()
 {
-  // °æ±¾Éè¶¨Ó¦µ±ÓëGLFWWindowÖĞÉè¶¨µÄglfwWindowHintÒ»ÖÂ
-  // £¨Ô­ÔòÉÏÓ¦µ±½«°æ±¾ºÅ×÷Îª²ÎÊı´«Èë£©
+  // ç‰ˆæœ¬è®¾å®šåº”å½“ä¸GLFWWindowä¸­è®¾å®šçš„glfwWindowHintä¸€è‡´
+  // ï¼ˆåŸåˆ™ä¸Šåº”å½“å°†ç‰ˆæœ¬å·ä½œä¸ºå‚æ•°ä¼ å…¥ï¼‰
   const char *glsl_version = "#version 410";
   if (!ImGui_ImplOpenGL3_Init(glsl_version)) {
     m_Logger->error("Failed to initialize ImGui OpenGL3 backend");

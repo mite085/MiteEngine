@@ -6,82 +6,82 @@
 
 namespace mite {
 /**
- * @brief ²ÄÖÊ×é¼ş£¬¹ÜÀíÊµÌåµÄäÖÈ¾²ÄÖÊÊôĞÔ
+ * @brief æè´¨ç»„ä»¶ï¼Œç®¡ç†å®ä½“çš„æ¸²æŸ“æè´¨å±æ€§
  *
- * ¹¦ÄÜÌØĞÔ£º
- * 1. ¹ÜÀí²ÄÖÊÊôĞÔºÍ×ÅÉ«Æ÷
- * 2. Ö§³ÖPBR(»ùÓÚÎïÀíµÄäÖÈ¾)ºÍ´«Í³²ÄÖÊ
- * 3. Ìá¹©²ÄÖÊ²ÎÊı¶¯Ì¬ĞŞ¸Ä½Ó¿Ú
- * 4. Ö§³Ö²ÄÖÊÊµÀı»¯
+ * åŠŸèƒ½ç‰¹æ€§ï¼š
+ * 1. ç®¡ç†æè´¨å±æ€§å’Œç€è‰²å™¨
+ * 2. æ”¯æŒPBR(åŸºäºç‰©ç†çš„æ¸²æŸ“)å’Œä¼ ç»Ÿæè´¨
+ * 3. æä¾›æè´¨å‚æ•°åŠ¨æ€ä¿®æ”¹æ¥å£
+ * 4. æ”¯æŒæè´¨å®ä¾‹åŒ–
  *
- * Éè¼Æ¿¼ÂÇ£º
- * - Ê¹ÓÃ¹²ÏíÖ¸Õë¹ÜÀí²ÄÖÊ×ÊÔ´
- * - ÓëRendererSystemĞ­Í¬¹¤×÷
- * - Ö§³ÖGPUÊµÀı»¯
+ * è®¾è®¡è€ƒè™‘ï¼š
+ * - ä½¿ç”¨å…±äº«æŒ‡é’ˆç®¡ç†æè´¨èµ„æº
+ * - ä¸RendererSystemååŒå·¥ä½œ
+ * - æ”¯æŒGPUå®ä¾‹åŒ–
  */
 class MaterialComponent : public ComponentTraits<MaterialComponent, Component::Family::Geometry> {
  public:
   /**
-   * @brief ´ø³õÊ¼ÖµµÄ¹¹Ôìº¯Êı
-   * @param material ²ÄÖÊÊµÀı
+   * @brief å¸¦åˆå§‹å€¼çš„æ„é€ å‡½æ•°
+   * @param material æè´¨å®ä¾‹
    */
   explicit MaterialComponent(std::shared_ptr<MaterialInstance> material);
 
   ~MaterialComponent() override = default;
 
   /**
-   * @brief Õë¶Ôdirty¶ÔÏó½øĞĞ´¦Àí
+   * @brief é’ˆå¯¹dirtyå¯¹è±¡è¿›è¡Œå¤„ç†
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
-  //===================== ²ÄÖÊ»ù´¡²Ù×÷ ===================
+  //===================== æè´¨åŸºç¡€æ“ä½œ ===================
   /**
-   * @brief »ñÈ¡²ÄÖÊÊı¾İ
-   * @return ¹²ÏíÖ¸ÕëÖ¸ÏòµÄ²ÄÖÊÊı¾İ
+   * @brief è·å–æè´¨æ•°æ®
+   * @return å…±äº«æŒ‡é’ˆæŒ‡å‘çš„æè´¨æ•°æ®
    */
   std::shared_ptr<MaterialInstance> GetMaterial() const;
 
   /**
-   * @brief ÉèÖÃ²ÄÖÊÊı¾İ
-   * @param material ĞÂµÄ²ÄÖÊÊı¾İ
+   * @brief è®¾ç½®æè´¨æ•°æ®
+   * @param material æ–°çš„æè´¨æ•°æ®
    */
   void SetMaterial(std::shared_ptr<MaterialInstance> material);
 
   /**
-   * @brief Í¨¹ı²ÄÖÊÄ£°åÃû³Æ´´½¨ÊµÀı
-   * @param templateName ÔÚMaterialSystemÖĞ×¢²áµÄÄ£°åÃû³Æ
-   * @throws std::out_of_range Èç¹ûÄ£°å²»´æÔÚ
+   * @brief é€šè¿‡æè´¨æ¨¡æ¿åç§°åˆ›å»ºå®ä¾‹
+   * @param templateName åœ¨MaterialSystemä¸­æ³¨å†Œçš„æ¨¡æ¿åç§°
+   * @throws std::out_of_range å¦‚æœæ¨¡æ¿ä¸å­˜åœ¨
    */
   //void SetMaterialFromTemplate(const std::string &templateName);
 
   /**
-   * @brief ¼ì²éÊÇ·ñÓĞÓĞĞ§²ÄÖÊÊı¾İ
-   * @return ÊÇ·ñÓĞĞ§
+   * @brief æ£€æŸ¥æ˜¯å¦æœ‰æœ‰æ•ˆæè´¨æ•°æ®
+   * @return æ˜¯å¦æœ‰æ•ˆ
    */
   bool HasMaterial() const;
 
-  //===================== ×ÅÉ«Æ÷¿ØÖÆ =====================
+  //===================== ç€è‰²å™¨æ§åˆ¶ =====================
   /**
-   * @brief »ñÈ¡¹ØÁªµÄ×ÅÉ«Æ÷
-   * @return ×ÅÉ«Æ÷Ö¸Õë
+   * @brief è·å–å…³è”çš„ç€è‰²å™¨
+   * @return ç€è‰²å™¨æŒ‡é’ˆ
    */
   std::shared_ptr<OpenGLShader> GetShader() const;
 
-  //==================== ²ÄÖÊ²ÎÊı¿ì½İÉèÖÃ ====================
+  //==================== æè´¨å‚æ•°å¿«æ·è®¾ç½® ====================
   void SetFloatParam(const std::string &name, float value);
   void SetColorParam(const std::string &name, const glm::vec3 &color);
   void SetTextureParam(const std::string &name, std::shared_ptr<Texture> texture);
 
-  //==================== ×é¼ş½Ó¿ÚÊµÏÖ ====================
+  //==================== ç»„ä»¶æ¥å£å®ç° ====================
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
  private:
-  std::shared_ptr<MaterialInstance> m_Material;  // ²ÄÖÊÊı¾İ
+  std::shared_ptr<MaterialInstance> m_Material;  // æè´¨æ•°æ®
 };
 
-//====================== Material×é¼şÏµÍ³ ========================
+//====================== Materialç»„ä»¶ç³»ç»Ÿ ========================
 class MaterialComponentSystem : public DirtyComponentSystem<MaterialComponent> {
   DECLARE_COMPONENT_SYSTEM(MaterialComponentSystem)
  public:
@@ -91,10 +91,10 @@ class MaterialComponentSystem : public DirtyComponentSystem<MaterialComponent> {
   void Update(float deltaTime, SceneRegistry &registry) override;
 };
 
-//====================== Material×é¼şÊÂ¼ş ========================
+//====================== Materialç»„ä»¶äº‹ä»¶ ========================
 /**
  * @class MaterialChangedEvent
- * @brief ²ÄÖÊ¸Ä±äÊÂ¼ş
+ * @brief æè´¨æ”¹å˜äº‹ä»¶
  */
 class MaterialChangedEvent : public ComponentEvent<MaterialComponent> {
  public:

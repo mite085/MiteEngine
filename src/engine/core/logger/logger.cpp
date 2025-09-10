@@ -10,31 +10,31 @@ std::vector<std::shared_ptr<spdlog::logger>> LoggerSystem::s_ModuleLoggers;
 
 void LoggerSystem::Init()
 {
-  // ´´½¨¶àsinkµÄlogger
+  // åˆ›å»ºå¤šsinkçš„logger
   std::vector<spdlog::sink_ptr> sinks;
 
-  // ¿ØÖÆÌ¨sink£¨´øÑÕÉ«£©
+  // æ§åˆ¶å°sinkï¼ˆå¸¦é¢œè‰²ï¼‰
   sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 
-  // ¹ö¶¯ÎÄ¼şsink£¨Ã¿ÎÄ¼ş5MB£¬×î¶à3¸öÎÄ¼ş£©
+  // æ»šåŠ¨æ–‡ä»¶sinkï¼ˆæ¯æ–‡ä»¶5MBï¼Œæœ€å¤š3ä¸ªæ–‡ä»¶ï¼‰
   sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
       "logs/editor.log", 5 * 1024 * 1024, 3));
 
-  // ´´½¨ºËĞÄlogger
+  // åˆ›å»ºæ ¸å¿ƒlogger
   s_CoreLogger = std::make_shared<spdlog::logger>("Mite Engine", begin(sinks), end(sinks));
   spdlog::register_logger(s_CoreLogger);
 
-  // ÉèÖÃÄ¬ÈÏ¸ñÊ½: [Ê±¼ä] [¼¶±ğ] [loggerÃû] ÏûÏ¢
+  // è®¾ç½®é»˜è®¤æ ¼å¼: [æ—¶é—´] [çº§åˆ«] [loggerå] æ¶ˆæ¯
   spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%n] %v");
 
-  // Ä¬ÈÏ¼¶±ğ
+  // é»˜è®¤çº§åˆ«
 #ifdef _DEBUG
   s_CoreLogger->set_level(spdlog::level::trace);
 #else
   s_CoreLogger->set_level(spdlog::level::info);
 #endif
 
-  // Ë¢ĞÂ²ßÂÔ
+  // åˆ·æ–°ç­–ç•¥
   s_CoreLogger->flush_on(spdlog::level::warn);
 
   LOG_INFO("Logger initialized");

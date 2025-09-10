@@ -20,16 +20,16 @@ class MiteApplication {
   MiteApplication();
   ~MiteApplication();
 
-  // Ö÷Ñ­»·¿ØÖÆ
+  // ä¸»å¾ªç¯æ§åˆ¶
   void run();
 
-  // ³¡¾°¹ÜÀí
+  // åœºæ™¯ç®¡ç†
   void NewScene();
   void LoadScene(const std::string &filepath);
   void SaveScene(const std::string &filepath);
   void LoadDefaultScene();
 
-  // »ñÈ¡×ÓÏµÍ³
+  // è·å–å­ç³»ç»Ÿ
   //Window* GetWindow() const { return m_Window.get(); }
   //Renderer* GetRenderer() const { return m_Renderer.get(); }
   //SceneCore* GetScene() const { return m_SceneCore.get(); }
@@ -37,7 +37,7 @@ class MiteApplication {
 
 
  private:
-  // ³õÊ¼»¯ÓëÇåÀí
+  // åˆå§‹åŒ–ä¸æ¸…ç†
   void Initialize();
   void CleanUp();
 
@@ -60,7 +60,7 @@ class MiteApplication {
   void InitializeSceneView();
   void CleanUpSceneView();
 
-  // Ö¡Ñ­»·Ïà¹Ø
+  // å¸§å¾ªç¯ç›¸å…³
   void BeginFrame();
   void Update();
   void Render();
@@ -68,7 +68,7 @@ class MiteApplication {
   void LimitFrameRate();
   void UpdateFrameStats();
 
-  // äÖÈ¾Ïà¹Ø
+  // æ¸²æŸ“ç›¸å…³
   void RenderUI();
   void RenderSceneHierarchy();
   void RenderPropertiesPanel();
@@ -76,17 +76,17 @@ class MiteApplication {
   void RenderPreviewWindow();
   void RenderMainMenu();
 
-  // ¸üĞÂÏà¹Ø
+  // æ›´æ–°ç›¸å…³
   void UpdateEditorState();
   void UpdateAnimations();
   void HandlePendingOperations();
 
-  // ÊÂ¼ş´¦Àí
+  // äº‹ä»¶å¤„ç†
   void OnWindowResize(uint32_t width, uint32_t height);
   bool OnWindowClose(WindowCloseEvent& e);
 
  private:
-  // ×ÓÏµÍ³
+  // å­ç³»ç»Ÿ
   std::shared_ptr<InputContextStack> m_InputContextStack;
   std::unique_ptr<AssetManager> m_AssetManager;
 
@@ -98,13 +98,13 @@ class MiteApplication {
   std::unique_ptr<UISystem> m_UISystem;
   std::unique_ptr<MaterialSystem> m_MaterialSystem;
 
-  // ×´Ì¬ĞÅÏ¢
+  // çŠ¶æ€ä¿¡æ¯
   WindowConfig m_Config;
   bool m_ShouldClose = false;
 
-  // ÈÕÖ¾ÏµÍ³
+  // æ—¥å¿—ç³»ç»Ÿ
   Logger m_Logger;
-  // ¶©ÔÄÊÂ¼ş¼¯ºÏ
+  // è®¢é˜…äº‹ä»¶é›†åˆ
   SubscriptionGroup m_EventSubscriptions;
 };
 

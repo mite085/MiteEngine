@@ -6,38 +6,38 @@
 namespace mite {
 
 	/**
- * @brief Shader³ÌĞò·â×°Àà£¨¹ÜÀí¶¥µã/Æ¬¶Î/¼¸ºÎ×ÅÉ«Æ÷µÄ±àÒë¡¢Á´½ÓºÍUniform²Ù×÷£©
- * @note Ïß³Ì°²È«ĞÔ£ºShader¶ÔÏóÓ¦ÔÚäÖÈ¾Ïß³Ì´´½¨ºÍÊ¹ÓÃ
+ * @brief Shaderç¨‹åºå°è£…ç±»ï¼ˆç®¡ç†é¡¶ç‚¹/ç‰‡æ®µ/å‡ ä½•ç€è‰²å™¨çš„ç¼–è¯‘ã€é“¾æ¥å’ŒUniformæ“ä½œï¼‰
+ * @note çº¿ç¨‹å®‰å…¨æ€§ï¼šShaderå¯¹è±¡åº”åœ¨æ¸²æŸ“çº¿ç¨‹åˆ›å»ºå’Œä½¿ç”¨
  */
 class OpenGLShader {
  public:
   OpenGLShader();
   ~OpenGLShader();
 
-  // ---- ÉúÃüÖÜÆÚ ----
+  // ---- ç”Ÿå‘½å‘¨æœŸ ----
   /**
-   * @brief ´ÓÔ´ÂëÎÄ¼ş¼ÓÔØ²¢±àÒëShader
-   * @param vertexPath   ¶¥µã×ÅÉ«Æ÷ÎÄ¼şÂ·¾¶
-   * @param fragmentPath Æ¬¶Î×ÅÉ«Æ÷ÎÄ¼şÂ·¾¶
-   * @param geometryPath ¿ÉÑ¡¼¸ºÎ×ÅÉ«Æ÷Â·¾¶£¨nullptr±íÊ¾ºöÂÔ£©
-   * @throws std::runtime_error ±àÒë/Á´½ÓÊ§°ÜÊ±Å×³öÒì³£
+   * @brief ä»æºç æ–‡ä»¶åŠ è½½å¹¶ç¼–è¯‘Shader
+   * @param vertexPath   é¡¶ç‚¹ç€è‰²å™¨æ–‡ä»¶è·¯å¾„
+   * @param fragmentPath ç‰‡æ®µç€è‰²å™¨æ–‡ä»¶è·¯å¾„
+   * @param geometryPath å¯é€‰å‡ ä½•ç€è‰²å™¨è·¯å¾„ï¼ˆnullptrè¡¨ç¤ºå¿½ç•¥ï¼‰
+   * @throws std::runtime_error ç¼–è¯‘/é“¾æ¥å¤±è´¥æ—¶æŠ›å‡ºå¼‚å¸¸
    */
   void LoadFromFile(const char *vertexPath,
                     const char *fragmentPath,
                     const char *geometryPath = nullptr);
 
   /**
-   * @brief Ö±½ÓÊ¹ÓÃÔ´Âë×Ö·û´®±àÒëShader£¨ÊÊÓÃÓÚÄÚÖÃShader£©
-   * @param vertexSrc   ¶¥µã×ÅÉ«Æ÷Ô´Âë
-   * @param fragmentSrc Æ¬¶Î×ÅÉ«Æ÷Ô´Âë
+   * @brief ç›´æ¥ä½¿ç”¨æºç å­—ç¬¦ä¸²ç¼–è¯‘Shaderï¼ˆé€‚ç”¨äºå†…ç½®Shaderï¼‰
+   * @param vertexSrc   é¡¶ç‚¹ç€è‰²å™¨æºç 
+   * @param fragmentSrc ç‰‡æ®µç€è‰²å™¨æºç 
    */
   void LoadFromSource(const std::string &vertexSrc,
                       const std::string &fragmentSrc,
                       const std::string &geometrySrc);
 
-  void Destroy();  // ÏÔÊ½ÊÍ·ÅGPU×ÊÔ´
+  void Destroy();  // æ˜¾å¼é‡Šæ”¾GPUèµ„æº
 
-  // ---- UniformÉèÖÃ ----
+  // ---- Uniformè®¾ç½® ----
   void SetBool(const std::string &name, bool value);
   void SetInt(const std::string &name, int value);
   void SetFloat(const std::string &name, float value);
@@ -51,31 +51,31 @@ class OpenGLShader {
   void SetFloatArray(const std::string &name, const float *values, size_t count);
   void SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count);
 
-  // ---- ×´Ì¬¿ØÖÆ ----
-  void Bind() const;    // °ó¶¨µ±Ç°ShaderÎª¼¤»î×´Ì¬
-  void Unbind() const;  // ½â°óShader
+  // ---- çŠ¶æ€æ§åˆ¶ ----
+  void Bind() const;    // ç»‘å®šå½“å‰Shaderä¸ºæ¿€æ´»çŠ¶æ€
+  void Unbind() const;  // è§£ç»‘Shader
 
-  // ---- ¹¤¾ßº¯Êı ----
+  // ---- å·¥å…·å‡½æ•° ----
   uint32_t GetID() const
   {
     return m_RendererID;
   }
 
  private:
-  // ---- Ë½ÓĞ·½·¨ ----
+  // ---- ç§æœ‰æ–¹æ³• ----
   /**
-   * @brief ±àÒëµ¥¸ö×ÅÉ«Æ÷½×¶Î
-   * @param source ×ÅÉ«Æ÷Ô´Âë
-   * @param type ×ÅÉ«Æ÷ÀàĞÍ£¨GL_VERTEX_SHADERµÈ£©
-   * @return ±àÒë³É¹¦µÄ×ÅÉ«Æ÷ID
+   * @brief ç¼–è¯‘å•ä¸ªç€è‰²å™¨é˜¶æ®µ
+   * @param source ç€è‰²å™¨æºç 
+   * @param type ç€è‰²å™¨ç±»å‹ï¼ˆGL_VERTEX_SHADERç­‰ï¼‰
+   * @return ç¼–è¯‘æˆåŠŸçš„ç€è‰²å™¨ID
    */
   uint32_t CompileShader(const std::string &source, uint32_t type);
 
   /**
-   * @brief ¼ì²é×ÅÉ«Æ÷/³ÌĞòµÄ±àÒëÁ´½Ó´íÎó
-   * @param id ×ÅÉ«Æ÷»ò³ÌĞòID
-   * @param type ¼ì²éÀàĞÍ£¨GL_COMPILE_STATUS»òGL_LINK_STATUS£©
-   * @param isProgram ÊÇ·ñÎª³ÌĞò¶ÔÏó£¨true=³ÌĞò£¬false=×ÅÉ«Æ÷£©
+   * @brief æ£€æŸ¥ç€è‰²å™¨/ç¨‹åºçš„ç¼–è¯‘é“¾æ¥é”™è¯¯
+   * @param id ç€è‰²å™¨æˆ–ç¨‹åºID
+   * @param type æ£€æŸ¥ç±»å‹ï¼ˆGL_COMPILE_STATUSæˆ–GL_LINK_STATUSï¼‰
+   * @param isProgram æ˜¯å¦ä¸ºç¨‹åºå¯¹è±¡ï¼ˆtrue=ç¨‹åºï¼Œfalse=ç€è‰²å™¨ï¼‰
    */
   void CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram);
 
@@ -86,9 +86,9 @@ class OpenGLShader {
    */
   int GetUniformLocation(const std::string &name);
 
-  // ---- ³ÉÔ±±äÁ¿ ----
-  uint32_t m_RendererID;                                                // OpenGL³ÌĞò¶ÔÏóID
-  mutable std::unordered_map<std::string, int> m_UniformLocationCache;  // UniformÎ»ÖÃ»º´æ
+  // ---- æˆå‘˜å˜é‡ ----
+  uint32_t m_RendererID;                                                // OpenGLç¨‹åºå¯¹è±¡ID
+  mutable std::unordered_map<std::string, int> m_UniformLocationCache;  // Uniformä½ç½®ç¼“å­˜
 };
 
 }  // namespace mite

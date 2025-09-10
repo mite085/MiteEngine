@@ -6,7 +6,7 @@ InputContext::InputContext(const std::string &name) : m_Name(name)
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Input Context: {" + name + "}");
   m_Logger->trace("Created input context: {}", name);
 
-  // ¶©ÔÄÊÂ¼ş
+  // è®¢é˜…äº‹ä»¶
   m_EventSubscriptions.Subscribe<KeyPressedEvent>(BIND_DISPATCH_FN(_ProcessKeyPressedEvent));
   m_EventSubscriptions.Subscribe<MouseButtonPressedEvent>(
       BIND_DISPATCH_FN(_ProcessMouseButtonPressedEvent));
@@ -36,7 +36,7 @@ bool InputContext::IsInputBlocked() const
 }
 
 void InputContext::Update(){
-   // Ã¿Ö¡¸üĞÂ³ÖĞø¶¯×÷Ê±¼ä£¨Èç³¤°´£©
+   // æ¯å¸§æ›´æ–°æŒç»­åŠ¨ä½œæ—¶é—´ï¼ˆå¦‚é•¿æŒ‰ï¼‰
   for (auto &[name, action] : m_Actions) {
     if (action.value > 0.0f) {
       action.holdTime += Time::DeltaTime();
@@ -99,11 +99,11 @@ float InputContext::GetActionValue(const std::string &name) const
 bool InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
 {
   bool handled = false;
-  // ±éÀúËùÓĞ¶¯×÷£¬¼ì²éÊÇ·ñÆ¥Åäµ±Ç°°´¼ü
+  // éå†æ‰€æœ‰åŠ¨ä½œï¼Œæ£€æŸ¥æ˜¯å¦åŒ¹é…å½“å‰æŒ‰é”®
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Keyboard && binding.code == e.GetKey()) {
-        // ¸üĞÂ¶¯×÷Öµ
+        // æ›´æ–°åŠ¨ä½œå€¼
         float newValue = 1.0f * binding.scale;
 
         _UpdateActionValue(name, newValue);
@@ -136,7 +136,7 @@ bool InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse) {
-        // Êó±êÒÆ¶¯×÷Îª³¬¸ßÆµÊÂ¼ş£¬¿ÉÒÔÓÅ»¯´¦ÀíÆµÂÊ
+        // é¼ æ ‡ç§»åŠ¨ä½œä¸ºè¶…é«˜é¢‘äº‹ä»¶ï¼Œå¯ä»¥ä¼˜åŒ–å¤„ç†é¢‘ç‡
         float newValue = 1.0f * binding.scale;
 
         _UpdateActionValue(name, newValue);
@@ -153,7 +153,7 @@ bool InputContext::_ProcessMouseScrollEvent(const MouseScrollEvent &e)
   for (auto &[name, action] : m_Actions) {
     for (const auto &binding : action.bindings) {
       if (binding.device == InputDevice::Mouse) {
-        // Êó±ê¹öÂÖÊÂ¼şÍ¨³£ĞèÒªÁ¢¼´´¦Àí
+        // é¼ æ ‡æ»šè½®äº‹ä»¶é€šå¸¸éœ€è¦ç«‹å³å¤„ç†
         float newValue = 1.0f * binding.scale;
 
         _UpdateActionValue(name, newValue);

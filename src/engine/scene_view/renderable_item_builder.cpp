@@ -10,7 +10,7 @@ namespace mite {
 RenderableItemBuilder::RenderableItemBuilder()
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView RenderableItem Builder");
-  // ³õÊ¼»¯ÈÕÖ¾
+  // åˆå§‹åŒ–æ—¥å¿—
   m_Logger->debug("RenderableItem Builder initialized");
 }
 
@@ -28,7 +28,7 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
 
   for (SceneNode *node : sceneNodes) {
     RenderableItem item = BuildFromSceneNode(registry, node);
-    if (item.entity.IsValid()) {  // ¼ì²éÊÇ·ñ¹¹½¨³É¹¦
+    if (item.entity.IsValid()) {  // æ£€æŸ¥æ˜¯å¦æ„å»ºæˆåŠŸ
       items.push_back(std::move(item));
     }
   }
@@ -66,7 +66,7 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
   }
 
   try {
-    // ÌáÈ¡äÖÈ¾ËùĞè×é¼şÊı¾İ
+    // æå–æ¸²æŸ“æ‰€éœ€ç»„ä»¶æ•°æ®
     auto mesh = ExtractMeshComponent(registry, entity);
     auto material = ExtractMaterialComponent(registry, entity);
     glm::mat4 transform = ExtractTransformComponent(registry, entity);
@@ -76,7 +76,7 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
       return RenderableItem();
     }
 
-    // Ó¦ÓÃ×Ô¶¨Òå¸²¸Çº¯Êı£¨Èç¹ûÉèÖÃ£©
+    // åº”ç”¨è‡ªå®šä¹‰è¦†ç›–å‡½æ•°ï¼ˆå¦‚æœè®¾ç½®ï¼‰
     if (m_MaterialOverrideFunc) {
       material = m_MaterialOverrideFunc(entity, material);
     }
@@ -85,7 +85,7 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
       transform = m_TransformOverrideFunc(entity, transform);
     }
 
-    // ¹¹½¨RenderableItem
+    // æ„å»ºRenderableItem
     RenderableItem item;
     item.entity = entity;
     item.worldTransform = transform;
@@ -112,7 +112,7 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromEntities(
 
   for (Entity entity : entities) {
     RenderableItem item = BuildFromEntity(registry, entity);
-    if (item.entity.IsValid()) {  // ¼ì²éÊÇ·ñ¹¹½¨³É¹¦
+    if (item.entity.IsValid()) {  // æ£€æŸ¥æ˜¯å¦æ„å»ºæˆåŠŸ
       items.push_back(std::move(item));
     }
   }
@@ -155,7 +155,7 @@ bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, Entity entity)
   if (!entity.IsValid())
     return false;
 
-  // ¼ì²éÊÇ·ñ°üº¬äÖÈ¾ËùĞèµÄ×é¼ş
+  // æ£€æŸ¥æ˜¯å¦åŒ…å«æ¸²æŸ“æ‰€éœ€çš„ç»„ä»¶
   bool hasMesh = registry.HasComponent<MeshComponent>(entity);
   bool hasMaterial = registry.HasComponent<MaterialComponent>(entity);
   bool hasTransform = registry.HasComponent<TransformComponent>(entity);
@@ -189,7 +189,7 @@ glm::mat4 RenderableItemBuilder::ExtractTransformComponent(SceneRegistry &regist
     auto &transformComp = registry.GetComponent<TransformComponent>(entity);
     return transformComp.GetWorldMatrix(registry);
   }
-  return glm::mat4(1.0f);  // ·µ»Øµ¥Î»¾ØÕó×÷ÎªÄ¬ÈÏÖµ
+  return glm::mat4(1.0f);  // è¿”å›å•ä½çŸ©é˜µä½œä¸ºé»˜è®¤å€¼
 }
 
 }  // namespace mite

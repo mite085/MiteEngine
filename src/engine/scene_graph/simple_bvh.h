@@ -6,34 +6,34 @@
 namespace mite {
 /**
  * @class BVHNode
- * @brief BVHÊ÷½Úµã£¬ÓÃÓÚ¹¹½¨²ã´Î°üÎ§ºĞ½á¹¹
+ * @brief BVHæ ‘èŠ‚ç‚¹ï¼Œç”¨äºæ„å»ºå±‚æ¬¡åŒ…å›´ç›’ç»“æ„
  */
 struct BVHNode {
-  AABB bounds;                          // ½Úµã°üÎ§ºĞ
-  BVHNode *left = nullptr;              // ×ó×Ó½Úµã
-  BVHNode *right = nullptr;             // ÓÒ×Ó½Úµã
-  std::vector<SceneNode *> sceneNodes;  // ¹ØÁªµÄ³¡¾°½Úµã£¨Ò¶×Ó½Úµã£©
-  int depth = 0;                        // ½ÚµãÉî¶È
+  AABB bounds;                          // èŠ‚ç‚¹åŒ…å›´ç›’
+  BVHNode *left = nullptr;              // å·¦å­èŠ‚ç‚¹
+  BVHNode *right = nullptr;             // å³å­èŠ‚ç‚¹
+  std::vector<SceneNode *> sceneNodes;  // å…³è”çš„åœºæ™¯èŠ‚ç‚¹ï¼ˆå¶å­èŠ‚ç‚¹ï¼‰
+  int depth = 0;                        // èŠ‚ç‚¹æ·±åº¦
 
   /**
-   * @brief ÅĞ¶ÏÊÇ·ñÎªÒ¶×Ó½Úµã
-   * @return ÊÇ·ñÎªÒ¶×Ó½Úµã
+   * @brief åˆ¤æ–­æ˜¯å¦ä¸ºå¶å­èŠ‚ç‚¹
+   * @return æ˜¯å¦ä¸ºå¶å­èŠ‚ç‚¹
    */
   bool IsLeaf() const
   {
-    return !sceneNodes.empty();  // ÓĞ³¡¾°½Úµã¾ÍÊÇÒ¶×Ó½Úµã
+    return !sceneNodes.empty();  // æœ‰åœºæ™¯èŠ‚ç‚¹å°±æ˜¯å¶å­èŠ‚ç‚¹
   }
 
   /**
-   * @brief »ñÈ¡½Úµã¸ß¶È£¨Ò¶×Ó½ÚµãÎª0£©
-   * @return ½Úµã¸ß¶È
+   * @brief è·å–èŠ‚ç‚¹é«˜åº¦ï¼ˆå¶å­èŠ‚ç‚¹ä¸º0ï¼‰
+   * @return èŠ‚ç‚¹é«˜åº¦
    */
   int GetHeight() const;
 };
 
 /**
  * @class BVHStates
- * @brief BVH×´Ì¬£¬ÓÃÓÚµİ¹éÍ³¼Æ½ÚµãĞÅÏ¢
+ * @brief BVHçŠ¶æ€ï¼Œç”¨äºé€’å½’ç»Ÿè®¡èŠ‚ç‚¹ä¿¡æ¯
  */
 struct BVHStats {
   int leafCount = 0;
@@ -45,25 +45,25 @@ struct BVHStats {
 
 /**
  * @class SimpleBVH
- * @brief ¼òÒ×°üÎ§ºĞ²ã´Î½á¹¹ÊµÏÖ£¬»ùÓÚSAH£¨Surface Area Heuristic£©ÓÅ»¯
+ * @brief ç®€æ˜“åŒ…å›´ç›’å±‚æ¬¡ç»“æ„å®ç°ï¼ŒåŸºäºSAHï¼ˆSurface Area Heuristicï¼‰ä¼˜åŒ–
  *
- * ²ÉÓÃ×Ô¶¥ÏòÏÂµÄ¹¹½¨·½Ê½£¬Ö§³Ö¶¯Ì¬¸üĞÂºÍ¸ßĞ§µÄ¿Õ¼ä²éÑ¯
+ * é‡‡ç”¨è‡ªé¡¶å‘ä¸‹çš„æ„å»ºæ–¹å¼ï¼Œæ”¯æŒåŠ¨æ€æ›´æ–°å’Œé«˜æ•ˆçš„ç©ºé—´æŸ¥è¯¢
  */
 class SimpleBVH : public SpatialPartition {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param maxDepth ×î´óÉî¶ÈÏŞÖÆ£¨·ÀÖ¹¹ı¶ÈÏ¸·Ö£©
-   * @param minLeafSize Ò¶×Ó½Úµã×îĞ¡°üº¬¶ÔÏóÊı
+   * @brief æ„é€ å‡½æ•°
+   * @param maxDepth æœ€å¤§æ·±åº¦é™åˆ¶ï¼ˆé˜²æ­¢è¿‡åº¦ç»†åˆ†ï¼‰
+   * @param minLeafSize å¶å­èŠ‚ç‚¹æœ€å°åŒ…å«å¯¹è±¡æ•°
    */
   explicit SimpleBVH(int maxDepth = 20, int minLeafSize = 4);
 
   /**
-   * @brief Îö¹¹º¯Êı
+   * @brief ææ„å‡½æ•°
    */
   ~SimpleBVH() override;
 
-  // SpatialPartition½Ó¿ÚÊµÏÖ
+  // SpatialPartitionæ¥å£å®ç°
   void Insert(SceneNode *node) override;
   void Remove(SceneNode *node) override;
   void Update(SceneNode *node) override;
@@ -90,59 +90,59 @@ class SimpleBVH : public SpatialPartition {
 
  private:
   /**
-   * @brief µİ¹é¹¹½¨BVHÊ÷
-   * @param nodes ³¡¾°½ÚµãÁĞ±í
-   * @param start ÆğÊ¼Ë÷Òı
-   * @param end ½áÊøË÷Òı
-   * @param depth µ±Ç°Éî¶È
-   * @return ¹¹½¨µÄBVH½Úµã
+   * @brief é€’å½’æ„å»ºBVHæ ‘
+   * @param nodes åœºæ™¯èŠ‚ç‚¹åˆ—è¡¨
+   * @param start èµ·å§‹ç´¢å¼•
+   * @param end ç»“æŸç´¢å¼•
+   * @param depth å½“å‰æ·±åº¦
+   * @return æ„å»ºçš„BVHèŠ‚ç‚¹
    */
   BVHNode *BuildTree(std::vector<SceneNode *> &nodes, int start, int end, int depth);
 
   /**
-   * @brief Ñ¡Ôñ×î¼Ñ·Ö¸îÖáºÍÎ»ÖÃ
-   * @param nodes ½ÚµãÁĞ±í
-   * @param start ÆğÊ¼Ë÷Òı
-   * @param end ½áÊøË÷Òı
-   * @param axis ×î¼Ñ·Ö¸îÖá£¨Êä³ö²ÎÊı£©
-   * @param splitPos ×î¼Ñ·Ö¸îÎ»ÖÃ£¨Êä³ö²ÎÊı£©
-   * @return ÊÇ·ñÕÒµ½ÓĞĞ§·Ö¸î
+   * @brief é€‰æ‹©æœ€ä½³åˆ†å‰²è½´å’Œä½ç½®
+   * @param nodes èŠ‚ç‚¹åˆ—è¡¨
+   * @param start èµ·å§‹ç´¢å¼•
+   * @param end ç»“æŸç´¢å¼•
+   * @param axis æœ€ä½³åˆ†å‰²è½´ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @param splitPos æœ€ä½³åˆ†å‰²ä½ç½®ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return æ˜¯å¦æ‰¾åˆ°æœ‰æ•ˆåˆ†å‰²
    */
   bool FindBestSplit(
       const std::vector<SceneNode *> &nodes, int start, int end, int &axis, float &splitPos) const;
 
   /**
-   * @brief °´Ö¸¶¨ÖáºÍÎ»ÖÃ·Ö¸î½ÚµãÁĞ±í
-   * @param nodes ½ÚµãÁĞ±í
-   * @param start ÆğÊ¼Ë÷Òı
-   * @param end ½áÊøË÷Òı
-   * @param axis ·Ö¸îÖá
-   * @param splitPos ·Ö¸îÎ»ÖÃ
-   * @return ·Ö¸îµãË÷Òı
+   * @brief æŒ‰æŒ‡å®šè½´å’Œä½ç½®åˆ†å‰²èŠ‚ç‚¹åˆ—è¡¨
+   * @param nodes èŠ‚ç‚¹åˆ—è¡¨
+   * @param start èµ·å§‹ç´¢å¼•
+   * @param end ç»“æŸç´¢å¼•
+   * @param axis åˆ†å‰²è½´
+   * @param splitPos åˆ†å‰²ä½ç½®
+   * @return åˆ†å‰²ç‚¹ç´¢å¼•
    */
   int PartitionNodes(
       std::vector<SceneNode *> &nodes, int start, int end, int axis, float splitPos) const;
 
   /**
-   * @brief µİ¹éÊÍ·ÅBVH½Úµã
-   * @param node ÒªÊÍ·ÅµÄ½Úµã
+   * @brief é€’å½’é‡Šæ”¾BVHèŠ‚ç‚¹
+   * @param node è¦é‡Šæ”¾çš„èŠ‚ç‚¹
    */
   void FreeNode(BVHNode *node);
 
   /**
-   * @brief µİ¹éÉäÏß¼ì²â
-   * @param node µ±Ç°½Úµã
-   * @param ray ÉäÏß
-   * @param results ½á¹ûÁĞ±í
+   * @brief é€’å½’å°„çº¿æ£€æµ‹
+   * @param node å½“å‰èŠ‚ç‚¹
+   * @param ray å°„çº¿
+   * @param results ç»“æœåˆ—è¡¨
    */
   void RaycastRecursive(BVHNode *node, const Ray &ray, std::vector<SceneNode *> &results) const;
 
   /**
-   * @brief µİ¹éÑ°ÕÒµÚÒ»¸öÉäÏßÏà½»
-   * @param node µ±Ç°½Úµã
-   * @param ray ÉäÏß
-   * @param bestNode ×î¼Ñ½Úµã£¨Êä³ö²ÎÊı£©
-   * @param bestDistance ×î¼Ñ¾àÀë£¨Êä³ö²ÎÊı£©
+   * @brief é€’å½’å¯»æ‰¾ç¬¬ä¸€ä¸ªå°„çº¿ç›¸äº¤
+   * @param node å½“å‰èŠ‚ç‚¹
+   * @param ray å°„çº¿
+   * @param bestNode æœ€ä½³èŠ‚ç‚¹ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @param bestDistance æœ€ä½³è·ç¦»ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
    */
   void RaycastFirstRecursive(BVHNode *node,
                              const Ray &ray,
@@ -150,75 +150,75 @@ class SimpleBVH : public SpatialPartition {
                              float &bestDistance) const;
 
   /**
-   * @brief µİ¹éÊÓ×¶Ìå²Ã¼ô
-   * @param node µ±Ç°½Úµã
-   * @param frustum ÊÓ×¶Ìå
-   * @param results ½á¹ûÁĞ±í
+   * @brief é€’å½’è§†é”¥ä½“è£å‰ª
+   * @param node å½“å‰èŠ‚ç‚¹
+   * @param frustum è§†é”¥ä½“
+   * @param results ç»“æœåˆ—è¡¨
    */
   void FrustumCullRecursive(BVHNode *node,
                             const Frustum &frustum,
                             std::vector<SceneNode *> &results) const;
 
   /**
-   * @brief µİ¹éÇòÌå²éÑ¯
-   * @param node µ±Ç°½Úµã
-   * @param sphere ÇòÌå
-   * @param results ½á¹ûÁĞ±í
+   * @brief é€’å½’çƒä½“æŸ¥è¯¢
+   * @param node å½“å‰èŠ‚ç‚¹
+   * @param sphere çƒä½“
+   * @param results ç»“æœåˆ—è¡¨
    */
   void SphereQueryRecursive(BVHNode *node,
                             const Sphere &sphere,
                             std::vector<SceneNode *> &results) const;
 
   /**
-   * @brief µİ¹éAABB²éÑ¯
-   * @param node µ±Ç°½Úµã
+   * @brief é€’å½’AABBæŸ¥è¯¢
+   * @param node å½“å‰èŠ‚ç‚¹
    * @param aabb AABB
-   * @param results ½á¹ûÁĞ±í
+   * @param results ç»“æœåˆ—è¡¨
    */
   void AABBQueryRecursive(BVHNode *node,
                           const AABB &aabb,
                           std::vector<SceneNode *> &results) const;
 
   /**
-   * @brief µİ¹é±éÀúËùÓĞ½Úµã
-   * @param node µ±Ç°½Úµã
-   * @param callback »Øµ÷º¯Êı
-   * @return ÊÇ·ñ¼ÌĞø±éÀú
+   * @brief é€’å½’éå†æ‰€æœ‰èŠ‚ç‚¹
+   * @param node å½“å‰èŠ‚ç‚¹
+   * @param callback å›è°ƒå‡½æ•°
+   * @return æ˜¯å¦ç»§ç»­éå†
    */
   bool ForEachNodeRecursive(BVHNode *node, std::function<bool(SceneNode *)> callback) const;
 
   /**
-   * @brief µİ¹éµ÷ÊÔ»æÖÆ
-   * @param node µ±Ç°½Úµã
-   * @param drawCallback »æÖÆ»Øµ÷
+   * @brief é€’å½’è°ƒè¯•ç»˜åˆ¶
+   * @param node å½“å‰èŠ‚ç‚¹
+   * @param drawCallback ç»˜åˆ¶å›è°ƒ
    */
   void DebugDrawRecursive(BVHNode *node,
                           std::function<void(const AABB &, int depth)> drawCallback) const;
 
   /**
-   * @brief µİ¹éÍ³¼Æ½ÚµãĞÅÏ¢
-   * @param node µ±Ç°½Úµã
-   * @param stats Í³¼ÆĞÅÏ¢
+   * @brief é€’å½’ç»Ÿè®¡èŠ‚ç‚¹ä¿¡æ¯
+   * @param node å½“å‰èŠ‚ç‚¹
+   * @param stats ç»Ÿè®¡ä¿¡æ¯
    */
   void CollectStatsRecursive(BVHNode *node, struct BVHStats &stats) const;
 
   /**
-   * @brief TODO: ¸üĞÂ³¡¾°½ÚµãÔÚBVHÖĞµÄÎ»ÖÃ
-   * @param node ³¡¾°½Úµã
+   * @brief TODO: æ›´æ–°åœºæ™¯èŠ‚ç‚¹åœ¨BVHä¸­çš„ä½ç½®
+   * @param node åœºæ™¯èŠ‚ç‚¹
    */
   //void UpdateNode(SceneNode *node);
 
  private:
-  BVHNode *m_Root = nullptr;            // BVH¸ù½Úµã
-  std::vector<SceneNode *> m_AllNodes;  // ËùÓĞ³¡¾°½ÚµãÁĞ±í£¨ÓÃÓÚ¿ìËÙÖØ½¨£©
-  int m_MaxDepth;                       // ×î´ó¹¹½¨Éî¶È
-  int m_MinLeafSize;                    // Ò¶×Ó½Úµã×îĞ¡¶ÔÏóÊı
-  bool m_NeedsRebuild = false;          // ĞèÒªÖØ½¨±ê¼Ç
-  size_t m_NodeCount = 0;               // ×Ü½ÚµãÊıÍ³¼Æ
+  BVHNode *m_Root = nullptr;            // BVHæ ¹èŠ‚ç‚¹
+  std::vector<SceneNode *> m_AllNodes;  // æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹åˆ—è¡¨ï¼ˆç”¨äºå¿«é€Ÿé‡å»ºï¼‰
+  int m_MaxDepth;                       // æœ€å¤§æ„å»ºæ·±åº¦
+  int m_MinLeafSize;                    // å¶å­èŠ‚ç‚¹æœ€å°å¯¹è±¡æ•°
+  bool m_NeedsRebuild = false;          // éœ€è¦é‡å»ºæ ‡è®°
+  size_t m_NodeCount = 0;               // æ€»èŠ‚ç‚¹æ•°ç»Ÿè®¡
 
-  // ĞÔÄÜÍ³¼Æ
-  mutable uint64_t m_RaycastTests = 0;  // ÉäÏß¼ì²â²âÊÔ´ÎÊı
-  mutable uint64_t m_FrustumTests = 0;  // ÊÓ×¶Ìå²âÊÔ´ÎÊı
+  // æ€§èƒ½ç»Ÿè®¡
+  mutable uint64_t m_RaycastTests = 0;  // å°„çº¿æ£€æµ‹æµ‹è¯•æ¬¡æ•°
+  mutable uint64_t m_FrustumTests = 0;  // è§†é”¥ä½“æµ‹è¯•æ¬¡æ•°
 };
 }  // namespace mite
 

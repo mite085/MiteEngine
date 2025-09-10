@@ -6,7 +6,7 @@
 namespace mite {
 
 /**
- * @brief ¿Ø¼şÎ»ÖÃ¸Ä±äÊÂ¼ş
+ * @brief æ§ä»¶ä½ç½®æ”¹å˜äº‹ä»¶
  */
 class WidgetPositionChangedEvent : public UIEvent {
  public:
@@ -53,7 +53,7 @@ class WidgetPositionChangedEvent : public UIEvent {
 };
 
 /**
- * @brief ¿Ø¼ş´óĞ¡¸Ä±äÊÂ¼ş
+ * @brief æ§ä»¶å¤§å°æ”¹å˜äº‹ä»¶
  */
 class WidgetSizeChangedEvent : public UIEvent {
  public:
@@ -99,7 +99,7 @@ class WidgetSizeChangedEvent : public UIEvent {
 };
 
 /**
- * @brief ¿Ø¼ş¿É¼ûĞÔ¸Ä±äÊÂ¼ş
+ * @brief æ§ä»¶å¯è§æ€§æ”¹å˜äº‹ä»¶
  */
 class WidgetVisibilityChangedEvent : public UIEvent {
  public:
@@ -143,7 +143,7 @@ class WidgetVisibilityChangedEvent : public UIEvent {
 };
 
 /**
- * @brief ¿Ø¼şÆôÓÃ×´Ì¬¸Ä±äÊÂ¼ş
+ * @brief æ§ä»¶å¯ç”¨çŠ¶æ€æ”¹å˜äº‹ä»¶
  */
 class WidgetEnabledStateChangedEvent : public UIEvent {
  public:
@@ -188,7 +188,7 @@ class WidgetEnabledStateChangedEvent : public UIEvent {
 };
 
 /**
- * @brief ²¼¾Ö¸üĞÂÇëÇóÊÂ¼ş
+ * @brief å¸ƒå±€æ›´æ–°è¯·æ±‚äº‹ä»¶
  */
 class LayoutUpdateRequestEvent : public UIEvent {
  public:
@@ -220,7 +220,7 @@ class LayoutUpdateRequestEvent : public UIEvent {
 };
 
 /**
- * @brief ²¼¾ÖÍê³ÉÊÂ¼ş
+ * @brief å¸ƒå±€å®Œæˆäº‹ä»¶
  */
 class LayoutCompletedEvent : public UIEvent {
  public:

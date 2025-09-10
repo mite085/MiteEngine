@@ -5,30 +5,30 @@
 
 namespace mite {
 
-// InputManagerÊÇÊäÈëÄ£¿éµÄºËĞÄÊµÏÖÀà£¬
-// ¸ºÔğÍ³Ò»¹ÜÀíËùÓĞÊäÈëÉè±¸µÄ×´Ì¬¡¢
-// ´¦ÀíÊäÈëÊÂ¼şµÄ·Ö·¢Âß¼­£¬²¢Î¬»¤ÊäÈëÉÏÏÂÎÄÕ»¡£
+// InputManageræ˜¯è¾“å…¥æ¨¡å—çš„æ ¸å¿ƒå®ç°ç±»ï¼Œ
+// è´Ÿè´£ç»Ÿä¸€ç®¡ç†æ‰€æœ‰è¾“å…¥è®¾å¤‡çš„çŠ¶æ€ã€
+// å¤„ç†è¾“å…¥äº‹ä»¶çš„åˆ†å‘é€»è¾‘ï¼Œå¹¶ç»´æŠ¤è¾“å…¥ä¸Šä¸‹æ–‡æ ˆã€‚
 class InputManager {
  public:
   static void Init(const std::shared_ptr<InputContextStack> &stack);
   static void Shutdown();
   static void Update();
 
-  // Éè±¸×´Ì¬
+  // è®¾å¤‡çŠ¶æ€
   static void SetKeyState(KeyCode key, InputState state);
   static void SetMouseButtonState(MouseCode button, InputState state);
   static void SetMousePosition(const glm::vec2 &position);
   static void SetMouseScrollDelta(float delta);
 
-  // ÉÏÏÂÎÄ¹ÜÀí
+  // ä¸Šä¸‹æ–‡ç®¡ç†
   static void PushContext(std::shared_ptr<InputContext> context);
   static void PopContext();
   static std::shared_ptr<InputContext> GetCurrentContext();
 
-  // ¶¯×÷²éÑ¯
+  // åŠ¨ä½œæŸ¥è¯¢
   static float GetActionValue(const std::string &actionName);
 
-  // Ô­Ê¼ÊäÈë²éÑ¯--Key
+  // åŸå§‹è¾“å…¥æŸ¥è¯¢--Key
   static InputState GetKeyState(KeyCode key);
   static InputState GetPrevKeyState(KeyCode key);
   static float GetKeyHeldDuration(KeyCode key); 
@@ -40,18 +40,18 @@ class InputManager {
   static float GetMouseScrollDelta(MouseCode button);
 
  private:
-  // ¼üÅÌ×´Ì¬ (µ±Ç°Ö¡ºÍÉÏÒ»Ö¡)
-  // GLFW_KEY_LAST=348£¬
-  // ¹Ê´Ë´¦¿¼ÂÇÒ»¶¨µÄÈßÓàÉè¼Æ£¬
-  // ½«arrayµÄsize¶©Îª512
+  // é”®ç›˜çŠ¶æ€ (å½“å‰å¸§å’Œä¸Šä¸€å¸§)
+  // GLFW_KEY_LAST=348ï¼Œ
+  // æ•…æ­¤å¤„è€ƒè™‘ä¸€å®šçš„å†—ä½™è®¾è®¡ï¼Œ
+  // å°†arrayçš„sizeè®¢ä¸º512
   static std::array<InputState, 512> s_KeyStates;
   static std::array<InputState, 512> s_PrevKeyStates;
   static std::array<float, 512> s_KeyHeldDurations;
 
-  // Êó±ê×´Ì¬
-  // GLFW_MOUSE_BUTTON_1£¬
-  // µ½GLFW_MOUSE_BUTTON_8
-  // ×ó¼ü£¨1£©¡¢ÓÒ¼ü£¨2£©¡¢ÖĞ¼ü£¨3£©+ ²à¼ü£¨4-8£©
+  // é¼ æ ‡çŠ¶æ€
+  // GLFW_MOUSE_BUTTON_1ï¼Œ
+  // åˆ°GLFW_MOUSE_BUTTON_8
+  // å·¦é”®ï¼ˆ1ï¼‰ã€å³é”®ï¼ˆ2ï¼‰ã€ä¸­é”®ï¼ˆ3ï¼‰+ ä¾§é”®ï¼ˆ4-8ï¼‰
   static std::array<InputState, 8> s_MouseButtonStates;
   static std::array<InputState, 8> s_PrevMouseButtonStates;
   static glm::vec2 s_MousePosition;
@@ -60,7 +60,7 @@ class InputManager {
   static float s_MouseScrollDelta;
   static float s_PrevMouseScrollDelta;
 
-  // ÊäÈëÉÏÏÂÎÄÕ»
+  // è¾“å…¥ä¸Šä¸‹æ–‡æ ˆ
   static std::shared_ptr<InputContextStack> s_ContextStack;
 };
 

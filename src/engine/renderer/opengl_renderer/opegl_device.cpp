@@ -1,14 +1,14 @@
 #include "opengl_renderer/opegl_device.h"
 
 namespace mite {
-// ------------------------ ¹¹Ôìº¯Êı/Îö¹¹º¯Êı ------------------------
+// ------------------------ æ„é€ å‡½æ•°/ææ„å‡½æ•° ------------------------
 OpenGLDevice::OpenGLDevice() : IRenderDevice()
 {
-  // ´´½¨ÈÕÖ¾ÏµÍ³
+  // åˆ›å»ºæ—¥å¿—ç³»ç»Ÿ
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Device");
   m_Logger->trace("Created OpenGL Device");
 
-  // ³õÊ¼»¯GLAD£¨±ØĞëÔÚÉÏÏÂÎÄ¼¤»îºóµ÷ÓÃ£©
+  // åˆå§‹åŒ–GLADï¼ˆå¿…é¡»åœ¨ä¸Šä¸‹æ–‡æ¿€æ´»åè°ƒç”¨ï¼‰
   if (!gladLoadGL()) {
     m_Logger->critical("Failed to initialize GLAD");
     throw std::runtime_error("GLAD initialization failed");
@@ -17,21 +17,21 @@ OpenGLDevice::OpenGLDevice() : IRenderDevice()
 
 OpenGLDevice::~OpenGLDevice()
 {
-  // ·ÀÓùĞÔ¼ì²é£ºÈ·±£ËùÓĞ×ÊÔ´ÒÑÊÍ·Å
+  // é˜²å¾¡æ€§æ£€æŸ¥ï¼šç¡®ä¿æ‰€æœ‰èµ„æºå·²é‡Šæ”¾
   CleanupResources();
   m_Logger->info("OpenGLDevice destroyed");
 }
 
 void OpenGLDevice::CleanupResources()
 {
-  // ÇåÀíÎÆÀí
+  // æ¸…ç†çº¹ç†
   if (!m_ActiveTextures.empty()) {
     m_Logger->warn("{} textures not released on shutdown", m_ActiveTextures.size());
     for (GLuint tex : m_ActiveTextures) {
       glDeleteTextures(1, &tex);
     }
   }
-  // ÇåÀí»º³åÇø¶ÔÏó
+  // æ¸…ç†ç¼“å†²åŒºå¯¹è±¡
   if (!m_ActiveVAOs.empty()) {
     m_Logger->warn("{} VAOs not released on shutdown", m_ActiveVAOs.size());
     for (GLuint vao : m_ActiveVAOs) {
@@ -50,7 +50,7 @@ void OpenGLDevice::CleanupResources()
       glDeleteBuffers(1, &ebo);
     }
   }
-  // ÇåÀíFrameBuffer¶ÔÏó
+  // æ¸…ç†FrameBufferå¯¹è±¡
   if (!m_ActiveFBOs.empty()) {
     m_Logger->warn("{} FBOs not released on shutdown", m_ActiveFBOs.size());
     for (GLuint fbo : m_ActiveFBOs) {
@@ -62,45 +62,45 @@ void OpenGLDevice::CleanupResources()
                      m_ActiveEBOs.size() + m_ActiveFBOs.size());
 }
 
-// ------------------------ ÎÆÀí²Ù×÷ ------------------------
+// ------------------------ çº¹ç†æ“ä½œ ------------------------
 TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> data)
 {
   GLuint textureID;
   glGenTextures(1, &textureID);
   glBindTexture(GL_TEXTURE_2D, textureID);
 
-  // ÉèÖÃÎÆÀí²ÎÊı
+  // è®¾ç½®çº¹ç†å‚æ•°
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  // ÉÏ´«ÎÆÀíÊı¾İ
+  // ä¸Šä¼ çº¹ç†æ•°æ®
   GLenum format = TranslateTextureFormat(data->format);
   GLenum internalFormat = /*!isHDR ? GL_SRGB8_ALPHA8 :*/ format;
   glTexImage2D(GL_TEXTURE_2D,
-               0,               // Mipmap¼¶±ğ
-               internalFormat,  // ÄÚ²¿¸ñÊ½
+               0,               // Mipmapçº§åˆ«
+               internalFormat,  // å†…éƒ¨æ ¼å¼
                data->width,
                data->height,
-               0,                 // ÀúÊ·ÒÅÁô²ÎÊı
-               internalFormat,    // ÏñËØÊı¾İ¸ñÊ½
-               GL_UNSIGNED_BYTE,  // Êı¾İÀàĞÍ£¨HDRĞè¸ÄÎªGL_FLOAT£©
-               data->pixelData    // Ô­Ê¼Êı¾İÖ¸Õë
+               0,                 // å†å²é—ç•™å‚æ•°
+               internalFormat,    // åƒç´ æ•°æ®æ ¼å¼
+               GL_UNSIGNED_BYTE,  // æ•°æ®ç±»å‹ï¼ˆHDRéœ€æ”¹ä¸ºGL_FLOATï¼‰
+               data->pixelData    // åŸå§‹æ•°æ®æŒ‡é’ˆ
   );
 
   if (data->generateMipmaps) {
     glGenerateMipmap(GL_TEXTURE_2D);
   }
 
-  // ¼ÇÂ¼»î¶¯ÎÆÀí
+  // è®°å½•æ´»åŠ¨çº¹ç†
   m_ActiveTextures.insert(textureID);
 
   TextureGPUHandle handle;
   handle.path = data->path;
   handle.apiHandle = static_cast<uintptr_t>(textureID);
 
-  // Ó¦ÓÃÖ¸¶¨µÄ°ü×°ºÍ¹ıÂËÄ£Ê½
+  // åº”ç”¨æŒ‡å®šçš„åŒ…è£…å’Œè¿‡æ»¤æ¨¡å¼
   SetTextureWrapMode(handle, data->wrapMode);
   SetTextureFilterMode(handle, data->filterMode);
 
@@ -120,13 +120,13 @@ void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
 
 void OpenGLDevice::BindTexture(TextureGPUHandle handle, uint32_t slot) const
 {
-  // äÖÈ¾Ê±£¬²ÅĞèÒª¼¤»îÎÆÀíµ¥Ôª
+  // æ¸²æŸ“æ—¶ï¼Œæ‰éœ€è¦æ¿€æ´»çº¹ç†å•å…ƒ
   glActiveTexture(GL_TEXTURE0 + slot);
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(handle.apiHandle));
 }
 void OpenGLDevice::SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode)
 {
-  // ³õÊ¼»¯ÎÆÀíÊ±£¬²»ĞèÒª¼¤»îÎÆÀíµ¥Ôª
+  // åˆå§‹åŒ–çº¹ç†æ—¶ï¼Œä¸éœ€è¦æ¿€æ´»çº¹ç†å•å…ƒ
   GLuint glTexture = static_cast<GLuint>(handle.apiHandle);
   glBindTexture(GL_TEXTURE_2D, glTexture);
 
@@ -134,7 +134,7 @@ void OpenGLDevice::SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode m
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode);
 
-  // Èç¹ûÊÇ3DÎÆÀíÔòĞèÒªÉèÖÃRÖá
+  // å¦‚æœæ˜¯3Dçº¹ç†åˆ™éœ€è¦è®¾ç½®Rè½´
   // glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, glWrapMode);
 }
 void OpenGLDevice::SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode)
@@ -157,17 +157,17 @@ void OpenGLDevice::GenerateMipmaps(TextureGPUHandle handle)
   glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-// ------------------------ Ä£ĞÍ²Ù×÷ ------------------------
+// ------------------------ æ¨¡å‹æ“ä½œ ------------------------
 ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
 {
-  // 0. ´´½¨ÁÙÊ±VAOµÈ¶ÔÏó
+  // 0. åˆ›å»ºä¸´æ—¶VAOç­‰å¯¹è±¡
   GLuint VBO, EBO, VAO;
 
-  // 1. ´´½¨VAO
+  // 1. åˆ›å»ºVAO
   glGenVertexArrays(1, &VAO);
   glBindVertexArray(VAO);
 
-  // 2. ´´½¨VBO²¢ÉÏ´«Êı¾İ
+  // 2. åˆ›å»ºVBOå¹¶ä¸Šä¼ æ•°æ®
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER,
@@ -175,7 +175,7 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
                data->mergedVertexData.data(),
                GL_STATIC_DRAW);
 
-  // 3. ´´½¨EBO²¢ÉÏ´«Êı¾İ
+  // 3. åˆ›å»ºEBOå¹¶ä¸Šä¼ æ•°æ®
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
@@ -183,13 +183,13 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
                data->mergedIndices.data(),
                GL_STATIC_DRAW);
 
-  // 4. ÉèÖÃ¶¥µãÊôĞÔÖ¸Õë(»ùÓÚÍ³Ò»µÄlayout)
+  // 4. è®¾ç½®é¡¶ç‚¹å±æ€§æŒ‡é’ˆ(åŸºäºç»Ÿä¸€çš„layout)
   SetVertexAttributes(data->layout);
 
-  // 5. ½â°óVAO
+  // 5. è§£ç»‘VAO
   glBindVertexArray(0);
 
-  // 6. Ìî³äGPU¾ä±ú
+  // 6. å¡«å……GPUå¥æŸ„
   ModelGPUHandle handle;
   handle.path = data->path;
   handle.bboxMax = data->modelBboxMax;
@@ -198,15 +198,15 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
   handle.vertexBuffer = static_cast<uintptr_t>(VBO);
   handle.indexBuffer = static_cast<uintptr_t>(EBO);
 
-  // 7. ¼ÇÂ¼»î¶¯Íø¸ñ£¨µ÷ÊÔÓÃ£©
+  // 7. è®°å½•æ´»åŠ¨ç½‘æ ¼ï¼ˆè°ƒè¯•ç”¨ï¼‰
   m_ActiveVAOs.insert(VAO);
   m_ActiveVBOs.insert(VBO);
   m_ActiveEBOs.insert(EBO);
 
-  // 8. ±£´æModelSourceData´´½¨Ê±Éú³ÉµÄMeshSections£¨°üº¬LODĞÅÏ¢£©
+  // 8. ä¿å­˜ModelSourceDataåˆ›å»ºæ—¶ç”Ÿæˆçš„MeshSectionsï¼ˆåŒ…å«LODä¿¡æ¯ï¼‰
   handle.subMeshes = std::move(data->sections);
 
-  // 9. ¼ÇÂ¼LODĞÅÏ¢
+  // 9. è®°å½•LODä¿¡æ¯
   m_Logger->debug("Created model with {} LOD levels for: {}", data->sections.size(), data->path);
 
   return handle;
@@ -214,46 +214,46 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
 
 void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
 {
-  // ·ÀÓùĞÔ¼ì²é
+  // é˜²å¾¡æ€§æ£€æŸ¥
   if (handle.vertexArray == 0 && handle.vertexBuffer == 0 && handle.indexBuffer == 0) {
     m_Logger->warn("Attempted to destroy invalid ModelGPUHandle (all handles are 0)");
     return;
   }
 
-  // 1. É¾³ı¶¥µãÊı×é¶ÔÏó(VAO)
+  // 1. åˆ é™¤é¡¶ç‚¹æ•°ç»„å¯¹è±¡(VAO)
   if (handle.vertexArray != 0) {
     GLuint vao = static_cast<GLuint>(handle.vertexArray);
     glDeleteVertexArrays(1, &vao);
 
-    // ´Ó»î¶¯×ÊÔ´ÖĞÒÆ³ı
+    // ä»æ´»åŠ¨èµ„æºä¸­ç§»é™¤
     m_ActiveVAOs.erase(vao);
   }
 
-  // 2. É¾³ı¶¥µã»º³åÇø(VBO)
+  // 2. åˆ é™¤é¡¶ç‚¹ç¼“å†²åŒº(VBO)
   if (handle.vertexBuffer != 0) {
     GLuint vbo = static_cast<GLuint>(handle.vertexBuffer);
     glDeleteBuffers(1, &vbo);
 
-    // ´Ó»î¶¯×ÊÔ´ÖĞÒÆ³ı
+    // ä»æ´»åŠ¨èµ„æºä¸­ç§»é™¤
     m_ActiveVBOs.erase(vbo);
   }
 
-  // 3. É¾³ıË÷Òı»º³åÇø(EBO)
+  // 3. åˆ é™¤ç´¢å¼•ç¼“å†²åŒº(EBO)
   if (handle.indexBuffer != 0) {
     GLuint ebo = static_cast<GLuint>(handle.indexBuffer);
     glDeleteBuffers(1, &ebo);
 
-    // ´Ó»î¶¯×ÊÔ´ÖĞÒÆ³ı
+    // ä»æ´»åŠ¨èµ„æºä¸­ç§»é™¤
     m_ActiveEBOs.erase(ebo);
   }
 
-  // 4. µ÷ÊÔÈÕÖ¾
+  // 4. è°ƒè¯•æ—¥å¿—
   m_Logger->debug("Destroyed model resources: VAO={}, VBO={}, EBO={}",
                   handle.vertexArray,
                   handle.vertexBuffer,
                   handle.indexBuffer);
 
-  // 5. Çå¿Õ¾ä±ú(·ÀÓùĞÔ±à³Ì)
+  // 5. æ¸…ç©ºå¥æŸ„(é˜²å¾¡æ€§ç¼–ç¨‹)
   handle.vertexArray = 0;
   handle.vertexBuffer = 0;
   handle.indexBuffer = 0;
@@ -264,7 +264,7 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   std::shared_ptr<ModelGPUHandle> modelHandle = mesh->GetModelHandle();
   MeshSection meshSection = mesh->GetSection();
 
-  // 1. ²ÎÊıÓĞĞ§ĞÔ¼ì²é
+  // 1. å‚æ•°æœ‰æ•ˆæ€§æ£€æŸ¥
   if (!modelHandle) {
     m_Logger->warn("Attempt to bind mesh with null model handle");
     return;
@@ -282,27 +282,27 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
     return;
   }
 
-  // 2. °ó¶¨Õû¸öÄ£ĞÍµÄVAO
+  // 2. ç»‘å®šæ•´ä¸ªæ¨¡å‹çš„VAO
   GLuint vao = static_cast<GLuint>(modelHandle->vertexArray);
   glBindVertexArray(vao);
 
-  // 3. ÑéÖ¤»º³åÇøÊÇ·ñÓĞĞ§
+  // 3. éªŒè¯ç¼“å†²åŒºæ˜¯å¦æœ‰æ•ˆ
   if (modelHandle->vertexBuffer == 0 || modelHandle->indexBuffer == 0) {
     m_Logger->error("Model buffers not initialized (VBO={}, EBO={})",
                     modelHandle->vertexBuffer,
                     modelHandle->indexBuffer);
   }
 
-  // 4. °ó¶¨»º³åÇø£¨VAOÒÑ°üº¬ÕâĞ©ĞÅÏ¢£¬µ«ÏÔÊ½°ó¶¨¸ü°²È«£©
+  // 4. ç»‘å®šç¼“å†²åŒºï¼ˆVAOå·²åŒ…å«è¿™äº›ä¿¡æ¯ï¼Œä½†æ˜¾å¼ç»‘å®šæ›´å®‰å…¨ï¼‰
   glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(modelHandle->vertexBuffer));
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLuint>(modelHandle->indexBuffer));
 
-  // 5. ´æ´¢µ±Ç°°ó¶¨µÄMeshSection£¨¹©ºóĞøDrawµ÷ÓÃÊ¹ÓÃ£©
-  // ×¢Òâ£ºÕâĞèÒªOpenGLDeviceÓĞ³ÉÔ±±äÁ¿´æ´¢µ±Ç°×´Ì¬£¬»òÕßÊ¹ÓÃÆäËû×´Ì¬¹ÜÀí»úÖÆ
+  // 5. å­˜å‚¨å½“å‰ç»‘å®šçš„MeshSectionï¼ˆä¾›åç»­Drawè°ƒç”¨ä½¿ç”¨ï¼‰
+  // æ³¨æ„ï¼šè¿™éœ€è¦OpenGLDeviceæœ‰æˆå‘˜å˜é‡å­˜å‚¨å½“å‰çŠ¶æ€ï¼Œæˆ–è€…ä½¿ç”¨å…¶ä»–çŠ¶æ€ç®¡ç†æœºåˆ¶
   // m_CurrentMeshSection = &meshSection;
   // m_CurrentModelHandle = modelHandle;
 
-  // 6. µ÷ÊÔĞÅÏ¢
+  // 6. è°ƒè¯•ä¿¡æ¯
   // m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
   //                vao,
   //                modelHandle->vertexBuffer,
@@ -322,44 +322,44 @@ uint32_t OpenGLDevice::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
     return 0;
   }
 
-  // »ñÈ¡Íø¸ñµÄÊÀ½ç¿Õ¼ä°üÎ§ºĞ
+  // è·å–ç½‘æ ¼çš„ä¸–ç•Œç©ºé—´åŒ…å›´ç›’
   auto localBBox = mesh->GetBoundingBox(0);
   glm::vec3 localMin = localBBox.first;
   glm::vec3 localMax = localBBox.second;
 
-  // ×ª»»µ½ÊÀ½ç¿Õ¼ä
+  // è½¬æ¢åˆ°ä¸–ç•Œç©ºé—´
   glm::vec3 worldMin = glm::vec3(worldTransform * glm::vec4(localMin, 1.0f));
   glm::vec3 worldMax = glm::vec3(worldTransform * glm::vec4(localMax, 1.0f));
   glm::vec3 worldCenter = (worldMin + worldMax) * 0.5f;
 
-  // ¼ÆËãÆÁÄ»¿Õ¼ä¸²¸ÇÂÊ
+  // è®¡ç®—å±å¹•ç©ºé—´è¦†ç›–ç‡
   //
-  // ¼ÙÉèÒ»¸öÍø¸ñ£º
-  // Ô­Ê¼´óĞ¡£º10Ã× ¡Á 10Ã× ¡Á 10Ã×
-  // ¾àÀëÏà»ú£º100Ã×
-  // ÆÁÄ»¿í¶È£º1920ÏñËØ
-  // screenCoverage = (10.0f / 100.0f) * 1920.0f = 192ÏñËØ
+  // å‡è®¾ä¸€ä¸ªç½‘æ ¼ï¼š
+  // åŸå§‹å¤§å°ï¼š10ç±³ Ã— 10ç±³ Ã— 10ç±³
+  // è·ç¦»ç›¸æœºï¼š100ç±³
+  // å±å¹•å®½åº¦ï¼š1920åƒç´ 
+  // screenCoverage = (10.0f / 100.0f) * 1920.0f = 192åƒç´ 
   float distance = glm::distance(cameraPosition, worldCenter);
   glm::vec3 bboxSize = worldMax - worldMin;
   float objectSize = glm::max(bboxSize.x, glm::max(bboxSize.y, bboxSize.z));
   float screenCoverage = (objectSize / distance) * screenWidth * lodBias;
 
-  // »ùÓÚÆÁÄ»¸²¸ÇÂÊµÄLODÑ¡Ôñ£¨Ê¹ÓÃÏñËØ¿í¶È½øĞĞÅĞ¶Ï£©
+  // åŸºäºå±å¹•è¦†ç›–ç‡çš„LODé€‰æ‹©ï¼ˆä½¿ç”¨åƒç´ å®½åº¦è¿›è¡Œåˆ¤æ–­ï¼‰
   //
-  // 200.0f: µ±Íø¸ñÔÚÆÁÄ»ÉÏ¸²¸Ç¿í¶ÈĞ¡ÓÚ200ÏñËØÊ±£¬ÇĞ»»µ½LOD 1
-  // 100.0f: µ±Íø¸ñÔÚÆÁÄ»ÉÏ¸²¸Ç¿í¶ÈĞ¡ÓÚ100ÏñËØÊ±£¬ÇĞ»»µ½LOD 2
-  //  50.0f: µ±Íø¸ñÔÚÆÁÄ»ÉÏ¸²¸Ç¿í¶ÈĞ¡ÓÚ 50ÏñËØÊ±£¬ÇĞ»»µ½LOD 3
-  //  25.0f: µ±Íø¸ñÔÚÆÁÄ»ÉÏ¸²¸Ç¿í¶ÈĞ¡ÓÚ 25ÏñËØÊ±£¬ÇĞ»»µ½LOD 4
-  //  10.0f: µ±Íø¸ñÔÚÆÁÄ»ÉÏ¸²¸Ç¿í¶ÈĞ¡ÓÚ 10ÏñËØÊ±£¬ÇĞ»»µ½LOD 5
-  //   5.0f: µ±Íø¸ñÔÚÆÁÄ»ÉÏ¸²¸Ç¿í¶ÈĞ¡ÓÚ  5ÏñËØÊ±£¬ÇĞ»»µ½LOD 6
+  // 200.0f: å½“ç½‘æ ¼åœ¨å±å¹•ä¸Šè¦†ç›–å®½åº¦å°äº200åƒç´ æ—¶ï¼Œåˆ‡æ¢åˆ°LOD 1
+  // 100.0f: å½“ç½‘æ ¼åœ¨å±å¹•ä¸Šè¦†ç›–å®½åº¦å°äº100åƒç´ æ—¶ï¼Œåˆ‡æ¢åˆ°LOD 2
+  //  50.0f: å½“ç½‘æ ¼åœ¨å±å¹•ä¸Šè¦†ç›–å®½åº¦å°äº 50åƒç´ æ—¶ï¼Œåˆ‡æ¢åˆ°LOD 3
+  //  25.0f: å½“ç½‘æ ¼åœ¨å±å¹•ä¸Šè¦†ç›–å®½åº¦å°äº 25åƒç´ æ—¶ï¼Œåˆ‡æ¢åˆ°LOD 4
+  //  10.0f: å½“ç½‘æ ¼åœ¨å±å¹•ä¸Šè¦†ç›–å®½åº¦å°äº 10åƒç´ æ—¶ï¼Œåˆ‡æ¢åˆ°LOD 5
+  //   5.0f: å½“ç½‘æ ¼åœ¨å±å¹•ä¸Šè¦†ç›–å®½åº¦å°äº  5åƒç´ æ—¶ï¼Œåˆ‡æ¢åˆ°LOD 6
   //
-  // TODO£º¿ÉÒÔ½«¸ÃÑ¡Ôñ·½°¸×÷ÎªÅäÖÃÏî£¬Õë¶Ô²»Í¬Çé¿öĞŞ¸ÄÅäÖÃ
+  // TODOï¼šå¯ä»¥å°†è¯¥é€‰æ‹©æ–¹æ¡ˆä½œä¸ºé…ç½®é¡¹ï¼Œé’ˆå¯¹ä¸åŒæƒ…å†µä¿®æ”¹é…ç½®
   //
-  // ¸ßÖÊÁ¿³¡¾°£¨½ü´¦Ï¸½ÚÖØÒª£©£º
+  // é«˜è´¨é‡åœºæ™¯ï¼ˆè¿‘å¤„ç»†èŠ‚é‡è¦ï¼‰ï¼š
   //    {300.0f, 150.0f, 75.0f, 30.0f, 15.0f, 5.0f};
-  // ĞÔÄÜÓÅÏÈ³¡¾°£º
+  // æ€§èƒ½ä¼˜å…ˆåœºæ™¯ï¼š
   //    {100.0f, 50.0f, 20.0f, 8.0f, 3.0f};
-  // »·¾³Íø¸ñ£¨¿ÉÒÔ¸üÔç½µ¼¶£©£º
+  // ç¯å¢ƒç½‘æ ¼ï¼ˆå¯ä»¥æ›´æ—©é™çº§ï¼‰ï¼š
   //    {80.0f, 40.0f, 15.0f, 5.0f};
   uint32_t selectedLOD = 0;
   constexpr float lodThresholds[] = {200.0f, 100.0f, 50.0f, 25.0f, 10.0f, 5.0f};
@@ -372,14 +372,14 @@ uint32_t OpenGLDevice::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
     }
   }
 
-  // »ñÈ¡¿ÉÓÃµÄLOD¼¶±ğ
+  // è·å–å¯ç”¨çš„LODçº§åˆ«
   std::set<uint32_t> availableLODs;
   availableLODs.insert(mesh->GetBaseSection().lodLevel);
   for (const auto &lodSection : mesh->GetAllLODSections()) {
     availableLODs.insert(lodSection.lodLevel);
   }
 
-  // È·±£Ñ¡ÔñµÄLOD¼¶±ğÊµ¼Ê´æÔÚ
+  // ç¡®ä¿é€‰æ‹©çš„LODçº§åˆ«å®é™…å­˜åœ¨
   if (!availableLODs.empty()) {
     auto it = availableLODs.lower_bound(selectedLOD);
     if (it != availableLODs.end()) {
@@ -405,13 +405,13 @@ void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) co
     return;
   }
 
-  // Ö±½Ó´ÓMesh¶ÔÏó»ñÈ¡Ö¸¶¨LOD¼¶±ğµÄMeshSection
+  // ç›´æ¥ä»Meshå¯¹è±¡è·å–æŒ‡å®šLODçº§åˆ«çš„MeshSection
   const MeshSection *targetSection = &mesh->GetSection(lodLevel);
 
-  // °ó¶¨Ä£ĞÍ
+  // ç»‘å®šæ¨¡å‹
   GLuint vao = static_cast<GLuint>(modelHandle->vertexArray);
   glBindVertexArray(vao);
-  // »æÖÆÖ¸¶¨LOD¼¶±ğµÄÍø¸ñ
+  // ç»˜åˆ¶æŒ‡å®šLODçº§åˆ«çš„ç½‘æ ¼
   DrawIndexed(
       targetSection->indexCount, targetSection->indexOffset, GL_TRIANGLES, GL_UNSIGNED_INT, true);
 }
@@ -422,35 +422,35 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
                                GLenum indexType,
                                bool enableDepthTest) const
 {
-  // 1. ²ÎÊıÑéÖ¤
+  // 1. å‚æ•°éªŒè¯
   if (indexCount == 0) {
     m_Logger->warn("Attempted to draw with indexCount = 0");
     return;
   }
 
-  // 2. ÏêÏ¸µÄ×´Ì¬¼ì²é
+  // 2. è¯¦ç»†çš„çŠ¶æ€æ£€æŸ¥
   GLint currentVAO = 0;
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &currentVAO);
   if (currentVAO == 0) {
-    m_Logger->error("DrawIndexed Failed£ºInvalid VAO");
+    m_Logger->error("DrawIndexed Failedï¼šInvalid VAO");
     return;
   }
 
   GLint currentProgram = 0;
   glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
   if (currentProgram == 0) {
-    m_Logger->error("DrawIndexed Failed£ºInvalid Shader");
+    m_Logger->error("DrawIndexed Failedï¼šInvalid Shader");
     return;
   }
 
   GLint elementBuffer = 0;
   glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &elementBuffer);
   if (elementBuffer == 0) {
-    m_Logger->error("DrawIndexed Failed£ºInvalid EBO");
+    m_Logger->error("DrawIndexed Failedï¼šInvalid EBO");
     return;
   }
 
-  // 3. ÉèÖÃÉî¶È²âÊÔ×´Ì¬
+  // 3. è®¾ç½®æ·±åº¦æµ‹è¯•çŠ¶æ€
   if (enableDepthTest) {
     glEnable(GL_DEPTH_TEST);
   }
@@ -458,7 +458,7 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
     glDisable(GL_DEPTH_TEST);
   }
 
-  // 4. ¼ÆËãË÷ÒıÆ«ÒÆÁ¿
+  // 4. è®¡ç®—ç´¢å¼•åç§»é‡
   void *indicesPtr = nullptr;
   size_t typeSize = 0;
   switch (indexType) {
@@ -477,10 +477,10 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
   }
   indicesPtr = reinterpret_cast<void *>(indexOffset * typeSize);
 
-  // 5. Ö´ĞĞ»æÖÆÃüÁî
+  // 5. æ‰§è¡Œç»˜åˆ¶å‘½ä»¤
   glDrawElements(mode, indexCount, indexType, indicesPtr);
 
-  // 6. ÔöÇ¿µÄ´íÎó¼ì²é
+  // 6. å¢å¼ºçš„é”™è¯¯æ£€æŸ¥
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     const char *errorStr = "";
@@ -524,14 +524,14 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
   }
 }
 
-// ------------------------ FrameBuffer ²Ù×÷ ------------------------
+// ------------------------ FrameBuffer æ“ä½œ ------------------------
 
 FrameBuffer::Ptr OpenGLDevice::CreateFrameBuffer(const FrameBufferSpec &spec)
 {
-  // ´´½¨FrameBuffer¶ÔÏó
+  // åˆ›å»ºFrameBufferå¯¹è±¡
   auto framebuffer = std::make_shared<FrameBuffer>(spec);
 
-  // ¼ÇÂ¼FBO ID
+  // è®°å½•FBO ID
   m_ActiveFBOs.insert(framebuffer->GetID());
 
   m_Logger->debug("Created framebuffer ({}x{})", spec.width, spec.height);
@@ -543,14 +543,14 @@ void OpenGLDevice::DestroyFrameBuffer(FrameBuffer::Ptr framebuffer)
   if (!framebuffer)
     return;
 
-  // ´Ó»î¶¯¼¯ºÏÖĞÒÆ³ı
+  // ä»æ´»åŠ¨é›†åˆä¸­ç§»é™¤
   m_ActiveFBOs.erase(framebuffer->GetID());
 
-  // Êµ¼ÊÏú»Ù²Ù×÷ÓÉFrameBufferÎö¹¹º¯Êı´¦Àí
+  // å®é™…é”€æ¯æ“ä½œç”±FrameBufferææ„å‡½æ•°å¤„ç†
   m_Logger->debug("Destroyed framebuffer");
 }
 
-// ------------------------ ¸¨Öú·½·¨ ------------------------
+// ------------------------ è¾…åŠ©æ–¹æ³• ------------------------
 GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
 {
   switch (format) {
@@ -564,32 +564,32 @@ GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
       return GL_RGBA16F;
     default:
       m_Logger->warn("Unsupported texture format: {}", static_cast<int>(format));
-      return GL_RGBA;  // Ä¬ÈÏ»ØÍË
+      return GL_RGBA;  // é»˜è®¤å›é€€
   }
 }
 
 bool OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
 {
-  // 1. ´´½¨GPU×ÊÔ´
+  // 1. åˆ›å»ºGPUèµ„æº
   ModelGPUHandle modelHandle = CreateModel(e.GetModelSourceData());
 
-  // 2. ¸üĞÂModelAsset
+  // 2. æ›´æ–°ModelAsset
   e.GetModelGPUHandle() = std::make_shared<ModelGPUHandle>(modelHandle);
 
-  // ±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬×è¶Ï´«²¥
+  // æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œé˜»æ–­ä¼ æ’­
   e.Handled();
   return e.handled;
 }
 
 bool OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
 {
-  //  1. ´´½¨GPU×ÊÔ´
+  //  1. åˆ›å»ºGPUèµ„æº
   TextureGPUHandle textureHandle = CreateTexture(e.GetTextureSourceData());
 
-  // 2. ¸üĞÂTextureAsset
+  // 2. æ›´æ–°TextureAsset
   e.GetTextureHandle() = std::make_shared<TextureGPUHandle>(textureHandle);
 
-  // ±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬×è¶Ï´«²¥
+  // æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œé˜»æ–­ä¼ æ’­
   e.Handled();
   return e.handled;
 }
@@ -624,10 +624,10 @@ void OpenGLDevice::ConvertFilterMode(TextureFilterMode mode,
       break;
 
     case TextureFilterMode::Anisotropic:
-      outMinFilter = GL_LINEAR_MIPMAP_LINEAR;  // ĞèÒªmipmap
+      outMinFilter = GL_LINEAR_MIPMAP_LINEAR;  // éœ€è¦mipmap
       outMagFilter = GL_LINEAR;
 
-      // ÉèÖÃ¸÷ÏòÒìĞÔ¹ıÂË£¨Ğè¼ì²éÀ©Õ¹Ö§³Ö£©
+      // è®¾ç½®å„å‘å¼‚æ€§è¿‡æ»¤ï¼ˆéœ€æ£€æŸ¥æ‰©å±•æ”¯æŒï¼‰
       if (GL_EXT_texture_filter_anisotropic) {
         float maxAniso = 0.0f;
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
@@ -644,7 +644,7 @@ void OpenGLDevice::ConvertFilterMode(TextureFilterMode mode,
 
 void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
 {
-  // È·±£VAOÒÑ°ó¶¨
+  // ç¡®ä¿VAOå·²ç»‘å®š
   GLint currentVAO;
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &currentVAO);
   if (currentVAO == 0) {
@@ -652,30 +652,30 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
     return;
   }
 
-  // ¼ÆËã×Ü²½³¤²¢ÑéÖ¤
+  // è®¡ç®—æ€»æ­¥é•¿å¹¶éªŒè¯
   const uint32_t stride = layout.stride;
   if (stride == 0) {
     m_Logger->error("Invalid vertex layout: stride is zero");
     return;
   }
 
-  // ÉèÖÃÃ¿¸ö¶¥µãÊôĞÔ
+  // è®¾ç½®æ¯ä¸ªé¡¶ç‚¹å±æ€§
   uint32_t offset = 0;
   for (uint32_t i = 0; i < layout.attributes.size(); ++i) {
     const auto &attr = layout.attributes[i];
 
-    // ÆôÓÃ¶¥µãÊôĞÔÊı×é
+    // å¯ç”¨é¡¶ç‚¹å±æ€§æ•°ç»„
     glEnableVertexAttribArray(i);
 
-    // ¸ù¾İÊôĞÔÀàĞÍÉèÖÃÖ¸Õë
+    // æ ¹æ®å±æ€§ç±»å‹è®¾ç½®æŒ‡é’ˆ
     switch (attr) {
       case VertexAttribute::Position:
-        glVertexAttribPointer(i,                         // ÊôĞÔÎ»ÖÃ
-                              3,                         // ·ÖÁ¿ÊıÁ¿ (vec3)
-                              GL_FLOAT,                  // Êı¾İÀàĞÍ
-                              GL_FALSE,                  // ÊÇ·ñ±ê×¼»¯
-                              stride,                    // ²½³¤
-                              (void *)(uintptr_t)offset  // Æ«ÒÆÁ¿
+        glVertexAttribPointer(i,                         // å±æ€§ä½ç½®
+                              3,                         // åˆ†é‡æ•°é‡ (vec3)
+                              GL_FLOAT,                  // æ•°æ®ç±»å‹
+                              GL_FALSE,                  // æ˜¯å¦æ ‡å‡†åŒ–
+                              stride,                    // æ­¥é•¿
+                              (void *)(uintptr_t)offset  // åç§»é‡
         );
         offset += sizeof(glm::vec3);
         break;
@@ -705,11 +705,11 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
         break;
     }
 
-    // ¶ÔÓÚInstancedäÖÈ¾£¬¿ÉÒÔÔÚ´ËÉèÖÃdivisor
+    // å¯¹äºInstancedæ¸²æŸ“ï¼Œå¯ä»¥åœ¨æ­¤è®¾ç½®divisor
     // glVertexAttribDivisor(i, 0);
   }
 
-  // ÑéÖ¤Æ«ÒÆÁ¿ÓëÉùÃ÷µÄstrideÒ»ÖÂ
+  // éªŒè¯åç§»é‡ä¸å£°æ˜çš„strideä¸€è‡´
   if (offset != stride) {
     m_Logger->error("Vertex attribute offset {} doesn't match layout stride {}", offset, stride);
   }

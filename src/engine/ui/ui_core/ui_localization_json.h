@@ -9,34 +9,34 @@
 namespace mite {
 
 /**
- * @brief »ùÓÚJsonÅäÖÃÎÄ¼şµÄ±¾µØ»¯£¨·­Òë£©ÊµÏÖ
+ * @brief åŸºäºJsoné…ç½®æ–‡ä»¶çš„æœ¬åœ°åŒ–ï¼ˆç¿»è¯‘ï¼‰å®ç°
  */
 class UILocalizationJson : public UILocalization {
  public:
   UILocalizationJson();
   ~UILocalizationJson() override;
 
-  // ÓïÑÔ¹ÜÀí
+  // è¯­è¨€ç®¡ç†
   bool LoadLanguagePack(const std::string &languageCode, const std::string &filePath) override;
   bool SetCurrentLanguage(const std::string &languageCode) override;
   std::string GetCurrentLanguage() const override;
   std::vector<std::string> GetAvailableLanguages() const override;
 
-  // ÎÄ±¾·­Òë
+  // æ–‡æœ¬ç¿»è¯‘
   std::string Translate(const std::string &key) const override;
 
-  // ÎÄ±¾·½Ïò
+  // æ–‡æœ¬æ–¹å‘
   bool IsRTLLanguage(const std::string &languageCode) const override;
   TextDirection GetTextDirection() const override;
 
-  // ³õÊ¼»¯ÄÚÖÃÓïÑÔ
+  // åˆå§‹åŒ–å†…ç½®è¯­è¨€
   void InitializeBuiltinLanguages();
 
  private:
-  // Ïû·ÑÓïÑÔÇĞ»»ÊÂ¼ş
+  // æ¶ˆè´¹è¯­è¨€åˆ‡æ¢äº‹ä»¶
   bool OnLanguageChanged(LanguageChangedEvent &e);
 
-  // ÓïÑÔ°ü¶¨Òå
+  // è¯­è¨€åŒ…å®šä¹‰
   struct LanguagePack {
     std::unordered_map<std::string, std::string> translations;
     std::string locale;
@@ -44,31 +44,31 @@ class UILocalizationJson : public UILocalization {
     std::string displayName;
   };
 
-  // ´ÓÎÄ¼ş¼ÓÔØÓïÑÔ°ü
+  // ä»æ–‡ä»¶åŠ è½½è¯­è¨€åŒ…
   bool LoadLanguagePackFromFile(const std::string &languageCode, const std::string &filePath);
 
-  // »ñÈ¡±¾µØ»¯ÎÄ¼şÂ·¾¶
+  // è·å–æœ¬åœ°åŒ–æ–‡ä»¶è·¯å¾„
   std::string GetLocalizationFilePath(const std::string &languageCode) const;
 
-  // ÑéÖ¤JSON¸ñÊ½
+  // éªŒè¯JSONæ ¼å¼
   bool ValidateLanguagePack(const nlohmann::json &jsonData) const;
 
-  // ½âÎöJSONµ½ÓïÑÔ°ü
+  // è§£æJSONåˆ°è¯­è¨€åŒ…
   bool ParseLanguagePack(const nlohmann::json &jsonData, LanguagePack &pack) const;
 
-  // ºÏ²¢·­ÒëÏî£¨Ö§³Ö²ã¼¶½á¹¹£©
+  // åˆå¹¶ç¿»è¯‘é¡¹ï¼ˆæ”¯æŒå±‚çº§ç»“æ„ï¼‰
   void MergeTranslations(const nlohmann::json &source,
                          std::unordered_map<std::string, std::string> &target,
                          const std::string &prefix = "") const;
 
-  // ÓïÑÔ°üÓëµ±Ç°×´Ì¬¹ÜÀí
+  // è¯­è¨€åŒ…ä¸å½“å‰çŠ¶æ€ç®¡ç†
   std::string m_CurrentLanguage;
   std::unordered_map<std::string, LanguagePack> m_LanguagePacks;
 
-  // ÈÕÖ¾ÏµÍ³
+  // æ—¥å¿—ç³»ç»Ÿ
   Logger m_Logger;
 
-  // ÊÂ¼ş¶©ÔÄÏµÍ³
+  // äº‹ä»¶è®¢é˜…ç³»ç»Ÿ
   SubscriptionGroup m_SubscriptionGroup;  
 
 

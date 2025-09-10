@@ -7,28 +7,28 @@
 
 namespace mite {
 /**
- * ×Ê²ú¹ÜÀíÆ÷£¨×ÊÔ´¼ÓÔØÓëÉúÃüÖÜÆÚ¹ÜÀí£©
- * Ö°Ôğ£º
- * 1. ¼ÓÔØ´ÅÅÌ×ÊÔ´²¢×ª»»ÎªÒıÇæÖĞ¼ä¸ñÊ½
- * 2. Î¬»¤×ÊÔ´»º´æºÍÒıÓÃ¼ÆÊı
+ * èµ„äº§ç®¡ç†å™¨ï¼ˆèµ„æºåŠ è½½ä¸ç”Ÿå‘½å‘¨æœŸç®¡ç†ï¼‰
+ * èŒè´£ï¼š
+ * 1. åŠ è½½ç£ç›˜èµ„æºå¹¶è½¬æ¢ä¸ºå¼•æ“ä¸­é—´æ ¼å¼
+ * 2. ç»´æŠ¤èµ„æºç¼“å­˜å’Œå¼•ç”¨è®¡æ•°
  */
 class AssetManager {
  public:
   AssetManager() = default;
   ~AssetManager();
 
-  // ---- ºËĞÄ½Ó¿Ú ----
+  // ---- æ ¸å¿ƒæ¥å£ ----
   AssetID LoadTexture(const std::string &path);
   std::shared_ptr<TextureAsset> GetTexture(AssetID id) const;
   void ReleaseTexture(AssetID id);
 
   /**
-   * @brief LoadModel ¼ÓÔØÄ£ĞÍÎÄ¼ş
-   * @param path Ä£ĞÍÎÄ¼şÂ·¾¶
-   * @param flipUVs ÊÇ·ñ·­×ªUV´¹Ö±×ø±ê£¨ÊÊÅäOpenGL×ø±êÏµ£©
-   * @param generateLODs ÊÇ·ñÉú³É¶à¼¶LOD
-   * @param lodLevels LOD¼¶±ğÅäÖÃ£¨Ã¿¸ö¼¶±ğµÄ¼ò»¯±ÈÀı£©
-   * @return °üº¬Ä£ĞÍÔªÊı¾İºÍËùÓĞ×ÓÍø¸ñÊı¾İµÄ½á¹¹Ìå
+   * @brief LoadModel åŠ è½½æ¨¡å‹æ–‡ä»¶
+   * @param path æ¨¡å‹æ–‡ä»¶è·¯å¾„
+   * @param flipUVs æ˜¯å¦ç¿»è½¬UVå‚ç›´åæ ‡ï¼ˆé€‚é…OpenGLåæ ‡ç³»ï¼‰
+   * @param generateLODs æ˜¯å¦ç”Ÿæˆå¤šçº§LOD
+   * @param lodLevels LODçº§åˆ«é…ç½®ï¼ˆæ¯ä¸ªçº§åˆ«çš„ç®€åŒ–æ¯”ä¾‹ï¼‰
+   * @return åŒ…å«æ¨¡å‹å…ƒæ•°æ®å’Œæ‰€æœ‰å­ç½‘æ ¼æ•°æ®çš„ç»“æ„ä½“
    * @return 
    */
   AssetID LoadModel(const std::string &path,
@@ -38,22 +38,22 @@ class AssetManager {
   std::shared_ptr<ModelAsset> GetModel(AssetID id) const;
   void ReleaseModel(AssetID id);
 
-  // ---- ½ûÓÃ¿½±´ ----
+  // ---- ç¦ç”¨æ‹·è´ ----
   AssetManager(const AssetManager &) = delete;
   AssetManager &operator=(const AssetManager &) = delete;
 
  private:
-  // ---- ÄÚ²¿·½·¨ ----
+  // ---- å†…éƒ¨æ–¹æ³• ----
   void LoadTextureInternalToCache(const std::string &path);
   void LoadModelInternalToCache(const std::string &path,
                                 bool flipUVs,
                                 bool generateLODs,
                                 const std::vector<float> &lodLevels);
 
-  // ---- ³ÉÔ±±äÁ¿ ----
-  TextureCache m_TextureCache;  // ÎÆÀí×ÊÔ´»º´æ
-  ModelCache m_ModelCache;      // Ä£ĞÍ×ÊÔ´»º´æ
-  mutable std::mutex m_Mutex;    // Ïß³Ì°²È«Ëø
+  // ---- æˆå‘˜å˜é‡ ----
+  TextureCache m_TextureCache;  // çº¹ç†èµ„æºç¼“å­˜
+  ModelCache m_ModelCache;      // æ¨¡å‹èµ„æºç¼“å­˜
+  mutable std::mutex m_Mutex;    // çº¿ç¨‹å®‰å…¨é”
 };
 };  // namespace mite
 

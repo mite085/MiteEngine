@@ -6,26 +6,26 @@
 
 namespace mite {
 /**
- * GPUÎÆÀíÔËĞĞÊ±·â×°
- * Ö°Ôğ£º
- * - Î¬»¤ÎÆÀí²ÉÑù×´Ì¬£¨Wrap/FilterµÈ£©
- * - Ìá¹©ÀàĞÍ°²È«µÄ°ó¶¨½Ó¿Ú
- * - ²»¹ÜÀíÉúÃüÖÜÆÚ£¨ÓÉRenderer¸ºÔğ£©
+ * GPUçº¹ç†è¿è¡Œæ—¶å°è£…
+ * èŒè´£ï¼š
+ * - ç»´æŠ¤çº¹ç†é‡‡æ ·çŠ¶æ€ï¼ˆWrap/Filterç­‰ï¼‰
+ * - æä¾›ç±»å‹å®‰å…¨çš„ç»‘å®šæ¥å£
+ * - ä¸ç®¡ç†ç”Ÿå‘½å‘¨æœŸï¼ˆç”±Rendererè´Ÿè´£ï¼‰
  */
 class Texture {
  public:
   Texture(const TextureGPUHandle &handle);
 
-  // ---- ÔªÊı¾İ·ÃÎÊ ----
+  // ---- å…ƒæ•°æ®è®¿é—® ----
   /**
-   * »ñÈ¡GPU¾ä±ú
+   * è·å–GPUå¥æŸ„
    */
   TextureGPUHandle GetHandle() const
   {
     return m_Handle;
   }
   /**
-   * »ñÈ¡ÎÄ¼şÂ·¾¶£¬ÓÃÓÚµ÷ÊÔ
+   * è·å–æ–‡ä»¶è·¯å¾„ï¼Œç”¨äºè°ƒè¯•
    */
   const std::string GetPath() const {
     return m_Handle.path;

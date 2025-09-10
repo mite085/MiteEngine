@@ -5,15 +5,15 @@
 #include <cmath>
 
 namespace mite_test {
-// TimeÀà²âÊÔ¼Ğ¾ß
+// Timeç±»æµ‹è¯•å¤¹å…·
 class TimeTest : public ::testing::Test {
  protected:
-  // Ã¿¸ö²âÊÔÇ°ÖØÖÃÊ±¼ä×´Ì¬
+  // æ¯ä¸ªæµ‹è¯•å‰é‡ç½®æ—¶é—´çŠ¶æ€
   void SetUp() override
   { 
     mite::Time::Reset();
   }
-  // ¸¨Öúº¯Êı£ºµÈ´ıÖ¸¶¨ºÁÃëÊı
+  // è¾…åŠ©å‡½æ•°ï¼šç­‰å¾…æŒ‡å®šæ¯«ç§’æ•°
   void WaitMilliseconds(int ms)
   {
     auto start = std::chrono::high_resolution_clock::now();
@@ -26,78 +26,78 @@ class TimeTest : public ::testing::Test {
   }
 };
 
-// ²âÊÔÓÃÀı1£º»ù±¾¹¦ÄÜ²âÊÔ - Ê±¼ä¸üĞÂºÍ»ñÈ¡
+// æµ‹è¯•ç”¨ä¾‹1ï¼šåŸºæœ¬åŠŸèƒ½æµ‹è¯• - æ—¶é—´æ›´æ–°å’Œè·å–
 TEST_F(TimeTest, BasicTimeFunctionality)
 {
-  // µÚÒ»´Î¸üĞÂÊ±¼ä
+  // ç¬¬ä¸€æ¬¡æ›´æ–°æ—¶é—´
   mite::Time::Update();
 
   float deltaTimeSec = mite::Time::DeltaTime();
   size_t deltaTimeMS = mite::Time::DeltaTimeMS();
   float currentTimeSec = mite::Time::CurrentTime();
   size_t currentTimeMS = mite::Time::CurrentTimeMS();
-  // ÑéÖ¤³õÊ¼ÖµºÏÀíĞÔ
+  // éªŒè¯åˆå§‹å€¼åˆç†æ€§
   EXPECT_GE(deltaTimeSec, 0.0f);
   EXPECT_LE(deltaTimeSec, 0.1f);
   EXPECT_GE(deltaTimeMS, 0u);
   EXPECT_LE(deltaTimeMS, 100u);
   EXPECT_GE(currentTimeSec, 0.0f);
   EXPECT_GE(currentTimeMS, 0u);
-  // ÑéÖ¤Á½ÖÖ¾«¶ÈµÄÒ»ÖÂĞÔ
+  // éªŒè¯ä¸¤ç§ç²¾åº¦çš„ä¸€è‡´æ€§
   EXPECT_NEAR(deltaTimeSec * 1000.0f, static_cast<float>(deltaTimeMS), 1.0f);
   EXPECT_NEAR(currentTimeSec * 1000.0f, static_cast<float>(currentTimeMS), 1.0f);
 }
-// ²âÊÔÓÃÀı2£ºÊ±¼äµ¥µ÷µİÔö²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹2ï¼šæ—¶é—´å•è°ƒé€’å¢æµ‹è¯•
 TEST_F(TimeTest, TimeIncreasesMonotonically)
 {
-  // »ñÈ¡³õÊ¼Ê±¼ä
+  // è·å–åˆå§‹æ—¶é—´
   float initialTimeSec = mite::Time::CurrentTime();
   size_t initialTimeMS = mite::Time::CurrentTimeMS();
-  // µÈ´ıÒ»¶ÎÊ±¼äºó¸üĞÂ
+  // ç­‰å¾…ä¸€æ®µæ—¶é—´åæ›´æ–°
   WaitMilliseconds(50);
   mite::Time::Update();
   float laterTimeSec = mite::Time::CurrentTime();
   size_t laterTimeMS = mite::Time::CurrentTimeMS();
-  // ÑéÖ¤Ê±¼äµ¥µ÷µİÔö
+  // éªŒè¯æ—¶é—´å•è°ƒé€’å¢
   EXPECT_GT(laterTimeSec, initialTimeSec);
   EXPECT_GT(laterTimeMS, initialTimeMS);
-  // ÑéÖ¤Ê±¼äÔö¼ÓÁ¿ºÏÀí
+  // éªŒè¯æ—¶é—´å¢åŠ é‡åˆç†
   float timeIncreaseSec = laterTimeSec - initialTimeSec;
   size_t timeIncreaseMS = laterTimeMS - initialTimeMS;
 
-  EXPECT_GE(timeIncreaseSec, 0.04f);  // ÖÁÉÙ40ms
-  EXPECT_LE(timeIncreaseSec, 0.06f);  // ×î¶à60ms
-  EXPECT_GE(timeIncreaseMS, 40u);     // ÖÁÉÙ40ms
-  EXPECT_LE(timeIncreaseMS, 60u);     // ×î¶à60ms
+  EXPECT_GE(timeIncreaseSec, 0.04f);  // è‡³å°‘40ms
+  EXPECT_LE(timeIncreaseSec, 0.06f);  // æœ€å¤š60ms
+  EXPECT_GE(timeIncreaseMS, 40u);     // è‡³å°‘40ms
+  EXPECT_LE(timeIncreaseMS, 60u);     // æœ€å¤š60ms
 }
-// ²âÊÔÓÃÀı3£ºDeltaTime×¼È·ĞÔ²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹3ï¼šDeltaTimeå‡†ç¡®æ€§æµ‹è¯•
 TEST_F(TimeTest, DeltaTimeAccuracy)
 {
   const size_t waitTimeMS = 80;
 
   mite::Time::Update();
   float initialTime = mite::Time::CurrentTime();
-  // µÈ´ıÖ¸¶¨Ê±¼ä
+  // ç­‰å¾…æŒ‡å®šæ—¶é—´
   WaitMilliseconds(waitTimeMS);
   mite::Time::Update();
   float deltaTime = mite::Time::DeltaTime();
   size_t deltaTimeMS = mite::Time::DeltaTimeMS();
-  // ÑéÖ¤DeltaTime·´Ó³ÁËµÈ´ıµÄÊ±¼ä
-  EXPECT_GE(deltaTime, waitTimeMS / 1000.0f * 0.8f);  // ÖÁÉÙ80%
-  EXPECT_LE(deltaTime, waitTimeMS / 1000.0f * 1.2f);  // ×î¶à120%
-  EXPECT_GE(deltaTimeMS, waitTimeMS - 10u);           // ÖÁÉÙ¼õÉÙ10msÈİ²î
-  EXPECT_LE(deltaTimeMS, waitTimeMS + 10u);           // ×î¶àÔö¼Ó10msÈİ²î
+  // éªŒè¯DeltaTimeåæ˜ äº†ç­‰å¾…çš„æ—¶é—´
+  EXPECT_GE(deltaTime, waitTimeMS / 1000.0f * 0.8f);  // è‡³å°‘80%
+  EXPECT_LE(deltaTime, waitTimeMS / 1000.0f * 1.2f);  // æœ€å¤š120%
+  EXPECT_GE(deltaTimeMS, waitTimeMS - 10u);           // è‡³å°‘å‡å°‘10mså®¹å·®
+  EXPECT_LE(deltaTimeMS, waitTimeMS + 10u);           // æœ€å¤šå¢åŠ 10mså®¹å·®
 }
-// ²âÊÔÓÃÀı4£ºÊ±¼ä¾«¶ÈÒ»ÖÂĞÔ²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹4ï¼šæ—¶é—´ç²¾åº¦ä¸€è‡´æ€§æµ‹è¯•
 TEST_F(TimeTest, TimePrecisionConsistency)
 {
   mite::Time::Update();
 
-  // »ñÈ¡Á½ÖÖ¾«¶ÈµÄÊ±¼ä
+  // è·å–ä¸¤ç§ç²¾åº¦çš„æ—¶é—´
   float timeSec1 = mite::Time::CurrentTime();
   size_t timeMS1 = mite::Time::CurrentTimeMS();
 
-  // ¿ìËÙÁ¬Ğø¸üĞÂ
+  // å¿«é€Ÿè¿ç»­æ›´æ–°
   for (int i = 0; i < 5; ++i) {
     WaitMilliseconds(1);
     mite::Time::Update();
@@ -105,48 +105,48 @@ TEST_F(TimeTest, TimePrecisionConsistency)
 
   float timeSec2 = mite::Time::CurrentTime();
   size_t timeMS2 = mite::Time::CurrentTimeMS();
-  // ÑéÖ¤Ê±¼äÂÔÓĞÔö¼Ó
+  // éªŒè¯æ—¶é—´ç•¥æœ‰å¢åŠ 
   EXPECT_GT(timeSec2, timeSec1);
   EXPECT_GT(timeMS2, timeMS1);
-  // ÑéÖ¤Ôö¼ÓÁ¿ºÜĞ¡
+  // éªŒè¯å¢åŠ é‡å¾ˆå°
   EXPECT_LT(timeSec2 - timeSec1, 0.01f);
   EXPECT_LT(timeMS2 - timeMS1, 10u);
-  // ÑéÖ¤Á½ÖÖ¾«¶È±£³ÖÍ¬²½
+  // éªŒè¯ä¸¤ç§ç²¾åº¦ä¿æŒåŒæ­¥
   float calculatedMS = (timeSec2 - timeSec1) * 1000.0f;
   size_t actualMS = timeMS2 - timeMS1;
   EXPECT_NEAR(calculatedMS, static_cast<float>(actualMS), 1.0f);
 }
-// ²âÊÔÓÃÀı5£º¼«´óÊ±¼äÖµ´¦Àí²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹5ï¼šæå¤§æ—¶é—´å€¼å¤„ç†æµ‹è¯•
 TEST_F(TimeTest, DeltaTimeClamping)
 {
-  // Ö±½ÓÔİÍ£1Ãë£¨Õı³£Çé¿öÏÂÃ¿Ö¡¸üĞÂ£¬²»Ì«¿ÉÄÜ³¬³ö1Ãë£©
+  // ç›´æ¥æš‚åœ1ç§’ï¼ˆæ­£å¸¸æƒ…å†µä¸‹æ¯å¸§æ›´æ–°ï¼Œä¸å¤ªå¯èƒ½è¶…å‡º1ç§’ï¼‰
   WaitMilliseconds(1000);
   mite::Time::Update();
 
   float secondDelta = mite::Time::DeltaTime();
   size_t secondDeltaMS = mite::Time::DeltaTimeMS();
 
-  // ÑéÖ¤Ê±¼äÀÛ»ıÕıÈ·
-  EXPECT_GE(secondDelta, 0.999f);   // ÖÁÉÙ999ms
-  EXPECT_LE(secondDelta, 1.001f);   // ×î¶à1001ms
-  EXPECT_GE(secondDeltaMS, 999u);   // ÖÁÉÙ999ms
-  EXPECT_LE(secondDeltaMS, 1001u);  // ×î¶à1001ms
+  // éªŒè¯æ—¶é—´ç´¯ç§¯æ­£ç¡®
+  EXPECT_GE(secondDelta, 0.999f);   // è‡³å°‘999ms
+  EXPECT_LE(secondDelta, 1.001f);   // æœ€å¤š1001ms
+  EXPECT_GE(secondDeltaMS, 999u);   // è‡³å°‘999ms
+  EXPECT_LE(secondDeltaMS, 1001u);  // æœ€å¤š1001ms
 }
-// ²âÊÔÓÃÀı6£ºÊ±¼äÖØÖÃĞĞÎª²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹6ï¼šæ—¶é—´é‡ç½®è¡Œä¸ºæµ‹è¯•
 TEST_F(TimeTest, TimeResetBehavior)
 {
-  // µÈ´ı30ºÁÃë²¢¸üĞÂ
+  // ç­‰å¾…30æ¯«ç§’å¹¶æ›´æ–°
   WaitMilliseconds(30);
   mite::Time::Update();
 
-  // Ö´ĞĞ³õÊ¼»¯
+  // æ‰§è¡Œåˆå§‹åŒ–
   mite::Time::Reset();
   mite::Time::Update();
-  // ÑéÖ¤×´Ì¬ÒÑ¸üĞÂ
+  // éªŒè¯çŠ¶æ€å·²æ›´æ–°
   EXPECT_LT(mite::Time::CurrentTime(), 0.001f);
   EXPECT_LT(mite::Time::CurrentTimeMS(), 1u);
 }
-// ²âÊÔÓÃÀı7£º³¤Ê±¼äÔËĞĞÎÈ¶¨ĞÔ²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹7ï¼šé•¿æ—¶é—´è¿è¡Œç¨³å®šæ€§æµ‹è¯•
 TEST_F(TimeTest, LongRunningStability)
 {
   const int NUM_UPDATES = 100;
@@ -158,24 +158,24 @@ TEST_F(TimeTest, LongRunningStability)
 
     totalTime += mite::Time::DeltaTime();
     totalTimeMS += mite::Time::DeltaTimeMS();
-    // Ã¿´Î¸üĞÂºóÑéÖ¤Ò»ÖÂĞÔ
+    // æ¯æ¬¡æ›´æ–°åéªŒè¯ä¸€è‡´æ€§
     EXPECT_NEAR(mite::Time::CurrentTime() * 1000.0f,
                 static_cast<float>(mite::Time::CurrentTimeMS()),
                 2.0f);
   }
-  // ÑéÖ¤×ÜÊ±¼äÀÛ»ıÕıÈ·£¨°Ù·ÖÖ®Ò»Îó²îµÄÈİĞí¶È£©
-  EXPECT_GE(totalTime, 0.990f);     // ÖÁÉÙ990ms
-  EXPECT_LE(totalTime, 1.010f);     // ×î¶à1010ms
-  EXPECT_GE(totalTimeMS, 990u);   // ÖÁÉÙ990ms
-  EXPECT_LE(totalTimeMS, 1010u);  // ×î¶à1010ms
-  // ÑéÖ¤Á½ÖÖ¾«¶ÈµÄÒ»ÖÂĞÔ
+  // éªŒè¯æ€»æ—¶é—´ç´¯ç§¯æ­£ç¡®ï¼ˆç™¾åˆ†ä¹‹ä¸€è¯¯å·®çš„å®¹è®¸åº¦ï¼‰
+  EXPECT_GE(totalTime, 0.990f);     // è‡³å°‘990ms
+  EXPECT_LE(totalTime, 1.010f);     // æœ€å¤š1010ms
+  EXPECT_GE(totalTimeMS, 990u);   // è‡³å°‘990ms
+  EXPECT_LE(totalTimeMS, 1010u);  // æœ€å¤š1010ms
+  // éªŒè¯ä¸¤ç§ç²¾åº¦çš„ä¸€è‡´æ€§
   EXPECT_NEAR(totalTime * 1000.0f, static_cast<float>(totalTimeMS), 10.0f);
 }
 
-// ²âÊÔÓÃÀı8£ºAPIµ÷ÓÃÒ»ÖÂĞÔ²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹8ï¼šAPIè°ƒç”¨ä¸€è‡´æ€§æµ‹è¯•
 TEST_F(TimeTest, APICallConsistency)
 {
-  // ÑéÖ¤¶à´Îµ÷ÓÃ·µ»ØÏàÍ¬Öµ£¨Ö±µ½ÏÂÒ»´ÎUpdate£©
+  // éªŒè¯å¤šæ¬¡è°ƒç”¨è¿”å›ç›¸åŒå€¼ï¼ˆç›´åˆ°ä¸‹ä¸€æ¬¡Updateï¼‰
   mite::Time::Update();
 
   float delta1 = mite::Time::DeltaTime();
@@ -183,7 +183,7 @@ TEST_F(TimeTest, APICallConsistency)
   float current1 = mite::Time::CurrentTime();
   size_t currentMS1 = mite::Time::CurrentTimeMS();
 
-  // ÔÙ´Îµ÷ÓÃÓ¦¸Ã·µ»ØÏàÍ¬Öµ
+  // å†æ¬¡è°ƒç”¨åº”è¯¥è¿”å›ç›¸åŒå€¼
   float delta2 = mite::Time::DeltaTime();
   size_t deltaMS2 = mite::Time::DeltaTimeMS();
   float current2 = mite::Time::CurrentTime();
@@ -194,7 +194,7 @@ TEST_F(TimeTest, APICallConsistency)
   EXPECT_FLOAT_EQ(current1, current2);
   EXPECT_EQ(currentMS1, currentMS2);
 
-  // ¸üĞÂºóÖµÓ¦¸Ã±ä»¯
+  // æ›´æ–°åå€¼åº”è¯¥å˜åŒ–
   WaitMilliseconds(20);
   mite::Time::Update();
 
@@ -203,32 +203,32 @@ TEST_F(TimeTest, APICallConsistency)
   EXPECT_GT(mite::Time::CurrentTime(), current1);
   EXPECT_GT(mite::Time::CurrentTimeMS(), currentMS1);
 }
-// ²âÊÔÓÃÀı9£º»ìºÏ¾«¶ÈÊıÑ§ÔËËã²âÊÔ
+// æµ‹è¯•ç”¨ä¾‹9ï¼šæ··åˆç²¾åº¦æ•°å­¦è¿ç®—æµ‹è¯•
 TEST_F(TimeTest, MixedPrecisionMathOperations)
 {
-  // ²âÊÔÔÚÊµ¼ÊÊ¹ÓÃ³¡¾°ÖĞµÄ»ìºÏ¾«¶ÈÔËËã
+  // æµ‹è¯•åœ¨å®é™…ä½¿ç”¨åœºæ™¯ä¸­çš„æ··åˆç²¾åº¦è¿ç®—
 
-  const float velocity = 5.0f;  // Ã×/Ãë
+  const float velocity = 5.0f;  // ç±³/ç§’
 
   mite::Time::Update();
 
-  // µÈ´ı0.2Ãë
+  // ç­‰å¾…0.2ç§’
   WaitMilliseconds(200);
   mite::Time::Update();
 
   float deltatime = mite::Time::DeltaTime();
 
-  // Ê¹ÓÃÃë¾«¶È¼ÆËãÎ»ÒÆ
+  // ä½¿ç”¨ç§’ç²¾åº¦è®¡ç®—ä½ç§»
   float displacementSec = velocity * mite::Time::DeltaTime();
 
-  // Ê¹ÓÃºÁÃë¾«¶È¼ÆËãÎ»ÒÆ
+  // ä½¿ç”¨æ¯«ç§’ç²¾åº¦è®¡ç®—ä½ç§»
   float displacementMS = velocity * (mite::Time::DeltaTimeMS() / 1000.0f);
 
-  // Á½ÖÖ·½·¨Ó¦¸ÃµÃµ½½üËÆ½á¹û
+  // ä¸¤ç§æ–¹æ³•åº”è¯¥å¾—åˆ°è¿‘ä¼¼ç»“æœ
   EXPECT_NEAR(displacementSec, displacementMS, 0.001f);
 
-  // ÑéÖ¤Î»ÒÆÁ¿ºÏÀí
-  EXPECT_GE(displacementSec, 0.9f);  // ÖÁÉÙ0.9Ã×
-  EXPECT_LE(displacementSec, 1.1f);  // ×î¶à1.1Ã×
+  // éªŒè¯ä½ç§»é‡åˆç†
+  EXPECT_GE(displacementSec, 0.9f);  // è‡³å°‘0.9ç±³
+  EXPECT_LE(displacementSec, 1.1f);  // æœ€å¤š1.1ç±³
 }
 }  // namespace mite_test

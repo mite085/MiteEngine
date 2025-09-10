@@ -11,7 +11,7 @@
 namespace fs = std::filesystem;
 
 namespace mite {
-// ¾²Ì¬³ÉÔ±³õÊ¼»¯
+// é™æ€æˆå‘˜åˆå§‹åŒ–
 fs::path FileSystem::s_ExecutablePath;
 bool FileSystem::s_Initialized = false;
 Logger FileSystem::s_Logger = nullptr;
@@ -44,7 +44,7 @@ fs::path FileSystem::GetAssetsRoot()
     throw std::runtime_error("FileSystem not initialized. Call FileSystem::Init() first.");
   }
 
-  // Ö±½Ó´ÓexeÍ¬¼¶Ä¿Â¼ÏÂµÄassetsÎÄ¼ş¼Ğ
+  // ç›´æ¥ä»exeåŒçº§ç›®å½•ä¸‹çš„assetsæ–‡ä»¶å¤¹
   return s_ExecutablePath / ASSETS_DIR;
 }
 bool FileSystem::Exists(const fs::path &path)
@@ -69,14 +69,14 @@ std::string FileSystem::ReadFileToString(const fs::path &path)
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open file: " + path.string());
   }
-  // »ñÈ¡ÎÄ¼ş´óĞ¡
+  // è·å–æ–‡ä»¶å¤§å°
   file.seekg(0, std::ios::end);
   std::streamsize size = file.tellg();
   file.seekg(0, std::ios::beg);
   if (size == 0) {
     return "";
   }
-  // ¶ÁÈ¡ÄÚÈİ
+  // è¯»å–å†…å®¹
   std::string content;
   content.resize(static_cast<size_t>(size));
   file.read(&content[0], size);
@@ -88,7 +88,7 @@ std::string FileSystem::ReadFileToString(const fs::path &path)
 bool FileSystem::WriteStringToFile(const fs::path &path, const std::string &content)
 {
   try {
-    // ´´½¨¸¸Ä¿Â¼£¨Èç¹û²»´æÔÚ£©
+    // åˆ›å»ºçˆ¶ç›®å½•ï¼ˆå¦‚æœä¸å­˜åœ¨ï¼‰
     fs::create_directories(path.parent_path());
 
     std::ofstream file(path, std::ios::binary);

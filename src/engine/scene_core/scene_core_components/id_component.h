@@ -4,53 +4,53 @@
 #include "scene_core/component_system.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class SceneRegistry;
 /**
- * @brief ÊµÌåÎ¨Ò»±êÊ¶×é¼ş
+ * @brief å®ä½“å”¯ä¸€æ ‡è¯†ç»„ä»¶
  *
- * Ã¿¸öÊµÌå±ØĞë°üº¬´Ë×é¼ş£¬ÓÃÓÚ£º
- * 1. ÊµÌåµÄ³Ö¾Ã»¯±êÊ¶
- * 2. ³¡¾°ĞòÁĞ»¯/·´ĞòÁĞ»¯
- * 3. ¿ç³¡¾°ÒıÓÃ
- * 4. ÍøÂçÍ¬²½±êÊ¶
+ * æ¯ä¸ªå®ä½“å¿…é¡»åŒ…å«æ­¤ç»„ä»¶ï¼Œç”¨äºï¼š
+ * 1. å®ä½“çš„æŒä¹…åŒ–æ ‡è¯†
+ * 2. åœºæ™¯åºåˆ—åŒ–/ååºåˆ—åŒ–
+ * 3. è·¨åœºæ™¯å¼•ç”¨
+ * 4. ç½‘ç»œåŒæ­¥æ ‡è¯†
  *
- * ×¢Òâ£¬ºÍclass ComponentID´æÔÚÇø±ğ£º
- * 1.¹Ø×¢µã·ÖÀë£º
- *  - IDComponent½â¾ö"Õâ¸öÊµÌåÊÇË­"µÄÎÊÌâ
- *  - ComponentID½â¾ö"ÕâÊÇÊ²Ã´ÀàĞÍµÄ×é¼ş"µÄÎÊÌâ
- * 2.ĞÔÄÜ¿¼ÂÇ£º
- *  - ComponentID¿ÉÒÔÔÚ±àÒëÆÚÈ·¶¨£¨Í¨¹ıÄ£°åÔª±à³Ì£©
- *  - IDComponentĞèÒªÔËĞĞÊ±Éú³ÉºÍ¹ÜÀí
- * 3.¼Ü¹¹ÇåÎúĞÔ£º
- *  - ±ÜÃâ½«ÊµÀı±êÊ¶ºÍÀàĞÍ±êÊ¶»ìÎªÒ»Ì¸
+ * æ³¨æ„ï¼Œå’Œclass ComponentIDå­˜åœ¨åŒºåˆ«ï¼š
+ * 1.å…³æ³¨ç‚¹åˆ†ç¦»ï¼š
+ *  - IDComponentè§£å†³"è¿™ä¸ªå®ä½“æ˜¯è°"çš„é—®é¢˜
+ *  - ComponentIDè§£å†³"è¿™æ˜¯ä»€ä¹ˆç±»å‹çš„ç»„ä»¶"çš„é—®é¢˜
+ * 2.æ€§èƒ½è€ƒè™‘ï¼š
+ *  - ComponentIDå¯ä»¥åœ¨ç¼–è¯‘æœŸç¡®å®šï¼ˆé€šè¿‡æ¨¡æ¿å…ƒç¼–ç¨‹ï¼‰
+ *  - IDComponentéœ€è¦è¿è¡Œæ—¶ç”Ÿæˆå’Œç®¡ç†
+ * 3.æ¶æ„æ¸…æ™°æ€§ï¼š
+ *  - é¿å…å°†å®ä¾‹æ ‡è¯†å’Œç±»å‹æ ‡è¯†æ··ä¸ºä¸€è°ˆ
  */
 class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core> {
  public:
   /**
-   * @brief Ä¬ÈÏ¹¹Ôìº¯Êı£¨Éú³ÉĞÂUUID£©
+   * @brief é»˜è®¤æ„é€ å‡½æ•°ï¼ˆç”Ÿæˆæ–°UUIDï¼‰
    */
   IDComponent();
 
   /**
-   * @brief ´ÓÏÖÓĞUUID×Ö·û´®¹¹Ôì
-   * @param id ·ûºÏRFC4122±ê×¼µÄUUID×Ö·û´®
-   * @throws std::runtime_error µ±UUID¸ñÊ½ÎŞĞ§Ê±Å×³ö
+   * @brief ä»ç°æœ‰UUIDå­—ç¬¦ä¸²æ„é€ 
+   * @param id ç¬¦åˆRFC4122æ ‡å‡†çš„UUIDå­—ç¬¦ä¸²
+   * @throws std::runtime_error å½“UUIDæ ¼å¼æ— æ•ˆæ—¶æŠ›å‡º
    */
   explicit IDComponent(const std::string &id);
 
-  // ½ûÖ¹¿½±´ºÍ¸³Öµ£¨±£³ÖIDÎ¨Ò»ĞÔ£©
+  // ç¦æ­¢æ‹·è´å’Œèµ‹å€¼ï¼ˆä¿æŒIDå”¯ä¸€æ€§ï¼‰
   IDComponent(const IDComponent &) = delete;
   IDComponent &operator=(const IDComponent &) = delete;
 
   /**
-   * @brief Õë¶Ôdirty¶ÔÏó½øĞĞ´¦Àí
+   * @brief é’ˆå¯¹dirtyå¯¹è±¡è¿›è¡Œå¤„ç†
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
   /**
-   * @brief »ñÈ¡UUID×Ö·û´®±íÊ¾£¨RFC4122¸ñÊ½£©
-   * @return Ê¾Àı£º"f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+   * @brief è·å–UUIDå­—ç¬¦ä¸²è¡¨ç¤ºï¼ˆRFC4122æ ¼å¼ï¼‰
+   * @return ç¤ºä¾‹ï¼š"f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
    */
   const std::string &String() const
   {
@@ -58,7 +58,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   }
 
   /**
-   * @brief »ñÈ¡µ×²ãUUID¶ÔÏó
+   * @brief è·å–åº•å±‚UUIDå¯¹è±¡
    */
   const UUID &GetUUID() const
   {
@@ -66,7 +66,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   }
 
   /**
-   * @brief ±È½ÏÔËËã·û
+   * @brief æ¯”è¾ƒè¿ç®—ç¬¦
    */
   bool operator==(const IDComponent &other) const
   {
@@ -78,17 +78,17 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   }
 
   /**
-   * @brief ¼ì²é×Ö·û´®ÊÇ·ñÎªÓĞĞ§UUID
-   * @param id ´ı¼ì²é×Ö·û´®
-   * @return ÊÇ·ñÓĞĞ§
+   * @brief æ£€æŸ¥å­—ç¬¦ä¸²æ˜¯å¦ä¸ºæœ‰æ•ˆUUID
+   * @param id å¾…æ£€æŸ¥å­—ç¬¦ä¸²
+   * @return æ˜¯å¦æœ‰æ•ˆ
    */
   static bool IsValid(const std::string &id);
 
  private:
-  UUID m_UUID;               // ¶ş½øÖÆ¸ñÊ½UUID
-  std::string m_UUIDString;  // ×Ö·û´®»º´æ£¨ÓÅ»¯Æµ·±·ÃÎÊ£©
+  UUID m_UUID;               // äºŒè¿›åˆ¶æ ¼å¼UUID
+  std::string m_UUIDString;  // å­—ç¬¦ä¸²ç¼“å­˜ï¼ˆä¼˜åŒ–é¢‘ç¹è®¿é—®ï¼‰
 };
-// ID×é¼şÏµÍ³ =====================================================
+// IDç»„ä»¶ç³»ç»Ÿ =====================================================
 class IDComponentSystem : public DirtyComponentSystem<IDComponent> {
   DECLARE_COMPONENT_SYSTEM(IDComponentSystem)
 };

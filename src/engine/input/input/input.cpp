@@ -19,7 +19,7 @@ void Input::Update()
 
 bool Input::IsKeyPressed(KeyCode key)
 {
-  // µ±Ç°Ö¡°´ÏÂÇÒÉÏÒ»Ö¡Î´°´ÏÂ
+  // å½“å‰å¸§æŒ‰ä¸‹ä¸”ä¸Šä¸€å¸§æœªæŒ‰ä¸‹
   auto currentState = InputManager::GetKeyState(key);
   auto prevState = InputManager::GetPrevKeyState(key);
   return currentState == InputState::Pressed && prevState != InputState::Pressed;
@@ -27,7 +27,7 @@ bool Input::IsKeyPressed(KeyCode key)
 
 bool Input::IsKeyReleased(KeyCode key)
 {
-  // µ±Ç°Ö¡ÊÍ·ÅÇÒÉÏÒ»Ö¡ÊÇ°´ÏÂ×´Ì¬
+  // å½“å‰å¸§é‡Šæ”¾ä¸”ä¸Šä¸€å¸§æ˜¯æŒ‰ä¸‹çŠ¶æ€
   auto currentState = InputManager::GetKeyState(key);
   auto prevState = InputManager::GetPrevKeyState(key);
   return currentState == InputState::Released && prevState == InputState::Pressed;
@@ -35,7 +35,7 @@ bool Input::IsKeyReleased(KeyCode key)
 
 bool Input::IsKeyHeld(KeyCode key)
 {
-  // µ±Ç°Ö¡´¦ÓÚ°´ÏÂ×´Ì¬£¨°üÀ¨ÖØ¸´£©
+  // å½“å‰å¸§å¤„äºæŒ‰ä¸‹çŠ¶æ€ï¼ˆåŒ…æ‹¬é‡å¤ï¼‰
   auto currentState = InputManager::GetKeyState(key);
   return currentState == InputState::Pressed || currentState == InputState::Held ||
          currentState == InputState::Repeated;
@@ -43,27 +43,27 @@ bool Input::IsKeyHeld(KeyCode key)
 
 float Input::GetKeyHeldDuration(KeyCode key)
 {
-  // ´ÓInputManager»ñÈ¡°´¼ü³ÖĞø°´ÏÂµÄÊ±¼ä
+  // ä»InputManagerè·å–æŒ‰é”®æŒç»­æŒ‰ä¸‹çš„æ—¶é—´
   return InputManager::GetKeyHeldDuration(key);
 }
 
 bool Input::IsMouseButtonPressed(MouseCode button)
 {
-  // µ±Ç°Ö¡°´ÏÂÇÒÉÏÒ»Ö¡Î´°´ÏÂ
+  // å½“å‰å¸§æŒ‰ä¸‹ä¸”ä¸Šä¸€å¸§æœªæŒ‰ä¸‹
   return InputManager::GetMouseButtonState(button) == InputState::Pressed &&
          InputManager::GetPrevMouseButtonState(button) != InputState::Pressed;
 }
 
 bool Input::IsMouseButtonReleased(MouseCode button)
 {
-  // µ±Ç°Ö¡ÊÍ·ÅÇÒÉÏÒ»Ö¡ÊÇ°´ÏÂ×´Ì¬
+  // å½“å‰å¸§é‡Šæ”¾ä¸”ä¸Šä¸€å¸§æ˜¯æŒ‰ä¸‹çŠ¶æ€
   return InputManager::GetMouseButtonState(button) == InputState::Released &&
          InputManager::GetPrevMouseButtonState(button) == InputState::Pressed;
 }
 
 bool Input::IsMouseButtonHeld(MouseCode button)
 {
-  // µ±Ç°Ö¡ÊÇ°´ÏÂ×´Ì¬
+  // å½“å‰å¸§æ˜¯æŒ‰ä¸‹çŠ¶æ€
   return InputManager::GetMouseButtonState(button) == InputState::Pressed ||
          InputManager::GetMouseButtonState(button) == InputState::Held;
 }
@@ -90,13 +90,13 @@ void Input::PushContext(std::shared_ptr<InputContext> context)
 
 void Input::PopContext()
 {
-  // ´Ó¹ÜÀíÆ÷Õ»ÖĞµ¯³ö¶¥²¿ÉÏÏÂÎÄ
+  // ä»ç®¡ç†å™¨æ ˆä¸­å¼¹å‡ºé¡¶éƒ¨ä¸Šä¸‹æ–‡
   InputManager::PopContext();
 }
 
 bool Input::IsCurrentContext(const std::string &contextName)
 {
-  // »ñÈ¡µ±Ç°ÉÏÏÂÎÄ²¢±È½ÏÃû³Æ
+  // è·å–å½“å‰ä¸Šä¸‹æ–‡å¹¶æ¯”è¾ƒåç§°
   std::shared_ptr<InputContext> current = InputManager::GetCurrentContext();
   return current && current->GetName() == contextName;
 }

@@ -8,17 +8,17 @@
 namespace mite {
 /**
  * @class TransformSceneNodeSystem
- * @brief ±ä»»³¡¾°½ÚµãÏµÍ³ - ¸ºÔğECS±ä»»×é¼şÓë³¡¾°Í¼½ÚµãÖ®¼äµÄÊı¾İÍ¬²½
+ * @brief å˜æ¢åœºæ™¯èŠ‚ç‚¹ç³»ç»Ÿ - è´Ÿè´£ECSå˜æ¢ç»„ä»¶ä¸åœºæ™¯å›¾èŠ‚ç‚¹ä¹‹é—´çš„æ•°æ®åŒæ­¥
  *
- * ×¢Òâ£º
- * ÓëSceneCoreÄ£¿éµÄTransformComponentSystem²»Í¬£¬
- * ²»¸ºÔğTransformComponentµÄ¹ÜÀí£¬½ö¸ºÔğEntityºÍ
- * SceneNodeÖ®¼äµÄTransformÊı¾İ´«µİÓëÍ¬²½¡£
+ * æ³¨æ„ï¼š
+ * ä¸SceneCoreæ¨¡å—çš„TransformComponentSystemä¸åŒï¼Œ
+ * ä¸è´Ÿè´£TransformComponentçš„ç®¡ç†ï¼Œä»…è´Ÿè´£Entityå’Œ
+ * SceneNodeä¹‹é—´çš„Transformæ•°æ®ä¼ é€’ä¸åŒæ­¥ã€‚
  * 
- * Éè¼ÆÔ­Ôò£º
- * 1. Í¨¹ıSceneGraph·şÎñÖ±½Ó²éÑ¯SceneNode£¬±ÜÃâÎ¬»¤ÖØ¸´Ó³Éä
- * 2. ×¨×¢ÓÚ±ä»»Êı¾İÍ¬²½£¬²»Éæ¼°²ã¼¶¹ØÏµ´¦Àí
- * 3. Ê¹ÓÃÑÓ³Ù´¦Àí»úÖÆÌá¸ßĞÔÄÜ
+ * è®¾è®¡åŸåˆ™ï¼š
+ * 1. é€šè¿‡SceneGraphæœåŠ¡ç›´æ¥æŸ¥è¯¢SceneNodeï¼Œé¿å…ç»´æŠ¤é‡å¤æ˜ å°„
+ * 2. ä¸“æ³¨äºå˜æ¢æ•°æ®åŒæ­¥ï¼Œä¸æ¶‰åŠå±‚çº§å…³ç³»å¤„ç†
+ * 3. ä½¿ç”¨å»¶è¿Ÿå¤„ç†æœºåˆ¶æé«˜æ€§èƒ½
  */
 class TransformSceneNodeSystem : public ComponentSystem {
  public:
@@ -26,7 +26,7 @@ class TransformSceneNodeSystem : public ComponentSystem {
   TransformSceneNodeSystem();
   ~TransformSceneNodeSystem() override = default;
 
-  // ==================== ComponentSystem ½Ó¿ÚÊµÏÖ ====================
+  // ==================== ComponentSystem æ¥å£å®ç° ====================
   Component::Family GetExecutionOrder() const override;
   void Initialize() override;
   void Update(float deltaTime, SceneRegistry &registry) override;
@@ -34,47 +34,47 @@ class TransformSceneNodeSystem : public ComponentSystem {
   std::vector<std::type_index> GetComponentTypes() const override;
   std::vector<std::type_index> GetSystemDependencies() const override;
 
-  // ==================== SceneGraph ·ÃÎÊ½Ó¿Ú ====================
+  // ==================== SceneGraph è®¿é—®æ¥å£ ====================
   void SetSceneGraph(SceneGraph *sceneGraph);
 
-  // ==================== Í¬²½¿ØÖÆ½Ó¿Ú ====================
+  // ==================== åŒæ­¥æ§åˆ¶æ¥å£ ====================
   /**
-   * @brief ÊÖ¶¯±ê¼ÇÊµÌåĞèÒªÍ¬²½
-   * @param entity ĞèÒªÍ¬²½µÄÊµÌå
+   * @brief æ‰‹åŠ¨æ ‡è®°å®ä½“éœ€è¦åŒæ­¥
+   * @param entity éœ€è¦åŒæ­¥çš„å®ä½“
    */
   void MarkEntityForSync(Entity entity);
   /**
-   * @brief ÅúÁ¿Í¬²½ECS×é¼şÊı¾İµ½³¡¾°½Úµã
-   * @param registry ³¡¾°×¢²á±íÒıÓÃ
+   * @brief æ‰¹é‡åŒæ­¥ECSç»„ä»¶æ•°æ®åˆ°åœºæ™¯èŠ‚ç‚¹
+   * @param registry åœºæ™¯æ³¨å†Œè¡¨å¼•ç”¨
    */
   void SyncAllComponentsToNodes(SceneRegistry &registry);
 
  private:
-  // ==================== ÊÂ¼ş´¦Àí»Øµ÷ ====================
+  // ==================== äº‹ä»¶å¤„ç†å›è°ƒ ====================
   bool OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &e);
   bool OnTransformComponentRemoved(ComponentRemovedEvent<TransformComponent> &e);
   bool OnTransformUpdated(TransformUpdatedEvent &e);
 
-  // ==================== ÄÚ²¿´¦Àí·½·¨ ====================
+  // ==================== å†…éƒ¨å¤„ç†æ–¹æ³• ====================
   /**
-   * @brief ´¦Àí´ıÍ¬²½µÄÊµÌå
-   * @param registry ³¡¾°×¢²á±íÒıÓÃ
+   * @brief å¤„ç†å¾…åŒæ­¥çš„å®ä½“
+   * @param registry åœºæ™¯æ³¨å†Œè¡¨å¼•ç”¨
    */
   void ProcessPendingSync(SceneRegistry &registry);
   /**
-   * @brief ½«ECS±ä»»×é¼şÊı¾İÍ¬²½µ½³¡¾°½Úµã
-   * @param registry ³¡¾°×¢²á±íÒıÓÃ
-   * @param entity Ä¿±êÊµÌå
+   * @brief å°†ECSå˜æ¢ç»„ä»¶æ•°æ®åŒæ­¥åˆ°åœºæ™¯èŠ‚ç‚¹
+   * @param registry åœºæ™¯æ³¨å†Œè¡¨å¼•ç”¨
+   * @param entity ç›®æ ‡å®ä½“
    */
   void SyncComponentToNode(SceneRegistry &registry, Entity entity);
 
  private:
   SceneGraph *m_SceneGraph = nullptr;
 
-  // ĞèÒªÍ¬²½µÄÊµÌå¶ÓÁĞ
+  // éœ€è¦åŒæ­¥çš„å®ä½“é˜Ÿåˆ—
   std::vector<Entity> m_PendingSyncEntities;
 
-  // PendingSyncEntitiesµÄÏß³Ì°²È«±£»¤
+  // PendingSyncEntitiesçš„çº¿ç¨‹å®‰å…¨ä¿æŠ¤
   mutable std::mutex m_Mutex;
 };
 

@@ -8,7 +8,7 @@ Model::Model(std::shared_ptr<ModelGPUHandle> modelHandle)
     throw std::invalid_argument("Model handle cannot be null");
   }
 
-  // 基于每个原始 LOD 创建的分组，逐个构建 Mesh 对象
+  // 鍩轰簬姣忎釜鍘熷 LOD 鍒涘缓鐨勫垎缁勶紝閫愪釜鏋勫缓 Mesh 瀵硅薄
   for (MeshSectionLODChain &lodChain : m_ModelHandle->subMeshes) {
     auto mesh = std::make_shared<Mesh>(modelHandle, lodChain);
     m_SubMeshes.push_back(mesh);
@@ -38,14 +38,14 @@ std::vector<uint32_t> Model::GetSupportedLODLevels() const
 {
   std::unordered_set<uint32_t> lodLevels;
 
-  // 遍历所有SubMesh，获取Lod层级
+  // 閬嶅巻鎵�鏈塖ubMesh锛岃幏鍙朙od灞傜骇
   for (const auto &mesh : m_SubMeshes) {
     for (const auto &section : mesh->GetAllLODSections()) {
       lodLevels.insert(section.lodLevel);
     }
   }
 
-  // 排序
+  // 鎺掑簭
   std::vector<uint32_t> result(lodLevels.begin(), lodLevels.end());
   std::sort(result.begin(), result.end());
 

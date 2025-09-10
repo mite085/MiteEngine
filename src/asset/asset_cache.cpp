@@ -1,28 +1,28 @@
 #include "asset_cache.h"
 
 namespace mite {
-// ------------------------ Ä£°åÌØ»¯ÊµÏÖ ------------------------
+// ------------------------ æ¨¡æ¿ç‰¹åŒ–å®ç° ------------------------
 template<typename AssetType> bool AssetCache<AssetType>::Store(AssetPtr asset)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
   AssetID id = asset->id;
 
-  // ¼ì²éÊÇ·ñÒÑ´æÔÚ
+  // æ£€æŸ¥æ˜¯å¦å·²å­˜åœ¨
   if (m_Cache.find(id) != m_Cache.end()) {
-    return false;  // ÒÑ´æÔÚµÄ×ÊÔ´ĞèÒªÏÔÊ½¸üĞÂ
+    return false;  // å·²å­˜åœ¨çš„èµ„æºéœ€è¦æ˜¾å¼æ›´æ–°
   }
 
-  // Ìí¼ÓĞÂ×ÊÔ´£¨³õÊ¼ÒıÓÃ¼ÆÊıÎª0£¬ÓÉµ÷ÓÃ·½¾ö¶¨ÊÇ·ñÔö¼Ó£©
+  // æ·»åŠ æ–°èµ„æºï¼ˆåˆå§‹å¼•ç”¨è®¡æ•°ä¸º0ï¼Œç”±è°ƒç”¨æ–¹å†³å®šæ˜¯å¦å¢åŠ ï¼‰
   auto [it, success] = m_Cache.emplace(id,
-                                      CachedAsset{asset, 0, m_LruList.end()});  // ³õÊ¼²»ÔÚLRUÁĞ±íÖĞ
+                                      CachedAsset{asset, 0, m_LruList.end()});  // åˆå§‹ä¸åœ¨LRUåˆ—è¡¨ä¸­
 
-  // ¸üĞÂLRUÁĞ±í£¨Èç¹ûÆôÓÃ£©
+  // æ›´æ–°LRUåˆ—è¡¨ï¼ˆå¦‚æœå¯ç”¨ï¼‰
   if (success && m_MaxSize > 0) {
     m_LruList.push_front(id);
     it->second.lruIt = m_LruList.begin();
 
-    // ¼ì²éÊÇ·ñ³¬¹ı×î´ó»º´æÏŞÖÆ
+    // æ£€æŸ¥æ˜¯å¦è¶…è¿‡æœ€å¤§ç¼“å­˜é™åˆ¶
     if (m_LruList.size() > m_MaxSize) {
       AssetID idToRemove = m_LruList.back();
       if (m_Cache[idToRemove].refCount == 0) {
@@ -44,7 +44,7 @@ typename AssetCache<AssetType>::AssetPtr AssetCache<AssetType>::Get(AssetID id) 
     return nullptr;
   }
 
-  // ¸üĞÂLRU·ÃÎÊ¼ÇÂ¼£¨Èç¹ûÆôÓÃ£©
+  // æ›´æ–°LRUè®¿é—®è®°å½•ï¼ˆå¦‚æœå¯ç”¨ï¼‰
   if (m_MaxSize > 0) {
     m_LruList.splice(m_LruList.begin(), m_LruList, it->second.lruIt);
   }
@@ -57,13 +57,13 @@ template<typename AssetType> int AssetCache<AssetType>::Release(AssetID id)
   std::lock_guard<std::mutex> lock(m_Mutex);
   auto it = m_Cache.find(id);
   if (it == m_Cache.end()) {
-    return -1;  // ×ÊÔ´²»´æÔÚ
+    return -1;  // èµ„æºä¸å­˜åœ¨
   }
 
-  // ¼õÉÙÒıÓÃ¼ÆÊı£¨µ«²»Á¢¼´É¾³ı£¬µÈ´ıPurgeUnused()£©
+  // å‡å°‘å¼•ç”¨è®¡æ•°ï¼ˆä½†ä¸ç«‹å³åˆ é™¤ï¼Œç­‰å¾…PurgeUnused()ï¼‰
   int newCount = --(it->second.refCount);
   if (newCount <= 0 && m_MaxSize == 0) {
-    // Èç¹ûÎ´ÆôÓÃLRUÇÒÒıÓÃ¹éÁã£¬Á¢¼´É¾³ı
+    // å¦‚æœæœªå¯ç”¨LRUä¸”å¼•ç”¨å½’é›¶ï¼Œç«‹å³åˆ é™¤
     m_Cache.erase(it);
   }
 
@@ -93,7 +93,7 @@ template<typename AssetType> size_t AssetCache<AssetType>::PurgeUnused()
   for (auto it = m_Cache.begin(); it != m_Cache.end();) {
     if (it->second.refCount <= 0) {
       if (m_MaxSize > 0) {
-        m_LruList.erase(it->second.lruIt);  // ´ÓLRUÁĞ±íÒÆ³ı
+        m_LruList.erase(it->second.lruIt);  // ä»LRUåˆ—è¡¨ç§»é™¤
       }
       it = m_Cache.erase(it);
       count++;
@@ -115,13 +115,13 @@ template<typename AssetType> bool AssetCache<AssetType>::ForceRemove(AssetID id)
   }
 
   if (m_MaxSize > 0) {
-    m_LruList.erase(it->second.lruIt);  // ´ÓLRUÁĞ±íÒÆ³ı
+    m_LruList.erase(it->second.lruIt);  // ä»LRUåˆ—è¡¨ç§»é™¤
   }
   m_Cache.erase(it);
   return true;
 }
 
-// ÏÔÊ½ÊµÀı»¯Ä£°å£¨È·±£Á´½ÓÆ÷ÄÜÕÒµ½ÊµÏÖ£©
+// æ˜¾å¼å®ä¾‹åŒ–æ¨¡æ¿ï¼ˆç¡®ä¿é“¾æ¥å™¨èƒ½æ‰¾åˆ°å®ç°ï¼‰
 template class AssetCache<TextureAsset>;
 template class AssetCache<ModelAsset>;
 };  // namespace mite

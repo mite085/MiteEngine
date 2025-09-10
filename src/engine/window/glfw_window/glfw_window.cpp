@@ -1,12 +1,12 @@
 #include "glfw_window.h"
 
 namespace mite {
-// ¾²Ì¬³ÉÔ±³õÊ¼»¯
+// é™æ€æˆå‘˜åˆå§‹åŒ–
 uint32_t OpenGLWindow::s_GLFWWindowCount = 0;
 
 OpenGLWindow::OpenGLWindow() : m_CallbackAdapter()
 {
-  // ³õÊ¼»¯ÈÕÖ¾ÏµÍ³
+  // åˆå§‹åŒ–æ—¥å¿—ç³»ç»Ÿ
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite GLFW Window");
   m_Logger->trace("GLFW Window constructor called");
 }
@@ -21,7 +21,7 @@ const bool OpenGLWindow::WindowShouldClose()
 void OpenGLWindow::Initialize(const WindowConfig &config)
 {
   try {
-    // Èç¹ûÊÇµÚÒ»¸ö´°¿Ú£¬³õÊ¼»¯GLFW¿â
+    // å¦‚æœæ˜¯ç¬¬ä¸€ä¸ªçª—å£ï¼Œåˆå§‹åŒ–GLFWåº“
     if (s_GLFWWindowCount == 0) {
       InitGLFW();
     }
@@ -32,14 +32,14 @@ void OpenGLWindow::Initialize(const WindowConfig &config)
                    config.height,
                    config.vsync);
 
-    // ÉèÖÃ´°¿ÚÌáÊ¾
+    // è®¾ç½®çª—å£æç¤º
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, config.resizable ? GLFW_TRUE : GLFW_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
 
-    // ´´½¨´°¿Ú
+    // åˆ›å»ºçª—å£
     m_Window = glfwCreateWindow(static_cast<int>(config.width),
                                 static_cast<int>(config.height),
                                 config.title.c_str(),
@@ -50,29 +50,29 @@ void OpenGLWindow::Initialize(const WindowConfig &config)
       throw;
     }
 
-    // GLFW»Øµ÷ÊÊÅäÆ÷×¢²á»Øµ÷º¯Êı
+    // GLFWå›è°ƒé€‚é…å™¨æ³¨å†Œå›è°ƒå‡½æ•°
     // 
-    // ×¢Òâ£º
-    // GLFWÄÚ²¿Ã»ÓĞ"ÖØ¸´×¢²á"µÄ¸ÅÄî£¬
-    // ÉèÖÃĞÂµÄ»Øµ÷»á¸²¸Ç¾ÉµÄ£¬
-    // ËùÒÔÎŞĞèÎª·ÀÖ¹ÖØ¸´×¢²á£¬
-    // ÔÚÃ¿´Î×¢²áÖ®Ç°Ö´ĞĞÒ»´ÎUnregisterCallbacks
+    // æ³¨æ„ï¼š
+    // GLFWå†…éƒ¨æ²¡æœ‰"é‡å¤æ³¨å†Œ"çš„æ¦‚å¿µï¼Œ
+    // è®¾ç½®æ–°çš„å›è°ƒä¼šè¦†ç›–æ—§çš„ï¼Œ
+    // æ‰€ä»¥æ— éœ€ä¸ºé˜²æ­¢é‡å¤æ³¨å†Œï¼Œ
+    // åœ¨æ¯æ¬¡æ³¨å†Œä¹‹å‰æ‰§è¡Œä¸€æ¬¡UnregisterCallbacks
     m_CallbackAdapter.RegisterCallbacks(m_Window);
 
-    // ÉèÖÃµ±Ç°ÉÏÏÂÎÄ
+    // è®¾ç½®å½“å‰ä¸Šä¸‹æ–‡
     MakeContextCurrent();
 
-    // ¼ÓÔØ Glad µÄº¯ÊıÖ¸Õë£¨±ØĞëÔÚÉÏÏÂÎÄ¼¤»îºóµ÷ÓÃ£©
+    // åŠ è½½ Glad çš„å‡½æ•°æŒ‡é’ˆï¼ˆå¿…é¡»åœ¨ä¸Šä¸‹æ–‡æ¿€æ´»åè°ƒç”¨ï¼‰
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
       m_Logger->critical("Failed to initialize Glad");
       glfwTerminate();
       throw;
     }
 
-    // ÉèÖÃVSync
+    // è®¾ç½®VSync
     SetVSync(m_WindowData.vsync);
 
-    // Ôö¼Ó´°¿Ú¼ÆÊı
+    // å¢åŠ çª—å£è®¡æ•°
     s_GLFWWindowCount++;
     m_Initialized = true;
 
@@ -87,16 +87,16 @@ void OpenGLWindow::Shutdown()
 {
   m_Logger->info("Shutting down GLFW window: {}", m_WindowData.title);
   if (m_Window) {
-    // ×¢Ïú»Øµ÷º¯Êı
+    // æ³¨é”€å›è°ƒå‡½æ•°
     m_CallbackAdapter.UnregisterCallbacks();
-    // ¹Ø±Õµ±Ç°´°¿Ú
+    // å…³é—­å½“å‰çª—å£
     glfwDestroyWindow(m_Window);
     m_Window = nullptr;
     s_GLFWWindowCount--;
     m_Initialized = false;
     m_ShouldClose = true;
 
-    // Èç¹ûÕâÊÇ×îºóÒ»¸ö´°¿Ú£¬¹Ø±ÕGLFW
+    // å¦‚æœè¿™æ˜¯æœ€åä¸€ä¸ªçª—å£ï¼Œå…³é—­GLFW
     if (s_GLFWWindowCount == 0) {
       ShutdownGLFW();
     }
@@ -122,7 +122,7 @@ void OpenGLWindow::SetVSync(bool enabled)
 {
   if (m_Window) {
     m_WindowData.vsync = enabled;
-    // GLFWÄÚÖÃÉèÖÃ´¹Ö±Í¬²½µÄº¯Êı
+    // GLFWå†…ç½®è®¾ç½®å‚ç›´åŒæ­¥çš„å‡½æ•°
     glfwSwapInterval(enabled ? 1 : 0);
     m_Logger->debug("VSync {}", enabled ? "enabled" : "disabled");
   }
@@ -134,7 +134,7 @@ void OpenGLWindow::SetTitle(const std::string &title)
 {
   if (m_Window) {
     m_WindowData.title = title;
-    // ¸ü»»´°¿Ú±êÌâ
+    // æ›´æ¢çª—å£æ ‡é¢˜
     glfwSetWindowTitle(m_Window, title.c_str());
     m_Logger->debug("Window title set to: {}", title);
   }
@@ -147,7 +147,7 @@ void OpenGLWindow::Resize(uint32_t width, uint32_t height)
   if (m_Window) {
     m_WindowData.width = width;
     m_WindowData.height = height;
-    // ÖØÖÃ´°¿Ú³ß´ç
+    // é‡ç½®çª—å£å°ºå¯¸
     glfwSetWindowSize(m_Window, static_cast<int>(width), static_cast<int>(height));
     m_Logger->debug("Window resized to: {}x{}", width, height);
   }
@@ -159,7 +159,7 @@ void OpenGLWindow::Maximize()
 {
   if (m_Window) {
     glfwMaximizeWindow(m_Window);
-    // ¸üĞÂ´°¿Ú³ß´ç
+    // æ›´æ–°çª—å£å°ºå¯¸
     int width, height;
     glfwGetWindowSize(m_Window, &width, &height);
     m_WindowData.width = static_cast<uint32_t>(width);
@@ -184,7 +184,7 @@ void OpenGLWindow::Restore()
 {
   if (m_Window) {
     glfwRestoreWindow(m_Window);
-    // ¸üĞÂ´°¿Ú³ß´ç
+    // æ›´æ–°çª—å£å°ºå¯¸
     int width, height;
     glfwGetWindowSize(m_Window, &width, &height);
     m_WindowData.width = static_cast<uint32_t>(width);
@@ -199,7 +199,7 @@ void OpenGLWindow::Close()
 {
   if (m_Window) {
     m_ShouldClose = true;
-    // ¹Ø±Õ´°¿Ú
+    // å…³é—­çª—å£
     glfwSetWindowShouldClose(m_Window, GLFW_TRUE);
     m_Logger->debug("Window close requested");
   }
@@ -209,38 +209,38 @@ void OpenGLWindow::Close()
 }
 
 void OpenGLWindow::PollEvents()
-{  // ¼ì²é´°¿ÚÊÇ·ñÓĞĞ§
+{  // æ£€æŸ¥çª—å£æ˜¯å¦æœ‰æ•ˆ
   if (!m_Window) {
     m_Logger->warn("Attempted to poll events on null window");
     return;
   }
 
-  // ¿É¼ÇÂ¼ĞÔÄÜµ÷ÊÔĞÅÏ¢
+  // å¯è®°å½•æ€§èƒ½è°ƒè¯•ä¿¡æ¯
   // m_Logger->debug("Polling GLFW events for window: {}", m_WindowData.title);
 
-  // ´¦ÀíËùÓĞ¹ÒÆğµÄÊÂ¼ş
+  // å¤„ç†æ‰€æœ‰æŒ‚èµ·çš„äº‹ä»¶
   glfwPollEvents();
 
-  // ¼ì²é´°¿Ú¹Ø±ÕÇëÇó
+  // æ£€æŸ¥çª—å£å…³é—­è¯·æ±‚
   m_ShouldClose = glfwWindowShouldClose(m_Window);
   if (m_ShouldClose) {
     m_Logger->info("Window close requested: {}", m_WindowData.title);
   }
 }
 void OpenGLWindow::WaitEvents()
-{  // ¼ì²é´°¿ÚÊÇ·ñÓĞĞ§
+{  // æ£€æŸ¥çª—å£æ˜¯å¦æœ‰æ•ˆ
   if (!m_Window) {
     m_Logger->warn("Attempted to wait for events on null window");
     return;
   }
 
-  // ¿É¼ÇÂ¼ĞÔÄÜµ÷ÊÔĞÅÏ¢
+  // å¯è®°å½•æ€§èƒ½è°ƒè¯•ä¿¡æ¯
   // m_Logger->debug("Waiting for GLFW events for window: {}", m_WindowData.title);
 
-  // ×èÈûÖ±µ½ÓĞĞÂÊÂ¼şµ½´ï
+  // é˜»å¡ç›´åˆ°æœ‰æ–°äº‹ä»¶åˆ°è¾¾
   glfwWaitEvents();
 
-  // ¼ì²é´°¿Ú¹Ø±ÕÇëÇó
+  // æ£€æŸ¥çª—å£å…³é—­è¯·æ±‚
   m_ShouldClose = glfwWindowShouldClose(m_Window);
   if (m_ShouldClose) {
     m_Logger->info("Window close requested during wait: {}", m_WindowData.title);
@@ -248,13 +248,13 @@ void OpenGLWindow::WaitEvents()
 }
 bool OpenGLWindow::IsKeyPressed(int keycode) const
 {
-  // ²ÎÊı¼ì²é
+  // å‚æ•°æ£€æŸ¥
   if (keycode < 0 || keycode >= GLFW_KEY_LAST) {
     m_Logger->warn("Invalid keycode queried: {}", keycode);
     return false;
   }
 
-  // ²éÑ¯²¢·µ»Ø°´¼ü×´Ì¬
+  // æŸ¥è¯¢å¹¶è¿”å›æŒ‰é”®çŠ¶æ€
   int state = glfwGetKey(m_Window, keycode);
   if (state == GLFW_PRESS)
     return true;
@@ -263,13 +263,13 @@ bool OpenGLWindow::IsKeyPressed(int keycode) const
 }
 bool OpenGLWindow::IsMouseButtonPressed(int button) const
 {
-  // ²ÎÊı¼ì²é
+  // å‚æ•°æ£€æŸ¥
   if (button < 0 || button >= GLFW_MOUSE_BUTTON_LAST) {
     m_Logger->warn("Invalid mouse button queried: {}", button);
     return false;
   }
 
-  // ²éÑ¯²¢·µ»ØÊó±ê°´Å¥×´Ì¬
+  // æŸ¥è¯¢å¹¶è¿”å›é¼ æ ‡æŒ‰é’®çŠ¶æ€
   int state = glfwGetKey(m_Window, button);
   if (state == GLFW_PRESS)
     return true;
@@ -279,7 +279,7 @@ bool OpenGLWindow::IsMouseButtonPressed(int button) const
 std::pair<double, double> OpenGLWindow::GetMousePosition() const
 {
   double xpos, ypos;
-  // ²éÑ¯²¢·µ»ØÊó±êÎ»ÖÃ
+  // æŸ¥è¯¢å¹¶è¿”å›é¼ æ ‡ä½ç½®
   glfwGetCursorPos(m_Window, &xpos, &ypos);
   return {xpos, ypos};
 }
@@ -293,7 +293,7 @@ void OpenGLWindow::MakeContextCurrent()
   m_Logger->debug("Making context current for window: {}", m_WindowData.title);
   glfwMakeContextCurrent(m_Window);
 
-  // ¼ì²éÉÏÏÂÎÄÊÇ·ñ³É¹¦ÉèÖÃ
+  // æ£€æŸ¥ä¸Šä¸‹æ–‡æ˜¯å¦æˆåŠŸè®¾ç½®
   if (glfwGetCurrentContext() != m_Window) {
     m_Logger->error("Failed to make context current for window: {}", m_WindowData.title);
     throw;
@@ -303,14 +303,14 @@ void OpenGLWindow::SwapBuffers()
 {
   if (!m_Window) {
     m_Logger->error("Attempted to swap buffers on null window");
-    return;  // ÕâÀïÑ¡Ôñ²»Å×³öÒì³££¬ÒòÎª¿ÉÄÜÔÚ¹Ø±Õ¹ı³ÌÖĞµ÷ÓÃ
+    return;  // è¿™é‡Œé€‰æ‹©ä¸æŠ›å‡ºå¼‚å¸¸ï¼Œå› ä¸ºå¯èƒ½åœ¨å…³é—­è¿‡ç¨‹ä¸­è°ƒç”¨
   }
 
-  // ¿É¼ÇÂ¼ĞÔÄÜµ÷ÊÔĞÅÏ¢
+  // å¯è®°å½•æ€§èƒ½è°ƒè¯•ä¿¡æ¯
   // m_Logger->debug("Swapping buffers for window: {}", m_WindowData.title);
   glfwSwapBuffers(m_Window);
 
-  // ¼ì²éOpenGL´íÎó
+  // æ£€æŸ¥OpenGLé”™è¯¯
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     m_Logger->warn("OpenGL error after buffer swap: {}", err);
@@ -338,7 +338,7 @@ void OpenGLWindow::InitGLFW()
 
   glfwSetErrorCallback(GLFWWindowCallbackAdapter::ErrorCallback);
 
-  // ÅäÖÃGLFW
+  // é…ç½®GLFW
   glfwWindowHint(GLFW_SAMPLES, 4);  // 4x MSAA
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 

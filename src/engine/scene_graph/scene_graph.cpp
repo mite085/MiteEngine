@@ -7,7 +7,7 @@
 #include "visibility_component.h"
 
 namespace mite {
-// ==================== ¹¹Ôìº¯ÊıºÍÎö¹¹º¯Êı ====================
+// ==================== æ„é€ å‡½æ•°å’Œææ„å‡½æ•° ====================
 SceneGraph::SceneGraph(SpatialPartitionType spatialPartitionType)
     : m_SpatialPartitionManager(spatialPartitionType), m_NodeManager(m_SpatialPartitionManager)
 {
@@ -23,7 +23,7 @@ void SceneGraph::Initialize(ComponentSystemManager &manager)
   manager.RegisterSystem<TransformSceneNodeSystem>();
   manager.RegisterSystem<VisibilityComponentSystem>();
 
-  // ½«´´½¨ºÃµÄSceneGraph½»¸¶¸ø×¢²áÔÚSceneCoreÄ£¿éµÄSceneGraph×é¼şÏµÍ³
+  // å°†åˆ›å»ºå¥½çš„SceneGraphäº¤ä»˜ç»™æ³¨å†Œåœ¨SceneCoreæ¨¡å—çš„SceneGraphç»„ä»¶ç³»ç»Ÿ
   manager.GetSystem<SceneGraphSystem>()->SetSceneGraph(this);
   manager.GetSystem<HierarchySceneNodeSystem>()->SetSceneGraph(this);
   manager.GetSystem<TransformSceneNodeSystem>()->SetSceneGraph(this);
@@ -47,7 +47,7 @@ void SceneGraph::CleanUp(ComponentSystemManager &manager)
   m_Logger->debug("SceneGraph destroyed");
 }
 
-// ==================== ³¡¾°½ÚµãÉúÃüÖÜÆÚ¹ÜÀí ====================
+// ==================== åœºæ™¯èŠ‚ç‚¹ç”Ÿå‘½å‘¨æœŸç®¡ç† ====================
 SceneNode *SceneGraph::CreateNode(SceneRegistry &registry, Entity entity)
 {
   return m_NodeManager.CreateNode(registry, entity);
@@ -58,7 +58,7 @@ bool SceneGraph::DestroyNode(SceneRegistry &registry, Entity entity)
   return m_NodeManager.DestroyNode(registry, entity);
 }
 
-// ==================== ³¡¾°½Úµã²éÑ¯½Ó¿Ú ====================
+// ==================== åœºæ™¯èŠ‚ç‚¹æŸ¥è¯¢æ¥å£ ====================
 SceneNode *SceneGraph::GetNode(Entity entity) const
 {
   return m_NodeManager.GetNode(entity);
@@ -89,7 +89,7 @@ bool SceneGraph::IsEmpty() const
   return m_NodeManager.IsEmpty();
 }
 
-// ==================== ³¡¾°Ê÷²Ù×÷½Ó¿Ú£¨±à¼­Æ÷Ö§³Ö£© ====================
+// ==================== åœºæ™¯æ ‘æ“ä½œæ¥å£ï¼ˆç¼–è¾‘å™¨æ”¯æŒï¼‰ ====================
 bool SceneGraph::SetParent(SceneNode *node, SceneNode *newParent)
 {
   return m_NodeManager.SetParent(node, newParent);
@@ -110,7 +110,7 @@ void SceneGraph::TraverseTree(std::function<bool(SceneNode *)> callback) const
   m_NodeManager.TraverseTree(callback);
 }
 
-// ==================== ¿Õ¼ä»®·Ö¹ÜÀí½Ó¿Ú ====================
+// ==================== ç©ºé—´åˆ’åˆ†ç®¡ç†æ¥å£ ====================
 void SceneGraph::SetSpatialPartitionType(SpatialPartitionType type)
 {
   m_SpatialPartitionManager.SetSpatialPartitionType(type);
@@ -136,7 +136,7 @@ void SceneGraph::DebugDraw(std::function<void(const AABB &, int depth)> drawCall
   m_SpatialPartitionManager.DebugDraw(drawCallback);
 }
 
-// ==================== ¿Õ¼ä²éÑ¯½Ó¿Ú ====================
+// ==================== ç©ºé—´æŸ¥è¯¢æ¥å£ ====================
 
 size_t SceneGraph::QueryVisibleCount(SceneRegistry &registry,
                                      const Frustum &frustum,
@@ -188,7 +188,7 @@ std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry,
   return m_SpatialPartitionManager.QueryAABB(registry, aabb, visibilityMask);
 }
 
-// ==================== ½Úµã¸üĞÂ½Ó¿Ú ====================
+// ==================== èŠ‚ç‚¹æ›´æ–°æ¥å£ ====================
 void SceneGraph::UpdateNodeBounds(SceneRegistry &registry, Entity entity, const AABB &localBounds)
 {
   m_NodeManager.UpdateNodeBounds(registry, entity, localBounds);
@@ -204,19 +204,19 @@ void SceneGraph::Update(SceneRegistry &registry)
   m_NodeManager.Update(registry);
 }
 
-// ==================== ĞòÁĞ»¯Ö§³Ö ====================
+// ==================== åºåˆ—åŒ–æ”¯æŒ ====================
 bool SceneGraph::Serialize(std::ostream &output) const
 {
-  // TODO: ÊµÏÖÍêÕûµÄ³¡¾°Í¼ĞòÁĞ»¯
-  // Ä¿Ç°ÏÈÔ¤Áô½Ó¿Ú
+  // TODO: å®ç°å®Œæ•´çš„åœºæ™¯å›¾åºåˆ—åŒ–
+  // ç›®å‰å…ˆé¢„ç•™æ¥å£
   m_Logger->info("SceneGraph serialization called (not implemented)");
   return !output.fail();
 }
 
 bool SceneGraph::Deserialize(std::istream &input)
 {
-  // TODO: ÊµÏÖÍêÕûµÄ³¡¾°Í¼·´ĞòÁĞ»¯
-  // Ä¿Ç°ÏÈÔ¤Áô½Ó¿Ú
+  // TODO: å®ç°å®Œæ•´çš„åœºæ™¯å›¾ååºåˆ—åŒ–
+  // ç›®å‰å…ˆé¢„ç•™æ¥å£
   m_Logger->info("SceneGraph deserialization called (not implemented)");
   return !input.fail();
 }

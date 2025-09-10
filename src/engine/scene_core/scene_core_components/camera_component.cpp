@@ -6,30 +6,30 @@ CameraComponent::CameraComponent(std::shared_ptr<Camera> camera) : m_Camera(came
 
 void CameraComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 {
-  // ´¦ÀíCameraInputProcessorºÍTransformComponentµÄÊı¾İÍ¬²½
+  // å¤„ç†CameraInputProcessorå’ŒTransformComponentçš„æ•°æ®åŒæ­¥
   if (reg.HasComponent<TransformComponent>(GetEntity())) {
-    // ¶Ô±ÈÉÏÒ»Ö¡£¬¼ì²âTransformÊÇ·ñÖ÷¶¯·¢Éú±ä»¯
+    // å¯¹æ¯”ä¸Šä¸€å¸§ï¼Œæ£€æµ‹Transformæ˜¯å¦ä¸»åŠ¨å‘ç”Ÿå˜åŒ–
     auto &transform = reg.GetComponent<TransformComponent>(GetEntity());
     TransformState currentState = {transform.GetWorldPosition(reg),
                                    transform.GetWorldRotation(reg)};
 
-    // ÈôTransformÖ÷¶¯¸Ä¶¯£¨²¢·ÇÍ¨¹ıCameraInputProcessorÊÖ¶Î¸Ä¶¯µÄ£¬¶øÊÇÍ¨¹ıTransfromComponent£¬ÈçGizmo¡¢½çÃæ»¬¶¯ÌõµÈ£©
+    // è‹¥Transformä¸»åŠ¨æ”¹åŠ¨ï¼ˆå¹¶éé€šè¿‡CameraInputProcessoræ‰‹æ®µæ”¹åŠ¨çš„ï¼Œè€Œæ˜¯é€šè¿‡TransfromComponentï¼Œå¦‚Gizmoã€ç•Œé¢æ»‘åŠ¨æ¡ç­‰ï¼‰
     if (IsTransformChanged(currentState, m_lastTransformState)) {
-      // Ö´ĞĞ Transform ¡ú Camera Í¬²½£¨¾ùÎªÀÛ¼ÓÊ½Í¬²½£¬·ÀÖ¹Ö±½Ó¸³Öµµ¼ÖÂÆçÒå£©
+      // æ‰§è¡Œ Transform â†’ Camera åŒæ­¥ï¼ˆå‡ä¸ºç´¯åŠ å¼åŒæ­¥ï¼Œé˜²æ­¢ç›´æ¥èµ‹å€¼å¯¼è‡´æ­§ä¹‰ï¼‰
       m_Camera->Move(transform.GetWorldPosition(reg) - currentState.position);
       m_Camera->Rotate(transform.GetWorldRotation(reg) - currentState.rotation);
     }
 
-    // Ö´ĞĞ Camera ¡ú Transform Í¬²½
-    // £¨¾ùÎª¸³ÖµÊ½Í¬²½£¬Ö±½ÓÊ¹ÓÃCameraÊıÖµĞŞ¸ÄTransfrom¿ÉÒÔ¸üÖ±¹ÛµÄÏÔÊ¾½á¹û£©
+    // æ‰§è¡Œ Camera â†’ Transform åŒæ­¥
+    // ï¼ˆå‡ä¸ºèµ‹å€¼å¼åŒæ­¥ï¼Œç›´æ¥ä½¿ç”¨Cameraæ•°å€¼ä¿®æ”¹Transfromå¯ä»¥æ›´ç›´è§‚çš„æ˜¾ç¤ºç»“æœï¼‰
     glm::vec3 newPosition = m_Camera->GetPosition();
     glm::vec3 newRotation = m_Camera->GetRotationEuler();
     transform.SetWorldPosition(reg, m_lastTransformState.position);
     transform.SetWorldRotation(reg, m_lastTransformState.rotation);
 
-    // ²¢ÒÔÍ¬²½½á¹û¼ÇÂ¼State
-    // £¨´ËÊ±¼´±ãTransformÃ»ÓĞÖ÷¶¯¸Ä¶¯£¬transformÒ²»á²»Í¬£¬
-    // Õâ¸ö¡°²»Í¬¡±²»×÷ÎªÖ÷¶¯¸Ä¶¯ÒÀ¾İ£¬·ñÔò»á³öÏÖ¶à´ÎÀÛ¼ÓµÄbug£©
+    // å¹¶ä»¥åŒæ­¥ç»“æœè®°å½•State
+    // ï¼ˆæ­¤æ—¶å³ä¾¿Transformæ²¡æœ‰ä¸»åŠ¨æ”¹åŠ¨ï¼Œtransformä¹Ÿä¼šä¸åŒï¼Œ
+    // è¿™ä¸ªâ€œä¸åŒâ€ä¸ä½œä¸ºä¸»åŠ¨æ”¹åŠ¨ä¾æ®ï¼Œå¦åˆ™ä¼šå‡ºç°å¤šæ¬¡ç´¯åŠ çš„bugï¼‰
     m_lastTransformState.position = newPosition;
     m_lastTransformState.rotation = newRotation;
   }
@@ -153,14 +153,14 @@ bool CameraComponent::HasVisibilityLayer(uint32_t mask) const
 
 bool CameraComponent::Serialize(std::ostream &output) const
 {
-  // TODO: ĞòÁĞ»¯Í¶Ó°ÀàĞÍ¡¢²ÎÊıµÈ
+  // TODO: åºåˆ—åŒ–æŠ•å½±ç±»å‹ã€å‚æ•°ç­‰
 
   return !output.fail();
 }
 
 bool CameraComponent::Deserialize(std::istream &input)
 {
-  // TODO: ·´ĞòÁĞ»¯²¢ÖØ½¨Camera×´Ì¬
+  // TODO: ååºåˆ—åŒ–å¹¶é‡å»ºCameraçŠ¶æ€
 
   MarkDirty();
   return !input.fail();
@@ -173,10 +173,10 @@ std::vector<std::type_index> CameraComponent::GetDependencies() const
 
 bool CameraComponent::IsTransformChanged(const TransformState &current, const TransformState &last)
 {
-  // Î»ÖÃÈİ²î±È½Ï
+  // ä½ç½®å®¹å·®æ¯”è¾ƒ
   bool positionChanged = glm::length(current.position - last.position) > POSITION_EPSILON;
 
-  // Å·À­½ÇÈİ²î±È½Ï£¨·Ö±ğ±È½ÏÈı¸öÖá£©
+  // æ¬§æ‹‰è§’å®¹å·®æ¯”è¾ƒï¼ˆåˆ†åˆ«æ¯”è¾ƒä¸‰ä¸ªè½´ï¼‰
   glm::vec3 rotationDelta = glm::abs(current.rotation - last.rotation);
   bool rotationChanged = (rotationDelta.x > ROTATION_EPSILON) ||
                          (rotationDelta.y > ROTATION_EPSILON) ||
@@ -189,7 +189,7 @@ bool CameraComponent::IsTransformChanged(const TransformState &current, const Tr
 
 std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() const
 {
-  return {typeid(TransformComponentSystem)};  // ĞèÒª±ä»»ĞÅÏ¢
+  return {typeid(TransformComponentSystem)};  // éœ€è¦å˜æ¢ä¿¡æ¯
 }
 
 Entity CameraComponentSystem::GetMainCameraEntity() const
@@ -207,7 +207,7 @@ Entity CameraComponentSystem::GetMainCameraEntity() const
 
 void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
 {
-  // ±éÀú×é¼şÁĞ±í£¬»ñÈ¡ĞÂcamera×é¼şºÍ¾Écamera×é¼ş
+  // éå†ç»„ä»¶åˆ—è¡¨ï¼Œè·å–æ–°cameraç»„ä»¶å’Œæ—§cameraç»„ä»¶
   CameraComponent *oldMain = nullptr, *newMain = nullptr;
   for (auto component : m_AllComponents) {
     if (!component) {
@@ -221,15 +221,15 @@ void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
     }
   }
 
-  // Èç¹ûĞÂ¾ÉÏàÍ¬£¬ÔòÊ¡ÂÔĞŞ¸Ä
+  // å¦‚æœæ–°æ—§ç›¸åŒï¼Œåˆ™çœç•¥ä¿®æ”¹
   if (oldMain == newMain)
     return;
 
-  // Çå³ıÖ®Ç°µÄÖ÷Ïà»ú±ê¼Ç
+  // æ¸…é™¤ä¹‹å‰çš„ä¸»ç›¸æœºæ ‡è®°
   if (oldMain) {
     oldMain->SetUsage(CameraUsage::FreeView);
   }
-  // ÉèÖÃĞÂµÄÖ÷Ïà»ú
+  // è®¾ç½®æ–°çš„ä¸»ç›¸æœº
   if (newMain) {
     newMain->SetUsage(CameraUsage::MainView);
     EventBus::Publish<MainCameraChangedEvent>(MainCameraChangedEvent(mainCamera, *newMain));
@@ -241,8 +241,8 @@ void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
 
 void CameraComponentSystem::ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
 {
-  // CameraComponent¸ºÔğÁËCameraInputProcessorºÍTransformComponentµÄÊı¾İÍ¬²½£¬
-  // ÓÉÓÚÎŞ·¨Í¨¹ıCameraInputProcessor±ê×¢dirty£¬´Ë´¦Ó¦µ±´¦ÀíËùÓĞCamera
+  // CameraComponentè´Ÿè´£äº†CameraInputProcessorå’ŒTransformComponentçš„æ•°æ®åŒæ­¥ï¼Œ
+  // ç”±äºæ— æ³•é€šè¿‡CameraInputProcessoræ ‡æ³¨dirtyï¼Œæ­¤å¤„åº”å½“å¤„ç†æ‰€æœ‰Camera
   for (auto *comp : m_AllComponents) {
     comp->ProcessDirty(deltaTime, registry);
   }

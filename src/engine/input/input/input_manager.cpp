@@ -2,7 +2,7 @@
 
 namespace mite {
 
-// ¾²Ì¬³ÉÔ±³õÊ¼»¯
+// é™æ€æˆå‘˜åˆå§‹åŒ–
 std::array<InputState, 512> InputManager::s_KeyStates;
 std::array<InputState, 512> InputManager::s_PrevKeyStates;
 std::array<float, 512> InputManager::s_KeyHeldDurations;
@@ -17,36 +17,36 @@ std::shared_ptr<InputContextStack> InputManager::s_ContextStack;
 
 void InputManager::Init(const std::shared_ptr<InputContextStack> &stack)
 {
-  // ÓÉApplication´´½¨ÊäÈëÉÏÏÂÎÄÕ»£¬²¢ÓÉManager½øĞĞ¹ÜÀí
+  // ç”±Applicationåˆ›å»ºè¾“å…¥ä¸Šä¸‹æ–‡æ ˆï¼Œå¹¶ç”±Managerè¿›è¡Œç®¡ç†
   s_ContextStack = stack;
 
-  // ³õÊ¼»¯ËùÓĞ¼ü×´Ì¬ÎªReleased
+  // åˆå§‹åŒ–æ‰€æœ‰é”®çŠ¶æ€ä¸ºReleased
   s_KeyStates.fill(InputState::Released);
   s_PrevKeyStates.fill(InputState::Released);
   s_KeyHeldDurations.fill(0.0f);
 
-  // ³õÊ¼»¯Êó±ê°´Å¥×´Ì¬
+  // åˆå§‹åŒ–é¼ æ ‡æŒ‰é’®çŠ¶æ€
   s_MouseButtonStates.fill(InputState::Released);
   s_PrevMouseButtonStates.fill(InputState::Released);
 
-  // ³õÊ¼»¯Êó±êÎ»ÖÃºÍ¹öÂÖ
+  // åˆå§‹åŒ–é¼ æ ‡ä½ç½®å’Œæ»šè½®
   s_MousePosition = glm::vec2(0.0f);
   s_PrevMousePosition = glm::vec2(0.0f);
   s_MouseDelta = glm::vec2(0.0f);
   s_MouseScrollDelta = 0.0f;
   s_PrevMouseScrollDelta = 0.0f;
 
-  // TODO: È·±£ÖÁÉÙÓĞÒ»¸öÄ¬ÈÏÉÏÏÂÎÄ
+  // TODO: ç¡®ä¿è‡³å°‘æœ‰ä¸€ä¸ªé»˜è®¤ä¸Šä¸‹æ–‡
   //if (s_ContextStack->IsEmpty()) {
   //  auto defaultContext = std::make_shared<InputContext>("Default");
   //  s_ContextStack->Push(defaultContext);
   //}
 }
 void InputManager::Shutdown()
-{  // ÇåÀíËùÓĞÉÏÏÂÎÄ
+{  // æ¸…ç†æ‰€æœ‰ä¸Šä¸‹æ–‡
   s_ContextStack->Clear();
 
-  // ÖØÖÃËùÓĞÊäÈë×´Ì¬
+  // é‡ç½®æ‰€æœ‰è¾“å…¥çŠ¶æ€
   s_KeyStates.fill(InputState::Released);
   s_PrevKeyStates.fill(InputState::Released);
   s_KeyHeldDurations.fill(0.0f);
@@ -55,14 +55,14 @@ void InputManager::Shutdown()
 }
 void InputManager::Update()
 {
-  // ¸üĞÂ°´¼ü³ÖĞøÊ±¼ä - ÏÖÔÚÊ¹ÓÃTime::DeltaTime()
+  // æ›´æ–°æŒ‰é”®æŒç»­æ—¶é—´ - ç°åœ¨ä½¿ç”¨Time::DeltaTime()
   for (size_t i = 0; i < s_KeyStates.size(); ++i) {
     if (s_KeyStates[i] == InputState::Pressed || s_KeyStates[i] == InputState::Held ||
         s_KeyStates[i] == InputState::Repeated)
     {
       s_KeyHeldDurations[i] += Time::DeltaTime();
 
-      // ½«Pressed×´Ì¬×ªÎªHeld×´Ì¬
+      // å°†PressedçŠ¶æ€è½¬ä¸ºHeldçŠ¶æ€
       if (s_KeyStates[i] == InputState::Pressed) {
         s_KeyStates[i] = InputState::Held;
       }
@@ -72,86 +72,86 @@ void InputManager::Update()
     }
   }
 
-  // ¸üĞÂÊó±ê°´Å¥×´Ì¬
+  // æ›´æ–°é¼ æ ‡æŒ‰é’®çŠ¶æ€
   for (size_t i = 0; i < s_MouseButtonStates.size(); ++i) {
     if (s_MouseButtonStates[i] == InputState::Pressed) {
       s_MouseButtonStates[i] = InputState::Held;
     }
   }
 
-  // Êó±êÒÆ¶¯Óë¹öÂÖ×´Ì¬ÓÉGLFW»Øµ÷¸Ä±ä£¨Òì²½£©£¬²¢·ÇinputÄ£¿é¸ºÔğ
+  // é¼ æ ‡ç§»åŠ¨ä¸æ»šè½®çŠ¶æ€ç”±GLFWå›è°ƒæ”¹å˜ï¼ˆå¼‚æ­¥ï¼‰ï¼Œå¹¶éinputæ¨¡å—è´Ÿè´£
   // s_MousePosition =
 
-  // ¼ÆËãDelta£¨Êó±êÒÆ¶¯ÔöÁ¿Óë¹öÂÖ±ä»¯Á¿£©
+  // è®¡ç®—Deltaï¼ˆé¼ æ ‡ç§»åŠ¨å¢é‡ä¸æ»šè½®å˜åŒ–é‡ï¼‰
   s_MouseDelta = s_MousePosition - s_PrevMousePosition;
   s_MouseScrollDelta = s_MouseScrollDelta - s_PrevMouseScrollDelta;
 
-  // È«²¿¼ÆËãÍê±Ïºó£¬¸üĞÂÉÏÒ»Ö¡×´Ì¬Îªµ±Ç°×´Ì¬¡£
+  // å…¨éƒ¨è®¡ç®—å®Œæ¯•åï¼Œæ›´æ–°ä¸Šä¸€å¸§çŠ¶æ€ä¸ºå½“å‰çŠ¶æ€ã€‚
   s_PrevKeyStates = s_KeyStates;
   s_PrevMouseButtonStates = s_MouseButtonStates;
   s_PrevMousePosition = s_MousePosition;
   s_PrevMouseScrollDelta = s_MouseScrollDelta;
 
-  // MainloopÍê³ÉÒ»´ÎÑ­»·£¬»Øµ½InputManager::Update()ºó£¬
-  // ¿ªÆôĞÂÒ»ÂÖµÄKeyºÍMouse×´Ì¬²éÑ¯Óë¸üĞÂ
+  // Mainloopå®Œæˆä¸€æ¬¡å¾ªç¯ï¼Œå›åˆ°InputManager::Update()åï¼Œ
+  // å¼€å¯æ–°ä¸€è½®çš„Keyå’ŒMouseçŠ¶æ€æŸ¥è¯¢ä¸æ›´æ–°
 }
 
 void InputManager::SetKeyState(KeyCode key, InputState state)
 {
-  // È·±£¼üÂëÔÚÓĞĞ§·¶Î§ÄÚ
+  // ç¡®ä¿é”®ç åœ¨æœ‰æ•ˆèŒƒå›´å†…
   if (key < 0 || key >= s_KeyStates.size()) {
     return;
   }
 
-  // ¸üĞÂ°´¼ü×´Ì¬
+  // æ›´æ–°æŒ‰é”®çŠ¶æ€
   InputState prevState = s_KeyStates[key];
   s_KeyStates[key] = state;
 
-  // ´¦Àí×´Ì¬×ª»»
+  // å¤„ç†çŠ¶æ€è½¬æ¢
   if (state == InputState::Pressed) {
-    // °´¼ü¸Õ¸Õ°´ÏÂ£¬ÖØÖÃ³ÖĞøÊ±¼ä
+    // æŒ‰é”®åˆšåˆšæŒ‰ä¸‹ï¼Œé‡ç½®æŒç»­æ—¶é—´
     s_KeyHeldDurations[key] = 0.0f;
   }
   else if (state == InputState::Held && prevState == InputState::Pressed) {
-    // ´ÓPressed×ª»»ÎªHeld×´Ì¬
+    // ä»Pressedè½¬æ¢ä¸ºHeldçŠ¶æ€
     s_KeyStates[key] = InputState::Held;
   }
 }
 
 void InputManager::SetMouseButtonState(MouseCode button, InputState state)
 {
-  // È·±£Êó±ê°´Å¥ÂëÔÚÓĞĞ§·¶Î§ÄÚ
+  // ç¡®ä¿é¼ æ ‡æŒ‰é’®ç åœ¨æœ‰æ•ˆèŒƒå›´å†…
   if (button < 0 || button >= s_MouseButtonStates.size()) {
     return;
   }
 
-  // ¸üĞÂÊó±ê°´Å¥×´Ì¬
+  // æ›´æ–°é¼ æ ‡æŒ‰é’®çŠ¶æ€
   InputState prevState = s_MouseButtonStates[button];
   s_MouseButtonStates[button] = state;
 
-  // ´¦Àí×´Ì¬×ª»»
+  // å¤„ç†çŠ¶æ€è½¬æ¢
   if (state == InputState::Pressed) {
-    // °´Å¥¸Õ¸Õ°´ÏÂ
+    // æŒ‰é’®åˆšåˆšæŒ‰ä¸‹
   }
   else if (state == InputState::Held && prevState == InputState::Pressed) {
-    // ´ÓPressed×ª»»ÎªHeld×´Ì¬
+    // ä»Pressedè½¬æ¢ä¸ºHeldçŠ¶æ€
     s_MouseButtonStates[button] = InputState::Held;
   }
 }
 
 void InputManager::SetMousePosition(const glm::vec2 &position)
 {
-  // ¸üĞÂÊó±êÎ»ÖÃ
+  // æ›´æ–°é¼ æ ‡ä½ç½®
   s_PrevMousePosition = s_MousePosition;
   s_MousePosition = position;
 
-  // ¼ÆËãÊó±êÒÆ¶¯ÔöÁ¿
+  // è®¡ç®—é¼ æ ‡ç§»åŠ¨å¢é‡
   s_MouseDelta = s_MousePosition - s_PrevMousePosition;
 }
 
 void InputManager::SetMouseScrollDelta(float delta)
 {
-  // ¸üĞÂÊó±ê¹öÂÖÔöÁ¿
+  // æ›´æ–°é¼ æ ‡æ»šè½®å¢é‡
   s_PrevMouseScrollDelta = s_MouseScrollDelta;
   s_MouseScrollDelta = delta;
 }
@@ -163,8 +163,8 @@ void InputManager::PushContext(std::shared_ptr<InputContext> context)
     return;
   }
 
-  // ·Ç¿ÕÕ»Çé¿öÏÂ£¬
-  // ÈÕÖ¾¼ÇÂ¼InputÊäÈëµÄÈëÕ»Ë³Ğò
+  // éç©ºæ ˆæƒ…å†µä¸‹ï¼Œ
+  // æ—¥å¿—è®°å½•Inputè¾“å…¥çš„å…¥æ ˆé¡ºåº
   if (!s_ContextStack->IsEmpty()) {
     auto &current = s_ContextStack->GetCurrent();
     LOG_DEBUG("Pushing input context '{}' over '{}'", context->GetName(), current->GetName());
@@ -173,7 +173,7 @@ void InputManager::PushContext(std::shared_ptr<InputContext> context)
     LOG_DEBUG("Pushing first input context '{}'", context->GetName());
   }
 
-  // Ö´ĞĞÈëÕ»²Ù×÷
+  // æ‰§è¡Œå…¥æ ˆæ“ä½œ
   s_ContextStack->Push(context);
 }
 
@@ -184,12 +184,12 @@ void InputManager::PopContext()
     return;
   }
 
-  // Ö´ĞĞ³öÕ»²Ù×÷
+  // æ‰§è¡Œå‡ºæ ˆæ“ä½œ
   auto popped = s_ContextStack->GetCurrent();
   s_ContextStack->Pop();
 
-  // ³öÕ»ºó·Ç¿ÕÕ»µÄÇé¿öÏÂ£¬
-  // ÈÕÖ¾¼ÇÂ¼ÏÂÒ»¸öInputÊÂ¼ş
+  // å‡ºæ ˆåéç©ºæ ˆçš„æƒ…å†µä¸‹ï¼Œ
+  // æ—¥å¿—è®°å½•ä¸‹ä¸€ä¸ªInputäº‹ä»¶
   if (!s_ContextStack->IsEmpty()) {
     auto &newCurrent = s_ContextStack->GetCurrent();
     LOG_DEBUG("Popped input context '{}', new current is '{}'",
@@ -203,7 +203,7 @@ void InputManager::PopContext()
 
 std::shared_ptr<InputContext> InputManager::GetCurrentContext()
 {
-  // ¿ÕÕ»Çé¿öÏÂ·ÃÎÊµ±Ç°ÉÏÏÂÎÄ
+  // ç©ºæ ˆæƒ…å†µä¸‹è®¿é—®å½“å‰ä¸Šä¸‹æ–‡
   if (s_ContextStack->IsEmpty()) {
     LOG_WARN("No input context available");
     return nullptr;
@@ -214,26 +214,26 @@ std::shared_ptr<InputContext> InputManager::GetCurrentContext()
 
 float InputManager::GetActionValue(const std::string &actionName)
 {
-  // Èç¹ûÃ»ÓĞ»îÔ¾µÄÊäÈëÉÏÏÂÎÄ£¬·µ»Ø0.0
+  // å¦‚æœæ²¡æœ‰æ´»è·ƒçš„è¾“å…¥ä¸Šä¸‹æ–‡ï¼Œè¿”å›0.0
   if (s_ContextStack->IsEmpty())
     return 0.0f;
 
-  // »ñÈ¡µ±Ç°ÉÏÏÂÎÄ
+  // è·å–å½“å‰ä¸Šä¸‹æ–‡
   auto &currentContext = s_ContextStack->GetCurrent();
 
-  // ²éÕÒÖ¸¶¨Ãû³ÆµÄ¶¯×÷
+  // æŸ¥æ‰¾æŒ‡å®šåç§°çš„åŠ¨ä½œ
   InputAction *action = currentContext->GetAction(actionName);
   if (!action)
     return 0.0f;
 
-  // ÖØÖÃ¶¯×÷Öµ
+  // é‡ç½®åŠ¨ä½œå€¼
   action->value = 0.0f;
 
-  // ±éÀú¶¯×÷µÄËùÓĞ°ó¶¨
+  // éå†åŠ¨ä½œçš„æ‰€æœ‰ç»‘å®š
   for (const auto &binding : action->bindings) {
     switch (binding.device) {
       case InputDevice::Keyboard: {
-        // Èç¹ûÊÇ¼üÅÌ°ó¶¨ÇÒ°´¼ü±»°´ÏÂ£¬ÀÛ¼ÓËõ·ÅÖµ
+        // å¦‚æœæ˜¯é”®ç›˜ç»‘å®šä¸”æŒ‰é”®è¢«æŒ‰ä¸‹ï¼Œç´¯åŠ ç¼©æ”¾å€¼
         if (GetKeyState(binding.code) == InputState::Pressed ||
             GetKeyState(binding.code) == InputState::Held ||
             GetKeyState(binding.code) == InputState::Repeated)
@@ -243,7 +243,7 @@ float InputManager::GetActionValue(const std::string &actionName)
         break;
       }
       case InputDevice::Mouse: {
-        // Èç¹ûÊÇÊó±ê°´Å¥°ó¶¨ÇÒ°´Å¥±»°´ÏÂ£¬ÀÛ¼ÓËõ·ÅÖµ
+        // å¦‚æœæ˜¯é¼ æ ‡æŒ‰é’®ç»‘å®šä¸”æŒ‰é’®è¢«æŒ‰ä¸‹ï¼Œç´¯åŠ ç¼©æ”¾å€¼
         if (GetMouseButtonState(binding.code) == InputState::Pressed ||
             GetMouseButtonState(binding.code) == InputState::Held ||
             GetMouseButtonState(binding.code) == InputState::Repeated)
@@ -255,7 +255,7 @@ float InputManager::GetActionValue(const std::string &actionName)
     }
   }
 
-  // ·µ»Ø¶¯×÷µÄ×îÖÕÖµ£¨ÏŞÖÆÔÚ-1.0µ½1.0Ö®¼ä£©
+  // è¿”å›åŠ¨ä½œçš„æœ€ç»ˆå€¼ï¼ˆé™åˆ¶åœ¨-1.0åˆ°1.0ä¹‹é—´ï¼‰
   return glm::clamp(action->value, -1.0f, 1.0f);
 }
 
@@ -285,9 +285,9 @@ float InputManager::GetKeyHeldDuration(KeyCode key)
 
 InputState InputManager::GetMouseButtonState(MouseCode button)
 {
-  // ¼ì²éÊó±ê°´Å¥ÂëÊÇ·ñÔÚÓĞĞ§·¶Î§ÄÚ
+  // æ£€æŸ¥é¼ æ ‡æŒ‰é’®ç æ˜¯å¦åœ¨æœ‰æ•ˆèŒƒå›´å†…
   if (button >= 0 && button < s_MouseButtonStates.size()) {
-    // ·µ»Øµ±Ç°Ö¡µÄÊó±ê°´Å¥×´Ì¬£¨Pressed »ò Held ¶¼ÊÓÎª°´ÏÂ£©
+    // è¿”å›å½“å‰å¸§çš„é¼ æ ‡æŒ‰é’®çŠ¶æ€ï¼ˆPressed æˆ– Held éƒ½è§†ä¸ºæŒ‰ä¸‹ï¼‰
     return s_MouseButtonStates[button];
   }
   return InputState::Released;
@@ -295,9 +295,9 @@ InputState InputManager::GetMouseButtonState(MouseCode button)
 
 InputState InputManager::GetPrevMouseButtonState(MouseCode button)
 {
-  // ¼ì²éÉÏÒ»Ö¡Êó±ê°´Å¥ÂëÊÇ·ñÔÚÓĞĞ§·¶Î§ÄÚ
+  // æ£€æŸ¥ä¸Šä¸€å¸§é¼ æ ‡æŒ‰é’®ç æ˜¯å¦åœ¨æœ‰æ•ˆèŒƒå›´å†…
   if (button >= 0 && button < s_PrevMouseButtonStates.size()) {
-    // ·µ»ØÉÏÒ»Ö¡µÄÊó±ê°´Å¥×´Ì¬£¨Pressed »ò Held ¶¼ÊÓÎª°´ÏÂ£©
+    // è¿”å›ä¸Šä¸€å¸§çš„é¼ æ ‡æŒ‰é’®çŠ¶æ€ï¼ˆPressed æˆ– Held éƒ½è§†ä¸ºæŒ‰ä¸‹ï¼‰
     return s_PrevMouseButtonStates[button];
   }
   return InputState::Released;

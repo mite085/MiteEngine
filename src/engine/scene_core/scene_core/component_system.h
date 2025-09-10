@@ -5,72 +5,72 @@
 #include "scene_core_event.h"
 namespace mite {
 /**
- * @brief ×é¼şÏµÍ³»ùÀà£¬¹ÜÀíÌØ¶¨ÀàĞÍ×é¼şµÄ¸üĞÂÂß¼­
+ * @brief ç»„ä»¶ç³»ç»ŸåŸºç±»ï¼Œç®¡ç†ç‰¹å®šç±»å‹ç»„ä»¶çš„æ›´æ–°é€»è¾‘
  *
- * Éè¼ÆÄ¿±ê£º
- * 1. Ìá¹©Í³Ò»µÄ×é¼şÏµÍ³½Ó¿Ú
- * 2. Ö§³Ö×Ô¶¯×¢²áµ½³¡¾°¸üĞÂÑ­»·
- * 3. ¸ßĞ§´¦Àí×é¼şÅúÁ¿²Ù×÷
- * 4. Ö§³Ö×é¼şÒÀÀµºÍÖ´ĞĞË³Ğò¿ØÖÆ
- * 5. Ìá¹©ÏµÍ³¼äÍ¨ĞÅ»úÖÆ
+ * è®¾è®¡ç›®æ ‡ï¼š
+ * 1. æä¾›ç»Ÿä¸€çš„ç»„ä»¶ç³»ç»Ÿæ¥å£
+ * 2. æ”¯æŒè‡ªåŠ¨æ³¨å†Œåˆ°åœºæ™¯æ›´æ–°å¾ªç¯
+ * 3. é«˜æ•ˆå¤„ç†ç»„ä»¶æ‰¹é‡æ“ä½œ
+ * 4. æ”¯æŒç»„ä»¶ä¾èµ–å’Œæ‰§è¡Œé¡ºåºæ§åˆ¶
+ * 5. æä¾›ç³»ç»Ÿé—´é€šä¿¡æœºåˆ¶
  */
 class ComponentSystem {
  public:
   virtual ~ComponentSystem() = default;
 
   /**
-   * @brief »ñÈ¡ÏµÍ³ÀàĞÍID(Ê¹ÓÃ¸¨Öúºê¶¨Òå£¬ÎŞĞèÔÚ×ÓÀàÊµÏÖ)
+   * @brief è·å–ç³»ç»Ÿç±»å‹ID(ä½¿ç”¨è¾…åŠ©å®å®šä¹‰ï¼Œæ— éœ€åœ¨å­ç±»å®ç°)
    */
   virtual std::type_index GetSystemType() const = 0;
 
   /**
-   * @brief ÏµÍ³Ö´ĞĞÓÅÏÈ¼¶(Ô½Ğ¡Ô½ÏÈÖ´ĞĞ)
+   * @brief ç³»ç»Ÿæ‰§è¡Œä¼˜å…ˆçº§(è¶Šå°è¶Šå…ˆæ‰§è¡Œ)
    */
   virtual Component::Family GetExecutionOrder() const = 0;
 
   /**
-   * @brief ÏµÍ³³õÊ¼»¯£¨³¡¾°¼ÓÔØÊ±µ÷ÓÃ£©
-   * @param registry ¹ØÁªµÄEnTT registry
+   * @brief ç³»ç»Ÿåˆå§‹åŒ–ï¼ˆåœºæ™¯åŠ è½½æ—¶è°ƒç”¨ï¼‰
+   * @param registry å…³è”çš„EnTT registry
    */
   virtual void Initialize() = 0;
 
   /**
-   * @brief ÏµÍ³¸üĞÂ£¨Ã¿Ö¡µ÷ÓÃ£©
-   * @param deltaTime Ö¡¼ä¸ôÊ±¼ä(Ãë)
+   * @brief ç³»ç»Ÿæ›´æ–°ï¼ˆæ¯å¸§è°ƒç”¨ï¼‰
+   * @param deltaTime å¸§é—´éš”æ—¶é—´(ç§’)
    */
   virtual void Update(float deltaTime, SceneRegistry &registry) = 0;
 
   /**
-   * @brief ÏµÍ³Ïú»Ù£¨³¡¾°Ğ¶ÔØÊ±µ÷ÓÃ£©
+   * @brief ç³»ç»Ÿé”€æ¯ï¼ˆåœºæ™¯å¸è½½æ—¶è°ƒç”¨ï¼‰
    */
   virtual void Shutdown() = 0;
 
   /**
-   * @brief »ñÈ¡¸ÃÏµÍ³¹ÜÀíµÄ×é¼şÀàĞÍÁĞ±í
+   * @brief è·å–è¯¥ç³»ç»Ÿç®¡ç†çš„ç»„ä»¶ç±»å‹åˆ—è¡¨
    */
   virtual std::vector<std::type_index> GetComponentTypes() const = 0;
 
   /**
-   * @brief »ñÈ¡¸ÃÏµÍ³ÒÀÀµµÄÆäËûÏµÍ³ÀàĞÍ
+   * @brief è·å–è¯¥ç³»ç»Ÿä¾èµ–çš„å…¶ä»–ç³»ç»Ÿç±»å‹
    */
   virtual std::vector<std::type_index> GetSystemDependencies() const = 0;
 
  protected:
-  // ±£»¤¹¹Ôìº¯Êı£¬È·±£Ö»ÄÜÍ¨¹ıÅÉÉúÀàÊµÀı»¯
+  // ä¿æŠ¤æ„é€ å‡½æ•°ï¼Œç¡®ä¿åªèƒ½é€šè¿‡æ´¾ç”Ÿç±»å®ä¾‹åŒ–
   ComponentSystem() = default;
 
-  // ½ûÓÃ¿½±´
+  // ç¦ç”¨æ‹·è´
   ComponentSystem(const ComponentSystem &) = delete;
   ComponentSystem &operator=(const ComponentSystem &) = delete;
 
-  // ÈÕÖ¾ÏµÍ³
+  // æ—¥å¿—ç³»ç»Ÿ
   Logger m_Logger;
-  // ¶©ÔÄÊÂ¼ş¼¯ºÏ
+  // è®¢é˜…äº‹ä»¶é›†åˆ
   SubscriptionGroup m_EventSubscriptions;
 };
 
 /**
- * @brief ×é¼şÏµÍ³¸¨Öúºê£¬¼ò»¯ÏµÍ³¶¨Òå
+ * @brief ç»„ä»¶ç³»ç»Ÿè¾…åŠ©å®ï¼Œç®€åŒ–ç³»ç»Ÿå®šä¹‰
  */
 #define DECLARE_COMPONENT_SYSTEM(system_name) \
  public: \
@@ -84,46 +84,46 @@ class ComponentSystem {
   }
 
 /**
- * @brief »ùÓÚDirty FlagÇı¶¯µÄ×é¼şÏµÍ³Ä£°åÀà
+ * @brief åŸºäºDirty Flagé©±åŠ¨çš„ç»„ä»¶ç³»ç»Ÿæ¨¡æ¿ç±»
  *
- * ×÷ÓÃ£º
- * ËùÓĞ¾ßÌåµÄComponent¾ùÓ¦µ±¼Ì³Ğ×Ô´ËÀà£¬
- * ¾ßÓĞ×ÔÔàÌØĞÔµÄ¿ÉÒÔÖ±½Ó¼Ì³Ğ×Ô
+ * ä½œç”¨ï¼š
+ * æ‰€æœ‰å…·ä½“çš„Componentå‡åº”å½“ç»§æ‰¿è‡ªæ­¤ç±»ï¼Œ
+ * å…·æœ‰è‡ªè„ç‰¹æ€§çš„å¯ä»¥ç›´æ¥ç»§æ‰¿è‡ª
  * DirtyComponentSystem<T, SelfDirtyPolicy>
  * 
- * »ù±¾ÊµÏÖÔ­Àí
- * 1. ±ê¼ÇÎªÔà£¨Dirty£©£ºµ±×é¼şµÄ×´Ì¬·¢Éú±ä»¯Ê±£¬½« m_Dirty ÉèÎª true
- * 2. ´¦ÀíÔà×´Ì¬£ºÔÚÊÊµ±µÄÊ±»ú£¨ÈçÃ¿Ö¡¸üĞÂÊ±£©¼ì²é²¢´¦ÀíÔà×´Ì¬
- * 3. Çå³ıÔà±ê¼Ç£º´¦ÀíÍê³Éºó½« m_Dirty ÉèÎª false
+ * åŸºæœ¬å®ç°åŸç†
+ * 1. æ ‡è®°ä¸ºè„ï¼ˆDirtyï¼‰ï¼šå½“ç»„ä»¶çš„çŠ¶æ€å‘ç”Ÿå˜åŒ–æ—¶ï¼Œå°† m_Dirty è®¾ä¸º true
+ * 2. å¤„ç†è„çŠ¶æ€ï¼šåœ¨é€‚å½“çš„æ—¶æœºï¼ˆå¦‚æ¯å¸§æ›´æ–°æ—¶ï¼‰æ£€æŸ¥å¹¶å¤„ç†è„çŠ¶æ€
+ * 3. æ¸…é™¤è„æ ‡è®°ï¼šå¤„ç†å®Œæˆåå°† m_Dirty è®¾ä¸º false
  */
 template<typename T> class DirtyComponentSystem : public ComponentSystem {
-  // ÏŞÖÆÄ£°åT±ØĞë¼Ì³Ğ×ÔComponentÀàĞÍ
+  // é™åˆ¶æ¨¡æ¿Tå¿…é¡»ç»§æ‰¿è‡ªComponentç±»å‹
   static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
 
  public:
-  // ±©Â¶×é¼şÀàĞÍ
+  // æš´éœ²ç»„ä»¶ç±»å‹
   using ComponentType = T;
 
   DirtyComponentSystem() : ComponentSystem() {
-    // ´´½¨ÈÕÖ¾ÏµÍ³
+    // åˆ›å»ºæ—¥å¿—ç³»ç»Ÿ
     m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Component System: {" + type_name<T>() +
                                                       "}");
     m_Logger->trace("Created component system: {}", type_name<T>());
   }
 
   /**
-   * @brief ³õÊ¼»¯²Ù×÷
+   * @brief åˆå§‹åŒ–æ“ä½œ
    * @param registry
    */
   virtual void Initialize() override
   {
-    // Í¨¹ıÊÂ¼ş×ÜÏß£¬¶©ÔÄ×é¼şÌí¼Ó/¸Ä±ä/ÒÆ³ıÊÂ¼ş
+    // é€šè¿‡äº‹ä»¶æ€»çº¿ï¼Œè®¢é˜…ç»„ä»¶æ·»åŠ /æ”¹å˜/ç§»é™¤äº‹ä»¶
     m_EventSubscriptions.Subscribe<ComponentAddedEvent<T>>(BIND_DISPATCH_FN(OnComponentAdded));
     m_EventSubscriptions.Subscribe<ComponentRemovedEvent<T>>(BIND_DISPATCH_FN(OnComponentRemoved));
   }
 
   /**
-   * @brief ÇåÀí²Ù×÷
+   * @brief æ¸…ç†æ“ä½œ
    * @param registry
    */
   virtual void Shutdown() override
@@ -134,20 +134,20 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   }
 
   /**
-   * @brief °´ÕÕÔà±ê¼Ç¸üĞÂ×é¼ş(ÖğÖ¡µ÷ÓÃ)
-   * @param deltaTime Ö¡ÓëÖ¡Ê±¼ä¼ä¸ô
+   * @brief æŒ‰ç…§è„æ ‡è®°æ›´æ–°ç»„ä»¶(é€å¸§è°ƒç”¨)
+   * @param deltaTime å¸§ä¸å¸§æ—¶é—´é—´éš”
    */
   virtual void Update(float deltaTime, SceneRegistry &registry) override
   {
-    // ½×¶Î1£ºÊÕ¼¯Ôà×é¼ş
+    // é˜¶æ®µ1ï¼šæ”¶é›†è„ç»„ä»¶
     CollectDirtyComponents();
 
-    // ½×¶Î2£º²¢ĞĞ´¦Àí
+    // é˜¶æ®µ2ï¼šå¹¶è¡Œå¤„ç†
     ProcessDirtyComponents(deltaTime, registry);
   }
 
   /**
-   * @brief »ñÈ¡¸ÃÏµÍ³¹ÜÀíµÄ×é¼şÀàĞÍÁĞ±í
+   * @brief è·å–è¯¥ç³»ç»Ÿç®¡ç†çš„ç»„ä»¶ç±»å‹åˆ—è¡¨
    */
   std::vector<std::type_index> GetComponentTypes() const
   {
@@ -155,7 +155,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   }
 
   /**
-   * @brief »ñÈ¡¸ÃÏµÍ³ÒÀÀµµÄÆäËûÏµÍ³ÀàĞÍ
+   * @brief è·å–è¯¥ç³»ç»Ÿä¾èµ–çš„å…¶ä»–ç³»ç»Ÿç±»å‹
    */
   virtual std::vector<std::type_index> GetSystemDependencies() const override
   {
@@ -163,7 +163,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   }
 
   /**
-   * @brief ÏµÍ³Ö´ĞĞÓÅÏÈ¼¶(Ô½Ğ¡Ô½ÏÈÖ´ĞĞ)
+   * @brief ç³»ç»Ÿæ‰§è¡Œä¼˜å…ˆçº§(è¶Šå°è¶Šå…ˆæ‰§è¡Œ)
    */
   virtual Component::Family GetExecutionOrder() const
   {
@@ -171,43 +171,43 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   }
 
   /**
-   * @brief ´¦Àí×é¼şÌí¼ÓÊÂ¼ş
-   * @param e ÊÂ¼ş
+   * @brief å¤„ç†ç»„ä»¶æ·»åŠ äº‹ä»¶
+   * @param e äº‹ä»¶
    */
   virtual bool OnComponentAdded(ComponentAddedEvent<T> &e) 
   {
     Register(&e.GetComponent());
 
-    // ±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬×è¶Ï´«²¥
+    // æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œé˜»æ–­ä¼ æ’­
     e.Handled();
     return e.handled;
   }
 
   /**
-   * @brief ´¦Àí×é¼şÌæ»»ÊÂ¼ş
+   * @brief å¤„ç†ç»„ä»¶æ›¿æ¢äº‹ä»¶
    *
-   * ×¢Òâ£º
-   * ½öµ±µ÷ÓÃSceneRegistryµÄReplaceComponent
-   * »òPatchComponent£¬ĞŞ¸ÄÏÖÓĞ×é¼şÊ±´¥·¢¡£
+   * æ³¨æ„ï¼š
+   * ä»…å½“è°ƒç”¨SceneRegistryçš„ReplaceComponent
+   * æˆ–PatchComponentï¼Œä¿®æ”¹ç°æœ‰ç»„ä»¶æ—¶è§¦å‘ã€‚
    */
   //virtual bool OnComponentUpdated(ComponentChangedEvent<T> &e) {}
 
   /**
-   * @brief ´¦Àí×é¼şÒÆ³ıÊÂ¼ş
+   * @brief å¤„ç†ç»„ä»¶ç§»é™¤äº‹ä»¶
    */
   virtual bool OnComponentRemoved(ComponentRemovedEvent<T> &e) 
   {
     Unregister(&e.GetComponent());
 
-    // ±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬×è¶Ï´«²¥
+    // æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œé˜»æ–­ä¼ æ’­
     e.Handled();
     return e.handled;
   }
 
  protected:
   /**
-   * @brief ½«×é¼ş×¢²á½øÎ¬»¤ÁĞ±í
-   * @param component ×é¼şÖ¸Õë
+   * @brief å°†ç»„ä»¶æ³¨å†Œè¿›ç»´æŠ¤åˆ—è¡¨
+   * @param component ç»„ä»¶æŒ‡é’ˆ
    */
   void Register(T *component)
   {
@@ -216,8 +216,8 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   }
 
   /**
-   * @brief ½«×é¼ş´ÓÎ¬»¤ÁĞ±íÒÆ³ı
-   * @param component ×é¼şÖ¸Õë
+   * @brief å°†ç»„ä»¶ä»ç»´æŠ¤åˆ—è¡¨ç§»é™¤
+   * @param component ç»„ä»¶æŒ‡é’ˆ
    */
   void Unregister(T *component)
   {
@@ -226,13 +226,13 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
                           m_AllComponents.end());
   }
   /**
-   * @brief »ñÈ¡Ôà×é¼şÁĞ±í
+   * @brief è·å–è„ç»„ä»¶åˆ—è¡¨
    */
   void CollectDirtyComponents()
   {
     m_DirtyComponents.clear();
 
-    // ²¢ĞĞÊÕ¼¯ÓÅ»¯
+    // å¹¶è¡Œæ”¶é›†ä¼˜åŒ–
     std::vector<T *> localDirtyComponents;
     std::mutex mutex;
     std::for_each(
@@ -243,17 +243,17 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
           }
         });
 
-    // ºÏ²¢½á¹û
+    // åˆå¹¶ç»“æœ
     m_DirtyComponents.insert(
         m_DirtyComponents.end(), localDirtyComponents.begin(), localDirtyComponents.end());
   }
 
   /**
-   * @brief ²¢ĞĞÖ´ĞĞÔà×é¼şµÄUpdate
+   * @brief å¹¶è¡Œæ‰§è¡Œè„ç»„ä»¶çš„Update
    */
   virtual void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
   {
-    // ²¢ĞĞ´¦ÀíÓÅ»¯
+    // å¹¶è¡Œå¤„ç†ä¼˜åŒ–
     std::for_each(std::execution::par,
                   m_DirtyComponents.begin(),
                   m_DirtyComponents.end(),

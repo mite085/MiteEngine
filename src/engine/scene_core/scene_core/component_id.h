@@ -7,45 +7,45 @@
 namespace mite {
 /**
  * @class ComponentID
- * @brief Î¨Ò»±êÊ¶×é¼şÀàĞÍµÄIDÏµÍ³
+ * @brief å”¯ä¸€æ ‡è¯†ç»„ä»¶ç±»å‹çš„IDç³»ç»Ÿ
  *
- * Ìá¹©±àÒëÆÚºÍÔËĞĞÊ±µÄ×é¼şÀàĞÍ±êÊ¶ÄÜÁ¦£¬Ö§³Ö£º
- * 1. ÀàĞÍ°²È«µÄ×é¼ş²Ù×÷
- * 2. ÔËĞĞÊ±ÀàĞÍ²éÑ¯
- * 3. ĞòÁĞ»¯Ö§³Ö
+ * æä¾›ç¼–è¯‘æœŸå’Œè¿è¡Œæ—¶çš„ç»„ä»¶ç±»å‹æ ‡è¯†èƒ½åŠ›ï¼Œæ”¯æŒï¼š
+ * 1. ç±»å‹å®‰å…¨çš„ç»„ä»¶æ“ä½œ
+ * 2. è¿è¡Œæ—¶ç±»å‹æŸ¥è¯¢
+ * 3. åºåˆ—åŒ–æ”¯æŒ
  */
 class ComponentID {
  public:
-  // »ñÈ¡ÌØ¶¨×é¼şÀàĞÍµÄID (±àÒëÆÚÈ·¶¨)
+  // è·å–ç‰¹å®šç»„ä»¶ç±»å‹çš„ID (ç¼–è¯‘æœŸç¡®å®š)
   template<typename T> static ComponentID Get();
 
-  // »ñÈ¡Î´ÖªÀàĞÍµÄID (ÔËĞĞÊ±Ê¹ÓÃ)
+  // è·å–æœªçŸ¥ç±»å‹çš„ID (è¿è¡Œæ—¶ä½¿ç”¨)
   static ComponentID FromString(const std::string &uuidStr);
 
-  // ±È½Ï²Ù×÷
+  // æ¯”è¾ƒæ“ä½œ
   bool operator==(const ComponentID &other) const;
   bool operator!=(const ComponentID &other) const;
   bool operator<(const ComponentID &other) const;
 
-  // ×ª»»Îª×Ö·û´®±íÊ¾
+  // è½¬æ¢ä¸ºå­—ç¬¦ä¸²è¡¨ç¤º
   std::string ToString() const;
 
-  // »ñÈ¡¹şÏ£Öµ
+  // è·å–å“ˆå¸Œå€¼
   size_t Hash() const;
 
-  // ÊÇ·ñÎªÓĞĞ§ID
+  // æ˜¯å¦ä¸ºæœ‰æ•ˆID
   bool IsValid() const;
 
  private:
   explicit ComponentID(UUID id);
 
-  // ÄÚ²¿UUID´æ´¢
+  // å†…éƒ¨UUIDå­˜å‚¨
   UUID m_ID;
 };
 
 };  // namespace mite
 
-// ¹şÏ£ÌØ»¯
+// å“ˆå¸Œç‰¹åŒ–
 namespace std {
 template<> struct hash<mite::ComponentID> {
   size_t operator()(const mite::ComponentID &id) const

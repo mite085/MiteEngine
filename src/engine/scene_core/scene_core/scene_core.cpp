@@ -5,10 +5,10 @@ namespace mite {
 SceneCore::SceneCore(const std::string &name)
     : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
 {
-  // ³õÊ¼»¯ºËĞÄÏµÍ³
+  // åˆå§‹åŒ–æ ¸å¿ƒç³»ç»Ÿ
   RegisterComponentSystems();
 
-  //// TODO: ´´½¨Ä¬ÈÏ»·¾³ÊµÌå
+  //// TODO: åˆ›å»ºé»˜è®¤ç¯å¢ƒå®ä½“
   // auto env = CreateEntity("Environment");
   // env.AddComponent<EnvironmentComponent>();
 }
@@ -20,19 +20,19 @@ SceneCore::~SceneCore()
 
 void SceneCore::InitializeComponentSystems()
 {
-  // ³õÊ¼»¯ËùÓĞ×é¼şÏµÍ³
+  // åˆå§‹åŒ–æ‰€æœ‰ç»„ä»¶ç³»ç»Ÿ
   m_SystemManager.InitializeAll();
 }
 
 void SceneCore::ShutdownComponentSystems()
 {
-  // ¹Ø±ÕËùÓĞ×é¼şÏµÍ³
+  // å…³é—­æ‰€æœ‰ç»„ä»¶ç³»ç»Ÿ
   m_SystemManager.ShutdownAll();
 }
 
 void SceneCore::RegisterComponentSystems()
 {
-  // Öğ¸ö×¢²á×é¼şÏµÍ³
+  // é€ä¸ªæ³¨å†Œç»„ä»¶ç³»ç»Ÿ
   m_SystemManager.RegisterSystem<CameraComponentSystem>();
   m_SystemManager.RegisterSystem<DestroyComponentSystem>();
   m_SystemManager.RegisterSystem<IDComponentSystem>();
@@ -45,7 +45,7 @@ void SceneCore::RegisterComponentSystems()
 
 void SceneCore::UnregisterComponentSystems()
 {
-  // Öğ¸ö×¢Ïú×é¼şÏµÍ³
+  // é€ä¸ªæ³¨é”€ç»„ä»¶ç³»ç»Ÿ
   m_SystemManager.UnregisterSystem<CameraComponentSystem>();
   m_SystemManager.UnregisterSystem<DestroyComponentSystem>();
   m_SystemManager.UnregisterSystem<IDComponentSystem>();
@@ -58,10 +58,10 @@ void SceneCore::UnregisterComponentSystems()
 
 void SceneCore::OnUpdate(float timestep)
 {
-  // ¸üĞÂËùÓĞ×¢²áµÄÏµÍ³
+  // æ›´æ–°æ‰€æœ‰æ³¨å†Œçš„ç³»ç»Ÿ
   m_SystemManager.UpdateAll(timestep);
 
-  // ´¦ÀíÊµÌåÏú»Ù¶ÓÁĞ
+  // å¤„ç†å®ä½“é”€æ¯é˜Ÿåˆ—
   auto entities = m_Registry.GetEntitiesWith<DestroyComponent>();
   for (auto entity : entities) {
     m_Registry.DestroyEntity(entity);
@@ -70,26 +70,26 @@ void SceneCore::OnUpdate(float timestep)
 
 void SceneCore::OnRenderPrepare()
 {
-  // ×¼±¸³¡¾°Í¼äÖÈ¾×´Ì¬
+  // å‡†å¤‡åœºæ™¯å›¾æ¸²æŸ“çŠ¶æ€
   // m_SceneGraph->OnRenderPrepare();
 }
 
 void SceneCore::Clear(bool keepSystems)
 {
-  // 1. Ïú»ÙËùÓĞÊµÌå£¨²»´¥·¢µ¥¶ÀÏú»ÙÊÂ¼ş£¬Ö±½ÓÅúÁ¿Çå³ı£©
+  // 1. é”€æ¯æ‰€æœ‰å®ä½“ï¼ˆä¸è§¦å‘å•ç‹¬é”€æ¯äº‹ä»¶ï¼Œç›´æ¥æ‰¹é‡æ¸…é™¤ï¼‰
   m_Registry.Clear();
 
-  // 2. ÖØÖÃÊµÌåID¼ÆÊıÆ÷
+  // 2. é‡ç½®å®ä½“IDè®¡æ•°å™¨
   m_EntityCounter = 0;
 
-  // 3. TODO: ÖØÖÃÖ÷Ïà»ú
+  // 3. TODO: é‡ç½®ä¸»ç›¸æœº
 
-  // 6. ¸ù¾İ²ÎÊı¾ö¶¨ÊÇ·ñÖØÖÃÏµÍ³
+  // 6. æ ¹æ®å‚æ•°å†³å®šæ˜¯å¦é‡ç½®ç³»ç»Ÿ
   if (!keepSystems) {
     UnregisterComponentSystems();
   }
 
-  // 7. TODO: ÏµÍ³±£ÁôÔòÖØĞÂ´´½¨Ä¬ÈÏ»·¾³ÊµÌå£¨±ÜÃâÓëÎö¹¹º¯ÊıµÄClear³åÍ»£©
+  // 7. TODO: ç³»ç»Ÿä¿ç•™åˆ™é‡æ–°åˆ›å»ºé»˜è®¤ç¯å¢ƒå®ä½“ï¼ˆé¿å…ä¸ææ„å‡½æ•°çš„Clearå†²çªï¼‰
   if (keepSystems) {
   }
 }
@@ -108,7 +108,7 @@ void SceneCore::DestroyEntity(Entity entity)
     return;
   }
 
-  // ±ê¼ÇÏú»Ù¶ø²»ÊÇÁ¢¼´Ïú»Ù£¬±ÜÃâµü´úÆ÷Ê§Ğ§
+  // æ ‡è®°é”€æ¯è€Œä¸æ˜¯ç«‹å³é”€æ¯ï¼Œé¿å…è¿­ä»£å™¨å¤±æ•ˆ
   m_Registry.AddComponent<DestroyComponent>(entity);
 }
 
@@ -119,17 +119,17 @@ bool SceneCore::IsValid(Entity entity) const
 
 std::shared_ptr<Camera> SceneCore::GetMainCamera() const
 {
-  // Í¨¹ı·ÃÎÊCamera×é¼şÏµÍ³£¬»ñÈ¡µ½ÆäÎ¬»¤µÄÖ÷Ïà»úÊµÌå
+  // é€šè¿‡è®¿é—®Cameraç»„ä»¶ç³»ç»Ÿï¼Œè·å–åˆ°å…¶ç»´æŠ¤çš„ä¸»ç›¸æœºå®ä½“
   Entity mainCameraEntity =
       m_SystemManager.GetSystem<CameraComponentSystem>()->GetMainCameraEntity();
 
-  // ÎŞÖ÷Ïà»úÇé¿ö±¨´í£¬²¢·µ»Ønullptr
+  // æ— ä¸»ç›¸æœºæƒ…å†µæŠ¥é”™ï¼Œå¹¶è¿”å›nullptr
   if (!mainCameraEntity.IsValid()) {
     LOG_ERROR("Invalid Main Camera in CameraComponentSystem!");
     return nullptr;
   }
 
-  // ²éÑ¯µ½×é¼ş£¬»ñÈ¡µ½Ïà»ú²¢·µ»Ø
+  // æŸ¥è¯¢åˆ°ç»„ä»¶ï¼Œè·å–åˆ°ç›¸æœºå¹¶è¿”å›
   std::shared_ptr<Camera> mainCamera =
       m_Registry.GetComponent<CameraComponent>(mainCameraEntity).GetCamera();
   return mainCamera;
@@ -137,17 +137,17 @@ std::shared_ptr<Camera> SceneCore::GetMainCamera() const
 
 uint32_t SceneCore::GetMainCameraVisibilityMask() const
 {
-  // Í¨¹ı·ÃÎÊCamera×é¼şÏµÍ³£¬»ñÈ¡µ½ÆäÎ¬»¤µÄÖ÷Ïà»úÊµÌå
+  // é€šè¿‡è®¿é—®Cameraç»„ä»¶ç³»ç»Ÿï¼Œè·å–åˆ°å…¶ç»´æŠ¤çš„ä¸»ç›¸æœºå®ä½“
   Entity mainCameraEntity =
       m_SystemManager.GetSystem<CameraComponentSystem>()->GetMainCameraEntity();
 
-  // ÎŞÖ÷Ïà»úÇé¿ö±¨´í£¬²¢·µ»ØÈ«²¿²»¿É¼û
+  // æ— ä¸»ç›¸æœºæƒ…å†µæŠ¥é”™ï¼Œå¹¶è¿”å›å…¨éƒ¨ä¸å¯è§
   if (!mainCameraEntity.IsValid()) {
     LOG_ERROR("Invalid Main Camera in CameraComponentSystem!");
     return CameraVisibilityMask::NONE;
   }
 
-  // ²éÑ¯µ½×é¼ş£¬»ñÈ¡µ½Ïà»ú¿É¼ûĞÔÑÚÂë²¢·µ»Ø
+  // æŸ¥è¯¢åˆ°ç»„ä»¶ï¼Œè·å–åˆ°ç›¸æœºå¯è§æ€§æ©ç å¹¶è¿”å›
   uint32_t mainCameraVisibilityMask =
       m_Registry.GetComponent<CameraComponent>(mainCameraEntity).GetVisibilityMask();
   return mainCameraVisibilityMask;
@@ -155,7 +155,7 @@ uint32_t SceneCore::GetMainCameraVisibilityMask() const
 
 void SceneCore::SetMainCamera(Entity mainCameraEntity)
 {
-  // Í¨¹ı·ÃÎÊCamera×é¼şÏµÍ³£¬¸ü»»ÆäÎ¬»¤µÄÖ÷Ïà»úÊµÌå
+  // é€šè¿‡è®¿é—®Cameraç»„ä»¶ç³»ç»Ÿï¼Œæ›´æ¢å…¶ç»´æŠ¤çš„ä¸»ç›¸æœºå®ä½“
   m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);
 }
 }  // namespace mite

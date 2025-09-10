@@ -6,14 +6,14 @@
 
 namespace mite {
 /**
- * @brief ImGui±¾µØ»¯ÑùÊ½¹ÜÀíÆ÷
- * ¸ºÔğ½«±¾µØ»¯ÏµÍ³ÓëImGuiäÖÈ¾¼¯³É
+ * @brief ImGuiæœ¬åœ°åŒ–æ ·å¼ç®¡ç†å™¨
+ * è´Ÿè´£å°†æœ¬åœ°åŒ–ç³»ç»Ÿä¸ImGuiæ¸²æŸ“é›†æˆ
  */
 class ImGuiFontManager {
  public:
-  // ¼ÓÔØ×ÖÌåÑùÊ½ÎÄ¼ş£¨ttf£©
+  // åŠ è½½å­—ä½“æ ·å¼æ–‡ä»¶ï¼ˆttfï¼‰
   static void LoadFonts();
-  // Éè¶¨ImguiÈ«¾Ö×ÖÌå£¨Ä¿Ç°Ö§³Ö"en-US"ºÍ"zh-CN"£©
+  // è®¾å®šImguiå…¨å±€å­—ä½“ï¼ˆç›®å‰æ”¯æŒ"en-US"å’Œ"zh-CN"ï¼‰
   static bool SetLanguageFont(const std::string &languageCode);
 
  private:
@@ -23,23 +23,23 @@ class ImGuiFontManager {
 };
 
 /**
- * @brief ImGui±¾µØ»¯äÖÈ¾ÊÊÅäÆ÷
- * ¸ºÔğ½«±¾µØ»¯ÏµÍ³ÓëImGuiäÖÈ¾¼¯³É
+ * @brief ImGuiæœ¬åœ°åŒ–æ¸²æŸ“é€‚é…å™¨
+ * è´Ÿè´£å°†æœ¬åœ°åŒ–ç³»ç»Ÿä¸ImGuiæ¸²æŸ“é›†æˆ
  * 
- * Ê¹ÓÃÊ¾Àı£º
+ * ä½¿ç”¨ç¤ºä¾‹ï¼š
  * 
- * // ÎÄ±¾ÀàĞÍ
+ * // æ–‡æœ¬ç±»å‹
  * IMGUI_TEXT("editor.camera_position");
  * ImGui::Text("X: %.2f, Y: %.2f, Z: %.2f", m_CameraPosition.x, m_CameraPosition.y, m_CameraPosition.z);
  * 
- * // ´ø²ÎÊıµÄÎÄ±¾
+ * // å¸¦å‚æ•°çš„æ–‡æœ¬
  * std::vector<std::string> args = { "scene.mite" };
  * ImGuiLocalizationRenderer::TextFormatted("editor.scene_loaded", args);
  * 
- * // °´Å¥ÀàĞÍ
+ * // æŒ‰é’®ç±»å‹
  * IMGUI_BUTTON("common.button_save")
  * 
- * // ¸´Ñ¡¿òÀàĞÍ(µÚ¶ş¸ö²ÎÊıÎªbool)
+ * // å¤é€‰æ¡†ç±»å‹(ç¬¬äºŒä¸ªå‚æ•°ä¸ºbool)
  * IMGUI_CHECKBOX("editor.show_grid", &m_ShowGrid);
  */
 class ImGuiLocalizationRenderer {
@@ -47,13 +47,13 @@ class ImGuiLocalizationRenderer {
   static void Initialize();
   static void Shutdown();
 
-  // ÎÄ±¾äÖÈ¾º¯Êı£¨Ìæ»»ImGuiÔ­Éúº¯Êı£©
+  // æ–‡æœ¬æ¸²æŸ“å‡½æ•°ï¼ˆæ›¿æ¢ImGuiåŸç”Ÿå‡½æ•°ï¼‰
   static void Text(const char *translationKey);
   static void TextColored(const ImVec4 &col, const char *translationKey);
   static void TextDisabled(const char *translationKey);
   static void TextWrapped(const char *translationKey);
 
-  // ´ø²ÎÊıµÄÎÄ±¾äÖÈ¾
+  // å¸¦å‚æ•°çš„æ–‡æœ¬æ¸²æŸ“
   template<typename... Args>
   static void TextFormatted(const char *translationKey, const Args &&...args)
   {
@@ -62,7 +62,7 @@ class ImGuiLocalizationRenderer {
     ImGui::Text("%s", translatedText.c_str());
   }
 
-  // ¿Ø¼ş±êÇ©±¾µØ»¯
+  // æ§ä»¶æ ‡ç­¾æœ¬åœ°åŒ–
   static bool Button(const char *translationKey, const ImVec2 &size = ImVec2(0, 0));
   static bool Checkbox(const char *translationKey, bool *v);
   static bool InputText(const char *translationKey,
@@ -70,20 +70,20 @@ class ImGuiLocalizationRenderer {
                         size_t buf_size,
                         ImGuiInputTextFlags flags = 0);
 
-  // ²Ëµ¥Ïî±¾µØ»¯
+  // èœå•é¡¹æœ¬åœ°åŒ–
   static bool MenuItem(const char *translationKey,
                        const char *shortcut = NULL,
                        bool selected = false,
                        bool enabled = true);
 
-  // ¹¤¾ßÌáÊ¾±¾µØ»¯
+  // å·¥å…·æç¤ºæœ¬åœ°åŒ–
   static void SetTooltip(const char *translationKey);
 
-  // ÓïÑÔÇĞ»»UI
+  // è¯­è¨€åˆ‡æ¢UI
   static void DrawLanguageSelector();
 };
 
-// ºê¶¨Òå¼ò»¯µ÷ÓÃ
+// å®å®šä¹‰ç®€åŒ–è°ƒç”¨
 #define IMGUI_TEXT(key) mite::ImGuiLocalizationRenderer::Text(key)
 #define IMGUI_BUTTON(key) mite::ImGuiLocalizationRenderer::Button(key)
 #define IMGUI_CHECKBOX(key, v) mite::ImGuiLocalizationRenderer::Checkbox(key, v)

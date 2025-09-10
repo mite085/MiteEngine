@@ -4,12 +4,12 @@
 #include "spatial_partition.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class SceneRegistry;
 
 /**
  * @class SpatialPartitionManager
- * @brief ¸ºÔğ¿Õ¼ä»®·Ö½á¹¹ºÍ¿Õ¼ä²éÑ¯
+ * @brief è´Ÿè´£ç©ºé—´åˆ’åˆ†ç»“æ„å’Œç©ºé—´æŸ¥è¯¢
  */
 class SpatialPartitionManager {
  public:
@@ -19,84 +19,84 @@ class SpatialPartitionManager {
 
   void Clear();
 
-  // ==================== ½ÚµãÔöÉ¾¹ÜÀí½Ó¿Ú ====================
+  // ==================== èŠ‚ç‚¹å¢åˆ ç®¡ç†æ¥å£ ====================
   /**
-   * @brief Ìí¼Ó½Úµãµ½¿Õ¼ä»®·Ö½á¹¹
+   * @brief æ·»åŠ èŠ‚ç‚¹åˆ°ç©ºé—´åˆ’åˆ†ç»“æ„
    */
   void AddNodeToSpatialPartition(SceneNode *node);
 
   /**
-   * @brief ¸üĞÂ³¡¾°½ÚµãÔÚ¿Õ¼ä½á¹¹ÖĞµÄÎ»ÖÃ
-   * @param node Òª¸üĞÂµÄ³¡¾°½Úµã
+   * @brief æ›´æ–°åœºæ™¯èŠ‚ç‚¹åœ¨ç©ºé—´ç»“æ„ä¸­çš„ä½ç½®
+   * @param node è¦æ›´æ–°çš„åœºæ™¯èŠ‚ç‚¹
    */
   void Update(SceneNode *node);
 
   /**
-   * @brief ´Ó¿Õ¼ä»®·Ö½á¹¹ÖĞÒÆ³ı½Úµã
+   * @brief ä»ç©ºé—´åˆ’åˆ†ç»“æ„ä¸­ç§»é™¤èŠ‚ç‚¹
    */
   void RemoveNodeFromSpatialPartition(SceneNode *node);
 
-  // ==================== ¿Õ¼ä»®·Ö¹ÜÀí½Ó¿Ú ====================
+  // ==================== ç©ºé—´åˆ’åˆ†ç®¡ç†æ¥å£ ====================
   /**
-   * @brief ÉèÖÃ¿Õ¼ä»®·ÖÀàĞÍ
-   * @param type ¿Õ¼ä»®·ÖÀàĞÍ
+   * @brief è®¾ç½®ç©ºé—´åˆ’åˆ†ç±»å‹
+   * @param type ç©ºé—´åˆ’åˆ†ç±»å‹
    */
   void SetSpatialPartitionType(SpatialPartitionType type);
 
   /**
-   * @brief »ñÈ¡µ±Ç°¿Õ¼ä»®·ÖÀàĞÍ
-   * @return ¿Õ¼ä»®·ÖÀàĞÍ
+   * @brief è·å–å½“å‰ç©ºé—´åˆ’åˆ†ç±»å‹
+   * @return ç©ºé—´åˆ’åˆ†ç±»å‹
    */
   SpatialPartitionType GetSpatialPartitionType() const;
 
   /**
-   * @brief ÖØĞÂ¹¹½¨¿Õ¼ä»®·Ö½á¹¹£¨ÓÅ»¯ĞÔÄÜ£©
+   * @brief é‡æ–°æ„å»ºç©ºé—´åˆ’åˆ†ç»“æ„ï¼ˆä¼˜åŒ–æ€§èƒ½ï¼‰
    */
   void RebuildSpatialPartition(std::vector<SceneNode *> nodelist);
 
   /**
-   * @brief »ñÈ¡¿Õ¼ä»®·ÖÍ³¼ÆĞÅÏ¢
-   * @return Í³¼ÆĞÅÏ¢×Ö·û´®
+   * @brief è·å–ç©ºé—´åˆ’åˆ†ç»Ÿè®¡ä¿¡æ¯
+   * @return ç»Ÿè®¡ä¿¡æ¯å­—ç¬¦ä¸²
    */
   std::string GetSpatialPartitionStats() const;
 
   /**
-   * @brief µ÷ÊÔ»æÖÆ½Ó¿Ú
-   * @param drawCallback »æÖÆ»Øµ÷º¯Êı
+   * @brief è°ƒè¯•ç»˜åˆ¶æ¥å£
+   * @param drawCallback ç»˜åˆ¶å›è°ƒå‡½æ•°
    */
   void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback);
 
-  // ==================== ¿Õ¼ä²éÑ¯½Ó¿Ú£¨ÎªSceneViewÌá¹©ÓÅ»¯£© ====================
+  // ==================== ç©ºé—´æŸ¥è¯¢æ¥å£ï¼ˆä¸ºSceneViewæä¾›ä¼˜åŒ–ï¼‰ ====================
   /**
-   * @brief »ñÈ¡¿É¼û½ÚµãÊıÁ¿£¨²»Ö´ĞĞ¿É¼ûĞÔ¼ì²é£¬Ö»»ñÈ¡ÉÏ´Î¼ì²é½á¹û£©
-   * @return ¿É¼û½ÚµãÊıÁ¿
+   * @brief è·å–å¯è§èŠ‚ç‚¹æ•°é‡ï¼ˆä¸æ‰§è¡Œå¯è§æ€§æ£€æŸ¥ï¼Œåªè·å–ä¸Šæ¬¡æ£€æŸ¥ç»“æœï¼‰
+   * @return å¯è§èŠ‚ç‚¹æ•°é‡
    */
   size_t GetVisibleNodeCount() const;
 
   /**
-   * @brief ÊÓ×¶Ìå²Ã¼ô²éÑ¯ - Ö÷Òª¸øSceneViewÊ¹ÓÃ
-   * @param frustum ÊÓ×¶Ìå
-   * @return ¿É¼û½ÚµãÁĞ±í
+   * @brief è§†é”¥ä½“è£å‰ªæŸ¥è¯¢ - ä¸»è¦ç»™SceneViewä½¿ç”¨
+   * @param frustum è§†é”¥ä½“
+   * @return å¯è§èŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> QueryVisibleNodes(SceneRegistry &registry,
                                              const Frustum &frustum,
                                              uint32_t visibilityMask);
 
   /**
-   * @brief ÉäÏß¼ì²â²éÑ¯
-   * @param ray ¼ì²âÉäÏß
-   * @return Ïà½»½ÚµãÁĞ±í
+   * @brief å°„çº¿æ£€æµ‹æŸ¥è¯¢
+   * @param ray æ£€æµ‹å°„çº¿
+   * @return ç›¸äº¤èŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> QueryRaycast(SceneRegistry &registry,
                                         const Ray &ray,
                                         uint32_t visibilityMask);
 
   /**
-   * @brief ÉäÏß¼ì²â²éÑ¯£¨µÚÒ»¸öÃüÖĞ£©
-   * @param ray ¼ì²âÉäÏß
-   * @param result ÃüÖĞµÄ½Úµã£¨Êä³ö²ÎÊı£©
-   * @param distance Ïà½»¾àÀë£¨Êä³ö²ÎÊı£©
-   * @return ÊÇ·ñÃüÖĞ
+   * @brief å°„çº¿æ£€æµ‹æŸ¥è¯¢ï¼ˆç¬¬ä¸€ä¸ªå‘½ä¸­ï¼‰
+   * @param ray æ£€æµ‹å°„çº¿
+   * @param result å‘½ä¸­çš„èŠ‚ç‚¹ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @param distance ç›¸äº¤è·ç¦»ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return æ˜¯å¦å‘½ä¸­
    */
   bool QueryRaycastFirst(SceneRegistry &registry,
                          const Ray &ray,
@@ -105,43 +105,43 @@ class SpatialPartitionManager {
                          uint32_t visibilityMask);
 
   /**
-   * @brief ÇòÌå²éÑ¯
-   * @param sphere ²éÑ¯ÇòÌå
-   * @return ½á¹û½ÚµãÁĞ±í
+   * @brief çƒä½“æŸ¥è¯¢
+   * @param sphere æŸ¥è¯¢çƒä½“
+   * @return ç»“æœèŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> QuerySphere(SceneRegistry &registry,
                                        const Sphere &sphere,
                                        uint32_t visibilityMask);
 
   /**
-   * @brief AABB²éÑ¯
-   * @param aabb ²éÑ¯AABB
-   * @return ½á¹û½ÚµãÁĞ±í
+   * @brief AABBæŸ¥è¯¢
+   * @param aabb æŸ¥è¯¢AABB
+   * @return ç»“æœèŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> QueryAABB(SceneRegistry &registry,
                                      const AABB &aabb,
                                      uint32_t visibilityMask);
 
  private:
-  // ==================== ÄÚ²¿¹¤¾ß·½·¨ ====================
+  // ==================== å†…éƒ¨å·¥å…·æ–¹æ³• ====================
   /**
-   * @brief ³õÊ¼»¯¿Õ¼ä»®·Ö½á¹¹
+   * @brief åˆå§‹åŒ–ç©ºé—´åˆ’åˆ†ç»“æ„
    */
   void InitializeSpatialPartition();
 
-  // ¿Õ¼ä»®·Ö½á¹¹
+  // ç©ºé—´åˆ’åˆ†ç»“æ„
   std::unique_ptr<SpatialPartition> m_SpatialPartition;
 
-  // µ±Ç°¿Õ¼ä»®·ÖÀàĞÍ
+  // å½“å‰ç©ºé—´åˆ’åˆ†ç±»å‹
   SpatialPartitionType m_SpatialPartitionType;
 
-  // ¿É¼û½ÚµãÊıÁ¿´æ´¢
+  // å¯è§èŠ‚ç‚¹æ•°é‡å­˜å‚¨
   size_t m_VisibleNodeCount;
 
-  // Ïß³Ì°²È«±£»¤
+  // çº¿ç¨‹å®‰å…¨ä¿æŠ¤
   mutable std::mutex m_Mutex;
 
-  // ÈÕÖ¾Æ÷
+  // æ—¥å¿—å™¨
   Logger m_Logger;
 };
 }  // namespace mite

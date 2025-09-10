@@ -6,18 +6,18 @@
 
 namespace mite {
 /**
- * @brief Í³Ò»²ÄÖÊ²ÎÊı±äÌåÀàĞÍ
- * @ÌØµã£º
- * 1. Ê¹ÓÃstd::variantÊµÏÖÀàĞÍ°²È«´æ´¢
- * 2. Ö§³ÖËùÓĞGLSL±ê×¼UniformÀàĞÍ
- * 3. ×Ô¶¯ÄÚ´æ¹ÜÀí£¨ÌØ±ğÊÇÊı×éÀàĞÍ£©
- * 4. Ìá¹©±ã½İµÄÀàĞÍ¼ì²éºÍ·ÃÎÊ½Ó¿Ú
+ * @brief ç»Ÿä¸€æè´¨å‚æ•°å˜ä½“ç±»å‹
+ * @ç‰¹ç‚¹ï¼š
+ * 1. ä½¿ç”¨std::variantå®ç°ç±»å‹å®‰å…¨å­˜å‚¨
+ * 2. æ”¯æŒæ‰€æœ‰GLSLæ ‡å‡†Uniformç±»å‹
+ * 3. è‡ªåŠ¨å†…å­˜ç®¡ç†ï¼ˆç‰¹åˆ«æ˜¯æ•°ç»„ç±»å‹ï¼‰
+ * 4. æä¾›ä¾¿æ·çš„ç±»å‹æ£€æŸ¥å’Œè®¿é—®æ¥å£
  */
 class UniformVariant {
  public:
-  // ---- Ö§³ÖµÄ²ÎÊıÀàĞÍ ----
-  using VariantType = std::variant<std::monostate,            // ¿Õ×´Ì¬£¨Ìæ´úNone£©
-                                   bool,                      // bool (×Ô¶¯×ª»»Îªint)
+  // ---- æ”¯æŒçš„å‚æ•°ç±»å‹ ----
+  using VariantType = std::variant<std::monostate,            // ç©ºçŠ¶æ€ï¼ˆæ›¿ä»£Noneï¼‰
+                                   bool,                      // bool (è‡ªåŠ¨è½¬æ¢ä¸ºint)
                                    int,                       // int
                                    unsigned int,              // uint
                                    float,                     // float
@@ -29,10 +29,10 @@ class UniformVariant {
                                    std::vector<int>,          // int[]
                                    std::vector<float>,        // float[]
                                    std::vector<glm::vec3>,    // vec3[]
-                                   std::shared_ptr<Texture>  // ÎÆÀíÀàĞÍ
+                                   std::shared_ptr<Texture>  // çº¹ç†ç±»å‹
                                    >;
 
-  // ---- ÀàĞÍÃ¶¾Ù ----
+  // ---- ç±»å‹æšä¸¾ ----
   enum class Type {
     None,
     Bool,
@@ -50,25 +50,25 @@ class UniformVariant {
     Texture
   };
 
-  // ---- ¹¹Ôìº¯Êı ----
+  // ---- æ„é€ å‡½æ•° ----
   UniformVariant() = default;
 
-  // Í¨ÓÃ¹¹Ôìº¯Êı£¨Ö§³ÖËùÓĞvariantÀàĞÍ£©
+  // é€šç”¨æ„é€ å‡½æ•°ï¼ˆæ”¯æŒæ‰€æœ‰variantç±»å‹ï¼‰
   template<typename T> UniformVariant(T &&value) : m_Data(std::forward<T>(value))
   {
     static_assert(std::is_constructible_v<VariantType, T>, "Invalid uniform type");
   }
 
-  // ---- ÀàĞÍ²éÑ¯ ----
+  // ---- ç±»å‹æŸ¥è¯¢ ----
   Type GetType() const;
 
-  // ÀàĞÍ¼ì²é
+  // ç±»å‹æ£€æŸ¥
   template<typename T> bool Is() const
   {
     return std::holds_alternative<T>(m_Data);
   }
 
-  // ---- Öµ»ñÈ¡£¨°²È«°æ£©----
+  // ---- å€¼è·å–ï¼ˆå®‰å…¨ç‰ˆï¼‰----
   template<typename T> bool TryGet(T &out) const
   {
     if (const T *ptr = std::get_if<T>(&m_Data)) {
@@ -78,7 +78,7 @@ class UniformVariant {
     return false;
   }
 
-  // ---- Öµ»ñÈ¡£¨·Ç°²È«°æ£©----
+  // ---- å€¼è·å–ï¼ˆéå®‰å…¨ç‰ˆï¼‰----
   template<typename T> const T &Get() const
   {
     return std::get<T>(m_Data);
@@ -89,28 +89,28 @@ class UniformVariant {
     return m_Data;
   }
 
-  // ---- ×ª»»Îª¾ÉUniformValue¼æÈİ½Ó¿Ú ----
-  // ÓÃÓÚMaterialInstanceµÄµ÷ÓÃ
+  // ---- è½¬æ¢ä¸ºæ—§UniformValueå…¼å®¹æ¥å£ ----
+  // ç”¨äºMaterialInstanceçš„è°ƒç”¨
 
-  // »ñÈ¡floatÖµ£¨Ê§°Ü·µ»ØÄ¬ÈÏÖµ£©
+  // è·å–floatå€¼ï¼ˆå¤±è´¥è¿”å›é»˜è®¤å€¼ï¼‰
   float GetFloat(float defaultValue = 0.0f) const;
 
-  // »ñÈ¡intÖµ£¨Ê§°Ü·µ»ØÄ¬ÈÏÖµ£©
+  // è·å–intå€¼ï¼ˆå¤±è´¥è¿”å›é»˜è®¤å€¼ï¼‰
   int GetInt(int defaultValue = 0) const;
 
-  // »ñÈ¡Êı×éÖ¸ÕëºÍ³¤¶È£¨¼æÈİ¾É½Ó¿Ú£©
+  // è·å–æ•°ç»„æŒ‡é’ˆå’Œé•¿åº¦ï¼ˆå…¼å®¹æ—§æ¥å£ï¼‰
   template<typename T> std::pair<const T *, size_t> GetArray() const;
 
-  // ---- ¸¨Öú·½·¨ ----
+  // ---- è¾…åŠ©æ–¹æ³• ----
   std::string GetTypeName() const;
 
   /**
-   * @brief ±äÁ¿×ª»»ÎªShaderµÄstring¹¤¾ß
+   * @brief å˜é‡è½¬æ¢ä¸ºShaderçš„stringå·¥å…·
    *
-   * ×¢Òâ£º
-   * Ô­ÔòÉÏÕâ¸ö·½·¨Ó¦µ±ÓÉRendererÄ£¿é¸ºÔğ£¬MaterialÄ£¿é
-   * Ê¹ÓÃ¸Ã·½·¨¿ÉÒÔ¸ü·½±ãµÄ´ÓMaterialTemplate²ÄÖÊÄ£°åÖĞ
-   * ÅÉÉúĞÂµÄ²ÄÖÊ¡£
+   * æ³¨æ„ï¼š
+   * åŸåˆ™ä¸Šè¿™ä¸ªæ–¹æ³•åº”å½“ç”±Rendereræ¨¡å—è´Ÿè´£ï¼ŒMaterialæ¨¡å—
+   * ä½¿ç”¨è¯¥æ–¹æ³•å¯ä»¥æ›´æ–¹ä¾¿çš„ä»MaterialTemplateæè´¨æ¨¡æ¿ä¸­
+   * æ´¾ç”Ÿæ–°çš„æè´¨ã€‚
    */
   std::string ToShaderString() const;
 

@@ -10,150 +10,150 @@ namespace mite {
 
 /**
  * @class SpatialPartition
- * @brief ¿Õ¼ä»®·Ö³éÏó½Ó¿Ú£¬¶¨Òå¿Õ¼äÊı¾İ½á¹¹µÄÍ³Ò»½Ó¿Ú
+ * @brief ç©ºé—´åˆ’åˆ†æŠ½è±¡æ¥å£ï¼Œå®šä¹‰ç©ºé—´æ•°æ®ç»“æ„çš„ç»Ÿä¸€æ¥å£
  *
- * ÓÃÓÚ³¡¾°¿Õ¼ä¹ÜÀíºÍ¿ìËÙ²éÑ¯£¬Ö§³Ö¶àÖÖ¿Õ¼ä»®·ÖËã·¨£¨BVH¡¢ËÄ²æÊ÷¡¢°Ë²æÊ÷µÈ£©
- * ²ÉÓÃ²ßÂÔÄ£Ê½£¬ÔÊĞíÔËĞĞÊ±ÇĞ»»²»Í¬µÄ¿Õ¼ä»®·ÖÊµÏÖ
+ * ç”¨äºåœºæ™¯ç©ºé—´ç®¡ç†å’Œå¿«é€ŸæŸ¥è¯¢ï¼Œæ”¯æŒå¤šç§ç©ºé—´åˆ’åˆ†ç®—æ³•ï¼ˆBVHã€å››å‰æ ‘ã€å…«å‰æ ‘ç­‰ï¼‰
+ * é‡‡ç”¨ç­–ç•¥æ¨¡å¼ï¼Œå…è®¸è¿è¡Œæ—¶åˆ‡æ¢ä¸åŒçš„ç©ºé—´åˆ’åˆ†å®ç°
  */
 class SpatialPartition {
  public:
   virtual ~SpatialPartition() = default;
 
   /**
-   * @brief ²åÈë³¡¾°½Úµãµ½¿Õ¼ä½á¹¹ÖĞ
-   * @param node Òª²åÈëµÄ³¡¾°½Úµã
+   * @brief æ’å…¥åœºæ™¯èŠ‚ç‚¹åˆ°ç©ºé—´ç»“æ„ä¸­
+   * @param node è¦æ’å…¥çš„åœºæ™¯èŠ‚ç‚¹
    */
   virtual void Insert(SceneNode *node) = 0;
 
   /**
-   * @brief ´Ó¿Õ¼ä½á¹¹ÖĞÒÆ³ı³¡¾°½Úµã
-   * @param node ÒªÒÆ³ıµÄ³¡¾°½Úµã
+   * @brief ä»ç©ºé—´ç»“æ„ä¸­ç§»é™¤åœºæ™¯èŠ‚ç‚¹
+   * @param node è¦ç§»é™¤çš„åœºæ™¯èŠ‚ç‚¹
    */
   virtual void Remove(SceneNode *node) = 0;
 
   /**
-   * @brief ¸üĞÂ³¡¾°½ÚµãÔÚ¿Õ¼ä½á¹¹ÖĞµÄÎ»ÖÃ
-   * @param node Òª¸üĞÂµÄ³¡¾°½Úµã
+   * @brief æ›´æ–°åœºæ™¯èŠ‚ç‚¹åœ¨ç©ºé—´ç»“æ„ä¸­çš„ä½ç½®
+   * @param node è¦æ›´æ–°çš„åœºæ™¯èŠ‚ç‚¹
    */
   virtual void Update(SceneNode *node) = 0;
 
   /**
-   * @brief Çå¿ÕÕû¸ö¿Õ¼ä½á¹¹
+   * @brief æ¸…ç©ºæ•´ä¸ªç©ºé—´ç»“æ„
    */
   virtual void Clear() = 0;
 
   /**
-   * @brief ÖØ½¨¿Õ¼ä½á¹¹£¨ÓÅ»¯ĞÔÄÜ£©
+   * @brief é‡å»ºç©ºé—´ç»“æ„ï¼ˆä¼˜åŒ–æ€§èƒ½ï¼‰
    */
   virtual void Rebuild() = 0;
 
   /**
-   * @brief ÉäÏß¼ì²â£¬·µ»ØËùÓĞÏà½»µÄ³¡¾°½Úµã
-   * @param ray ¼ì²âÉäÏß
-   * @param results Ïà½»½á¹ûÁĞ±í£¨Êä³ö²ÎÊı£©
-   * @return ÊÇ·ñÕÒµ½Ïà½»½Úµã
+   * @brief å°„çº¿æ£€æµ‹ï¼Œè¿”å›æ‰€æœ‰ç›¸äº¤çš„åœºæ™¯èŠ‚ç‚¹
+   * @param ray æ£€æµ‹å°„çº¿
+   * @param results ç›¸äº¤ç»“æœåˆ—è¡¨ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return æ˜¯å¦æ‰¾åˆ°ç›¸äº¤èŠ‚ç‚¹
    */
   virtual bool Raycast(const Ray &ray, std::vector<SceneNode *> &results) = 0;
 
   /**
-   * @brief ÉäÏß¼ì²â£¬·µ»ØµÚÒ»¸öÏà½»µÄ³¡¾°½Úµã
-   * @param ray ¼ì²âÉäÏß
-   * @param result Ïà½»½á¹û£¨Êä³ö²ÎÊı£©
-   * @param distance Ïà½»¾àÀë£¨Êä³ö²ÎÊı£©
-   * @return ÊÇ·ñÕÒµ½Ïà½»½Úµã
+   * @brief å°„çº¿æ£€æµ‹ï¼Œè¿”å›ç¬¬ä¸€ä¸ªç›¸äº¤çš„åœºæ™¯èŠ‚ç‚¹
+   * @param ray æ£€æµ‹å°„çº¿
+   * @param result ç›¸äº¤ç»“æœï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @param distance ç›¸äº¤è·ç¦»ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return æ˜¯å¦æ‰¾åˆ°ç›¸äº¤èŠ‚ç‚¹
    */
   virtual bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) = 0;
 
   /**
-   * @brief ÊÓ×¶Ìå²Ã¼ô£¬·µ»ØÊÓ×¶ÌåÄÚµÄËùÓĞ³¡¾°½Úµã
-   * @param frustum ÊÓ×¶Ìå
-   * @param results ¿É¼û½ÚµãÁĞ±í£¨Êä³ö²ÎÊı£©
-   * @return ¿É¼û½ÚµãÊıÁ¿
+   * @brief è§†é”¥ä½“è£å‰ªï¼Œè¿”å›è§†é”¥ä½“å†…çš„æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹
+   * @param frustum è§†é”¥ä½“
+   * @param results å¯è§èŠ‚ç‚¹åˆ—è¡¨ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return å¯è§èŠ‚ç‚¹æ•°é‡
    */
   virtual int FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) = 0;
 
   /**
-   * @brief ÇòÌå²éÑ¯£¬·µ»ØÇòÌåÄÚµÄËùÓĞ³¡¾°½Úµã
-   * @param sphere ²éÑ¯ÇòÌå
-   * @param results ½á¹û½ÚµãÁĞ±í£¨Êä³ö²ÎÊı£©
-   * @return ½á¹û½ÚµãÊıÁ¿
+   * @brief çƒä½“æŸ¥è¯¢ï¼Œè¿”å›çƒä½“å†…çš„æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹
+   * @param sphere æŸ¥è¯¢çƒä½“
+   * @param results ç»“æœèŠ‚ç‚¹åˆ—è¡¨ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return ç»“æœèŠ‚ç‚¹æ•°é‡
    */
   virtual size_t SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results) = 0;
 
   /**
-   * @brief AABB²éÑ¯£¬·µ»ØAABBÄÚµÄËùÓĞ³¡¾°½Úµã
-   * @param aabb ²éÑ¯AABB
-   * @param results ½á¹û½ÚµãÁĞ±í£¨Êä³ö²ÎÊı£©
-   * @return ½á¹û½ÚµãÊıÁ¿
+   * @brief AABBæŸ¥è¯¢ï¼Œè¿”å›AABBå†…çš„æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹
+   * @param aabb æŸ¥è¯¢AABB
+   * @param results ç»“æœèŠ‚ç‚¹åˆ—è¡¨ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return ç»“æœèŠ‚ç‚¹æ•°é‡
    */
   virtual size_t AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results) = 0;
 
   /**
-   * @brief µã²éÑ¯£¬·µ»Ø°üº¬µãµÄËùÓĞ³¡¾°½Úµã
-   * @param point ²éÑ¯µã
-   * @param results ½á¹û½ÚµãÁĞ±í£¨Êä³ö²ÎÊı£©
-   * @return ½á¹û½ÚµãÊıÁ¿
+   * @brief ç‚¹æŸ¥è¯¢ï¼Œè¿”å›åŒ…å«ç‚¹çš„æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹
+   * @param point æŸ¥è¯¢ç‚¹
+   * @param results ç»“æœèŠ‚ç‚¹åˆ—è¡¨ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return ç»“æœèŠ‚ç‚¹æ•°é‡
    */
   virtual size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) = 0;
 
   /**
-   * @brief ×î½üÁÚ²éÑ¯£¬·µ»Ø¾àÀëµã×î½üµÄ³¡¾°½Úµã
-   * @param point ²éÑ¯µã
-   * @param result ×î½ü½Úµã£¨Êä³ö²ÎÊı£©
-   * @param maxDistance ×î´óËÑË÷¾àÀë
-   * @return ÊÇ·ñÕÒµ½½Úµã
+   * @brief æœ€è¿‘é‚»æŸ¥è¯¢ï¼Œè¿”å›è·ç¦»ç‚¹æœ€è¿‘çš„åœºæ™¯èŠ‚ç‚¹
+   * @param point æŸ¥è¯¢ç‚¹
+   * @param result æœ€è¿‘èŠ‚ç‚¹ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @param maxDistance æœ€å¤§æœç´¢è·ç¦»
+   * @return æ˜¯å¦æ‰¾åˆ°èŠ‚ç‚¹
    */
   virtual bool NearestNeighbor(const glm::vec3 &point,
                                SceneNode *&result,
                                float maxDistance = FLT_MAX) = 0;
 
   /**
-   * @brief ±éÀúËùÓĞ³¡¾°½ÚµãÖ´ĞĞ»Øµ÷º¯Êı
-   * @param callback »Øµ÷º¯Êı£¬·µ»Øfalse¿ÉÖĞ¶Ï±éÀú
+   * @brief éå†æ‰€æœ‰åœºæ™¯èŠ‚ç‚¹æ‰§è¡Œå›è°ƒå‡½æ•°
+   * @param callback å›è°ƒå‡½æ•°ï¼Œè¿”å›falseå¯ä¸­æ–­éå†
    */
   virtual void ForEachNode(std::function<bool(SceneNode *)> callback) = 0;
 
   /**
-   * @brief »ñÈ¡¿Õ¼ä½á¹¹ÖĞ½ÚµãµÄ×ÜÊı
-   * @return ½ÚµãÊıÁ¿
+   * @brief è·å–ç©ºé—´ç»“æ„ä¸­èŠ‚ç‚¹çš„æ€»æ•°
+   * @return èŠ‚ç‚¹æ•°é‡
    */
   virtual size_t GetNodeCount() const = 0;
 
   /**
-   * @brief ÅĞ¶Ï¿Õ¼ä½á¹¹ÊÇ·ñÎª¿Õ
-   * @return ÊÇ·ñÎª¿Õ
+   * @brief åˆ¤æ–­ç©ºé—´ç»“æ„æ˜¯å¦ä¸ºç©º
+   * @return æ˜¯å¦ä¸ºç©º
    */
   virtual bool IsEmpty() const = 0;
 
   /**
-   * @brief »ñÈ¡¿Õ¼ä½á¹¹µÄÉî¶È£¨ÓÃÓÚµ÷ÊÔ£©
-   * @return ½á¹¹Éî¶È
+   * @brief è·å–ç©ºé—´ç»“æ„çš„æ·±åº¦ï¼ˆç”¨äºè°ƒè¯•ï¼‰
+   * @return ç»“æ„æ·±åº¦
    */
   virtual int GetDepth() const = 0;
 
   /**
-   * @brief »ñÈ¡¿Õ¼ä½á¹¹µÄÀàĞÍÃû³Æ
-   * @return ÀàĞÍÃû³Æ×Ö·û´®
+   * @brief è·å–ç©ºé—´ç»“æ„çš„ç±»å‹åç§°
+   * @return ç±»å‹åç§°å­—ç¬¦ä¸²
    */
   virtual const char *GetTypeName() const = 0;
 
   /**
-   * @brief »ñÈ¡¿Õ¼ä½á¹¹µÄĞÔÄÜÍ³¼ÆĞÅÏ¢
-   * @return Í³¼ÆĞÅÏ¢×Ö·û´®
+   * @brief è·å–ç©ºé—´ç»“æ„çš„æ€§èƒ½ç»Ÿè®¡ä¿¡æ¯
+   * @return ç»Ÿè®¡ä¿¡æ¯å­—ç¬¦ä¸²
    */
   virtual std::string GetStats() const = 0;
 
   /**
-   * @brief µ÷ÊÔ»æÖÆ½Ó¿Ú£¨¿ÉÑ¡ÊµÏÖ£©
-   * @param drawCallback »æÖÆ»Øµ÷º¯Êı
+   * @brief è°ƒè¯•ç»˜åˆ¶æ¥å£ï¼ˆå¯é€‰å®ç°ï¼‰
+   * @param drawCallback ç»˜åˆ¶å›è°ƒå‡½æ•°
    */
   virtual void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback) = 0;
 
   /**
-   * @brief ¼ÆËãÁ½¸öAABBµÄºÏ²¢½á¹û
-   * @param a µÚÒ»¸öAABB
-   * @param b µÚ¶ş¸öAABB
-   * @return ºÏ²¢ºóµÄAABB
+   * @brief è®¡ç®—ä¸¤ä¸ªAABBçš„åˆå¹¶ç»“æœ
+   * @param a ç¬¬ä¸€ä¸ªAABB
+   * @param b ç¬¬äºŒä¸ªAABB
+   * @return åˆå¹¶åçš„AABB
    */
   static AABB MergeAABBs(const AABB &a, const AABB &b)
   {
@@ -161,9 +161,9 @@ class SpatialPartition {
   }
 
   /**
-   * @brief ¼ÆËã¶à¸öAABBµÄºÏ²¢½á¹û
-   * @param aabbs AABBÁĞ±í
-   * @return ºÏ²¢ºóµÄAABB
+   * @brief è®¡ç®—å¤šä¸ªAABBçš„åˆå¹¶ç»“æœ
+   * @param aabbs AABBåˆ—è¡¨
+   * @return åˆå¹¶åçš„AABB
    */
   static AABB MergeAABBs(const std::vector<AABB> &aabbs)
   {
@@ -178,11 +178,11 @@ class SpatialPartition {
   }
 
   /**
-   * @brief ÅĞ¶ÏÉäÏßÊÇ·ñÓëAABBÏà½»
-   * @param ray ÉäÏß
-   * @param aabb °üÎ§ºĞ
-   * @param t Ïà½»¾àÀë£¨Êä³ö²ÎÊı£©
-   * @return ÊÇ·ñÏà½»
+   * @brief åˆ¤æ–­å°„çº¿æ˜¯å¦ä¸AABBç›¸äº¤
+   * @param ray å°„çº¿
+   * @param aabb åŒ…å›´ç›’
+   * @param t ç›¸äº¤è·ç¦»ï¼ˆè¾“å‡ºå‚æ•°ï¼‰
+   * @return æ˜¯å¦ç›¸äº¤
    */
   static bool RayIntersectsAABB(const Ray &ray, const AABB &aabb, float &t)
   {
@@ -190,10 +190,10 @@ class SpatialPartition {
   }
 
   /**
-   * @brief ÅĞ¶ÏÊÓ×¶ÌåÓëAABBµÄÏà½»¹ØÏµ
-   * @param frustum ÊÓ×¶Ìå
-   * @param aabb °üÎ§ºĞ
-   * @return Ïà½»ÀàĞÍ
+   * @brief åˆ¤æ–­è§†é”¥ä½“ä¸AABBçš„ç›¸äº¤å…³ç³»
+   * @param frustum è§†é”¥ä½“
+   * @param aabb åŒ…å›´ç›’
+   * @return ç›¸äº¤ç±»å‹
    */
   static IntersectionType FrustumIntersectsAABB(const Frustum &frustum, const AABB &aabb)
   {
@@ -201,10 +201,10 @@ class SpatialPartition {
   }
 
   /**
-   * @brief ÅĞ¶ÏµãÊÇ·ñÔÚAABBÄÚ
-   * @param point µã
-   * @param aabb °üÎ§ºĞ
-   * @return ÊÇ·ñÔÚÄÚ²¿
+   * @brief åˆ¤æ–­ç‚¹æ˜¯å¦åœ¨AABBå†…
+   * @param point ç‚¹
+   * @param aabb åŒ…å›´ç›’
+   * @return æ˜¯å¦åœ¨å†…éƒ¨
    */
   static bool PointInAABB(const glm::vec3 &point, const AABB &aabb)
   {
@@ -212,10 +212,10 @@ class SpatialPartition {
   }
 
   /**
-   * @brief ÅĞ¶ÏÇòÌåÊÇ·ñÓëAABBÏà½»
-   * @param sphere ÇòÌå
-   * @param aabb °üÎ§ºĞ
-   * @return ÊÇ·ñÏà½»
+   * @brief åˆ¤æ–­çƒä½“æ˜¯å¦ä¸AABBç›¸äº¤
+   * @param sphere çƒä½“
+   * @param aabb åŒ…å›´ç›’
+   * @return æ˜¯å¦ç›¸äº¤
    */
   static bool SphereIntersectsAABB(const Sphere &sphere, const AABB &aabb)
   {
@@ -224,27 +224,27 @@ class SpatialPartition {
 };
 
 /**
- * @brief ¿Õ¼ä»®·ÖÀàĞÍÃ¶¾Ù
+ * @brief ç©ºé—´åˆ’åˆ†ç±»å‹æšä¸¾
  */
 enum class SpatialPartitionType {
-  BVH,       // °üÎ§ºĞ²ã´Î½á¹¹
-  QuadTree,  // ËÄ²æÊ÷£¨2D¿Õ¼ä£©
-  Octree,    // °Ë²æÊ÷£¨3D¿Õ¼ä£©
-  Grid,      // ¾ùÔÈÍø¸ñ
-  KDTree     // KDÊ÷
+  BVH,       // åŒ…å›´ç›’å±‚æ¬¡ç»“æ„
+  QuadTree,  // å››å‰æ ‘ï¼ˆ2Dç©ºé—´ï¼‰
+  Octree,    // å…«å‰æ ‘ï¼ˆ3Dç©ºé—´ï¼‰
+  Grid,      // å‡åŒ€ç½‘æ ¼
+  KDTree     // KDæ ‘
 };
 
 /**
- * @brief ´´½¨Ö¸¶¨ÀàĞÍµÄ¿Õ¼ä»®·ÖÊµÀı
- * @param type ¿Õ¼ä»®·ÖÀàĞÍ
- * @return ¿Õ¼ä»®·ÖÊµÀıÖ¸Õë
+ * @brief åˆ›å»ºæŒ‡å®šç±»å‹çš„ç©ºé—´åˆ’åˆ†å®ä¾‹
+ * @param type ç©ºé—´åˆ’åˆ†ç±»å‹
+ * @return ç©ºé—´åˆ’åˆ†å®ä¾‹æŒ‡é’ˆ
  */
 std::unique_ptr<SpatialPartition> CreateSpatialPartition(SpatialPartitionType type);
 
 /**
- * @brief »ñÈ¡¿Õ¼ä»®·ÖÀàĞÍµÄÃû³Æ
- * @param type ¿Õ¼ä»®·ÖÀàĞÍ
- * @return ÀàĞÍÃû³Æ×Ö·û´®
+ * @brief è·å–ç©ºé—´åˆ’åˆ†ç±»å‹çš„åç§°
+ * @param type ç©ºé—´åˆ’åˆ†ç±»å‹
+ * @return ç±»å‹åç§°å­—ç¬¦ä¸²
  */
 const char *GetSpatialPartitionTypeName(SpatialPartitionType type);
 

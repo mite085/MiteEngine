@@ -16,25 +16,25 @@ SceneCoreEventCallbackAdapter &SceneRegistry::GetEventCallbackAdapter()
   return m_EventCallbackAdapter;
 }
 
-// 1. ÊµÌå¹ÜÀí ===================================================
+// 1. å®ä½“ç®¡ç† ===================================================
 
 Entity SceneRegistry::CreateEntity(const std::string& name)
 {
-  // ´´½¨ÊµÌå
+  // åˆ›å»ºå®ä½“
   Entity entity = Entity::CreateEntity();
 
-  // Ìí¼ÓID×é¼ş£¬×Ô¶¯Éú³ÉÎ¨Ò»ID
+  // æ·»åŠ IDç»„ä»¶ï¼Œè‡ªåŠ¨ç”Ÿæˆå”¯ä¸€ID
   auto &id = AddComponent<IDComponent>(entity);
 
-  // Ìí¼ÓTag×é¼ş£¬ÓÃÓÚÊµÌåËÑË÷ºÍÉ¸Ñ¡
+  // æ·»åŠ Tagç»„ä»¶ï¼Œç”¨äºå®ä½“æœç´¢å’Œç­›é€‰
   auto &tag = AddComponent<TagComponent>(entity);
   tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
 
-  // Ìí¼ÓHierachy×é¼ş£¬ÓÃÓÚ²ã´Î½á¹¹´´½¨
+  // æ·»åŠ Hierachyç»„ä»¶ï¼Œç”¨äºå±‚æ¬¡ç»“æ„åˆ›å»º
   AddComponent<HierarchyComponent>(entity);
 
 
-  // ´´½¨ÊÂ¼ş²¢·¢²¼
+  // åˆ›å»ºäº‹ä»¶å¹¶å‘å¸ƒ
   EntityCreatedEvent event(entity);
   EventBus::Publish<EntityCreatedEvent>(event);
 
@@ -47,13 +47,13 @@ void SceneRegistry::DestroyEntity(Entity entity)
     return;
   }
 
-  // ÒÆ³ıËùÓĞ×é¼ş
+  // ç§»é™¤æ‰€æœ‰ç»„ä»¶
   std::unique_lock lock(m_ComponentMutex);
   for (auto &pair : m_Components) {
     pair.second.erase(entity);
   }
 
-  // ±ê¼ÇÊµÌåÎªÎŞĞ§
+  // æ ‡è®°å®ä½“ä¸ºæ— æ•ˆ
   entity.Destroy();
 }
 
@@ -74,7 +74,7 @@ std::vector<Entity> SceneRegistry::GetAllEntities()
 
   std::vector<Entity> entities;
   if (!m_Components.empty()) {
-    // Ê¹ÓÃµÚÒ»¸ö×é¼şÀàĞÍµÄÊµÌåÁĞ±í×÷Îª»ù×¼
+    // ä½¿ç”¨ç¬¬ä¸€ä¸ªç»„ä»¶ç±»å‹çš„å®ä½“åˆ—è¡¨ä½œä¸ºåŸºå‡†
     auto &firstComponentMap = m_Components.begin()->second;
     entities.reserve(firstComponentMap.size());
 

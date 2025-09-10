@@ -12,7 +12,7 @@ SceneCoreEventCallbackAdapter::~SceneCoreEventCallbackAdapter()
 
 void SceneCoreEventCallbackAdapter::RegisterCallbacks()
 {
-	// 由SceneRegistry负责触发
+	// 鐢盨ceneRegistry璐熻矗瑙﹀彂
 }
 
 void SceneCoreEventCallbackAdapter::UnregisterCallbacks()

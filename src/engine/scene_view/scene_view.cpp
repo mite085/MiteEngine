@@ -10,7 +10,7 @@ SceneView::SceneView()
       m_LastUpdateTime(0.0f)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView");
-  // ³õÊ¼»¯ÈÕÖ¾
+  // åˆå§‹åŒ–æ—¥å¿—
   m_Logger->debug("SceneView initialized");
 }
 SceneView::~SceneView()
@@ -19,7 +19,7 @@ SceneView::~SceneView()
 }
 void SceneView::Update(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes)
 {
-  // ¼ÆÊ±£¬È·¶¨¹¹½¨RenderQueueËùÏûºÄµÄÊ±¼ä
+  // è®¡æ—¶ï¼Œç¡®å®šæ„å»ºRenderQueueæ‰€æ¶ˆè€—çš„æ—¶é—´
   Timer timer;
   ProcessVisibility(registry, visibleNodes);
   m_LastUpdateTime = timer.ElapsedMillis();
@@ -32,7 +32,7 @@ void SceneView::Update(SceneRegistry &registry, std::vector<SceneNode *> visible
 void SceneView::Rebuild(SceneRegistry &registry,
                         std::vector<SceneNode *> visibleNodes)
 {
-  Update(registry, visibleNodes);  // µ±Ç°ÊµÏÖÓëUpdateÏàÍ¬
+  Update(registry, visibleNodes);  // å½“å‰å®ç°ä¸Updateç›¸åŒ
 }
 std::shared_ptr<RenderQueue> SceneView::GetRenderQueue() const
 {
@@ -60,17 +60,17 @@ void SceneView::ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode
 {
   m_LastVisibleNodeCount = visibleNodes.size();
 
-  // 1. Ó¦ÓÃ×Ô¶¨Òå¹ıÂËÆ÷£¨Èç¹ûÉèÖÃ£©
+  // 1. åº”ç”¨è‡ªå®šä¹‰è¿‡æ»¤å™¨ï¼ˆå¦‚æœè®¾ç½®ï¼‰
   if (m_CustomFilterFunc) {
     visibleNodes = ApplyCustomFilter(visibleNodes);
   }
 
-  // 2. ¹¹½¨äÖÈ¾Ïî
+  // 2. æ„å»ºæ¸²æŸ“é¡¹
   std::vector<RenderableItem> renderItems = m_Builder->BuildFromSceneNodes(registry, visibleNodes);
 
   m_LastRenderItemCount = renderItems.size();
 
-  // 3. ¸üĞÂäÖÈ¾¶ÓÁĞ
+  // 3. æ›´æ–°æ¸²æŸ“é˜Ÿåˆ—
   m_RenderQueue->ClearAll();
   m_RenderQueue->AddItems(renderItems);
   m_RenderQueue->SortAll();

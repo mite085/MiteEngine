@@ -9,34 +9,34 @@
 
 namespace mite {
 /**
- * äÖÈ¾Éè±¸³éÏó½Ó¿Ú
+ * æ¸²æŸ“è®¾å¤‡æŠ½è±¡æ¥å£
  *
- * Ö°Ôğ£º
- * 1. Ìá¹©¿çäÖÈ¾APIµÄ×ÊÔ´¹ÜÀí½Ó¿Ú
- * 2. ´¦Àí×ÊÔ´¼ÓÔØÊÂ¼ş
- * 3. ¹ÜÀíGPU×ÊÔ´ÉúÃüÖÜÆÚ
+ * èŒè´£ï¼š
+ * 1. æä¾›è·¨æ¸²æŸ“APIçš„èµ„æºç®¡ç†æ¥å£
+ * 2. å¤„ç†èµ„æºåŠ è½½äº‹ä»¶
+ * 3. ç®¡ç†GPUèµ„æºç”Ÿå‘½å‘¨æœŸ
  *
- * Éè¼ÆÔ­Ôò£º
- * 1. ½Ó¿ÚÓë¾ßÌåAPI½âñî
- * 2. Ïß³Ì°²È«Éè¼Æ
- * 3. Ö§³ÖÎ´À´¶àºó¶ËÀ©Õ¹
+ * è®¾è®¡åŸåˆ™ï¼š
+ * 1. æ¥å£ä¸å…·ä½“APIè§£è€¦
+ * 2. çº¿ç¨‹å®‰å…¨è®¾è®¡
+ * 3. æ”¯æŒæœªæ¥å¤šåç«¯æ‰©å±•
  *
- * µ¥ÀıÄ£Ê½£º
- * Ê¹ÓÃµ¥ÀıÄ£Ê½µÄÄ¿µÄÊÇ·½±ãTextureºÍMeshÃ¿´Î´´½¨Ê±¿ÉÒÔ²»Í¨¹ı¶ÔIRenderDeviceµÄ
- * ÒÀÀµ×¢Èë£¬ÇÒ¿É¶ÀÁ¢ÊµÏÖDraw·½·¨£¬È·±£´úÂëµÄ¼ò½àĞÔ¡£
+ * å•ä¾‹æ¨¡å¼ï¼š
+ * ä½¿ç”¨å•ä¾‹æ¨¡å¼çš„ç›®çš„æ˜¯æ–¹ä¾¿Textureå’ŒMeshæ¯æ¬¡åˆ›å»ºæ—¶å¯ä»¥ä¸é€šè¿‡å¯¹IRenderDeviceçš„
+ * ä¾èµ–æ³¨å…¥ï¼Œä¸”å¯ç‹¬ç«‹å®ç°Drawæ–¹æ³•ï¼Œç¡®ä¿ä»£ç çš„ç®€æ´æ€§ã€‚
  *
- * ´æÔÚ·çÏÕ£º
- * 1. Èç¹ûäÖÈ¾Ö¸ÁîĞèÔÚ¶à¸öÏß³ÌÌá½»£¨ÈçäÖÈ¾Ïß³Ì vs. ×ÊÔ´¼ÓÔØÏß³Ì£©£¬
- *	  µ¥ÀıµÄÈ«¾ÖËø¿ÉÄÜ³ÉÎªĞÔÄÜÆ¿¾±¡£´ËÊ±ĞèÉè¼ÆÎŞËø¶ÓÁĞ»òÏß³Ì¾Ö²¿´æ´¢£¨TLS£©¡£
- * 2. µ¥ÀıµÄ IRenderDevice »á×è°­µ¥Ôª²âÊÔÖĞ¶ÔäÖÈ¾½Ó¿ÚµÄÄ£Äâ£¨Mocking£©¡£
- *    ÒÀÀµ×¢Èë¸üÀûÓÚ¸ôÀë²âÊÔ¡£
- * 3. ¼´Ê¹µ±Ç°ÎŞĞè¶àäÖÈ¾Æ÷£¬Î´À´¿ÉÄÜÖ§³Ö¶àÊÓ¿Ú¡¢¶àGPU»òÀëÏßäÖÈ¾¡£µ¥Àı»áÏŞÖÆ¼Ü¹¹Áé»îĞÔ¡£
+ * å­˜åœ¨é£é™©ï¼š
+ * 1. å¦‚æœæ¸²æŸ“æŒ‡ä»¤éœ€åœ¨å¤šä¸ªçº¿ç¨‹æäº¤ï¼ˆå¦‚æ¸²æŸ“çº¿ç¨‹ vs. èµ„æºåŠ è½½çº¿ç¨‹ï¼‰ï¼Œ
+ *	  å•ä¾‹çš„å…¨å±€é”å¯èƒ½æˆä¸ºæ€§èƒ½ç“¶é¢ˆã€‚æ­¤æ—¶éœ€è®¾è®¡æ— é”é˜Ÿåˆ—æˆ–çº¿ç¨‹å±€éƒ¨å­˜å‚¨ï¼ˆTLSï¼‰ã€‚
+ * 2. å•ä¾‹çš„ IRenderDevice ä¼šé˜»ç¢å•å…ƒæµ‹è¯•ä¸­å¯¹æ¸²æŸ“æ¥å£çš„æ¨¡æ‹Ÿï¼ˆMockingï¼‰ã€‚
+ *    ä¾èµ–æ³¨å…¥æ›´åˆ©äºéš”ç¦»æµ‹è¯•ã€‚
+ * 3. å³ä½¿å½“å‰æ— éœ€å¤šæ¸²æŸ“å™¨ï¼Œæœªæ¥å¯èƒ½æ”¯æŒå¤šè§†å£ã€å¤šGPUæˆ–ç¦»çº¿æ¸²æŸ“ã€‚å•ä¾‹ä¼šé™åˆ¶æ¶æ„çµæ´»æ€§ã€‚
  */
 class IRenderDevice {
  public:
   virtual ~IRenderDevice() = default;
 
-  // ---- ÎÆÀí²Ù×÷ ----
+  // ---- çº¹ç†æ“ä½œ ----
   virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
   virtual void BindTexture(TextureGPUHandle handle, uint32_t slot) const = 0;
@@ -44,29 +44,29 @@ class IRenderDevice {
   virtual void SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode) = 0;
   virtual void GenerateMipmaps(TextureGPUHandle handle) = 0;
 
-  // ---- Ä£ĞÍ/Íø¸ñ²Ù×÷ ----
+  // ---- æ¨¡å‹/ç½‘æ ¼æ“ä½œ ----
   virtual ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) = 0;
   virtual void DestroyModel(ModelGPUHandle handle) = 0;
   /**
-   * @brief °ó¶¨Mesh
-   * @param mesh Íø¸ñÌå¶ÔÏó
+   * @brief ç»‘å®šMesh
+   * @param mesh ç½‘æ ¼ä½“å¯¹è±¡
    *
-   * ×¢Òâ£º
-   * ÓÉÓÚAsset½öÎ¬»¤Model£¬ÓÉModelÎ¬»¤Mesh£¬
-   * ËùÒÔCreateºÍDestroy½ÓÊÕµÄÊÇModelÊı¾İ¡£
-   * µ«BindºÍDrawµÄ²Ù×÷ÊÇºÍMeshÇ¿Ïà¹Ø£¬
-   * ËùÒÔÕâÀïÊµÏÖBind Mesh¶ø·ÇBind Model
+   * æ³¨æ„ï¼š
+   * ç”±äºAssetä»…ç»´æŠ¤Modelï¼Œç”±Modelç»´æŠ¤Meshï¼Œ
+   * æ‰€ä»¥Createå’ŒDestroyæ¥æ”¶çš„æ˜¯Modelæ•°æ®ã€‚
+   * ä½†Bindå’ŒDrawçš„æ“ä½œæ˜¯å’ŒMeshå¼ºç›¸å…³ï¼Œ
+   * æ‰€ä»¥è¿™é‡Œå®ç°Bind Meshè€ŒéBind Model
    */
   virtual void BindMesh(std::shared_ptr<Mesh> mesh) const = 0;
   /**
-   * @brief SelectMeshLODLevel ¸ù¾İÊäÈëLODÆ«²î£¬Ñ¡Ôñµ¥¸öMeshµÄLOD²ã¼¶
-   * @param mesh Íø¸ñÌå¶ÔÏó
-   * @param cameraPosition Ïà»ú¾àÀë
-   * @param worldTransform ¾Ö²¿¿Õ¼äµ½ÊÀ½ç¿Õ¼äµÄĞı×ª¾ØÕó
-   * @param lodBias LOD²ã¼¶Æ«²îÖµ
-   * @return LOD²ã¼¶
+   * @brief SelectMeshLODLevel æ ¹æ®è¾“å…¥LODåå·®ï¼Œé€‰æ‹©å•ä¸ªMeshçš„LODå±‚çº§
+   * @param mesh ç½‘æ ¼ä½“å¯¹è±¡
+   * @param cameraPosition ç›¸æœºè·ç¦»
+   * @param worldTransform å±€éƒ¨ç©ºé—´åˆ°ä¸–ç•Œç©ºé—´çš„æ—‹è½¬çŸ©é˜µ
+   * @param lodBias LODå±‚çº§åå·®å€¼
+   * @return LODå±‚çº§
    * 
-   * Õë¶Ô³¬´óModel£¨ÈçµØĞÎ£©¿ÉÒÔÖğMesh»®·ÖLOD£¬½µµÍäÖÈ¾Ñ¹Á¦
+   * é’ˆå¯¹è¶…å¤§Modelï¼ˆå¦‚åœ°å½¢ï¼‰å¯ä»¥é€Meshåˆ’åˆ†LODï¼Œé™ä½æ¸²æŸ“å‹åŠ›
    */
   virtual uint32_t SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
                                       const glm::vec3 &cameraPosition,
@@ -75,18 +75,18 @@ class IRenderDevice {
                                       float screenWidth,
                                       float lodBias) const = 0;
   /**
-   * @brief DrawMeshLOD ¸ù¾İLOD»æÖÆMesh
+   * @brief DrawMeshLOD æ ¹æ®LODç»˜åˆ¶Mesh
    * @param mesh
    * @param lodLevel
    */
   virtual void DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const = 0;
   /**
-   * @brief DrawIndexed °´ÕÕ¶¥µãÖ´ĞĞ»æÖÆÈÎÎñ
-   * @param indexCount »æÖÆµÄ¶¥µãÊıÁ¿
-   * @param indexOffset »æÖÆµÄ¶¥µãÔÚHandleÖĞµÄÆ«ÒÆÁ¿
-   * @param mode Ä¬ÈÏ°´ÕÕÈı½ÇĞÎÄ£Ê½Ö´ĞĞ»æÖÆ
-   * @param indexType ¶¥µãÊı¾İ¸ñÊ½£¬Ä¬ÈÏUNSIGNED INT
-   * @param enableDepthTest ÔÊĞíÉî¶È²âÊÔ£¬Ä¬ÈÏ¿ªÆô
+   * @brief DrawIndexed æŒ‰ç…§é¡¶ç‚¹æ‰§è¡Œç»˜åˆ¶ä»»åŠ¡
+   * @param indexCount ç»˜åˆ¶çš„é¡¶ç‚¹æ•°é‡
+   * @param indexOffset ç»˜åˆ¶çš„é¡¶ç‚¹åœ¨Handleä¸­çš„åç§»é‡
+   * @param mode é»˜è®¤æŒ‰ç…§ä¸‰è§’å½¢æ¨¡å¼æ‰§è¡Œç»˜åˆ¶
+   * @param indexType é¡¶ç‚¹æ•°æ®æ ¼å¼ï¼Œé»˜è®¤UNSIGNED INT
+   * @param enableDepthTest å…è®¸æ·±åº¦æµ‹è¯•ï¼Œé»˜è®¤å¼€å¯
    */
   virtual void DrawIndexed(uint32_t indexCount,
                            uint32_t indexOffset,
@@ -94,23 +94,23 @@ class IRenderDevice {
                            GLenum indexType = GL_UNSIGNED_INT,
                            bool enableDepthTest = true) const = 0;
 
-  // ---- FrameBuffer ²Ù×÷ (ĞÂÔö) ----
+  // ---- FrameBuffer æ“ä½œ (æ–°å¢) ----
   virtual FrameBuffer::Ptr CreateFrameBuffer(const FrameBufferSpec &spec) = 0;
   virtual void DestroyFrameBuffer(FrameBuffer::Ptr framebuffer) = 0;
 
-  // ---- Éè±¸¹ÜÀí ----
+  // ---- è®¾å¤‡ç®¡ç† ----
   static IRenderDevice &Current();
   static void SetCurrent(std::unique_ptr<IRenderDevice> device);
 
  protected:
-  // Ë½ÓĞ¹¹Ôìº¯Êı
+  // ç§æœ‰æ„é€ å‡½æ•°
   IRenderDevice();
 
-  // ---- ÊÂ¼ş´¦Àí ----
+  // ---- äº‹ä»¶å¤„ç† ----
   virtual bool OnModelLoaded(ModelLoadEvent &e) = 0;
   virtual bool OnTextureLoaded(TextureLoadEvent &e) = 0;
 
-  SubscriptionGroup m_EventSubscriptions;  // ÊÂ¼ş¶©ÔÄ
+  SubscriptionGroup m_EventSubscriptions;  // äº‹ä»¶è®¢é˜…
 };
 };  // namespace mite
 

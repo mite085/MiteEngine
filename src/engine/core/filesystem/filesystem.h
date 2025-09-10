@@ -6,37 +6,37 @@
 #include <string>
 #include <vector>
 #include "logger/logger.h"
-// Í¨¹ıCmakeListsµÄtarget_include_directories(PRIVATE ${CMAKE_BINARY_DIR}/src/core/filesystem)
-// ¼ìË÷µ½build/src/core/filesystem/filesystem_config.hÎÄ¼ş
+// é€šè¿‡CmakeListsçš„target_include_directories(PRIVATE ${CMAKE_BINARY_DIR}/src/core/filesystem)
+// æ£€ç´¢åˆ°build/src/core/filesystem/filesystem_config.hæ–‡ä»¶
 #include "filesystem_config.h"
 
 namespace mite {
 /**
- * @brief ÎÄ¼ş¹ÜÀíº¯Êı
+ * @brief æ–‡ä»¶ç®¡ç†å‡½æ•°
  * 
  */
 class FileSystem {
  public:
-  // ³õÊ¼»¯ÎÄ¼şÏµÍ³(±ØĞëÔÚ³ÌĞòÆô¶¯Ê±µ÷ÓÃ)
+  // åˆå§‹åŒ–æ–‡ä»¶ç³»ç»Ÿ(å¿…é¡»åœ¨ç¨‹åºå¯åŠ¨æ—¶è°ƒç”¨)
   static void Init(int argc = 0, char **argv = nullptr);
 
-  // »ñÈ¡×ÊÔ´ÍêÕûÂ·¾¶
+  // è·å–èµ„æºå®Œæ•´è·¯å¾„
   static std::filesystem::path GetAssetPath(const std::string &relativePath);
 
-  // »ñÈ¡×ÊÔ´¸ùÄ¿Â¼£¨exeÍ¬¼¶Ä¿Â¼ÏÂµÄassets£©
+  // è·å–èµ„æºæ ¹ç›®å½•ï¼ˆexeåŒçº§ç›®å½•ä¸‹çš„assetsï¼‰
   static std::filesystem::path GetAssetsRoot();
 
-  // ¼ì²éÎÄ¼şÊÇ·ñ´æÔÚ
+  // æ£€æŸ¥æ–‡ä»¶æ˜¯å¦å­˜åœ¨
   static bool Exists(const std::filesystem::path &path);
 
-  // ¶ÁÈ¡ÎÄ¼şÄÚÈİ
+  // è¯»å–æ–‡ä»¶å†…å®¹
   static std::string ReadFileToString(const std::filesystem::path &path);
 
-  // Ğ´ÈëÎÄ¼şÄÚÈİ
+  // å†™å…¥æ–‡ä»¶å†…å®¹
   static bool WriteStringToFile(const std::filesystem::path &path, const std::string &content);
 
  private:
-  // »ñÈ¡¿ÉÖ´ĞĞÎÄ¼şÂ·¾¶
+  // è·å–å¯æ‰§è¡Œæ–‡ä»¶è·¯å¾„
   static std::filesystem::path GetExecutablePath();
 
   static std::filesystem::path s_ExecutablePath;

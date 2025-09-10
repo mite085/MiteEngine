@@ -6,51 +6,51 @@
 namespace mite {
 /**
  * @class Frustum
- * @brief ÊÓ×¶ÌåÀà£¬ÓÃÓÚÊÓ×¶Ìå²Ã¼ôºÍ¿É¼ûĞÔÅĞ¶Ï
+ * @brief è§†é”¥ä½“ç±»ï¼Œç”¨äºè§†é”¥ä½“è£å‰ªå’Œå¯è§æ€§åˆ¤æ–­
  */
 class Frustum {
  public:
   /**
-   * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+   * @brief é»˜è®¤æ„é€ å‡½æ•°
    */
   Frustum();
 
   /**
-   * @brief Í¨¹ıÊÓÍ¼Í¶Ó°¾ØÕó¹¹ÔìÊÓ×¶Ìå
-   * @param viewProjection ÊÓÍ¼Í¶Ó°¾ØÕó
+   * @brief é€šè¿‡è§†å›¾æŠ•å½±çŸ©é˜µæ„é€ è§†é”¥ä½“
+   * @param viewProjection è§†å›¾æŠ•å½±çŸ©é˜µ
    */
   explicit Frustum(const glm::mat4 &viewProjection);
 
   /**
-   * @brief Í¨¹ıÊÓÍ¼Í¶Ó°¾ØÕó¸üĞÂÊÓ×¶Ìå
-   * @param viewProjection ÊÓÍ¼Í¶Ó°¾ØÕó
+   * @brief é€šè¿‡è§†å›¾æŠ•å½±çŸ©é˜µæ›´æ–°è§†é”¥ä½“
+   * @param viewProjection è§†å›¾æŠ•å½±çŸ©é˜µ
    */
   void Update(const glm::mat4 &viewProjection);
 
   /**
-   * @brief ÅĞ¶ÏµãÊÇ·ñÔÚÊÓ×¶ÌåÄÚ
-   * @param point ²âÊÔµã
-   * @return ÊÇ·ñÔÚÊÓ×¶ÌåÄÚ
+   * @brief åˆ¤æ–­ç‚¹æ˜¯å¦åœ¨è§†é”¥ä½“å†…
+   * @param point æµ‹è¯•ç‚¹
+   * @return æ˜¯å¦åœ¨è§†é”¥ä½“å†…
    */
   bool Contains(const glm::vec3 &point) const;
 
   /**
-   * @brief ÅĞ¶ÏÇòÊÇ·ñÔÚÊÓ×¶ÌåÄÚ
-   * @param sphere ÇòÌå
-   * @return Ïà½»ÀàĞÍ
+   * @brief åˆ¤æ–­çƒæ˜¯å¦åœ¨è§†é”¥ä½“å†…
+   * @param sphere çƒä½“
+   * @return ç›¸äº¤ç±»å‹
    */
   IntersectionType TestSphere(const Sphere &sphere) const;
 
   /**
-   * @brief ÅĞ¶ÏAABBÊÇ·ñÔÚÊÓ×¶ÌåÄÚ
-   * @param aabb Öá¶ÔÆë°üÎ§ºĞ
-   * @return Ïà½»ÀàĞÍ
+   * @brief åˆ¤æ–­AABBæ˜¯å¦åœ¨è§†é”¥ä½“å†…
+   * @param aabb è½´å¯¹é½åŒ…å›´ç›’
+   * @return ç›¸äº¤ç±»å‹
    */
   IntersectionType TestAABB(const AABB &aabb) const;
 
   /**
-   * @brief »ñÈ¡ÊÓ×¶ÌåµÄ6¸ö²Ã¼ôÆ½Ãæ
-   * @return Æ½ÃæÊı×éµÄÖ¸Õë
+   * @brief è·å–è§†é”¥ä½“çš„6ä¸ªè£å‰ªå¹³é¢
+   * @return å¹³é¢æ•°ç»„çš„æŒ‡é’ˆ
    */
   const Plane *GetPlanes() const
   {
@@ -58,15 +58,15 @@ class Frustum {
   }
 
   /**
-   * @brief »ñÈ¡ÊÓ×¶ÌåµÄ8¸ö½Çµã
-   * @param corners ½ÇµãÊı×é£¨Êä³ö²ÎÊı£¬ĞèÒª8¸öÔªËØ£©
+   * @brief è·å–è§†é”¥ä½“çš„8ä¸ªè§’ç‚¹
+   * @param corners è§’ç‚¹æ•°ç»„ï¼ˆè¾“å‡ºå‚æ•°ï¼Œéœ€è¦8ä¸ªå…ƒç´ ï¼‰
    */
   void GetCorners(glm::vec3 corners[8]) const;
 
   /**
-   * @brief ÅĞ¶ÏOBBÊÇ·ñÔÚÊÓ×¶ÌåÄÚ
-   * @param obb ÓĞÏò°üÎ§ºĞ
-   * @return Ïà½»ÀàĞÍ
+   * @brief åˆ¤æ–­OBBæ˜¯å¦åœ¨è§†é”¥ä½“å†…
+   * @param obb æœ‰å‘åŒ…å›´ç›’
+   * @return ç›¸äº¤ç±»å‹
    */
   IntersectionType TestOBB(const OBB &obb) const;
 
@@ -74,15 +74,15 @@ class Frustum {
   enum FrustumPlane { LEFT = 0, RIGHT = 1, BOTTOM = 2, TOP = 3, NEAR = 4, FAR = 5 };
 
   /**
-   * @brief ´Ó¾ØÕóÌáÈ¡²Ã¼ôÆ½Ãæ
-   * @param matrix ÊÓÍ¼Í¶Ó°¾ØÕó
-   * @param planeIndex Æ½ÃæË÷Òı£¨0-5£©
-   * @param sign ·ûºÅ£¨1»ò-1£©
+   * @brief ä»çŸ©é˜µæå–è£å‰ªå¹³é¢
+   * @param matrix è§†å›¾æŠ•å½±çŸ©é˜µ
+   * @param planeIndex å¹³é¢ç´¢å¼•ï¼ˆ0-5ï¼‰
+   * @param sign ç¬¦å·ï¼ˆ1æˆ–-1ï¼‰
    */
   void ExtractPlane(const glm::mat4 &matrix, FrustumPlane plane);
 
  private:
-  Plane m_Planes[6];  // 6¸ö²Ã¼ôÆ½Ãæ£¨×ó¡¢ÓÒ¡¢ÏÂ¡¢ÉÏ¡¢½ü¡¢Ô¶£©
+  Plane m_Planes[6];  // 6ä¸ªè£å‰ªå¹³é¢ï¼ˆå·¦ã€å³ã€ä¸‹ã€ä¸Šã€è¿‘ã€è¿œï¼‰
 };
 }  // namespace mite
 

@@ -7,45 +7,45 @@
 namespace mite {
 
 enum class TextDirection {
-  LTR,  // ´Ó×óµ½ÓÒ
-  RTL   // ´ÓÓÒµ½×ó
+  LTR,  // ä»å·¦åˆ°å³
+  RTL   // ä»å³åˆ°å·¦
 };
 
 /**
- * @brief ±¾µØ»¯¹ÜÀí³éÏóÀà
+ * @brief æœ¬åœ°åŒ–ç®¡ç†æŠ½è±¡ç±»
  */
 class UILocalization {
  public:
   virtual ~UILocalization() = default;
 
-  // µ¥Àı·ÃÎÊ
+  // å•ä¾‹è®¿é—®
   static UILocalization &Get();
 
-  // ÓïÑÔ¹ÜÀí
+  // è¯­è¨€ç®¡ç†
   virtual bool LoadLanguagePack(const std::string &languageCode, const std::string &filePath) = 0;
   virtual bool SetCurrentLanguage(const std::string &languageCode) = 0;
   virtual std::string GetCurrentLanguage() const = 0;
   virtual std::vector<std::string> GetAvailableLanguages() const = 0;
 
-  // ÎÄ±¾·­Òë
+  // æ–‡æœ¬ç¿»è¯‘
   virtual std::string Translate(const std::string &key) const = 0;
 
-  // ÎÄ±¾·½Ïò
+  // æ–‡æœ¬æ–¹å‘
   virtual bool IsRTLLanguage(const std::string &languageCode) const = 0;
   virtual TextDirection GetTextDirection() const = 0;
 
-  // ÄÚÖÃÓïÑÔÖ§³Ö
+  // å†…ç½®è¯­è¨€æ”¯æŒ
   static constexpr const char *ENGLISH = "en-US";
   static constexpr const char *SIMPLIFIED_CHINESE = "zh-CN";
 
-  // Ö§³ÖÍêÃÀ×ª·¢µÄ·­ÒëĞĞÎª
+  // æ”¯æŒå®Œç¾è½¬å‘çš„ç¿»è¯‘è¡Œä¸º
   // 
-  // Ê¹ÓÃÊ¾Àı£º
-  // TranslateFormat("Price: ${:.2f} !", 19.99) ,¿ÉÒÔ·­ÒëÎª¡°¼Û¸ñ£º19.99ÃÀÔª£¡¡±
+  // ä½¿ç”¨ç¤ºä¾‹ï¼š
+  // TranslateFormat("Price: ${:.2f} !", 19.99) ,å¯ä»¥ç¿»è¯‘ä¸ºâ€œä»·æ ¼ï¼š19.99ç¾å…ƒï¼â€
   // 
-  // ¶ÔÓ¦JsonÊ¾Àı£º
+  // å¯¹åº”Jsonç¤ºä¾‹ï¼š
   // "common": {
-  //   "Price: ${:.2f} !": "¼Û¸ñ£º{:.2f}ÃÀÔª£¡"
+  //   "Price: ${:.2f} !": "ä»·æ ¼ï¼š{:.2f}ç¾å…ƒï¼"
   // }
   template<typename... Args>
   std::string TranslateFormat(const std::string &key, const Args &&...args) const
@@ -57,7 +57,7 @@ class UILocalization {
     }
     catch (const std::exception &e) {
       LOG_ERROR("String formatting failed: {}", e.what());
-      return baseText;  // ·µ»ØÔ­Ê¼¸ñÊ½×Ö·û´®
+      return baseText;  // è¿”å›åŸå§‹æ ¼å¼å­—ç¬¦ä¸²
     }
   }
 

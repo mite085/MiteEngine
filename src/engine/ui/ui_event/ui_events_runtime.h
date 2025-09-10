@@ -6,7 +6,7 @@
 namespace mite {
 
 /**
- * @brief ÔËĞĞÊ±UI³õÊ¼»¯ÊÂ¼ş
+ * @brief è¿è¡Œæ—¶UIåˆå§‹åŒ–äº‹ä»¶
  */
 class RuntimeUIInitializedEvent : public UIEvent {
  public:
@@ -26,7 +26,7 @@ class RuntimeUIInitializedEvent : public UIEvent {
 };
 
 /**
- * @brief ÔËĞĞÊ±UI¹Ø±ÕÊÂ¼ş
+ * @brief è¿è¡Œæ—¶UIå…³é—­äº‹ä»¶
  */
 class RuntimeUIShutdownEvent : public UIEvent {
  public:
@@ -46,7 +46,7 @@ class RuntimeUIShutdownEvent : public UIEvent {
 };
 
 /**
- * @brief ÓÎÏ·¿ªÊ¼ÊÂ¼ş
+ * @brief æ¸¸æˆå¼€å§‹äº‹ä»¶
  */
 class GameStartEvent : public UIEvent {
  public:
@@ -66,7 +66,7 @@ class GameStartEvent : public UIEvent {
 };
 
 /**
- * @brief ÓÎÏ·ÔİÍ£ÊÂ¼ş
+ * @brief æ¸¸æˆæš‚åœäº‹ä»¶
  */
 class GamePauseEvent : public UIEvent {
  public:
@@ -94,7 +94,7 @@ class GamePauseEvent : public UIEvent {
 };
 
 /**
- * @brief ÓÎÏ·Í£Ö¹ÊÂ¼ş
+ * @brief æ¸¸æˆåœæ­¢äº‹ä»¶
  */
 class GameStopEvent : public UIEvent {
  public:
@@ -114,7 +114,7 @@ class GameStopEvent : public UIEvent {
 };
 
 /**
- * @brief ÔËĞĞÊ±ÉèÖÃĞŞ¸ÄÊÂ¼ş
+ * @brief è¿è¡Œæ—¶è®¾ç½®ä¿®æ”¹äº‹ä»¶
  */
 class RuntimeSettingChangedEvent : public UIEvent {
  public:
@@ -151,7 +151,7 @@ class RuntimeSettingChangedEvent : public UIEvent {
 };
 
 /**
- * @brief ÔËĞĞÊ±ĞÔÄÜÍ³¼ÆÊÂ¼ş
+ * @brief è¿è¡Œæ—¶æ€§èƒ½ç»Ÿè®¡äº‹ä»¶
  */
 class RuntimePerformanceEvent : public UIEvent {
  public:

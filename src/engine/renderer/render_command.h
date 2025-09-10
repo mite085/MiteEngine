@@ -9,29 +9,29 @@
 
 namespace mite {
 /**
- * @brief äÖÈ¾ÃüÁîÏµÍ³£¨µ¥ÀıÄ£Ê½£¬Ïß³Ì°²È«£©
+ * @brief æ¸²æŸ“å‘½ä»¤ç³»ç»Ÿï¼ˆå•ä¾‹æ¨¡å¼ï¼Œçº¿ç¨‹å®‰å…¨ï¼‰
  *
- * Ö÷Òª¹¦ÄÜ£º
- * 1. Ö§³ÖFrameBuffer²Ù×÷
- * 2. ÍêÉÆµÄäÖÈ¾×´Ì¬¹ÜÀí
- * 3. ¿ÉÀ©Õ¹ĞÔÉè¼Æ
- * 4. ÏêÏ¸µÄ´íÎó¼ì²é
+ * ä¸»è¦åŠŸèƒ½ï¼š
+ * 1. æ”¯æŒFrameBufferæ“ä½œ
+ * 2. å®Œå–„çš„æ¸²æŸ“çŠ¶æ€ç®¡ç†
+ * 3. å¯æ‰©å±•æ€§è®¾è®¡
+ * 4. è¯¦ç»†çš„é”™è¯¯æ£€æŸ¥
  */
 class RenderCommand {
  public:
-  // ÃüÁîÀàĞÍÃ¶¾Ù
+  // å‘½ä»¤ç±»å‹æšä¸¾
   enum class CommandType {
-    Clear,              // ÇåÆÁÃüÁî
-    SetClearColor,      // ÉèÖÃÇåÆÁÑÕÉ«
-    BindFrameBuffer,    // °ó¶¨Ö¡»º³å£¨ĞÂÔö£©
-    UnbindFrameBuffer,  // ½â°óÖ¡»º³å£¨ĞÂÔö£©
-    DrawIndexed,        // »æÖÆË÷Òı¼¸ºÎÌå
-    SetViewport,        // ÉèÖÃÊÓ¿Ú
-    SetRenderState,     // ÉèÖÃäÖÈ¾×´Ì¬
-    Custom              // ×Ô¶¨ÒåÃüÁî
+    Clear,              // æ¸…å±å‘½ä»¤
+    SetClearColor,      // è®¾ç½®æ¸…å±é¢œè‰²
+    BindFrameBuffer,    // ç»‘å®šå¸§ç¼“å†²ï¼ˆæ–°å¢ï¼‰
+    UnbindFrameBuffer,  // è§£ç»‘å¸§ç¼“å†²ï¼ˆæ–°å¢ï¼‰
+    DrawIndexed,        // ç»˜åˆ¶ç´¢å¼•å‡ ä½•ä½“
+    SetViewport,        // è®¾ç½®è§†å£
+    SetRenderState,     // è®¾ç½®æ¸²æŸ“çŠ¶æ€
+    Custom              // è‡ªå®šä¹‰å‘½ä»¤
   };
 
-  // äÖÈ¾×´Ì¬½á¹¹Ìå
+  // æ¸²æŸ“çŠ¶æ€ç»“æ„ä½“
   struct RenderState {
     bool depthTest = true;
     GLenum depthFunc = GL_LESS;
@@ -42,51 +42,51 @@ class RenderCommand {
     GLenum cullFaceMode = GL_BACK;
   };
 
-  // ÃüÁîÊı¾İ½á¹¹
+  // å‘½ä»¤æ•°æ®ç»“æ„
   struct Command {
     CommandType type;
     std::function<void()> execute;
-    std::string debugName;  // µ÷ÊÔÓÃÃû³Æ
+    std::string debugName;  // è°ƒè¯•ç”¨åç§°
   };
 
-  // »ñÈ¡µ¥ÀıÊµÀı
+  // è·å–å•ä¾‹å®ä¾‹
   static RenderCommand &Get();
 
-  // ---- ºËĞÄ½Ó¿Ú ----
-  static void Init();  // ³õÊ¼»¯Ä¬ÈÏäÖÈ¾×´Ì¬
+  // ---- æ ¸å¿ƒæ¥å£ ----
+  static void Init();  // åˆå§‹åŒ–é»˜è®¤æ¸²æŸ“çŠ¶æ€
 
-  // ÇåÆÁÃüÁî
+  // æ¸…å±å‘½ä»¤
   static void Clear(uint32_t clearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                     const glm::vec4 &clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f),
                     float depthClear = 1.0f,
                     int stencilClear = 0);
 
-  // Ö¡»º³å²Ù×÷£¨ĞÂÔö£©
+  // å¸§ç¼“å†²æ“ä½œï¼ˆæ–°å¢ï¼‰
   static void BindFrameBuffer(const FrameBuffer::Ptr &framebuffer);
   static void UnbindFrameBuffer();
 
-  // »æÖÆÃüÁî
-  // TODO: ÕâÒ»²¿·Ö»¹¿ÉÒÔ¼ÌĞøÓÅ»¯£¬Ô­ÔòÉÏ½öĞè´«µİÒÔÏÂ¼¸¸ö²ÎÊı
+  // ç»˜åˆ¶å‘½ä»¤
+  // TODO: è¿™ä¸€éƒ¨åˆ†è¿˜å¯ä»¥ç»§ç»­ä¼˜åŒ–ï¼ŒåŸåˆ™ä¸Šä»…éœ€ä¼ é€’ä»¥ä¸‹å‡ ä¸ªå‚æ•°
   // const std::shared_ptr<OpenGLShader>& shader,
   // const std::shared_ptr<Mesh> &mesh,
-  // const glm::mat4 &transform  ¶ÔÓ¦"u_Model"¾ØÕó
+  // const glm::mat4 &transform  å¯¹åº”"u_Model"çŸ©é˜µ
   static void Submit(RenderableItem item,
                      glm::mat4 viewMatrix,
                      glm::mat4 projectionMatrix);
 
-  // ÊÓ¿ÚÉèÖÃ
+  // è§†å£è®¾ç½®
   static void SetViewport(int x, int y, int width, int height);
 
-  // äÖÈ¾×´Ì¬ÉèÖÃ£¨À©Õ¹£©
+  // æ¸²æŸ“çŠ¶æ€è®¾ç½®ï¼ˆæ‰©å±•ï¼‰
   static void SetRenderState(const RenderState &state);
 
-  // ×Ô¶¨ÒåÃüÁî
+  // è‡ªå®šä¹‰å‘½ä»¤
   template<typename Func>
   static void PushCustomCommand(Func &&func, const std::string &debugName = "Custom");
 
-  // Ö´ĞĞ¿ØÖÆ
-  static void Flush();       // Ö´ĞĞËùÓĞÃüÁî
-  static void ClearQueue();  // Çå¿ÕÃüÁî¶ÓÁĞ£¨ĞÂÔö£©
+  // æ‰§è¡Œæ§åˆ¶
+  static void Flush();       // æ‰§è¡Œæ‰€æœ‰å‘½ä»¤
+  static void ClearQueue();  // æ¸…ç©ºå‘½ä»¤é˜Ÿåˆ—ï¼ˆæ–°å¢ï¼‰
 
  private:
   RenderCommand() = default;
@@ -99,10 +99,10 @@ class RenderCommand {
   uint32_t m_ClearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
   RenderState m_CurrentState;
 
-  Logger m_Logger;  // ÈÕÖ¾ÏµÍ³
+  Logger m_Logger;  // æ—¥å¿—ç³»ç»Ÿ
 };
 
-// Ä£°åÊµÏÖ
+// æ¨¡æ¿å®ç°
 template<typename Func>
 void RenderCommand::PushCustomCommand(Func &&func, const std::string &debugName)
 {

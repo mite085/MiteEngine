@@ -7,22 +7,22 @@
 namespace mite {
 
 /**
- * @brief Timer ¼ÆÊ±Æ÷
- * @note Ö°Ôğ£º¸ºÔğ¾«È·¼ÆÊ±
- * @note ÓÃÓÚ¾Ö²¿¼ÆÊ±Æ÷ºÍĞÔÄÜ·ÖÎö
+ * @brief Timer è®¡æ—¶å™¨
+ * @note èŒè´£ï¼šè´Ÿè´£ç²¾ç¡®è®¡æ—¶
+ * @note ç”¨äºå±€éƒ¨è®¡æ—¶å™¨å’Œæ€§èƒ½åˆ†æ
  */
 class Timer {
  public:
   Timer();
   void Reset();
 
-  // »ñÈ¡×ÔÉÏ´ÎReset()ºóµÄ¾­¹ıÊ±¼ä(Ãë)
+  // è·å–è‡ªä¸Šæ¬¡Reset()åçš„ç»è¿‡æ—¶é—´(ç§’)
   float ElapsedSeconds() const;
 
-  // »ñÈ¡×ÔÉÏ´ÎReset()ºóµÄ¾­¹ıÊ±¼ä(ºÁÃë)
+  // è·å–è‡ªä¸Šæ¬¡Reset()åçš„ç»è¿‡æ—¶é—´(æ¯«ç§’)
   float ElapsedMillis() const;
 
-  // ĞÔÄÜ·ÖÎö¹¤¾ß
+  // æ€§èƒ½åˆ†æå·¥å…·
   void StartProfile(const std::string &name);
   float EndProfile(const std::string &name);
 

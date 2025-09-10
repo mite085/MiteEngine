@@ -2,7 +2,7 @@
 
 namespace mite {
 
-// ==================== AABB³ÉÔ±º¯ÊıÊµÏÖ ====================
+// ==================== AABBæˆå‘˜å‡½æ•°å®ç° ====================
 
 AABB::AABB(const glm::vec3 &center, float halfExtent)
 {
@@ -24,7 +24,7 @@ void AABB::Expand(const AABB &other)
 
 AABB AABB::Transform(const glm::mat4 &matrix) const
 {
-  // ±ä»»AABBµÄ8¸ö¶¥µã²¢ÖØĞÂ¼ÆËã°üÎ§ºĞ
+  // å˜æ¢AABBçš„8ä¸ªé¡¶ç‚¹å¹¶é‡æ–°è®¡ç®—åŒ…å›´ç›’
   glm::vec3 vertices[8] = {{min.x, min.y, min.z},
                            {min.x, min.y, max.z},
                            {min.x, max.y, min.z},
@@ -76,19 +76,19 @@ float AABB::DistanceToPointSq(const glm::vec3 &point) const
 {
   float sqDist = 0.0f;
 
-  // ·Ö±ğ¼ÆËãÈı¸öÖáÉÏµÄ¾àÀë·ÖÁ¿
+  // åˆ†åˆ«è®¡ç®—ä¸‰ä¸ªè½´ä¸Šçš„è·ç¦»åˆ†é‡
   for (int i = 0; i < 3; ++i) {
-    // µãÔÚ°üÎ§ºĞ×ó²à
+    // ç‚¹åœ¨åŒ…å›´ç›’å·¦ä¾§
     if (point[i] < min[i]) {
       float diff = min[i] - point[i];
       sqDist += diff * diff;
     }
-    // µãÔÚ°üÎ§ºĞÓÒ²à
+    // ç‚¹åœ¨åŒ…å›´ç›’å³ä¾§
     else if (point[i] > max[i]) {
       float diff = point[i] - max[i];
       sqDist += diff * diff;
     }
-    // µãÔÚ°üÎ§ºĞÄÚ²¿£¬¸ÃÖá¾àÀë·ÖÁ¿Îª0
+    // ç‚¹åœ¨åŒ…å›´ç›’å†…éƒ¨ï¼Œè¯¥è½´è·ç¦»åˆ†é‡ä¸º0
   }
 
   return sqDist;
@@ -118,7 +118,7 @@ AABB AABB::CreateAABBFromPoints(const glm::vec3 *points, uint32_t count)
   return result;
 }
 
-// ==================== Sphere³ÉÔ±º¯ÊıÊµÏÖ ====================
+// ==================== Sphereæˆå‘˜å‡½æ•°å®ç° ====================
 
 Sphere Sphere::FromAABB(const AABB &aabb)
 {
@@ -146,10 +146,10 @@ bool Sphere::Intersects(const Sphere &other) const
 
 Sphere Sphere::Transform(const glm::mat4 &matrix) const
 {
-  // ÌáÈ¡Æ½ÒÆºÍ¾ùÔÈËõ·Å
+  // æå–å¹³ç§»å’Œå‡åŒ€ç¼©æ”¾
   glm::vec3 newCenter = glm::vec3(matrix * glm::vec4(center, 1.0f));
 
-  // ¼ÙÉè¾ùÔÈËõ·Å£¬È¡×î´óËõ·ÅÖµ
+  // å‡è®¾å‡åŒ€ç¼©æ”¾ï¼Œå–æœ€å¤§ç¼©æ”¾å€¼
   glm::vec3 scale = glm::vec3(glm::length(glm::vec3(matrix[0])),
                               glm::length(glm::vec3(matrix[1])),
                               glm::length(glm::vec3(matrix[2])));
@@ -159,7 +159,7 @@ Sphere Sphere::Transform(const glm::mat4 &matrix) const
   return Sphere(newCenter, newRadius);
 }
 
-// ==================== OBB³ÉÔ±º¯ÊıÊµÏÖ ====================
+// ==================== OBBæˆå‘˜å‡½æ•°å®ç° ====================
 
 OBB OBB::FromAABB(const AABB &aabb)
 {
@@ -195,7 +195,7 @@ OBB OBB::Transform(const glm::mat4 &matrix) const
   glm::vec3 newCenter = glm::vec3(matrix * glm::vec4(center, 1.0f));
   glm::mat3 newOrientation = glm::mat3(matrix) * orientation;
 
-  // ¼ÆËãĞÂµÄ°ë³¤£¨¿¼ÂÇ·Ç¾ùÔÈËõ·Å£©
+  // è®¡ç®—æ–°çš„åŠé•¿ï¼ˆè€ƒè™‘éå‡åŒ€ç¼©æ”¾ï¼‰
   glm::vec3 scale = glm::vec3(glm::length(glm::vec3(matrix[0])),
                               glm::length(glm::vec3(matrix[1])),
                               glm::length(glm::vec3(matrix[2])));
@@ -206,24 +206,24 @@ OBB OBB::Transform(const glm::mat4 &matrix) const
 
 bool OBB::Contains(const glm::vec3 &point) const
 {
-  // ½«µã×ª»»µ½OBB¾Ö²¿¿Õ¼ä
+  // å°†ç‚¹è½¬æ¢åˆ°OBBå±€éƒ¨ç©ºé—´
   glm::vec3 localPoint = glm::transpose(orientation) * (point - center);
   return std::abs(localPoint.x) <= extents.x && std::abs(localPoint.y) <= extents.y &&
          std::abs(localPoint.z) <= extents.z;
 }
 
-// ==================== Plane³ÉÔ±º¯ÊıÊµÏÖ ====================
+// ==================== Planeæˆå‘˜å‡½æ•°å®ç° ====================
 
 Plane::Plane(const glm::vec3 &point, const glm::vec3 &normal)
     : normal(glm::normalize(normal)), distance(-glm::dot(normal, point))
 {
-  // ÒòÎªÆ½Ãæ·½³ÌÊÇ normal¡¤point + distance = 0£¬ËùÒÔ distance = -normal¡¤point
+  // å› ä¸ºå¹³é¢æ–¹ç¨‹æ˜¯ normalÂ·point + distance = 0ï¼Œæ‰€ä»¥ distance = -normalÂ·point
 }
 
 float Plane::DistanceToPoint(const glm::vec3 &point) const
 {
-  // ÓÒÊÖÏµÆ½Ãæ·½³Ì£ºnormal.x*x + normal.y*y + normal.z*z + distance = 0
-  // ËùÒÔµãµ½Æ½ÃæµÄ¾àÀë = normal¡¤point + distance
+  // å³æ‰‹ç³»å¹³é¢æ–¹ç¨‹ï¼šnormal.x*x + normal.y*y + normal.z*z + distance = 0
+  // æ‰€ä»¥ç‚¹åˆ°å¹³é¢çš„è·ç¦» = normalÂ·point + distance
   return glm::dot(normal, point) + distance;
 }
 
@@ -231,10 +231,10 @@ int Plane::GetSide(const glm::vec3 &point) const
 {
   float dist = DistanceToPoint(point);
   if (dist > 0.0f)
-    return 1;  // ÕıÃæ
+    return 1;  // æ­£é¢
   if (dist < 0.0f)
-    return -1;  // ±³Ãæ
-  return 0;     // ÔÚÆ½ÃæÉÏ
+    return -1;  // èƒŒé¢
+  return 0;     // åœ¨å¹³é¢ä¸Š
 }
 
 }  // namespace mite

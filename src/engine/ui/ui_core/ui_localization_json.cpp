@@ -9,15 +9,15 @@ namespace mite {
 
 UILocalizationJson::UILocalizationJson()
 {
-  // ³õÊ¼»¯ÈÕÖ¾ÏµÍ³
+  // åˆå§‹åŒ–æ—¥å¿—ç³»ç»Ÿ
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI Localization Json");
   m_Logger->info("Initializing UII Localization Json");
 
 
   InitializeBuiltinLanguages();
-  SetCurrentLanguage(SIMPLIFIED_CHINESE);  // Ä¬ÈÏÖĞÎÄ
+  SetCurrentLanguage(SIMPLIFIED_CHINESE);  // é»˜è®¤ä¸­æ–‡
 
-  // ¶©ÔÄÓïÑÔ±ä¸üÊÂ¼ş
+  // è®¢é˜…è¯­è¨€å˜æ›´äº‹ä»¶
   m_SubscriptionGroup.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
 }
 
@@ -25,7 +25,7 @@ UILocalizationJson::~UILocalizationJson() = default;
 
 void UILocalizationJson::InitializeBuiltinLanguages()
 {
-  // ³¢ÊÔ´ÓÎÄ¼ş¼ÓÔØ
+  // å°è¯•ä»æ–‡ä»¶åŠ è½½
   std::string enPath = GetLocalizationFilePath("en-US");
   if (!enPath.empty() && LoadLanguagePackFromFile(ENGLISH, enPath)) {
     m_Logger->info("Loaded English language pack from file");
@@ -56,7 +56,7 @@ bool UILocalizationJson::OnLanguageChanged(LanguageChangedEvent &e)
   if (!SetCurrentLanguage(languageCode))
     return false;
 
-  // ÊÂ¼şÒÑÏû·Ñ£¬×è¶Ï´«²¥
+  // äº‹ä»¶å·²æ¶ˆè´¹ï¼Œé˜»æ–­ä¼ æ’­
   e.Handled();
   return e.handled;
 }
@@ -70,11 +70,11 @@ bool UILocalizationJson::LoadLanguagePackFromFile(const std::string &languageCod
       return false;
     }
 
-    // ¶ÁÈ¡ÎÄ¼şÄÚÈİ
+    // è¯»å–æ–‡ä»¶å†…å®¹
     std::string content = FileSystem::ReadFileToString(filePath);
     json jsonData = json::parse(content);
 
-    // ÑéÖ¤JSON¸ñÊ½
+    // éªŒè¯JSONæ ¼å¼
     if (!ValidateLanguagePack(jsonData)) {
       m_Logger->error("Invalid localization file format: {}", filePath);
       return false;
@@ -102,7 +102,7 @@ bool UILocalizationJson::LoadLanguagePackFromFile(const std::string &languageCod
 std::string UILocalizationJson::GetLocalizationFilePath(const std::string &languageCode) const
 {
   try {
-    // Ö±½Ó¹¹½¨Ïà¶ÔÓÚassetsµÄÂ·¾¶
+    // ç›´æ¥æ„å»ºç›¸å¯¹äºassetsçš„è·¯å¾„
     std::string relativePath = "localization/" + languageCode + ".json";
     fs::path fullPath = FileSystem::GetAssetPath(relativePath);
 
@@ -110,7 +110,7 @@ std::string UILocalizationJson::GetLocalizationFilePath(const std::string &langu
       return fullPath.string();
     }
 
-    return "";  // ÎÄ¼ş²»´æÔÚ
+    return "";  // æ–‡ä»¶ä¸å­˜åœ¨
   }
   catch (const std::exception &e) {
     m_Logger->debug("Localization file not found: {}", e.what());
@@ -120,7 +120,7 @@ std::string UILocalizationJson::GetLocalizationFilePath(const std::string &langu
 
 bool UILocalizationJson::ValidateLanguagePack(const json &jsonData) const
 {
-  // »ù±¾ÑéÖ¤£º¼ì²é±ØĞè×Ö¶Î
+  // åŸºæœ¬éªŒè¯ï¼šæ£€æŸ¥å¿…éœ€å­—æ®µ
   if (!jsonData.is_object()) {
     m_Logger->error("Localization file must be a JSON object");
     return false;
@@ -155,7 +155,7 @@ bool UILocalizationJson::ParseLanguagePack(const json &jsonData, LanguagePack &p
     std::string directionStr = metadata.value("direction", "LTR");
     pack.direction = (directionStr == "RTL") ? TextDirection::RTL : TextDirection::LTR;
 
-    // ºÏ²¢ËùÓĞ·­ÒëÏî
+    // åˆå¹¶æ‰€æœ‰ç¿»è¯‘é¡¹
     MergeTranslations(jsonData["common"], pack.translations, "common.");
     if (jsonData.contains("editor") && jsonData["editor"].is_object()) {
       MergeTranslations(jsonData["editor"], pack.translations, "editor.");
@@ -187,7 +187,7 @@ void UILocalizationJson::MergeTranslations(const json &source,
       target[prefix + it.key()] = it.value();
     }
     else if (it.value().is_object()) {
-      // µİ¹é´¦ÀíÇ¶Ì×¶ÔÏó
+      // é€’å½’å¤„ç†åµŒå¥—å¯¹è±¡
       MergeTranslations(it.value(), target, prefix + it.key() + ".");
     }
   }
@@ -226,7 +226,7 @@ std::vector<std::string> UILocalizationJson::GetAvailableLanguages() const
 std::string UILocalizationJson::Translate(const std::string &key) const
 {
   if (m_CurrentLanguage.empty() || m_LanguagePacks.empty()) {
-    return key;  // ·µ»Ø¼üÃû×÷ÎªÄ¬ÈÏÖµ
+    return key;  // è¿”å›é”®åä½œä¸ºé»˜è®¤å€¼
   }
 
   const auto &languagePack = m_LanguagePacks.at(m_CurrentLanguage);
@@ -235,7 +235,7 @@ std::string UILocalizationJson::Translate(const std::string &key) const
     return it->second;
   }
 
-  // Èç¹ûµ±Ç°ÓïÑÔÕÒ²»µ½£¬³¢ÊÔÓ¢ÎÄ×÷Îªºó±¸
+  // å¦‚æœå½“å‰è¯­è¨€æ‰¾ä¸åˆ°ï¼Œå°è¯•è‹±æ–‡ä½œä¸ºåå¤‡
   if (m_CurrentLanguage != ENGLISH && m_LanguagePacks.find(ENGLISH) != m_LanguagePacks.end()) {
     const auto &englishPack = m_LanguagePacks.at(ENGLISH);
     auto engIt = englishPack.translations.find(key);
@@ -245,7 +245,7 @@ std::string UILocalizationJson::Translate(const std::string &key) const
   }
 
   m_Logger->debug("Translation key not found: {}", key);
-  return key;  // ÎŞ·­Òë£¬·µ»Ø¼üÃû×÷ÎªÄ¬ÈÏÖµ
+  return key;  // æ— ç¿»è¯‘ï¼Œè¿”å›é”®åä½œä¸ºé»˜è®¤å€¼
 }
 
 

@@ -18,13 +18,13 @@ bool SceneSerializer::SerializeToJson(const std::string &filepath)
 
     cereal::JSONOutputArchive archive(os);
 
-    // ĞòÁĞ»¯³¡¾°ÔªÊı¾İ
+    // åºåˆ—åŒ–åœºæ™¯å…ƒæ•°æ®
     //archive(cereal::make_nvp("Scene", m_scene.GetName()));
 
-    // ×¢²á²¢ĞòÁĞ»¯ËùÓĞ×é¼şÀàĞÍ
+    // æ³¨å†Œå¹¶åºåˆ—åŒ–æ‰€æœ‰ç»„ä»¶ç±»å‹
     //RegisterComponentTypes(archive);
 
-    // ĞòÁĞ»¯ÊµÌå
+    // åºåˆ—åŒ–å®ä½“
     //SerializeEntities(archive, m_scene.GetRegistry());
 
     return true;
@@ -46,18 +46,18 @@ bool SceneSerializer::DeserializeFromJson(const std::string &filepath)
 
     cereal::JSONInputArchive archive(is);
 
-    // ·´ĞòÁĞ»¯³¡¾°ÔªÊı¾İ
+    // ååºåˆ—åŒ–åœºæ™¯å…ƒæ•°æ®
     std::string sceneName;
     //archive(cereal::make_nvp("Scene", sceneName));
     m_scene.SetName(sceneName);
 
-    // ×¢²á×é¼şÀàĞÍ
+    // æ³¨å†Œç»„ä»¶ç±»å‹
     //RegisterComponentTypes(archive);
 
-    // Çå¿Õµ±Ç°³¡¾°
+    // æ¸…ç©ºå½“å‰åœºæ™¯
     m_scene.Clear();
 
-    // ·´ĞòÁĞ»¯ÊµÌå
+    // ååºåˆ—åŒ–å®ä½“
     //DeserializeEntities(archive, m_scene.GetRegistry());
 
     return true;
@@ -79,13 +79,13 @@ bool SceneSerializer::SerializeToBinary(const std::string &filepath)
 
     //cereal::BinaryOutputArchive archive(os);
 
-    // ĞòÁĞ»¯³¡¾°ÔªÊı¾İ
+    // åºåˆ—åŒ–åœºæ™¯å…ƒæ•°æ®
     //archive(cereal::make_nvp("Scene", m_scene.GetName()));
 
-    // ×¢²á²¢ĞòÁĞ»¯ËùÓĞ×é¼şÀàĞÍ
+    // æ³¨å†Œå¹¶åºåˆ—åŒ–æ‰€æœ‰ç»„ä»¶ç±»å‹
     //RegisterComponentTypes(archive);
 
-    // ĞòÁĞ»¯ÊµÌå
+    // åºåˆ—åŒ–å®ä½“
     //SerializeEntities(archive, m_scene.GetRegistry());
 
     return true;
@@ -107,18 +107,18 @@ bool SceneSerializer::DeserializeFromBinary(const std::string &filepath)
 
     //cereal::BinaryInputArchive archive(is);
 
-    // ·´ĞòÁĞ»¯³¡¾°ÔªÊı¾İ
+    // ååºåˆ—åŒ–åœºæ™¯å…ƒæ•°æ®
     std::string sceneName;
     //archive(cereal::make_nvp("Scene", m_scene.GetName()));
     m_scene.SetName(sceneName);
 
-    // ×¢²á×é¼şÀàĞÍ
+    // æ³¨å†Œç»„ä»¶ç±»å‹
     //RegisterComponentTypes(archive);
 
-    // Çå¿Õµ±Ç°³¡¾°
+    // æ¸…ç©ºå½“å‰åœºæ™¯
     m_scene.Clear();
 
-    // ·´ĞòÁĞ»¯ÊµÌå
+    // ååºåˆ—åŒ–å®ä½“
     //DeserializeEntities(archive, m_scene.GetRegistry());
 
     return true;
@@ -131,13 +131,13 @@ bool SceneSerializer::DeserializeFromBinary(const std::string &filepath)
 
 template<typename Archive> void SceneSerializer::RegisterComponentTypes(Archive &archive)
 {
-  // ÎªÃ¿¸ö×é¼şÀàĞÍ×¢²áĞòÁĞ»¯º¯Êı
-  // TODO: Ê¹ÓÃCEREAL_REGISTER_TYPEºêÈ·±£ÀàĞÍĞÅÏ¢±»ÕıÈ·¼ÇÂ¼
+  // ä¸ºæ¯ä¸ªç»„ä»¶ç±»å‹æ³¨å†Œåºåˆ—åŒ–å‡½æ•°
+  // TODO: ä½¿ç”¨CEREAL_REGISTER_TYPEå®ç¡®ä¿ç±»å‹ä¿¡æ¯è¢«æ­£ç¡®è®°å½•
 
-  // Ê¾Àı£ºTag×é¼ş
+  // ç¤ºä¾‹ï¼šTagç»„ä»¶
   //archive.template register_type<TagComponent>();
 
-  // TODO: ÆäËû×é¼ş...
+  // TODO: å…¶ä»–ç»„ä»¶...
   // archive.template register_type<TransformComponent>();
   // archive.template register_type<MeshRendererComponent>();
   // archive.template register_type<LightComponent>();
@@ -148,23 +148,23 @@ template<typename Archive> void SceneSerializer::RegisterComponentTypes(Archive 
 template<typename Archive>
 void SceneSerializer::SerializeEntities(Archive &archive, SceneRegistry &registry)
 {
-  // »ñÈ¡ËùÓĞÊµÌå
+  // è·å–æ‰€æœ‰å®ä½“
   auto view = registry.GetAllEntities();
 
-  // Ê×ÏÈĞòÁĞ»¯ÊµÌåÊıÁ¿
+  // é¦–å…ˆåºåˆ—åŒ–å®ä½“æ•°é‡
   const auto count = view.size();
   archive(cereal::make_nvp("EntityCount", count));
 
-  // ĞòÁĞ»¯Ã¿¸öÊµÌå¼°Æä×é¼ş - Ê¹ÓÃÊÓÍ¼µü´ú
+  // åºåˆ—åŒ–æ¯ä¸ªå®ä½“åŠå…¶ç»„ä»¶ - ä½¿ç”¨è§†å›¾è¿­ä»£
   for (auto entity : view) {
-    // ĞòÁĞ»¯ÊµÌåID
+    // åºåˆ—åŒ–å®ä½“ID
     archive(cereal::make_nvp("Entity", entity));
 
-    // ĞòÁĞ»¯¸ÃÊµÌåÉÏµÄËùÓĞ×é¼ş
+    // åºåˆ—åŒ–è¯¥å®ä½“ä¸Šçš„æ‰€æœ‰ç»„ä»¶
     //auto view = registry.GetAllEntities();
     //for (auto entity : view) {
     //  using ComponentType = std::decay_t<decltype(registry.GetComponent<ComponentType>(entity))>;
-    //  archive(cereal::make_nvp(component_type_name<ComponentType>(),  // ĞèÒªÊµÏÖ»ñÈ¡ÀàĞÍÃûµÄº¯Êı
+    //  archive(cereal::make_nvp(component_type_name<ComponentType>(),  // éœ€è¦å®ç°è·å–ç±»å‹åçš„å‡½æ•°
     //                           registry.template GetComponent<ComponentType>(entity)));
     //}
   }
@@ -173,30 +173,30 @@ void SceneSerializer::SerializeEntities(Archive &archive, SceneRegistry &registr
 template<typename Archive>
 void SceneSerializer::DeserializeEntities(Archive &archive, SceneRegistry &registry)
 {
-  // ·´ĞòÁĞ»¯ÊµÌåÊıÁ¿
+  // ååºåˆ—åŒ–å®ä½“æ•°é‡
   size_t entityCount = 0;
   //archive(cereal::make_nvp("EntityCount", entityCount));
 
-  // ·´ĞòÁĞ»¯Ã¿¸öÊµÌå¼°Æä×é¼ş
+  // ååºåˆ—åŒ–æ¯ä¸ªå®ä½“åŠå…¶ç»„ä»¶
   for (size_t i = 0; i < entityCount; ++i) {
     Entity entity = registry.CreateEntity();
-    // ·´ĞòÁĞ»¯ÊµÌåID
+    // ååºåˆ—åŒ–å®ä½“ID
     //archive(cereal::make_nvp("Entity", entity));
 
-    // ·´ĞòÁĞ»¯×é¼ş
-    // Cereal»á¸ù¾İĞòÁĞ»¯Ê±¼ÇÂ¼µÄÀàĞÍĞÅÏ¢×Ô¶¯´¦Àí
+    // ååºåˆ—åŒ–ç»„ä»¶
+    // Cerealä¼šæ ¹æ®åºåˆ—åŒ–æ—¶è®°å½•çš„ç±»å‹ä¿¡æ¯è‡ªåŠ¨å¤„ç†
     std::string componentName;
     while (true) {
       try {
-        //// ³¢ÊÔ¶ÁÈ¡ÏÂÒ»¸ö×é¼şÃû
+        //// å°è¯•è¯»å–ä¸‹ä¸€ä¸ªç»„ä»¶å
         //archive.setNextName(nullptr);
         //if (!archive.tryGetName(componentName)) {
-        //  break;  // Ã»ÓĞ¸ü¶à×é¼şÁË
+        //  break;  // æ²¡æœ‰æ›´å¤šç»„ä»¶äº†
         //}
 
-        // ¸ù¾İ×é¼şÃû·´ĞòÁĞ»¯×é¼ş
-        // ÕâÀïĞèÒªÎªÃ¿¸ö×é¼şÀàĞÍÊµÏÖÌØ¶¨µÄ·´ĞòÁĞ»¯Âß¼­
-        // ¿ÉÒÔÊ¹ÓÃ¹¤³§Ä£Ê½»òÀàĞÍ×¢²á±íÀ´¶¯Ì¬´´½¨×é¼ş
+        // æ ¹æ®ç»„ä»¶åååºåˆ—åŒ–ç»„ä»¶
+        // è¿™é‡Œéœ€è¦ä¸ºæ¯ä¸ªç»„ä»¶ç±»å‹å®ç°ç‰¹å®šçš„ååºåˆ—åŒ–é€»è¾‘
+        // å¯ä»¥ä½¿ç”¨å·¥å‚æ¨¡å¼æˆ–ç±»å‹æ³¨å†Œè¡¨æ¥åŠ¨æ€åˆ›å»ºç»„ä»¶
 
         //if (componentName == TransformComponent::GetSerializationName()) {
         //  TransformComponent transform;
@@ -208,18 +208,18 @@ void SceneSerializer::DeserializeEntities(Archive &archive, SceneRegistry &regis
         //  archive(tag);
         //  registry.emplace_or_replace<TagComponent>(entity, tag);
         //}
-        // ÆäËû×é¼şÀàĞÍµÄ´¦Àí...
+        // å…¶ä»–ç»„ä»¶ç±»å‹çš„å¤„ç†...
       }
       catch (const cereal::Exception &e) {
-        // ´¦Àí×é¼ş·´ĞòÁĞ»¯´íÎó
+        // å¤„ç†ç»„ä»¶ååºåˆ—åŒ–é”™è¯¯
         m_lastError = "Component deserialization error: " + std::string(e.what());
         break;
       }
     }
   }
 
-  // ·´ĞòÁĞ»¯ºó¿ÉÄÜĞèÒªÖØ½¨ÊµÌå¼äµÄ¹ØÏµ£¨Èç¸¸×Ó¹ØÏµ£©
-  // ¿ÉÒÔÔÚËùÓĞÊµÌå¼ÓÔØÍê³Éºó½øĞĞÕâÒ»²½
+  // ååºåˆ—åŒ–åå¯èƒ½éœ€è¦é‡å»ºå®ä½“é—´çš„å…³ç³»ï¼ˆå¦‚çˆ¶å­å…³ç³»ï¼‰
+  // å¯ä»¥åœ¨æ‰€æœ‰å®ä½“åŠ è½½å®Œæˆåè¿›è¡Œè¿™ä¸€æ­¥
 }
 
 template<typename T> const char *SceneSerializer::component_type_name()
@@ -230,7 +230,7 @@ template<typename T> const char *SceneSerializer::component_type_name()
   else if constexpr (std::is_same_v<T, TagComponent>) {
     return "Tag";
   }
-  // TODO: ÆäËû×é¼şÀàĞÍ...
+  // TODO: å…¶ä»–ç»„ä»¶ç±»å‹...
   else {
     static_assert(false, "Unregistered component type");
   }

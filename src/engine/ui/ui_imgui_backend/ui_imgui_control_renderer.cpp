@@ -3,7 +3,7 @@
 
 namespace mite {
 
-// ==================== »ù´¡¿Ø¼şÊµÏÖ ====================
+// ==================== åŸºç¡€æ§ä»¶å®ç° ====================
 
 bool ImGuiControlRenderer::Button(const glm::vec2 &size)
 {
@@ -25,7 +25,7 @@ bool ImGuiControlRenderer::ArrowButton(const char *str_id, ImGuiDir dir)
   return ImGui::ArrowButton(str_id, dir);
 }
 
-// ==================== ²¼¾Ö¿Ø¼şÊµÏÖ ====================
+// ==================== å¸ƒå±€æ§ä»¶å®ç° ====================
 
 void ImGuiControlRenderer::Separator()
 {
@@ -62,7 +62,7 @@ void ImGuiControlRenderer::Unindent(float indent_w)
   ImGui::Unindent(indent_w);
 }
 
-// ==================== ·Ö×é¿Ø¼şÊµÏÖ ====================
+// ==================== åˆ†ç»„æ§ä»¶å®ç° ====================
 
 void ImGuiControlRenderer::BeginGroup()
 {
@@ -87,7 +87,7 @@ void ImGuiControlRenderer::EndChild()
   ImGui::EndChild();
 }
 
-// ==================== ½ø¶ÈÖ¸Ê¾Æ÷ÊµÏÖ ====================
+// ==================== è¿›åº¦æŒ‡ç¤ºå™¨å®ç° ====================
 
 void ImGuiControlRenderer::ProgressBar(float fraction,
                                        const glm::vec2 &size_arg,
@@ -97,7 +97,7 @@ void ImGuiControlRenderer::ProgressBar(float fraction,
 }
 
 
-// ==================== ÑÕÉ«¿Ø¼şÊµÏÖ ====================
+// ==================== é¢œè‰²æ§ä»¶å®ç° ====================
 
 bool ImGuiControlRenderer::ColorButton(const char *desc_id,
                                        const ImVec4 &col,
@@ -130,7 +130,7 @@ bool ImGuiControlRenderer::ColorPicker4(const char *label,
   return ImGui::ColorPicker4(label, col, flags, ref_col);
 }
 
-// ==================== Í¼Ïñ¿Ø¼şÊµÏÖ ====================
+// ==================== å›¾åƒæ§ä»¶å®ç° ====================
 
 void ImGuiControlRenderer::Image(ImTextureID user_texture_id,
                                  const glm::vec2 &size,
@@ -164,7 +164,7 @@ bool ImGuiControlRenderer::ImageButton(const char *str_id,
                             tint_col);
 }
 
-// ==================== ×Ô¶¨ÒåĞÎ×´ÊµÏÖ ====================
+// ==================== è‡ªå®šä¹‰å½¢çŠ¶å®ç° ====================
 
 void ImGuiControlRenderer::DrawRect(const glm::vec2 &min,
                                     const glm::vec2 &max,
@@ -200,7 +200,7 @@ void ImGuiControlRenderer::DrawCircleFilled(const glm::vec2 &center,
   draw_list->AddCircleFilled(ImVec2(center.x, center.y), radius, col, num_segments);
 }
 
-// ==================== Ê÷ĞÎ¿Ø¼şÊµÏÖ ====================
+// ==================== æ ‘å½¢æ§ä»¶å®ç° ====================
 
 bool ImGuiControlRenderer::TreeNode(const char *label, ImGuiTreeNodeFlags flags)
 {
@@ -229,7 +229,7 @@ void ImGuiControlRenderer::SetNextItemOpen(bool is_open, ImGuiCond cond)
   ImGui::SetNextItemOpen(is_open, cond);
 }
 
-// ==================== ±í¸ñ¿Ø¼şÊµÏÖ ====================
+// ==================== è¡¨æ ¼æ§ä»¶å®ç° ====================
 
 bool ImGuiControlRenderer::BeginTable(const char *str_id,
                                       int column,
@@ -260,7 +260,7 @@ void ImGuiControlRenderer::TableSetColumnIndex(int column_n)
   ImGui::TableSetColumnIndex(column_n);
 }
 
-// ==================== µ¯³ö´°¿ÚÊµÏÖ ====================
+// ==================== å¼¹å‡ºçª—å£å®ç° ====================
 
 void ImGuiControlRenderer::OpenPopup(const char *str_id, ImGuiPopupFlags popup_flags)
 {
@@ -297,7 +297,7 @@ void ImGuiControlRenderer::CloseCurrentPopup()
   ImGui::CloseCurrentPopup();
 }
 
-// ==================== ÍÏ×§¿Ø¼şÊµÏÖ ====================
+// ==================== æ‹–æ‹½æ§ä»¶å®ç° ====================
 
 bool ImGuiControlRenderer::DragFloat(const char *label,
                                      float *v,
@@ -387,7 +387,7 @@ bool ImGuiControlRenderer::DragInt4(const char *label,
   return ImGui::DragInt4(label, v, v_speed, v_min, v_max, format, flags);
 }
 
-// ==================== »¬¿é¿Ø¼şÊµÏÖ ====================
+// ==================== æ»‘å—æ§ä»¶å®ç° ====================
 
 bool ImGuiControlRenderer::SliderFloat(const char *label,
                                        float *v,
@@ -463,7 +463,7 @@ bool ImGuiControlRenderer::SliderAngle(const char *label,
   return ImGui::SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format, flags);
 }
 
-// ==================== Ê¸Á¿¿Ø¼şÊµÏÖ ====================
+// ==================== çŸ¢é‡æ§ä»¶å®ç° ====================
 
 bool ImGuiControlRenderer::DragVector2(
     const char *label, glm::vec2 &value, float speed, float min, float max)
@@ -483,7 +483,7 @@ bool ImGuiControlRenderer::DragVector4(
   return ImGui::DragFloat4(label, glm::value_ptr(value), speed, min, max);
 }
 
-// ==================== ¹¤¾ßº¯ÊıÊµÏÖ ====================
+// ==================== å·¥å…·å‡½æ•°å®ç° ====================
 
 glm::vec2 ImGuiControlRenderer::GetCursorPos()
 {

@@ -5,14 +5,14 @@
 
 namespace mite {
 /**
- * @brief Êó±êÒÆ¶¯ÊÂ¼ş
+ * @brief é¼ æ ‡ç§»åŠ¨äº‹ä»¶
  */
 class MouseMoveEvent : public Event {
  public:
   /**
-   * @brief Êó±êÒÆ¶¯ÊÂ¼ş¹¹Ôìº¯Êı
-   * @param xpos ÒÆ¶¯ºóµÄÎ»ÖÃX
-   * @param ypos ÒÆ¶¯ºóµÄÎ»ÖÃY
+   * @brief é¼ æ ‡ç§»åŠ¨äº‹ä»¶æ„é€ å‡½æ•°
+   * @param xpos ç§»åŠ¨åçš„ä½ç½®X
+   * @param ypos ç§»åŠ¨åçš„ä½ç½®Y
    */
   explicit MouseMoveEvent(double xpos, double ypos) : xpos(xpos), ypos(ypos) {}
   glm::vec2 GetPosition() const
@@ -38,16 +38,16 @@ class MouseMoveEvent : public Event {
   double xpos, ypos;
 };
 /**
- * @brief Êó±ê°´¼ü°´ÏÂÊÂ¼ş
+ * @brief é¼ æ ‡æŒ‰é”®æŒ‰ä¸‹äº‹ä»¶
  */
 class MouseButtonPressedEvent : public Event {
  public:
   /**
-   * @brief Êó±ê°´¼ü°´ÏÂÊÂ¼ş¹¹Ôìº¯Êı
-   * @param button °´¼üµÄ±êÖ¾£¬ÓĞGLFW_MOUSE_BUTTON_1µ½8
-   * @param mods °´ÏÂÊ±ÅäºÏµÄĞŞÊÎ¼ü£¬ÈçGLFW_MOD_SHIFT¡¢GLFW_MOD_CONTROL
-   * @param xpos °´ÏÂÊ±µÄÎ»ÖÃX
-   * @param ypos °´ÏÂÊ±µÄÎ»ÖÃY
+   * @brief é¼ æ ‡æŒ‰é”®æŒ‰ä¸‹äº‹ä»¶æ„é€ å‡½æ•°
+   * @param button æŒ‰é”®çš„æ ‡å¿—ï¼Œæœ‰GLFW_MOUSE_BUTTON_1åˆ°8
+   * @param mods æŒ‰ä¸‹æ—¶é…åˆçš„ä¿®é¥°é”®ï¼Œå¦‚GLFW_MOD_SHIFTã€GLFW_MOD_CONTROL
+   * @param xpos æŒ‰ä¸‹æ—¶çš„ä½ç½®X
+   * @param ypos æŒ‰ä¸‹æ—¶çš„ä½ç½®Y
    */
   explicit MouseButtonPressedEvent(int button, int mods, double xpos, double ypos)
       : button(button), mods(mods), xpos(xpos), ypos(ypos)
@@ -81,15 +81,15 @@ class MouseButtonPressedEvent : public Event {
   double xpos, ypos;
 };
 /**
- * @brief Êó±ê°´¼üÊÍ·ÅÊÂ¼ş
+ * @brief é¼ æ ‡æŒ‰é”®é‡Šæ”¾äº‹ä»¶
  */
 class MouseButtonReleasedEvent : public Event {
  public:
   /**
-   * @brief Êó±ê°´¼üÊÍ·ÅÊÂ¼ş¹¹Ôìº¯Êı
-   * @param button ÊÍ·Å°´¼üµÄ±êÖ¾£¬ÓĞGLFW_MOUSE_BUTTON_1µ½8
-   * @param xpos ÊÍ·ÅÊ±µÄÎ»ÖÃX
-   * @param ypos ÊÍ·ÅÊ±µÄÎ»ÖÃY
+   * @brief é¼ æ ‡æŒ‰é”®é‡Šæ”¾äº‹ä»¶æ„é€ å‡½æ•°
+   * @param button é‡Šæ”¾æŒ‰é”®çš„æ ‡å¿—ï¼Œæœ‰GLFW_MOUSE_BUTTON_1åˆ°8
+   * @param xpos é‡Šæ”¾æ—¶çš„ä½ç½®X
+   * @param ypos é‡Šæ”¾æ—¶çš„ä½ç½®Y
    */
   explicit MouseButtonReleasedEvent(int button, double xpos, double ypos)
       : button(button), xpos(xpos), ypos(ypos)
@@ -119,22 +119,22 @@ class MouseButtonReleasedEvent : public Event {
   double xpos, ypos;
 };
 /**
- * @brief Êó±ê¹öÂÖ¹ö¶¯ÊÂ¼ş
+ * @brief é¼ æ ‡æ»šè½®æ»šåŠ¨äº‹ä»¶
  *
- * µ±ÓÃ»§¹ö¶¯Êó±ê¹öÂÖÊ±´¥·¢£¬°üº¬Ë®Æ½ºÍ´¹Ö±¹ö¶¯Á¿
+ * å½“ç”¨æˆ·æ»šåŠ¨é¼ æ ‡æ»šè½®æ—¶è§¦å‘ï¼ŒåŒ…å«æ°´å¹³å’Œå‚ç›´æ»šåŠ¨é‡
  */
 class MouseScrollEvent : public Event {
  public:
   /**
-   * @brief Êó±ê¹öÂÖ¹ö¶¯ÊÂ¼ş¹¹Ôìº¯Êı
-   * @param xoffset Ë®Æ½¹ö¶¯Á¿£¨ÏòÓÒÎªÕı£©
-   * @param yoffset ´¹Ö±¹ö¶¯Á¿£¨ÏòÉÏÎªÕı£©
+   * @brief é¼ æ ‡æ»šè½®æ»šåŠ¨äº‹ä»¶æ„é€ å‡½æ•°
+   * @param xoffset æ°´å¹³æ»šåŠ¨é‡ï¼ˆå‘å³ä¸ºæ­£ï¼‰
+   * @param yoffset å‚ç›´æ»šåŠ¨é‡ï¼ˆå‘ä¸Šä¸ºæ­£ï¼‰
    */
   explicit MouseScrollEvent(double xoffset, double yoffset) : xoffset(xoffset), yoffset(yoffset) {}
 
   /**
-   * @brief »ñÈ¡Ë®Æ½¹ö¶¯Á¿
-   * @return Ë®Æ½¹ö¶¯Á¿£¨ÏòÓÒÎªÕı£©
+   * @brief è·å–æ°´å¹³æ»šåŠ¨é‡
+   * @return æ°´å¹³æ»šåŠ¨é‡ï¼ˆå‘å³ä¸ºæ­£ï¼‰
    */
   double GetXOffset() const
   {
@@ -142,8 +142,8 @@ class MouseScrollEvent : public Event {
   }
 
   /**
-   * @brief »ñÈ¡´¹Ö±¹ö¶¯Á¿
-   * @return ´¹Ö±¹ö¶¯Á¿£¨ÏòÉÏÎªÕı£©
+   * @brief è·å–å‚ç›´æ»šåŠ¨é‡
+   * @return å‚ç›´æ»šåŠ¨é‡ï¼ˆå‘ä¸Šä¸ºæ­£ï¼‰
    */
   double GetYOffset() const
   {
@@ -151,8 +151,8 @@ class MouseScrollEvent : public Event {
   }
 
   /**
-   * @brief »ñÈ¡¹ö¶¯Á¿ÏòÁ¿
-   * @return °üº¬Ë®Æ½ºÍ´¹Ö±¹ö¶¯Á¿µÄ¶şÎ¬ÏòÁ¿
+   * @brief è·å–æ»šåŠ¨é‡å‘é‡
+   * @return åŒ…å«æ°´å¹³å’Œå‚ç›´æ»šåŠ¨é‡çš„äºŒç»´å‘é‡
    */
   glm::vec2 GetOffset() const
   {
@@ -171,15 +171,15 @@ class MouseScrollEvent : public Event {
 };
 
 /**
- * @brief ¼üÅÌ°´¼ü°´ÏÂÊÂ¼ş
+ * @brief é”®ç›˜æŒ‰é”®æŒ‰ä¸‹äº‹ä»¶
  */
 class KeyPressedEvent : public Event {
  public:
   /**
-   * @brief ¼üÅÌ°´¼ü°´ÏÂÊÂ¼ş¹¹Ôìº¯Êı
-   * @param key °´¼üµÄ±êÖ¾£¬ÒÔGLFW_KEY_¿ªÍ·µÄflag
-   * @param mods °´ÏÂÊ±ÅäºÏµÄĞŞÊÎ¼ü£¬ÈçGLFW_MOD_SHIFT¡¢GLFW_MOD_CONTROL
-   * @param isRepeated ÊÇ·ñÖØ¸´°´ÏÂµÄflag
+   * @brief é”®ç›˜æŒ‰é”®æŒ‰ä¸‹äº‹ä»¶æ„é€ å‡½æ•°
+   * @param key æŒ‰é”®çš„æ ‡å¿—ï¼Œä»¥GLFW_KEY_å¼€å¤´çš„flag
+   * @param mods æŒ‰ä¸‹æ—¶é…åˆçš„ä¿®é¥°é”®ï¼Œå¦‚GLFW_MOD_SHIFTã€GLFW_MOD_CONTROL
+   * @param isRepeated æ˜¯å¦é‡å¤æŒ‰ä¸‹çš„flag
    */
   explicit KeyPressedEvent(int key, int mods, bool isRepeated)
       : key(key), mods(mods), isRepeated(isRepeated)
@@ -209,13 +209,13 @@ class KeyPressedEvent : public Event {
   bool isRepeated;
 };
 /**
- * @brief ¼üÅÌ°´¼üÊÍ·ÅÊÂ¼ş
+ * @brief é”®ç›˜æŒ‰é”®é‡Šæ”¾äº‹ä»¶
  */
 class KeyReleasedEvent : public Event {
  public:
   /**
-   * @brief ¼üÅÌ°´¼üÊÍ·ÅÊÂ¼ş¹¹Ôìº¯Êı
-   * @param key °´¼üµÄ±êÖ¾£¬ÒÔGLFW_KEY_¿ªÍ·µÄflag
+   * @brief é”®ç›˜æŒ‰é”®é‡Šæ”¾äº‹ä»¶æ„é€ å‡½æ•°
+   * @param key æŒ‰é”®çš„æ ‡å¿—ï¼Œä»¥GLFW_KEY_å¼€å¤´çš„flag
    */
   explicit KeyReleasedEvent(int key) : key(key) {}
 
@@ -234,28 +234,28 @@ class KeyReleasedEvent : public Event {
 };
 
 /**
- * @brief ×Ö·ûÊäÈëÊÂ¼ş
+ * @brief å­—ç¬¦è¾“å…¥äº‹ä»¶
  *
- * µ±ÓÃ»§ÊäÈëUnicode×Ö·ûÊ±´¥·¢£¨¿¼ÂÇ×éºÏ¼ü¡¢IMEÊäÈëµÈÇé¿ö£©
- * ÓëKeyPressedEvent²»Í¬£¬´ËÊÂ¼ş±íÊ¾Êµ¼ÊÊäÈëµÄ×Ö·û
+ * å½“ç”¨æˆ·è¾“å…¥Unicodeå­—ç¬¦æ—¶è§¦å‘ï¼ˆè€ƒè™‘ç»„åˆé”®ã€IMEè¾“å…¥ç­‰æƒ…å†µï¼‰
+ * ä¸KeyPressedEventä¸åŒï¼Œæ­¤äº‹ä»¶è¡¨ç¤ºå®é™…è¾“å…¥çš„å­—ç¬¦
  */
 class KeyTypedEvent : public Event {
  public:
   /**
-   * @brief ×Ö·ûÊäÈëÊÂ¼ş¹¹Ôìº¯Êı
-   * @param codepoint UTF-32±àÂëµÄ×Ö·û
+   * @brief å­—ç¬¦è¾“å…¥äº‹ä»¶æ„é€ å‡½æ•°
+   * @param codepoint UTF-32ç¼–ç çš„å­—ç¬¦
    */
   explicit KeyTypedEvent(unsigned int codepoint) : m_Codepoint(codepoint) {}
   /**
-   * @brief »ñÈ¡×Ö·ûµÄUTF-32±àÂë
+   * @brief è·å–å­—ç¬¦çš„UTF-32ç¼–ç 
    */
   unsigned int GetCodepoint() const
   {
     return m_Codepoint;
   }
   /**
-   * @brief ³¢ÊÔ×ª»»ÎªASCII×Ö·û£¨Èç¹ûÊÇ¿É´òÓ¡ASCII£©
-   * @return Èç¹û¿É×ª»»·µ»Øchar£¬·ñÔò·µ»Ø0
+   * @brief å°è¯•è½¬æ¢ä¸ºASCIIå­—ç¬¦ï¼ˆå¦‚æœæ˜¯å¯æ‰“å°ASCIIï¼‰
+   * @return å¦‚æœå¯è½¬æ¢è¿”å›charï¼Œå¦åˆ™è¿”å›0
    */
   char GetAsciiChar() const
   {
@@ -268,7 +268,7 @@ class KeyTypedEvent : public Event {
   }
 
  private:
-  unsigned int m_Codepoint;  // UTF-32±àÂëµÄ×Ö·û
+  unsigned int m_Codepoint;  // UTF-32ç¼–ç çš„å­—ç¬¦
 };
 };  // namespace mite
 

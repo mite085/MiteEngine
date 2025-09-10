@@ -11,7 +11,7 @@ void Timer::Reset()
   m_StartTime = std::chrono::high_resolution_clock::now();
 }
 
-// »ñÈ¡×ÔÉÏ´ÎReset()ºóµÄ¾­¹ıÊ±¼ä(Ãë)
+// è·å–è‡ªä¸Šæ¬¡Reset()åçš„ç»è¿‡æ—¶é—´(ç§’)
 float Timer::ElapsedSeconds() const
 {
   auto now = std::chrono::high_resolution_clock::now();
@@ -24,7 +24,7 @@ float Timer::ElapsedMillis() const
   return std::chrono::duration<float, std::milli>(now - m_StartTime).count();
 }
 
-// ĞÔÄÜ·ÖÎö¹¤¾ß
+// æ€§èƒ½åˆ†æå·¥å…·
 void Timer::StartProfile(const std::string &name)
 {
   m_ProfileStart[name] = std::chrono::high_resolution_clock::now();

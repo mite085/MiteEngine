@@ -15,13 +15,13 @@ Frustum::Frustum(const glm::mat4 &viewProjection)
 
 void Frustum::Update(const glm::mat4 &viewProjection)
 {
-  // ÌáÈ¡6¸ö²Ã¼ôÆ½Ãæ
-  ExtractPlane(viewProjection, FrustumPlane::LEFT);    // ×óÆ½Ãæ
-  ExtractPlane(viewProjection, FrustumPlane::RIGHT);   // ÓÒÆ½Ãæ
-  ExtractPlane(viewProjection, FrustumPlane::BOTTOM);  // ÏÂÆ½Ãæ
-  ExtractPlane(viewProjection, FrustumPlane::TOP);     // ÉÏÆ½Ãæ
-  ExtractPlane(viewProjection, FrustumPlane::NEAR);    // ½üÆ½Ãæ
-  ExtractPlane(viewProjection, FrustumPlane::FAR);     // Ô¶Æ½Ãæ
+  // æå–6ä¸ªè£å‰ªå¹³é¢
+  ExtractPlane(viewProjection, FrustumPlane::LEFT);    // å·¦å¹³é¢
+  ExtractPlane(viewProjection, FrustumPlane::RIGHT);   // å³å¹³é¢
+  ExtractPlane(viewProjection, FrustumPlane::BOTTOM);  // ä¸‹å¹³é¢
+  ExtractPlane(viewProjection, FrustumPlane::TOP);     // ä¸Šå¹³é¢
+  ExtractPlane(viewProjection, FrustumPlane::NEAR);    // è¿‘å¹³é¢
+  ExtractPlane(viewProjection, FrustumPlane::FAR);     // è¿œå¹³é¢
 }
 
 void Frustum::ExtractPlane(const glm::mat4 &vpMatrix, FrustumPlane plane)
@@ -49,13 +49,13 @@ void Frustum::ExtractPlane(const glm::mat4 &vpMatrix, FrustumPlane plane)
       break;
   }
 
-  // ±ê×¼»¯Æ½Ãæ·½³Ì
+  // æ ‡å‡†åŒ–å¹³é¢æ–¹ç¨‹
   float length = glm::length(glm::vec3(planeCoeffs));
   if (length > 0.0f) {
     planeCoeffs /= length;
   }
-  // ÓÒÊÖÏµÆ½Ãæ·½³Ì£ºnormal.x*x + normal.y*y + normal.z*z + d = 0
-  // ÆäÖĞ d = planeCoeffs.w£¨Óë×óÊÖÏµ·ûºÅÏà·´£©
+  // å³æ‰‹ç³»å¹³é¢æ–¹ç¨‹ï¼šnormal.x*x + normal.y*y + normal.z*z + d = 0
+  // å…¶ä¸­ d = planeCoeffs.wï¼ˆä¸å·¦æ‰‹ç³»ç¬¦å·ç›¸åï¼‰
   m_Planes[static_cast<int>(plane)] = Plane(glm::vec3(planeCoeffs), planeCoeffs.w);
 }
 
@@ -92,7 +92,7 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
 {
   bool intersects = false;
   for (int i = 0; i < 6; ++i) {
-    // ¼ÆËã¼«Öµµã
+    // è®¡ç®—æå€¼ç‚¹
     glm::vec3 positiveVertex = aabb.min;
     glm::vec3 negativeVertex = aabb.max;
     if (m_Planes[i].normal.x >= 0) {
@@ -108,17 +108,17 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
       negativeVertex.z = aabb.min.z;
     }
 
-    // ÔÚÓÒÊÖÏµÖĞ£¬Æ½Ãæ·½³ÌµÄ·ûºÅÔ¼¶¨ÊÇ
+    // åœ¨å³æ‰‹ç³»ä¸­ï¼Œå¹³é¢æ–¹ç¨‹çš„ç¬¦å·çº¦å®šæ˜¯
     // normal.x *x + normal.y *y + normal.z *z + d = 0
-    // ·¨ÏßÖ¸ÏòÊÓ×¶ÌåÄÚ²¿£¬ËùÒÔ£º
-    // ÕıÖµ±íÊ¾µãÔÚÆ½ÃæÕı²à£¨ÊÓ×¶ÌåÄÚ²¿£©
-    // ¸ºÖµ±íÊ¾µãÔÚÆ½Ãæ¸º²à£¨ÊÓ×¶ÌåÍâ²¿£©
+    // æ³•çº¿æŒ‡å‘è§†é”¥ä½“å†…éƒ¨ï¼Œæ‰€ä»¥ï¼š
+    // æ­£å€¼è¡¨ç¤ºç‚¹åœ¨å¹³é¢æ­£ä¾§ï¼ˆè§†é”¥ä½“å†…éƒ¨ï¼‰
+    // è´Ÿå€¼è¡¨ç¤ºç‚¹åœ¨å¹³é¢è´Ÿä¾§ï¼ˆè§†é”¥ä½“å¤–éƒ¨ï¼‰
 
-    // ²âÊÔ¸º¶¥µã£¨×îÔ¶µÄµã£©
+    // æµ‹è¯•è´Ÿé¡¶ç‚¹ï¼ˆæœ€è¿œçš„ç‚¹ï¼‰
     float negativeDistance = m_Planes[i].DistanceToPoint(negativeVertex);
     if (negativeDistance < 0.0f) {
-      // Èç¹û×îÔ¶µÄµã¶¼ÔÚÍâÃæ£¬AABBÍêÈ«ÔÚÕâ¸öÆ½ÃæÍâ
-      // µ«»¹ÒªÈ·ÈÏÊÇ·ñÕæµÄÍêÈ«ÔÚÍâÃæ£¨²âÊÔ8¸ö¶¥µã£©
+      // å¦‚æœæœ€è¿œçš„ç‚¹éƒ½åœ¨å¤–é¢ï¼ŒAABBå®Œå…¨åœ¨è¿™ä¸ªå¹³é¢å¤–
+      // ä½†è¿˜è¦ç¡®è®¤æ˜¯å¦çœŸçš„å®Œå…¨åœ¨å¤–é¢ï¼ˆæµ‹è¯•8ä¸ªé¡¶ç‚¹ï¼‰
       bool allOutside = true;
       glm::vec3 vertices[8] = {{aabb.min.x, aabb.min.y, aabb.min.z},
                                {aabb.min.x, aabb.min.y, aabb.max.z},
@@ -134,42 +134,42 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
           break;
         }
       }
-      // ½öµ±8¸öµãÈ«²¿ÔÚÊÓ×¶ÌåÍâÃæÊ±·µ»ØOutside
+      // ä»…å½“8ä¸ªç‚¹å…¨éƒ¨åœ¨è§†é”¥ä½“å¤–é¢æ—¶è¿”å›Outside
       if (allOutside) {
         return IntersectionType::Outside;
       }
-      // ·ñÔòÈÏÎªÊÇÏà½»µÄ
+      // å¦åˆ™è®¤ä¸ºæ˜¯ç›¸äº¤çš„
       intersects = true;
       continue;
     }
-    // ²âÊÔÕı¶¥µã
+    // æµ‹è¯•æ­£é¡¶ç‚¹
     float positiveDistance = m_Planes[i].DistanceToPoint(positiveVertex);
     if (positiveDistance < 0.0f) {
-      // ÓëÕâ¸öÆ½ÃæÏà½»
+      // ä¸è¿™ä¸ªå¹³é¢ç›¸äº¤
       intersects = true;
     }
   }
-  // ¸ù¾İintersects£¬ÅĞ¶Ï½á¹ûÎªInsideÍêÈ«ÔÚÄÚ£¬»¹ÊÇIntersectÏà½»
+  // æ ¹æ®intersectsï¼Œåˆ¤æ–­ç»“æœä¸ºInsideå®Œå…¨åœ¨å†…ï¼Œè¿˜æ˜¯Intersectç›¸äº¤
   return intersects ? IntersectionType::Intersect : IntersectionType::Inside;
 }
 
 void Frustum::GetCorners(glm::vec3 corners[8]) const
 {
-  // Í¨¹ıÆ½ÃæÏà½»¼ÆËãÊÓ×¶Ìå½Çµã£¨¼ò»¯ÊµÏÖ£©
-  // Êµ¼ÊÓ¦ÓÃÖĞÍ¨³£´ÓÍ¶Ó°¾ØÕó·´Ëã¸ü×¼È·
-  corners[0] = glm::vec3(-1, -1, -1);  // ½ü×óÏÂ
-  corners[1] = glm::vec3(1, -1, -1);   // ½üÓÒÏÂ
-  corners[2] = glm::vec3(-1, 1, -1);   // ½ü×óÉÏ
-  corners[3] = glm::vec3(1, 1, -1);    // ½üÓÒÉÏ
-  corners[4] = glm::vec3(-1, -1, 1);   // Ô¶×óÏÂ
-  corners[5] = glm::vec3(1, -1, 1);    // Ô¶ÓÒÏÂ
-  corners[6] = glm::vec3(-1, 1, 1);    // Ô¶×óÉÏ
-  corners[7] = glm::vec3(1, 1, 1);     // Ô¶ÓÒÉÏ
+  // é€šè¿‡å¹³é¢ç›¸äº¤è®¡ç®—è§†é”¥ä½“è§’ç‚¹ï¼ˆç®€åŒ–å®ç°ï¼‰
+  // å®é™…åº”ç”¨ä¸­é€šå¸¸ä»æŠ•å½±çŸ©é˜µåç®—æ›´å‡†ç¡®
+  corners[0] = glm::vec3(-1, -1, -1);  // è¿‘å·¦ä¸‹
+  corners[1] = glm::vec3(1, -1, -1);   // è¿‘å³ä¸‹
+  corners[2] = glm::vec3(-1, 1, -1);   // è¿‘å·¦ä¸Š
+  corners[3] = glm::vec3(1, 1, -1);    // è¿‘å³ä¸Š
+  corners[4] = glm::vec3(-1, -1, 1);   // è¿œå·¦ä¸‹
+  corners[5] = glm::vec3(1, -1, 1);    // è¿œå³ä¸‹
+  corners[6] = glm::vec3(-1, 1, 1);    // è¿œå·¦ä¸Š
+  corners[7] = glm::vec3(1, 1, 1);     // è¿œå³ä¸Š
 }
 
 IntersectionType Frustum::TestOBB(const OBB &obb) const
 {
-  // ½«OBB×ª»»µ½ÊÓ×¶Ìå¿Õ¼ä²âÊÔ
+  // å°†OBBè½¬æ¢åˆ°è§†é”¥ä½“ç©ºé—´æµ‹è¯•
   AABB localAABB = obb.GetAABB();
   return TestAABB(localAABB);
 }

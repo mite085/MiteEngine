@@ -10,8 +10,8 @@ class InputAction {
  public:
   struct Binding {
     InputDevice device;
-    int code;            // ¼üÂë»ò°´Å¥Âë
-    float scale = 1.0f;  // ÊäÈëËõ·Å
+    int code;            // é”®ç æˆ–æŒ‰é’®ç 
+    float scale = 1.0f;  // è¾“å…¥ç¼©æ”¾
 
     Binding(InputDevice device, int code, float scale = 1.0f)
         : device(device), code(code), scale(scale)
@@ -21,45 +21,45 @@ class InputAction {
 
   std::string name;
   std::vector<Binding> bindings;
-  float value = 0.0f;  // µ±Ç°¶¯×÷Öµ
+  float value = 0.0f;  // å½“å‰åŠ¨ä½œå€¼
 
-  float holdTime = 0.0f;  // ³¤°´¼ÆÊ±
+  float holdTime = 0.0f;  // é•¿æŒ‰è®¡æ—¶
 };
 /**
- * @brief ÊäÈëÉÏÏÂÎÄ
+ * @brief è¾“å…¥ä¸Šä¸‹æ–‡
  *
- * ¹¦ÄÜ£º
- * 1. »ù´¡ÊäÈë¹ÜÀí
- * 2. ¶¯×÷Ó³ÉäÏµÍ³£¨Action Mapping£©
- * 3. ÊÂ¼ş´¦Àí£¨TODO£ºÅĞ¶ÏÊÇ·ñºÍModular»¥Ïà³åÍ»£¿£©
+ * åŠŸèƒ½ï¼š
+ * 1. åŸºç¡€è¾“å…¥ç®¡ç†
+ * 2. åŠ¨ä½œæ˜ å°„ç³»ç»Ÿï¼ˆAction Mappingï¼‰
+ * 3. äº‹ä»¶å¤„ç†ï¼ˆTODOï¼šåˆ¤æ–­æ˜¯å¦å’ŒModularäº’ç›¸å†²çªï¼Ÿï¼‰
  */
 class InputContext {
  public:
   explicit InputContext(const std::string &name);
   ~InputContext();
 
-  // »ù´¡ÊôĞÔ
+  // åŸºç¡€å±æ€§
   const std::string &GetName() const;
   void SetBlockInput(bool block);
   bool IsInputBlocked() const;
 
-  // ¶¯×÷Ó³ÉäÏµÍ³
+  // åŠ¨ä½œæ˜ å°„ç³»ç»Ÿ
   void AddAction(const InputAction &action);
   void RemoveAction(const std::string &name);
   InputAction *GetAction(const std::string &actionName);
   float GetActionValue(const std::string &name) const;
 
-  // Ã¿Ö¡¸üĞÂ
+  // æ¯å¸§æ›´æ–°
   void Update();
 
-  // ÊäÈë´¦Àí: °´ÕÕÓÅÏÈ¼¶¶ÔÊÂ¼ş½øĞĞÅÅĞò£¬Ëæºó°´Ë³Ğò´¦Àí
+  // è¾“å…¥å¤„ç†: æŒ‰ç…§ä¼˜å…ˆçº§å¯¹äº‹ä»¶è¿›è¡Œæ’åºï¼ŒéšåæŒ‰é¡ºåºå¤„ç†
   virtual bool ProcessEvent(Event &e) = 0;
 
-  // µ÷ÊÔ¹¤¾ß
+  // è°ƒè¯•å·¥å…·
   void DebugPrintActions() const;
 
  protected:
-  // ÄÚ²¿´¦Àí·½·¨
+  // å†…éƒ¨å¤„ç†æ–¹æ³•
   bool _ProcessKeyPressedEvent(const KeyPressedEvent &e);
   bool _ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e);
   bool _ProcessMouseMoveEvent(const MouseMoveEvent &e);
@@ -69,12 +69,12 @@ class InputContext {
   std::string m_Name;
   bool m_BlockInput = false;
 
-  // ¶¯×÷ÏµÍ³
+  // åŠ¨ä½œç³»ç»Ÿ
   std::unordered_map<std::string, InputAction> m_Actions;
 
-  // ÈÕÖ¾ÏµÍ³
+  // æ—¥å¿—ç³»ç»Ÿ
   Logger m_Logger;
-  // ¶©ÔÄÊÂ¼ş¼¯ºÏ
+  // è®¢é˜…äº‹ä»¶é›†åˆ
   SubscriptionGroup m_EventSubscriptions;
 };
 };  // namespace mite

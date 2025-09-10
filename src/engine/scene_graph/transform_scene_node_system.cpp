@@ -21,7 +21,7 @@ void TransformSceneNodeSystem::Initialize()
 {
   m_Logger->info("Initializing TransformSceneNodeSystem");
 
-  // TransformSystem²¢·Ç¼Ì³Ğ×ÔDirtyComponentSystem£¬×é¼şÌí¼Ó/É¾³ıÊÂ¼şĞèÒªµ¥¶À¶©ÔÄ
+  // TransformSystemå¹¶éç»§æ‰¿è‡ªDirtyComponentSystemï¼Œç»„ä»¶æ·»åŠ /åˆ é™¤äº‹ä»¶éœ€è¦å•ç‹¬è®¢é˜…
   m_EventSubscriptions.Subscribe<ComponentAddedEvent<TransformComponent>>(
       BIND_DISPATCH_FN(OnTransformComponentAdded));
   m_EventSubscriptions.Subscribe<ComponentRemovedEvent<TransformComponent>>(
@@ -52,7 +52,7 @@ std::vector<std::type_index> TransformSceneNodeSystem::GetComponentTypes() const
 
 std::vector<std::type_index> TransformSceneNodeSystem::GetSystemDependencies() const
 {
-  return {typeid(TransformComponentSystem), typeid(HierarchySceneNodeSystem)};// ÒÀÀµECS±ä»»ºÍ²ã¼¶
+  return {typeid(TransformComponentSystem), typeid(HierarchySceneNodeSystem)};// ä¾èµ–ECSå˜æ¢å’Œå±‚çº§
 }
 
 void TransformSceneNodeSystem::SetSceneGraph(SceneGraph *sceneGraph)
@@ -65,7 +65,7 @@ void TransformSceneNodeSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
   if (!m_SceneGraph) {
     return;
   }
-  // ±éÀúËùÓĞÓĞ±ä»»×é¼şµÄÊµÌå
+  // éå†æ‰€æœ‰æœ‰å˜æ¢ç»„ä»¶çš„å®ä½“
   auto view = registry.GetEntitiesWith<TransformComponent>();
   for (Entity entity : view) {
     if (m_SceneGraph->HasNode(entity)) {
@@ -77,7 +77,7 @@ void TransformSceneNodeSystem::SyncAllComponentsToNodes(SceneRegistry &registry)
 void TransformSceneNodeSystem::MarkEntityForSync(Entity entity)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-  // ±ÜÃâÖØ¸´Ìí¼Ó
+  // é¿å…é‡å¤æ·»åŠ 
   if (std::find(m_PendingSyncEntities.begin(), m_PendingSyncEntities.end(), entity) ==
       m_PendingSyncEntities.end())
   {
@@ -94,8 +94,8 @@ bool TransformSceneNodeSystem::OnTransformComponentAdded(ComponentAddedEvent<Tra
 
 bool TransformSceneNodeSystem::OnTransformComponentRemoved(ComponentRemovedEvent<TransformComponent> &e)
 {
-  // ÒÆ³ı×é¼şÊ±²»ĞèÒªÌØÊâ´¦Àí£¬SceneGraph»á´¦Àí½ÚµãÏú»Ù
-  // ´Ë´¦½öĞèÒªÎ¬»¤ºÃPendingSyncEntities¼´¿É
+  // ç§»é™¤ç»„ä»¶æ—¶ä¸éœ€è¦ç‰¹æ®Šå¤„ç†ï¼ŒSceneGraphä¼šå¤„ç†èŠ‚ç‚¹é”€æ¯
+  // æ­¤å¤„ä»…éœ€è¦ç»´æŠ¤å¥½PendingSyncEntitieså³å¯
 
   Entity entity = e.GetEntity();
 
@@ -119,7 +119,7 @@ void TransformSceneNodeSystem::ProcessPendingSync(SceneRegistry &registry)
 {
   std::vector<Entity> processingEntities;
 
-  // ´¦Àí½×¶ÎÏÈ½»»»»º´æ£¬ºóĞø´¦Àí½×¶Î²»Ó°ÏìÆäËûÊÂ¼ş´¥·¢µ¼ÖÂµÄm_pendingSyncEntitiesĞŞ¸Ä
+  // å¤„ç†é˜¶æ®µå…ˆäº¤æ¢ç¼“å­˜ï¼Œåç»­å¤„ç†é˜¶æ®µä¸å½±å“å…¶ä»–äº‹ä»¶è§¦å‘å¯¼è‡´çš„m_pendingSyncEntitiesä¿®æ”¹
   {
     std::lock_guard<std::mutex> lock(m_Mutex);
     if (m_PendingSyncEntities.empty())

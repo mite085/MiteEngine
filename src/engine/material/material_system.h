@@ -7,20 +7,20 @@
 
 namespace mite {
 /**
- * @brief ²ÄÖÊÏµÍ³ºËĞÄ¹ÜÀíÆ÷
- * @Ö°Ôğ£º
- * 1. È«¾Ö²ÄÖÊÄ£°åµÄ×¢²áÓëÉúÃüÖÜÆÚ¹ÜÀí
- * 2. ²ÄÖÊÊµÀıµÄ´´½¨Óë»º´æ
- * 3. ²ÄÖÊÈÈÖØÔØÖ§³Ö£¨Í¨¹ıÎÄ¼ş¼àÊÓ»òÊÖ¶¯´¥·¢£©
- * 4. ´íÎó²ÄÖÊ»ØÍË»úÖÆ
+ * @brief æè´¨ç³»ç»Ÿæ ¸å¿ƒç®¡ç†å™¨
+ * @èŒè´£ï¼š
+ * 1. å…¨å±€æè´¨æ¨¡æ¿çš„æ³¨å†Œä¸ç”Ÿå‘½å‘¨æœŸç®¡ç†
+ * 2. æè´¨å®ä¾‹çš„åˆ›å»ºä¸ç¼“å­˜
+ * 3. æè´¨çƒ­é‡è½½æ”¯æŒï¼ˆé€šè¿‡æ–‡ä»¶ç›‘è§†æˆ–æ‰‹åŠ¨è§¦å‘ï¼‰
+ * 4. é”™è¯¯æè´¨å›é€€æœºåˆ¶
  *
- * @Ê¹ÓÃÊ¾Àı£º
+ * @ä½¿ç”¨ç¤ºä¾‹ï¼š
  *
- * // ³õÊ¼»¯½×¶Î
+ * // åˆå§‹åŒ–é˜¶æ®µ
  * auto pbrTemplate = std::make_unique<PBRMaterialTemplate>(shader);
  * MaterialSystem::Get().RegisterTemplate("DefaultPBR", std::move(pbrTemplate));
 
- * // ÔËĞĞÊ±´´½¨ÊµÀı
+ * // è¿è¡Œæ—¶åˆ›å»ºå®ä¾‹
  * auto material = MaterialSystem::Get().CreateInstanceWithOverrides(
  *     "DefaultPBR",
  *     {{"u_Albedo", glm::vec3(1.0, 0.0, 0.0)}, {"u_Roughness", 0.8f}}
@@ -28,45 +28,45 @@ namespace mite {
  */
 class MaterialSystem {
  public:
-  // ---- ¹¹Ôìº¯Êı ----
+  // ---- æ„é€ å‡½æ•° ----
   MaterialSystem();
 
-  // ---- ³õÊ¼»¯£º×¢²á²ÄÖÊ----
+  // ---- åˆå§‹åŒ–ï¼šæ³¨å†Œæè´¨----
   void Initialize();
 
-  // ---- Ä£°å¹ÜÀí ----
+  // ---- æ¨¡æ¿ç®¡ç† ----
   /**
-   * @brief ×¢²á²ÄÖÊÄ£°åµ½ÏµÍ³
-   * @param name     ²ÄÖÊÄ£°åÃû³Æ£¨Î¨Ò»±êÊ¶·û£©
-   * @param template ²ÄÖÊÄ£°å¶ÔÏó£¨ËùÓĞÈ¨×ªÒÆ¸øÏµÍ³£©
-   * @throws std::invalid_argument Èç¹ûÃû³ÆÒÑ´æÔÚ
+   * @brief æ³¨å†Œæè´¨æ¨¡æ¿åˆ°ç³»ç»Ÿ
+   * @param name     æè´¨æ¨¡æ¿åç§°ï¼ˆå”¯ä¸€æ ‡è¯†ç¬¦ï¼‰
+   * @param template æè´¨æ¨¡æ¿å¯¹è±¡ï¼ˆæ‰€æœ‰æƒè½¬ç§»ç»™ç³»ç»Ÿï¼‰
+   * @throws std::invalid_argument å¦‚æœåç§°å·²å­˜åœ¨
    */
   void RegisterTemplate(const std::string &name, std::unique_ptr<Material> material);
 
   /**
-   * @brief ¼ì²é²ÄÖÊÄ£°åÊÇ·ñ´æÔÚ
-   * @param name ²ÄÖÊÄ£°åÃû³Æ
+   * @brief æ£€æŸ¥æè´¨æ¨¡æ¿æ˜¯å¦å­˜åœ¨
+   * @param name æè´¨æ¨¡æ¿åç§°
    */
   bool HasTemplate(const std::string &name) const;
 
-  // ---- ÊµÀı¹ÜÀí ----
+  // ---- å®ä¾‹ç®¡ç† ----
   /**
-   * @brief ´´½¨²ÄÖÊÊµÀı
-   * @param templateName Ä£°åÃû³Æ
-   * @return ¹²ÏíÖ¸Õë¹ÜÀíµÄ²ÄÖÊÊµÀı
-   * @throws std::out_of_range Èç¹ûÄ£°å²»´æÔÚ
+   * @brief åˆ›å»ºæè´¨å®ä¾‹
+   * @param templateName æ¨¡æ¿åç§°
+   * @return å…±äº«æŒ‡é’ˆç®¡ç†çš„æè´¨å®ä¾‹
+   * @throws std::out_of_range å¦‚æœæ¨¡æ¿ä¸å­˜åœ¨
    * 
-   * ×÷ÓÃ£º
-   * µ±ÔÚÔËĞĞÊ±¶¯Ì¬¾ö¶¨²ÄÖÊÀàĞÍÊ±£¨Èç´ÓÅäÖÃÎÄ¼ş¶ÁÈ¡£©Ê¹ÓÃ£¬¸ü±ã½İÇÒ¿ÉÀ©Õ¹ĞÔ¸üÇ¿
+   * ä½œç”¨ï¼š
+   * å½“åœ¨è¿è¡Œæ—¶åŠ¨æ€å†³å®šæè´¨ç±»å‹æ—¶ï¼ˆå¦‚ä»é…ç½®æ–‡ä»¶è¯»å–ï¼‰ä½¿ç”¨ï¼Œæ›´ä¾¿æ·ä¸”å¯æ‰©å±•æ€§æ›´å¼º
    */
   std::shared_ptr<MaterialInstance> CreateInstance(const std::string &templateName);
 
   /**
-   * @brief ´´½¨²ÄÖÊÊµÀı--Ä£°å·½·¨
-   * @tparam T ²ÄÖÊÄ£°åÀàĞÍ
+   * @brief åˆ›å»ºæè´¨å®ä¾‹--æ¨¡æ¿æ–¹æ³•
+   * @tparam T æè´¨æ¨¡æ¿ç±»å‹
    * 
-   * ×÷ÓÃ£º
-   * ´úÂëÄÚ²¿´´½¨ÊµÀıÊ±Ê¹ÓÃ£¬¸ü¼ÓÇåÎú£¬¿É±ÜÃâ×Ö·û´®Æ¥Åä´íÎó
+   * ä½œç”¨ï¼š
+   * ä»£ç å†…éƒ¨åˆ›å»ºå®ä¾‹æ—¶ä½¿ç”¨ï¼Œæ›´åŠ æ¸…æ™°ï¼Œå¯é¿å…å­—ç¬¦ä¸²åŒ¹é…é”™è¯¯
    */
   template<typename T> std::shared_ptr<MaterialInstance> CreateInstance()
   {
@@ -74,18 +74,18 @@ class MaterialSystem {
   }
 
   /**
-   * @brief ´´½¨´øÓĞ³õÊ¼²ÎÊıµÄ²ÄÖÊÊµÀı£¨±ã½İ½Ó¿Ú£©
-   * @param templateName    Ä£°åÃû³Æ
-   * @param overrides       ²ÎÊı¸²¸Ç¼üÖµ¶Ô£¨Èç{{"u_Color", glm::vec3(1,0,0)}}£©
+   * @brief åˆ›å»ºå¸¦æœ‰åˆå§‹å‚æ•°çš„æè´¨å®ä¾‹ï¼ˆä¾¿æ·æ¥å£ï¼‰
+   * @param templateName    æ¨¡æ¿åç§°
+   * @param overrides       å‚æ•°è¦†ç›–é”®å€¼å¯¹ï¼ˆå¦‚{{"u_Color", glm::vec3(1,0,0)}}ï¼‰
    */
   std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
       const std::string &templateName,
       const std::unordered_map<std::string, UniformVariant> &overrides);
 
   /**
-   * @brief ´´½¨´øÓĞ³õÊ¼²ÎÊıµÄ²ÄÖÊÊµÀı--Ä£°å·½·¨
-   * @tparam T          ²ÄÖÊÄ£°åÀàĞÍ
-   * @param overrides   ²ÎÊı¸²¸Ç¼üÖµ¶Ô£¨Èç{{"u_Color", glm::vec3(1,0,0)}}£©
+   * @brief åˆ›å»ºå¸¦æœ‰åˆå§‹å‚æ•°çš„æè´¨å®ä¾‹--æ¨¡æ¿æ–¹æ³•
+   * @tparam T          æè´¨æ¨¡æ¿ç±»å‹
+   * @param overrides   å‚æ•°è¦†ç›–é”®å€¼å¯¹ï¼ˆå¦‚{{"u_Color", glm::vec3(1,0,0)}}ï¼‰
    */
   template<typename T>
   std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
@@ -94,35 +94,35 @@ class MaterialSystem {
     return CreateInstanceWithOverrides(Material::GetMaterialTypeStatic<T>(), overrides);
   }
 
-  // ---- ÈÈÖØÔØÖ§³Ö ----
+  // ---- çƒ­é‡è½½æ”¯æŒ ----
   /**
-   * @brief ÖØĞÂ¼ÓÔØ²ÄÖÊÄ£°å£¨ÓÃÓÚ¿ª·¢Ê±ÊµÊ±±à¼­£©
-   * @param name Ä£°åÃû³Æ
-   * @param newMaterial ĞÂ²ÄÖÊÄ£°å
-   * @note »á´¥·¢MaterialReloadedEventÊÂ¼ş
+   * @brief é‡æ–°åŠ è½½æè´¨æ¨¡æ¿ï¼ˆç”¨äºå¼€å‘æ—¶å®æ—¶ç¼–è¾‘ï¼‰
+   * @param name æ¨¡æ¿åç§°
+   * @param newMaterial æ–°æè´¨æ¨¡æ¿
+   * @note ä¼šè§¦å‘MaterialReloadedEventäº‹ä»¶
    */
   void ReloadTemplate(const std::string &name, std::unique_ptr<Material> newMaterial);
 
-  // ---- ´íÎó´¦Àí ----
+  // ---- é”™è¯¯å¤„ç† ----
   /**
-   * @brief ÉèÖÃÄ¬ÈÏ»ØÍË²ÄÖÊ£¨µ±Ä£°å²»´æÔÚÊ±Ê¹ÓÃ£©
-   * @param material Ä¬ÈÏ²ÄÖÊÄ£°å
+   * @brief è®¾ç½®é»˜è®¤å›é€€æè´¨ï¼ˆå½“æ¨¡æ¿ä¸å­˜åœ¨æ—¶ä½¿ç”¨ï¼‰
+   * @param material é»˜è®¤æè´¨æ¨¡æ¿
    */
   void SetFallbackMaterial(std::unique_ptr<Material> material);
 
  private:
-  // ÈÕÖ¾ÏµÍ³
+  // æ—¥å¿—ç³»ç»Ÿ
   Logger m_Logger;
 
-  // ---- ³ÉÔ±±äÁ¿ ----
-  std::unordered_map<std::string, std::unique_ptr<Material>> m_Templates;  // Ä£°å´æ´¢
-  std::unique_ptr<Material> m_FallbackMaterial;                            // ´íÎó»ØÍË²ÄÖÊ
-  std::unordered_map<size_t, std::weak_ptr<MaterialInstance>> m_InstanceCache;  // ÊµÀıÈõÒıÓÃ»º´æ
+  // ---- æˆå‘˜å˜é‡ ----
+  std::unordered_map<std::string, std::unique_ptr<Material>> m_Templates;  // æ¨¡æ¿å­˜å‚¨
+  std::unique_ptr<Material> m_FallbackMaterial;                            // é”™è¯¯å›é€€æè´¨
+  std::unordered_map<size_t, std::weak_ptr<MaterialInstance>> m_InstanceCache;  // å®ä¾‹å¼±å¼•ç”¨ç¼“å­˜
 };
 
 /**
  * @class MaterialReloadedEvent
- * @brief ²ÄÖÊÄ£°åÖØÔØĞŞ¸ÄÊÂ¼ş
+ * @brief æè´¨æ¨¡æ¿é‡è½½ä¿®æ”¹äº‹ä»¶
  */
 class MaterialReloadedEvent : public Event {
  public:
@@ -139,9 +139,9 @@ class MaterialReloadedEvent : public Event {
   }
 
  private:
-  std::string m_TemplateName;         // ±»ÖØÔØµÄÄ£°åÃû
-  Material *m_OldMaterial = nullptr;  // ¾É²ÄÖÊÖ¸Õë£¨¿ÉÄÜÒÑÊ§Ğ§£©
-  Material *m_NewMaterial = nullptr;  // ĞÂ²ÄÖÊÖ¸Õë
+  std::string m_TemplateName;         // è¢«é‡è½½çš„æ¨¡æ¿å
+  Material *m_OldMaterial = nullptr;  // æ—§æè´¨æŒ‡é’ˆï¼ˆå¯èƒ½å·²å¤±æ•ˆï¼‰
+  Material *m_NewMaterial = nullptr;  // æ–°æè´¨æŒ‡é’ˆ
 };
 };  // namespace mite
 

@@ -12,7 +12,7 @@ std::unique_ptr<SpatialPartition> CreateSpatialPartition(SpatialPartitionType ty
     case SpatialPartitionType::Octree:
     case SpatialPartitionType::Grid:
     case SpatialPartitionType::KDTree:
-      // ÕâĞ©ÀàĞÍÔİ²»ÊµÏÖ£¬Å×³öÒì³£
+      // è¿™äº›ç±»å‹æš‚ä¸å®ç°ï¼ŒæŠ›å‡ºå¼‚å¸¸
       throw std::runtime_error("Spatial partition type not implemented yet");
     default:
       throw std::runtime_error("Unknown spatial partition type");

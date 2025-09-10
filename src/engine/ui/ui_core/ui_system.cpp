@@ -15,29 +15,29 @@ UISystem::UISystem()
 
 void UISystem::Initialize(void *nativeWindow)
 {  
-    // ³õÊ¼»¯ºó¶Ë
+    // åˆå§‹åŒ–åç«¯
   if (!InitializeBackend(nativeWindow)) {
     m_Logger->error("UI Backend Initialize FAILED!");
   }
 
-  // ³õÊ¼»¯Style Manager£¬²¢½«CurrentStyle×÷ÓÃÓÚºó¶Ë
+  // åˆå§‹åŒ–Style Managerï¼Œå¹¶å°†CurrentStyleä½œç”¨äºåç«¯
   m_StyleManager = std::make_unique<UIStyleManager>();
   m_StyleManager->Initialize();
   m_Backend->ApplyUIStyle(m_StyleManager->GetCurrentStyle());
 
-  // ·¢²¼³õÊ¼»¯Íê³ÉÊÂ¼ş
+  // å‘å¸ƒåˆå§‹åŒ–å®Œæˆäº‹ä»¶
   EventBus::Publish<UIInitializedEvent>(UIInitializedEvent());
 }
 
 void UISystem::Shutdown()
 { 
-  // ·¢²¼¹Ø±ÕÊÂ¼ş
+  // å‘å¸ƒå…³é—­äº‹ä»¶
   EventBus::Publish<UIShutdownEvent>(UIShutdownEvent());
 
-  // ÇåÀíÃæ°å
+  // æ¸…ç†é¢æ¿
   m_Panels.clear();
 
-  // ¹Ø±Õºó¶Ë
+  // å…³é—­åç«¯
   if (m_Backend) {
     m_Backend->Shutdown();
     m_Backend.reset();
@@ -52,7 +52,7 @@ void UISystem::Update(float deltaTime)
     return;
   }
 
-  // ¸üĞÂËùÓĞÃæ°å
+  // æ›´æ–°æ‰€æœ‰é¢æ¿
   for (auto &[id, panel] : m_Panels) {
     if (panel->IsVisible()) {
       panel->Update(deltaTime);
@@ -78,7 +78,7 @@ void UISystem::Render()
   }
 
   if (m_Backend) {
-    // äÖÈ¾ËùÓĞ¿É¼ûÃæ°å
+    // æ¸²æŸ“æ‰€æœ‰å¯è§é¢æ¿
     for (auto &[id, panel] : m_Panels) {
       if (panel->IsVisible())
         panel->Render();
@@ -110,17 +110,17 @@ void UISystem::ProcessInputEvent(Event &event)
 
 void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
 {
-  // ĞèÒª¼ì²éUIµÄID
+  // éœ€è¦æ£€æŸ¥UIçš„ID
   if (m_Panels.find(panel->GetID()) != m_Panels.end()) {
     m_Logger->error("Cannot Register Existing Panel: name = {}, UUID = {}",
                     panel->GetName(),
                     UUIDGenerator::UUIDToString(panel->GetID()));
   }
 
-  // ×¢²á½ø¹şÏ£±í
+  // æ³¨å†Œè¿›å“ˆå¸Œè¡¨
   m_Panels[panel->GetID()] = panel;
 
-  // ·¢²¼Ãæ°å´´½¨ÊÂ¼ş
+  // å‘å¸ƒé¢æ¿åˆ›å»ºäº‹ä»¶
   EventBus::Publish<PanelOpenedEvent>(PanelOpenedEvent(panel->GetID(), panel->GetName()));
 }
 
@@ -128,7 +128,7 @@ void UISystem::DestroyPanel(UUID panelId)
 {
   auto it = m_Panels.find(panelId);
   if (it != m_Panels.end()) {
-    // ·¢²¼Ãæ°å¹Ø±ÕÊÂ¼ş
+    // å‘å¸ƒé¢æ¿å…³é—­äº‹ä»¶
     EventBus::Publish<PanelClosedEvent>(PanelClosedEvent(panelId, it->second->GetName()));
     m_Panels.erase(it);
   }
@@ -144,7 +144,7 @@ void UISystem::SetPanelVisible(UUID panelId, bool visible)
 {
   if (auto panel = GetPanel(panelId)) {
     panel->SetVisible(visible);
-    // ·¢²¼¿É¼ûĞÔ±ä¸üÊÂ¼ş
+    // å‘å¸ƒå¯è§æ€§å˜æ›´äº‹ä»¶
     EventBus::Publish<UIVisibilityChangedEvent>(
         UIVisibilityChangedEvent(panelId, "Panel", visible));
   }
@@ -162,7 +162,7 @@ void UISystem::SetVisible(bool visible)
 
 bool UISystem::InitializeBackend(void *nativeWindow)
 {
-  // Ä¿Ç°Ö»ÊµÏÖImGuiºó¶Ë
+  // ç›®å‰åªå®ç°ImGuiåç«¯
   m_Backend = std::make_unique<ImGuiBackend>();
 
   if (!m_Backend->Initialize(nativeWindow)) {

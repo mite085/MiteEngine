@@ -7,11 +7,11 @@ ComponentID::ComponentID(UUID id) : m_ID(std::move(id)) {}
 
 template<typename T> ComponentID ComponentID::Get()
 {
-  // Ê¹ÓÃÀàĞÍĞÅÏ¢Éú³ÉÈ·¶¨ĞÔUUID
+  // ä½¿ç”¨ç±»å‹ä¿¡æ¯ç”Ÿæˆç¡®å®šæ€§UUID
   const std::type_index typeIdx(typeid(T));
   const size_t hash = typeIdx.hash_code();
 
-  // ¾²Ì¬¾Ö²¿±äÁ¿±£Ö¤Ã¿¸öÀàĞÍÖ»ÓĞÒ»¸öIDÊµÀı
+  // é™æ€å±€éƒ¨å˜é‡ä¿è¯æ¯ä¸ªç±»å‹åªæœ‰ä¸€ä¸ªIDå®ä¾‹
   static const ComponentID id(UUIDGenerator::Generate(hash));
   return id;
 }
@@ -55,7 +55,7 @@ bool ComponentID::IsValid() const
   return !m_ID.is_nil();
 }
 
-// ÏÔÊ½ÊµÀı»¯³£ÓÃ×é¼şÀàĞÍµÄID
+// æ˜¾å¼å®ä¾‹åŒ–å¸¸ç”¨ç»„ä»¶ç±»å‹çš„ID
 template ComponentID ComponentID::Get<CameraComponent>();
 template ComponentID ComponentID::Get<DestroyComponent>();
 template ComponentID ComponentID::Get<HierarchyComponent>();
@@ -65,8 +65,8 @@ template ComponentID ComponentID::Get<MeshComponent>();
 template ComponentID ComponentID::Get<TagComponent>();
 template ComponentID ComponentID::Get<TransformComponent>();
 
-// VisibilityComponentÁ¥ÊôÓÚSceneGraphÄ£¿é£¬Ó¦µ±ÔÚSceneGraphÖĞÊµÏÖ
-class VisibilityComponent;                                       // Ç°ÏòÉùÃ÷
-template<> ComponentID ComponentID::Get<VisibilityComponent>();  // ÉùÃ÷ÏÔÊ½ÌØ»¯
+// VisibilityComponentéš¶å±äºSceneGraphæ¨¡å—ï¼Œåº”å½“åœ¨SceneGraphä¸­å®ç°
+class VisibilityComponent;                                       // å‰å‘å£°æ˜
+template<> ComponentID ComponentID::Get<VisibilityComponent>();  // å£°æ˜æ˜¾å¼ç‰¹åŒ–
 
 };

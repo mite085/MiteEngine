@@ -10,10 +10,10 @@ void ImGuiFontManager::LoadFonts()
 {
   ImGuiIO &io = ImGui::GetIO();
 
-  // 加载默认字体（英文）
+  // 鍔犺浇榛樿瀛椾綋锛堣嫳鏂囷級
   m_EnglistFont = io.Fonts->AddFontDefault();
 
-  // 加载中文字体
+  // 鍔犺浇涓枃瀛椾綋
   std::string fontPath = FileSystem::GetAssetPath("localization/NotoSansSC-Regular.ttf").string();
   if (FileSystem::Exists(fontPath)) {
     m_ChineseFont = io.Fonts->AddFontFromFileTTF(
@@ -24,7 +24,7 @@ void ImGuiFontManager::LoadFonts()
     m_ChineseFont = m_EnglistFont;
   }
 
-  // 构建字体映射
+  // 鏋勫缓瀛椾綋鏄犲皠
   m_LanguageFonts["en-US"] = m_EnglistFont;
   m_LanguageFonts["zh-CN"] = m_ChineseFont;
 }

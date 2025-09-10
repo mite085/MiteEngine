@@ -14,6 +14,6 @@ bool Entity::IsValid() const
 }
 void Entity::Destroy()
 {
-  m_UUID = UUID();  // ÉèÖÃÎªnil UUID
+  m_UUID = UUID();  // è®¾ç½®ä¸ºnil UUID
 }
 };  // namespace mite

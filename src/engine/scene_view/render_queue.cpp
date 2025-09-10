@@ -4,7 +4,7 @@ namespace mite {
 
 RenderQueue::RenderQueue()
 {
-  // ÉèÖÃÄ¬ÈÏÅÅĞò²ßÂÔ
+  // è®¾ç½®é»˜è®¤æ’åºç­–ç•¥
   m_OpaqueQueue.sortStrategy = SortStrategy::FrontToBack;
   m_TransparentQueue.sortStrategy = SortStrategy::BackToFront;
   m_AlphaTestQueue.sortStrategy = SortStrategy::ByMaterial;
@@ -13,7 +13,7 @@ RenderQueue::RenderQueue()
 
 RenderQueue::~RenderQueue()
 {
-  // ÇåÀí×ÊÔ´
+  // æ¸…ç†èµ„æº
   ClearAll();
 }
 
@@ -53,20 +53,20 @@ void RenderQueue::SortQueue(QueueType queueType)
 {
   QueueData &queue = GetQueueData(queueType);
 
-  // Èç¹ûÉèÖÃÁË×Ô¶¨ÒåÅÅĞòº¯Êı£¬ÓÅÏÈÊ¹ÓÃ×Ô¶¨ÒåÅÅĞò
+  // å¦‚æœè®¾ç½®äº†è‡ªå®šä¹‰æ’åºå‡½æ•°ï¼Œä¼˜å…ˆä½¿ç”¨è‡ªå®šä¹‰æ’åº
   if (queue.customSortFunc) {
     std::sort(queue.items.begin(), queue.items.end(), queue.customSortFunc);
   }
-  // ·ñÔò°´ÕÕÅÅĞò²ßÂÔÖ´ĞĞ
+  // å¦åˆ™æŒ‰ç…§æ’åºç­–ç•¥æ‰§è¡Œ
   else {
 
     switch (queue.sortStrategy) {
       case SortStrategy::None:
-        // ²»ÅÅĞò
+        // ä¸æ’åº
         break;
 
       case SortStrategy::FrontToBack:
-        // °´¾àÀë´ÓÇ°µ½ºóÅÅĞò£¨¼õÉÙoverdraw£©
+        // æŒ‰è·ç¦»ä»å‰åˆ°åæ’åºï¼ˆå‡å°‘overdrawï¼‰
         std::sort(queue.items.begin(),
                   queue.items.end(),
                   [](const RenderableItem &a, const RenderableItem &b) {
@@ -75,7 +75,7 @@ void RenderQueue::SortQueue(QueueType queueType)
         break;
 
       case SortStrategy::BackToFront:
-        // °´¾àÀë´Óºóµ½Ç°ÅÅĞò£¨Í¸Ã÷ÎïÌåÕıÈ·»ìºÏ£©
+        // æŒ‰è·ç¦»ä»ååˆ°å‰æ’åºï¼ˆé€æ˜ç‰©ä½“æ­£ç¡®æ··åˆï¼‰
         std::sort(queue.items.begin(),
                   queue.items.end(),
                   [](const RenderableItem &a, const RenderableItem &b) {
@@ -84,7 +84,7 @@ void RenderQueue::SortQueue(QueueType queueType)
         break;
 
       case SortStrategy::ByMaterial:
-        // °´²ÄÖÊÅÅĞò£¨¼õÉÙ×´Ì¬ÇĞ»»£©
+        // æŒ‰æè´¨æ’åºï¼ˆå‡å°‘çŠ¶æ€åˆ‡æ¢ï¼‰
         std::sort(queue.items.begin(),
                   queue.items.end(),
                   [](const RenderableItem &a, const RenderableItem &b) {
@@ -93,7 +93,7 @@ void RenderQueue::SortQueue(QueueType queueType)
         break;
 
       case SortStrategy::ByShader:
-        // °´ShaderÅÅĞò£¨¼õÉÙ×´Ì¬ÇĞ»»£©
+        // æŒ‰Shaderæ’åºï¼ˆå‡å°‘çŠ¶æ€åˆ‡æ¢ï¼‰
         std::sort(queue.items.begin(),
                   queue.items.end(),
                   [](const RenderableItem &a, const RenderableItem &b) {

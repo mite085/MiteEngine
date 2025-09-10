@@ -4,43 +4,43 @@
 #include "scene_core/component_system.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class SceneRegistry;
 /**
- * @brief ±êÇ©×é¼ş - ÎªÊµÌåÌá¹©Ãû³Æ±êÊ¶ºÍ·ÖÀà±êÇ©
+ * @brief æ ‡ç­¾ç»„ä»¶ - ä¸ºå®ä½“æä¾›åç§°æ ‡è¯†å’Œåˆ†ç±»æ ‡ç­¾
  *
- * Ã¿¸öÊµÌå¶¼Ó¦¸ÃÓĞÒ»¸öTagComponent£¬ÓÃÓÚ£º
- * - ÔÚ±à¼­Æ÷ÖĞÏÔÊ¾ÓÑºÃÃû³Æ
- * - ÊµÌåËÑË÷ºÍÉ¸Ñ¡
- * - ÔËĞĞÊ±ÊµÌå±êÊ¶
+ * æ¯ä¸ªå®ä½“éƒ½åº”è¯¥æœ‰ä¸€ä¸ªTagComponentï¼Œç”¨äºï¼š
+ * - åœ¨ç¼–è¾‘å™¨ä¸­æ˜¾ç¤ºå‹å¥½åç§°
+ * - å®ä½“æœç´¢å’Œç­›é€‰
+ * - è¿è¡Œæ—¶å®ä½“æ ‡è¯†
  */
 class TagComponent : public ComponentTraits<TagComponent, Component::Family::Core> {
  public:
-  // Ä¬ÈÏ¹¹Ôì
+  // é»˜è®¤æ„é€ 
   TagComponent();
 
   /**
-   * @brief Ê¹ÓÃÖ¸¶¨Ãû³Æ¹¹Ôì
-   * @param tag ÊµÌåÃû³Æ/±êÇ©
+   * @brief ä½¿ç”¨æŒ‡å®šåç§°æ„é€ 
+   * @param tag å®ä½“åç§°/æ ‡ç­¾
    */
   TagComponent(const std::string &tag);
 
   /**
-   * @brief Ê¹ÓÃÖ¸¶¨Ãû³ÆºÍÑÕÉ«¹¹Ôì
-   * @param tag ÊµÌåÃû³Æ/±êÇ©
-   * @param color ±à¼­Æ÷ÏÔÊ¾ÑÕÉ«(RGBA)
+   * @brief ä½¿ç”¨æŒ‡å®šåç§°å’Œé¢œè‰²æ„é€ 
+   * @param tag å®ä½“åç§°/æ ‡ç­¾
+   * @param color ç¼–è¾‘å™¨æ˜¾ç¤ºé¢œè‰²(RGBA)
    */
   TagComponent(const std::string &tag, const glm::vec4 &color);
 
   /**
-   * @brief Õë¶Ôdirty¶ÔÏó½øĞĞ´¦Àí
+   * @brief é’ˆå¯¹dirtyå¯¹è±¡è¿›è¡Œå¤„ç†
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
-  // ĞòÁĞ»¯Ö§³Ö
+  // åºåˆ—åŒ–æ”¯æŒ
   template<typename Archive> void serialize(Archive &archive);
 
-  // ------------------------ ÊôĞÔ·ÃÎÊ ------------------------
+  // ------------------------ å±æ€§è®¿é—® ------------------------
   const std::string &GetTag() const
   {
     return m_Tag;
@@ -59,39 +59,39 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
     m_Color = color;
   }
 
-  // ------------------------ ¸¨Öú·½·¨ ------------------------
+  // ------------------------ è¾…åŠ©æ–¹æ³• ------------------------
   /**
-   * @brief ¼ì²é±êÇ©ÊÇ·ñÆ¥ÅäËÑË÷×Ö·û´®(Ö§³Ö¼òµ¥Í¨Åä·û)
-   * @param searchStr ËÑË÷×Ö·û´®£¬¿ÉÒÔ°üº¬*Í¨Åä·û
-   * @return ÊÇ·ñÆ¥Åä
+   * @brief æ£€æŸ¥æ ‡ç­¾æ˜¯å¦åŒ¹é…æœç´¢å­—ç¬¦ä¸²(æ”¯æŒç®€å•é€šé…ç¬¦)
+   * @param searchStr æœç´¢å­—ç¬¦ä¸²ï¼Œå¯ä»¥åŒ…å«*é€šé…ç¬¦
+   * @return æ˜¯å¦åŒ¹é…
    */
   bool MatchSearch(const std::string &searchStr) const;
 
   /**
-   * @brief »ñÈ¡ÓÃÓÚÏÔÊ¾µÄ¶ÌÃû³Æ(È¥³ı²ã¼¶Ç°×º)
+   * @brief è·å–ç”¨äºæ˜¾ç¤ºçš„çŸ­åç§°(å»é™¤å±‚çº§å‰ç¼€)
    */
   std::string GetDisplayName() const;
 
   /**
-   * @brief ¼ì²éÊÇ·ñ°üº¬×Ó±êÇ©
-   * @param subTag Òª¼ì²éµÄ×Ó±êÇ©
-   * @return ÊÇ·ñ°üº¬
+   * @brief æ£€æŸ¥æ˜¯å¦åŒ…å«å­æ ‡ç­¾
+   * @param subTag è¦æ£€æŸ¥çš„å­æ ‡ç­¾
+   * @return æ˜¯å¦åŒ…å«
    */
   bool HasSubTag(const std::string &subTag) const;
 
  private:
-  std::string m_Tag = "Entity";                  // ÊµÌåÖ÷±êÇ©/Ãû³Æ
-  glm::vec4 m_Color = {1.0f, 1.0f, 1.0f, 1.0f};  // ±à¼­Æ÷ÏÔÊ¾ÑÕÉ«
+  std::string m_Tag = "Entity";                  // å®ä½“ä¸»æ ‡ç­¾/åç§°
+  glm::vec4 m_Color = {1.0f, 1.0f, 1.0f, 1.0f};  // ç¼–è¾‘å™¨æ˜¾ç¤ºé¢œè‰²
 
-  // »º´æµÄ¼ÆËãÊôĞÔ£¨std::optional±íÊ¾¿ÉÄÜ²»´æÔÚµÄÖµ£¬ÀàËÆ¿É¿ÕÀàĞÍ£©
+  // ç¼“å­˜çš„è®¡ç®—å±æ€§ï¼ˆstd::optionalè¡¨ç¤ºå¯èƒ½ä¸å­˜åœ¨çš„å€¼ï¼Œç±»ä¼¼å¯ç©ºç±»å‹ï¼‰
   mutable std::optional<std::vector<std::string>> m_CachedSubTags;
 
   /**
-   * @brief ¸üĞÂ×Ó±êÇ©»º´æ
+   * @brief æ›´æ–°å­æ ‡ç­¾ç¼“å­˜
    */
   void UpdateSubTagsCache() const;
 };
-// Tag×é¼şÏµÍ³ =====================================================
+// Tagç»„ä»¶ç³»ç»Ÿ =====================================================
 class TagComponentSystem : public DirtyComponentSystem<TagComponent> {
   DECLARE_COMPONENT_SYSTEM(TagComponentSystem)
 };

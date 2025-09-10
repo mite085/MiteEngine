@@ -8,7 +8,7 @@ SpatialPartitionManager::SpatialPartitionManager(SpatialPartitionType spatialPar
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph Spatial Partition Manager");
 
-  // ³õÊ¼»¯¿Õ¼ä»®·Ö½á¹¹£¨Ä¬ÈÏBVH£©
+  // åˆå§‹åŒ–ç©ºé—´åˆ’åˆ†ç»“æ„ï¼ˆé»˜è®¤BVHï¼‰
   InitializeSpatialPartition();
 }
 
@@ -16,13 +16,13 @@ void SpatialPartitionManager::Clear()
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // Çå¿Õ¿Õ¼ä»®·Ö½á¹¹
+  // æ¸…ç©ºç©ºé—´åˆ’åˆ†ç»“æ„
   if (m_SpatialPartition) {
     m_SpatialPartition->Clear();
   }
 }
 
-// ==================== ½ÚµãÔöÉ¾¹ÜÀí½Ó¿Ú ====================
+// ==================== èŠ‚ç‚¹å¢åˆ ç®¡ç†æ¥å£ ====================
 void SpatialPartitionManager::RemoveNodeFromSpatialPartition(SceneNode *node)
 {
   if (m_SpatialPartition && node) {
@@ -42,7 +42,7 @@ void SpatialPartitionManager::Update(SceneNode *node)
   m_SpatialPartition->Update(node);
 }
 
-// ==================== ¿Õ¼ä»®·Ö¹ÜÀí½Ó¿Ú ====================
+// ==================== ç©ºé—´åˆ’åˆ†ç®¡ç†æ¥å£ ====================
 void SpatialPartitionManager::SetSpatialPartitionType(SpatialPartitionType type)
 {
   if (m_SpatialPartitionType == type) {
@@ -73,7 +73,7 @@ void SpatialPartitionManager::RebuildSpatialPartition(std::vector<SceneNode *> n
 
   m_SpatialPartition->Clear();
 
-  // ÖØĞÂÌí¼ÓËùÓĞ½Úµã
+  // é‡æ–°æ·»åŠ æ‰€æœ‰èŠ‚ç‚¹
   for (const auto node : nodelist) {
     AddNodeToSpatialPartition(node);
   }
@@ -101,7 +101,7 @@ void SpatialPartitionManager::DebugDraw(std::function<void(const AABB &, int dep
   }
 }
 
-// ==================== ¿Õ¼ä²éÑ¯½Ó¿Ú ====================
+// ==================== ç©ºé—´æŸ¥è¯¢æ¥å£ ====================
 size_t SpatialPartitionManager::GetVisibleNodeCount() const
 {
   return m_VisibleNodeCount;
@@ -119,7 +119,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
 
   std::vector<SceneNode *> results;
 
-  // µÚÒ»½×¶Î£ºÊ¹ÓÃ¿Õ¼ä»®·Ö½á¹¹½øĞĞ´ÖÁ£¶ÈÌŞ³ı
+  // ç¬¬ä¸€é˜¶æ®µï¼šä½¿ç”¨ç©ºé—´åˆ’åˆ†ç»“æ„è¿›è¡Œç²—ç²’åº¦å‰”é™¤
   std::vector<SceneNode *> potentiallyVisibleNodes;
   int spatialResult = m_SpatialPartition->FrustumCull(frustum, potentiallyVisibleNodes);
 
@@ -130,48 +130,48 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
   }
   //m_Logger->trace("{} visible nodes after FrustumCull", potentiallyVisibleNodes.size());
 
-  // µÚ¶ş½×¶Î£ºÏ¸Á£¶È¿É¼ûĞÔ¼ì²é£¨½áºÏVisibilityComponent£©
+  // ç¬¬äºŒé˜¶æ®µï¼šç»†ç²’åº¦å¯è§æ€§æ£€æŸ¥ï¼ˆç»“åˆVisibilityComponentï¼‰
   m_VisibleNodeCount = 0;
 
   for (SceneNode *node : potentiallyVisibleNodes) {
     Entity entity = node->GetEntity();
 
-    // ¼ì²é½ÚµãÊÇ·ñÓĞĞ§ÇÒ¾ßÓĞVisibilityComponent
+    // æ£€æŸ¥èŠ‚ç‚¹æ˜¯å¦æœ‰æ•ˆä¸”å…·æœ‰VisibilityComponent
     if (!entity.IsValid()) {
       continue;
     }
     if (registry.HasComponent<VisibilityComponent>(entity)) {
       auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
 
-      // ¼ì²é¿É¼ûĞÔÑÚÂëÆ¥Åä
+      // æ£€æŸ¥å¯è§æ€§æ©ç åŒ¹é…
       if (!visibilityComp.MatchesMask(visibilityMask)) {
-        continue;  // ÑÚÂë²»Æ¥Åä£¬Ìø¹ı
+        continue;  // æ©ç ä¸åŒ¹é…ï¼Œè·³è¿‡
       }
 
-      // ¼ì²éÊÖ¶¯¸²¸ÇµÄ¿É¼ûĞÔ×´Ì¬
+      // æ£€æŸ¥æ‰‹åŠ¨è¦†ç›–çš„å¯è§æ€§çŠ¶æ€
       if (!visibilityComp.IsVisible()) {
-        continue;  // ÊÖ¶¯ÉèÖÃÎª²»¿É¼û
+        continue;  // æ‰‹åŠ¨è®¾ç½®ä¸ºä¸å¯è§
       }
 
-      // Ö´ĞĞ¾«È·µÄÊÓ×¶Ìå²Ã¼ô²âÊÔ
+      // æ‰§è¡Œç²¾ç¡®çš„è§†é”¥ä½“è£å‰ªæµ‹è¯•
       IntersectionType intersection = visibilityComp.TestFrustum(frustum);
 
       if (intersection != IntersectionType::Outside) {
-        // ½Úµã¿É¼û£¬Ìí¼Óµ½½á¹ûÁĞ±í
+        // èŠ‚ç‚¹å¯è§ï¼Œæ·»åŠ åˆ°ç»“æœåˆ—è¡¨
         results.push_back(node);
         m_VisibleNodeCount++;
 
-        // ¸üĞÂVisibilityComponentµÄ¿É¼ûĞÔ×´Ì¬
-        visibilityComp.SetVisible(true);  // È·±£×´Ì¬Ò»ÖÂ
+        // æ›´æ–°VisibilityComponentçš„å¯è§æ€§çŠ¶æ€
+        visibilityComp.SetVisible(true);  // ç¡®ä¿çŠ¶æ€ä¸€è‡´
       }
       else {
-        // ½Úµã²»¿É¼û£¬¸üĞÂ×´Ì¬
+        // èŠ‚ç‚¹ä¸å¯è§ï¼Œæ›´æ–°çŠ¶æ€
         visibilityComp.SetVisible(false);
       }
     }
     else {
-      // Ã»ÓĞVisibilityComponentµÄ½Úµã£¬Ê¹ÓÃ±£ÊØ¹À¼Æ
-      // ¼ì²éÊÀ½ç°üÎ§ºĞÓëÊÓ×¶ÌåµÄÏà½»²âÊÔ
+      // æ²¡æœ‰VisibilityComponentçš„èŠ‚ç‚¹ï¼Œä½¿ç”¨ä¿å®ˆä¼°è®¡
+      // æ£€æŸ¥ä¸–ç•ŒåŒ…å›´ç›’ä¸è§†é”¥ä½“çš„ç›¸äº¤æµ‹è¯•
       const AABB &worldAABB = node->GetWorldBounds();
       IntersectionType intersection = frustum.TestAABB(worldAABB);
 
@@ -197,31 +197,31 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryRaycast(SceneRegistry &re
     return results;
   }
 
-  float distance;  // ÓÃÓÚ¼ÇÂ¼RayĞĞ½ø¾àÀëµÄÁÙÊ±±äÁ¿
+  float distance;  // ç”¨äºè®°å½•Rayè¡Œè¿›è·ç¦»çš„ä¸´æ—¶å˜é‡
 
-  // µÚÒ»½×¶Î£ºÊ¹ÓÃ¿Õ¼ä»®·Ö½á¹¹½øĞĞ´Ö¼ì²â
+  // ç¬¬ä¸€é˜¶æ®µï¼šä½¿ç”¨ç©ºé—´åˆ’åˆ†ç»“æ„è¿›è¡Œç²—æ£€æµ‹
   std::vector<SceneNode *> potentialHits;
   if (m_SpatialPartition->Raycast(ray, potentialHits)) {
-    // µÚ¶ş½×¶Î£º¾«È·¼ì²âºÍ¿É¼ûĞÔ¹ıÂË
+    // ç¬¬äºŒé˜¶æ®µï¼šç²¾ç¡®æ£€æµ‹å’Œå¯è§æ€§è¿‡æ»¤
     for (SceneNode *node : potentialHits) {
       Entity entity = node->GetEntity();
 
-      // ¼ì²é½Úµã¿É¼ûĞÔ
+      // æ£€æŸ¥èŠ‚ç‚¹å¯è§æ€§
       if (!node->IsNodeVisible(registry, visibilityMask)) {
         continue;
       }
-      // Èç¹ûÓĞVisibilityComponent£¬Ê¹ÓÃÆäÊÀ½ç°üÎ§ºĞ½øĞĞ¾«È·¼ì²â
+      // å¦‚æœæœ‰VisibilityComponentï¼Œä½¿ç”¨å…¶ä¸–ç•ŒåŒ…å›´ç›’è¿›è¡Œç²¾ç¡®æ£€æµ‹
       if (registry.HasComponent<VisibilityComponent>(entity)) {
         auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
         const AABB &worldAABB = visibilityComp.GetWorldAABB();
 
-        // ¾«È·µÄÉäÏßÓëAABBÏà½»²âÊÔ
+        // ç²¾ç¡®çš„å°„çº¿ä¸AABBç›¸äº¤æµ‹è¯•
         if (SpatialPartition::RayIntersectsAABB(ray, worldAABB, distance)) {
           results.push_back(node);
         }
       }
       else {
-        // Ã»ÓĞVisibilityComponent£¬Ê¹ÓÃSceneNodeµÄÊÀ½ç°üÎ§ºĞ
+        // æ²¡æœ‰VisibilityComponentï¼Œä½¿ç”¨SceneNodeçš„ä¸–ç•ŒåŒ…å›´ç›’
         const AABB &worldAABB = node->GetWorldBounds();
         if (SpatialPartition::RayIntersectsAABB(ray, worldAABB, distance)) {
           results.push_back(node);
@@ -246,25 +246,25 @@ bool SpatialPartitionManager::QueryRaycastFirst(SceneRegistry &registry,
     m_Logger->warn("Invalid spatial partition, cannot Raycast.");
     return false;
   }
-  // »ñÈ¡ËùÓĞÇ±ÔÚÃüÖĞ½Úµã
+  // è·å–æ‰€æœ‰æ½œåœ¨å‘½ä¸­èŠ‚ç‚¹
   std::vector<SceneNode *> potentialHits;
   if (!m_SpatialPartition->Raycast(ray, potentialHits)) {
     return false;
   }
   SceneNode *closestNode = nullptr;
   float closestDistance = FLT_MAX;
-  // ²éÕÒ×î½üµÄ¿É¼û½Úµã
+  // æŸ¥æ‰¾æœ€è¿‘çš„å¯è§èŠ‚ç‚¹
   for (SceneNode *node : potentialHits) {
     Entity entity = node->GetEntity();
 
-    // ¼ì²é½Úµã¿É¼ûĞÔ
+    // æ£€æŸ¥èŠ‚ç‚¹å¯è§æ€§
     if (!node->IsNodeVisible(registry, visibilityMask)) {
       continue;
     }
 
     float hitDistance = FLT_MAX;
     bool hit = false;
-    // ¾«È·µÄÉäÏßÓë°üÎ§ºĞÏà½»²âÊÔ
+    // ç²¾ç¡®çš„å°„çº¿ä¸åŒ…å›´ç›’ç›¸äº¤æµ‹è¯•
     if (registry.HasComponent<VisibilityComponent>(entity)) {
       auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
       hit = SpatialPartition::RayIntersectsAABB(ray, visibilityComp.GetWorldAABB(), hitDistance);
@@ -295,20 +295,20 @@ std::vector<SceneNode *> SpatialPartitionManager::QuerySphere(SceneRegistry &reg
     m_Logger->warn("Invalid spatial partition, cannot QuerySphere.");
     return results;
   }
-  // µÚÒ»½×¶Î£ºÊ¹ÓÃ¿Õ¼ä»®·Ö½á¹¹½øĞĞ´Ö¼ì²â
+  // ç¬¬ä¸€é˜¶æ®µï¼šä½¿ç”¨ç©ºé—´åˆ’åˆ†ç»“æ„è¿›è¡Œç²—æ£€æµ‹
   std::vector<SceneNode *> potentialHits;
   size_t hitCount = m_SpatialPartition->SphereQuery(sphere, potentialHits);
 
   if (hitCount > 0) {
-    // µÚ¶ş½×¶Î£º¾«È·¼ì²âºÍ¿É¼ûĞÔ¹ıÂË
+    // ç¬¬äºŒé˜¶æ®µï¼šç²¾ç¡®æ£€æµ‹å’Œå¯è§æ€§è¿‡æ»¤
     for (SceneNode *node : potentialHits) {
       Entity entity = node->GetEntity();
 
-      // ¼ì²é½Úµã¿É¼ûĞÔ
+      // æ£€æŸ¥èŠ‚ç‚¹å¯è§æ€§
       if (!node->IsNodeVisible(registry, visibilityMask)) {
         continue;
       }
-      // ¾«È·µÄÇòÌåÓë°üÎ§ºĞÏà½»²âÊÔ
+      // ç²¾ç¡®çš„çƒä½“ä¸åŒ…å›´ç›’ç›¸äº¤æµ‹è¯•
       bool intersects = false;
       if (registry.HasComponent<VisibilityComponent>(entity)) {
         auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
@@ -338,20 +338,20 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryAABB(SceneRegistry &regis
     m_Logger->warn("Invalid spatial partition, cannot QueryAABB.");
     return results;
   }
-  // µÚÒ»½×¶Î£ºÊ¹ÓÃ¿Õ¼ä»®·Ö½á¹¹½øĞĞ´Ö¼ì²â
+  // ç¬¬ä¸€é˜¶æ®µï¼šä½¿ç”¨ç©ºé—´åˆ’åˆ†ç»“æ„è¿›è¡Œç²—æ£€æµ‹
   std::vector<SceneNode *> potentialHits;
   size_t hitCount = m_SpatialPartition->AABBQuery(aabb, potentialHits);
 
   if (hitCount > 0) {
-    // µÚ¶ş½×¶Î£º¾«È·¼ì²âºÍ¿É¼ûĞÔ¹ıÂË
+    // ç¬¬äºŒé˜¶æ®µï¼šç²¾ç¡®æ£€æµ‹å’Œå¯è§æ€§è¿‡æ»¤
     for (SceneNode *node : potentialHits) {
       Entity entity = node->GetEntity();
 
-      // ¼ì²é½Úµã¿É¼ûĞÔ
+      // æ£€æŸ¥èŠ‚ç‚¹å¯è§æ€§
       if (!node->IsNodeVisible(registry, visibilityMask)) {
         continue;
       }
-      // ¾«È·µÄAABBÓëAABBÏà½»²âÊÔ
+      // ç²¾ç¡®çš„AABBä¸AABBç›¸äº¤æµ‹è¯•
       bool intersects = false;
       if (registry.HasComponent<VisibilityComponent>(entity)) {
         auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
@@ -371,7 +371,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryAABB(SceneRegistry &regis
   return results;
 }
 
-// ==================== Ë½ÓĞ¹¤¾ß·½·¨ ====================
+// ==================== ç§æœ‰å·¥å…·æ–¹æ³• ====================
 
 void SpatialPartitionManager::InitializeSpatialPartition()
 {

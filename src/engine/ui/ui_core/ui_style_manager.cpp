@@ -7,19 +7,19 @@ static const std::string s_DarkStyleName = "dark";
 namespace mite {
 UIStyleManager::UIStyleManager() : m_CurrentStyleName(s_LightStyleName)
 {
-  // ¹¹Ôìº¯Êı±£³Ö¼òµ¥£¬³õÊ¼»¯ÔÚInitialize()ÖĞ½øĞĞ
+  // æ„é€ å‡½æ•°ä¿æŒç®€å•ï¼Œåˆå§‹åŒ–åœ¨Initialize()ä¸­è¿›è¡Œ
 }
 
 void UIStyleManager::Initialize()
 {
-  // ´´½¨ÈÕÖ¾ÏµÍ³
+  // åˆ›å»ºæ—¥å¿—ç³»ç»Ÿ
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI Style Manager");
   m_Logger->info("Initializing UI Style Manager");
 
-  // ´´½¨²¢×¢²áÄÚÖÃÑùÊ½
+  // åˆ›å»ºå¹¶æ³¨å†Œå†…ç½®æ ·å¼
   CreateBuiltinStyles();
 
-  // ÉèÖÃÄ¬ÈÏÑùÊ½Îªµ±Ç°ÑùÊ½
+  // è®¾ç½®é»˜è®¤æ ·å¼ä¸ºå½“å‰æ ·å¼
   if (HasStyle(s_LightStyleName)) {
     SetCurrentStyle(s_LightStyleName);
     m_Logger->info("Light style set as current style");
@@ -46,10 +46,10 @@ bool UIStyleManager::RegisterStyle(const std::string &name, std::shared_ptr<UISt
     return false;
   }
 
-  // ÉèÖÃÑùÊ½Ãû³Æ
+  // è®¾ç½®æ ·å¼åç§°
   style->SetName(name);
 
-  // ×¢²áÑùÊ½
+  // æ³¨å†Œæ ·å¼
   m_Styles[name] = style;
   m_Logger->info("Style registered: {}", name);
 
@@ -87,8 +87,8 @@ bool UIStyleManager::SetCurrentStyle(const std::string &name)
   std::string oldStyleName = m_CurrentStyleName;
   m_CurrentStyleName = name;
 
-  // ·¢²¼ÑùÊ½±ä¸üÊÂ¼ş
-  // µ±ºó¶ËÊÇImguiÊ±£¬ÓÉImGuiStyleAdapter¸ºÔğÏû·ÑÊÂ¼ş£¬Ö´ĞĞÑùÊ½ÇĞ»»²Ù×÷
+  // å‘å¸ƒæ ·å¼å˜æ›´äº‹ä»¶
+  // å½“åç«¯æ˜¯Imguiæ—¶ï¼Œç”±ImGuiStyleAdapterè´Ÿè´£æ¶ˆè´¹äº‹ä»¶ï¼Œæ‰§è¡Œæ ·å¼åˆ‡æ¢æ“ä½œ
   StyleChangedEvent event(GetStyle(name));
   EventBus::Publish<StyleChangedEvent>(event);
 
@@ -120,13 +120,13 @@ size_t UIStyleManager::GetStyleCount() const
 
 void UIStyleManager::CreateBuiltinStyles()
 {
-  // ×¢²á°µÉ«Ö÷Ìâ
+  // æ³¨å†Œæš—è‰²ä¸»é¢˜
   auto darkTheme = CreateDarkTheme();
   if (darkTheme) {
     RegisterStyle(s_DarkStyleName, darkTheme);
   }
 
-  // ×¢²áÁÁÉ«Ö÷Ìâ
+  // æ³¨å†Œäº®è‰²ä¸»é¢˜
   auto lightTheme = CreateLightTheme();
   if (lightTheme) {
     RegisterStyle(s_LightStyleName, lightTheme);
@@ -139,7 +139,7 @@ std::shared_ptr<UIStyle> UIStyleManager::CreateDarkTheme()
 {
   auto style = std::make_shared<UIStyle>(s_DarkStyleName);
 
-  // °µÉ«Ö÷ÌâÅäÖÃ
+  // æš—è‰²ä¸»é¢˜é…ç½®
   style->SetProperty(
       StyleProperties::COLOR_BACKGROUND, glm::vec4(0.15f, 0.15f, 0.15f, 1.0f), "dark background");
   style->SetProperty(
@@ -157,7 +157,7 @@ std::shared_ptr<UIStyle> UIStyleManager::CreateLightTheme()
 {
   auto style = std::make_shared<UIStyle>(s_LightStyleName);
 
-  // ÁÁÉ«Ö÷ÌâÅäÖÃ
+  // äº®è‰²ä¸»é¢˜é…ç½®
   style->SetProperty(
       StyleProperties::COLOR_BACKGROUND, glm::vec4(0.95f, 0.95f, 0.95f, 1.0f), "light background");
   style->SetProperty(

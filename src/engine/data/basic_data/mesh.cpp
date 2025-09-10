@@ -8,7 +8,7 @@ Mesh::Mesh(std::shared_ptr<ModelGPUHandle> modelHandle, const MeshSectionLODChai
     throw std::invalid_argument("Model handle cannot be null");
   }
 
-  // ¼ì²éÊÇ·ñÎª¿ÕMesh
+  // æ£€æŸ¥æ˜¯å¦ä¸ºç©ºMesh
   if (m_LODChain.baseSection.vertexCount == 0 || m_LODChain.baseSection.indexCount == 0) {
     throw std::invalid_argument("Invalid mesh section: vertex or index count is zero");
   }
@@ -22,7 +22,7 @@ uint32_t Mesh::GetVertexCount(uint32_t lodLevel) const
       return section.vertexCount;
     }
   }
-  // Èç¹ûÕÒ²»µ½Ö¸¶¨LOD¼¶±ğ£¬·µ»Ø»ù´¡LOD¼¶±ğµÄÊı¾İ
+  // å¦‚æœæ‰¾ä¸åˆ°æŒ‡å®šLODçº§åˆ«ï¼Œè¿”å›åŸºç¡€LODçº§åˆ«çš„æ•°æ®
   return m_LODChain.baseSection.vertexCount;
 }
 
@@ -33,7 +33,7 @@ uint32_t Mesh::GetIndexCount(uint32_t lodLevel) const
       return section.indexCount;
     }
   }
-  // Èç¹ûÕÒ²»µ½Ö¸¶¨LOD¼¶±ğ£¬·µ»Ø»ù´¡LOD¼¶±ğµÄÊı¾İ
+  // å¦‚æœæ‰¾ä¸åˆ°æŒ‡å®šLODçº§åˆ«ï¼Œè¿”å›åŸºç¡€LODçº§åˆ«çš„æ•°æ®
   return m_LODChain.baseSection.indexCount;
 }
 
@@ -44,7 +44,7 @@ uint32_t Mesh::GetIndexOffset(uint32_t lodLevel) const
       return section.indexOffset;
     }
   }
-  // Èç¹ûÕÒ²»µ½Ö¸¶¨LOD¼¶±ğ£¬·µ»Ø»ù´¡LOD¼¶±ğµÄÊı¾İ
+  // å¦‚æœæ‰¾ä¸åˆ°æŒ‡å®šLODçº§åˆ«ï¼Œè¿”å›åŸºç¡€LODçº§åˆ«çš„æ•°æ®
   return m_LODChain.baseSection.indexOffset;
 }
 
@@ -55,7 +55,7 @@ const MeshSection &Mesh::GetSection(uint32_t lodLevel) const
       return section;
     }
   }
-  // Èç¹ûÕÒ²»µ½Ö¸¶¨LOD¼¶±ğ£¬·µ»Ø»ù´¡LOD¼¶±ğ
+  // å¦‚æœæ‰¾ä¸åˆ°æŒ‡å®šLODçº§åˆ«ï¼Œè¿”å›åŸºç¡€LODçº§åˆ«
   return m_LODChain.baseSection;
 }
 
@@ -86,11 +86,11 @@ const std::pair<glm::vec3, glm::vec3> Mesh::GetBoundingBox(uint32_t lodLevel) co
       return {section.bboxMin, section.bboxMax};
     }
   }
-  // Èç¹ûÕÒ²»µ½Ö¸¶¨LOD¼¶±ğ£¬·µ»Ø»ù´¡LOD¼¶±ğµÄ°üÎ§ºĞ
+  // å¦‚æœæ‰¾ä¸åˆ°æŒ‡å®šLODçº§åˆ«ï¼Œè¿”å›åŸºç¡€LODçº§åˆ«çš„åŒ…å›´ç›’
   return {m_LODChain.baseSection.bboxMin, m_LODChain.baseSection.bboxMax};
 }
 /**
- * »ñÈ¡²ÄÖÊË÷Òı
+ * è·å–æè´¨ç´¢å¼•
  */
 uint32_t Mesh::GetMaterialIndex() const
 {

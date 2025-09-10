@@ -5,27 +5,27 @@
 
 namespace mite {
 /**
- * @brief ÑùÊ½ÖµÀàĞÍ¶¨Òå
+ * @brief æ ·å¼å€¼ç±»å‹å®šä¹‰
  */
-using StyleValue = std::variant<int,         // ÕûÊıÖµ
-                                float,       // ¸¡µãÊıÖµ
-                                bool,        // ²¼¶ûÖµ
-                                glm::vec2,   // ¶şÎ¬ÏòÁ¿
-                                glm::vec3,   // ÈıÎ¬ÏòÁ¿
-                                glm::vec4,   // ËÄÎ¬ÏòÁ¿
-                                std::string  // ×Ö·û´®Öµ
+using StyleValue = std::variant<int,         // æ•´æ•°å€¼
+                                float,       // æµ®ç‚¹æ•°å€¼
+                                bool,        // å¸ƒå°”å€¼
+                                glm::vec2,   // äºŒç»´å‘é‡
+                                glm::vec3,   // ä¸‰ç»´å‘é‡
+                                glm::vec4,   // å››ç»´å‘é‡
+                                std::string  // å­—ç¬¦ä¸²å€¼
                                 >;
 
 /**
- * @brief ÑùÊ½ÊôĞÔ¶¨Òå
+ * @brief æ ·å¼å±æ€§å®šä¹‰
  */
 struct StyleProperty {
   StyleValue value;
-  std::string description;  // ÊôĞÔÃèÊö
+  std::string description;  // å±æ€§æè¿°
 };
 
 /**
- * @brief ÑùÊ½Àà£¬¹ÜÀíUI¿Ø¼şµÄÊÓ¾õÑùÊ½
+ * @brief æ ·å¼ç±»ï¼Œç®¡ç†UIæ§ä»¶çš„è§†è§‰æ ·å¼
  */
 class UIStyle {
  public:
@@ -33,19 +33,19 @@ class UIStyle {
   ~UIStyle();
 
   /**
-   * @brief ÉèÖÃÑùÊ½ÊôĞÔ
-   * @param propertyName ÊôĞÔÃû³Æ
-   * @param value ÊôĞÔÖµ
-   * @param description ÊôĞÔÃèÊö£¨¿ÉÑ¡£©
+   * @brief è®¾ç½®æ ·å¼å±æ€§
+   * @param propertyName å±æ€§åç§°
+   * @param value å±æ€§å€¼
+   * @param description å±æ€§æè¿°ï¼ˆå¯é€‰ï¼‰
    */
   void SetProperty(const std::string &propertyName,
                    const StyleValue &value,
                    const std::string &description = "");
 
   /**
-   * @brief »ñÈ¡ÑùÊ½ÊôĞÔ
-   * @param propertyName ÊôĞÔÃû³Æ
-   * @return ÊôĞÔÖµ£¬Èç¹û²»´æÔÚ·µ»ØÄ¬ÈÏÖµ
+   * @brief è·å–æ ·å¼å±æ€§
+   * @param propertyName å±æ€§åç§°
+   * @return å±æ€§å€¼ï¼Œå¦‚æœä¸å­˜åœ¨è¿”å›é»˜è®¤å€¼
    */
   template<typename T>
   T GetProperty(const std::string &propertyName, const T &defaultValue = T()) const
@@ -59,7 +59,7 @@ class UIStyle {
         LOG_WARN("Style property {} is not of requested type", propertyName);
       }
     }
-    // ¼ì²é¸¸ÑùÊ½
+    // æ£€æŸ¥çˆ¶æ ·å¼
     if (m_Parent) {
       return m_Parent->GetProperty<T>(propertyName, defaultValue);
     }
@@ -67,41 +67,41 @@ class UIStyle {
   }
 
   /**
-   * @brief ¼ì²éÊôĞÔÊÇ·ñ´æÔÚ
-   * @param propertyName ÊôĞÔÃû³Æ
+   * @brief æ£€æŸ¥å±æ€§æ˜¯å¦å­˜åœ¨
+   * @param propertyName å±æ€§åç§°
    */
   bool HasProperty(const std::string &propertyName) const;
 
   /**
-   * @brief ÒÆ³ıÑùÊ½ÊôĞÔ
-   * @param propertyName ÊôĞÔÃû³Æ
+   * @brief ç§»é™¤æ ·å¼å±æ€§
+   * @param propertyName å±æ€§åç§°
    */
   void RemoveProperty(const std::string &propertyName);
 
   /**
-   * @brief Çå¿ÕËùÓĞÑùÊ½ÊôĞÔ
+   * @brief æ¸…ç©ºæ‰€æœ‰æ ·å¼å±æ€§
    */
   void Clear();
 
   /**
-   * @brief ºÏ²¢ÁíÒ»¸öÑùÊ½
-   * @param other ÒªºÏ²¢µÄÑùÊ½
-   * @param overwrite ÊÇ·ñ¸²¸ÇÏÖÓĞÊôĞÔ
+   * @brief åˆå¹¶å¦ä¸€ä¸ªæ ·å¼
+   * @param other è¦åˆå¹¶çš„æ ·å¼
+   * @param overwrite æ˜¯å¦è¦†ç›–ç°æœ‰å±æ€§
    */
   void Merge(const UIStyle &other, bool overwrite = true);
 
   /**
-   * @brief »ñÈ¡ËùÓĞÊôĞÔÃû³Æ
+   * @brief è·å–æ‰€æœ‰å±æ€§åç§°
    */
   std::vector<std::string> GetPropertyNames() const;
 
   /**
-   * @brief »ñÈ¡ÊôĞÔÊıÁ¿
+   * @brief è·å–å±æ€§æ•°é‡
    */
   size_t GetPropertyCount() const;
 
   /**
-   * @brief ÉèÖÃÑùÊ½Ãû³Æ
+   * @brief è®¾ç½®æ ·å¼åç§°
    */
   void SetName(const std::string &name)
   {
@@ -109,7 +109,7 @@ class UIStyle {
   }
 
   /**
-   * @brief »ñÈ¡ÑùÊ½Ãû³Æ
+   * @brief è·å–æ ·å¼åç§°
    */
   const std::string &GetName() const
   {
@@ -117,8 +117,8 @@ class UIStyle {
   }
 
   /**
-   * @brief ÉèÖÃ¸¸ÑùÊ½
-   * @param parent ¸¸ÑùÊ½¹²ÏíÖ¸Õë
+   * @brief è®¾ç½®çˆ¶æ ·å¼
+   * @param parent çˆ¶æ ·å¼å…±äº«æŒ‡é’ˆ
    */
   void SetParent(std::shared_ptr<UIStyle> parent)
   {
@@ -126,8 +126,8 @@ class UIStyle {
   }
 
   /**
-   * @brief »ñÈ¡¸¸ÑùÊ½
-   * @return std::shared_ptr<UIStyle> ¸¸ÑùÊ½¹²ÏíÖ¸Õë
+   * @brief è·å–çˆ¶æ ·å¼
+   * @return std::shared_ptr<UIStyle> çˆ¶æ ·å¼å…±äº«æŒ‡é’ˆ
    */
   std::shared_ptr<UIStyle> GetParent() const
   {
@@ -135,14 +135,14 @@ class UIStyle {
   }
 
  private:
-  std::string m_Name;                                           // ÑùÊ½Ãû³Æ
-  std::unordered_map<std::string, StyleProperty> m_Properties;  // ÊôĞÔ´æ´¢
-  std::shared_ptr<UIStyle> m_Parent;                            // ¸¸ÑùÊ½Ö¸Õë
+  std::string m_Name;                                           // æ ·å¼åç§°
+  std::unordered_map<std::string, StyleProperty> m_Properties;  // å±æ€§å­˜å‚¨
+  std::shared_ptr<UIStyle> m_Parent;                            // çˆ¶æ ·å¼æŒ‡é’ˆ
 };
 
-// ³£ÓÃÑùÊ½ÊôĞÔÃû³Æ¶¨Òå£¨»ùÓÚimguiµÄÉùÃ÷±àĞ´£©
+// å¸¸ç”¨æ ·å¼å±æ€§åç§°å®šä¹‰ï¼ˆåŸºäºimguiçš„å£°æ˜ç¼–å†™ï¼‰
 namespace StyleProperties {
-// ÑÕÉ«Ïà¹Ø
+// é¢œè‰²ç›¸å…³
 constexpr const char *COLOR_BACKGROUND = "color.background";
 constexpr const char *COLOR_TEXT = "color.text";
 constexpr const char *COLOR_BORDER = "color.border";
@@ -196,7 +196,7 @@ constexpr const char *COLOR_NAV_WINDOWING_HIGHLIGHT = "color.nav_windowing_highl
 constexpr const char *COLOR_NAV_WINDOWING_DIM_BG = "color.nav_windowing_dim_bg";
 constexpr const char *COLOR_MODAL_WINDOW_DIM_BG = "color.modal_window_dim_bg";
 
-// ³ß´çÏà¹Ø
+// å°ºå¯¸ç›¸å…³
 constexpr const char *SIZE_WINDOW_PADDING_X = "size.window_padding_x";
 constexpr const char *SIZE_WINDOW_PADDING_Y = "size.window_padding_y";
 constexpr const char *SIZE_WINDOW_ROUNDING = "size.window_rounding";
@@ -245,18 +245,18 @@ constexpr const char *SIZE_ANTI_ALIASED_FILL = "size.anti_aliased_fill";
 constexpr const char *SIZE_CURVE_TESSELLATION_TOL = "size.curve_tessellation_tol";
 constexpr const char *SIZE_CIRCLE_TESSELLATION_MAX_ERROR = "size.circle_tessellation_max_error";
 
-// ²¼¾ÖÏà¹Ø£¨Ã¶¾ÙÀàĞÍ£©
+// å¸ƒå±€ç›¸å…³ï¼ˆæšä¸¾ç±»å‹ï¼‰
 constexpr const char *LAYOUT_COLOR_BUTTON_POSITION = "layout.color_button_position";
 constexpr const char *LAYOUT_WINDOW_MENU_BUTTON_POSITION = "layout.window_menu_button_position";
 
-// ±ß¿òÏà¹Ø
+// è¾¹æ¡†ç›¸å…³
 constexpr const char *BORDER_WINDOW = "border.window";
 constexpr const char *BORDER_CHILD = "border.child";
 constexpr const char *BORDER_POPUP = "border.popup";
 constexpr const char *BORDER_FRAME = "border.frame";
 constexpr const char *BORDER_TAB = "border.tab";
 
-// ¼ä¾àÏà¹Ø
+// é—´è·ç›¸å…³
 constexpr const char *SPACING_WINDOW_PADDING_X = "spacing.window_padding_x";
 constexpr const char *SPACING_WINDOW_PADDING_Y = "spacing.window_padding_y";
 constexpr const char *SPACING_FRAME_PADDING_X = "spacing.frame_padding_x";

@@ -8,17 +8,17 @@ namespace mite {
 using UUID = uuids::uuid;
 
 /**
- * @brief UUIDÉú³ÉÆ÷
+ * @brief UUIDç”Ÿæˆå™¨
  *
- * ¾²Ì¬£¬µ¥Àı£¬Íâ²¿½öĞèµ÷ÓÃGenerate()·½·¨£¬·µ»Øuuids::uuid
- * ÓÅ»¯µã£º
- * 1. Ê¹ÓÃÏß³Ì¾Ö²¿´æ´¢µÄËæ»úÊıÉú³ÉÆ÷±ÜÃâÖØ¸´³õÊ¼»¯
- * 2. ÓÅ»¯×Ö·û´®´¦Àí¼õÉÙÁÙÊ±¶ÔÏó
- * 3. ±£Ö¤Ïß³Ì°²È«
+ * é™æ€ï¼Œå•ä¾‹ï¼Œå¤–éƒ¨ä»…éœ€è°ƒç”¨Generate()æ–¹æ³•ï¼Œè¿”å›uuids::uuid
+ * ä¼˜åŒ–ç‚¹ï¼š
+ * 1. ä½¿ç”¨çº¿ç¨‹å±€éƒ¨å­˜å‚¨çš„éšæœºæ•°ç”Ÿæˆå™¨é¿å…é‡å¤åˆå§‹åŒ–
+ * 2. ä¼˜åŒ–å­—ç¬¦ä¸²å¤„ç†å‡å°‘ä¸´æ—¶å¯¹è±¡
+ * 3. ä¿è¯çº¿ç¨‹å®‰å…¨
  */
 class UUIDGenerator {
  private:
-  // Ïß³Ì¾Ö²¿´æ´¢µÄËæ»úÊıÉú³ÉÆ÷£¬±ÜÃâÃ¿´Îµ÷ÓÃ¶¼³õÊ¼»¯
+  // çº¿ç¨‹å±€éƒ¨å­˜å‚¨çš„éšæœºæ•°ç”Ÿæˆå™¨ï¼Œé¿å…æ¯æ¬¡è°ƒç”¨éƒ½åˆå§‹åŒ–
   static inline std::mt19937 &GetThreadLocalGenerator()
   {
     thread_local std::random_device rd;
@@ -33,41 +33,41 @@ class UUIDGenerator {
 
  public:
   /**
-   * @brief Éú³ÉÍêÈ«Ëæ»úµÄUUID
-   * @return uuids::uuid Éú³ÉµÄUUID
-   * ¸´ÔÓ¶È: O(1) Æ½¾ùÊ±¼ä¸´ÔÓ¶È
+   * @brief ç”Ÿæˆå®Œå…¨éšæœºçš„UUID
+   * @return uuids::uuid ç”Ÿæˆçš„UUID
+   * å¤æ‚åº¦: O(1) å¹³å‡æ—¶é—´å¤æ‚åº¦
    */
   static uuids::uuid Generate()
   {
-    // C6001 Ê¹ÓÃÎ´³õÊ¼»¯µÄÄÚ´æ¡°bytes¡±
-    // Õâ¸ö¾¯¸æÊÇÎó±¨£¬bytesÊı×é»á±»ÍêÈ«³õÊ¼»¯
+    // C6001 ä½¿ç”¨æœªåˆå§‹åŒ–çš„å†…å­˜â€œbytesâ€
+    // è¿™ä¸ªè­¦å‘Šæ˜¯è¯¯æŠ¥ï¼Œbytesæ•°ç»„ä¼šè¢«å®Œå…¨åˆå§‹åŒ–
     thread_local uuids::uuid_random_generator gen{GetThreadLocalGenerator()};
     return gen();
   }
 
   /**
-   * @brief ¸ù¾İË÷ÒıÉú³ÉÎ±Ëæ»úµÄUUID
-   * @param index Éú³ÉUUIDµÄË÷ÒıÖµ
-   * @return uuids::uuid Éú³ÉµÄUUID
+   * @brief æ ¹æ®ç´¢å¼•ç”Ÿæˆä¼ªéšæœºçš„UUID
+   * @param index ç”ŸæˆUUIDçš„ç´¢å¼•å€¼
+   * @return uuids::uuid ç”Ÿæˆçš„UUID
    */
   static uuids::uuid Generate(size_t index)
   {
     constexpr size_t fixed_seed = 0x123456789ABCDEF0;
-    std::mt19937 generator(unsigned int(fixed_seed + index));   // Ã¿´ÎÖØĞÂ¹¹Ôì
-    uuids::uuid_random_generator gen(generator);  // ¾Ö²¿±äÁ¿£¬²»¸´ÓÃ
-    return gen();                                 // È·±£Ã¿´Îµ÷ÓÃ¶¼´Ó³õÊ¼×´Ì¬¿ªÊ¼
+    std::mt19937 generator(unsigned int(fixed_seed + index));   // æ¯æ¬¡é‡æ–°æ„é€ 
+    uuids::uuid_random_generator gen(generator);  // å±€éƒ¨å˜é‡ï¼Œä¸å¤ç”¨
+    return gen();                                 // ç¡®ä¿æ¯æ¬¡è°ƒç”¨éƒ½ä»åˆå§‹çŠ¶æ€å¼€å§‹
   }
 
   /**
-   * @brief ¸ù¾İ×Ö·û´®Ë÷ÒıÉú³ÉÎ±Ëæ»úµÄUUID
-   * @param str ÓÃÓÚÉú³ÉUUIDµÄ×Ö·û´®
-   * @return uuids::uuid Éú³ÉµÄUUID
-   * ¸´ÔÓ¶È: O(n) nÎª×Ö·û´®³¤¶È
-   * ÓÅ»¯: Ö±½Ó¼ÆËã¹şÏ££¬±ÜÃâ´´½¨ÁÙÊ±string¶ÔÏó
+   * @brief æ ¹æ®å­—ç¬¦ä¸²ç´¢å¼•ç”Ÿæˆä¼ªéšæœºçš„UUID
+   * @param str ç”¨äºç”ŸæˆUUIDçš„å­—ç¬¦ä¸²
+   * @return uuids::uuid ç”Ÿæˆçš„UUID
+   * å¤æ‚åº¦: O(n) nä¸ºå­—ç¬¦ä¸²é•¿åº¦
+   * ä¼˜åŒ–: ç›´æ¥è®¡ç®—å“ˆå¸Œï¼Œé¿å…åˆ›å»ºä¸´æ—¶stringå¯¹è±¡
    */
   static uuids::uuid Generate(const char *str)
   {
-    // Ö±½Ó¼ÆËãC×Ö·û´®µÄ¹şÏ££¬±ÜÃâ´´½¨ÁÙÊ±string¶ÔÏó
+    // ç›´æ¥è®¡ç®—Cå­—ç¬¦ä¸²çš„å“ˆå¸Œï¼Œé¿å…åˆ›å»ºä¸´æ—¶stringå¯¹è±¡
     size_t hash = 5381;
     int c;
     while ((c = *str++)) {
@@ -76,7 +76,7 @@ class UUIDGenerator {
     return Generate(hash);
   }
 
-  // UUID×Ö·û´®×ª»»µÄ±¾µØ¸¨Öúº¯Êı
+  // UUIDå­—ç¬¦ä¸²è½¬æ¢çš„æœ¬åœ°è¾…åŠ©å‡½æ•°
   static std::string UUIDToString(const UUID &id)
   {
     return uuids::to_string(id);

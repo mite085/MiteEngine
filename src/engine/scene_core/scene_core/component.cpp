@@ -4,8 +4,8 @@
 #include "scene_registry.h"
 
 namespace mite {
-// »ùÀà·½·¨µÄ»ù´¡ÊµÏÖ
-// ×¢Òâ£º´ó²¿·Ö¹¦ÄÜÒÑÔÚÍ·ÎÄ¼şÖĞÊµÏÖÎª´¿Ğéº¯Êı
+// åŸºç±»æ–¹æ³•çš„åŸºç¡€å®ç°
+// æ³¨æ„ï¼šå¤§éƒ¨åˆ†åŠŸèƒ½å·²åœ¨å¤´æ–‡ä»¶ä¸­å®ç°ä¸ºçº¯è™šå‡½æ•°
 
 void Component::MarkDirty()
 {
@@ -25,10 +25,10 @@ void Component::ClearDirty()
 void Component::Update(float deltaTime, SceneRegistry &reg)
 {
   if (IsDirty()) {
-    // Ö´ĞĞ±ØÒªµÄ¸üĞÂ»òÖØĞÂ¼ÆËã
+    // æ‰§è¡Œå¿…è¦çš„æ›´æ–°æˆ–é‡æ–°è®¡ç®—
     ProcessDirty(deltaTime, reg);
 
-    // Çå³ıÔà±ê¼Ç
+    // æ¸…é™¤è„æ ‡è®°
     ClearDirty();
   }
 }
@@ -45,14 +45,14 @@ bool Component::IsEnabled() const
 
 bool Component::Serialize(std::ostream &output) const
 {
-  // »ù´¡×é¼şĞòÁĞ»¯Ö»Ğ´ÈëÆôÓÃ×´Ì¬
+  // åŸºç¡€ç»„ä»¶åºåˆ—åŒ–åªå†™å…¥å¯ç”¨çŠ¶æ€
   output.write(reinterpret_cast<const char *>(&m_Enabled), sizeof(m_Enabled));
   return !output.fail();
 }
 
 bool Component::Deserialize(std::istream &input)
 {
-  // »ù´¡×é¼ş·´ĞòÁĞ»¯Ö»¶ÁÈ¡ÆôÓÃ×´Ì¬
+  // åŸºç¡€ç»„ä»¶ååºåˆ—åŒ–åªè¯»å–å¯ç”¨çŠ¶æ€
   input.read(reinterpret_cast<char *>(&m_Enabled), sizeof(m_Enabled));
   return !input.fail();
 }
@@ -67,7 +67,7 @@ bool Component::HasParent(SceneRegistry &reg)
 
 Entity Component::GetParent(SceneRegistry &reg)
 {
-  // ÓëComponent::HasParentÅäºÏÊ¹ÓÃ£¬¹Ê²»ÉèÖÃif·ÖÖ§½øĞĞÕıÈ·ĞÔ¼ì²é¡£
+  // ä¸Component::HasParenté…åˆä½¿ç”¨ï¼Œæ•…ä¸è®¾ç½®ifåˆ†æ”¯è¿›è¡Œæ­£ç¡®æ€§æ£€æŸ¥ã€‚
   return reg.GetComponent<HierarchyComponent>(GetEntity()).GetParent();
 }
 

@@ -6,41 +6,41 @@
 #include "scene_core_event_callback_adapter.h"
 namespace mite {
 /**
- * @brief ×é¼şÏµÍ³¹ÜÀíÆ÷£¬¼¯ÖĞ¹ÜÀíËùÓĞ×é¼şÏµÍ³
+ * @brief ç»„ä»¶ç³»ç»Ÿç®¡ç†å™¨ï¼Œé›†ä¸­ç®¡ç†æ‰€æœ‰ç»„ä»¶ç³»ç»Ÿ
  *
  *
- * Ê¹ÓÃ·½·¨£º
- * 1. Scene¹¹Ôì½×¶Î--µ÷ÓÃÄ¬ÈÏ¹¹Ôìº¯Êı£¬¹¹ÔìManager¶ÔÏó
- * 2. Scene¹¹Ôì½×¶Î--µ÷ÓÃRegisterSystem()£¬Öğ¸ö×¢²á¸÷¸öComponentSystem
+ * ä½¿ç”¨æ–¹æ³•ï¼š
+ * 1. Sceneæ„é€ é˜¶æ®µ--è°ƒç”¨é»˜è®¤æ„é€ å‡½æ•°ï¼Œæ„é€ Managerå¯¹è±¡
+ * 2. Sceneæ„é€ é˜¶æ®µ--è°ƒç”¨RegisterSystem()ï¼Œé€ä¸ªæ³¨å†Œå„ä¸ªComponentSystem
  *
- * 3. Scene³õÊ¼»¯½×¶Î--µ÷ÓÃInitializeAll()£¬³õÊ¼»¯ËùÓĞÏµÍ³
+ * 3. Sceneåˆå§‹åŒ–é˜¶æ®µ--è°ƒç”¨InitializeAll()ï¼Œåˆå§‹åŒ–æ‰€æœ‰ç³»ç»Ÿ
  *
- * 4. SceneÔËĞĞ½×¶Î--Ã¿Ö¡µ÷ÓÃUpdateAll(deltaTime)£¬¸üĞÂËùÓĞÏµÍ³
- * 5. SceneÔËĞĞ½×¶Î--ÊÓÇé¿öµ÷ÓÃGetSystem()£¬Õë¶ÔÄ³Ò»ÏµÍ³½øĞĞ´¦Àí
+ * 4. Sceneè¿è¡Œé˜¶æ®µ--æ¯å¸§è°ƒç”¨UpdateAll(deltaTime)ï¼Œæ›´æ–°æ‰€æœ‰ç³»ç»Ÿ
+ * 5. Sceneè¿è¡Œé˜¶æ®µ--è§†æƒ…å†µè°ƒç”¨GetSystem()ï¼Œé’ˆå¯¹æŸä¸€ç³»ç»Ÿè¿›è¡Œå¤„ç†
  *
  * 6.
- * SceneÔËĞĞ½×¶Î--Ã¿µ±ĞÂµÄComponent´´½¨/¸üĞÂ/ÒÆ³ı£¬´¥·¢¶ÔÓ¦ComponentSystemµÄ»Øµ÷º¯ÊıOnComponentAddedµÈ
+ * Sceneè¿è¡Œé˜¶æ®µ--æ¯å½“æ–°çš„Componentåˆ›å»º/æ›´æ–°/ç§»é™¤ï¼Œè§¦å‘å¯¹åº”ComponentSystemçš„å›è°ƒå‡½æ•°OnComponentAddedç­‰
  *
- * 7. SceneÏú»Ù½×¶Î--µ÷ÓÃShutdownAll()£¬¹Ø±ÕËùÓĞÏµÍ³
+ * 7. Sceneé”€æ¯é˜¶æ®µ--è°ƒç”¨ShutdownAll()ï¼Œå…³é—­æ‰€æœ‰ç³»ç»Ÿ
  */
 class ComponentSystemManager {
  public:
   ComponentSystemManager(SceneRegistry &registry);
   ~ComponentSystemManager();
 
-  // SFINAE ¼ì²â T ÊÇ·ñÓĞ ComponentType ³ÉÔ±ÀàĞÍ
+  // SFINAE æ£€æµ‹ T æ˜¯å¦æœ‰ ComponentType æˆå‘˜ç±»å‹
   template<typename T, typename = void> struct HasComponentType : std::false_type {};
   template<typename T>
   struct HasComponentType<T, std::void_t<typename T::ComponentType>> : std::true_type {};
 
   /**
-   * @brief ×¢²á×é¼şÏµÍ³
+   * @brief æ³¨å†Œç»„ä»¶ç³»ç»Ÿ
    *
-   * @tparam T ÏµÍ³ÀàĞÍ
-   * @tparam U ×é¼şÀàĞÍ
-   * @tparam Args ¹¹Ôì²ÎÊıÀàĞÍ
-   * @param args ¹¹Ôì²ÎÊı
-   * @return ×¢²áµÄÏµÍ³Ö¸Õë
+   * @tparam T ç³»ç»Ÿç±»å‹
+   * @tparam U ç»„ä»¶ç±»å‹
+   * @tparam Args æ„é€ å‚æ•°ç±»å‹
+   * @param args æ„é€ å‚æ•°
+   * @return æ³¨å†Œçš„ç³»ç»ŸæŒ‡é’ˆ
    */
   template<typename T, typename... Args> T *RegisterSystem(Args &&...args)
   {
@@ -49,22 +49,22 @@ class ComponentSystemManager {
 
     const std::type_index type = typeid(T);
 
-    // 1. ¼ì²éÊÇ·ñÒÑ×¢²á£¬ÈôÒÑ×¢²áÔòÖ±½Ó·µ»ØÒÑÓĞµÄÏµÍ³
+    // 1. æ£€æŸ¥æ˜¯å¦å·²æ³¨å†Œï¼Œè‹¥å·²æ³¨å†Œåˆ™ç›´æ¥è¿”å›å·²æœ‰çš„ç³»ç»Ÿ
     if (m_SystemMap.find(type) != m_SystemMap.end()) {
       return static_cast<T *>(m_SystemMap[type]);
     }
 
-    // 2. ´´½¨ĞÂÏµÍ³
+    // 2. åˆ›å»ºæ–°ç³»ç»Ÿ
     auto system = std::make_unique<T>(std::forward<Args>(args)...);
     T *rawPtr = system.get();
 
-    // 3. ´æÈë¹ÜÀí½á¹¹
+    // 3. å­˜å…¥ç®¡ç†ç»“æ„
     m_SystemMap[type] = rawPtr;
     m_Systems.push_back(std::move(
-        system));  // ×¢Òâ´Ë´¦µÄsystemÎªÁÙÊ±±äÁ¿£¬Î´ÄÜÕıÈ·move»áÌáÇ°´¥·¢×é¼şÏµÍ³µÄÎö¹¹º¯Êı
+        system));  // æ³¨æ„æ­¤å¤„çš„systemä¸ºä¸´æ—¶å˜é‡ï¼Œæœªèƒ½æ­£ç¡®moveä¼šæå‰è§¦å‘ç»„ä»¶ç³»ç»Ÿçš„ææ„å‡½æ•°
     m_SystemsSorted = false;
 
-    // 4. ×¢²áÍ¨ÓÃ×é¼ş»Øµ÷
+    // 4. æ³¨å†Œé€šç”¨ç»„ä»¶å›è°ƒ
     if constexpr (HasComponentType<T>::value) {
       using U = typename T::ComponentType;
       static_assert(std::is_base_of<Component, U>::value,
@@ -75,26 +75,26 @@ class ComponentSystemManager {
   }
 
   /**
-   * @brief ×¢Ïú×é¼şÏµÍ³
-   * @tparam T ÏµÍ³ÀàĞÍ
-   * @tparam U ×é¼şÀàĞÍ
+   * @brief æ³¨é”€ç»„ä»¶ç³»ç»Ÿ
+   * @tparam T ç³»ç»Ÿç±»å‹
+   * @tparam U ç»„ä»¶ç±»å‹
    */
   template<typename T> void UnregisterSystem()
   {
     static_assert(std::is_base_of<ComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
     const std::type_index type = typeid(T);
-    // 1. ¼ì²éÊÇ·ñÒÑ×¢Ïú£¬ÈôÒÑ×¢ÏúÔòÖ±½Ó·µ»Ø
+    // 1. æ£€æŸ¥æ˜¯å¦å·²æ³¨é”€ï¼Œè‹¥å·²æ³¨é”€åˆ™ç›´æ¥è¿”å›
     auto mapIt = m_SystemMap.find(type);
     if (mapIt == m_SystemMap.end()) {
       return;
     }
 
-    // 2. ´Óunordered_mapÖĞÉ¾³ı
+    // 2. ä»unordered_mapä¸­åˆ é™¤
     ComponentSystem *systemPtr = mapIt->second;
     m_SystemMap.erase(mapIt);
 
-    // 3. ´ÓvectorÖĞÒÆ³ı¶ÔÓ¦µÄunique_ptr
+    // 3. ä»vectorä¸­ç§»é™¤å¯¹åº”çš„unique_ptr
     auto vecIt = std::find_if(m_Systems.begin(),
                               m_Systems.end(),
                               [systemPtr](const std::unique_ptr<ComponentSystem> &ptr) {
@@ -102,16 +102,16 @@ class ComponentSystemManager {
                               });
 
     if (vecIt != m_Systems.end()) {
-      m_Systems.erase(vecIt);  // Õâ»áÉ¾³ıunique_ptr£¬´Ó¶øÊÍ·ÅÄÚ´æ
+      m_Systems.erase(vecIt);  // è¿™ä¼šåˆ é™¤unique_ptrï¼Œä»è€Œé‡Šæ”¾å†…å­˜
     }
     else {
-      // ½öµ±mapºÍvectorË«ÖØ´æ´¢½á¹¹³öÏÖÎÊÌâÊ±´¥·¢£ºmapÖĞ
-      // ÄÜ²éÕÒµ½²¢ÇÒÕı³£É¾³ı£¬µ«vectorÎ´ÄÜ²éÕÒµ½¶ÔÓ¦µÄunique_ptr
+      // ä»…å½“mapå’ŒvectoråŒé‡å­˜å‚¨ç»“æ„å‡ºç°é—®é¢˜æ—¶è§¦å‘ï¼šmapä¸­
+      // èƒ½æŸ¥æ‰¾åˆ°å¹¶ä¸”æ­£å¸¸åˆ é™¤ï¼Œä½†vectoræœªèƒ½æŸ¥æ‰¾åˆ°å¯¹åº”çš„unique_ptr
       assert(false && "Inconsistent state: system found in map but not in vector");
       return;
     }
 
-    // 4. ×¢ÏúÍ¨ÓÃ×é¼ş»Øµ÷
+    // 4. æ³¨é”€é€šç”¨ç»„ä»¶å›è°ƒ
     if constexpr (HasComponentType<T>::value) {
       using U = typename T::ComponentType;
       static_assert(std::is_base_of<Component, U>::value,
@@ -121,10 +121,10 @@ class ComponentSystemManager {
   }
 
   /**
-   * @brief ¼ì²éÏµÍ³ÊÇ·ñ×¢²á
+   * @brief æ£€æŸ¥ç³»ç»Ÿæ˜¯å¦æ³¨å†Œ
    *
-   * @tparam T ÏµÍ³ÀàĞÍ
-   * @return ÏµÍ³Ö¸Õë£¬Î´ÕÒµ½·µ»Ønullptr
+   * @tparam T ç³»ç»Ÿç±»å‹
+   * @return ç³»ç»ŸæŒ‡é’ˆï¼Œæœªæ‰¾åˆ°è¿”å›nullptr
    */
   template<typename T> bool HasSystem() const
   {
@@ -137,14 +137,14 @@ class ComponentSystemManager {
   }
 
   /**
-   * @brief »ñÈ¡ÒÑ×¢²áµÄÏµÍ³
+   * @brief è·å–å·²æ³¨å†Œçš„ç³»ç»Ÿ
    *
-   * @tparam T ÏµÍ³ÀàĞÍ
-   * @return ÏµÍ³Ö¸Õë£¬Î´ÕÒµ½·µ»Ønullptr
+   * @tparam T ç³»ç»Ÿç±»å‹
+   * @return ç³»ç»ŸæŒ‡é’ˆï¼Œæœªæ‰¾åˆ°è¿”å›nullptr
    */
   template<typename T> T *GetSystem() const
   {
-    // »ñÈ¡Ç°Ê¹ÓÃassert¶ÏÑÔ¼ì²é£¬±ãÓÚÔÚdebug½×¶Î·¢ÏÖÎÊÌâ¡£
+    // è·å–å‰ä½¿ç”¨assertæ–­è¨€æ£€æŸ¥ï¼Œä¾¿äºåœ¨debugé˜¶æ®µå‘ç°é—®é¢˜ã€‚
     assert(HasSystem<T>());
     const std::type_index type = typeid(T);
     auto it = m_SystemMap.find(type);
@@ -155,38 +155,38 @@ class ComponentSystemManager {
   }
 
   /**
-   * @brief ³õÊ¼»¯ËùÓĞÏµÍ³
+   * @brief åˆå§‹åŒ–æ‰€æœ‰ç³»ç»Ÿ
    */
   void InitializeAll();
 
   /**
-   * @brief ¸üĞÂËùÓĞÏµÍ³
+   * @brief æ›´æ–°æ‰€æœ‰ç³»ç»Ÿ
    *
-   * @param deltaTime Ö¡¼ä¸ôÊ±¼ä
+   * @param deltaTime å¸§é—´éš”æ—¶é—´
    */
   void UpdateAll(float deltaTime);
 
   /**
-   * @brief Ïú»ÙËùÓĞÏµÍ³
+   * @brief é”€æ¯æ‰€æœ‰ç³»ç»Ÿ
    */
   void ShutdownAll();
 
  private:
   /**
-   * @brief ÏµÍ³Ö´ĞĞË³ĞòÅÅĞò
+   * @brief ç³»ç»Ÿæ‰§è¡Œé¡ºåºæ’åº
    *
-   * Í¨¹ı»ñÈ¡µ±Ç°ÏµÍ³ÒÀÀµµÄÆäËûÏµÍ³ÀàĞÍ£¬
-   * Ê¹ÓÃÍØÆËÅÅĞòËã·¨£¬È·±£±»ÒÀÀµµÄÏµÍ³ÅÅĞòÔÚÇ°¡£
-   * ÔÚÏµÍ³¸üĞÂ½×¶Î£¬ÓÅÏÈ¸üĞÂ±»ÒÀÀµµÄÏµÍ³£¬
-   * ºó¸üĞÂÒÀÀµÆäËûÏµÍ³µÄÏµÍ³
+   * é€šè¿‡è·å–å½“å‰ç³»ç»Ÿä¾èµ–çš„å…¶ä»–ç³»ç»Ÿç±»å‹ï¼Œ
+   * ä½¿ç”¨æ‹“æ‰‘æ’åºç®—æ³•ï¼Œç¡®ä¿è¢«ä¾èµ–çš„ç³»ç»Ÿæ’åºåœ¨å‰ã€‚
+   * åœ¨ç³»ç»Ÿæ›´æ–°é˜¶æ®µï¼Œä¼˜å…ˆæ›´æ–°è¢«ä¾èµ–çš„ç³»ç»Ÿï¼Œ
+   * åæ›´æ–°ä¾èµ–å…¶ä»–ç³»ç»Ÿçš„ç³»ç»Ÿ
    */
   void SortSystems();
 
  private:
   SceneRegistry &m_Registry;
 
-  std::vector<std::unique_ptr<ComponentSystem>> m_Systems;             // ÓÃÓÚ±éÀú
-  std::unordered_map<std::type_index, ComponentSystem *> m_SystemMap;  // ÓÃÓÚ²éÕÒ
+  std::vector<std::unique_ptr<ComponentSystem>> m_Systems;             // ç”¨äºéå†
+  std::unordered_map<std::type_index, ComponentSystem *> m_SystemMap;  // ç”¨äºæŸ¥æ‰¾
   bool m_SystemsSorted = false;
 };
 };  // namespace mite

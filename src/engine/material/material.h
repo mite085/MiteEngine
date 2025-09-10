@@ -5,32 +5,32 @@
 
 namespace mite {
 /**
- * @brief ²ÄÖÊÄ£°åµÄ³éÏó»ùÀà
- * @note Ö°Ôğ£º
- * 1. ¶¨Òå²ÄÖÊµÄÍ¨ÓÃ½Ó¿Ú£¨´´½¨ÊµÀı¡¢Ó¦ÓÃ²ÎÊı£©
- * 2. Ìá¹©»ù´¡ÊôĞÔ£¨Ãû³Æ¡¢ÀàĞÍ±êÊ¶µÈ£©
- * 3. ÅÉÉúÀàĞèÊµÏÖ¾ßÌå²ÄÖÊÀàĞÍµÄÂß¼­£¨ÈçPBR¡¢Phong£©
+ * @brief æè´¨æ¨¡æ¿çš„æŠ½è±¡åŸºç±»
+ * @note èŒè´£ï¼š
+ * 1. å®šä¹‰æè´¨çš„é€šç”¨æ¥å£ï¼ˆåˆ›å»ºå®ä¾‹ã€åº”ç”¨å‚æ•°ï¼‰
+ * 2. æä¾›åŸºç¡€å±æ€§ï¼ˆåç§°ã€ç±»å‹æ ‡è¯†ç­‰ï¼‰
+ * 3. æ´¾ç”Ÿç±»éœ€å®ç°å…·ä½“æè´¨ç±»å‹çš„é€»è¾‘ï¼ˆå¦‚PBRã€Phongï¼‰
  */
 class Material {
  public:
   virtual ~Material() = default;
 
-  // ---- ºËĞÄ½Ó¿Ú ----
+  // ---- æ ¸å¿ƒæ¥å£ ----
   /**
-   * @brief ´´½¨²ÄÖÊÊµÀı
-   * @return ¹²ÏíÖ¸Õë¹ÜÀíµÄMaterialInstance¶ÔÏó
-   * @note ÊµÀı»á¼Ì³ĞÄ£°åµÄÄ¬ÈÏ²ÎÊı£¬µ«ÔÊĞíÔËĞĞÊ±ĞŞ¸Ä
+   * @brief åˆ›å»ºæè´¨å®ä¾‹
+   * @return å…±äº«æŒ‡é’ˆç®¡ç†çš„MaterialInstanceå¯¹è±¡
+   * @note å®ä¾‹ä¼šç»§æ‰¿æ¨¡æ¿çš„é»˜è®¤å‚æ•°ï¼Œä½†å…è®¸è¿è¡Œæ—¶ä¿®æ”¹
    */
   virtual std::shared_ptr<MaterialInstance> CreateInstance() const = 0;
 
   /**
-   * @brief Ó¦ÓÃÄ¬ÈÏ²ÎÊıµ½²ÄÖÊÊµÀı
-   * @param instance Ä¿±ê²ÄÖÊÊµÀı
-   * @note ÓÃÓÚ³õÊ¼»¯»òÖØÖÃÊµÀı²ÎÊı
+   * @brief åº”ç”¨é»˜è®¤å‚æ•°åˆ°æè´¨å®ä¾‹
+   * @param instance ç›®æ ‡æè´¨å®ä¾‹
+   * @note ç”¨äºåˆå§‹åŒ–æˆ–é‡ç½®å®ä¾‹å‚æ•°
    */
   virtual void ApplyParameters(MaterialInstance &instance) const = 0;
 
-  // ---- Í¨ÓÃÊôĞÔ ----
+  // ---- é€šç”¨å±æ€§ ----
   void SetName(const std::string &name)
   {
     m_Name = name;
@@ -41,14 +41,14 @@ class Material {
   }
 
   /**
-   * @brief »ñÈ¡²ÄÖÊÀàĞÍ±êÊ¶£¨ÓÃÓÚÔËĞĞÊ±ÀàĞÍ¼ì²é£©
-   * @return ×Ö·û´®ÀàĞÍ±êÊ¶£¨Èç"PBR"¡¢"Phong"£©
+   * @brief è·å–æè´¨ç±»å‹æ ‡è¯†ï¼ˆç”¨äºè¿è¡Œæ—¶ç±»å‹æ£€æŸ¥ï¼‰
+   * @return å­—ç¬¦ä¸²ç±»å‹æ ‡è¯†ï¼ˆå¦‚"PBR"ã€"Phong"ï¼‰
    */
   virtual std::string GetMaterialType() const = 0;
 
   /**
-   * @brief »ñÈ¡²ÄÖÊÀàĞÍ±êÊ¶--¾²Ì¬Ä£°å·½·¨
-   * @return ×Ö·û´®ÀàĞÍ±êÊ¶
+   * @brief è·å–æè´¨ç±»å‹æ ‡è¯†--é™æ€æ¨¡æ¿æ–¹æ³•
+   * @return å­—ç¬¦ä¸²ç±»å‹æ ‡è¯†
    */
   template<typename T> static std::string GetMaterialTypeStatic()
   {
@@ -57,7 +57,7 @@ class Material {
   }
 
  protected:
-  std::string m_Name = "Unnamed_Material";  // ²ÄÖÊÃû³Æ£¨ÓÃÓÚµ÷ÊÔºÍUIÏÔÊ¾£©
+  std::string m_Name = "Unnamed_Material";  // æè´¨åç§°ï¼ˆç”¨äºè°ƒè¯•å’ŒUIæ˜¾ç¤ºï¼‰
 };
 };
 

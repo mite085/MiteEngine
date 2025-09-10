@@ -9,32 +9,32 @@ class InputContextStack {
  public:
   InputContextStack();
 
-  // ÍÆÈëĞÂÉÏÏÂÎÄ£¨Õ»¶¥ÉúĞ§£©
+  // æ¨å…¥æ–°ä¸Šä¸‹æ–‡ï¼ˆæ ˆé¡¶ç”Ÿæ•ˆï¼‰
   void Push(const std::shared_ptr<InputContext> &context);
 
-  // µ¯³öÕ»¶¥ÉÏÏÂÎÄ
+  // å¼¹å‡ºæ ˆé¡¶ä¸Šä¸‹æ–‡
   void Pop();
 
-  // »ñÈ¡µ±Ç°ÉúĞ§µÄÉÏÏÂÎÄ
+  // è·å–å½“å‰ç”Ÿæ•ˆçš„ä¸Šä¸‹æ–‡
   std::shared_ptr<InputContext> GetCurrent();
 
-  // ¼ì²éÊÇ·ñÔÚÌØ¶¨ÉÏÏÂÎÄÖĞ
+  // æ£€æŸ¥æ˜¯å¦åœ¨ç‰¹å®šä¸Šä¸‹æ–‡ä¸­
   bool IsInContext(const std::string &name);
 
-  // ´¦ÀíÊäÈëÊÂ¼ş
-  // ×¢Òâ£º
-  // ¸Ã¹¦ÄÜÔİÊ±±»ModularInputContextµÄSubscribeByCategory´óÀà¶©ÔÄ¹¦ÄÜÌæ´ú£¬
-  // Î´Õı³£ÆôÓÃ£¨Ã»ÓĞµØ·½µ÷ÓÃ¸Ãº¯Êı£©
+  // å¤„ç†è¾“å…¥äº‹ä»¶
+  // æ³¨æ„ï¼š
+  // è¯¥åŠŸèƒ½æš‚æ—¶è¢«ModularInputContextçš„SubscribeByCategoryå¤§ç±»è®¢é˜…åŠŸèƒ½æ›¿ä»£ï¼Œ
+  // æœªæ­£å¸¸å¯ç”¨ï¼ˆæ²¡æœ‰åœ°æ–¹è°ƒç”¨è¯¥å‡½æ•°ï¼‰
   // 
-  // InputContextStack¸ºÔğÁËËùÓĞµÄInputContext£¬ÊÂ¼şÀàĞÍÓëÊıÁ¿¿ÉÄÜ¼«¶à£¬
-  // Ê¹ÓÃµ¥Ò»µÄProcessEventÊÂ¼şÈë¿ÚÊÇ·ñºÏÊÊ£¬Ã¿´ÎÊÂ¼ş¶¼ËømutexÊÇ·ñ»áÓ°ÏìĞÔÄÜ
+  // InputContextStackè´Ÿè´£äº†æ‰€æœ‰çš„InputContextï¼Œäº‹ä»¶ç±»å‹ä¸æ•°é‡å¯èƒ½æå¤šï¼Œ
+  // ä½¿ç”¨å•ä¸€çš„ProcessEventäº‹ä»¶å…¥å£æ˜¯å¦åˆé€‚ï¼Œæ¯æ¬¡äº‹ä»¶éƒ½é”mutexæ˜¯å¦ä¼šå½±å“æ€§èƒ½
   // 
   bool ProcessEvent(Event &event);
 
-  // ²éÑ¯ÊÇ·ñ¿ÕÕ»
+  // æŸ¥è¯¢æ˜¯å¦ç©ºæ ˆ
   bool IsEmpty();
 
-  // Çå¿Õ
+  // æ¸…ç©º
   void Clear();
 
  private:

@@ -4,7 +4,7 @@ namespace mite {
 
 UIStyle::UIStyle(const std::string& name) : m_Name(name)
 {
-  // 构造函数保持简洁，不再包含默认样式配置
+  // 鏋勯�犲嚱鏁颁繚鎸佺畝娲侊紝涓嶅啀鍖呭惈榛樿鏍峰紡閰嶇疆
 }
 UIStyle::~UIStyle()
 {
@@ -21,7 +21,7 @@ bool UIStyle::HasProperty(const std::string &propertyName) const
   if (m_Properties.find(propertyName) != m_Properties.end()) {
     return true;
   }
-  // 检查父样式
+  // 妫�鏌ョ埗鏍峰紡
   if (m_Parent) {
     return m_Parent->HasProperty(propertyName);
   }

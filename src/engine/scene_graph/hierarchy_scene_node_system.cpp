@@ -65,7 +65,7 @@ bool HierarchySceneNodeSystem::OnHierarchyComponentAdded(
 bool HierarchySceneNodeSystem::OnHierarchyComponentRemoved(
     ComponentRemovedEvent<HierarchyComponent> &e)
 {
-  // 移除层级组件时，将节点设为根节点
+  // 绉婚櫎灞傜骇缁勪欢鏃讹紝灏嗚妭鐐硅涓烘牴鑺傜偣
   if (m_SceneGraph) {
     SceneNode *node = m_SceneGraph->GetNode(e.GetEntity());
     if (node) {

@@ -10,59 +10,59 @@
 
 namespace mite {
 /**
- * äÖÈ¾Æ÷³éÏó»ùÀà£¨¶àºó¶Ë¼æÈİ£©
- * Ö°Ôğ£º
- * 1. ¹ÜÀíäÖÈ¾¹ÜÏß×´Ì¬£¨Shader¡¢FBOµÈ£©
- * 2. Ğ­µ÷AssetManagerÓëIRenderDeviceµÄ½»»¥
- * 3. Ìá¹©¸ß²ãäÖÈ¾½Ó¿Ú£¨²»Ö±½Ó½Ó´¥OpenGL/Vulkan API£©
+ * æ¸²æŸ“å™¨æŠ½è±¡åŸºç±»ï¼ˆå¤šåç«¯å…¼å®¹ï¼‰
+ * èŒè´£ï¼š
+ * 1. ç®¡ç†æ¸²æŸ“ç®¡çº¿çŠ¶æ€ï¼ˆShaderã€FBOç­‰ï¼‰
+ * 2. åè°ƒAssetManagerä¸IRenderDeviceçš„äº¤äº’
+ * 3. æä¾›é«˜å±‚æ¸²æŸ“æ¥å£ï¼ˆä¸ç›´æ¥æ¥è§¦OpenGL/Vulkan APIï¼‰
  *
- * ĞŞ¸Äµã£º
- * 1. Ôö¼ÓFrameBufferÖ§³Ö
- * 2. ÎªViewportPanelÌá¹©½Ó¿Ú
+ * ä¿®æ”¹ç‚¹ï¼š
+ * 1. å¢åŠ FrameBufferæ”¯æŒ
+ * 2. ä¸ºViewportPanelæä¾›æ¥å£
  */
 class Renderer {
  public:
   explicit Renderer();
   virtual ~Renderer() = default;
 
-  // ---- ³õÊ¼»¯ ----
+  // ---- åˆå§‹åŒ– ----
   virtual void Initialize() = 0;
 
-  // ---- Ö¡¿ØÖÆ ----
+  // ---- å¸§æ§åˆ¶ ----
   virtual void BeginFrame() = 0;
   virtual void EndFrame() = 0;
 
   /**
-   * @brief äÖÈ¾³¡¾°µÄºËĞÄ½Ó¿Ú
-   * @param mainCamera Ö÷ÉãÏñ»ú
-   * @param renderQueue ´ÓSceneView»ñÈ¡µÄ¿ÉäÖÈ¾ÊµÌåÁĞ±í
+   * @brief æ¸²æŸ“åœºæ™¯çš„æ ¸å¿ƒæ¥å£
+   * @param mainCamera ä¸»æ‘„åƒæœº
+   * @param renderQueue ä»SceneViewè·å–çš„å¯æ¸²æŸ“å®ä½“åˆ—è¡¨
    * 
-   * RenderScene()½ö¸ºÔğÌá½»RenderCommand¶ÓÁĞ£¬
-   * EndFrame()¸ºÔğµ÷ÓÃRenderCommand::Flush();Ö´ĞĞËùÓĞÃüÁî
+   * RenderScene()ä»…è´Ÿè´£æäº¤RenderCommandé˜Ÿåˆ—ï¼Œ
+   * EndFrame()è´Ÿè´£è°ƒç”¨RenderCommand::Flush();æ‰§è¡Œæ‰€æœ‰å‘½ä»¤
    */
   virtual void RenderScene(const std::shared_ptr<Camera> mainCamera,
                            std::shared_ptr<RenderQueue> renderQueue) = 0;
 
-  // ---- ×´Ì¬ÉèÖÃ ----
+  // ---- çŠ¶æ€è®¾ç½® ----
   virtual void SetClearColor(const glm::vec4 &color) = 0;
   virtual void SetViewport(uint32_t width, uint32_t height) = 0;
 
-  // ---- ¹©UIÄ£¿éµ÷ÓÃµÄ½Ó¿Ú ----
+  // ---- ä¾›UIæ¨¡å—è°ƒç”¨çš„æ¥å£ ----
   /**
-   * @brief »ñÈ¡ÊÓ¿ÚFrameBuffer
-   * @return FrameBufferÖÇÄÜÖ¸Õë
+   * @brief è·å–è§†å£FrameBuffer
+   * @return FrameBufferæ™ºèƒ½æŒ‡é’ˆ
    */
   virtual std::shared_ptr<FrameBuffer> GetViewportFrameBuffer() const = 0;
 
   /**
-   * @brief »ñÈ¡ÊÓ¿ÚFrameBufferµÄÎÆÀíID£¨¼æÈİ¾É½Ó¿Ú£©
-   * @return ÎÆÀíIDµÄintptr_t±íÊ¾
+   * @brief è·å–è§†å£FrameBufferçš„çº¹ç†IDï¼ˆå…¼å®¹æ—§æ¥å£ï¼‰
+   * @return çº¹ç†IDçš„intptr_tè¡¨ç¤º
    */
   virtual intptr_t GetViewportFramebufferID() const = 0;
 
  protected:
-  glm::vec4 m_ClearColor = {0.1f, 0.1f, 0.1f, 1.0f};  // ÇåÆÁÑÕÉ«
-  glm::ivec2 m_ViewportSize = {1280, 720};            // ÊÓ¿Ú³ß´ç
+  glm::vec4 m_ClearColor = {0.1f, 0.1f, 0.1f, 1.0f};  // æ¸…å±é¢œè‰²
+  glm::ivec2 m_ViewportSize = {1280, 720};            // è§†å£å°ºå¯¸
 };
 }  // namespace mite
 

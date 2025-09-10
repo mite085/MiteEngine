@@ -6,7 +6,7 @@
 
 namespace mite {
 /**
- * @brief UI³õÊ¼»¯Íê³ÉÊÂ¼ş
+ * @brief UIåˆå§‹åŒ–å®Œæˆäº‹ä»¶
  */
 class UIInitializedEvent : public UIEvent {
  public:
@@ -25,7 +25,7 @@ class UIInitializedEvent : public UIEvent {
 };
 
 /**
- * @brief UI¹Ø±ÕÊÂ¼ş
+ * @brief UIå…³é—­äº‹ä»¶
  */
 class UIShutdownEvent : public UIEvent {
  public:
@@ -45,7 +45,7 @@ class UIShutdownEvent : public UIEvent {
 };
 
 /**
- * @brief ¿Ø¼ş´´½¨ÊÂ¼ş
+ * @brief æ§ä»¶åˆ›å»ºäº‹ä»¶
  */
 class WidgetCreatedEvent : public UIEvent {
  public:
@@ -82,7 +82,7 @@ class WidgetCreatedEvent : public UIEvent {
 };
 
 /**
- * @brief ¿Ø¼şÏú»ÙÊÂ¼ş
+ * @brief æ§ä»¶é”€æ¯äº‹ä»¶
  */
 class WidgetDestroyedEvent : public UIEvent {
  public:
@@ -119,7 +119,7 @@ class WidgetDestroyedEvent : public UIEvent {
 };
 
 /**
- * @brief Ãæ°å´ò¿ªÊÂ¼ş
+ * @brief é¢æ¿æ‰“å¼€äº‹ä»¶
  */
 class PanelOpenedEvent : public UIEvent {
  public:
@@ -156,7 +156,7 @@ class PanelOpenedEvent : public UIEvent {
 };
 
 /**
- * @brief Ãæ°å¹Ø±ÕÊÂ¼ş
+ * @brief é¢æ¿å…³é—­äº‹ä»¶
  */
 class PanelClosedEvent : public UIEvent {
  public:
@@ -193,7 +193,7 @@ class PanelClosedEvent : public UIEvent {
 };
 
 /**
- * @brief ²¼¾Ö±ä»¯ÊÂ¼ş
+ * @brief å¸ƒå±€å˜åŒ–äº‹ä»¶
  */
 class LayoutChangedEvent : public UIEvent {
  public:
@@ -237,7 +237,7 @@ class LayoutChangedEvent : public UIEvent {
 };
 
 /**
- * @brief ½¹µã»ñµÃÊÂ¼ş
+ * @brief ç„¦ç‚¹è·å¾—äº‹ä»¶
  */
 class FocusGainedEvent : public UIEvent {
  public:
@@ -274,7 +274,7 @@ class FocusGainedEvent : public UIEvent {
 };
 
 /**
- * @brief ½¹µãÊ§È¥ÊÂ¼ş
+ * @brief ç„¦ç‚¹å¤±å»äº‹ä»¶
  */
 class FocusLostEvent : public UIEvent {
  public:
@@ -311,8 +311,8 @@ class FocusLostEvent : public UIEvent {
 };
 
 /**
- * @brief ÑùÊ½±ä¸üÊÂ¼ş
- * µ±ÑùÊ½»òÑùÊ½ÊôĞÔ·¢Éú±ä»¯Ê±´¥·¢
+ * @brief æ ·å¼å˜æ›´äº‹ä»¶
+ * å½“æ ·å¼æˆ–æ ·å¼å±æ€§å‘ç”Ÿå˜åŒ–æ—¶è§¦å‘
  */
 struct StyleChangedEvent : public UIEvent {
  public:
@@ -331,11 +331,11 @@ struct StyleChangedEvent : public UIEvent {
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
-  std::shared_ptr<UIStyle> m_Style;  // ÑùÊ½Ãû³Æ
+  std::shared_ptr<UIStyle> m_Style;  // æ ·å¼åç§°
 };
 
 /**
- * @brief ÓïÑÔ±ä¸üÊÂ¼ş
+ * @brief è¯­è¨€å˜æ›´äº‹ä»¶
  */
 class LanguageChangedEvent : public UIEvent {
  public:
@@ -365,7 +365,7 @@ class LanguageChangedEvent : public UIEvent {
 };
 
 /**
- * @brief UI¿É¼ûĞÔ¸Ä±äÊÂ¼ş
+ * @brief UIå¯è§æ€§æ”¹å˜äº‹ä»¶
  */
 class UIVisibilityChangedEvent : public UIEvent {
  public:

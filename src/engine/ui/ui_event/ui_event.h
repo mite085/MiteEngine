@@ -8,14 +8,14 @@
 namespace mite {
 
 /**
- * @brief UI事件基类
+ * @brief UI浜嬩欢鍩虹被
  */
 class UIEvent : public Event {
  public:
   virtual ~UIEvent() = default;
 
   /**
-   * @brief 获取事件源控件ID
+   * @brief 鑾峰彇浜嬩欢婧愭帶浠禝D
    */
   virtual UUID GetSourceWidgetID() const
   {

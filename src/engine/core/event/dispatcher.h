@@ -9,32 +9,32 @@ namespace mite {
 template<typename T> using EventFn = std::function<void(T &)>;
 
 /**
- * @brief ÊÂ¼ş·Ö·¢Æ÷Àà
+ * @brief äº‹ä»¶åˆ†å‘å™¨ç±»
  *
- * ÓÃÓÚ½«ÊÂ¼ş·Ö·¢¸ø¶ÔÓ¦µÄ´¦Àíº¯Êı£¬È·±£ÀàĞÍ°²È«µÄÊÂ¼ş´¦Àí
+ * ç”¨äºå°†äº‹ä»¶åˆ†å‘ç»™å¯¹åº”çš„å¤„ç†å‡½æ•°ï¼Œç¡®ä¿ç±»å‹å®‰å…¨çš„äº‹ä»¶å¤„ç†
  */
 class EventDispatcher {
  public:
   /**
-   * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+   * @brief é»˜è®¤æ„é€ å‡½æ•°
    *
-   * ´´½¨Ò»¸öÎ´¹ØÁªÈÎºÎÊÂ¼şµÄ·Ö·¢Æ÷
+   * åˆ›å»ºä¸€ä¸ªæœªå…³è”ä»»ä½•äº‹ä»¶çš„åˆ†å‘å™¨
    */
   EventDispatcher() = default;
 
   /**
-   * @brief ¹¹Ôìº¯Êı£¨´øÊÂ¼şÒıÓÃ£©
-   * @param event Òª·Ö·¢µÄÊÂ¼şÒıÓÃ
+   * @brief æ„é€ å‡½æ•°ï¼ˆå¸¦äº‹ä»¶å¼•ç”¨ï¼‰
+   * @param event è¦åˆ†å‘çš„äº‹ä»¶å¼•ç”¨
    *
-   * ´´½¨Ò»¸öÓëÖ¸¶¨ÊÂ¼ş¹ØÁªµÄ·Ö·¢Æ÷
+   * åˆ›å»ºä¸€ä¸ªä¸æŒ‡å®šäº‹ä»¶å…³è”çš„åˆ†å‘å™¨
    */
   explicit EventDispatcher(Event &event) : m_Event(&event) {}
 
   /**
-   * @brief ÉèÖÃµ±Ç°Òª·Ö·¢µÄÊÂ¼ş
-   * @param event Òª·Ö·¢µÄÊÂ¼şÒıÓÃ
+   * @brief è®¾ç½®å½“å‰è¦åˆ†å‘çš„äº‹ä»¶
+   * @param event è¦åˆ†å‘çš„äº‹ä»¶å¼•ç”¨
    *
-   * ¿ÉÒÔÔÚ·Ö·¢Æ÷´´½¨ºóÖØĞÂÉèÖÃ¹ØÁªµÄÊÂ¼ş
+   * å¯ä»¥åœ¨åˆ†å‘å™¨åˆ›å»ºåé‡æ–°è®¾ç½®å…³è”çš„äº‹ä»¶
    */
   void SetEvent(Event &event)
   {
@@ -42,42 +42,42 @@ class EventDispatcher {
   }
 
   /**
-   * @brief ·Ö·¢ÊÂ¼şµ½Ö¸¶¨ÀàĞÍµÄ´¦Àíº¯Êı
-   * @tparam T ¾ßÌåµÄÊÂ¼şÀàĞÍ
-   * @param func ÊÂ¼ş´¦Àíº¯Êı£¬½ÓÊÜTÀàĞÍÊÂ¼ş
-   * @return bool ÊÇ·ñ³É¹¦·Ö·¢£¨ÊÂ¼şÀàĞÍÆ¥ÅäÊ±·µ»Øtrue£©
+   * @brief åˆ†å‘äº‹ä»¶åˆ°æŒ‡å®šç±»å‹çš„å¤„ç†å‡½æ•°
+   * @tparam T å…·ä½“çš„äº‹ä»¶ç±»å‹
+   * @param func äº‹ä»¶å¤„ç†å‡½æ•°ï¼Œæ¥å—Tç±»å‹äº‹ä»¶
+   * @return bool æ˜¯å¦æˆåŠŸåˆ†å‘ï¼ˆäº‹ä»¶ç±»å‹åŒ¹é…æ—¶è¿”å›trueï¼‰
    *
-   * 1. ¼ì²éµ±Ç°ÊÂ¼şÊÇ·ñÓëÄ£°åÀàĞÍTÆ¥Åä
-   * 2. Èç¹ûÆ¥Åä£¬½«ÊÂ¼ş×ª»»Îª¾ßÌåÀàĞÍ²¢µ÷ÓÃ´¦Àíº¯Êı
-   * 3. ½«´¦Àíº¯ÊıµÄ·µ»ØÖµÉèÖÃµ½ÊÂ¼şµÄhandled±êÖ¾£¨¸Ã²½ÖèÉ¾³ı£¬ÓÉfunc×ÔÖ÷¾ö¶¨ÊÇ·ñhandled£©
+   * 1. æ£€æŸ¥å½“å‰äº‹ä»¶æ˜¯å¦ä¸æ¨¡æ¿ç±»å‹TåŒ¹é…
+   * 2. å¦‚æœåŒ¹é…ï¼Œå°†äº‹ä»¶è½¬æ¢ä¸ºå…·ä½“ç±»å‹å¹¶è°ƒç”¨å¤„ç†å‡½æ•°
+   * 3. å°†å¤„ç†å‡½æ•°çš„è¿”å›å€¼è®¾ç½®åˆ°äº‹ä»¶çš„handledæ ‡å¿—ï¼ˆè¯¥æ­¥éª¤åˆ é™¤ï¼Œç”±funcè‡ªä¸»å†³å®šæ˜¯å¦handledï¼‰
    */
   template<typename T> bool Dispatch(EventFn<T> func)
   {
     static_assert(std::is_base_of<Event, T>::value, "T must inherit from Event");
 
-    // ¼ì²éÊÇ·ñÓĞÓĞĞ§ÊÂ¼şÇÒÊÂ¼şÀàĞÍÆ¥Åä
+    // æ£€æŸ¥æ˜¯å¦æœ‰æœ‰æ•ˆäº‹ä»¶ä¸”äº‹ä»¶ç±»å‹åŒ¹é…
     if (m_Event && typeid(*m_Event) == typeid(T)) {
-      // ½«»ùÀàEvent×ª»»Îª¾ßÌåÊÂ¼şÀàĞÍT
+      // å°†åŸºç±»Eventè½¬æ¢ä¸ºå…·ä½“äº‹ä»¶ç±»å‹T
       func(static_cast<T &>(*m_Event));
-      return true;  // ·Ö·¢³É¹¦
+      return true;  // åˆ†å‘æˆåŠŸ
     }
-    return false;  // ÊÂ¼şÀàĞÍ²»Æ¥Åä£¬·Ö·¢Ê§°Ü
+    return false;  // äº‹ä»¶ç±»å‹ä¸åŒ¹é…ï¼Œåˆ†å‘å¤±è´¥
   }
 
  private:
-  Event *m_Event = nullptr;  // Ö¸Ïòµ±Ç°Òª·Ö·¢µÄÊÂ¼ş¶ÔÏóµÄÖ¸Õë
+  Event *m_Event = nullptr;  // æŒ‡å‘å½“å‰è¦åˆ†å‘çš„äº‹ä»¶å¯¹è±¡çš„æŒ‡é’ˆ
 };
 
 }  // namespace mite
 
 /**
- * @brief ¸¨Öúºê£ºÓÃÓÚ EventDispatcher ·Ö·¢£¨±£³ÖÔ­ÓĞÀàĞÍ°²È«£©
+ * @brief è¾…åŠ©å®ï¼šç”¨äº EventDispatcher åˆ†å‘ï¼ˆä¿æŒåŸæœ‰ç±»å‹å®‰å…¨ï¼‰
  *
- * Ê¹ÓÃÊ¾Àı£¨¶©ÔÄÊÂ¼şÊ±£©£º
+ * ä½¿ç”¨ç¤ºä¾‹ï¼ˆè®¢é˜…äº‹ä»¶æ—¶ï¼‰ï¼š
  * auto handlerId = EventBus::Get().Subscribe<WindowResizeEvent>(
  *  BIND_DISPATCH_FN(OnWindowResized)
  * );
- * ´ËÊ±£¬BIND_DISPATCH_FN(OnWindowResized) µÈ¼ÛÓÚ [this](auto&& e) { OnWindowResized(e); }
+ * æ­¤æ—¶ï¼ŒBIND_DISPATCH_FN(OnWindowResized) ç­‰ä»·äº [this](auto&& e) { OnWindowResized(e); }
  */
 #define BIND_DISPATCH_FN(fn) [this](auto &&event) -> bool { return this->fn(event); }
 

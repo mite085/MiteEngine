@@ -5,120 +5,120 @@
 
 namespace mite {
 /**
- * @brief UIÑùÊ½¹ÜÀíÆ÷
- * ¸ºÔğ¹ÜÀíËùÓĞUIÑùÊ½£¬Ìá¹©ÑùÊ½µÄ×¢²á¡¢»ñÈ¡¡¢ÇĞ»»µÈ¹¦ÄÜ
- * ²ÉÓÃµ¥ÀıÄ£Ê½È·±£È«¾ÖÎ¨Ò»ĞÔ
+ * @brief UIæ ·å¼ç®¡ç†å™¨
+ * è´Ÿè´£ç®¡ç†æ‰€æœ‰UIæ ·å¼ï¼Œæä¾›æ ·å¼çš„æ³¨å†Œã€è·å–ã€åˆ‡æ¢ç­‰åŠŸèƒ½
+ * é‡‡ç”¨å•ä¾‹æ¨¡å¼ç¡®ä¿å…¨å±€å”¯ä¸€æ€§
  * 
- * Ê¹ÓÃÊ¾Àı£º
- * // ³õÊ¼»¯
+ * ä½¿ç”¨ç¤ºä¾‹ï¼š
+ * // åˆå§‹åŒ–
  * manager.Initialize();
  * 
- * // »ñÈ¡µ±Ç°ÑùÊ½
+ * // è·å–å½“å‰æ ·å¼
  * auto currentStyle = manager.GetCurrentStyle();
  * 
- * // ÇĞ»»Ö÷Ìâ
+ * // åˆ‡æ¢ä¸»é¢˜
  * manager.SetCurrentStyle("dark");
  * 
- * // ¼àÌıÑùÊ½±ä¸üÊÂ¼ş
+ * // ç›‘å¬æ ·å¼å˜æ›´äº‹ä»¶
  * SubscriptionGroup m_EventSubscriptions;
  * m_EventSubscriptions.Subscribe<StyleChangedEvent>((BIND_DISPATCH_FN(onStyleChanged));
  */
 class UIStyleManager {
  public:
   /**
-   * @brief Ë½ÓĞ¹¹Ôìº¯Êı
-   * È·±£Ö»ÄÜÍ¨¹ıGet()·½·¨»ñÈ¡ÊµÀı
+   * @brief ç§æœ‰æ„é€ å‡½æ•°
+   * ç¡®ä¿åªèƒ½é€šè¿‡Get()æ–¹æ³•è·å–å®ä¾‹
    */
   UIStyleManager();
 
-  // ½ûÓÃ¿½±´ºÍÒÆ¶¯¹¹Ôìº¯Êı
+  // ç¦ç”¨æ‹·è´å’Œç§»åŠ¨æ„é€ å‡½æ•°
   UIStyleManager(const UIStyleManager &) = delete;
   UIStyleManager(UIStyleManager &&) = delete;
   UIStyleManager &operator=(const UIStyleManager &) = delete;
   UIStyleManager &operator=(UIStyleManager &&) = delete;
 
   /**
-   * @brief ³õÊ¼»¯ÑùÊ½¹ÜÀíÆ÷
-   * ´´½¨Ä¬ÈÏÑùÊ½²¢ÉèÖÃÎªµ±Ç°ÑùÊ½
+   * @brief åˆå§‹åŒ–æ ·å¼ç®¡ç†å™¨
+   * åˆ›å»ºé»˜è®¤æ ·å¼å¹¶è®¾ç½®ä¸ºå½“å‰æ ·å¼
    */
   void Initialize();
 
   /**
-   * @brief ×¢²áÑùÊ½
-   * @param name ÑùÊ½Ãû³Æ
-   * @param style ÑùÊ½¶ÔÏó¹²ÏíÖ¸Õë
-   * @return bool ×¢²áÊÇ·ñ³É¹¦
+   * @brief æ³¨å†Œæ ·å¼
+   * @param name æ ·å¼åç§°
+   * @param style æ ·å¼å¯¹è±¡å…±äº«æŒ‡é’ˆ
+   * @return bool æ³¨å†Œæ˜¯å¦æˆåŠŸ
    */
   bool RegisterStyle(const std::string &name, std::shared_ptr<UIStyle> style);
 
   /**
-   * @brief »ñÈ¡Ö¸¶¨Ãû³ÆµÄÑùÊ½
-   * @param name ÑùÊ½Ãû³Æ
-   * @return std::shared_ptr<UIStyle> ÑùÊ½¶ÔÏó¹²ÏíÖ¸Õë£¬Èç¹û²»´æÔÚ·µ»Ønullptr
+   * @brief è·å–æŒ‡å®šåç§°çš„æ ·å¼
+   * @param name æ ·å¼åç§°
+   * @return std::shared_ptr<UIStyle> æ ·å¼å¯¹è±¡å…±äº«æŒ‡é’ˆï¼Œå¦‚æœä¸å­˜åœ¨è¿”å›nullptr
    */
   std::shared_ptr<UIStyle> GetStyle(const std::string &name) const;
 
   /**
-   * @brief »ñÈ¡µ±Ç°Ê¹ÓÃµÄÑùÊ½
-   * @return std::shared_ptr<UIStyle> µ±Ç°ÑùÊ½¶ÔÏó¹²ÏíÖ¸Õë
+   * @brief è·å–å½“å‰ä½¿ç”¨çš„æ ·å¼
+   * @return std::shared_ptr<UIStyle> å½“å‰æ ·å¼å¯¹è±¡å…±äº«æŒ‡é’ˆ
    */
   std::shared_ptr<UIStyle> GetCurrentStyle() const;
 
   /**
-   * @brief »ñÈ¡µ±Ç°ÑùÊ½Ãû³Æ
-   * @return std::string µ±Ç°ÑùÊ½Ãû³Æ
+   * @brief è·å–å½“å‰æ ·å¼åç§°
+   * @return std::string å½“å‰æ ·å¼åç§°
    */
   std::string GetCurrentStyleName() const;
 
   /**
-   * @brief ÉèÖÃµ±Ç°ÑùÊ½
-   * @param name ÑùÊ½Ãû³Æ
-   * @return bool ÉèÖÃÊÇ·ñ³É¹¦
+   * @brief è®¾ç½®å½“å‰æ ·å¼
+   * @param name æ ·å¼åç§°
+   * @return bool è®¾ç½®æ˜¯å¦æˆåŠŸ
    */
   bool SetCurrentStyle(const std::string &name);
 
   /**
-   * @brief ¼ì²éÑùÊ½ÊÇ·ñ´æÔÚ
-   * @param name ÑùÊ½Ãû³Æ
-   * @return bool ÑùÊ½ÊÇ·ñ´æÔÚ
+   * @brief æ£€æŸ¥æ ·å¼æ˜¯å¦å­˜åœ¨
+   * @param name æ ·å¼åç§°
+   * @return bool æ ·å¼æ˜¯å¦å­˜åœ¨
    */
   bool HasStyle(const std::string &name) const;
 
   /**
-   * @brief »ñÈ¡ËùÓĞÒÑ×¢²áµÄÑùÊ½Ãû³Æ
-   * @return std::vector<std::string> ÑùÊ½Ãû³ÆÁĞ±í
+   * @brief è·å–æ‰€æœ‰å·²æ³¨å†Œçš„æ ·å¼åç§°
+   * @return std::vector<std::string> æ ·å¼åç§°åˆ—è¡¨
    */
   std::vector<std::string> GetAllStyleNames() const;
 
   /**
-   * @brief »ñÈ¡ÑùÊ½ÊıÁ¿
-   * @return size_t ÑùÊ½ÊıÁ¿
+   * @brief è·å–æ ·å¼æ•°é‡
+   * @return size_t æ ·å¼æ•°é‡
    */
   size_t GetStyleCount() const;
 
   /**
-   * @brief ´´½¨°µÉ«Ö÷ÌâÑùÊ½
-   * @return std::shared_ptr<UIStyle> °µÉ«Ö÷ÌâÑùÊ½¶ÔÏó
+   * @brief åˆ›å»ºæš—è‰²ä¸»é¢˜æ ·å¼
+   * @return std::shared_ptr<UIStyle> æš—è‰²ä¸»é¢˜æ ·å¼å¯¹è±¡
    */
   static std::shared_ptr<UIStyle> CreateDarkTheme();
 
   /**
-   * @brief ´´½¨ÁÁÉ«Ö÷ÌâÑùÊ½
-   * @return std::shared_ptr<UIStyle> ÁÁÉ«Ö÷ÌâÑùÊ½¶ÔÏó
+   * @brief åˆ›å»ºäº®è‰²ä¸»é¢˜æ ·å¼
+   * @return std::shared_ptr<UIStyle> äº®è‰²ä¸»é¢˜æ ·å¼å¯¹è±¡
    */
   static std::shared_ptr<UIStyle> CreateLightTheme();
 
  private:
 
   /**
-   * @brief ´´½¨²¢×¢²áÄÚÖÃÑùÊ½
+   * @brief åˆ›å»ºå¹¶æ³¨å†Œå†…ç½®æ ·å¼
    */
   void CreateBuiltinStyles();
 
   Logger m_Logger;
 
-  std::unordered_map<std::string, std::shared_ptr<UIStyle>> m_Styles;  // ÑùÊ½´æ´¢Ó³Éä±í
-  std::string m_CurrentStyleName;                                      // µ±Ç°ÑùÊ½Ãû³Æ
+  std::unordered_map<std::string, std::shared_ptr<UIStyle>> m_Styles;  // æ ·å¼å­˜å‚¨æ˜ å°„è¡¨
+  std::string m_CurrentStyleName;                                      // å½“å‰æ ·å¼åç§°
 };
 
 

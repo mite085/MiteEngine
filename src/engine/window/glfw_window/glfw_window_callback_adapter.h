@@ -5,9 +5,9 @@
 
 namespace mite {
 /**
- * @brief GLFW»Øµ÷ÊÊÅäÆ÷ - ½«GLFWÔ­ÉúÊÂ¼ş×ª»»Îª×Ô¶¨ÒåÊÂ¼ş
+ * @brief GLFWå›è°ƒé€‚é…å™¨ - å°†GLFWåŸç”Ÿäº‹ä»¶è½¬æ¢ä¸ºè‡ªå®šä¹‰äº‹ä»¶
  *
- * ¸ºÔğËùÓĞGLFWÏà¹ØÊÂ¼ş£¨´°¿Ú¡¢ÊäÈëµÈ£©µÄ×ª»»ºÍ×ª·¢
+ * è´Ÿè´£æ‰€æœ‰GLFWç›¸å…³äº‹ä»¶ï¼ˆçª—å£ã€è¾“å…¥ç­‰ï¼‰çš„è½¬æ¢å’Œè½¬å‘
  */
 class GLFWWindowCallbackAdapter : public CallbackAdapter<GLFWwindow *> {
  public:
@@ -16,97 +16,97 @@ class GLFWWindowCallbackAdapter : public CallbackAdapter<GLFWwindow *> {
   ~GLFWWindowCallbackAdapter() override;
 
   /**
-   * @brief ×¢²áËùÓĞ»Øµ÷µ½Ô­Ê¼ÏµÍ³
-   * @param source Ô­Ê¼ÏµÍ³¶ÔÏóÖ¸Õë
+   * @brief æ³¨å†Œæ‰€æœ‰å›è°ƒåˆ°åŸå§‹ç³»ç»Ÿ
+   * @param source åŸå§‹ç³»ç»Ÿå¯¹è±¡æŒ‡é’ˆ
    */
   void RegisterCallbacks(GLFWwindow *window) override;
   /**
-   * @brief ×¢ÏúËùÓĞ»Øµ÷
+   * @brief æ³¨é”€æ‰€æœ‰å›è°ƒ
    */
   void UnregisterCallbacks() override;
 
   /**
-   * @brief ÔËĞĞ´íÎó»Øµ÷º¯Êı
-   * @param error ´íÎó±àºÅ
-   * @param description ´íÎóÃèÊö
+   * @brief è¿è¡Œé”™è¯¯å›è°ƒå‡½æ•°
+   * @param error é”™è¯¯ç¼–å·
+   * @param description é”™è¯¯æè¿°
    */
   static void ErrorCallback(int error, const char *description);
 
  private:
-  // ´°¿ÚÊÂ¼ş´¦Àíº¯Êı  ==============================================
+  // çª—å£äº‹ä»¶å¤„ç†å‡½æ•°  ==============================================
   /**
-   * @brief ´¦Àí´°¿Ú¹Ø±ÕÊÂ¼ş
+   * @brief å¤„ç†çª—å£å…³é—­äº‹ä»¶
    */
   static void HandleWindowClose(GLFWwindow *window);
 
   /**
-   * @brief ´¦Àí´°¿Ú´óĞ¡¸Ä±äÊÂ¼ş
-   * @param width ĞÂ¿í¶È£¨ÏñËØ£©
-   * @param height ĞÂ¸ß¶È£¨ÏñËØ£©
+   * @brief å¤„ç†çª—å£å¤§å°æ”¹å˜äº‹ä»¶
+   * @param width æ–°å®½åº¦ï¼ˆåƒç´ ï¼‰
+   * @param height æ–°é«˜åº¦ï¼ˆåƒç´ ï¼‰
    */
   static void HandleWindowResize(GLFWwindow *window, int width, int height);
 
   /**
-   * @brief ´¦Àí´°¿Ú½¹µã±ä»¯ÊÂ¼ş
-   * @param focused GLFW_TRUE±íÊ¾»ñµÃ½¹µã£¬GLFW_FALSE±íÊ¾Ê§È¥½¹µã
+   * @brief å¤„ç†çª—å£ç„¦ç‚¹å˜åŒ–äº‹ä»¶
+   * @param focused GLFW_TRUEè¡¨ç¤ºè·å¾—ç„¦ç‚¹ï¼ŒGLFW_FALSEè¡¨ç¤ºå¤±å»ç„¦ç‚¹
    */
   static void HandleWindowFocus(GLFWwindow *window, int focused);
 
   /**
-   * @brief ´¦Àí´°¿ÚÒÆ¶¯ÊÂ¼ş
-   * @param xpos ĞÂX×ø±ê£¨ÆÁÄ»×ø±ê£©
-   * @param ypos ĞÂY×ø±ê£¨ÆÁÄ»×ø±ê£©
+   * @brief å¤„ç†çª—å£ç§»åŠ¨äº‹ä»¶
+   * @param xpos æ–°Xåæ ‡ï¼ˆå±å¹•åæ ‡ï¼‰
+   * @param ypos æ–°Yåæ ‡ï¼ˆå±å¹•åæ ‡ï¼‰
    */
   static void HandleWindowMoved(GLFWwindow *window, int xpos, int ypos);
 
-  /* Êó±êÊÂ¼ş´¦Àíº¯Êı */
+  /* é¼ æ ‡äº‹ä»¶å¤„ç†å‡½æ•° */
 
   /**
-   * @brief ´¦ÀíÊó±êÒÆ¶¯ÊÂ¼ş
-   * @param xpos Êó±êX×ø±ê£¨´°¿Ú×ø±ê£©
-   * @param ypos Êó±êY×ø±ê£¨´°¿Ú×ø±ê£©
+   * @brief å¤„ç†é¼ æ ‡ç§»åŠ¨äº‹ä»¶
+   * @param xpos é¼ æ ‡Xåæ ‡ï¼ˆçª—å£åæ ‡ï¼‰
+   * @param ypos é¼ æ ‡Yåæ ‡ï¼ˆçª—å£åæ ‡ï¼‰
    */
   static void HandleMouseMove(GLFWwindow *window, double xpos, double ypos);
 
   /**
-   * @brief ´¦ÀíÊó±ê°´Å¥ÊÂ¼ş
-   * @param button °´Å¥±àºÅ£¨GLFW_MOUSE_BUTTON_*£©
-   * @param action ¶¯×÷£¨GLFW_PRESS/GLFW_RELEASE£©
-   * @param mods ĞŞÊÎ¼ü£¨GLFW_MOD_*×éºÏ£©
+   * @brief å¤„ç†é¼ æ ‡æŒ‰é’®äº‹ä»¶
+   * @param button æŒ‰é’®ç¼–å·ï¼ˆGLFW_MOUSE_BUTTON_*ï¼‰
+   * @param action åŠ¨ä½œï¼ˆGLFW_PRESS/GLFW_RELEASEï¼‰
+   * @param mods ä¿®é¥°é”®ï¼ˆGLFW_MOD_*ç»„åˆï¼‰
    */
   static void HandleMouseButton(GLFWwindow *window, int button, int action, int mods);
 
   /**
-   * @brief ´¦ÀíÊó±ê¹öÂÖÊÂ¼ş
+   * @brief å¤„ç†é¼ æ ‡æ»šè½®äº‹ä»¶
    */
   static void HandleMouseScroll(GLFWwindow *window, double xoffset, double yoffset);
 
-  /* ¼üÅÌÊÂ¼ş´¦Àíº¯Êı */
+  /* é”®ç›˜äº‹ä»¶å¤„ç†å‡½æ•° */
 
   /**
-   * @brief ´¦Àí¼üÅÌ°´¼üÊÂ¼ş
-   * @param key ¼üÎ»±àºÅ£¨GLFW_KEY_*£©
-   * @param scancode ÎïÀí¼üÎ»É¨ÃèÂë
-   * @param action ¶¯×÷£¨GLFW_PRESS/GLFW_RELEASE/GLFW_REPEAT£©
-   * @param mods ĞŞÊÎ¼ü£¨GLFW_MOD_*×éºÏ£©
+   * @brief å¤„ç†é”®ç›˜æŒ‰é”®äº‹ä»¶
+   * @param key é”®ä½ç¼–å·ï¼ˆGLFW_KEY_*ï¼‰
+   * @param scancode ç‰©ç†é”®ä½æ‰«æç 
+   * @param action åŠ¨ä½œï¼ˆGLFW_PRESS/GLFW_RELEASE/GLFW_REPEATï¼‰
+   * @param mods ä¿®é¥°é”®ï¼ˆGLFW_MOD_*ç»„åˆï¼‰
    */
   static void HandleKeyEvent(GLFWwindow *window, int key, int scancode, int action, int mods);
 
   /**
-   * @brief ´¦Àí×Ö·ûÊäÈëÊÂ¼ş£¨ÓÃÓÚÎÄ±¾ÊäÈë£©
-   * @param codepoint UnicodeÂëµã
+   * @brief å¤„ç†å­—ç¬¦è¾“å…¥äº‹ä»¶ï¼ˆç”¨äºæ–‡æœ¬è¾“å…¥ï¼‰
+   * @param codepoint Unicodeç ç‚¹
    */
   static void HandleCharInput(GLFWwindow *window, unsigned int codepoint);
 
   /**
-   * @brief °²È«»ñÈ¡ÊÊÅäÆ÷ÊµÀı
+   * @brief å®‰å…¨è·å–é€‚é…å™¨å®ä¾‹
    */
   static GLFWWindowCallbackAdapter *GetAdapter(GLFWwindow *window);
 
-  // GLFW´°¿Ú¾ä±ú
+  // GLFWçª—å£å¥æŸ„
   GLFWwindow *m_Window = nullptr;
 
-  static Logger s_Logger;  // ¾²Ì¬ÈÕÖ¾¶ÔÏó
+  static Logger s_Logger;  // é™æ€æ—¥å¿—å¯¹è±¡
 };
 };  // namespace mite
 

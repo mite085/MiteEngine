@@ -5,41 +5,41 @@
 
 namespace mite {
 /**
- * @brief ³¡¾°ÊÂ¼ş»Øµ÷ÊÊÅäÆ÷
+ * @brief åœºæ™¯äº‹ä»¶å›è°ƒé€‚é…å™¨
  */
 class SceneCoreEventCallbackAdapter {
  public:
   explicit SceneCoreEventCallbackAdapter();
   ~SceneCoreEventCallbackAdapter();
 
-  // ×é¼ş»Øµ÷º¯ÊıÀàĞÍ
+  // ç»„ä»¶å›è°ƒå‡½æ•°ç±»å‹
   using ComponentCallback = std::function<void(Entity, Component &)>;
   // using ComponentUpdateCallback = std::function<void(Entity, Component &, Component &)>;
 
   /**
-   * @brief ×¢²áËùÓĞ»Øµ÷
+   * @brief æ³¨å†Œæ‰€æœ‰å›è°ƒ
    */
   void RegisterCallbacks();
 
   /**
-   * @brief ×¢ÏúËùÓĞ»Øµ÷
+   * @brief æ³¨é”€æ‰€æœ‰å›è°ƒ
    */
   void UnregisterCallbacks();
 
   /**
-   * @brief ×¢²á×é¼şÏà¹Ø»Øµ÷
+   * @brief æ³¨å†Œç»„ä»¶ç›¸å…³å›è°ƒ
    */
   template<typename T> void RegisterComponentCallbacks()
   {
     static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
 
-    // ×é¼şÌí¼ÓÊÂ¼ş
+    // ç»„ä»¶æ·»åŠ äº‹ä»¶
     RegisterCallbackComponentConstruct<T>([this](Entity entity, T &component) {
       ComponentAddedEvent<T> event(entity, component);
       EventBus::Publish<ComponentAddedEvent<T>>(event);
     });
 
-    // ×é¼şÉ¾³ıÊÂ¼ş
+    // ç»„ä»¶åˆ é™¤äº‹ä»¶
     RegisterCallbackComponentDestroy<T>([this](Entity entity, T &component) {
       ComponentRemovedEvent<T> event(entity, component);
       EventBus::Publish<ComponentRemovedEvent<T>>(event);
@@ -47,7 +47,7 @@ class SceneCoreEventCallbackAdapter {
   }
 
   /**
-   * @brief ×¢Ïú×é¼ş»Øµ÷º¯Êı
+   * @brief æ³¨é”€ç»„ä»¶å›è°ƒå‡½æ•°
    */
   template<typename T> void UnregisterComponentCallbacks()
   {
@@ -58,13 +58,13 @@ class SceneCoreEventCallbackAdapter {
     m_DestroyCallbacks.erase(type);
   }
 
-  // ÒÔÏÂ·½·¨ÓÉSceneRegistryµ÷ÓÃÒÔ´¥·¢ÊÂ¼ş
+  // ä»¥ä¸‹æ–¹æ³•ç”±SceneRegistryè°ƒç”¨ä»¥è§¦å‘äº‹ä»¶
   template<typename T> void OnComponentConstructed(Entity entity, Component &component)
   {
     std::shared_lock lock(m_Mutex);
     const std::type_index type = typeid(component);
 
-    // ´¥·¢¹¹Ôì»Øµ÷
+    // è§¦å‘æ„é€ å›è°ƒ
     if (auto it = m_ConstructCallbacks.find(type); it != m_ConstructCallbacks.end()) {
       it->second(entity, component);
     }
@@ -76,7 +76,7 @@ class SceneCoreEventCallbackAdapter {
     std::shared_lock lock(m_Mutex);
     const std::type_index type = typeid(component);
 
-    // ´¥·¢Ïú»Ù»Øµ÷
+    // è§¦å‘é”€æ¯å›è°ƒ
     if (auto it = m_DestroyCallbacks.find(type); it != m_DestroyCallbacks.end()) {
       it->second(entity, component);
     }

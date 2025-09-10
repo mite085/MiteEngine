@@ -5,102 +5,102 @@
 #include "window_event.h"
 
 namespace mite {
-// WindowÀàĞÍ
+// Windowç±»å‹
 enum WindowType {
   GLFWWINDOW,
 };
 
-// WindowÅäÖÃ
-// ×¢Òâ£¬config½öÔÚ¹¹ÔìWindowÊ±Ê¹ÓÃÒ»´Î£¬
-// ²¢²»ÓÃÓÚÊµÊ±´æ´¢WindowµÄĞÅÏ¢¡£
+// Windowé…ç½®
+// æ³¨æ„ï¼Œconfigä»…åœ¨æ„é€ Windowæ—¶ä½¿ç”¨ä¸€æ¬¡ï¼Œ
+// å¹¶ä¸ç”¨äºå®æ—¶å­˜å‚¨Windowçš„ä¿¡æ¯ã€‚
 struct WindowConfig {
-  WindowType type = GLFWWINDOW;       // ÀàĞÍ
-  std::string title = "Mite Engine";  // ±êÌâ
-  uint32_t width = 1920;              // ¿í¶È
-  uint32_t height = 1080;             // ¸ß¶È
-  bool vsync = false;                 // ´¹Ö±Í¬²½
-  bool fullscreen = false;            // È«ÆÁÏÔÊ¾
-  bool resizable = true;              // ¿ÉÀ­Éì
+  WindowType type = GLFWWINDOW;       // ç±»å‹
+  std::string title = "Mite Engine";  // æ ‡é¢˜
+  uint32_t width = 1920;              // å®½åº¦
+  uint32_t height = 1080;             // é«˜åº¦
+  bool vsync = false;                 // å‚ç›´åŒæ­¥
+  bool fullscreen = false;            // å…¨å±æ˜¾ç¤º
+  bool resizable = true;              // å¯æ‹‰ä¼¸
 };
 
-// Window³éÏóÀà
+// WindowæŠ½è±¡ç±»
 class Window {
  public:
-  // ¹¹Ôìº¯ÊıÓëÎö¹¹º¯Êı
+  // æ„é€ å‡½æ•°ä¸ææ„å‡½æ•°
   virtual ~Window() = default;
 
   /**
-   * @brief ÓÃÓÚÖ÷Ñ­»·,¼ì²âWindow¹Ø±Õ±êÖ¾
+   * @brief ç”¨äºä¸»å¾ªç¯,æ£€æµ‹Windowå…³é—­æ ‡å¿—
    * @return 
    */
   virtual const bool WindowShouldClose() = 0;
 
-  // WindowÉúÃüÖÜÆÚ¹ÜÀí ==============================================
+  // Windowç”Ÿå‘½å‘¨æœŸç®¡ç† ==============================================
   /**
-   * @brief Ê¹ÓÃWindowÅäÖÃ³õÊ¼»¯Window¶ÔÏó
-   * @param config WindowÅäÖÃ
+   * @brief ä½¿ç”¨Windowé…ç½®åˆå§‹åŒ–Windowå¯¹è±¡
+   * @param config Windowé…ç½®
    */
   virtual void Initialize(const WindowConfig &config) = 0;
   /**
-   * @brief ¹Ø±Õ´°¿Ú
+   * @brief å…³é—­çª—å£
    */
   virtual void Shutdown() = 0;
 
-  // WindowÊôĞÔ ==============================================
+  // Windowå±æ€§ ==============================================
   /**
-   * @brief »ñÈ¡´°¿Ú¿í¶È
-   * @return ¿í¶È
+   * @brief è·å–çª—å£å®½åº¦
+   * @return å®½åº¦
    */
   virtual uint32_t GetWidth() const = 0;
   /**
-   * @brief »ñÈ¡´°¿Ú¸ß¶È
-   * @return ¸ß¶È
+   * @brief è·å–çª—å£é«˜åº¦
+   * @return é«˜åº¦
    */
   virtual uint32_t GetHeight() const = 0;
   /**
-   * @brief »ñÈ¡»î¶¯´°¿Ú
-   * @return ´°¿Ú¾ä±ú
+   * @brief è·å–æ´»åŠ¨çª—å£
+   * @return çª—å£å¥æŸ„
    */
   virtual void *GetNativeWindow() const = 0;
   /**
-   * @brief ¼ì²â´¹Ö±Í¬²½
+   * @brief æ£€æµ‹å‚ç›´åŒæ­¥
    * @return 
    */
   virtual bool IsVSync() const = 0;
 
-  // Window²Ù×÷ ==============================================
+  // Windowæ“ä½œ ==============================================
   /**
-   * @brief ¼ì²â´¹Ö±Í¬²½
+   * @brief æ£€æµ‹å‚ç›´åŒæ­¥
    */
   virtual void SetVSync(bool enabled) = 0;
   /**
-   * @brief ÉèÖÃ´°¿Ú±êÌâ.
+   * @brief è®¾ç½®çª—å£æ ‡é¢˜.
    */
   virtual void SetTitle(const std::string &title) = 0; 
   /**
-   * @brief µ÷Õû´°¿Ú´óĞ¡
+   * @brief è°ƒæ•´çª—å£å¤§å°
    */
   virtual void Resize(uint32_t width, uint32_t height) = 0;
   /**
-   * @brief ×î´ó»¯´°¿Ú
+   * @brief æœ€å¤§åŒ–çª—å£
    */
   virtual void Maximize() = 0;
   /**
-   * @brief ×îĞ¡»¯´°¿Ú
+   * @brief æœ€å°åŒ–çª—å£
    */
   virtual void Minimize() = 0;
   /**
-   * @brief »Ö¸´´°¿Ú
+   * @brief æ¢å¤çª—å£
    */
   virtual void Restore() = 0;
   /**
-   * @brief ¹Ø±Õ´°¿Ú
+   * @brief å…³é—­çª—å£
    */
   virtual void Close() = 0;
 
-  // WindowÊÂ¼ş´¦Àí ==============================================
+  // Windowäº‹ä»¶å¤„ç† ==============================================
   /**
-   * @brief ´¦ÀíËùÓĞ¹ÒÆğµÄÊÂ¼ş
+   * @brief å¤„ç†æ‰€æœ‰æŒ‚èµ·çš„äº‹ä»¶
    */
   virtual void PollEvents() = 0;
   /**
@@ -108,34 +108,34 @@ class Window {
    */
   virtual void WaitEvents() = 0;
 
-  // ¼üÅÌÊó±êÊäÈëÏà¹Ø
+  // é”®ç›˜é¼ æ ‡è¾“å…¥ç›¸å…³
   virtual bool IsKeyPressed(int keycode) const = 0;
   virtual bool IsMouseButtonPressed(int button) const = 0;
   virtual std::pair<double, double> GetMousePosition() const = 0;
 
-  // äÖÈ¾ÉÏÏÂÎÄ
+  // æ¸²æŸ“ä¸Šä¸‹æ–‡
   virtual void MakeContextCurrent() = 0;
   virtual void SwapBuffers() = 0;
 
-  // ´°¿ÚÊıÁ¿¼ÆÊı
+  // çª—å£æ•°é‡è®¡æ•°
   static const uint32_t WindowCount(WindowType &type);
 
-  // »Øµ÷ÉèÖÃ
-  // TODO: °´ÕÕÊÂ¼ş×ÜÏßÖØĞÂ¹æ»®EventCallbackFnÏà¹ØÊµÏÖ
+  // å›è°ƒè®¾ç½®
+  // TODO: æŒ‰ç…§äº‹ä»¶æ€»çº¿é‡æ–°è§„åˆ’EventCallbackFnç›¸å…³å®ç°
   using EventCallbackFn = std::function<void(void *)>;
   //virtual void SetEventCallback(const EventCallbackFn &callback) = 0;
 
-  // ¹¤³§·½·¨ - ´´½¨ÌØ¶¨ÀàĞÍµÄ´°¿Ú
+  // å·¥å‚æ–¹æ³• - åˆ›å»ºç‰¹å®šç±»å‹çš„çª—å£
   static std::unique_ptr<Window> Create(const WindowConfig &config = WindowConfig());
 
  protected:
   WindowConfig m_Config;
 
-  // ´°¿Ú×´Ì¬±êÖ¾
+  // çª—å£çŠ¶æ€æ ‡å¿—
   bool m_Initialized = false;
   bool m_ShouldClose = false;
 
-  // ÈÕÖ¾ÏµÍ³
+  // æ—¥å¿—ç³»ç»Ÿ
   Logger m_Logger;
 };
 

@@ -1,8 +1,8 @@
 #include "model_loader.h"
 #include "basic_event/asset_event.h"
 #include "meshoptimizer.h"
-#include <assimp/Importer.hpp>   // AssimpÄ£ĞÍµ¼ÈëÆ÷
-#include <assimp/postprocess.h>  // Assimpºó´¦Àí±êÖ¾
+#include <assimp/Importer.hpp>   // Assimpæ¨¡å‹å¯¼å…¥å™¨
+#include <assimp/postprocess.h>  // Assimpåå¤„ç†æ ‡å¿—
 
 namespace mite {
 std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
@@ -10,12 +10,12 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
                                                    bool generateLODs,
                                                    const std::vector<float> &lodLevels)
 {
-  // 1. ÅäÖÃAssimpµ¼ÈëÆ÷
+  // 1. é…ç½®Assimpå¯¼å…¥å™¨
   Assimp::Importer importer;
   unsigned int flags = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace |
                        aiProcess_JoinIdenticalVertices | (flipUVs ? aiProcess_FlipUVs : 0);
 
-  // 2. ¼ÓÔØÄ£ĞÍÎÄ¼ş
+  // 2. åŠ è½½æ¨¡å‹æ–‡ä»¶
   const aiScene *scene = importer.ReadFile(path, flags);
   if (!scene || scene == NULL || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
     LOG_ERROR("Assimp load failed: " + std::string(importer.GetErrorString()));
@@ -23,22 +23,22 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
   }
 
   std::shared_ptr<ModelAsset> model = std::make_shared<ModelAsset>();
-  model->id = UUIDGenerator::Generate(path.c_str());  // Éú³ÉÎ¨Ò»ID
+  model->id = UUIDGenerator::Generate(path.c_str());  // ç”Ÿæˆå”¯ä¸€ID
   model->metadata.path = path;
   model->metadata.materialPaths = ExtractMaterialPaths(scene);
 
-  // 3. ´¦ÀíËùÓĞ×ÓÍø¸ñ
+  // 3. å¤„ç†æ‰€æœ‰å­ç½‘æ ¼
   for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-    // ¹¹½¨MeshLodÁ´
+    // æ„å»ºMeshLodé“¾
     MeshDataLODChain subMeshLodChain{ProcessMesh(scene->mMeshes[i], scene), {}};
 
-    // 4. Éú³É¶à¼¶LOD
+    // 4. ç”Ÿæˆå¤šçº§LOD
     if (generateLODs) {
       for (size_t lodLevel = 0; lodLevel < lodLevels.size(); lodLevel++) {
-        // Ìø¹ıÔ­Ê¼LOD¼¶±ğ
+        // è·³è¿‡åŸå§‹LODçº§åˆ«
         if (lodLevels[lodLevel] < 1.0f) {
           MeshData simplifiedMesh = SimplifyMesh(subMeshLodChain.baseSection, lodLevels[lodLevel]);
-          // LOD¼¶±ğ´Ó1¿ªÊ¼
+          // LODçº§åˆ«ä»1å¼€å§‹
           simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel + 1);
           subMeshLodChain.lodSections.push_back(simplifiedMesh);
         }
@@ -47,14 +47,14 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
     model->subMeshData.push_back(subMeshLodChain);
   }
 
-  // 4. ¼ÆËãÄ£ĞÍ°üÎ§ºĞ
+  // 4. è®¡ç®—æ¨¡å‹åŒ…å›´ç›’
   CalculateBoundingBox(
       model->subMeshData, model->metadata.boundingBoxMin, model->metadata.boundingBoxMax);
 
-  // 5. ¹¹ÔìRendererDevice¿É½ÓÊÕµÄModelSourceDataÊı¾İ
+  // 5. æ„é€ RendererDeviceå¯æ¥æ”¶çš„ModelSourceDataæ•°æ®
   std::shared_ptr<ModelSourceData> sourceData = CreateModelSourceData(model);
 
-  // 6. ·¢²¼ÊÂ¼ş£¬Î¯ÍĞRendererDevice´´½¨GPU×ÊÔ´
+  // 6. å‘å¸ƒäº‹ä»¶ï¼Œå§”æ‰˜RendererDeviceåˆ›å»ºGPUèµ„æº
   ModelLoadEvent event(sourceData, model->handle);
   EventBus::Publish<ModelLoadEvent>(event);
   // model->handle = IRenderDevice::Current().CreateModel(rendererData);
@@ -67,7 +67,7 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
 {
   std::shared_ptr<ModelSourceData> sourceData = std::make_shared<ModelSourceData>();
 
-  // 1. ×¼±¸ºÏ²¢ËùÓĞ×ÓÍø¸ñÊı¾İ
+  // 1. å‡†å¤‡åˆå¹¶æ‰€æœ‰å­ç½‘æ ¼æ•°æ®
   sourceData->path = model->metadata.path;
   sourceData->modelBboxMin = model->metadata.boundingBoxMin;
   sourceData->modelBboxMax = model->metadata.boundingBoxMax;
@@ -75,53 +75,53 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
     sourceData->layout = model->subMeshData[0].baseSection.layout;
   }
 
-  // 2. ºÏ²¢¶¥µãºÍË÷ÒıÊı¾İ
+  // 2. åˆå¹¶é¡¶ç‚¹å’Œç´¢å¼•æ•°æ®
   size_t totalVertexBytes = 0;
   size_t totalIndices = 0;
 
-  // Ô¤¼ÆËã×Ü´óĞ¡
+  // é¢„è®¡ç®—æ€»å¤§å°
   for (const auto &lodChain : model->subMeshData) {
-    // »ù´¡ LOD
+    // åŸºç¡€ LOD
     totalVertexBytes += lodChain.baseSection.vertexData.size();
     totalIndices += lodChain.baseSection.indices.size();
 
-    // ÆäËû LOD ¼¶±ğ
+    // å…¶ä»– LOD çº§åˆ«
     for (const auto &lodSection : lodChain.lodSections) {
       totalVertexBytes += lodSection.vertexData.size();
       totalIndices += lodSection.indices.size();
     }
   }
 
-  // Ô¤·ÖÅä¿Õ¼ä
+  // é¢„åˆ†é…ç©ºé—´
   sourceData->mergedVertexData.reserve(totalVertexBytes);
   sourceData->mergedIndices.reserve(totalIndices);
 
-  // 3. Êµ¼ÊºÏ²¢Êı¾İ²¢¼ÇÂ¼MeshSection
+  // 3. å®é™…åˆå¹¶æ•°æ®å¹¶è®°å½•MeshSection
   uint32_t vertexOffset = 0;
   uint32_t indexOffset = 0;
 
-  // ¶¨ÒåLambdaº¯Êı£¬¼æ¹ËºÏ²¢¶¥µãµ½sourceData¡¢¸üĞÂOffset¡¢¹¹½¨MeshSectionÈı¸ö¹¦ÄÜ
+  // å®šä¹‰Lambdaå‡½æ•°ï¼Œå…¼é¡¾åˆå¹¶é¡¶ç‚¹åˆ°sourceDataã€æ›´æ–°Offsetã€æ„å»ºMeshSectionä¸‰ä¸ªåŠŸèƒ½
   auto MergeMeshDataToSourceData =
       [&sourceData, &vertexOffset, &indexOffset](const MeshData &meshData) -> MeshSection {
-    // Ìí¼Ó¶¥µãÊı¾İ
+    // æ·»åŠ é¡¶ç‚¹æ•°æ®
     sourceData->mergedVertexData.insert(sourceData->mergedVertexData.end(),
                                         meshData.vertexData.begin(),
                                         meshData.vertexData.end());
 
-    // Ìí¼ÓË÷ÒıÊı¾İ
+    // æ·»åŠ ç´¢å¼•æ•°æ®
     std::vector<uint32_t> adjustedIndices = meshData.indices;
     for (auto &index : adjustedIndices) {
-      // ĞŞÕıË÷ÒıÖµÆ«ÒÆ£¬½«µ¥¸ö MeshData ´æ´¢µÄÏà¶ÔÆ«ÒÆ£¨Ïà¶ÔÓÚ×Ô¼ºµÄ¶¥µãÊı¾İ£©£¬
-      // ĞŞÕıÎªºÏ²¢µ½ ModelSourceData ºóµÄ¾ø¶ÔÆ«ÒÆ£¨Ïà¶ÔÓÚºÏ²¢ºóµÄ¶¥µãÊı¾İ£©
+      // ä¿®æ­£ç´¢å¼•å€¼åç§»ï¼Œå°†å•ä¸ª MeshData å­˜å‚¨çš„ç›¸å¯¹åç§»ï¼ˆç›¸å¯¹äºè‡ªå·±çš„é¡¶ç‚¹æ•°æ®ï¼‰ï¼Œ
+      // ä¿®æ­£ä¸ºåˆå¹¶åˆ° ModelSourceData åçš„ç»å¯¹åç§»ï¼ˆç›¸å¯¹äºåˆå¹¶åçš„é¡¶ç‚¹æ•°æ®ï¼‰
       index += vertexOffset;
     }
     sourceData->mergedIndices.insert(
         sourceData->mergedIndices.end(), adjustedIndices.begin(), adjustedIndices.end());
 
-    // ´´½¨»ù´¡ MeshSection
+    // åˆ›å»ºåŸºç¡€ MeshSection
     MeshSection meshSection = MeshSection{
-        vertexOffset,  // ¶¥µãÆ«ÒÆ£¨ÒÔ¶¥µã¼ÆÊıÎªµ¥Î»£©
-        indexOffset,   // Ë÷ÒıÆ«ÒÆ£¨ÒÔË÷Òı¼ÆÊıÎªµ¥Î»£©
+        vertexOffset,  // é¡¶ç‚¹åç§»ï¼ˆä»¥é¡¶ç‚¹è®¡æ•°ä¸ºå•ä½ï¼‰
+        indexOffset,   // ç´¢å¼•åç§»ï¼ˆä»¥ç´¢å¼•è®¡æ•°ä¸ºå•ä½ï¼‰
         static_cast<uint32_t>(meshData.vertexData.size() / meshData.layout.stride),
         static_cast<uint32_t>(meshData.indices.size()),
         meshData.boundingBoxMin,
@@ -129,21 +129,21 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
         meshData.materialIndex,
         meshData.lodLevel};
 
-    // ¸üĞÂÆ«ÒÆÁ¿
+    // æ›´æ–°åç§»é‡
     vertexOffset += meshSection.vertexCount;
     indexOffset = static_cast<uint32_t>(sourceData->mergedIndices.size());
 
     return meshSection;
   };
 
-  // ±éÀúMeshData²¢Öğ¸ö´¦Àí£¬²¢¹¹½¨MeshSection
+  // éå†MeshDataå¹¶é€ä¸ªå¤„ç†ï¼Œå¹¶æ„å»ºMeshSection
   for (const MeshDataLODChain &meshLODChain : model->subMeshData) {
     MeshSectionLODChain sectionLODChain;
 
-    // ´¦Àí»ù´¡ LOD
+    // å¤„ç†åŸºç¡€ LOD
     sectionLODChain.baseSection = MergeMeshDataToSourceData(meshLODChain.baseSection);
 
-    // ´¦ÀíÆäËû LOD ¼¶±ğ
+    // å¤„ç†å…¶ä»– LOD çº§åˆ«
     for (const MeshData &lodMeshData : meshLODChain.lodSections) {
       sectionLODChain.lodSections.push_back(MergeMeshDataToSourceData(lodMeshData));
     }
@@ -158,34 +158,34 @@ MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)
   MeshData subMesh;
   subMesh.layout = GenerateVertexLayout(aiMesh);
 
-  // 1. ¼ÆËã¶¥µãÊı¾İ×Ü´óĞ¡
+  // 1. è®¡ç®—é¡¶ç‚¹æ•°æ®æ€»å¤§å°
   const uint32_t vertexSize = subMesh.layout.stride;
   const uint32_t vertexDataSize = aiMesh->mNumVertices * vertexSize;
   subMesh.vertexData.resize(vertexDataSize);
 
-  // 2. Ìî³ä¶¥µãÊı¾İ
+  // 2. å¡«å……é¡¶ç‚¹æ•°æ®
   uint8_t *vertexPtr = subMesh.vertexData.data();
   for (unsigned int i = 0; i < aiMesh->mNumVertices; i++) {
-    // Î»ÖÃ×ø±ê
+    // ä½ç½®åæ ‡
     glm::vec3 position(aiMesh->mVertices[i].x, aiMesh->mVertices[i].y, aiMesh->mVertices[i].z);
     memcpy(vertexPtr, &position, sizeof(glm::vec3));
     vertexPtr += sizeof(glm::vec3);
 
-    // ·¨Ïß
+    // æ³•çº¿
     if (aiMesh->HasNormals()) {
       glm::vec3 normal(aiMesh->mNormals[i].x, aiMesh->mNormals[i].y, aiMesh->mNormals[i].z);
       memcpy(vertexPtr, &normal, sizeof(glm::vec3));
       vertexPtr += sizeof(glm::vec3);
     }
 
-    // ÎÆÀí×ø±ê
+    // çº¹ç†åæ ‡
     if (aiMesh->mTextureCoords[0]) {
       glm::vec2 uv(aiMesh->mTextureCoords[0][i].x, aiMesh->mTextureCoords[0][i].y);
       memcpy(vertexPtr, &uv, sizeof(glm::vec2));
       vertexPtr += sizeof(glm::vec2);
     }
 
-    // ÇĞÏß/¸±ÇĞÏß
+    // åˆ‡çº¿/å‰¯åˆ‡çº¿
     if (aiMesh->HasTangentsAndBitangents()) {
       glm::vec3 tangent(aiMesh->mTangents[i].x, aiMesh->mTangents[i].y, aiMesh->mTangents[i].z);
       memcpy(vertexPtr, &tangent, sizeof(glm::vec3));
@@ -198,7 +198,7 @@ MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)
     }
   }
 
-  // 3. ´¦ÀíË÷ÒıÊı¾İ£¨Ïà¶ÔÓÚ×Ô¼ºµÄ¶¥µãÊı¾İµÄÏà¶ÔÆ«ÒÆ£©
+  // 3. å¤„ç†ç´¢å¼•æ•°æ®ï¼ˆç›¸å¯¹äºè‡ªå·±çš„é¡¶ç‚¹æ•°æ®çš„ç›¸å¯¹åç§»ï¼‰
   subMesh.indices.reserve(aiMesh->mNumFaces * 3);
   for (unsigned int i = 0; i < aiMesh->mNumFaces; i++) {
     const aiFace &face = aiMesh->mFaces[i];
@@ -207,10 +207,10 @@ MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)
     }
   }
 
-  // 4. ¹ØÁª²ÄÖÊË÷Òı
+  // 4. å…³è”æè´¨ç´¢å¼•
   subMesh.materialIndex = aiMesh->mMaterialIndex;
 
-  // 5. ¼ÆËã×ÓÍø¸ñ°üÎ§ºĞ
+  // 5. è®¡ç®—å­ç½‘æ ¼åŒ…å›´ç›’
   subMesh.boundingBoxMin = glm::vec3(FLT_MAX);
   subMesh.boundingBoxMax = glm::vec3(-FLT_MAX);
   const uint8_t *vPtr = subMesh.vertexData.data();
@@ -260,20 +260,20 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
   if (originalMesh.indices.empty() || targetRatio >= 1.0f) {
     return simplifiedMesh;
   }
-  // ×¼±¸meshoptimizerÊäÈëÊı¾İ
+  // å‡†å¤‡meshoptimizerè¾“å…¥æ•°æ®
   const size_t indexCount = originalMesh.indices.size();
   const size_t vertexCount = originalMesh.vertexData.size() / originalMesh.layout.stride;
 
   std::vector<unsigned int> indices = originalMesh.indices;
 
-  // Ê×ÏÈ½øĞĞ¶¥µã»º´æÓÅ»¯
+  // é¦–å…ˆè¿›è¡Œé¡¶ç‚¹ç¼“å­˜ä¼˜åŒ–
   meshopt_optimizeVertexCache(indices.data(), indices.data(), indexCount, vertexCount);
 
-  // ¼ÆËãÄ¿±êË÷ÒıÊıÁ¿
+  // è®¡ç®—ç›®æ ‡ç´¢å¼•æ•°é‡
   const size_t targetIndexCount = static_cast<size_t>(indexCount * targetRatio);
-  const float targetError = 1e-2f;  // ¿É½ÓÊÜµÄ¼ò»¯Îó²î
+  const float targetError = 1e-2f;  // å¯æ¥å—çš„ç®€åŒ–è¯¯å·®
 
-  // Ê¹ÓÃmeshoptimizer½øĞĞÍø¸ñ¼ò»¯
+  // ä½¿ç”¨meshoptimizerè¿›è¡Œç½‘æ ¼ç®€åŒ–
   std::vector<unsigned int> simplifiedIndices(indices.size());
   size_t simplifiedIndexCount = meshopt_simplify(
       simplifiedIndices.data(),
@@ -285,15 +285,15 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
       targetIndexCount,
       targetError);
 
-  // µ÷Õû¼ò»¯ºóµÄË÷ÒıÊı×é´óĞ¡
+  // è°ƒæ•´ç®€åŒ–åçš„ç´¢å¼•æ•°ç»„å¤§å°
   simplifiedIndices.resize(simplifiedIndexCount);
 
-  // ÖØĞÂÓ³Éä¶¥µãÊı¾İ
+  // é‡æ–°æ˜ å°„é¡¶ç‚¹æ•°æ®
   std::vector<unsigned int> remap(vertexCount);
   size_t uniqueVertexCount = meshopt_optimizeVertexFetchRemap(
       remap.data(), simplifiedIndices.data(), simplifiedIndexCount, vertexCount);
 
-  // Ó¦ÓÃ¶¥µãÖØÓ³Éä
+  // åº”ç”¨é¡¶ç‚¹é‡æ˜ å°„
   std::vector<uint8_t> simplifiedVertexData(uniqueVertexCount * originalMesh.layout.stride);
   meshopt_remapVertexBuffer(simplifiedVertexData.data(),
                             originalMesh.vertexData.data(),
@@ -301,15 +301,15 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
                             originalMesh.layout.stride,
                             remap.data());
 
-  // ÖØÓ³ÉäË÷Òı£¨Ïà¶ÔÓÚ×Ô¼ºµÄ¶¥µãÊı¾İµÄÏà¶ÔÆ«ÒÆ£©
+  // é‡æ˜ å°„ç´¢å¼•ï¼ˆç›¸å¯¹äºè‡ªå·±çš„é¡¶ç‚¹æ•°æ®çš„ç›¸å¯¹åç§»ï¼‰
   meshopt_remapIndexBuffer(
       simplifiedIndices.data(), simplifiedIndices.data(), simplifiedIndexCount, remap.data());
 
-  // ¸üĞÂ¼ò»¯ºóµÄÍø¸ñÊı¾İ
+  // æ›´æ–°ç®€åŒ–åçš„ç½‘æ ¼æ•°æ®
   simplifiedMesh.vertexData = std::move(simplifiedVertexData);
   simplifiedMesh.indices = std::move(simplifiedIndices);
 
-  // ÖØĞÂ¼ÆËã°üÎ§ºĞ
+  // é‡æ–°è®¡ç®—åŒ…å›´ç›’
   simplifiedMesh.boundingBoxMin = glm::vec3(FLT_MAX);
   simplifiedMesh.boundingBoxMax = glm::vec3(-FLT_MAX);
   const uint8_t *vPtr = simplifiedMesh.vertexData.data();
@@ -352,7 +352,7 @@ std::vector<std::string> ModelLoader::ExtractMaterialPaths(const aiScene *scene)
       materialPaths.emplace_back(path.C_Str());
     }
     else {
-      materialPaths.emplace_back("");  // ¿ÕÂ·¾¶±íÊ¾ÎŞ²ÄÖÊ
+      materialPaths.emplace_back("");  // ç©ºè·¯å¾„è¡¨ç¤ºæ— æè´¨
     }
   }
 

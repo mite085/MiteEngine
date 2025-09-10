@@ -6,58 +6,58 @@
 
 namespace mite {
 /**
- * @brief Ïà»ú¿É¼ûĞÔÑÚÂë¶¨Òå
- * ÓÃÓÚ·Ö²ãäÖÈ¾ºÍÑ¡ÔñĞÔ¿É¼ûĞÔ¿ØÖÆ
+ * @brief ç›¸æœºå¯è§æ€§æ©ç å®šä¹‰
+ * ç”¨äºåˆ†å±‚æ¸²æŸ“å’Œé€‰æ‹©æ€§å¯è§æ€§æ§åˆ¶
  */
 namespace CameraVisibilityMask {
-// »ù´¡¿É¼ûĞÔ²ã¼¶
-constexpr uint32_t DEFAULT = 0x00000001;      // Ä¬ÈÏ¿É¼û²ã
-constexpr uint32_t STATIC = 0x00000002;       // ¾²Ì¬ÎïÌå²ã
-constexpr uint32_t DYNAMIC = 0x00000004;      // ¶¯Ì¬ÎïÌå²ã
-constexpr uint32_t TRANSPARENT = 0x00000008;  // Í¸Ã÷ÎïÌå²ã
+// åŸºç¡€å¯è§æ€§å±‚çº§
+constexpr uint32_t DEFAULT = 0x00000001;      // é»˜è®¤å¯è§å±‚
+constexpr uint32_t STATIC = 0x00000002;       // é™æ€ç‰©ä½“å±‚
+constexpr uint32_t DYNAMIC = 0x00000004;      // åŠ¨æ€ç‰©ä½“å±‚
+constexpr uint32_t TRANSPARENT = 0x00000008;  // é€æ˜ç‰©ä½“å±‚
 
-// ÌØÊâÓÃÍ¾²ã¼¶
-constexpr uint32_t UI = 0x00000010;       // UIÔªËØ²ã
-constexpr uint32_t DEBUG = 0x00000020;    // µ÷ÊÔĞÅÏ¢²ã
-constexpr uint32_t EDITOR = 0x00000040;   // ±à¼­Æ÷×¨ÓÃ²ã
-constexpr uint32_t TERRAIN = 0x00000080;  // µØĞÎ²ã
+// ç‰¹æ®Šç”¨é€”å±‚çº§
+constexpr uint32_t UI = 0x00000010;       // UIå…ƒç´ å±‚
+constexpr uint32_t DEBUG = 0x00000020;    // è°ƒè¯•ä¿¡æ¯å±‚
+constexpr uint32_t EDITOR = 0x00000040;   // ç¼–è¾‘å™¨ä¸“ç”¨å±‚
+constexpr uint32_t TERRAIN = 0x00000080;  // åœ°å½¢å±‚
 
-// äÖÈ¾Í¨µÀ×¨ÓÃ
-constexpr uint32_t SHADOW_CAST = 0x00000100;  // Í¶ÉäÒõÓ°
-constexpr uint32_t REFLECTION = 0x00000200;   // ·´ÉääÖÈ¾
-constexpr uint32_t REFRACTION = 0x00000400;   // ÕÛÉääÖÈ¾
+// æ¸²æŸ“é€šé“ä¸“ç”¨
+constexpr uint32_t SHADOW_CAST = 0x00000100;  // æŠ•å°„é˜´å½±
+constexpr uint32_t REFLECTION = 0x00000200;   // åå°„æ¸²æŸ“
+constexpr uint32_t REFRACTION = 0x00000400;   // æŠ˜å°„æ¸²æŸ“
 
-// ÓÎÏ·Âß¼­²ã¼¶£¨´ıºóĞøÆôÓÃ£©
-//constexpr uint32_t PLAYER = 0x00001000;       // Íæ¼ÒÏà¹Ø
-//constexpr uint32_t ENEMY = 0x00002000;        // µĞÈËÏà¹Ø
-//constexpr uint32_t NPC = 0x00004000;          // NPCÏà¹Ø
-//constexpr uint32_t ENVIRONMENT = 0x00008000;  // »·¾³ÎïÌå
+// æ¸¸æˆé€»è¾‘å±‚çº§ï¼ˆå¾…åç»­å¯ç”¨ï¼‰
+//constexpr uint32_t PLAYER = 0x00001000;       // ç©å®¶ç›¸å…³
+//constexpr uint32_t ENEMY = 0x00002000;        // æ•Œäººç›¸å…³
+//constexpr uint32_t NPC = 0x00004000;          // NPCç›¸å…³
+//constexpr uint32_t ENVIRONMENT = 0x00008000;  // ç¯å¢ƒç‰©ä½“
 
-// ×éºÏÑÚÂë
-constexpr uint32_t ALL = 0xFFFFFFFF;   // ËùÓĞ²ã¼¶
-constexpr uint32_t NONE = 0x00000000;  // ÎŞ²ã¼¶
+// ç»„åˆæ©ç 
+constexpr uint32_t ALL = 0xFFFFFFFF;   // æ‰€æœ‰å±‚çº§
+constexpr uint32_t NONE = 0x00000000;  // æ— å±‚çº§
 
-// ³£ÓÃ×éºÏ
+// å¸¸ç”¨ç»„åˆ
 constexpr uint32_t RENDER_ALL = DEFAULT | STATIC | DYNAMIC | TRANSPARENT;
 constexpr uint32_t EDITOR_VIEW = EDITOR | DEBUG | UI;
 }  // namespace CameraVisibilityMask
 
 /**
- * @brief Ïà»úÀàĞÍÃ¶¾Ù
+ * @brief ç›¸æœºç±»å‹æšä¸¾
  */
 enum class CameraType {
-  PERSPECTIVE,   // Í¸ÊÓÏà»ú
-  ORTHOGRAPHIC,  // Õı½»Ïà»ú
+  PERSPECTIVE,   // é€è§†ç›¸æœº
+  ORTHOGRAPHIC,  // æ­£äº¤ç›¸æœº
 };
 
 /**
- * @brief Ïà»úÇå³ı±êÖ¾
+ * @brief ç›¸æœºæ¸…é™¤æ ‡å¿—
  */
 enum class CameraClearFlags {
-  SKYBOX,       // Çå³ıÎªÌì¿ÕºĞ
-  SOLID_COLOR,  // Çå³ıÎª´¿É«
-  DEPTH_ONLY,   // Ö»Çå³ıÉî¶È
-  DONT_CLEAR    // ²»Çå³ı
+  SKYBOX,       // æ¸…é™¤ä¸ºå¤©ç©ºç›’
+  SOLID_COLOR,  // æ¸…é™¤ä¸ºçº¯è‰²
+  DEPTH_ONLY,   // åªæ¸…é™¤æ·±åº¦
+  DONT_CLEAR    // ä¸æ¸…é™¤
 };
 }  // namespace mite
 

@@ -7,7 +7,7 @@ Logger GLFWWindowCallbackAdapter::s_Logger = nullptr;
 
 GLFWWindowCallbackAdapter::GLFWWindowCallbackAdapter() : CallbackAdapter()
 {  
-  // Ê×´Î´´½¨Ê±³õÊ¼»¯ÈÕÖ¾ÏµÍ³
+  // é¦–æ¬¡åˆ›å»ºæ—¶åˆå§‹åŒ–æ—¥å¿—ç³»ç»Ÿ
   if (!s_Logger) {
     s_Logger = mite::LoggerSystem::CreateModuleLogger("Mite GLFW Window Callback Adapter");
     s_Logger->trace("Created GLFW Window Callback Adapter");
@@ -16,25 +16,25 @@ GLFWWindowCallbackAdapter::GLFWWindowCallbackAdapter() : CallbackAdapter()
 
 GLFWWindowCallbackAdapter::~GLFWWindowCallbackAdapter()
 {
-  UnregisterCallbacks();  // È·±£×¢ÏúËùÓĞ»Øµ÷
+  UnregisterCallbacks();  // ç¡®ä¿æ³¨é”€æ‰€æœ‰å›è°ƒ
 }
 void GLFWWindowCallbackAdapter::RegisterCallbacks(GLFWwindow *window)
 {
   m_Window = window;
   glfwSetWindowUserPointer(window, this);
 
-  // ×¢²á´°¿ÚÊÂ¼ş»Øµ÷
+  // æ³¨å†Œçª—å£äº‹ä»¶å›è°ƒ
   glfwSetWindowCloseCallback(window, &HandleWindowClose);
   glfwSetWindowSizeCallback(window, &HandleWindowResize);
   glfwSetWindowFocusCallback(window, &HandleWindowFocus);
   glfwSetWindowPosCallback(window, &HandleWindowMoved);
 
-  // ×¢²áÊó±êÊÂ¼ş»Øµ÷
+  // æ³¨å†Œé¼ æ ‡äº‹ä»¶å›è°ƒ
   glfwSetCursorPosCallback(window, &HandleMouseMove);
   glfwSetMouseButtonCallback(window, &HandleMouseButton);
   glfwSetScrollCallback(window, &HandleMouseScroll);
 
-  // ×¢²á¼üÅÌÊÂ¼ş»Øµ÷
+  // æ³¨å†Œé”®ç›˜äº‹ä»¶å›è°ƒ
   glfwSetKeyCallback(window, &HandleKeyEvent);
   glfwSetCharCallback(window, &HandleCharInput);
 }
@@ -43,7 +43,7 @@ void GLFWWindowCallbackAdapter::UnregisterCallbacks()
   if (!m_Window)
     return;
 
-  // ÖØÖÃËùÓĞ»Øµ÷
+  // é‡ç½®æ‰€æœ‰å›è°ƒ
   glfwSetWindowCloseCallback(m_Window, nullptr);
   glfwSetWindowSizeCallback(m_Window, nullptr);
   glfwSetWindowFocusCallback(m_Window, nullptr);
@@ -72,7 +72,7 @@ void GLFWWindowCallbackAdapter::HandleWindowResize(GLFWwindow *window, int width
   auto *adapter = GetAdapter(window);
   WindowResizeEvent event(width, height);
   EventBus::Publish<WindowResizeEvent>(event);
-  // ±ÜÃâ¹ı¶àµÄ´°¿ÚResizeÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+  // é¿å…è¿‡å¤šçš„çª—å£Resizeæ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
   // s_Logger->debug("Framebuffer resized to {}x{}", width, height);
 }
 void GLFWWindowCallbackAdapter::HandleWindowFocus(GLFWwindow *window, int focused)
@@ -94,7 +94,7 @@ void GLFWWindowCallbackAdapter::HandleWindowMoved(GLFWwindow *window, int xpos, 
   auto *adapter = GetAdapter(window);
   WindowMovedEvent event(xpos, ypos);
   EventBus::Publish<WindowMovedEvent>(event);
-  // ±ÜÃâ¹ı¶àµÄ´°¿ÚÒÆ¶¯ÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+  // é¿å…è¿‡å¤šçš„çª—å£ç§»åŠ¨æ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
   //s_Logger->debug("Window moved to {}, {}", xpos, ypos);
 }
 void GLFWWindowCallbackAdapter::HandleMouseMove(GLFWwindow *window, double xpos, double ypos)
@@ -102,7 +102,7 @@ void GLFWWindowCallbackAdapter::HandleMouseMove(GLFWwindow *window, double xpos,
   auto *adapter = GetAdapter(window);
   MouseMoveEvent event(static_cast<float>(xpos), static_cast<float>(ypos));
   EventBus::Publish<MouseMoveEvent>(event);
-  // ±ÜÃâ¹ı¶àµÄÊó±êÒÆ¶¯ÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+  // é¿å…è¿‡å¤šçš„é¼ æ ‡ç§»åŠ¨æ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
   // s_Logger->debug("Mouse moved to ({}, {})", xpos, ypos);
 }
 void GLFWWindowCallbackAdapter::HandleMouseButton(GLFWwindow *window,
@@ -118,13 +118,13 @@ void GLFWWindowCallbackAdapter::HandleMouseButton(GLFWwindow *window,
     MouseButtonPressedEvent event(
         button, mods, static_cast<float>(xpos), static_cast<float>(ypos));
     EventBus::Publish<MouseButtonPressedEvent>(event);
-    // ±ÜÃâ¹ı¶àµÄMouse ButtonÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+    // é¿å…è¿‡å¤šçš„Mouse Buttonæ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
     // s_Logger->debug("Mouse button {} pressed", button);
   }
   else {
     MouseButtonReleasedEvent event(button, static_cast<float>(xpos), static_cast<float>(ypos));
     EventBus::Publish<MouseButtonReleasedEvent>(event);
-    // ±ÜÃâ¹ı¶àµÄMouse ButtonÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+    // é¿å…è¿‡å¤šçš„Mouse Buttonæ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
     // s_Logger->debug("Mouse button {} released", button);
   }
 }
@@ -135,7 +135,7 @@ void GLFWWindowCallbackAdapter::HandleMouseScroll(GLFWwindow *window,
   auto *adapter = GetAdapter(window);
   MouseScrollEvent event(xoffset, yoffset);
   EventBus::Publish<MouseScrollEvent>(event);
-  // ±ÜÃâ¹ı¶àµÄ¹öÂÖÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+  // é¿å…è¿‡å¤šçš„æ»šè½®æ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
   // s_Logger->debug("Mouse scrolled: xoffset={}, yoffset={}", xoffset, yoffset);
 }
 void GLFWWindowCallbackAdapter::HandleKeyEvent(
@@ -145,23 +145,23 @@ void GLFWWindowCallbackAdapter::HandleKeyEvent(
 
   switch (action) {
     case GLFW_PRESS: {
-      KeyPressedEvent event(key, mods, false);  // ·ÇÖØ¸´°´¼ü
+      KeyPressedEvent event(key, mods, false);  // éé‡å¤æŒ‰é”®
       EventBus::Publish<KeyPressedEvent>(event);
-      // ±ÜÃâ¹ı¶àµÄKey pressedÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+      // é¿å…è¿‡å¤šçš„Key pressedæ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
       // s_Logger->debug("Key pressed: {} (scancode: {}, mods: {})", key, scancode, mods);
       break;
     }
     case GLFW_RELEASE: {
       KeyReleasedEvent event(key);
       EventBus::Publish<KeyReleasedEvent>(event);
-      // ±ÜÃâ¹ı¶àµÄKey releasedÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+      // é¿å…è¿‡å¤šçš„Key releasedæ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
       // s_Logger->debug("Key released: {}", key);
       break;
     }
     case GLFW_REPEAT: {
-      KeyPressedEvent event(key, mods, true);  // ÖØ¸´°´¼ü
+      KeyPressedEvent event(key, mods, true);  // é‡å¤æŒ‰é”®
       EventBus::Publish<KeyPressedEvent>(event);
-      // ±ÜÃâ¹ı¶àµÄKey pressedÈÕÖ¾£¬ÔÚµ÷ÊÔÊ±Ñ¡ÔñĞÔÆôÓÃ
+      // é¿å…è¿‡å¤šçš„Key pressedæ—¥å¿—ï¼Œåœ¨è°ƒè¯•æ—¶é€‰æ‹©æ€§å¯ç”¨
       // s_Logger->debug("Key pressed repeatly: {} (scancode: {}, mods: {})", key, scancode, mods);
       break;
     }

@@ -7,7 +7,7 @@ IDComponent::IDComponent()
       m_UUID(UUIDGenerator::Generate()),
       m_UUIDString(UUIDGenerator::UUIDToString(m_UUID))
 {
-  // È·±£Éú³ÉµÄUUIDÓĞĞ§
+  // ç¡®ä¿ç”Ÿæˆçš„UUIDæœ‰æ•ˆ
   if (m_UUID.is_nil()) {
     throw std::runtime_error("Failed to generate valid UUID");
   }
@@ -15,26 +15,26 @@ IDComponent::IDComponent()
 
 IDComponent::IDComponent(const std::string &id) : ComponentTraits()
 {
-  // ³¢ÊÔ½âÎö×Ö·û´®
+  // å°è¯•è§£æå­—ç¬¦ä¸²
   auto optionalUUID = UUID::from_string(id);
   if (!optionalUUID) {
     throw std::runtime_error("Invalid UUID string: {" + id + "}");
   }
 
   m_UUID = *optionalUUID;
-  m_UUIDString = id;  // Ê¹ÓÃÔ­Ê¼×Ö·û´®±£³Ö¸ñÊ½Ò»ÖÂ
+  m_UUIDString = id;  // ä½¿ç”¨åŸå§‹å­—ç¬¦ä¸²ä¿æŒæ ¼å¼ä¸€è‡´
 
-  // ±ê×¼»¯×Ö·û´®±íÊ¾£¨Ğ¡Ğ´¡¢ÎŞ»¨À¨ºÅµÈ£©
+  // æ ‡å‡†åŒ–å­—ç¬¦ä¸²è¡¨ç¤ºï¼ˆå°å†™ã€æ— èŠ±æ‹¬å·ç­‰ï¼‰
   m_UUIDString = UUIDGenerator::UUIDToString(m_UUID);
 }
 
 bool IDComponent::IsValid(const std::string &id)
 {
-  // ¿Õ×Ö·û´®²»ËãÓĞĞ§UUID
+  // ç©ºå­—ç¬¦ä¸²ä¸ç®—æœ‰æ•ˆUUID
   if (id.empty())
     return false;
 
-  // ³¢ÊÔ½âÎö
+  // å°è¯•è§£æ
   auto optionalUUID = UUID::from_string(id);
   return optionalUUID.has_value() && !optionalUUID->is_nil();
 }

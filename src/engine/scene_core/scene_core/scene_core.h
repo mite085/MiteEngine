@@ -6,59 +6,59 @@
 
 namespace mite {
 /**
- * @brief ³¡¾°Àà - ¹ÜÀíËùÓĞÊµÌå¡¢×é¼şºÍÏµÍ³µÄÖ÷ÈİÆ÷
+ * @brief åœºæ™¯ç±» - ç®¡ç†æ‰€æœ‰å®ä½“ã€ç»„ä»¶å’Œç³»ç»Ÿçš„ä¸»å®¹å™¨
  *
- * Ìá¹©³¡¾°¹ÜÀíµÄ¸ß¼¶½Ó¿Ú£¬°üÀ¨£º
- * - ÊµÌå´´½¨/Ïú»Ù
- * - ×é¼şÏµÍ³¹ÜÀí
+ * æä¾›åœºæ™¯ç®¡ç†çš„é«˜çº§æ¥å£ï¼ŒåŒ…æ‹¬ï¼š
+ * - å®ä½“åˆ›å»º/é”€æ¯
+ * - ç»„ä»¶ç³»ç»Ÿç®¡ç†
  */
 class SceneCore{
  public:
   SceneCore(const std::string &name = "Untitled Scene");
   ~SceneCore();
 
-  // ½ûÖ¹¿½±´
+  // ç¦æ­¢æ‹·è´
   SceneCore(const SceneCore &) = delete;
   SceneCore &operator=(const SceneCore &) = delete;
 
-  // ------------------------ ³¡¾°¹ÜÀí ------------------------
+  // ------------------------ åœºæ™¯ç®¡ç† ------------------------
   /**
-   * @brief ¸üĞÂ³¡¾°ËùÓĞÏµÍ³
-   * @param timestep Ö¡Ê±¼ä(Ãë)
+   * @brief æ›´æ–°åœºæ™¯æ‰€æœ‰ç³»ç»Ÿ
+   * @param timestep å¸§æ—¶é—´(ç§’)
    */
   void OnUpdate(float timestep);
 
   /**
-   * @brief ³¡¾°ÊÓÍ¼äÖÈ¾Ç°µÄ×¼±¸
+   * @brief åœºæ™¯è§†å›¾æ¸²æŸ“å‰çš„å‡†å¤‡
    */
   void OnRenderPrepare();
 
   /**
-   * @brief Çå¿Õ³¡¾°ÖĞµÄËùÓĞÄÚÈİ£¬ÖØÖÃÎª³õÊ¼×´Ì¬
-   * @param keepSystems ÊÇ·ñ±£ÁôÒÑ×¢²áµÄÏµÍ³£¨½öµ±SceneÎö¹¹Ê±²»±£Áô£©
+   * @brief æ¸…ç©ºåœºæ™¯ä¸­çš„æ‰€æœ‰å†…å®¹ï¼Œé‡ç½®ä¸ºåˆå§‹çŠ¶æ€
+   * @param keepSystems æ˜¯å¦ä¿ç•™å·²æ³¨å†Œçš„ç³»ç»Ÿï¼ˆä»…å½“Sceneææ„æ—¶ä¸ä¿ç•™ï¼‰
    */
   void Clear(bool keepSystems = true);
 
-  // ------------------------ ÊµÌå¹ÜÀí ------------------------
+  // ------------------------ å®ä½“ç®¡ç† ------------------------
   /**
-   * @brief ´´½¨ĞÂÊµÌå
-   * @param name ÊµÌåÃû³Æ(¿ÉÑ¡)
-   * @return ĞÂ´´½¨µÄÊµÌå
+   * @brief åˆ›å»ºæ–°å®ä½“
+   * @param name å®ä½“åç§°(å¯é€‰)
+   * @return æ–°åˆ›å»ºçš„å®ä½“
    */
   Entity CreateEntity(const std::string &name = "");
 
   /**
-   * @brief Ïú»ÙÊµÌå
-   * @param entity ÒªÏú»ÙµÄÊµÌå
+   * @brief é”€æ¯å®ä½“
+   * @param entity è¦é”€æ¯çš„å®ä½“
    */
   void DestroyEntity(Entity entity);
 
   /**
-   * @brief ¼ì²éÊµÌåÊÇ·ñÓĞĞ§
+   * @brief æ£€æŸ¥å®ä½“æ˜¯å¦æœ‰æ•ˆ
    */
   bool IsValid(Entity entity) const;
 
-  // ------------------------ ³¡¾°×´Ì¬ ------------------------
+  // ------------------------ åœºæ™¯çŠ¶æ€ ------------------------
   const std::string &GetName() const
   {
     return m_Name;
@@ -69,71 +69,71 @@ class SceneCore{
   }
 
   /**
-   * @brief »ñÈ¡Ö÷Ïà»ú
+   * @brief è·å–ä¸»ç›¸æœº
    */
   std::shared_ptr<Camera> GetMainCamera() const;
   uint32_t GetMainCameraVisibilityMask() const;
   void SetMainCamera(Entity entity);
 
-  // ------------------------ Ä£¿é·ÃÎÊ ------------------------
+  // ------------------------ æ¨¡å—è®¿é—® ------------------------
   /**
-   * @brief »ñÈ¡Registry
+   * @brief è·å–Registry
    */
   SceneRegistry &GetRegistry()
   {
     return m_Registry;
   }
   /**
-   * @brief »ñÈ¡ComponentSystemManager
+   * @brief è·å–ComponentSystemManager
    */
   ComponentSystemManager &GetComponentSystemManager()
   {
     return m_SystemManager;
   }
   /**
-   * @brief ³õÊ¼»¯×é¼şÏµÍ³
+   * @brief åˆå§‹åŒ–ç»„ä»¶ç³»ç»Ÿ
    *
-   * ×¢Òâ£º
-   * ¸Ã²½ÖèÓ¦µ±ÔÚApplication::Init()µÄ×îºó½×¶Î½øĞĞ
-   * ÒòÎªÆäËû´æÔÚ×é¼şµÄÄ£¿é(°üÀ¨SceneGraph)£¬Ò²»á½«
-   * Æä¶¨ÒåµÄ×é¼ş×¢²áµ½ComponentSystemManagerÖĞ£¬
-   * Èô¹ıÔç³õÊ¼»¯»áµ¼ÖÂºó×¢²áµÄ×é¼şÎŞ·¨Õı³£ÆôÓÃ¡£
+   * æ³¨æ„ï¼š
+   * è¯¥æ­¥éª¤åº”å½“åœ¨Application::Init()çš„æœ€åé˜¶æ®µè¿›è¡Œ
+   * å› ä¸ºå…¶ä»–å­˜åœ¨ç»„ä»¶çš„æ¨¡å—(åŒ…æ‹¬SceneGraph)ï¼Œä¹Ÿä¼šå°†
+   * å…¶å®šä¹‰çš„ç»„ä»¶æ³¨å†Œåˆ°ComponentSystemManagerä¸­ï¼Œ
+   * è‹¥è¿‡æ—©åˆå§‹åŒ–ä¼šå¯¼è‡´åæ³¨å†Œçš„ç»„ä»¶æ— æ³•æ­£å¸¸å¯ç”¨ã€‚
    */
   void InitializeComponentSystems();
 
   /**
-   * @brief ¹Ø±Õ×é¼şÏµÍ³
+   * @brief å…³é—­ç»„ä»¶ç³»ç»Ÿ
    * 
-   * ×¢Òâ£º
-   * ¸Ã²½ÖèÓ¦µ±ÔÚApplication¹Ø±ÕÁ÷³ÌµÄ
-   * ×î¿ªÊ¼½×¶Îµ÷ÓÃ£¬Ô­ÒòÍ¬ÉÏ¡£
+   * æ³¨æ„ï¼š
+   * è¯¥æ­¥éª¤åº”å½“åœ¨Applicationå…³é—­æµç¨‹çš„
+   * æœ€å¼€å§‹é˜¶æ®µè°ƒç”¨ï¼ŒåŸå› åŒä¸Šã€‚
    */
   void ShutdownComponentSystems();
 
  private:
   /**
-   * @brief ×¢²á×é¼şÏµÍ³
+   * @brief æ³¨å†Œç»„ä»¶ç³»ç»Ÿ
    */
   void RegisterComponentSystems();
   /**
-   * @brief ×¢Ïú×é¼şÏµÍ³
+   * @brief æ³¨é”€ç»„ä»¶ç³»ç»Ÿ
    */
   void UnregisterComponentSystems();
 
  private:
-  // ³¡¾°Ãû³Æ
+  // åœºæ™¯åç§°
   std::string m_Name;         
 
-  // ÊµÌå×é¼ş×¢²á±í£º
-  // Ö±½ÓÖµ³ÖÓĞ,ÓëScene¹²ÏíÉúÃüÖÜÆÚ£¬
-  // ±ÜÃâunique_ptr²»±ØÒªµÄ¶Ñ·ÖÅä£¬
-  // ²¢·½±ãÆäËûÄ£¿éÖ±½ÓÒıÓÃm_Registry(¿ÉÄÜ´æÔÚ·çÏÕ£¿)
+  // å®ä½“ç»„ä»¶æ³¨å†Œè¡¨ï¼š
+  // ç›´æ¥å€¼æŒæœ‰,ä¸Sceneå…±äº«ç”Ÿå‘½å‘¨æœŸï¼Œ
+  // é¿å…unique_pträ¸å¿…è¦çš„å †åˆ†é…ï¼Œ
+  // å¹¶æ–¹ä¾¿å…¶ä»–æ¨¡å—ç›´æ¥å¼•ç”¨m_Registry(å¯èƒ½å­˜åœ¨é£é™©ï¼Ÿ)
   SceneRegistry m_Registry;  
 
-  // ÏµÍ³¹ÜÀí
+  // ç³»ç»Ÿç®¡ç†
   ComponentSystemManager m_SystemManager;
 
-  // ÊµÌåIDÉú³É¼ÆÊı
+  // å®ä½“IDç”Ÿæˆè®¡æ•°
   uint32_t m_EntityCounter = 0;
 };
 

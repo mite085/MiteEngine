@@ -6,11 +6,11 @@
 
 namespace mite {
 /**
- * OpenGLäÖÈ¾Éè±¸ÊµÏÖ£¨IRenderDevice½Ó¿Ú£©
- * Ö°Ôğ£º
- * 1. ´´½¨/Ïú»ÙOpenGLÎÆÀí¡¢»º³åÇøµÈGPU×ÊÔ´
- * 2. ¹ÜÀíOpenGL×´Ì¬ºÍ×ÊÔ´ÉúÃüÖÜÆÚ
- * 3. Ìá¹©ÓëAssetManagerµÄÇÅÁº
+ * OpenGLæ¸²æŸ“è®¾å¤‡å®ç°ï¼ˆIRenderDeviceæ¥å£ï¼‰
+ * èŒè´£ï¼š
+ * 1. åˆ›å»º/é”€æ¯OpenGLçº¹ç†ã€ç¼“å†²åŒºç­‰GPUèµ„æº
+ * 2. ç®¡ç†OpenGLçŠ¶æ€å’Œèµ„æºç”Ÿå‘½å‘¨æœŸ
+ * 3. æä¾›ä¸AssetManagerçš„æ¡¥æ¢
  */
 class OpenGLDevice : public IRenderDevice {
  public:
@@ -18,7 +18,7 @@ class OpenGLDevice : public IRenderDevice {
   ~OpenGLDevice() override;
   void CleanupResources();
 
-  // ---- ÎÆÀí²Ù×÷ ----
+  // ---- çº¹ç†æ“ä½œ ----
   TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) override;
   void DestroyTexture(TextureGPUHandle handle) override;
   void BindTexture(TextureGPUHandle handle, uint32_t slot) const override;
@@ -26,18 +26,18 @@ class OpenGLDevice : public IRenderDevice {
   void SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode) override;
   void GenerateMipmaps(TextureGPUHandle handle) override;
 
-  // ---- Ä£ĞÍ²Ù×÷ ----
+  // ---- æ¨¡å‹æ“ä½œ ----
   ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) override;
   // TODO: 
-  // Ó¦µ±ÔÚÄÄÀïµ÷ÓÃDestroyModel£¬ÒÔÊµÏÖModelµÄ
-  // ÉúÃüÖÜÆÚ½áÊøºó£¬GPU×ÊÔ´µÄ×Ô¶¯ÊÍ·Å£¿
+  // åº”å½“åœ¨å“ªé‡Œè°ƒç”¨DestroyModelï¼Œä»¥å®ç°Modelçš„
+  // ç”Ÿå‘½å‘¨æœŸç»“æŸåï¼ŒGPUèµ„æºçš„è‡ªåŠ¨é‡Šæ”¾ï¼Ÿ
   // 
-  // Ë¼Â·£º
-  // ¹¹½¨std::shared_ptr<Model>Ê±£¬Ìí¼ÓÉ¾³ıÆ÷£¬
-  // ÒıÓÃ¼ÆÊı¹éÁãÊ±×Ô¶¯µ÷ÓÃÉ¾³ıÆ÷´¥·¢DestroyModel
+  // æ€è·¯ï¼š
+  // æ„å»ºstd::shared_ptr<Model>æ—¶ï¼Œæ·»åŠ åˆ é™¤å™¨ï¼Œ
+  // å¼•ç”¨è®¡æ•°å½’é›¶æ—¶è‡ªåŠ¨è°ƒç”¨åˆ é™¤å™¨è§¦å‘DestroyModel
   // 
-  // ÄÑµã£º
-  // ĞèÒªÕûÌåÊáÀístd::shared_ptr<Model>µÄÉúÃüÖÜÆÚ
+  // éš¾ç‚¹ï¼š
+  // éœ€è¦æ•´ä½“æ¢³ç†std::shared_ptr<Model>çš„ç”Ÿå‘½å‘¨æœŸ
   void DestroyModel(ModelGPUHandle model) override;
   void BindMesh(std::shared_ptr<Mesh> mesh) const override;
   uint32_t SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
@@ -53,29 +53,29 @@ class OpenGLDevice : public IRenderDevice {
                    GLenum indexType = GL_UNSIGNED_INT,
                    bool enableDepthTest = true) const override;
 
-  // ---- FrameBuffer ²Ù×÷ ----
+  // ---- FrameBuffer æ“ä½œ ----
   FrameBuffer::Ptr CreateFrameBuffer(const FrameBufferSpec &spec) override;
   void DestroyFrameBuffer(FrameBuffer::Ptr framebuffer) override;
 
  private:
-  // ---- ÊÂ¼şÏìÓ¦º¯Êı ----
+  // ---- äº‹ä»¶å“åº”å‡½æ•° ----
   bool OnModelLoaded(ModelLoadEvent &e) override;
   bool OnTextureLoaded(TextureLoadEvent &e) override;
 
-  // ---- ¸¨Öú·½·¨ ----
+  // ---- è¾…åŠ©æ–¹æ³• ----
   GLenum TranslateTextureFormat(TextureFormat format);
   GLenum ConvertWrapMode(TextureWrapMode mode) const;
   void ConvertFilterMode(TextureFilterMode mode, GLenum &outMinFilter, GLenum &outMagFilter) const;
   void SetVertexAttributes(const VertexLayout &layout);
 
-  // ×ÊÔ´×·×Ù£¨ÓÃÓÚµ÷ÊÔºÍĞ¹Â©¼ì²â£©
-  std::unordered_set<GLuint> m_ActiveTextures;  // »î¶¯ÎÆÀí¼¯ºÏ
-  std::unordered_set<GLuint> m_ActiveVAOs;      // »î¶¯VAO¼¯ºÏ
-  std::unordered_set<GLuint> m_ActiveVBOs;      // »î¶¯VBO¼¯ºÏ
-  std::unordered_set<GLuint> m_ActiveEBOs;      // »î¶¯EBO¼¯ºÏ
-  std::unordered_set<GLuint> m_ActiveFBOs;      // »î¶¯FBO¼¯ºÏ
+  // èµ„æºè¿½è¸ªï¼ˆç”¨äºè°ƒè¯•å’Œæ³„æ¼æ£€æµ‹ï¼‰
+  std::unordered_set<GLuint> m_ActiveTextures;  // æ´»åŠ¨çº¹ç†é›†åˆ
+  std::unordered_set<GLuint> m_ActiveVAOs;      // æ´»åŠ¨VAOé›†åˆ
+  std::unordered_set<GLuint> m_ActiveVBOs;      // æ´»åŠ¨VBOé›†åˆ
+  std::unordered_set<GLuint> m_ActiveEBOs;      // æ´»åŠ¨EBOé›†åˆ
+  std::unordered_set<GLuint> m_ActiveFBOs;      // æ´»åŠ¨FBOé›†åˆ
 
-  // ÈÕÖ¾ÏµÍ³
+  // æ—¥å¿—ç³»ç»Ÿ
   Logger m_Logger;
 };
 };  // namespace mite

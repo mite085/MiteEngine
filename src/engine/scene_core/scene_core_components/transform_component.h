@@ -5,60 +5,60 @@
 #include "basic_data/transform.h"
 
 namespace mite {
-// Ç°ÏòÉùÃ÷
+// å‰å‘å£°æ˜
 class SceneRegistry;
 /**
- * @brief ±ä»»×é¼ş£¬¹ÜÀíÊµÌåµÄÎ»ÖÃ¡¢Ğı×ªºÍËõ·Å
+ * @brief å˜æ¢ç»„ä»¶ï¼Œç®¡ç†å®ä½“çš„ä½ç½®ã€æ—‹è½¬å’Œç¼©æ”¾
  *
- * ¹¦ÄÜÌØĞÔ£º
- * 1. Ö§³Ö¾Ö²¿¿Õ¼äºÍÊÀ½ç¿Õ¼ä±ä»»
- * 2. ¸ßĞ§µÄ¾ØÕó»º´æºÍ¸üĞÂ»úÖÆ
- * 3. Ìá¹©³£ÓÃµÄ±ä»»²Ù×÷½Ó¿Ú
- * 4. ÓëHierarchyComponentĞ­Í¬¹¤×÷´¦Àí²ã´Î½á¹¹
+ * åŠŸèƒ½ç‰¹æ€§ï¼š
+ * 1. æ”¯æŒå±€éƒ¨ç©ºé—´å’Œä¸–ç•Œç©ºé—´å˜æ¢
+ * 2. é«˜æ•ˆçš„çŸ©é˜µç¼“å­˜å’Œæ›´æ–°æœºåˆ¶
+ * 3. æä¾›å¸¸ç”¨çš„å˜æ¢æ“ä½œæ¥å£
+ * 4. ä¸HierarchyComponentååŒå·¥ä½œå¤„ç†å±‚æ¬¡ç»“æ„
  *
- * Éè¼Æ¿¼ÂÇ£º
- * - Ê¹ÓÃÓÒÊÖ×ø±êÏµ£¬YÖáÏòÉÏ
- * - Ğı×ªÊ¹ÓÃËÄÔªÊı´æ´¢±ÜÃâÍòÏò½ÚËø
- * - Ìá¹©Ôà±ê¼ÇÏµÍ³ÓÅ»¯¾ØÕó¼ÆËã
+ * è®¾è®¡è€ƒè™‘ï¼š
+ * - ä½¿ç”¨å³æ‰‹åæ ‡ç³»ï¼ŒYè½´å‘ä¸Š
+ * - æ—‹è½¬ä½¿ç”¨å››å…ƒæ•°å­˜å‚¨é¿å…ä¸‡å‘èŠ‚é”
+ * - æä¾›è„æ ‡è®°ç³»ç»Ÿä¼˜åŒ–çŸ©é˜µè®¡ç®—
  */
 class TransformComponent
     : public ComponentTraits<TransformComponent, Component::Family::Transform> {
  public:
   /**
-   * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+   * @brief é»˜è®¤æ„é€ å‡½æ•°
    */
   TransformComponent();
 
   /**
-   * @brief ´ø³õÊ¼ÖµµÄ¹¹Ôìº¯Êı
-   * @param position Î»ÖÃ×ø±ê
-   * @param rotation Ğı×ª
-   * @param scale Ëõ·Å
+   * @brief å¸¦åˆå§‹å€¼çš„æ„é€ å‡½æ•°
+   * @param position ä½ç½®åæ ‡
+   * @param rotation æ—‹è½¬
+   * @param scale ç¼©æ”¾
    */
   explicit TransformComponent(const glm::vec3 &position,
                               const glm::vec3 &rotation = glm::vec3(0.0f),
                               const glm::vec3 &scale = glm::vec3(1.0f));
 
   /**
-   * @brief Ê¹ÓÃ±ä»»¾ØÕóµÄ¹¹Ôìº¯Êı
-   * @param matrix ±ä»»¾ØÕó
+   * @brief ä½¿ç”¨å˜æ¢çŸ©é˜µçš„æ„é€ å‡½æ•°
+   * @param matrix å˜æ¢çŸ©é˜µ
    */
   explicit TransformComponent(const glm::mat4 &matrix);
 
   ~TransformComponent() override = default;
 
   /**
-   * @brief Õë¶Ôdirty¶ÔÏó½øĞĞ´¦Àí
+   * @brief é’ˆå¯¹dirtyå¯¹è±¡è¿›è¡Œå¤„ç†
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
-// ==================== Î»ÖÃ²Ù×÷ ====================
+// ==================== ä½ç½®æ“ä½œ ====================
   const glm::vec3 &GetLocalPosition() const;
   void SetLocalPosition(const glm::vec3 &position);
   glm::vec3 GetWorldPosition(SceneRegistry &reg) const;
   void SetWorldPosition(SceneRegistry &reg, const glm::vec3 &position);
 
-  // ==================== Ğı×ª²Ù×÷£¨Å·À­½Çdeg¡¢ËÄÔªÊı£© ====================
+  // ==================== æ—‹è½¬æ“ä½œï¼ˆæ¬§æ‹‰è§’degã€å››å…ƒæ•°ï¼‰ ====================
   glm::vec3 GetLocalRotation() const;
   glm::quat GetLocalRotationQuat() const;
   void SetLocalRotation(const glm::vec3 &rotation);
@@ -76,83 +76,83 @@ class TransformComponent
               const glm::vec3 &target,
               const glm::vec3 &up = glm::vec3(0.0f, 1.0f, 0.0f));
 
-  // ==================== Ëõ·Å²Ù×÷ ====================
+  // ==================== ç¼©æ”¾æ“ä½œ ====================
   const glm::vec3 &GetLocalScale() const;
   void SetLocalScale(const glm::vec3 &scale);
   void SetLocalScale(float scale);
   glm::vec3 GetWorldScale(SceneRegistry &reg) const;
 
-   // ==================== ¾ØÕó²Ù×÷ ====================
+   // ==================== çŸ©é˜µæ“ä½œ ====================
   glm::mat4 GetLocalMatrix() const;
   glm::mat4 GetWorldMatrix(SceneRegistry &reg) const;
   void SetLocalMatrix(const glm::mat4 &matrix);
   void SetWorldMatrix(SceneRegistry &reg, const glm::mat4 &matrix);
 
-  // ·½ÏòÏòÁ¿ ==============================================
-  glm::vec3 Forward() const;  // ÕıZÖá·½Ïò
-  glm::vec3 Up() const;       // ÕıYÖá·½Ïò
-  glm::vec3 Right() const;    // ÕıXÖá·½Ïò
+  // æ–¹å‘å‘é‡ ==============================================
+  glm::vec3 Forward() const;  // æ­£Zè½´æ–¹å‘
+  glm::vec3 Up() const;       // æ­£Yè½´æ–¹å‘
+  glm::vec3 Right() const;    // æ­£Xè½´æ–¹å‘
 
-  // ==================== ×é¼ş½Ó¿Ú ====================
+  // ==================== ç»„ä»¶æ¥å£ ====================
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
   /**
-   * @brief »ñÈ¡µ×²ãTransform¶ÔÏó£¨Ö»¶Á£©
+   * @brief è·å–åº•å±‚Transformå¯¹è±¡ï¼ˆåªè¯»ï¼‰
    */
   const Transform &GetTransform() const;
   /**
-   * @brief »ñÈ¡µ×²ãTransform¶ÔÏó£¨¿ÉĞŞ¸Ä£©
-   * @note ĞŞ¸ÄºóĞèÒªÊÖ¶¯µ÷ÓÃMarkDirty()
+   * @brief è·å–åº•å±‚Transformå¯¹è±¡ï¼ˆå¯ä¿®æ”¹ï¼‰
+   * @note ä¿®æ”¹åéœ€è¦æ‰‹åŠ¨è°ƒç”¨MarkDirty()
    */
   Transform &GetTransform();
   /**
-   * @brief ±ê¼Ç²ã¼¶Ôà±ê¼Ç£¨µ±¸¸½Úµã±ä»»¸Ä±äÊ±µ÷ÓÃ£©
+   * @brief æ ‡è®°å±‚çº§è„æ ‡è®°ï¼ˆå½“çˆ¶èŠ‚ç‚¹å˜æ¢æ”¹å˜æ—¶è°ƒç”¨ï¼‰
    */
   void MarkHierarchyDirty();
   /**
-   * @brief ¼ì²éÊÇ·ñĞèÒª²ã¼¶¸üĞÂ
+   * @brief æ£€æŸ¥æ˜¯å¦éœ€è¦å±‚çº§æ›´æ–°
    */
   bool IsHierarchyDirty() const;
 
  private:
   /**
-   * @brief ¼ÆËãÊÀ½ç±ä»»¾ØÕó(µİ¹é)
+   * @brief è®¡ç®—ä¸–ç•Œå˜æ¢çŸ©é˜µ(é€’å½’)
    */
   void UpdateWorldMatrix(SceneRegistry &reg) const;
   /**
-   * @brief ´ÓËÄÔªÊı×ª»»ÎªÅ·À­½Ç£¨¶È£©
+   * @brief ä»å››å…ƒæ•°è½¬æ¢ä¸ºæ¬§æ‹‰è§’ï¼ˆåº¦ï¼‰
    */
   static glm::vec3 QuatToEulerDegrees(const glm::quat &quat);
   /**
-   * @brief ´ÓÅ·À­½Ç£¨¶È£©×ª»»ÎªËÄÔªÊı
+   * @brief ä»æ¬§æ‹‰è§’ï¼ˆåº¦ï¼‰è½¬æ¢ä¸ºå››å…ƒæ•°
    */
   static glm::quat EulerDegreesToQuat(const glm::vec3 &euler);
 
  private:
-  Transform m_Transform;                              // »ù´¡±ä»»¶ÔÏó
-  mutable glm::mat4 m_WorldMatrix = glm::mat4(1.0f);  // ÊÀ½ç±ä»»¾ØÕó»º´æ
-  mutable bool m_HierarchyDirty = true;               // ²ã¼¶Ôà±ê¼Ç£¨¸¸½Úµã±ä»»¸Ä±ä£©
+  Transform m_Transform;                              // åŸºç¡€å˜æ¢å¯¹è±¡
+  mutable glm::mat4 m_WorldMatrix = glm::mat4(1.0f);  // ä¸–ç•Œå˜æ¢çŸ©é˜µç¼“å­˜
+  mutable bool m_HierarchyDirty = true;               // å±‚çº§è„æ ‡è®°ï¼ˆçˆ¶èŠ‚ç‚¹å˜æ¢æ”¹å˜ï¼‰
 };
 
-// ==================== ×é¼şÏµÍ³ ====================
+// ==================== ç»„ä»¶ç³»ç»Ÿ ====================
 class TransformComponentSystem : public DirtyComponentSystem<TransformComponent> {
   DECLARE_COMPONENT_SYSTEM(TransformComponentSystem)
  
   std::vector<std::type_index> GetSystemDependencies() const override;
 
  private:
-  // ×é¼şÌí¼ÓÓëÒÆ³ıÊÂ¼şÏìÓ¦º¯ÊıÖØĞ´£º
-  // ºóĞøSceneGraphÄ£¿éµÄTransformSceneNodeSystem¸ºÔğ´¦ÀíEntityºÍSceneNodeµÄTransformÍ¬²½£¬²»Ó¦µ±×è¶ÏÊÂ¼ş´«²¥
+  // ç»„ä»¶æ·»åŠ ä¸ç§»é™¤äº‹ä»¶å“åº”å‡½æ•°é‡å†™ï¼š
+  // åç»­SceneGraphæ¨¡å—çš„TransformSceneNodeSystemè´Ÿè´£å¤„ç†Entityå’ŒSceneNodeçš„TransformåŒæ­¥ï¼Œä¸åº”å½“é˜»æ–­äº‹ä»¶ä¼ æ’­
   bool OnComponentAdded(ComponentAddedEvent<TransformComponent> &e) override;
   bool OnComponentRemoved(ComponentRemovedEvent<TransformComponent> &e) override;
   void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
 };
-// ==================== ÊÂ¼ş¶¨Òå ====================
+// ==================== äº‹ä»¶å®šä¹‰ ====================
 /**
  * @class TransformUpdatedEvent
- * @brief Transform×é¼şÌæ»»ÊÂ¼ş
+ * @brief Transformç»„ä»¶æ›¿æ¢äº‹ä»¶
  */
 class TransformUpdatedEvent : public ComponentEvent<TransformComponent> {
  public:
@@ -168,7 +168,7 @@ class TransformUpdatedEvent : public ComponentEvent<TransformComponent> {
 };
 /**
  * @class PositionChangedEvent
- * @brief Î»ÖÃ¸Ä±äÊÂ¼ş
+ * @brief ä½ç½®æ”¹å˜äº‹ä»¶
  */
 class PositionChangedEvent : public ComponentEvent<TransformComponent> {
  public:
@@ -196,7 +196,7 @@ class PositionChangedEvent : public ComponentEvent<TransformComponent> {
 };
 /**
  * @class RotationChangedEvent
- * @brief Ğı×ª¸Ä±äÊÂ¼ş
+ * @brief æ—‹è½¬æ”¹å˜äº‹ä»¶
  */
 class RotationChangedEvent : public ComponentEvent<TransformComponent> {
  public:
@@ -225,7 +225,7 @@ class RotationChangedEvent : public ComponentEvent<TransformComponent> {
 };
 /**
  * @class ScaleChangedEvent
- * @brief Ëõ·Å¸Ä±äÊÂ¼ş
+ * @brief ç¼©æ”¾æ”¹å˜äº‹ä»¶
  */
 class ScaleChangedEvent : public ComponentEvent<TransformComponent> {
  public:
@@ -254,7 +254,7 @@ class ScaleChangedEvent : public ComponentEvent<TransformComponent> {
 };
 /**
  * @class TransformChangedEvent
- * @brief ±ä»»¸Ä±äÊÂ¼ş
+ * @brief å˜æ¢æ”¹å˜äº‹ä»¶
  */
 class TransformChangedEvent : public ComponentEvent<TransformComponent> {
  public:

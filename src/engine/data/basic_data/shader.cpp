@@ -12,17 +12,17 @@ void OpenGLShader::LoadFromFile(const char *vertexPath,
                           const char *fragmentPath,
                           const char *geometryPath)
 {
-  // 1. ´ÓÎÄ¼ş¶ÁÈ¡×ÅÉ«Æ÷Ô´Âë
+  // 1. ä»æ–‡ä»¶è¯»å–ç€è‰²å™¨æºç 
   std::string vertexCode, fragmentCode, geometryCode;
   std::ifstream vShaderFile, fShaderFile, gShaderFile;
 
-  // È·±£ifstream¶ÔÏóÄÜÅ×³öÒì³£
+  // ç¡®ä¿ifstreamå¯¹è±¡èƒ½æŠ›å‡ºå¼‚å¸¸
   vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
   try {
-    // ´ò¿ªÎÄ¼ş²¢¶ÁÈ¡µ½×Ö·û´®Á÷
+    // æ‰“å¼€æ–‡ä»¶å¹¶è¯»å–åˆ°å­—ç¬¦ä¸²æµ
     
     vShaderFile.open(vertexPath);
     fShaderFile.open(fragmentPath);
@@ -37,7 +37,7 @@ void OpenGLShader::LoadFromFile(const char *vertexPath,
     vertexCode = vShaderStream.str();
     fragmentCode = fShaderStream.str();
 
-    // ¿ÉÑ¡¼¸ºÎ×ÅÉ«Æ÷
+    // å¯é€‰å‡ ä½•ç€è‰²å™¨
     if (geometryPath != nullptr) {
       gShaderFile.open(geometryPath);
       std::stringstream gShaderStream;
@@ -51,7 +51,7 @@ void OpenGLShader::LoadFromFile(const char *vertexPath,
     throw std::runtime_error("Shader file load failed");
   }
 
-  // 2. µ÷ÓÃÔ´Âë¼ÓÔØ½Ó¿Ú
+  // 2. è°ƒç”¨æºç åŠ è½½æ¥å£
   LoadFromSource(vertexCode, fragmentCode, geometryCode);
 }
 
@@ -59,17 +59,17 @@ void OpenGLShader::LoadFromSource(const std::string &vertexSrc,
                             const std::string &fragmentSrc,
                             const std::string &geometrySrc)
 {
-  // 1. ±àÒë×ÅÉ«Æ÷
+  // 1. ç¼–è¯‘ç€è‰²å™¨
   uint32_t vertexID = CompileShader(vertexSrc, GL_VERTEX_SHADER);
   uint32_t fragmentID = CompileShader(fragmentSrc, GL_FRAGMENT_SHADER);
   uint32_t geometryID = 0;
 
-  // ¿ÉÑ¡¼¸ºÎ×ÅÉ«Æ÷
+  // å¯é€‰å‡ ä½•ç€è‰²å™¨
   if (!geometrySrc.empty()) {
     geometryID = CompileShader(geometrySrc, GL_GEOMETRY_SHADER);
   }
 
-  // 2. ´´½¨×ÅÉ«Æ÷³ÌĞò
+  // 2. åˆ›å»ºç€è‰²å™¨ç¨‹åº
   m_RendererID = glCreateProgram();
   glAttachShader(m_RendererID, vertexID);
   glAttachShader(m_RendererID, fragmentID);
@@ -77,11 +77,11 @@ void OpenGLShader::LoadFromSource(const std::string &vertexSrc,
     glAttachShader(m_RendererID, geometryID);
   }
 
-  // 3. Á´½Ó³ÌĞò
+  // 3. é“¾æ¥ç¨‹åº
   glLinkProgram(m_RendererID);
   CheckCompileErrors(m_RendererID, GL_LINK_STATUS, true);
 
-  // 4. É¾³ıÁÙÊ±×ÅÉ«Æ÷¶ÔÏó£¨ÒÑÁ´½Óµ½³ÌĞòÖĞ£©
+  // 4. åˆ é™¤ä¸´æ—¶ç€è‰²å™¨å¯¹è±¡ï¼ˆå·²é“¾æ¥åˆ°ç¨‹åºä¸­ï¼‰
   glDeleteShader(vertexID);
   glDeleteShader(fragmentID);
   if (geometryID != 0) {
@@ -98,7 +98,7 @@ void OpenGLShader::Destroy()
   m_UniformLocationCache.clear();
 }
 
-// =============== UniformÉèÖÃ·½·¨ ===============
+// =============== Uniformè®¾ç½®æ–¹æ³• ===============
 void OpenGLShader::SetBool(const std::string &name, bool value)
 {
   glUniform1i(GetUniformLocation(name), (int)value);
@@ -148,11 +148,11 @@ void OpenGLShader::SetIntArray(const std::string &name, const int *values, size_
 
   const int location = GetUniformLocation(name);
   if (location == -1)
-    return;  // ÒÑÍ¨¹ıGetUniformLocationÊä³ö¾¯¸æ
+    return;  // å·²é€šè¿‡GetUniformLocationè¾“å‡ºè­¦å‘Š
 
   glUniform1iv(location, static_cast<GLsizei>(count), values);
 
-// 4. OpenGL´íÎó¼ì²é£¨µ÷ÊÔÄ£Ê½£©
+// 4. OpenGLé”™è¯¯æ£€æŸ¥ï¼ˆè°ƒè¯•æ¨¡å¼ï¼‰
 #ifdef _DEBUG
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
@@ -163,27 +163,27 @@ void OpenGLShader::SetIntArray(const std::string &name, const int *values, size_
 
 void OpenGLShader::SetFloatArray(const std::string &name, const float *values, size_t count)
 {
-  // 1. ²ÎÊıĞ£Ñé
+  // 1. å‚æ•°æ ¡éªŒ
   if (count == 0 || values == nullptr) {
     LOG_WARN("Attempting to set empty float array for uniform: {}", name);
     return;
   }
 
-  // 2. »ñÈ¡UniformÎ»ÖÃ
+  // 2. è·å–Uniformä½ç½®
   const int location = GetUniformLocation(name);
   if (location == -1) {
-    return;  // ÒÑÍ¨¹ıGetUniformLocationÊä³ö¾¯¸æ
+    return;  // å·²é€šè¿‡GetUniformLocationè¾“å‡ºè­¦å‘Š
   }
 
-  // 3. µ÷ÓÃOpenGL½Ó¿Ú
+  // 3. è°ƒç”¨OpenGLæ¥å£
   glUniform1fv(location, static_cast<GLsizei>(count), values);
 
-// 4. OpenGL´íÎó¼ì²é£¨µ÷ÊÔÄ£Ê½£©
+// 4. OpenGLé”™è¯¯æ£€æŸ¥ï¼ˆè°ƒè¯•æ¨¡å¼ï¼‰
 #ifdef _DEBUG
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     LOG_ERROR("[OpenGL] SetFloatArray({}) failed with error 0x{:X}", name, err);
-    // ¸½¼Ó´íÎó½âÊÍ
+    // é™„åŠ é”™è¯¯è§£é‡Š
     switch (err) {
       case GL_INVALID_OPERATION:
         LOG_ERROR("  - Shader program not linked or not a valid program");
@@ -198,27 +198,27 @@ void OpenGLShader::SetFloatArray(const std::string &name, const float *values, s
 
 void OpenGLShader::SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count)
 {
-  // 1. ²ÎÊıĞ£Ñé
+  // 1. å‚æ•°æ ¡éªŒ
   if (count == 0 || values == nullptr) {
     LOG_WARN("Attempting to set empty vec3 array for uniform: {}", name);
     return;
   }
 
-  // 2. »ñÈ¡UniformÎ»ÖÃ
+  // 2. è·å–Uniformä½ç½®
   const int location = GetUniformLocation(name);
   if (location == -1) {
-    return;  // ÒÑÍ¨¹ıGetUniformLocationÊä³ö¾¯¸æ
+    return;  // å·²é€šè¿‡GetUniformLocationè¾“å‡ºè­¦å‘Š
   }
 
-  // 3. µ÷ÓÃOpenGL½Ó¿Ú
+  // 3. è°ƒç”¨OpenGLæ¥å£
   glUniform3fv(location, static_cast<GLsizei>(count), glm::value_ptr(values[0]));
 
-// 4. OpenGL´íÎó¼ì²é£¨µ÷ÊÔÄ£Ê½£©
+// 4. OpenGLé”™è¯¯æ£€æŸ¥ï¼ˆè°ƒè¯•æ¨¡å¼ï¼‰
 #ifdef _DEBUG
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     LOG_ERROR("[OpenGL] SetVector3Array({}) failed with error 0x{:X}", name, err);
-    // ¸½¼Óµ÷ÊÔĞÅÏ¢
+    // é™„åŠ è°ƒè¯•ä¿¡æ¯
     LOG_DEBUG("  - Array count: {}, First element: ({}, {}, {})",
               count,
               values[0].x,
@@ -228,7 +228,7 @@ void OpenGLShader::SetVector3Array(const std::string &name, const glm::vec3 *val
 #endif
 }
 
-// =============== Ë½ÓĞ¹¤¾ß·½·¨ ===============
+// =============== ç§æœ‰å·¥å…·æ–¹æ³• ===============
 uint32_t OpenGLShader::CompileShader(const std::string &source, uint32_t type)
 {
   uint32_t id = glCreateShader(type);
@@ -262,12 +262,12 @@ void OpenGLShader::CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram
 
 int OpenGLShader::GetUniformLocation(const std::string &name)
 {
-  // ¼ì²é»º´æ
+  // æ£€æŸ¥ç¼“å­˜
   if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end()) {
     return m_UniformLocationCache[name];
   }
 
-  // ²éÑ¯OpenGL²¢»º´æ½á¹û
+  // æŸ¥è¯¢OpenGLå¹¶ç¼“å­˜ç»“æœ
   int location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1) {
     LOG_CRITICAL("WARNING: Uniform {} not found in shader!", name);

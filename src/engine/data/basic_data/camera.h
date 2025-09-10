@@ -5,41 +5,41 @@
 
 namespace mite {
 /**
- * @brief ¶ÀÁ¢ÉãÏñ»úÀà£¬·â×°ÊÓÍ¼/Í¶Ó°¾ØÕó¼ÆËã
+ * @brief ç‹¬ç«‹æ‘„åƒæœºç±»ï¼Œå°è£…è§†å›¾/æŠ•å½±çŸ©é˜µè®¡ç®—
  *
- * Ö°Ôğ£º
- * 1. ¹ÜÀíÉãÏñ»ú²ÎÊı£¨FOV¡¢Clipping PlanesµÈ£©
- * 2. ¼ÆËãÊÓÍ¼/Í¶Ó°¾ØÕó
- * 3. Ö§³Ö¶àÖÖÍ¶Ó°Ä£Ê½£¨Í¸ÊÓ/Õı½»£©
+ * èŒè´£ï¼š
+ * 1. ç®¡ç†æ‘„åƒæœºå‚æ•°ï¼ˆFOVã€Clipping Planesç­‰ï¼‰
+ * 2. è®¡ç®—è§†å›¾/æŠ•å½±çŸ©é˜µ
+ * 3. æ”¯æŒå¤šç§æŠ•å½±æ¨¡å¼ï¼ˆé€è§†/æ­£äº¤ï¼‰
  *
- * ×¢Òâ£º
- * - ²»ÒÀÀµECS£¬´¿ÊıÑ§¹¤¾ßÀà
- * - ÓëTransformComponentĞ­Í¬¹¤×÷
- * - Ä¬ÈÏ³¯ÏòZ¸º·½Ïò£¬UpÎªYÖáÕı·½Ïò£¬Å·À­½ÇË³ĞòÎªYXZ£¨¸ü·ûºÏOpenGL±ê×¼£©
- * - GLMÊ¹ÓÃÁËÓÒÊÖ×ø±êÏµ
- * - GLMµÄmat4Ê¹ÓÃÁËÁĞÖ÷Ğò
- *   Èç:
- *   m_ViewMatrix[0]»òÕßglm::column(m_ViewMatrix,1)   ±íÊ¾µÚÒ»ÁĞ[right.x,  up.x,  -forward.x,  0]
- *   glm::row(vpMatrix,0)   ±íÊ¾[ right.x  right.y  right.z  -dot(right, eye)]
- *   Èç£º
- *   m_ProjectionMatrix[2]»òÕßglm::column(m_ProjectionMatrix,2)±íÊ¾µÚÈıÁĞ[0,  0,  -(f+n)/(f-n),  -1]
+ * æ³¨æ„ï¼š
+ * - ä¸ä¾èµ–ECSï¼Œçº¯æ•°å­¦å·¥å…·ç±»
+ * - ä¸TransformComponentååŒå·¥ä½œ
+ * - é»˜è®¤æœå‘Zè´Ÿæ–¹å‘ï¼ŒUpä¸ºYè½´æ­£æ–¹å‘ï¼Œæ¬§æ‹‰è§’é¡ºåºä¸ºYXZï¼ˆæ›´ç¬¦åˆOpenGLæ ‡å‡†ï¼‰
+ * - GLMä½¿ç”¨äº†å³æ‰‹åæ ‡ç³»
+ * - GLMçš„mat4ä½¿ç”¨äº†åˆ—ä¸»åº
+ *   å¦‚:
+ *   m_ViewMatrix[0]æˆ–è€…glm::column(m_ViewMatrix,1)   è¡¨ç¤ºç¬¬ä¸€åˆ—[right.x,  up.x,  -forward.x,  0]
+ *   glm::row(vpMatrix,0)   è¡¨ç¤º[ right.x  right.y  right.z  -dot(right, eye)]
+ *   å¦‚ï¼š
+ *   m_ProjectionMatrix[2]æˆ–è€…glm::column(m_ProjectionMatrix,2)è¡¨ç¤ºç¬¬ä¸‰åˆ—[0,  0,  -(f+n)/(f-n),  -1]
  * 
- * ¶ÔÓÚ±ê×¼µÄÓÒÊÖÏµÊÓÍ¼¾ØÕó
+ * å¯¹äºæ ‡å‡†çš„å³æ‰‹ç³»è§†å›¾çŸ©é˜µ
  * [ right.x     right.y     right.z     -dot(right, eye)  ]
  * [ up.x        up.y        up.z        -dot(up, eye)     ]
  * [ -forward.x -forward.y  -forward.z    dot(forward, eye)]
  * [ 0           0           0            1                ]
 
  * 
- * ±ê×¼µÄÓÒÊÖÏµÍ¸ÊÓÍ¶Ó°¾ØÕó
+ * æ ‡å‡†çš„å³æ‰‹ç³»é€è§†æŠ•å½±çŸ©é˜µ
  * [ n/r   0     0             0        ]
  * [ 0     n/t   0             0        ]
  * [ 0     0    -(f+n)/(f-n)  -2fn/(f-n)]
  * [ 0     0    -1             0        ]
- * ÆäÖĞ
- * ½üÆ½Ãæ£ºn = near
- * Ô¶Æ½Ãæ£ºf = far
- * ¿í¸ß±È£ºa = aspect
+ * å…¶ä¸­
+ * è¿‘å¹³é¢ï¼šn = near
+ * è¿œå¹³é¢ï¼šf = far
+ * å®½é«˜æ¯”ï¼ša = aspect
  */
 class Camera {
  public:
@@ -47,24 +47,24 @@ class Camera {
 
   Camera();
 
-  // Í¶Ó°²ÎÊıÉèÖÃ
+  // æŠ•å½±å‚æ•°è®¾ç½®
   void SetPerspective(float fov, float aspect, float near, float far);
   void SetOrthographic(float size, float aspect, float near, float far);
   void SetProjectionType(ProjectionType type);
   void SetAspectRatio(float aspect);
 
-  // ÊÓÍ¼¿ØÖÆ
+  // è§†å›¾æ§åˆ¶
   void LookAt(const glm::vec3 &position,
               const glm::vec3 &target,
               const glm::vec3 &up = glm::vec3(0, 1, 0));
   void SetViewMatrix(const glm::mat4 &view);
 
-  // ¾ØÕó»ñÈ¡
+  // çŸ©é˜µè·å–
   const glm::mat4 &GetProjectionMatrix() const;
   const glm::mat4 &GetViewMatrix() const;
   glm::mat4 GetViewProjectionMatrix() const;
 
-  // ²ÎÊı·ÃÎÊ
+  // å‚æ•°è®¿é—®
   ProjectionType GetProjectionType() const;
   float GetNear() const;
   float GetFar() const;
@@ -77,37 +77,37 @@ class Camera {
   glm::vec3 GetForwardVector() const;
   float GetDistance() const;
 
-  // Ïà»ú¿ØÖÆ
-  void Translate(const glm::vec3 position);  // ÊÀ½ç¿Õ¼ä¶¨Î»
-  void Rotate(const glm::vec3 rotation);  // Å·À­½ÇĞı×ª£¨½Ç¶ÈÖÆ£¬Æ«º½/¸©Ñö/¹ö×ª£©
-  void Rotate(float yaw, float pitch, float roll = 0.0f);  // Å·À­½ÇĞı×ª£¨½Ç¶ÈÖÆ£¬Æ«º½/¸©Ñö/¹ö×ª£©
-  void Pan(float right, float up);                         // ÆÁÄ»¿Õ¼äÆ½ÒÆ
-  void Zoom(float amount);                                 // ÊÓÒ°Ëõ·Å
-  void Move(const glm::vec3 direction);                    // ÊÀ½ç¿Õ¼äÒÆ¶¯
+  // ç›¸æœºæ§åˆ¶
+  void Translate(const glm::vec3 position);  // ä¸–ç•Œç©ºé—´å®šä½
+  void Rotate(const glm::vec3 rotation);  // æ¬§æ‹‰è§’æ—‹è½¬ï¼ˆè§’åº¦åˆ¶ï¼Œåèˆª/ä¿¯ä»°/æ»šè½¬ï¼‰
+  void Rotate(float yaw, float pitch, float roll = 0.0f);  // æ¬§æ‹‰è§’æ—‹è½¬ï¼ˆè§’åº¦åˆ¶ï¼Œåèˆª/ä¿¯ä»°/æ»šè½¬ï¼‰
+  void Pan(float right, float up);                         // å±å¹•ç©ºé—´å¹³ç§»
+  void Zoom(float amount);                                 // è§†é‡ç¼©æ”¾
+  void Move(const glm::vec3 direction);                    // ä¸–ç•Œç©ºé—´ç§»åŠ¨
 
  private:
-  // ¸¨Öú·½·¨
+  // è¾…åŠ©æ–¹æ³•
   void RecalculateViewFromRotation();
   void RecalculateProjection();
 
-  // Í¶Ó°ÀàĞÍ£¬Ä¬ÈÏÍ¸ÊÓ
+  // æŠ•å½±ç±»å‹ï¼Œé»˜è®¤é€è§†
   ProjectionType m_ProjectionType = ProjectionType::Perspective;
 
-  // Í¸ÊÓ²ÎÊı
-  float m_FOV = 45.0f;  // ´¹Ö±FOV£¨¶È£©
+  // é€è§†å‚æ•°
+  float m_FOV = 45.0f;  // å‚ç›´FOVï¼ˆåº¦ï¼‰
   float m_Aspect = 16.0f / 9.0f;
 
-  // Õı½»²ÎÊı
+  // æ­£äº¤å‚æ•°
   float m_OrthoSize = 10.0f;
 
-  // ¹«¹²²ÎÊı
+  // å…¬å…±å‚æ•°
   float m_Near = 0.1f;
   float m_Far = 100.0f;
 
   glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
   glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 
-  // ´æ´¢µ±Ç°µÄÎ»ÖÃÓëÅ·À­½Ç(degree)
+  // å­˜å‚¨å½“å‰çš„ä½ç½®ä¸æ¬§æ‹‰è§’(degree)
   glm::vec3 m_Position = glm::vec3(0.0f);
   glm::vec3 m_RotationEuler = glm::vec3(0.0f);
 };

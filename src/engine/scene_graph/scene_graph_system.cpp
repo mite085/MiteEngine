@@ -5,17 +5,17 @@
 #include "visibility_component.h"
 
 namespace mite {
-// ==================== ¹¹Ôìº¯Êı ====================
+// ==================== æ„é€ å‡½æ•° ====================
 SceneGraphSystem::SceneGraphSystem() : m_SceneGraph(nullptr)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraphSystem");
   m_Logger->trace("SceneGraphSystem created");
 }
 
-// ==================== ComponentSystem ½Ó¿ÚÊµÏÖ ====================
+// ==================== ComponentSystem æ¥å£å®ç° ====================
 Component::Family SceneGraphSystem::GetExecutionOrder() const
 {
-  // TODO: ÔÚTransformSystemÖ®ºóÖ´ĞĞ£¬È·±£±ä»»Êı¾İÒÑÍ¬²½
+  // TODO: åœ¨TransformSystemä¹‹åæ‰§è¡Œï¼Œç¡®ä¿å˜æ¢æ•°æ®å·²åŒæ­¥
   return Component::Family::Core;
 }
 
@@ -23,7 +23,7 @@ void SceneGraphSystem::Initialize()
 {
   m_Logger->info("Initializing Scene Graph System");
 
-  // ¶©ÔÄECSÊÂ¼ş
+  // è®¢é˜…ECSäº‹ä»¶
   m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
 
   m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
@@ -34,7 +34,7 @@ void SceneGraphSystem::Initialize()
   m_EventSubscriptions.Subscribe<ComponentRemovedEvent<MeshComponent>>(
       BIND_DISPATCH_FN(OnMeshComponentRemoved));
 
-  // Çå¿ÕÔİ´æ¶ÓÁĞ£¨È·±£³õÊ¼»¯ºó×´Ì¬¸É¾»£©
+  // æ¸…ç©ºæš‚å­˜é˜Ÿåˆ—ï¼ˆç¡®ä¿åˆå§‹åŒ–åçŠ¶æ€å¹²å‡€ï¼‰
   m_PendingCreateNodes.clear();
   m_PendingDestroyNodes.clear();
   m_PendingSyncBounds.clear();
@@ -48,13 +48,13 @@ void SceneGraphSystem::Update(float deltaTime, SceneRegistry &registry)
     return;
   }
 
-  // ´¦ÀíËùÓĞÔİ´æµÄ²Ù×÷ÇëÇó
+  // å¤„ç†æ‰€æœ‰æš‚å­˜çš„æ“ä½œè¯·æ±‚
   ProcessPendingOperations(registry);
 
-  // ¸üĞÂSceneGraphÖĞµÄÔà½Úµã
+  // æ›´æ–°SceneGraphä¸­çš„è„èŠ‚ç‚¹
   m_SceneGraph->Update(registry);
 
-  // ¶¨ÆÚÊä³öÍ³¼ÆĞÅÏ¢£¨µ÷ÊÔÓÃ£©
+  // å®šæœŸè¾“å‡ºç»Ÿè®¡ä¿¡æ¯ï¼ˆè°ƒè¯•ç”¨ï¼‰
   static float statsTimer = 0.0f;
   statsTimer += deltaTime;
   if (statsTimer > 5.0f) {
@@ -67,10 +67,10 @@ void SceneGraphSystem::Shutdown()
 {
   m_Logger->info("Shutting down SceneGraphSystem");
 
-  // È¡ÏûËùÓĞÊÂ¼ş¶©ÔÄ
+  // å–æ¶ˆæ‰€æœ‰äº‹ä»¶è®¢é˜…
   m_EventSubscriptions.UnsubscribeAll();
 
-  // Çå¿ÕÍ³¼ÆĞÅÏ¢
+  // æ¸…ç©ºç»Ÿè®¡ä¿¡æ¯
   m_Stats = {};
 
   m_Logger->debug("SceneGraphSystem shutdown complete");
@@ -89,7 +89,7 @@ std::vector<std::type_index> SceneGraphSystem::GetSystemDependencies() const
           typeid(VisibilityComponentSystem)};
 }
 
-// ==================== SceneGraph ·ÃÎÊ½Ó¿Ú ====================
+// ==================== SceneGraph è®¿é—®æ¥å£ ====================
 SceneGraph *SceneGraphSystem::GetSceneGraph() const
 {
   return m_SceneGraph;
@@ -106,7 +106,7 @@ void SceneGraphSystem::SetSceneGraph(SceneGraph *sceneGraph)
   }
 }
 
-// ==================== µ÷ÊÔºÍÍ³¼Æ½Ó¿Ú ====================
+// ==================== è°ƒè¯•å’Œç»Ÿè®¡æ¥å£ ====================
 std::string SceneGraphSystem::GetStats() const
 {
   std::stringstream ss;
@@ -115,27 +115,27 @@ std::string SceneGraphSystem::GetStats() const
   return ss.str();
 }
 
-// ==================== ECSÊÂ¼ş´¦Àí»Øµ÷ ====================
+// ==================== ECSäº‹ä»¶å¤„ç†å›è°ƒ ====================
 bool SceneGraphSystem::OnEntityCreated(EntityCreatedEvent &e)
 {
   Entity entity = e.GetEntity();
-  m_PendingCreateNodes.push_back(entity);  // Ôİ´æ¶ø²»ÊÇÁ¢¼´´¦Àí
+  m_PendingCreateNodes.push_back(entity);  // æš‚å­˜è€Œä¸æ˜¯ç«‹å³å¤„ç†
 
-  return e.handled;  // EntityCreatedEvent»¹ÓĞºÜ¶àµØ·½ĞèÒªÏìÓ¦£¬²»Ó¦µ±±ê¼ÇÊÂ¼şÒÑ´¦Àí
+  return e.handled;  // EntityCreatedEventè¿˜æœ‰å¾ˆå¤šåœ°æ–¹éœ€è¦å“åº”ï¼Œä¸åº”å½“æ ‡è®°äº‹ä»¶å·²å¤„ç†
 }
 
 bool SceneGraphSystem::OnEntityDestroyed(EntityDestroyedEvent &e)
 {
   Entity entity = e.GetEntity();
-  m_PendingDestroyNodes.push_back(entity);  // Ôİ´æ¶ø²»ÊÇÁ¢¼´´¦Àí
+  m_PendingDestroyNodes.push_back(entity);  // æš‚å­˜è€Œä¸æ˜¯ç«‹å³å¤„ç†
 
-  return e.handled;  // EntityDestroyedEvent»¹ÓĞºÜ¶àµØ·½ĞèÒªÏìÓ¦£¬²»Ó¦µ±±ê¼ÇÊÂ¼şÒÑ´¦Àí
+  return e.handled;  // EntityDestroyedEventè¿˜æœ‰å¾ˆå¤šåœ°æ–¹éœ€è¦å“åº”ï¼Œä¸åº”å½“æ ‡è®°äº‹ä»¶å·²å¤„ç†
 }
 
 bool SceneGraphSystem::OnMeshComponentAdded(ComponentAddedEvent<MeshComponent> &e)
 {
   Entity entity = e.GetEntity();
-  m_PendingSyncBounds.push_back(entity);  // Ôİ´æ°üÎ§ºĞÍ¬²½
+  m_PendingSyncBounds.push_back(entity);  // æš‚å­˜åŒ…å›´ç›’åŒæ­¥
   e.Handled();
   return true;
 }
@@ -144,14 +144,14 @@ bool SceneGraphSystem::OnMeshComponentRemoved(ComponentRemovedEvent<MeshComponen
 {
   Entity entity = e.GetEntity();
 
-  // Ôİ´æÏú»Ù¼ì²éÇëÇó
+  // æš‚å­˜é”€æ¯æ£€æŸ¥è¯·æ±‚
   m_PendingDestroyNodes.push_back(entity);
 
   e.Handled();
   return true;
 }
 
-// ==================== ÄÚ²¿¹¤¾ß·½·¨ ====================
+// ==================== å†…éƒ¨å·¥å…·æ–¹æ³• ====================
 void SceneGraphSystem::CreateNodeForEntity(SceneRegistry &registry, Entity entity)
 {
   if (!m_SceneGraph) {
@@ -168,7 +168,7 @@ void SceneGraphSystem::CreateNodeForEntity(SceneRegistry &registry, Entity entit
   if (node) {
     m_Stats.nodesCreated++;
 
-    // Á¢¼´Í¬²½³õÊ¼Êı¾İ
+    // ç«‹å³åŒæ­¥åˆå§‹æ•°æ®
     SyncBoundsToSceneGraph(registry, entity);
 
     m_Logger->debug("Created and synced scene node for entity {}", entity.GetUUIDString());
@@ -177,8 +177,8 @@ void SceneGraphSystem::CreateNodeForEntity(SceneRegistry &registry, Entity entit
 
 bool SceneGraphSystem::ShouldCreateNodeForEntity(SceneRegistry &registry, Entity entity) const
 {
-  // Ö»ÓĞÓµÓĞ±ä»»×é¼şµÄÊµÌå²ÅĞèÒª³¡¾°½Úµã
-  // £¨ÒòÎª³¡¾°½ÚµãÖ÷ÒªÓÃÓÚ¿Õ¼ä±ä»»ºÍäÖÈ¾£©
+  // åªæœ‰æ‹¥æœ‰å˜æ¢ç»„ä»¶çš„å®ä½“æ‰éœ€è¦åœºæ™¯èŠ‚ç‚¹
+  // ï¼ˆå› ä¸ºåœºæ™¯èŠ‚ç‚¹ä¸»è¦ç”¨äºç©ºé—´å˜æ¢å’Œæ¸²æŸ“ï¼‰
   return registry.HasComponent<TransformComponent>(entity);
 }
 
@@ -191,7 +191,7 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
   AABB localBounds;
   bool hasBounds = false;
 
-  // ³¢ÊÔ´ÓMesh×é¼ş»ñÈ¡°üÎ§ºĞ
+  // å°è¯•ä»Meshç»„ä»¶è·å–åŒ…å›´ç›’
   if (registry.HasComponent<MeshComponent>(entity)) {
     try {
       auto &meshComp = registry.GetComponent<MeshComponent>(entity);
@@ -207,7 +207,7 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
     }
   }
 
-  // Èç¹ûÃ»ÓĞMesh×é¼ş£¬Ê¹ÓÃÄ¬ÈÏ°üÎ§ºĞ
+  // å¦‚æœæ²¡æœ‰Meshç»„ä»¶ï¼Œä½¿ç”¨é»˜è®¤åŒ…å›´ç›’
   if (!hasBounds) {
     localBounds = AABB(glm::vec3(-0.5f), glm::vec3(0.5f));
   }
@@ -218,10 +218,10 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
 
 void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
 {
-  // 1. ÏÈ´¦Àí½ÚµãÏú»Ù£¨±ÜÃâ²Ù×÷ÒÑÏú»ÙµÄ½Úµã£©
+  // 1. å…ˆå¤„ç†èŠ‚ç‚¹é”€æ¯ï¼ˆé¿å…æ“ä½œå·²é”€æ¯çš„èŠ‚ç‚¹ï¼‰
   for (Entity entity : m_PendingDestroyNodes) {
     if (m_SceneGraph && m_SceneGraph->HasNode(entity)) {
-      // ¼ì²éÊÇ·ñÕæµÄĞèÒªÏú»Ù£¨Ã»ÓĞ±ä»»×é¼ş£©
+      // æ£€æŸ¥æ˜¯å¦çœŸçš„éœ€è¦é”€æ¯ï¼ˆæ²¡æœ‰å˜æ¢ç»„ä»¶ï¼‰
       if (!ShouldCreateNodeForEntity(registry, entity)) {
         m_SceneGraph->DestroyNode(registry, entity);
         m_Stats.nodesDestroyed++;
@@ -230,7 +230,7 @@ void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
   }
   m_PendingDestroyNodes.clear();
 
-  // 2. ´¦Àí½Úµã´´½¨
+  // 2. å¤„ç†èŠ‚ç‚¹åˆ›å»º
   for (Entity entity : m_PendingCreateNodes) {
     if (ShouldCreateNodeForEntity(registry, entity) && m_SceneGraph &&
         !m_SceneGraph->HasNode(entity))
@@ -240,7 +240,7 @@ void SceneGraphSystem::ProcessPendingOperations(SceneRegistry &registry)
   }
   m_PendingCreateNodes.clear();
 
-  // 3. ´¦ÀíÆäËûÍ¬²½²Ù×÷£¨Ô­ÓĞµÄ°üÎ§ºĞ¡¢¸¸×Ó¹ØÏµ£©
+  // 3. å¤„ç†å…¶ä»–åŒæ­¥æ“ä½œï¼ˆåŸæœ‰çš„åŒ…å›´ç›’ã€çˆ¶å­å…³ç³»ï¼‰
   for (Entity entity : m_PendingSyncBounds) {
     if (m_SceneGraph && m_SceneGraph->HasNode(entity)) {
       SyncBoundsToSceneGraph(registry, entity);

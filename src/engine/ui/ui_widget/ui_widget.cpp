@@ -15,7 +15,7 @@ UIWidget::UIWidget(const std::string &name)
 
 UIWidget::~UIWidget()
 {
-  // ÇåÀí×ÊÔ´
+  // æ¸…ç†èµ„æº
 }
 
 UUID UIWidget::GetID() const
@@ -103,7 +103,7 @@ std::shared_ptr<UIStyle> UIWidget::GetStyle() const
 void UIWidget::SetStyle(std::shared_ptr<UIStyle> style)
 {
   m_Style = style;
-  // ´¥·¢²¼¾Ö¸üĞÂÇëÇó£¬ÒòÎªÑùÊ½¸Ä±ä¿ÉÄÜÓ°Ïì¿Ø¼ş³ß´ç
+  // è§¦å‘å¸ƒå±€æ›´æ–°è¯·æ±‚ï¼Œå› ä¸ºæ ·å¼æ”¹å˜å¯èƒ½å½±å“æ§ä»¶å°ºå¯¸
   EventBus::Publish<LayoutUpdateRequestEvent>(LayoutUpdateRequestEvent(m_ID));
 }
 
@@ -115,18 +115,18 @@ bool UIWidget::ContainsPoint(const glm::vec2 &point) const
 
 void UIWidget::OnMouseEnter(const MouseEnterEvent &event)
 {
-  // »ùÀàÊµÏÖÎª¿Õ£¬×ÓÀà¿ÉÒÔÖØĞ´
+  // åŸºç±»å®ç°ä¸ºç©ºï¼Œå­ç±»å¯ä»¥é‡å†™
   LOG_DEBUG("Mouse entered widget: {}", m_Name);
 }
 
 void UIWidget::OnMouseLeave(const MouseLeaveEvent &event)
 {
-  // »ùÀàÊµÏÖÎª¿Õ£¬×ÓÀà¿ÉÒÔÖØĞ´
+  // åŸºç±»å®ç°ä¸ºç©ºï¼Œå­ç±»å¯ä»¥é‡å†™
   LOG_DEBUG("Mouse left widget: {}", m_Name);
 }
 
 void UIWidget::Update(float deltaTime)
 {
-  // »ùÀàÊµÏÖÎª¿Õ£¬×ÓÀà¿ÉÒÔÖØĞ´´¦Àí¶¯»­»òÆäËû×´Ì¬¸üĞÂ
+  // åŸºç±»å®ç°ä¸ºç©ºï¼Œå­ç±»å¯ä»¥é‡å†™å¤„ç†åŠ¨ç”»æˆ–å…¶ä»–çŠ¶æ€æ›´æ–°
 }
 }  // namespace mite

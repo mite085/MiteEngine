@@ -5,7 +5,7 @@
 namespace mite {
 MiteApplication::MiteApplication()
 {
-  // ³õÊ¼»¯LOGGER
+  // åˆå§‹åŒ–LOGGER
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Application");
   m_Logger->info("Create logger for application");
 }
@@ -17,32 +17,32 @@ void MiteApplication::run()
   Initialize();
 
   while (!m_ShouldClose) {
-    // TimeÏµÍ³¸üĞÂÊ±¼ä
+    // Timeç³»ç»Ÿæ›´æ–°æ—¶é—´
     Time::Update();
 
-    // 1. ´¦ÀíÊÂ¼ş
+    // 1. å¤„ç†äº‹ä»¶
     m_Window->PollEvents();
     EventBus::Get().ProcessQueue();
 
-    // 2. ¸üĞÂÊäÈëÏµÍ³
+    // 2. æ›´æ–°è¾“å…¥ç³»ç»Ÿ
     Input::Update();
 
-    // 3. ¿ªÊ¼ĞÂµÄÒ»Ö¡
+    // 3. å¼€å§‹æ–°çš„ä¸€å¸§
     BeginFrame();
 
-    // 4. ¸üĞÂ³¡¾°
+    // 4. æ›´æ–°åœºæ™¯
     Update();
 
-    // 5. äÖÈ¾³¡¾°
+    // 5. æ¸²æŸ“åœºæ™¯
     Render();
 
-    // 6. ½áÊøµ±Ç°Ö¡
+    // 6. ç»“æŸå½“å‰å¸§
     EndFrame();
 
-    // 7. UIäÖÈ¾
+    // 7. UIæ¸²æŸ“
     RenderUI();
 
-    // 8. ´°¿Ú¸ºÔğ½»»»»º³å
+    // 8. çª—å£è´Ÿè´£äº¤æ¢ç¼“å†²
     m_Window->SwapBuffers();
   }
 
@@ -59,22 +59,22 @@ void MiteApplication::LoadDefaultScene()
 {
   m_Logger->info("Loading default scene");
 
-  // Ğ­µ÷¸÷Ä£¿é£¬¼ÓÔØ³õÊ¼³¡¾°
+  // åè°ƒå„æ¨¡å—ï¼ŒåŠ è½½åˆå§‹åœºæ™¯
 
-  // 0. ´´½¨²¢°ó¶¨Ö÷Ïà»ú£¨¸Ã²½Öè±ØĞëÔÚm_SceneCore->InitializeComponentSystems();Ö®ºóÖ´ĞĞ)
+  // 0. åˆ›å»ºå¹¶ç»‘å®šä¸»ç›¸æœºï¼ˆè¯¥æ­¥éª¤å¿…é¡»åœ¨m_SceneCore->InitializeComponentSystems();ä¹‹åæ‰§è¡Œ)
   Camera mainCamera;
   // main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
 
-  // Éè¶¨·½±ã¹Û¿´Ä£ĞÍµÄ½Ç¶È
-  mainCamera.LookAt(glm::vec3(0.0f, 3.0f, 5.0f),  // Î»ÖÃ£ºÔÚÄ£ĞÍÉÏ·½ÉÔºó·½
-                     glm::vec3(0.0f, 0.0f, 0.0f),  // ¿´ÏòÄ£ĞÍÖĞĞÄ
-                     glm::vec3(0.0f, 1.0f, 0.0f)   // ÉÏ·½Ïò
+  // è®¾å®šæ–¹ä¾¿è§‚çœ‹æ¨¡å‹çš„è§’åº¦
+  mainCamera.LookAt(glm::vec3(0.0f, 3.0f, 5.0f),  // ä½ç½®ï¼šåœ¨æ¨¡å‹ä¸Šæ–¹ç¨åæ–¹
+                     glm::vec3(0.0f, 0.0f, 0.0f),  // çœ‹å‘æ¨¡å‹ä¸­å¿ƒ
+                     glm::vec3(0.0f, 1.0f, 0.0f)   // ä¸Šæ–¹å‘
   );
-  // Í¶Ó°²ÎÊı
-  mainCamera.SetPerspective(60.0f,  // FOV: 60¶È£¨±ãÓÚ¼ÆËã£©
-                             1.0f,   // ¿í¸ß±È: 1:1£¨Õı·½ĞÎÊÓ¿Ú£¬¼ò»¯¼ÆËã£©
-                             1.0f,   // ½üÆ½Ãæ: 1m
-                             20.0f   // Ô¶Æ½Ãæ: 20m£¨×ã¹»°üº¬³¡¾°£©
+  // æŠ•å½±å‚æ•°
+  mainCamera.SetPerspective(60.0f,  // FOV: 60åº¦ï¼ˆä¾¿äºè®¡ç®—ï¼‰
+                             1.0f,   // å®½é«˜æ¯”: 1:1ï¼ˆæ­£æ–¹å½¢è§†å£ï¼Œç®€åŒ–è®¡ç®—ï¼‰
+                             1.0f,   // è¿‘å¹³é¢: 1m
+                             20.0f   // è¿œå¹³é¢: 20mï¼ˆè¶³å¤ŸåŒ…å«åœºæ™¯ï¼‰
   );
   Entity mainCameraEntity = m_SceneCore->CreateEntity("main_camera");
   CameraComponent &mainCameraComponent =
@@ -84,40 +84,40 @@ void MiteApplication::LoadDefaultScene()
       m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
   m_SceneCore->SetMainCamera(mainCameraEntity);
 
-  // 0. ´´½¨ViewportPanel²¢ÉèÖÃFrameBuffer
+  // 0. åˆ›å»ºViewportPanelå¹¶è®¾ç½®FrameBuffer
   auto viewportPanel = std::make_shared<ViewportPanel>();
   viewportPanel->setFramebuffer(m_Renderer->GetViewportFrameBuffer());
-  // ×¢²áÃæ°åµ½UIÏµÍ³
+  // æ³¨å†Œé¢æ¿åˆ°UIç³»ç»Ÿ
   m_UISystem->RegisterPanel(viewportPanel);
 
-  // 1. ¼ÓÔØÄ£ĞÍ£¨ÆôÓÃLOD£¬°´ÕÕÄ¬ÈÏ4²ãLOD²ÎÊıÉú³É£©
+  // 1. åŠ è½½æ¨¡å‹ï¼ˆå¯ç”¨LODï¼ŒæŒ‰ç…§é»˜è®¤4å±‚LODå‚æ•°ç”Ÿæˆï¼‰
   AssetID plane_model_asset_id = m_AssetManager->LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string(), true, true);
   Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
-    // 2. ´´½¨Íø¸ñÊµÌå£¬¹ÒÔØ×é¼ş
+    // 2. åˆ›å»ºç½‘æ ¼å®ä½“ï¼ŒæŒ‚è½½ç»„ä»¶
     Entity plane_submesh = m_SceneCore->CreateEntity("plane_submesh");
     MeshComponent &plane_mesh_component = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
         plane_submesh, plane_model.GetSubMesh(i));
 
-    // 3. ´´½¨²ÄÖÊÊµÀı
+    // 3. åˆ›å»ºæè´¨å®ä¾‹
     std::shared_ptr<MaterialInstance> plane_material =
         m_MaterialSystem->CreateInstanceWithOverrides<PureColorMaterialTemplate>(
             {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
 
-    // 4. ´´½¨²ÄÖÊ×é¼ş
+    // 4. åˆ›å»ºæè´¨ç»„ä»¶
     MaterialComponent &plane_material_component =
         m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(plane_submesh, plane_material);
 
-    // 5. ´´½¨±ä»»×é¼ş
+    // 5. åˆ›å»ºå˜æ¢ç»„ä»¶
     TransformComponent &plane_transform_component =
         m_SceneCore->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
 
-    // 6. ÓÉSceneView×Ô¶¯ÍÆÈëäÖÈ¾¶ÓÁĞ£¨EntityCreatedEventÊÂ¼şÇı¶¯+PendingEntitiesÑÓ³Ù´¦Àí£©
+    // 6. ç”±SceneViewè‡ªåŠ¨æ¨å…¥æ¸²æŸ“é˜Ÿåˆ—ï¼ˆEntityCreatedEventäº‹ä»¶é©±åŠ¨+PendingEntitieså»¶è¿Ÿå¤„ç†ï¼‰
   }
 
-  // ¸üĞÂ³¡¾°ÊÓÍ¼
+  // æ›´æ–°åœºæ™¯è§†å›¾
   // m_SceneView->SyncFromSceneCore();
 }
 
@@ -125,24 +125,24 @@ void MiteApplication::Initialize()
 {
   m_Logger->info("Initialize application");
 
-  // ¶©ÔÄÊÂ¼ş£¬²¢¹ÜÀí¶©ÔÄ¾ä±ú
+  // è®¢é˜…äº‹ä»¶ï¼Œå¹¶ç®¡ç†è®¢é˜…å¥æŸ„
   m_EventSubscriptions.Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
 
-  // °´ÕÕÒÀÀµ¹ØÏµ£¬ÏÈ³õÊ¼»¯µ×²ãÄ£¿é£¬ºó³õÊ¼»¯¶¥²ãÄ£¿é
+  // æŒ‰ç…§ä¾èµ–å…³ç³»ï¼Œå…ˆåˆå§‹åŒ–åº•å±‚æ¨¡å—ï¼Œååˆå§‹åŒ–é¡¶å±‚æ¨¡å—
   InitializeInputSystem();
   InitializeAssertManager();
   InitializeWindowWithOpenGL();
-  InitializeRenderWithOpenGL();  // ±ØĞëÔÚWindow´´½¨GLÉÏÏÂÎÄºóÖ´ĞĞ
+  InitializeRenderWithOpenGL();  // å¿…é¡»åœ¨Windowåˆ›å»ºGLä¸Šä¸‹æ–‡åæ‰§è¡Œ
   InitializeMaterialSystem();
   InitializeSceneCore();
-  InitializeSceneGraph();  // ÒÀÀµSceneCore
-  InitializeSceneView();   // ÒÀÀµSceneCoreºÍSceneGraph
-  InitializeUI();          // ±ØĞëÔÚWindow´´½¨GLÉÏÏÂÎÄºóÖ´ĞĞ
+  InitializeSceneGraph();  // ä¾èµ–SceneCore
+  InitializeSceneView();   // ä¾èµ–SceneCoreå’ŒSceneGraph
+  InitializeUI();          // å¿…é¡»åœ¨Windowåˆ›å»ºGLä¸Šä¸‹æ–‡åæ‰§è¡Œ
 
-  // ³õÊ¼»¯×é¼şÏµÍ³£¨±ØĞëÔÚSceneGraphµÄ×é¼ş×¢²áµ½SceneCoreÖ®ºóÖ´ĞĞ£©
+  // åˆå§‹åŒ–ç»„ä»¶ç³»ç»Ÿï¼ˆå¿…é¡»åœ¨SceneGraphçš„ç»„ä»¶æ³¨å†Œåˆ°SceneCoreä¹‹åæ‰§è¡Œï¼‰
   m_SceneCore->InitializeComponentSystems();
 
-  // ¼ÓÔØÄ¬ÈÏ³¡¾°
+  // åŠ è½½é»˜è®¤åœºæ™¯
   LoadDefaultScene();
 }
 
@@ -150,13 +150,13 @@ void MiteApplication::CleanUp()
 {
   m_Logger->info("Cleaning up application");
 
-  // È¡ÏûÊÂ¼ş¶©ÔÄ
+  // å–æ¶ˆäº‹ä»¶è®¢é˜…
   m_EventSubscriptions.UnsubscribeAll();
 
-  // ¹Ø±Õ×é¼şÏµÍ³
+  // å…³é—­ç»„ä»¶ç³»ç»Ÿ
   m_SceneCore->ShutdownComponentSystems();
 
-  // °´ÕÕ³õÊ¼»¯µÄµ¹Ğò£¬ÒÀ´ÎCleanUp
+  // æŒ‰ç…§åˆå§‹åŒ–çš„å€’åºï¼Œä¾æ¬¡CleanUp
   CleanUpUI();
   CleanUpSceneView();
   CleanUpSceneGraph();
@@ -172,7 +172,7 @@ void MiteApplication::InitializeWindowWithOpenGL()
 {
   m_Logger->info("Initializing window with OpenGL mode");
 
-  // ³õÊ¼»¯OpenGL´°¿Ú
+  // åˆå§‹åŒ–OpenGLçª—å£
   m_Config = WindowConfig();
   m_Window = Window::Create();
   m_Window->Initialize(m_Config);
@@ -182,10 +182,10 @@ void MiteApplication::InitializeRenderWithOpenGL()
 {
   m_Logger->info("Initializing renderer with OpenGL mode");
 
-  // ³õÊ¼»¯ OpenGL Éè±¸
+  // åˆå§‹åŒ– OpenGL è®¾å¤‡
   IRenderDevice::SetCurrent(std::make_unique<OpenGLDevice>());
 
-  // ³õÊ¼»¯OpenGLäÖÈ¾Æ÷
+  // åˆå§‹åŒ–OpenGLæ¸²æŸ“å™¨
   m_Renderer = std::make_unique<OpenGLRenderer>();
   m_Renderer->Initialize();
 }
@@ -194,7 +194,7 @@ void MiteApplication::InitializeUI()
 {
   m_Logger->info("Initializing user interface");
 
-  // ³õÊ¼»¯UIÏµÍ³£¬ÒÀÀµWindow
+  // åˆå§‹åŒ–UIç³»ç»Ÿï¼Œä¾èµ–Window
   m_UISystem = std::make_unique<UISystem>();
   m_UISystem->Initialize(m_Window->GetNativeWindow());
 }
@@ -203,7 +203,7 @@ void MiteApplication::InitializeAssertManager()
 {
   m_Logger->info("Initializing asset manager");
 
-  // ³õÊ¼»¯×Ê²ú¹ÜÀíÆ÷
+  // åˆå§‹åŒ–èµ„äº§ç®¡ç†å™¨
   m_AssetManager = std::make_unique<AssetManager>();
 }
 
@@ -211,7 +211,7 @@ void MiteApplication::InitializeSceneCore()
 {
   m_Logger->info("Initializing scene core");
 
-  // ³õÊ¼»¯³¡¾°ºËĞÄ
+  // åˆå§‹åŒ–åœºæ™¯æ ¸å¿ƒ
   m_SceneCore = std::make_unique<SceneCore>();
 }
 
@@ -219,7 +219,7 @@ void MiteApplication::InitializeSceneView()
 {
   m_Logger->info("Initializing scene view");
 
-  // ³õÊ¼»¯³¡¾°ÊÓÍ¼
+  // åˆå§‹åŒ–åœºæ™¯è§†å›¾
   m_SceneView = std::make_unique<SceneView>();
 }
 
@@ -227,7 +227,7 @@ void MiteApplication::InitializeMaterialSystem()
 {
   m_Logger->info("Initializing material system");
 
-  // ³õÊ¼»¯²ÄÖÊÏµÍ³
+  // åˆå§‹åŒ–æè´¨ç³»ç»Ÿ
   m_MaterialSystem = std::make_unique<MaterialSystem>();
   m_MaterialSystem->Initialize();
 }
@@ -236,20 +236,20 @@ void MiteApplication::InitializeInputSystem()
 {
   m_Logger->info("Initializing input system");
 
-  // ´´½¨ÊäÈëÉÏÏÂÎÄÕ»ContextStack
+  // åˆ›å»ºè¾“å…¥ä¸Šä¸‹æ–‡æ ˆContextStack
   m_InputContextStack = std::make_shared<InputContextStack>();
 
-  // ³õÊ¼»¯ÊäÈëÏµÍ³,½«ÊäÈëÉÏÏÂÎÄÕ»ContextStack×¢Èëµ½Manager
+  // åˆå§‹åŒ–è¾“å…¥ç³»ç»Ÿ,å°†è¾“å…¥ä¸Šä¸‹æ–‡æ ˆContextStackæ³¨å…¥åˆ°Manager
   Input::Init(m_InputContextStack);
 
-  // ´´½¨±à¼­Æ÷ÉÏÏÂÎÄ
+  // åˆ›å»ºç¼–è¾‘å™¨ä¸Šä¸‹æ–‡
   // auto editorContext = std::make_shared<ModularInputContext>("Editor");
 
-  //// TODO: Îª±à¼­Æ÷ÉÏÏÂÎÄ×°Åä´¦ÀíÆ÷£¬ÒÔPropertyPanelProcessorÎªÀı
+  //// TODO: ä¸ºç¼–è¾‘å™¨ä¸Šä¸‹æ–‡è£…é…å¤„ç†å™¨ï¼Œä»¥PropertyPanelProcessorä¸ºä¾‹
   // std::shared_ptr<PropertyPanel> panel = std::make_shared<PropertyPanel>();
   // editorContext->AddProcessor(std::make_shared<PropertyPanelProcessor>(panel));
 
-  // ½«±à¼­Æ÷ÉÏÏÂÎÄÍÆÈëÈ«¾ÖÕ»
+  // å°†ç¼–è¾‘å™¨ä¸Šä¸‹æ–‡æ¨å…¥å…¨å±€æ ˆ
   // Input::PushContext(editorContext);
 }
 
@@ -285,10 +285,10 @@ void MiteApplication::InitializeSceneGraph()
 {
   m_Logger->info("Initializing scene graph");
 
-  // ³õÊ¼»¯³¡¾°Í¼
+  // åˆå§‹åŒ–åœºæ™¯å›¾
   m_SceneGraph = std::make_unique<SceneGraph>();
 
-  // ÔÚSceneCoreÄÚ×¢²áSceneGraphSystem
+  // åœ¨SceneCoreå†…æ³¨å†ŒSceneGraphSystem
   m_SceneGraph->Initialize(m_SceneCore->GetComponentSystemManager());
 }
 
@@ -302,75 +302,75 @@ void MiteApplication::CleanUpSceneView() {}
 
 void MiteApplication::BeginFrame()
 {
-  // Çå³ı»º³å
+  // æ¸…é™¤ç¼“å†²
   m_Renderer->BeginFrame();
 
-  // TODO£º¿ªÊ¼UIÖ¡
+  // TODOï¼šå¼€å§‹UIå¸§
   // m_UIManager->BeginFrame()
 
-  // ¸üĞÂÖ¡Í³¼ÆĞÅÏ¢
+  // æ›´æ–°å¸§ç»Ÿè®¡ä¿¡æ¯
   UpdateFrameStats();
 }
 
 void MiteApplication::Update()
 {
-  // 1. ¸üĞÂ³¡¾°×´Ì¬(ECSÏµÍ³¸üĞÂ)
+  // 1. æ›´æ–°åœºæ™¯çŠ¶æ€(ECSç³»ç»Ÿæ›´æ–°)
   m_SceneCore->OnUpdate(Time::DeltaTime());
 
-  // 2. SceneGraphSystemÍ¬²½ECS×´Ì¬µ½³¡¾°Í¼
-  //    - ´¦ÀíÊµÌå´´½¨/Ïú»Ù
-  //    - Í¬²½±ä»»Êı¾İ
+  // 2. SceneGraphSystemåŒæ­¥ECSçŠ¶æ€åˆ°åœºæ™¯å›¾
+  //    - å¤„ç†å®ä½“åˆ›å»º/é”€æ¯
+  //    - åŒæ­¥å˜æ¢æ•°æ®
   //
-  // TODO£ºSceneGraphSystem×÷ÎªComponentSystemÒÑ¾­×¢²áµ½SceneCoreµÄ×é¼ş¹ÜÀíÆ÷£¬
-  // ĞèÒªÃ÷È· m_SceneCore->OnUpdateµÄÖ´ĞĞË³Ğò£¬½«SceneGraphSystemË³Ğò·ÅÔÚ×îºó
+  // TODOï¼šSceneGraphSystemä½œä¸ºComponentSystemå·²ç»æ³¨å†Œåˆ°SceneCoreçš„ç»„ä»¶ç®¡ç†å™¨ï¼Œ
+  // éœ€è¦æ˜ç¡® m_SceneCore->OnUpdateçš„æ‰§è¡Œé¡ºåºï¼Œå°†SceneGraphSystemé¡ºåºæ”¾åœ¨æœ€å
 
-  // 3. ¸üĞÂDirtySceneNode£¬ÓÉSceneGraph¸ºÔğ
-  // ¸Ã²½ÖèÒ²ÓÉSceneGraphSystem¸ºÔğÁË¡£
+  // 3. æ›´æ–°DirtySceneNodeï¼Œç”±SceneGraphè´Ÿè´£
+  // è¯¥æ­¥éª¤ä¹Ÿç”±SceneGraphSystemè´Ÿè´£äº†ã€‚
 
-  // 4. VisibilityComponentSystemÖ´ĞĞ¿É¼ûĞÔ¼ÆËã
-  //    - Ê¹ÓÃSceneGraphµÄ¿Õ¼ä²éÑ¯½øĞĞÊÓ×¶Ìå²Ã¼ô
+  // 4. VisibilityComponentSystemæ‰§è¡Œå¯è§æ€§è®¡ç®—
+  //    - ä½¿ç”¨SceneGraphçš„ç©ºé—´æŸ¥è¯¢è¿›è¡Œè§†é”¥ä½“è£å‰ª
 
-  // TODO£º´¦Àí¶¯»­
+  // TODOï¼šå¤„ç†åŠ¨ç”»
   UpdateAnimations();
 
-  // TODO£º´¦Àí±à¼­Æ÷×´Ì¬¸üĞÂ
+  // TODOï¼šå¤„ç†ç¼–è¾‘å™¨çŠ¶æ€æ›´æ–°
   UpdateEditorState();
 
-  // TODO£º´¦Àí×ÊÔ´¼ÓÔØ¶ÓÁĞ
+  // TODOï¼šå¤„ç†èµ„æºåŠ è½½é˜Ÿåˆ—
   // m_AssetManager->ProcessLoadingQueue();
 
-  // TODO£º¸üĞÂ³¡¾°ÊÓÍ¼(½«ECSÊı¾İ×ª»»ÎªäÖÈ¾ÓÑºÃ¸ñÊ½)
+  // TODOï¼šæ›´æ–°åœºæ™¯è§†å›¾(å°†ECSæ•°æ®è½¬æ¢ä¸ºæ¸²æŸ“å‹å¥½æ ¼å¼)
   // m_SceneView->Update();
 }
 
 void MiteApplication::Render()
 {
-  // Ö÷³¡¾°äÖÈ¾
+  // ä¸»åœºæ™¯æ¸²æŸ“
 
-  // 1. »ñÈ¡Ö÷Ïà»ú£¬¹¹½¨ÊÓ×¶Ìå
+  // 1. è·å–ä¸»ç›¸æœºï¼Œæ„å»ºè§†é”¥ä½“
   std::shared_ptr<Camera> mainCamera = m_SceneCore->GetMainCamera();
   uint32_t mainCameraVisibilityMask = m_SceneCore->GetMainCameraVisibilityMask();
   if (!mainCamera)
     return;
   Frustum mainCameraFrustum(mainCamera->GetViewProjectionMatrix());
 
-  // 2. SceneGraphÖ´ĞĞÊÓ×¶Ìå²Ã¼ô²éÑ¯£¬»ñÈ¡¿É¼û½ÚµãÁĞ±í
+  // 2. SceneGraphæ‰§è¡Œè§†é”¥ä½“è£å‰ªæŸ¥è¯¢ï¼Œè·å–å¯è§èŠ‚ç‚¹åˆ—è¡¨
   std::vector<SceneNode *> visibleNodes = m_SceneGraph->QueryVisibleNodes(
       m_SceneCore->GetRegistry(), mainCameraFrustum, mainCameraVisibilityMask);
 
-  // 3. SceneView¸ù¾İ¿É¼û½ÚµãÁĞ±í¹¹½¨RendererQueue
+  // 3. SceneViewæ ¹æ®å¯è§èŠ‚ç‚¹åˆ—è¡¨æ„å»ºRendererQueue
   m_SceneView->Update(m_SceneCore->GetRegistry(), visibleNodes);
   std::shared_ptr<RenderQueue> renderQueue = m_SceneView->GetRenderQueue();
 
-  // 4. äÖÈ¾Æ÷äÖÈ¾³¡¾°
-  m_Renderer->RenderScene(mainCamera, renderQueue);  // äÖÈ¾³¡¾°
+  // 4. æ¸²æŸ“å™¨æ¸²æŸ“åœºæ™¯
+  m_Renderer->RenderScene(mainCamera, renderQueue);  // æ¸²æŸ“åœºæ™¯
 
-  // TODO£ºäÖÈ¾µ÷ÊÔĞÅÏ¢
+  // TODOï¼šæ¸²æŸ“è°ƒè¯•ä¿¡æ¯
   // if (m_ShowDebug) {
   //  m_Renderer->RenderDebug(m_SceneView->GetRenderData());
   //}
 
-  // TODO: Ô¤ÀÀ´°¿ÚäÖÈ¾
+  // TODO: é¢„è§ˆçª—å£æ¸²æŸ“
   // if (m_ShowPreviewWindow) {
   //  RenderPreview();
   //}
@@ -380,7 +380,7 @@ void MiteApplication::EndFrame()
 {
   m_Renderer->EndFrame();
 
-  // TODO: ´¦ÀíÑÓ³ÙÊÍ·ÅµÄ×ÊÔ´
+  // TODO: å¤„ç†å»¶è¿Ÿé‡Šæ”¾çš„èµ„æº
   // m_AssetManager->ProcessDeletionQueue();
 }
 
@@ -390,16 +390,16 @@ void MiteApplication::UpdateFrameStats() {}
 
 void MiteApplication::RenderUI()
 {
-  // ¿ªÊ¼UIÖ¡
+  // å¼€å§‹UIå¸§
   m_UISystem->BeginFrame();
 
-  // ¸üĞÂUIÂß¼­£¨´¦ÀíÊäÈë/¶¯»­µÈ£©
+  // æ›´æ–°UIé€»è¾‘ï¼ˆå¤„ç†è¾“å…¥/åŠ¨ç”»ç­‰ï¼‰
   m_UISystem->Update(Time::DeltaTime());
 
-  // äÖÈ¾ËùÓĞUIÃæ°å
+  // æ¸²æŸ“æ‰€æœ‰UIé¢æ¿
   m_UISystem->Render();
 
-  // ½áÊøµ±Ç°Ö¡
+  // ç»“æŸå½“å‰å¸§
   m_UISystem->EndFrame();
 }
 
@@ -426,7 +426,7 @@ bool MiteApplication::OnWindowClose(WindowCloseEvent &e)
   m_Logger->info("Window close event triggered.");
   m_ShouldClose = true;
 
-  // ±ê¼ÇÊÂ¼şÒÑ´¦Àí£¬×è¶Ï´«²¥
+  // æ ‡è®°äº‹ä»¶å·²å¤„ç†ï¼Œé˜»æ–­ä¼ æ’­
   e.Handled();
   return e.handled;
 }

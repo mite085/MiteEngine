@@ -8,68 +8,68 @@
 namespace mite {
 
 /**
- * @brief ImGuiÑùÊ½ÊÊÅäÆ÷
- * ¸ºÔğ½«ÒıÇæµÄUIStyleÏµÍ³ÓëImGuiµÄÑùÊ½ÏµÍ³½øĞĞÇÅ½Ó
+ * @brief ImGuiæ ·å¼é€‚é…å™¨
+ * è´Ÿè´£å°†å¼•æ“çš„UIStyleç³»ç»Ÿä¸ImGuiçš„æ ·å¼ç³»ç»Ÿè¿›è¡Œæ¡¥æ¥
  */
 class ImGuiStyleAdapter {
  public:
   ImGuiStyleAdapter();
   ~ImGuiStyleAdapter() = default;
 
-  // ³õÊ¼»¯
+  // åˆå§‹åŒ–
   void Initialize();
 
-  // ¹Ø±Õ
+  // å…³é—­
   void Shutdown();
 
-  // ´ÓUIStyleÓ¦ÓÃµ½ImGui
+  // ä»UIStyleåº”ç”¨åˆ°ImGui
   bool ApplyUIStyle(const std::shared_ptr<UIStyle> uiStyle);
 
-  // ´ÓImGuiÑùÊ½µ¼³öµ½UIStyle
+  // ä»ImGuiæ ·å¼å¯¼å‡ºåˆ°UIStyle
   std::shared_ptr<UIStyle> ExportToUIStyle(const std::string &styleName);
 
-  // »ñÈ¡ImGuiÑùÊ½ÒıÓÃ
+  // è·å–ImGuiæ ·å¼å¼•ç”¨
   ImGuiStyle &GetImGuiStyle();
 
  private:
-  // Ó³ÉäUIStyleÊôĞÔµ½ImGuiÑùÊ½
+  // æ˜ å°„UIStyleå±æ€§åˆ°ImGuiæ ·å¼
   void MapUIStyleToImGui(const std::shared_ptr<UIStyle> &uiStyle);
 
-  // Ó³ÉäÑÕÉ«ÊôĞÔ
+  // æ˜ å°„é¢œè‰²å±æ€§
   void MapColorProperties(const std::shared_ptr<UIStyle> &uiStyle);
 
-  // Ó³Éä³ß´çÊôĞÔ
+  // æ˜ å°„å°ºå¯¸å±æ€§
   void MapSizeProperties(const std::shared_ptr<UIStyle> &uiStyle);
 
-  // Ó³ÉäÃ¶¾ÙÊôĞÔ
+  // æ˜ å°„æšä¸¾å±æ€§
   void MapEnumProperties(const std::shared_ptr<UIStyle> &uiStyle);
 
-  // Ó³Éä±ß¿òÊôĞÔ
+  // æ˜ å°„è¾¹æ¡†å±æ€§
   void MapBorderProperties(const std::shared_ptr<UIStyle> &uiStyle);
 
-  // Ó³Éä¼ä¾àÊôĞÔ
+  // æ˜ å°„é—´è·å±æ€§
   void MapSpacingProperties(const std::shared_ptr<UIStyle> &uiStyle);
 
-  // ÉèÖÃImGuiÑÕÉ«
+  // è®¾ç½®ImGuié¢œè‰²
   void SetImGuiColor(ImGuiCol colorIndex, const glm::vec4 &color);
 
-  // ´´½¨Ä¬ÈÏÑùÊ½Ó³Éä±í
+  // åˆ›å»ºé»˜è®¤æ ·å¼æ˜ å°„è¡¨
   void CreateDefaultStyleMappings();
 
-  // ÑùÊ½±ä¸üÊÂ¼şÏìÓ¦
+  // æ ·å¼å˜æ›´äº‹ä»¶å“åº”
   bool OnStyleChanged(StyleChangedEvent &event);
 
   Logger m_Logger;
   ImGuiStyle m_BackupStyle;
 
-  // ÑùÊ½Ó³ÉäÅäÖÃ
+  // æ ·å¼æ˜ å°„é…ç½®
   std::unordered_map<std::string, ImGuiCol> m_ColorMappings;
   std::unordered_map<std::string, std::function<void(ImGuiDir)>> m_EnumMappings;
   std::unordered_map<std::string, std::function<void(float)>> m_SizeMappings;
   std::unordered_map<std::string, std::function<void(float)>> m_BorderMappings;
   std::unordered_map<std::string, std::function<void(float)>> m_SpacingMappings;
 
-  // ÊÂ¼ş¶©ÔÄ
+  // äº‹ä»¶è®¢é˜…
   SubscriptionGroup m_EventSubscriptions;
 };
 

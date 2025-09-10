@@ -7,7 +7,7 @@ MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> material)
 {
 }
 
-// ²ÄÖÊ»ù´¡²Ù×÷ ========================================
+// æè´¨åŸºç¡€æ“ä½œ ========================================
 std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterial() const
 {
   return m_Material;
@@ -25,7 +25,7 @@ void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
 //void MaterialComponent::SetMaterialFromTemplate(const std::string &templateName)
 //{
 //  try {
-//    // TODO: ´´½¨³öµÄnewMaterialÖÇÄÜÖ¸ÕëÃ»ÓĞºóĞøÎ¬»¤£¬²»ÍÆ¼öÊ¹ÓÃ
+//    // TODO: åˆ›å»ºå‡ºçš„newMaterialæ™ºèƒ½æŒ‡é’ˆæ²¡æœ‰åç»­ç»´æŠ¤ï¼Œä¸æ¨èä½¿ç”¨
 //    std::shared_ptr<MaterialInstance> newMaterial = MaterialSystem::Get().CreateInstance(
 //        templateName);
 //    SetMaterial(newMaterial);
@@ -41,13 +41,13 @@ bool MaterialComponent::HasMaterial() const
   return m_Material != nullptr;
 }
 
-// ×ÅÉ«Æ÷¿ØÖÆ ==========================================
+// ç€è‰²å™¨æ§åˆ¶ ==========================================
 std::shared_ptr<OpenGLShader> MaterialComponent::GetShader() const
 {
   return m_Material ? m_Material->GetShader() : nullptr;
 }
 
-// ²ÄÖÊ²ÎÊı¿ØÖÆ ========================================
+// æè´¨å‚æ•°æ§åˆ¶ ========================================
 
 void MaterialComponent::SetFloatParam(const std::string &name, float value)
 {
@@ -75,7 +75,7 @@ void MaterialComponent::SetTextureParam(const std::string &name, std::shared_ptr
   MarkDirty();
 }
 
-// ×é¼ş½Ó¿ÚÊµÏÖ ========================================
+// ç»„ä»¶æ¥å£å®ç° ========================================
 std::vector<std::type_index> MaterialComponent::GetDependencies() const
 {
   return {};
@@ -83,47 +83,47 @@ std::vector<std::type_index> MaterialComponent::GetDependencies() const
 
 bool MaterialComponent::Serialize(std::ostream &output) const
 {
-  Component::Serialize(output);  // ĞòÁĞ»¯»ùÀàÊı¾İ
+  Component::Serialize(output);  // åºåˆ—åŒ–åŸºç±»æ•°æ®
 
-  // TODO: ÊµÏÖ²ÄÖÊ²ÎÊıµÄĞòÁĞ»¯
-  // ĞèÒª¿¼ÂÇÎÆÀí×ÊÔ´µÄÒıÓÃĞòÁĞ»¯
+  // TODO: å®ç°æè´¨å‚æ•°çš„åºåˆ—åŒ–
+  // éœ€è¦è€ƒè™‘çº¹ç†èµ„æºçš„å¼•ç”¨åºåˆ—åŒ–
 
   return !output.fail();
 }
 
 bool MaterialComponent::Deserialize(std::istream &input)
 {
-  Component::Deserialize(input);  // ·´ĞòÁĞ»¯»ùÀàÊı¾İ
+  Component::Deserialize(input);  // ååºåˆ—åŒ–åŸºç±»æ•°æ®
 
-  // TODO: ÊµÏÖ²ÄÖÊ²ÎÊıµÄ·´ĞòÁĞ»¯
+  // TODO: å®ç°æè´¨å‚æ•°çš„ååºåˆ—åŒ–
 
   return !input.fail();
 }
 
-// Material×é¼şÏµÍ³ÊµÏÖ ==================================
+// Materialç»„ä»¶ç³»ç»Ÿå®ç° ==================================
 std::vector<std::type_index> MaterialComponentSystem::GetSystemDependencies() const
 {
-  return {typeid(MeshComponentSystem)};  // Í¨³£ÓëMeshÅäºÏÊ¹ÓÃ
+  return {typeid(MeshComponentSystem)};  // é€šå¸¸ä¸Meshé…åˆä½¿ç”¨
 }
 
 void MaterialComponentSystem::Initialize()
 {
   DirtyComponentSystem<MaterialComponent>::Initialize();
-  // ³õÊ¼»¯²ÄÖÊÏµÍ³×ÊÔ´
+  // åˆå§‹åŒ–æè´¨ç³»ç»Ÿèµ„æº
 }
 
 void MaterialComponentSystem::Shutdown()
 {
   DirtyComponentSystem<MaterialComponent>::Shutdown();
-  // ÇåÀí²ÄÖÊÏµÍ³×ÊÔ´
+  // æ¸…ç†æè´¨ç³»ç»Ÿèµ„æº
 }
 
 void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
 {
-  // ´¦Àí²ÄÖÊ²ÎÊı¶¯»­µÈÃ¿Ö¡¸üĞÂ
+  // å¤„ç†æè´¨å‚æ•°åŠ¨ç”»ç­‰æ¯å¸§æ›´æ–°
   auto view = registry.GetEntitiesWith<MaterialComponent>();
 
-  // °´²ÄÖÊ·Ö×éÒÔ¼õÉÙ×´Ì¬ÇĞ»»
+  // æŒ‰æè´¨åˆ†ç»„ä»¥å‡å°‘çŠ¶æ€åˆ‡æ¢
   std::unordered_map<MaterialInstance *, std::vector<Entity>> materialGroups;
   for (auto entity : view) {
     auto &matComp = registry.GetComponent<MaterialComponent>(entity);
@@ -132,14 +132,14 @@ void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
     }
   }
 
-  // ÅúÁ¿Ìá½»µ½äÖÈ¾Æ÷
+  // æ‰¹é‡æäº¤åˆ°æ¸²æŸ“å™¨
   for (const auto &[material, entities] : materialGroups) {
-    // °ó¶¨²ÄÖÊ×´Ì¬
+    // ç»‘å®šæè´¨çŠ¶æ€
     // material->Apply();
 
-    // Ìá½»¹ØÁªÊµÌå
+    // æäº¤å…³è”å®ä½“
     for (Entity entity : entities) {
-      // Ê¾Àı£º»ùÓÚÊµÌåÎ»ÖÃ£¬ĞŞ¸Äu_Model²ÄÖÊ²ÎÊı£¬£¨¿ÉÓÃÓÚÊµÏÖ²»Í¬º£°Î¸ß¶ÈÏÂ²»Í¬É«²Ê±íÏÖ£©
+      // ç¤ºä¾‹ï¼šåŸºäºå®ä½“ä½ç½®ï¼Œä¿®æ”¹u_Modelæè´¨å‚æ•°ï¼Œï¼ˆå¯ç”¨äºå®ç°ä¸åŒæµ·æ‹”é«˜åº¦ä¸‹ä¸åŒè‰²å½©è¡¨ç°ï¼‰
       // if (registry.HasComponent<TransformComponent>(entity)) {
       //  const auto &transform = registry.GetComponent<TransformComponent>(entity);
       //  material->GetShader()->SetMat4("u_Model", transform.GetWorldMatrix(registry));

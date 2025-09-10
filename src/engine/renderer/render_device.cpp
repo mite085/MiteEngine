@@ -1,7 +1,7 @@
 #include "render_device.h"
 
 namespace {
-// ¾²Ì¬±äÁ¿Òş²ØÔÚÄäÃûnamespaceÖĞ
+// é™æ€å˜é‡éšè—åœ¨åŒ¿ånamespaceä¸­
 std::mutex &GetDeviceMutex()
 {
   static std::mutex mutex;
@@ -16,7 +16,7 @@ std::unique_ptr<mite::IRenderDevice> &GetCurrentDevice()
 }  // namespace
 
 namespace mite {
-// ---- ÊµÏÖ¾²Ì¬·½·¨ ----
+// ---- å®ç°é™æ€æ–¹æ³• ----
 IRenderDevice &IRenderDevice::Current()
 {
   std::lock_guard<std::mutex> lock(GetDeviceMutex());
@@ -33,7 +33,7 @@ void IRenderDevice::SetCurrent(std::unique_ptr<IRenderDevice> device)
 }
 IRenderDevice::IRenderDevice()
 {
-  // ¶©ÔÄÊÂ¼ş
+  // è®¢é˜…äº‹ä»¶
   m_EventSubscriptions.Subscribe<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded));
   m_EventSubscriptions.Subscribe<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded));
 }

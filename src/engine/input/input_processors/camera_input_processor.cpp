@@ -2,13 +2,13 @@
 #include "input/input_manager.h"
 
 namespace mite {
-// ÈÕÖ¾ÏµÍ³
+// æ—¥å¿—ç³»ç»Ÿ
 Logger CameraInputProcessor::s_Logger = nullptr;
 
 CameraInputProcessor::CameraInputProcessor(std::shared_ptr<Camera> camera)
     : m_Camera(std::move(camera))
 {
-  // Ê×´Î´´½¨Ê±³õÊ¼»¯ÈÕÖ¾ÏµÍ³
+  // é¦–æ¬¡åˆ›å»ºæ—¶åˆå§‹åŒ–æ—¥å¿—ç³»ç»Ÿ
   if (!s_Logger) {
     s_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Input Processor: Camera");
     s_Logger->trace("Created Input Processor: Camera");
@@ -18,7 +18,7 @@ CameraInputProcessor::CameraInputProcessor(std::shared_ptr<Camera> camera)
 void CameraInputProcessor::UpdateCameraTransform(float deltaTime)
 {
   if (glm::length(m_InputState.moveDirection) > 0.01f) {
-    // ±ê×¼»¯ÒÆ¶¯·½Ïò²¢Ó¦ÓÃËÙ¶ÈºÍÖ¡Ê±¼ä
+    // æ ‡å‡†åŒ–ç§»åŠ¨æ–¹å‘å¹¶åº”ç”¨é€Ÿåº¦å’Œå¸§æ—¶é—´
     glm::vec3 moveDir = glm::normalize(m_InputState.moveDirection);
     glm::vec3 worldMove = moveDir.x * m_Camera->GetRightVector() +
                           moveDir.y * m_Camera->GetUpVector() +
@@ -28,28 +28,28 @@ void CameraInputProcessor::UpdateCameraTransform(float deltaTime)
   }
 }
 
-// --- Ë½ÓÐ·½·¨ÊµÏÖ ---
+// --- ç§æœ‰æ–¹æ³•å®žçŽ° ---
 bool CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
 {
   if (!m_InputState.rotating && !m_InputState.panning)
-    return false;  // Î´´¦ÀíÊÂ¼þ
+    return false;  // æœªå¤„ç†äº‹ä»¶
 
   const glm::vec2 currentPos = {e.GetXPos(), e.GetYPos()};
   const glm::vec2 delta = currentPos - m_LastMousePos;
   m_LastMousePos = currentPos;
 
   if (m_InputState.rotating) {
-    // ÓÒ¼üÐý×ªÊÓ½Ç
+    // å³é”®æ—‹è½¬è§†è§’
     m_Camera->Rotate(-delta.x * m_RotationSpeed, -delta.y * m_RotationSpeed);
-    return true;  // ÊÂ¼þÒÑ´¦Àí
+    return true;  // äº‹ä»¶å·²å¤„ç†
   }
   else if (m_InputState.panning) {
-    // ÖÐ¼üÆ½ÒÆÊÓ½Ç
+    // ä¸­é”®å¹³ç§»è§†è§’
     m_Camera->Pan(delta.x * float(0.01) * m_MoveSpeed, -delta.y * float(0.01) * m_MoveSpeed);
-    return true;  // ÊÂ¼þÒÑ´¦Àí
+    return true;  // äº‹ä»¶å·²å¤„ç†
   }
 
-  return false;  // Ä¬ÈÏ·µ»ØÎ´´¦Àí
+  return false;  // é»˜è®¤è¿”å›žæœªå¤„ç†
 }
 
 bool CameraInputProcessor::handleMouseButtonPressed(MouseButtonPressedEvent &e)
@@ -57,23 +57,23 @@ bool CameraInputProcessor::handleMouseButtonPressed(MouseButtonPressedEvent &e)
   const bool pressed = true;
 
   if (e.GetButton() == GLFW_MOUSE_BUTTON_RIGHT) {
-    // ÓÒ¼üÐý×ª¿ØÖÆ
+    // å³é”®æ—‹è½¬æŽ§åˆ¶
     m_InputState.rotating = pressed;
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
-    return true;  // ÊÂ¼þÒÑ´¦Àí
+    return true;  // äº‹ä»¶å·²å¤„ç†
   }
   else if (e.GetButton() == GLFW_MOUSE_BUTTON_MIDDLE) {
-    // ÖÐ¼üÆ½ÒÆ¿ØÖÆ
+    // ä¸­é”®å¹³ç§»æŽ§åˆ¶
     m_InputState.panning = pressed;
     if (pressed) {
       m_LastMousePos = {e.GetXPos(), e.GetYPos()};
     }
-    return true;  // ÊÂ¼þÒÑ´¦Àí
+    return true;  // äº‹ä»¶å·²å¤„ç†
   }
 
-  return false;  // Î´´¦ÀíÆäËû°´Å¥ÊÂ¼þ
+  return false;  // æœªå¤„ç†å…¶ä»–æŒ‰é’®äº‹ä»¶
 }
 
 bool CameraInputProcessor::handleMouseButtonReleased(MouseButtonReleasedEvent &e)
@@ -81,29 +81,29 @@ bool CameraInputProcessor::handleMouseButtonReleased(MouseButtonReleasedEvent &e
   const bool pressed = false;
 
   if (e.GetButton() == GLFW_MOUSE_BUTTON_RIGHT) {
-    // ÓÒ¼üÐý×ª¿ØÖÆ
+    // å³é”®æ—‹è½¬æŽ§åˆ¶
     m_InputState.rotating = pressed;
-    return true;  // ÊÂ¼þÒÑ´¦Àí
+    return true;  // äº‹ä»¶å·²å¤„ç†
   }
   else if (e.GetButton() == GLFW_MOUSE_BUTTON_MIDDLE) {
-    // ÖÐ¼üÆ½ÒÆ¿ØÖÆ
+    // ä¸­é”®å¹³ç§»æŽ§åˆ¶
     m_InputState.panning = pressed;
-    return true;  // ÊÂ¼þÒÑ´¦Àí
+    return true;  // äº‹ä»¶å·²å¤„ç†
   }
 
-  return false;  // Î´´¦ÀíÆäËû°´Å¥ÊÂ¼þ
+  return false;  // æœªå¤„ç†å…¶ä»–æŒ‰é’®äº‹ä»¶
 }
 
 bool CameraInputProcessor::handleMouseScroll(MouseScrollEvent &e)
 {
-  // ³£¹æÊó±ê½ö´æÔÚY·½ÏòÊó±ê£¬½öÐè´¦ÀíYÖá¡£
+  // å¸¸è§„é¼ æ ‡ä»…å­˜åœ¨Yæ–¹å‘é¼ æ ‡ï¼Œä»…éœ€å¤„ç†Yè½´ã€‚
   m_Camera->Zoom(float(e.GetYOffset()) * m_ZoomSpeed);
-  return true;  // ¹öÂÖÊÂ¼þÊ¼ÖÕÊÓÎªÒÑ´¦Àí
+  return true;  // æ»šè½®äº‹ä»¶å§‹ç»ˆè§†ä¸ºå·²å¤„ç†
 }
 
 bool CameraInputProcessor::handleKeyPressedEvent(KeyPressedEvent &e)
 {
-  // ¼ÇÂ¼°´¼ü°´ÏÂ×´Ì¬
+  // è®°å½•æŒ‰é”®æŒ‰ä¸‹çŠ¶æ€
   m_InputState.keyStates[e.GetKey()] = true;
   UpdateMoveDirection();
   return true;
@@ -111,7 +111,7 @@ bool CameraInputProcessor::handleKeyPressedEvent(KeyPressedEvent &e)
 
 bool CameraInputProcessor::handleKeyReleasedEvent(KeyReleasedEvent &e)
 {
-  // ¼ÇÂ¼°´¼üÊÍ·Å×´Ì¬
+  // è®°å½•æŒ‰é”®é‡Šæ”¾çŠ¶æ€
   m_InputState.keyStates[e.GetKey()] = false;
   UpdateMoveDirection();
   return true;
@@ -119,27 +119,27 @@ bool CameraInputProcessor::handleKeyReleasedEvent(KeyReleasedEvent &e)
 
 void CameraInputProcessor::UpdateMoveDirection()
 {
-  // ÖØÖÃÒÆ¶¯·½Ïò
+  // é‡ç½®ç§»åŠ¨æ–¹å‘
   m_InputState.moveDirection = glm::vec3(0.0f);
 
-  // ¸ù¾ÝËùÓÐ°´¼ü×´Ì¬¼ÆËã×îÖÕÒÆ¶¯·½Ïò£¨±ÜÃâ°´¼ü¾ºÕù£¬µ±WSÍ¬Ê±°´ÏÂÊ±£¬»¥ÏàµÖÏû£©
+  // æ ¹æ®æ‰€æœ‰æŒ‰é”®çŠ¶æ€è®¡ç®—æœ€ç»ˆç§»åŠ¨æ–¹å‘ï¼ˆé¿å…æŒ‰é”®ç«žäº‰ï¼Œå½“WSåŒæ—¶æŒ‰ä¸‹æ—¶ï¼Œäº’ç›¸æŠµæ¶ˆï¼‰
   if (m_InputState.keyStates[GLFW_KEY_W])
-    // ÓëGetForwardVector()Ïà³Ë£¬W°´¼ü(Ç°½ø)ÎªÕý
+    // ä¸ŽGetForwardVector()ç›¸ä¹˜ï¼ŒWæŒ‰é”®(å‰è¿›)ä¸ºæ­£
     m_InputState.moveDirection.z += 1.0f;   
   if (m_InputState.keyStates[GLFW_KEY_S])
     m_InputState.moveDirection.z -= 1.0f;
   if (m_InputState.keyStates[GLFW_KEY_A])
     m_InputState.moveDirection.x -= 1.0f;
   if (m_InputState.keyStates[GLFW_KEY_D])
-    // ÓëGetRightVector()Ïà³Ë£¬R°´¼ü(ÏòÓÒ)ÎªÕý
+    // ä¸ŽGetRightVector()ç›¸ä¹˜ï¼ŒRæŒ‰é”®(å‘å³)ä¸ºæ­£
     m_InputState.moveDirection.x += 1.0f;   
   if (m_InputState.keyStates[GLFW_KEY_Q])
     m_InputState.moveDirection.y -= 1.0f;
   if (m_InputState.keyStates[GLFW_KEY_E])
-    // ÓëGetUpVector()Ïà³Ë£¬E°´¼ü(ÏòÉÏ)ÎªÕý
+    // ä¸ŽGetUpVector()ç›¸ä¹˜ï¼ŒEæŒ‰é”®(å‘ä¸Š)ä¸ºæ­£
     m_InputState.moveDirection.y += 1.0f;   
 
-  // ¿ÉÑ¡£º¹éÒ»»¯¶Ô½ÇÏßÒÆ¶¯
+  // å¯é€‰ï¼šå½’ä¸€åŒ–å¯¹è§’çº¿ç§»åŠ¨
   if (glm::length(m_InputState.moveDirection) > 1.0f) {
     m_InputState.moveDirection = glm::normalize(m_InputState.moveDirection);
   }

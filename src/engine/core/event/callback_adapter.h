@@ -5,8 +5,8 @@
 
 namespace mite {
 /**
- * @brief ³éÏó»Øµ÷ÊÊÅäÆ÷»ùÀà
- * @tparam SourceType Ô­Ê¼»Øµ÷Êı¾İÀ´Ô´ÀàĞÍ£¨ÈçGLFWwindow*, entt::registry*£©
+ * @brief æŠ½è±¡å›è°ƒé€‚é…å™¨åŸºç±»
+ * @tparam SourceType åŸå§‹å›è°ƒæ•°æ®æ¥æºç±»å‹ï¼ˆå¦‚GLFWwindow*, entt::registry*ï¼‰
  */
 template<typename SourceType> class CallbackAdapter {
  public:
@@ -14,13 +14,13 @@ template<typename SourceType> class CallbackAdapter {
   virtual ~CallbackAdapter() = default;
 
   /**
-   * @brief ×¢²áËùÓĞ»Øµ÷µ½Ô­Ê¼ÏµÍ³
-   * @param source Ô­Ê¼ÏµÍ³¶ÔÏóÖ¸Õë
+   * @brief æ³¨å†Œæ‰€æœ‰å›è°ƒåˆ°åŸå§‹ç³»ç»Ÿ
+   * @param source åŸå§‹ç³»ç»Ÿå¯¹è±¡æŒ‡é’ˆ
    */
   virtual void RegisterCallbacks(SourceType source) = 0;
 
   /**
-   * @brief ×¢ÏúËùÓĞ»Øµ÷
+   * @brief æ³¨é”€æ‰€æœ‰å›è°ƒ
    */
   virtual void UnregisterCallbacks() = 0;
 };

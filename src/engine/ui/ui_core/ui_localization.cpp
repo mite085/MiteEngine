@@ -5,7 +5,7 @@ namespace mite {
 
 UILocalization &UILocalization::Get()
 {
-  // 当前唯一后端为Json翻译系统
+  // 褰撳墠鍞竴鍚庣涓篔son缈昏瘧绯荤粺
   static UILocalizationJson instance;
 
   return instance;

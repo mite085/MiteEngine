@@ -11,85 +11,85 @@
 
 namespace mite {
 /**
- * @brief ÊÂ¼ş×ÜÏßÏµÍ³ - ºËĞÄÀà
+ * @brief äº‹ä»¶æ€»çº¿ç³»ç»Ÿ - æ ¸å¿ƒç±»
  *
- * ¸ºÔğ¹ÜÀíÊÂ¼şµÄ¶©ÔÄºÍ·Ö·¢£¬×÷ÎªÏµÍ³ÖĞ¸÷¸öÄ£¿é¼äÍ¨ĞÅµÄÊàÅ¦
+ * è´Ÿè´£ç®¡ç†äº‹ä»¶çš„è®¢é˜…å’Œåˆ†å‘ï¼Œä½œä¸ºç³»ç»Ÿä¸­å„ä¸ªæ¨¡å—é—´é€šä¿¡çš„æ¢çº½
  *
- * Ê¹ÓÃÊ¾Àı£º£¨×¢Òâ£ºµÚ¶ş²½ºÍµÚËÄ²½¿ÉÒÔÓÉSubscriptionGroup´úÎªÊµÏÖ£©
+ * ä½¿ç”¨ç¤ºä¾‹ï¼šï¼ˆæ³¨æ„ï¼šç¬¬äºŒæ­¥å’Œç¬¬å››æ­¥å¯ä»¥ç”±SubscriptionGroupä»£ä¸ºå®ç°ï¼‰
  * 
- * 1. ´´½¨²¢·¢²¼ÊÂ¼ş£¨´¥·¢ÊÂ¼ş£©£º
+ * 1. åˆ›å»ºå¹¶å‘å¸ƒäº‹ä»¶ï¼ˆè§¦å‘äº‹ä»¶ï¼‰ï¼š
  *      mite::EventBus::Get().Post(event);
- * 2. ¶©ÔÄÊÂ¼ş£¨ÔÚÄ£¿éInitializeÊ±¶©ÔÄ£¬onXxxEventÎª´¦Àí¸ÃÊÂ¼şµÄÂß¼­£©£º
+ * 2. è®¢é˜…äº‹ä»¶ï¼ˆåœ¨æ¨¡å—Initializeæ—¶è®¢é˜…ï¼ŒonXxxEventä¸ºå¤„ç†è¯¥äº‹ä»¶çš„é€»è¾‘ï¼‰ï¼š
  *      m_XxxHandler = mite::EventBus::Get().Subscribe<XxxEvent>(BIND_DISPATCH_FN(onXxxEvent));
- * 3. ´¥·¢ÊÂ¼ş£¨Ö÷Ñ­»·µ÷ÓÃProcessQueue()×Ô¶¯´¥·¢onEventº¯Êı£©
+ * 3. è§¦å‘äº‹ä»¶ï¼ˆä¸»å¾ªç¯è°ƒç”¨ProcessQueue()è‡ªåŠ¨è§¦å‘onEventå‡½æ•°ï¼‰
  *      while (window.IsRunning()) {
  *          mite::EventBus::Get().ProcessQueue();
  *      }
- * 4. È¡Ïû¶©ÔÄ£¨ÔÚÄ£¿éShutDownÊ±È¡Ïû£©£º
+ * 4. å–æ¶ˆè®¢é˜…ï¼ˆåœ¨æ¨¡å—ShutDownæ—¶å–æ¶ˆï¼‰ï¼š
  *      mite::EventBus::Get().Unsubscribe(m_XxxHandler);
  */
 class EventBus {
  public:
-  using EventHandler = std::function<void(Event &)>;  // ÊÂ¼ş´¦Àíº¯ÊıÀàĞÍ
-  using HandlerID = size_t;                           // ´¦ÀíÆ÷IDÀàĞÍ
+  using EventHandler = std::function<void(Event &)>;  // äº‹ä»¶å¤„ç†å‡½æ•°ç±»å‹
+  using HandlerID = size_t;                           // å¤„ç†å™¨IDç±»å‹
 
   /**
-   * @brief µ¥ÀıÄ£Ê½£º»ñÈ¡È«¾ÖÎ¨Ò»ÊµÀı
-   * @return EventBusµ¥ÀıµÄÒıÓÃ
+   * @brief å•ä¾‹æ¨¡å¼ï¼šè·å–å…¨å±€å”¯ä¸€å®ä¾‹
+   * @return EventBuså•ä¾‹çš„å¼•ç”¨
    * 
-   * Ê¹ÓÃ"Meyer's singleton"·½Ê½£¨¼´º¯Êı¾Ö²¿¾²Ì¬±äÁ¿£©
-   * ÕâÖÖÊµÏÖ¾ßÓĞÒÔÏÂÌØĞÔ£º
-   * Ïß³Ì°²È«£ºC++11±ê×¼±£Ö¤¾²Ì¬¾Ö²¿±äÁ¿µÄ³õÊ¼»¯ÊÇÏß³Ì°²È«µÄ
-   * °´Ğè¹¹Ôì£ºÖ»ÓĞÔÚµÚÒ»´Îµ÷ÓÃGet()Ê±²Å´´½¨ÊµÀı
-   * ×Ô¶¯Ïú»Ù£º³ÌĞò½áÊøÊ±×Ô¶¯µ÷ÓÃÎö¹¹º¯Êı
+   * ä½¿ç”¨"Meyer's singleton"æ–¹å¼ï¼ˆå³å‡½æ•°å±€éƒ¨é™æ€å˜é‡ï¼‰
+   * è¿™ç§å®ç°å…·æœ‰ä»¥ä¸‹ç‰¹æ€§ï¼š
+   * çº¿ç¨‹å®‰å…¨ï¼šC++11æ ‡å‡†ä¿è¯é™æ€å±€éƒ¨å˜é‡çš„åˆå§‹åŒ–æ˜¯çº¿ç¨‹å®‰å…¨çš„
+   * æŒ‰éœ€æ„é€ ï¼šåªæœ‰åœ¨ç¬¬ä¸€æ¬¡è°ƒç”¨Get()æ—¶æ‰åˆ›å»ºå®ä¾‹
+   * è‡ªåŠ¨é”€æ¯ï¼šç¨‹åºç»“æŸæ—¶è‡ªåŠ¨è°ƒç”¨ææ„å‡½æ•°
    */
   static EventBus &Get()
   {
     static EventBus instance;
     return instance;
   }
-  // ¸¨ÖúµÄ·¢²¼º¯Êı
+  // è¾…åŠ©çš„å‘å¸ƒå‡½æ•°
   template<typename T>
   static void Publish(T& event) {
     Get().Post<T>(event);
   }
 
-  // É¾³ı¿½±´¹¹Ôìº¯ÊıºÍ¸³ÖµÔËËã·û
+  // åˆ é™¤æ‹·è´æ„é€ å‡½æ•°å’Œèµ‹å€¼è¿ç®—ç¬¦
   EventBus(const EventBus &) = delete;
   EventBus &operator=(const EventBus &) = delete;
 
   /**
-   * @brief ¶©ÔÄÖ¸¶¨ÀàĞÍµÄÊÂ¼ş
-   * @tparam T ÊÂ¼şÀàĞÍ
-   * @param handler ÊÂ¼ş´¦Àíº¯Êı
-   * @return HandlerID ÓÃÓÚÈ¡Ïû¶©ÔÄµÄID
+   * @brief è®¢é˜…æŒ‡å®šç±»å‹çš„äº‹ä»¶
+   * @tparam T äº‹ä»¶ç±»å‹
+   * @param handler äº‹ä»¶å¤„ç†å‡½æ•°
+   * @return HandlerID ç”¨äºå–æ¶ˆè®¢é˜…çš„ID
    */
   template<typename T> HandlerID Subscribe(EventFn<T> handler)
   {
     static_assert(std::is_base_of<Event, T>::value, "T must inherit from Event");
 
-    // ½«´¦Àíº¯Êı×ª»»ÎªÍ¨ÓÃÊÂ¼ş´¦Àíº¯Êı
+    // å°†å¤„ç†å‡½æ•°è½¬æ¢ä¸ºé€šç”¨äº‹ä»¶å¤„ç†å‡½æ•°
     auto genericHandler = [handler](Event &event) -> bool {
-      // Ê¹ÓÃDispatcherÈ·±£ÀàĞÍ°²È«
+      // ä½¿ç”¨Dispatcherç¡®ä¿ç±»å‹å®‰å…¨
       EventDispatcher dispatcher(event);
       return dispatcher.Dispatch<T>(handler);
     };
 
-    // »ñÈ¡ÊÂ¼şÀàĞÍtypeIndex×÷Îª¼ü
+    // è·å–äº‹ä»¶ç±»å‹typeIndexä½œä¸ºé”®
     HandlerID id = m_NextHandlerID++;
     std::type_index typeIndex = typeid(T);
 
-    // ´æ´¢´¦Àíº¯Êı
+    // å­˜å‚¨å¤„ç†å‡½æ•°
     m_Subscribers[typeIndex].emplace_back(id, genericHandler);
     m_HandlerTypes[id] = &typeid(T);
     return id;
   }
 
   /**
-   * @brief ¶©ÔÄÖ¸¶¨Àà±ğµÄÊÂ¼ş
-   * @param category ÊÂ¼şÀà±ğ(EventCategoryÃ¶¾ÙÖµ)
-   * @param handler ÊÂ¼ş´¦Àíº¯Êı
-   * @return HandlerID ÓÃÓÚÈ¡Ïû¶©ÔÄµÄID
+   * @brief è®¢é˜…æŒ‡å®šç±»åˆ«çš„äº‹ä»¶
+   * @param category äº‹ä»¶ç±»åˆ«(EventCategoryæšä¸¾å€¼)
+   * @param handler äº‹ä»¶å¤„ç†å‡½æ•°
+   * @return HandlerID ç”¨äºå–æ¶ˆè®¢é˜…çš„ID
    */
   HandlerID SubscribeByCategory(EventCategory category, EventHandler handler)
   {
@@ -100,12 +100,12 @@ class EventBus {
   }
 
   /**
-   * @brief È¡Ïû¶©ÔÄ
-   * @param id ¶©ÔÄÊ±·µ»ØµÄHandlerID
+   * @brief å–æ¶ˆè®¢é˜…
+   * @param id è®¢é˜…æ—¶è¿”å›çš„HandlerID
    */
   void Unsubscribe(HandlerID id)
   {
-    // Ê×ÏÈ³¢ÊÔ´ÓÀàĞÍ¶©ÔÄÖĞÒÆ³ı
+    // é¦–å…ˆå°è¯•ä»ç±»å‹è®¢é˜…ä¸­ç§»é™¤
     if (auto it = m_HandlerTypes.find(id); it != m_HandlerTypes.end()) {
       std::type_index typeIndex = *it->second;
       auto &handlers = m_Subscribers[typeIndex];
@@ -116,7 +116,7 @@ class EventBus {
       m_HandlerTypes.erase(it);
       return;
     }  
-    // È»ºó³¢ÊÔ´ÓÀà±ğ¶©ÔÄÖĞÒÆ³ı
+    // ç„¶åå°è¯•ä»ç±»åˆ«è®¢é˜…ä¸­ç§»é™¤
     if (auto it = m_HandlerCategories.find(id); it != m_HandlerCategories.end()) {
       EventCategory category = it->second;
       auto &handlers = m_CategorySubscribers[category];
@@ -129,9 +129,9 @@ class EventBus {
   }
 
   /**
-   * @brief ·¢²¼ÊÂ¼ş(Á¢¼´´¦Àí)
-   * @param event ÊÂ¼ş¶ÔÏó
-   * @param immediate ÊÇ·ñÁ¢¼´´¦Àí(Ä¬ÈÏÎªtrue£¬·ñÔòÍÆÈë¶ÓÁĞÒì²½´¦Àí)
+   * @brief å‘å¸ƒäº‹ä»¶(ç«‹å³å¤„ç†)
+   * @param event äº‹ä»¶å¯¹è±¡
+   * @param immediate æ˜¯å¦ç«‹å³å¤„ç†(é»˜è®¤ä¸ºtrueï¼Œå¦åˆ™æ¨å…¥é˜Ÿåˆ—å¼‚æ­¥å¤„ç†)
    */
   template<typename T>
   void Post(T &e, bool immediate = true)
@@ -141,29 +141,29 @@ class EventBus {
     //LOG_DEBUG("Posting event: {}", e.ToString());
 
     if (immediate) {
-      // Á¢¼´Ö´ĞĞ
+      // ç«‹å³æ‰§è¡Œ
       ProcessEvent<T>(e);
     }
     else {
-      // ´´½¨°ü×°Æ÷£¬´æ´¢ÊÂ¼ş¿½±´£¬±£´æÀàĞÍĞÅÏ¢ºÍ´¦ÀíÂß¼­£¨·½±ãÒì²½´¦ÀíÊ±»ñÈ¡ÕıÈ·ÀàĞÍ£©
+      // åˆ›å»ºåŒ…è£…å™¨ï¼Œå­˜å‚¨äº‹ä»¶æ‹·è´ï¼Œä¿å­˜ç±»å‹ä¿¡æ¯å’Œå¤„ç†é€»è¾‘ï¼ˆæ–¹ä¾¿å¼‚æ­¥å¤„ç†æ—¶è·å–æ­£ç¡®ç±»å‹ï¼‰
       EventWrapper wrapper;
       wrapper.event = std::unique_ptr<Event>(e.Clone());
 
-      // ÉèÖÃÀàĞÍÌØ¶¨µÄ´¦ÀíÆ÷
+      // è®¾ç½®ç±»å‹ç‰¹å®šçš„å¤„ç†å™¨
       wrapper.processor = [](EventBus &bus, Event &storedEvent) {
-        // Ö±½Óstatic_cast£¬Èç¹ûÀàĞÍ²»Æ¥Åä»áÔÚ±àÒëÊ±»òÔËĞĞÊ±±¨´í
+        // ç›´æ¥static_castï¼Œå¦‚æœç±»å‹ä¸åŒ¹é…ä¼šåœ¨ç¼–è¯‘æ—¶æˆ–è¿è¡Œæ—¶æŠ¥é”™
         T &specificEvent = static_cast<T &>(storedEvent);
         bus.ProcessEvent<T>(specificEvent);
       };
-      // µÈ´ıÒì²½´¦Àí(µ±Ç°Î´ÑéÖ¤¶àÏß³Ì°²È«ĞÔ)
+      // ç­‰å¾…å¼‚æ­¥å¤„ç†(å½“å‰æœªéªŒè¯å¤šçº¿ç¨‹å®‰å…¨æ€§)
       m_EventQueue.push_back(std::move(wrapper));
     }
   }
 
   /**
-   * @brief ´¦Àí¶ÓÁĞÖĞµÄÊÂ¼ş
+   * @brief å¤„ç†é˜Ÿåˆ—ä¸­çš„äº‹ä»¶
    * 
-   * Òì²½´¦Àí(µ±Ç°Î´ÑéÖ¤¶àÏß³Ì°²È«ĞÔ£¬Î´ÆôÓÃ)
+   * å¼‚æ­¥å¤„ç†(å½“å‰æœªéªŒè¯å¤šçº¿ç¨‹å®‰å…¨æ€§ï¼Œæœªå¯ç”¨)
    */
   void ProcessQueue()
   {
@@ -174,7 +174,7 @@ class EventBus {
   }
 
   /**
-   * @brief Çå¿ÕËùÓĞ¶©ÔÄ
+   * @brief æ¸…ç©ºæ‰€æœ‰è®¢é˜…
    */
   void Clear()
   {
@@ -188,23 +188,23 @@ class EventBus {
 
  private:
   /**
-   * @brief ´¦Àíµ¥¸öÊÂ¼ş
-   * @param event ÊÂ¼ş¶ÔÏó
+   * @brief å¤„ç†å•ä¸ªäº‹ä»¶
+   * @param event äº‹ä»¶å¯¹è±¡
    */
   template<typename T>
   void ProcessEvent(Event &event)
   {
     std::type_index typeIndex = typeid(T);
-    // 1. Ê×ÏÈ´¦ÀíÌØ¶¨ÀàĞÍ¶©ÔÄÕß
+    // 1. é¦–å…ˆå¤„ç†ç‰¹å®šç±»å‹è®¢é˜…è€…
     if (m_Subscribers.find(typeIndex) != m_Subscribers.end()) {
       for (auto &[id, handler] : m_Subscribers[typeIndex]) {
         if (event.handled)
-          break;  // Èç¹ûÊÂ¼şÒÑ±»±ê¼ÇÎª´¦Àí£¬ÔòÍ£Ö¹´«²¥
+          break;  // å¦‚æœäº‹ä»¶å·²è¢«æ ‡è®°ä¸ºå¤„ç†ï¼Œåˆ™åœæ­¢ä¼ æ’­
         handler(event);
       }
     }
 
-    // 2. È»ºó´¦ÀíÀà±ğ¶©ÔÄÕß
+    // 2. ç„¶åå¤„ç†ç±»åˆ«è®¢é˜…è€…
     auto categories = event.GetCategoryFlags();
     for (auto &[category, handlers] : m_CategorySubscribers) {
       if ((categories & category) && !event.handled) {
@@ -220,33 +220,33 @@ class EventBus {
   }
 
  private:
-  // µ¥ÀıÄ£Ê½£º¹¹Ôìº¯ÊıË½ÓĞ»¯
+  // å•ä¾‹æ¨¡å¼ï¼šæ„é€ å‡½æ•°ç§æœ‰åŒ–
   EventBus() = default;
 
-  // »ùÓÚÀàĞÍË÷ÒıµÄ¶©ÔÄÕßÁĞ±í
+  // åŸºäºç±»å‹ç´¢å¼•çš„è®¢é˜…è€…åˆ—è¡¨
   std::unordered_map<std::type_index, std::vector<std::pair<HandlerID, EventHandler>>>
       m_Subscribers;
 
-  // »ùÓÚÊÂ¼şÀà±ğµÄ¶©ÔÄÕßÁĞ±í
+  // åŸºäºäº‹ä»¶ç±»åˆ«çš„è®¢é˜…è€…åˆ—è¡¨
   std::unordered_map<EventCategory, std::vector<std::pair<HandlerID, EventHandler>>>
       m_CategorySubscribers;
 
-  // ´¦ÀíÆ÷IDµ½ÀàĞÍË÷ÒıµÄÓ³Éä£¬×¢ÒâÊ¹ÓÃ std::type_info* ¶ø²»ÊÇ std::type_index
+  // å¤„ç†å™¨IDåˆ°ç±»å‹ç´¢å¼•çš„æ˜ å°„ï¼Œæ³¨æ„ä½¿ç”¨ std::type_info* è€Œä¸æ˜¯ std::type_index
   std::unordered_map<HandlerID, const std::type_info *> m_HandlerTypes;
 
-  // ´¦ÀíÆ÷IDµ½ÊÂ¼şÀà±ğµÄÓ³Éä
+  // å¤„ç†å™¨IDåˆ°äº‹ä»¶ç±»åˆ«çš„æ˜ å°„
   std::unordered_map<HandlerID, EventCategory> m_HandlerCategories;
 
 
-  // Ê¹ÓÃstd::any´æ´¢ÊÂ¼ş¶ÔÏó£¬±£³ÖÀàĞÍĞÅÏ¢
+  // ä½¿ç”¨std::anyå­˜å‚¨äº‹ä»¶å¯¹è±¡ï¼Œä¿æŒç±»å‹ä¿¡æ¯
   struct EventWrapper {
-    std::unique_ptr<Event> event;  // ´æ´¢ÊÂ¼ş¶ÔÏóµÄ¿½±´
+    std::unique_ptr<Event> event;  // å­˜å‚¨äº‹ä»¶å¯¹è±¡çš„æ‹·è´
     std::function<void(EventBus &, Event &)> processor;
   };
-  // ÊÂ¼ş¶ÓÁĞ
+  // äº‹ä»¶é˜Ÿåˆ—
   std::vector<EventWrapper> m_EventQueue;
 
-  // ÏÂÒ»¸ö¿ÉÓÃµÄ´¦ÀíÆ÷ID
+  // ä¸‹ä¸€ä¸ªå¯ç”¨çš„å¤„ç†å™¨ID
   HandlerID m_NextHandlerID = 1;
 };
 };

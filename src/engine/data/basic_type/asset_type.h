@@ -6,71 +6,71 @@
 #include <glm/glm.hpp>
 
 namespace mite {
-// --- »ù´¡ÀàĞÍ±ğÃû ---
-using AssetID = UUID;  // ×ÊÔ´Î¨Ò»±êÊ¶·û£¨ÓÃUUIDÉú³É£©
+// --- åŸºç¡€ç±»å‹åˆ«å ---
+using AssetID = UUID;  // èµ„æºå”¯ä¸€æ ‡è¯†ç¬¦ï¼ˆç”¨UUIDç”Ÿæˆï¼‰
 
-// ------------------------ ÎÆÀíÏà¹Ø ------------------------
+// ------------------------ çº¹ç†ç›¸å…³ ------------------------
 
-// ÎÆÀíÔªÊı¾İ£¨ÃèÊöÎÆÀíµÄÊôĞÔºÍÀ´Ô´£©
+// çº¹ç†å…ƒæ•°æ®ï¼ˆæè¿°çº¹ç†çš„å±æ€§å’Œæ¥æºï¼‰
 struct TextureMetadata {
-  std::string path;                             // ×ÊÔ´Â·¾¶£¨ÓÃÓÚÈÈÖØÔØÊ¶±ğ£©
-  TextureFormat format = TextureFormat::RGBA8;  // Êı¾İ¸ñÊ½
-  int width = 0;                                // ¿í¶È£¨ÏñËØ£©
-  int height = 0;                               // ¸ß¶È
-  int channels = 4;                             // ÑÕÉ«Í¨µÀÊı£¨RGB=3, RGBA=4£©
-  bool isHDR = false;                           // ÊÇ·ñÊÇHDRÎÆÀí
+  std::string path;                             // èµ„æºè·¯å¾„ï¼ˆç”¨äºçƒ­é‡è½½è¯†åˆ«ï¼‰
+  TextureFormat format = TextureFormat::RGBA8;  // æ•°æ®æ ¼å¼
+  int width = 0;                                // å®½åº¦ï¼ˆåƒç´ ï¼‰
+  int height = 0;                               // é«˜åº¦
+  int channels = 4;                             // é¢œè‰²é€šé“æ•°ï¼ˆRGB=3, RGBA=4ï¼‰
+  bool isHDR = false;                           // æ˜¯å¦æ˜¯HDRçº¹ç†
 };
 
-// ÎÆÀíÊı¾İ
-// ´æ´¢ÄÚÈİÎª£ºuint8_t[]ÎÆÀíÊı×é£¬void (*)(uint8_t *)Îö¹¹·½·¨
+// çº¹ç†æ•°æ®
+// å­˜å‚¨å†…å®¹ä¸ºï¼šuint8_t[]çº¹ç†æ•°ç»„ï¼Œvoid (*)(uint8_t *)ææ„æ–¹æ³•
 struct TetxureData {
   std::unique_ptr<uint8_t[], void (*)(uint8_t *)> textureData;
 };
-// ------------------------ Ä£ĞÍ/Íø¸ñÏà¹Ø ------------------------
+// ------------------------ æ¨¡å‹/ç½‘æ ¼ç›¸å…³ ------------------------
 
-// ×ÓÍø¸ñÊı¾İ£¨APIÎŞ¹ØµÄ¼¸ºÎÊı¾İ£©
+// å­ç½‘æ ¼æ•°æ®ï¼ˆAPIæ— å…³çš„å‡ ä½•æ•°æ®ï¼‰
 struct MeshData {
-  std::vector<uint8_t> vertexData;  // Ô­Ê¼¶¥µã×Ö½ÚÁ÷
-  std::vector<uint32_t> indices;    // Ë÷ÒıÊı¾İ
-  VertexLayout layout;              // ¶¥µã½á¹¹ÃèÊö
-  uint32_t materialIndex = 0;       // ¹ØÁªµÄ²ÄÖÊË÷Òı
+  std::vector<uint8_t> vertexData;  // åŸå§‹é¡¶ç‚¹å­—èŠ‚æµ
+  std::vector<uint32_t> indices;    // ç´¢å¼•æ•°æ®
+  VertexLayout layout;              // é¡¶ç‚¹ç»“æ„æè¿°
+  uint32_t materialIndex = 0;       // å…³è”çš„æè´¨ç´¢å¼•
 
-  glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // ×ÓÍø¸ñ¾Ö²¿°üÎ§ºĞ
+  glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // å­ç½‘æ ¼å±€éƒ¨åŒ…å›´ç›’
   glm::vec3 boundingBoxMax = glm::vec3(-FLT_MAX);
 
-  uint32_t lodLevel = 0;  // 0±íÊ¾Ô­Ê¼LOD
+  uint32_t lodLevel = 0;  // 0è¡¨ç¤ºåŸå§‹LOD
 };
 
-// ×ÓÍø¸ñ LOD Á´½á¹¹
+// å­ç½‘æ ¼ LOD é“¾ç»“æ„
 struct MeshDataLODChain {
-  MeshData baseSection;               // »ù´¡ LOD (level 0)
-  std::vector<MeshData> lodSections;  // ÆäËû LOD ¼¶±ğ (level 1+)
+  MeshData baseSection;               // åŸºç¡€ LOD (level 0)
+  std::vector<MeshData> lodSections;  // å…¶ä»– LOD çº§åˆ« (level 1+)
 };
 
-// Ä£ĞÍÔªÊı¾İ
+// æ¨¡å‹å…ƒæ•°æ®
 struct ModelMetadata {
   std::string path;
-  std::vector<std::string> materialPaths;         // ²ÄÖÊÂ·¾¶ÒıÓÃ
-  glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // Ä£ĞÍ°üÎ§ºĞ
+  std::vector<std::string> materialPaths;         // æè´¨è·¯å¾„å¼•ç”¨
+  glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // æ¨¡å‹åŒ…å›´ç›’
   glm::vec3 boundingBoxMax = glm::vec3(-FLT_MAX);
 };
 
-// ------------------------ ×ÊÔ´¾ä±ú --------------------
-// ÎÆÀíÂß¼­¾ä±ú
+// ------------------------ èµ„æºå¥æŸ„ --------------------
+// çº¹ç†é€»è¾‘å¥æŸ„
 struct TextureAsset {
-  AssetID id;  // Î¨Ò»±êÊ¶·û
+  AssetID id;  // å”¯ä¸€æ ‡è¯†ç¬¦
   TextureMetadata metadata;
   TetxureData textureData;
 
   std::shared_ptr<TextureGPUHandle> handle;
 };
 
-// Ä£ĞÍÂß¼­¾ä±ú
+// æ¨¡å‹é€»è¾‘å¥æŸ„
 struct ModelAsset {
   AssetID id;
   ModelMetadata metadata;
-  std::vector<MeshDataLODChain> subMeshData;  // ×ÓÍø¸ñ¼¯ºÏ
-  std::shared_ptr<ModelGPUHandle> handle;     // Ä£ĞÍGPU¾ä±ú
+  std::vector<MeshDataLODChain> subMeshData;  // å­ç½‘æ ¼é›†åˆ
+  std::shared_ptr<ModelGPUHandle> handle;     // æ¨¡å‹GPUå¥æŸ„
 };
 };  // namespace mite
 

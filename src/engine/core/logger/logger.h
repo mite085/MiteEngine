@@ -1,13 +1,13 @@
 #ifndef MITE_LOGGER
 #define MITE_LOGGER
 
-// VS±àÒëspdlogÊ±£¬
-// fmt¿âÄ³Ğ©ÄÚ²¿ÊµÏÖ»á±¨warning
-// ²»Ó°Ïì¹¦ÄÜ£¬¿ÉÒÔ°²È«ºöÂÔ
+// VSç¼–è¯‘spdlogæ—¶ï¼Œ
+// fmtåº“æŸäº›å†…éƒ¨å®ç°ä¼šæŠ¥warning
+// ä¸å½±å“åŠŸèƒ½ï¼Œå¯ä»¥å®‰å…¨å¿½ç•¥
 #pragma warning(push)
 #pragma warning(disable : 26495)
 #pragma warning(disable : 26498)
-#include <spdlog/fmt/ostr.h>  // Ö§³Ö×Ô¶¨ÒåÀàĞÍÊä³ö
+#include <spdlog/fmt/ostr.h>  // æ”¯æŒè‡ªå®šä¹‰ç±»å‹è¾“å‡º
 #include <spdlog/spdlog.h>
 #pragma warning(pop)
 
@@ -20,7 +20,7 @@ class LoggerSystem {
   static void Init();
   static void Shutdown();
 
-  // ºËĞÄÈÕÖ¾½Ó¿Ú
+  // æ ¸å¿ƒæ—¥å¿—æ¥å£
   template<typename... Args> static void Trace(const std::string &fmt, Args &&...args)
   {
     GetCoreLogger()->trace(fmt, std::forward<Args>(args)...);
@@ -51,7 +51,7 @@ class LoggerSystem {
     GetCoreLogger()->critical(fmt, std::forward<Args>(args)...);
   }
 
-  // ´ø±êÇ©µÄÈÕÖ¾½Ó¿Ú
+  // å¸¦æ ‡ç­¾çš„æ—¥å¿—æ¥å£
   template<typename... Args>
   static void TraceTag(const std::string &tag, const std::string &fmt, Args &&...args)
   {
@@ -82,13 +82,13 @@ class LoggerSystem {
     GetCoreLogger()->critical("[{}] {}", tag, fmt::format(fmt, std::forward<Args>(args)...));
   }
 
-  // ÉèÖÃÈ«¾ÖÈÕÖ¾¼¶±ğ
+  // è®¾ç½®å…¨å±€æ—¥å¿—çº§åˆ«
   static void SetLevel(spdlog::level::level_enum level);
 
-  // »ñÈ¡ºËĞÄlogger
+  // è·å–æ ¸å¿ƒlogger
   static std::shared_ptr<spdlog::logger> &GetCoreLogger();
 
-  // ´´½¨Ä£¿é×¨Êôlogger
+  // åˆ›å»ºæ¨¡å—ä¸“å±logger
   static std::shared_ptr<spdlog::logger> CreateModuleLogger(const std::string &name);
 
  private:
@@ -96,7 +96,7 @@ class LoggerSystem {
   static std::vector<std::shared_ptr<spdlog::logger>> s_ModuleLoggers;
 };
 
-// ¿ì½İºê¶¨Òå
+// å¿«æ·å®å®šä¹‰
 #define LOG_TRACE(...) ::mite::LoggerSystem::Trace(__VA_ARGS__)
 #define LOG_DEBUG(...) ::mite::LoggerSystem::Debug(__VA_ARGS__)
 #define LOG_INFO(...) ::mite::LoggerSystem::Info(__VA_ARGS__)
@@ -110,7 +110,7 @@ class LoggerSystem {
 #define LOG_ERROR_TAG(tag, ...) ::mite::LoggerSystem::ErrorTag(tag, __VA_ARGS__)
 #define LOG_CRITICAL_TAG(tag, ...) ::mite::LoggerSystem::CriticalTag(tag, __VA_ARGS__)
 
-// »ñÈ¡ÀàĞÍÃûµÄ·½·¨
+// è·å–ç±»å‹åçš„æ–¹æ³•
 template<typename U> std::string type_name()
 {
   return typeid(U).name();

@@ -7,10 +7,10 @@
 
 namespace mite {
 /**
- * @brief ×é¼şÓëÊµÌå×¢²á±í
+ * @brief ç»„ä»¶ä¸å®ä½“æ³¨å†Œè¡¨
  *
- * ¸ºÔğ´æ´¢ÒÑ×¢²áµÄ×é¼şÓëÊµÌå£¬
- * ²¢Ìá¹©ÀàĞÍ°²È«ÓëÏß³Ì°²È«µÄÊµÌåºÍ×é¼ş²Ù×÷
+ * è´Ÿè´£å­˜å‚¨å·²æ³¨å†Œçš„ç»„ä»¶ä¸å®ä½“ï¼Œ
+ * å¹¶æä¾›ç±»å‹å®‰å…¨ä¸çº¿ç¨‹å®‰å…¨çš„å®ä½“å’Œç»„ä»¶æ“ä½œ
  */
 class SceneRegistry {
  public:
@@ -19,66 +19,66 @@ class SceneRegistry {
 
   SceneCoreEventCallbackAdapter &GetEventCallbackAdapter();
 
-  // 1. ÊµÌå¹ÜÀí ============================================
+  // 1. å®ä½“ç®¡ç† ============================================
 
   /**
-   * @brief ´´½¨ĞÂÊµÌå
-   * @param name ÊµÌåÃû³Æ
-   * @return ĞÂ´´½¨µÄÊµÌå
+   * @brief åˆ›å»ºæ–°å®ä½“
+   * @param name å®ä½“åç§°
+   * @return æ–°åˆ›å»ºçš„å®ä½“
    */
   Entity CreateEntity(const std::string &name = "");
 
   /**
-   * @brief Ïú»ÙÊµÌå¼°ÆäËùÓĞ×é¼ş
-   * @param entity ÒªÏú»ÙµÄÊµÌå
+   * @brief é”€æ¯å®ä½“åŠå…¶æ‰€æœ‰ç»„ä»¶
+   * @param entity è¦é”€æ¯çš„å®ä½“
    */
   void DestroyEntity(Entity entity);
 
   /**
-   * @brief ¼ì²éÊµÌåÊÇ·ñÓĞĞ§
+   * @brief æ£€æŸ¥å®ä½“æ˜¯å¦æœ‰æ•ˆ
    */
   bool IsValid(Entity entity) const;
 
   /**
-   * @brief Çå¿Õ×¢²á±í
+   * @brief æ¸…ç©ºæ³¨å†Œè¡¨
    */
   void Clear();
 
-  // 2. ×é¼ş²Ù×÷ ============================================
+  // 2. ç»„ä»¶æ“ä½œ ============================================
 
   /**
-   * @brief Ìí¼Ó×é¼ş
+   * @brief æ·»åŠ ç»„ä»¶
    */
   template<typename T, typename... Args> T &AddComponent(Entity entity, Args &&...args)
   {
-    // ÏÈ¼ì²éÊµÌåÓĞĞ§ĞÔ£¨²»ĞèÒªËø£©
+    // å…ˆæ£€æŸ¥å®ä½“æœ‰æ•ˆæ€§ï¼ˆä¸éœ€è¦é”ï¼‰
     if (!IsValid(entity)) {
       throw std::runtime_error("Cannot add component to invalid entity");
     }
 
-    // Èç¹ûÒÑÓĞÍ¬ÀàĞÍ×é¼ş£¬ÏÈÒÆ³ı
+    // å¦‚æœå·²æœ‰åŒç±»å‹ç»„ä»¶ï¼Œå…ˆç§»é™¤
     if (HasComponent<T>(entity)) {
       RemoveComponent<T>(entity);
     }
 
     std::unique_lock lock(m_ComponentMutex);
 
-    // ´´½¨×é¼ş²¢ÉèÖÃËùÓĞÕß
+    // åˆ›å»ºç»„ä»¶å¹¶è®¾ç½®æ‰€æœ‰è€…
     auto component = std::make_shared<T>(std::forward<Args>(args)...);
     component->SetOwnerEntity(entity);
 
-    // ´æ´¢×é¼ş
+    // å­˜å‚¨ç»„ä»¶
     auto &componentMap = m_Components[typeid(T)];
     componentMap[entity] = component;
 
-    // ´¥·¢¹¹ÔìÊÂ¼ş
+    // è§¦å‘æ„é€ äº‹ä»¶
     m_EventCallbackAdapter.OnComponentConstructed<T>(entity, *component);
 
     return *component;
   }
 
   /**
-   * @brief »ñÈ¡»òÌí¼Ó×é¼ş
+   * @brief è·å–æˆ–æ·»åŠ ç»„ä»¶
    */
   template<typename T> T &GetOrAddComponent(Entity entity)
   {
@@ -93,30 +93,30 @@ class SceneRegistry {
   }
 
   /**
-   * @brief ÒÆ³ı×é¼ş
+   * @brief ç§»é™¤ç»„ä»¶
    */
   template<typename T> void RemoveComponent(Entity entity)
   {
     std::unique_lock lock(m_ComponentMutex);
 
-    // ÏÈÈ·±£ComponentTypeMapÖĞ´æÔÚ¸ÃÀàĞÍµÄComponentMap
+    // å…ˆç¡®ä¿ComponentTypeMapä¸­å­˜åœ¨è¯¥ç±»å‹çš„ComponentMap
     auto it = m_Components.find(typeid(T));
     if (it != m_Components.end()) {
-      // ÔÙÈ·±£ComponentMapÖĞ£¬Ê¹ÓÃ¸Ãentity¿É²éÑ¯µ½Component
+      // å†ç¡®ä¿ComponentMapä¸­ï¼Œä½¿ç”¨è¯¥entityå¯æŸ¥è¯¢åˆ°Component
       auto componentIt = it->second.find(entity);
       if (componentIt != it->second.end()) {
-        // ´¥·¢ÒÆ³ıÊÂ¼ş
+        // è§¦å‘ç§»é™¤äº‹ä»¶
         m_EventCallbackAdapter.OnComponentDestroyed<T>(
             entity, *static_cast<T *>(componentIt->second.get()));
 
-        // ×îºóÒÆ³ı
+        // æœ€åç§»é™¤
         it->second.erase(entity);
       }
     }
   }
 
   /**
-   * @brief ¼ì²éÊµÌåÊÇ·ñÓµÓĞ×é¼ş
+   * @brief æ£€æŸ¥å®ä½“æ˜¯å¦æ‹¥æœ‰ç»„ä»¶
    */
   template<typename T> bool HasComponent(Entity entity) const
   {
@@ -130,10 +130,10 @@ class SceneRegistry {
   }
 
   /**
-   * @brief ¼ì²éÊµÌåÊÇ·ñÍ¬Ê±ÓµÓĞËùÓĞÖ¸¶¨×é¼ş
-   * @tparam Components Òª¼ì²éµÄ×é¼şÀàĞÍÁĞ±í
-   * @param entity Òª¼ì²éµÄÊµÌå
-   * @return Èç¹ûÊµÌåÓµÓĞËùÓĞÖ¸¶¨×é¼ş·µ»Øtrue£¬·ñÔòfalse
+   * @brief æ£€æŸ¥å®ä½“æ˜¯å¦åŒæ—¶æ‹¥æœ‰æ‰€æœ‰æŒ‡å®šç»„ä»¶
+   * @tparam Components è¦æ£€æŸ¥çš„ç»„ä»¶ç±»å‹åˆ—è¡¨
+   * @param entity è¦æ£€æŸ¥çš„å®ä½“
+   * @return å¦‚æœå®ä½“æ‹¥æœ‰æ‰€æœ‰æŒ‡å®šç»„ä»¶è¿”å›trueï¼Œå¦åˆ™false
    */
   template<typename... Components> bool HasComponentWithAllOf(Entity entity) const
   {
@@ -141,12 +141,12 @@ class SceneRegistry {
 
     std::shared_lock lock(m_ComponentMutex);
 
-    // ¼ì²éÊµÌåÓĞĞ§ĞÔ
+    // æ£€æŸ¥å®ä½“æœ‰æ•ˆæ€§
     if (!IsValid(entity)) {
       return false;
     }
 
-    // Ê¹ÓÃÕÛµş±í´ïÊ½¼ì²éËùÓĞ×é¼ş
+    // ä½¿ç”¨æŠ˜å è¡¨è¾¾å¼æ£€æŸ¥æ‰€æœ‰ç»„ä»¶
     bool hasAll = true;
     ((hasAll = hasAll && (m_Components.find(typeid(Components)) != m_Components.end() &&
                           m_Components.at(typeid(Components)).find(entity) !=
@@ -157,7 +157,7 @@ class SceneRegistry {
   }
 
   /**
-   * @brief »ñÈ¡×é¼ş
+   * @brief è·å–ç»„ä»¶
    */
   template<typename T> T &GetComponent(Entity entity)
   {
@@ -174,7 +174,7 @@ class SceneRegistry {
     throw std::runtime_error("Component not found");
   }
   /**
-   * @brief »ñÈ¡×é¼ş const°æ±¾
+   * @brief è·å–ç»„ä»¶ constç‰ˆæœ¬
    */
   template<typename T> T &GetComponent(Entity entity) const
   {
@@ -192,7 +192,7 @@ class SceneRegistry {
   }
 
   /**
-   * @brief ³¢ÊÔ»ñÈ¡×é¼ş
+   * @brief å°è¯•è·å–ç»„ä»¶
    */
   template<typename T> T *TryGetComponent(Entity entity)
   {
@@ -208,7 +208,7 @@ class SceneRegistry {
     return nullptr;
   }
   /**
-   * @brief ³¢ÊÔ»ñÈ¡×é¼ş const°æ±¾
+   * @brief å°è¯•è·å–ç»„ä»¶ constç‰ˆæœ¬
    */
   template<typename T> T *TryGetComponent(Entity entity) const
   {
@@ -224,15 +224,15 @@ class SceneRegistry {
     return nullptr;
   }
 
-  // 3. ²éÑ¯²Ù×÷ ============================================
+  // 3. æŸ¥è¯¢æ“ä½œ ============================================
 
   /**
-   * @brief »ñÈ¡ËùÓĞÊµÌå
+   * @brief è·å–æ‰€æœ‰å®ä½“
    */
   std::vector<Entity> GetAllEntities();
 
   /**
-   * @brief »ñÈ¡ÓµÓĞÖ¸¶¨×é¼şµÄËùÓĞÊµÌå
+   * @brief è·å–æ‹¥æœ‰æŒ‡å®šç»„ä»¶çš„æ‰€æœ‰å®ä½“
    */
   template<typename T> std::vector<Entity> GetEntitiesWith()
   {
@@ -250,9 +250,9 @@ class SceneRegistry {
     return entities;
   }
   /**
-   * @brief »ñÈ¡ÓµÓĞËùÓĞÖ¸¶¨×é¼şµÄÊµÌå
-   * @tparam Components Òª²éÑ¯µÄ×é¼şÀàĞÍÁĞ±í
-   * @return ÓµÓĞËùÓĞÖ¸¶¨×é¼şµÄÊµÌåÁĞ±í
+   * @brief è·å–æ‹¥æœ‰æ‰€æœ‰æŒ‡å®šç»„ä»¶çš„å®ä½“
+   * @tparam Components è¦æŸ¥è¯¢çš„ç»„ä»¶ç±»å‹åˆ—è¡¨
+   * @return æ‹¥æœ‰æ‰€æœ‰æŒ‡å®šç»„ä»¶çš„å®ä½“åˆ—è¡¨
    */
   template<typename... Components> std::vector<Entity> GetEntitiesWithAllOf()
   {
@@ -260,12 +260,12 @@ class SceneRegistry {
 
     std::shared_lock lock(m_ComponentMutex);
 
-    // Èç¹ûÃ»ÓĞÊµÌå£¬Ö±½Ó·µ»Ø¿ÕÁĞ±í
+    // å¦‚æœæ²¡æœ‰å®ä½“ï¼Œç›´æ¥è¿”å›ç©ºåˆ—è¡¨
     if (m_Components.empty()) {
       return {};
     }
 
-    // »ñÈ¡µÚÒ»¸ö×é¼şÀàĞÍµÄÊµÌåÁĞ±í×÷Îª»ù×¼
+    // è·å–ç¬¬ä¸€ä¸ªç»„ä»¶ç±»å‹çš„å®ä½“åˆ—è¡¨ä½œä¸ºåŸºå‡†
     const std::type_index firstType = typeid(
         typename std::tuple_element<0, std::tuple<Components...>>::type);
     auto firstIt = m_Components.find(firstType);
@@ -275,18 +275,18 @@ class SceneRegistry {
 
     std::vector<Entity> result;
 
-    // Ô¤·ÖÅä¿Õ¼ä
+    // é¢„åˆ†é…ç©ºé—´
     result.reserve(firstIt->second.size());
 
-    // ±éÀúµÚÒ»¸ö×é¼şÀàĞÍµÄÊµÌåÁĞ±í£¬
-    // ¼ì²éÃ¿¸öÊµÌåÊÇ·ñÓµÓĞËùÓĞÖ¸¶¨×é¼ş
+    // éå†ç¬¬ä¸€ä¸ªç»„ä»¶ç±»å‹çš„å®ä½“åˆ—è¡¨ï¼Œ
+    // æ£€æŸ¥æ¯ä¸ªå®ä½“æ˜¯å¦æ‹¥æœ‰æ‰€æœ‰æŒ‡å®šç»„ä»¶
     for (const auto &pair : firstIt->second) {
       Entity entity = pair.first;
       if (!IsValid(entity)) {
         continue;
       }
 
-      // ¼ì²éÊÇ·ñÓµÓĞËùÓĞ×é¼ş
+      // æ£€æŸ¥æ˜¯å¦æ‹¥æœ‰æ‰€æœ‰ç»„ä»¶
       bool hasAllComponents = true;
       ((hasAllComponents = hasAllComponents && HasComponent<Components>(entity)), ...);
 
@@ -298,12 +298,12 @@ class SceneRegistry {
     return result;
   }
  private:
-  // ×é¼ş´æ´¢½á¹¹
+  // ç»„ä»¶å­˜å‚¨ç»“æ„
   using ComponentMap = std::unordered_map<Entity, std::shared_ptr<Component>>;
   using ComponentTypeMap = std::unordered_map<std::type_index, ComponentMap>;
 
-  mutable std::shared_mutex m_ComponentMutex;  // ×é¼ş²Ù×÷µÄ¶ÁĞ´Ëø
-  ComponentTypeMap m_Components;               // ×é¼ş´æ´¢
+  mutable std::shared_mutex m_ComponentMutex;  // ç»„ä»¶æ“ä½œçš„è¯»å†™é”
+  ComponentTypeMap m_Components;               // ç»„ä»¶å­˜å‚¨
 
   SceneCoreEventCallbackAdapter m_EventCallbackAdapter;
 };

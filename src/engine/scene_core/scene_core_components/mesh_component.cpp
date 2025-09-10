@@ -6,7 +6,7 @@ MeshComponent::MeshComponent(std::shared_ptr<Mesh> mesh) : ComponentTraits(), m_
 {
 }
 
-// Íø¸ñ²Ù×÷ ==============================================
+// ç½‘æ ¼æ“ä½œ ==============================================
 std::shared_ptr<Mesh> MeshComponent::GetMesh() const
 {
   return m_Mesh;
@@ -23,7 +23,7 @@ bool MeshComponent::HasMesh() const
   return m_Mesh && m_Mesh->GetSection().indexCount != 0 && m_Mesh->GetSection().vertexCount != 0;
 }
 
-// äÖÈ¾ÊôĞÔ¿ØÖÆ ==========================================
+// æ¸²æŸ“å±æ€§æ§åˆ¶ ==========================================
 
 void MeshComponent::SetCastShadows(bool castShadows)
 {
@@ -45,7 +45,7 @@ bool MeshComponent::ReceivesShadows() const
   return m_ReceiveShadows;
 }
 
-// LOD¿ØÖÆ ==============================================
+// LODæ§åˆ¶ ==============================================
 void MeshComponent::SetLODLevel(int lodLevel)
 {
   m_LODLevel = std::max(0, lodLevel);
@@ -56,7 +56,7 @@ int MeshComponent::GetLODLevel() const
   return m_LODLevel;
 }
 
-// ×é¼ş½Ó¿ÚÊµÏÖ ==========================================
+// ç»„ä»¶æ¥å£å®ç° ==========================================
 std::vector<std::type_index> MeshComponent::GetDependencies() const
 {
   return {typeid(TransformComponent)};
@@ -64,39 +64,39 @@ std::vector<std::type_index> MeshComponent::GetDependencies() const
 
 bool MeshComponent::Serialize(std::ostream &output) const
 {
-  Component::Serialize(output);  // ĞòÁĞ»¯»ùÀàÊı¾İ
+  Component::Serialize(output);  // åºåˆ—åŒ–åŸºç±»æ•°æ®
 
-  // TODO: ÊµÏÖÍø¸ñºÍ²ÄÖÊµÄĞòÁĞ»¯
-  // ĞèÒª¿¼ÂÇ×ÊÔ´ÒıÓÃÈçºÎĞòÁĞ»¯
+  // TODO: å®ç°ç½‘æ ¼å’Œæè´¨çš„åºåˆ—åŒ–
+  // éœ€è¦è€ƒè™‘èµ„æºå¼•ç”¨å¦‚ä½•åºåˆ—åŒ–
 
   return !output.fail();
 }
 
 bool MeshComponent::Deserialize(std::istream &input)
 {
-  Component::Deserialize(input);  // ·´ĞòÁĞ»¯»ùÀàÊı¾İ
+  Component::Deserialize(input);  // ååºåˆ—åŒ–åŸºç±»æ•°æ®
 
-  // TODO: ÊµÏÖÍø¸ñºÍ²ÄÖÊµÄ·´ĞòÁĞ»¯
+  // TODO: å®ç°ç½‘æ ¼å’Œæè´¨çš„ååºåˆ—åŒ–
 
   return !input.fail();
 }
 
-// Mesh×é¼şÏµÍ³ÊµÏÖ ======================================
+// Meshç»„ä»¶ç³»ç»Ÿå®ç° ======================================
 std::vector<std::type_index> MeshComponentSystem::GetSystemDependencies() const
 {
-  return {typeid(TransformComponentSystem)};  // ĞèÒª±ä»»ĞÅÏ¢
+  return {typeid(TransformComponentSystem)};  // éœ€è¦å˜æ¢ä¿¡æ¯
 }
 
 void MeshComponentSystem::Initialize()
 {
   DirtyComponentSystem<MeshComponent>::Initialize();
-  // ³õÊ¼»¯ÏµÍ³×ÊÔ´
+  // åˆå§‹åŒ–ç³»ç»Ÿèµ„æº
 }
 
 void MeshComponentSystem::Shutdown()
 {
   DirtyComponentSystem<MeshComponent>::Shutdown();
-  // ÇåÀíÏµÍ³×ÊÔ´
+  // æ¸…ç†ç³»ç»Ÿèµ„æº
 }
 
 void MeshComponentSystem::Update(float deltaTime, SceneRegistry &registry)
@@ -107,7 +107,7 @@ void MeshComponentSystem::Update(float deltaTime, SceneRegistry &registry)
     auto &mesh = registry.GetComponent<MeshComponent>(entity);
     auto &transform = registry.GetComponent<TransformComponent>(entity);
 
-    // TODO: ´¦ÀíÃ¿Ö¡¸üĞÂ£¬ÈçLOD¼ÆËãµÈ
+    // TODO: å¤„ç†æ¯å¸§æ›´æ–°ï¼Œå¦‚LODè®¡ç®—ç­‰
   }
 }
 };  // namespace mite

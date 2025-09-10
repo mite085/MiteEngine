@@ -8,98 +8,98 @@
 namespace mite {
 
 /**
- * @brief ³¡¾°ÊÓÍ¼¹ÜÀíÆ÷
- * @note Ö°Ôğ£º¸ºÔğäÖÈ¾Êı¾İµÄÊÕ¼¯¡¢×éÖ¯ºÍ½»¸¶£¬×÷ÎªSceneGraphÓëRendererÖ®¼äµÄÇÅÁº
- * @note µ¥Ò»Ö°Ôğ£º×¨×¢ÓÚäÖÈ¾Êı¾İ¹ÜÀí£¬²»Éæ¼°ECSÊÂ¼ş¼àÌı
+ * @brief åœºæ™¯è§†å›¾ç®¡ç†å™¨
+ * @note èŒè´£ï¼šè´Ÿè´£æ¸²æŸ“æ•°æ®çš„æ”¶é›†ã€ç»„ç»‡å’Œäº¤ä»˜ï¼Œä½œä¸ºSceneGraphä¸Rendererä¹‹é—´çš„æ¡¥æ¢
+ * @note å•ä¸€èŒè´£ï¼šä¸“æ³¨äºæ¸²æŸ“æ•°æ®ç®¡ç†ï¼Œä¸æ¶‰åŠECSäº‹ä»¶ç›‘å¬
  */
 class SceneView {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param sceneGraph ³¡¾°Í¼ÒıÓÃ
-   * @param registry ³¡¾°×¢²á±íÒıÓÃ£¨ÓÃÓÚ¹¹½¨Æ÷´´½¨£©
+   * @brief æ„é€ å‡½æ•°
+   * @param sceneGraph åœºæ™¯å›¾å¼•ç”¨
+   * @param registry åœºæ™¯æ³¨å†Œè¡¨å¼•ç”¨ï¼ˆç”¨äºæ„å»ºå™¨åˆ›å»ºï¼‰
    */
   SceneView();
 
   /**
-   * @brief Îö¹¹º¯Êı
+   * @brief ææ„å‡½æ•°
    */
   ~SceneView();
   // ----  ----
-  // ==================== ºËĞÄ½Ó¿Ú ====================
+  // ==================== æ ¸å¿ƒæ¥å£ ====================
   /**
-   * @brief ¸üĞÂ³¡¾°ÊÓÍ¼£¨Ã¿Ö¡µ÷ÓÃ£©
-   * @note Ã¿Ö¡ÍêÈ«ÖØ½¨äÖÈ¾¶ÓÁĞ
+   * @brief æ›´æ–°åœºæ™¯è§†å›¾ï¼ˆæ¯å¸§è°ƒç”¨ï¼‰
+   * @note æ¯å¸§å®Œå…¨é‡å»ºæ¸²æŸ“é˜Ÿåˆ—
    */
   void Update(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes);
 
   /**
-   * @brief Ç¿ÖÆÖØ½¨äÖÈ¾¶ÓÁĞ£¨ÊÖ¶¯µ÷ÓÃ£©
+   * @brief å¼ºåˆ¶é‡å»ºæ¸²æŸ“é˜Ÿåˆ—ï¼ˆæ‰‹åŠ¨è°ƒç”¨ï¼‰
    */
   void Rebuild(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes);
 
   /**
-   * @brief »ñÈ¡äÖÈ¾¶ÓÁĞ
-   * @return äÖÈ¾¶ÓÁĞµÄ¹²ÏíÖ¸Õë
+   * @brief è·å–æ¸²æŸ“é˜Ÿåˆ—
+   * @return æ¸²æŸ“é˜Ÿåˆ—çš„å…±äº«æŒ‡é’ˆ
    */
   std::shared_ptr<RenderQueue> GetRenderQueue() const;
   // ----  ----
-  // ==================== ÅäÖÃ½Ó¿Ú ====================
+  // ==================== é…ç½®æ¥å£ ====================
   /**
-   * @brief ÉèÖÃ×Ô¶¨ÒåäÖÈ¾¹ıÂËÆ÷£¨¶ÔvisibleNodesÖ´ĞĞ½øÒ»²½É¸Ñ¡£©
-   * @param filterFunc ¹ıÂËº¯Êı£¨·µ»Øtrue±íÊ¾°üº¬¸Ã½Úµã£©
+   * @brief è®¾ç½®è‡ªå®šä¹‰æ¸²æŸ“è¿‡æ»¤å™¨ï¼ˆå¯¹visibleNodesæ‰§è¡Œè¿›ä¸€æ­¥ç­›é€‰ï¼‰
+   * @param filterFunc è¿‡æ»¤å‡½æ•°ï¼ˆè¿”å›trueè¡¨ç¤ºåŒ…å«è¯¥èŠ‚ç‚¹ï¼‰
    */
   void SetCustomFilter(std::function<bool(SceneNode *)> filterFunc);
   // ----  ----
-  // ==================== Í³¼ÆĞÅÏ¢ ====================
+  // ==================== ç»Ÿè®¡ä¿¡æ¯ ====================
   /**
-   * @brief »ñÈ¡¿É¼û½ÚµãÊıÁ¿
-   * @return µ±Ç°Ö¡µÄ¿É¼û½ÚµãÊıÁ¿
+   * @brief è·å–å¯è§èŠ‚ç‚¹æ•°é‡
+   * @return å½“å‰å¸§çš„å¯è§èŠ‚ç‚¹æ•°é‡
    */
   size_t GetVisibleNodeCount() const;
 
   /**
-   * @brief »ñÈ¡äÖÈ¾ÏîÊıÁ¿
-   * @return µ±Ç°Ö¡µÄäÖÈ¾ÏîÊıÁ¿
+   * @brief è·å–æ¸²æŸ“é¡¹æ•°é‡
+   * @return å½“å‰å¸§çš„æ¸²æŸ“é¡¹æ•°é‡
    */
   size_t GetRenderItemCount() const;
 
   /**
-   * @brief »ñÈ¡ÉÏ´Î¸üĞÂºÄÊ±£¨ºÁÃë£©
-   * @return ¸üĞÂºÄÊ±
+   * @brief è·å–ä¸Šæ¬¡æ›´æ–°è€—æ—¶ï¼ˆæ¯«ç§’ï¼‰
+   * @return æ›´æ–°è€—æ—¶
    */
   float GetLastUpdateTime() const;
 
  private:
-  // ==================== ÄÚ²¿·½·¨ ====================
+  // ==================== å†…éƒ¨æ–¹æ³• ====================
   /**
-   * @brief Ö´ĞĞäÖÈ¾Item¹¹½¨
+   * @brief æ‰§è¡Œæ¸²æŸ“Itemæ„å»º
    */
   void ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes);
 
   /**
-   * @brief Ó¦ÓÃ×Ô¶¨Òå¹ıÂËÆ÷
-   * @param nodes ÊäÈë½ÚµãÁĞ±í
-   * @return ¹ıÂËºóµÄ½ÚµãÁĞ±í
+   * @brief åº”ç”¨è‡ªå®šä¹‰è¿‡æ»¤å™¨
+   * @param nodes è¾“å…¥èŠ‚ç‚¹åˆ—è¡¨
+   * @return è¿‡æ»¤åçš„èŠ‚ç‚¹åˆ—è¡¨
    */
   std::vector<SceneNode *> ApplyCustomFilter(const std::vector<SceneNode *> &nodes);
 
 
-  std::unique_ptr<RenderableItemBuilder> m_Builder;  // äÖÈ¾Item¹¹½¨Æ÷
-  std::shared_ptr<RenderQueue> m_RenderQueue;        // äÖÈ¾¶ÓÁĞ
+  std::unique_ptr<RenderableItemBuilder> m_Builder;  // æ¸²æŸ“Itemæ„å»ºå™¨
+  std::shared_ptr<RenderQueue> m_RenderQueue;        // æ¸²æŸ“é˜Ÿåˆ—
 
-  std::function<bool(SceneNode *)> m_CustomFilterFunc;  // ×Ô¶¨Òå¹ıÂËÆ÷
+  std::function<bool(SceneNode *)> m_CustomFilterFunc;  // è‡ªå®šä¹‰è¿‡æ»¤å™¨
 
-  // Í³¼ÆĞÅÏ¢
-  size_t m_LastVisibleNodeCount;  // ÉÏ´Î¿É¼û½ÚµãÊıÁ¿
-  size_t m_LastRenderItemCount;   // ÉÏ´ÎäÖÈ¾ItemÊıÁ¿
-  float m_LastUpdateTime;         // ÉÏ´Î¸üĞÂºÄÊ±£¨ºÁÃë£©
+  // ç»Ÿè®¡ä¿¡æ¯
+  size_t m_LastVisibleNodeCount;  // ä¸Šæ¬¡å¯è§èŠ‚ç‚¹æ•°é‡
+  size_t m_LastRenderItemCount;   // ä¸Šæ¬¡æ¸²æŸ“Itemæ•°é‡
+  float m_LastUpdateTime;         // ä¸Šæ¬¡æ›´æ–°è€—æ—¶ï¼ˆæ¯«ç§’ï¼‰
 
-  // ½ûÓÃ¿½±´¹¹ÔìºÍ¸³Öµ
+  // ç¦ç”¨æ‹·è´æ„é€ å’Œèµ‹å€¼
   SceneView(const SceneView &) = delete;
   SceneView &operator=(const SceneView &) = delete;
 
-  // ÈÕÖ¾Æ÷
+  // æ—¥å¿—å™¨
   Logger m_Logger;
 };
 

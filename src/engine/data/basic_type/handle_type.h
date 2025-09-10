@@ -8,9 +8,9 @@
 #include <vector>
 
 namespace mite {
-// ------------------------ ÎÆÀíÏà¹Ø ------------------------
+// ------------------------ çº¹ç†ç›¸å…³ ------------------------
 
-// ÎÆÀí¸ñÊ½Ã¶¾Ù
+// çº¹ç†æ ¼å¼æšä¸¾
 enum class TextureFormat {
   Unknown,
   RGB8,     // 8-bit per channel RGB
@@ -18,41 +18,41 @@ enum class TextureFormat {
   RGB16F,   // HDR RGB (half float)
   RGBA16F,  // HDR RGBA
 };
-// ÎÆÀí°ü×°Ä£Ê½£¨¶ÔÓ¦OpenGL/VulkanµÄwrap²ÎÊı£©
+// çº¹ç†åŒ…è£…æ¨¡å¼ï¼ˆå¯¹åº”OpenGL/Vulkançš„wrapå‚æ•°ï¼‰
 enum class TextureWrapMode {
-  Repeat,         // Ä¬ÈÏÖØ¸´ÎÆÀí
-  ClampToEdge,    // ±ßÔµÀ­Éì
-  MirroredRepeat  // ¾µÏñÖØ¸´
+  Repeat,         // é»˜è®¤é‡å¤çº¹ç†
+  ClampToEdge,    // è¾¹ç¼˜æ‹‰ä¼¸
+  MirroredRepeat  // é•œåƒé‡å¤
 };
 
-// ÎÆÀí¹ıÂËÄ£Ê½
+// çº¹ç†è¿‡æ»¤æ¨¡å¼
 enum class TextureFilterMode {
-  Nearest,     // ×î½üÁÚ²ÉÑù£¨ÏñËØ»¯·ç¸ñ£©
-  Linear,      // ÏßĞÔ¹ıÂË£¨Æ½»¬£©
-  Anisotropic  // ¸÷ÏòÒìĞÔ¹ıÂË£¨ĞèÓ²¼şÖ§³Ö£©
+  Nearest,     // æœ€è¿‘é‚»é‡‡æ ·ï¼ˆåƒç´ åŒ–é£æ ¼ï¼‰
+  Linear,      // çº¿æ€§è¿‡æ»¤ï¼ˆå¹³æ»‘ï¼‰
+  Anisotropic  // å„å‘å¼‚æ€§è¿‡æ»¤ï¼ˆéœ€ç¡¬ä»¶æ”¯æŒï¼‰
 };
 
-// ÎÆÀíGPU¾ä±ú
+// çº¹ç†GPUå¥æŸ„
 struct TextureGPUHandle {
-  std::string path;         // ÎÄ¼şÔ­Ê¼Â·¾¶
-  uintptr_t apiHandle = 0;  // µ×²ãÇı¶¯¾ä±ú£¨OpenGLµÄGLuint»òVulkanµÄVkImage£©
+  std::string path;         // æ–‡ä»¶åŸå§‹è·¯å¾„
+  uintptr_t apiHandle = 0;  // åº•å±‚é©±åŠ¨å¥æŸ„ï¼ˆOpenGLçš„GLuintæˆ–Vulkançš„VkImageï¼‰
 };
 
-// ÎÆÀíÊı¾İÀ´Ô´£¨RendererÄ£¿é×¨ÓÃµÄ¹ı¶ÉĞÍÊı¾İ¸ñÊ½£©
+// çº¹ç†æ•°æ®æ¥æºï¼ˆRendereræ¨¡å—ä¸“ç”¨çš„è¿‡æ¸¡å‹æ•°æ®æ ¼å¼ï¼‰
 struct TextureSourceData {
-  std::string path;              // ÎÄ¼şÔ­Ê¼Â·¾¶
-  const uint8_t *pixelData;      // Ô­Ê¼ÏñËØÊı¾İ£¨Ö»¶ÁÖ¸Õë£©
-  int width;                     // ÎÆÀí¿í¶È
-  int height;                    // ÎÆÀí¸ß¶È
-  TextureFormat format;          // Êı¾İ¸ñÊ½£¨RGB8/RGBA8µÈ£©
-  TextureWrapMode wrapMode;      // °ü×°Ä£Ê½
-  TextureFilterMode filterMode;  // ¹ıÂËÄ£Ê½
-  bool generateMipmaps;          // ÊÇ·ñÉú³ÉMipmap
+  std::string path;              // æ–‡ä»¶åŸå§‹è·¯å¾„
+  const uint8_t *pixelData;      // åŸå§‹åƒç´ æ•°æ®ï¼ˆåªè¯»æŒ‡é’ˆï¼‰
+  int width;                     // çº¹ç†å®½åº¦
+  int height;                    // çº¹ç†é«˜åº¦
+  TextureFormat format;          // æ•°æ®æ ¼å¼ï¼ˆRGB8/RGBA8ç­‰ï¼‰
+  TextureWrapMode wrapMode;      // åŒ…è£…æ¨¡å¼
+  TextureFilterMode filterMode;  // è¿‡æ»¤æ¨¡å¼
+  bool generateMipmaps;          // æ˜¯å¦ç”ŸæˆMipmap
 };
 
-// ------------------------ Íø¸ñÏà¹Ø ------------------------
+// ------------------------ ç½‘æ ¼ç›¸å…³ ------------------------
 
-// ¶¥µãÊôĞÔ±êÖ¾£¨ÃèÊö¶¥µã½á¹¹£©
+// é¡¶ç‚¹å±æ€§æ ‡å¿—ï¼ˆæè¿°é¡¶ç‚¹ç»“æ„ï¼‰
 enum class VertexAttribute {
   Position,
   Normal,
@@ -61,79 +61,79 @@ enum class VertexAttribute {
   Bitangent,
 };
 
-// ¶¥µã¸ñÊ½ÃèÊö£¨Ìæ´úÓ²±àÂëµÄVertex½á¹¹Ìå£©
+// é¡¶ç‚¹æ ¼å¼æè¿°ï¼ˆæ›¿ä»£ç¡¬ç¼–ç çš„Vertexç»“æ„ä½“ï¼‰
 struct VertexLayout {
   std::vector<VertexAttribute> attributes;
-  uint32_t stride = 0;  // ¶¥µã×Ü×Ö½ÚÊı
+  uint32_t stride = 0;  // é¡¶ç‚¹æ€»å­—èŠ‚æ•°
 };
 
-// ×ÓÍø¸ñGPUĞÅÏ¢£¨½ö½ö°üº¬OffsetÊı¾İ£©
+// å­ç½‘æ ¼GPUä¿¡æ¯ï¼ˆä»…ä»…åŒ…å«Offsetæ•°æ®ï¼‰
 struct MeshSection {
-  uint32_t vertexOffset;  // MeshÔÚModelµÄVAOÖĞµÄÆ«ÒÆÁ¿
-  uint32_t indexOffset;   // MeshÔÚModelµÄVBOÖĞµÄÆ«ÒÆÁ¿
-  uint32_t vertexCount;   // MeshµÄ¶¥µãÊıÁ¿
-  uint32_t indexCount;    // MeshµÄË÷ÒıÊıÁ¿
-  glm::vec3 bboxMin;      // Íø¸ñ¼¶°üÎ§ºĞ
+  uint32_t vertexOffset;  // Meshåœ¨Modelçš„VAOä¸­çš„åç§»é‡
+  uint32_t indexOffset;   // Meshåœ¨Modelçš„VBOä¸­çš„åç§»é‡
+  uint32_t vertexCount;   // Meshçš„é¡¶ç‚¹æ•°é‡
+  uint32_t indexCount;    // Meshçš„ç´¢å¼•æ•°é‡
+  glm::vec3 bboxMin;      // ç½‘æ ¼çº§åŒ…å›´ç›’
   glm::vec3 bboxMax;
-  uint32_t materialIndex;  // ²ÄÖÊË÷Òı
-  uint32_t lodLevel;       // LOD¼¶±ğ£¬0±íÊ¾Ô­Ê¼LOD
+  uint32_t materialIndex;  // æè´¨ç´¢å¼•
+  uint32_t lodLevel;       // LODçº§åˆ«ï¼Œ0è¡¨ç¤ºåŸå§‹LOD
 };
 
-// ×ÓÍø¸ñ LOD Á´½á¹¹
+// å­ç½‘æ ¼ LOD é“¾ç»“æ„
 struct MeshSectionLODChain {
-  MeshSection baseSection;               // »ù´¡ LOD (level 0)
-  std::vector<MeshSection> lodSections;  // ÆäËû LOD ¼¶±ğ (level 1+)
+  MeshSection baseSection;               // åŸºç¡€ LOD (level 0)
+  std::vector<MeshSection> lodSections;  // å…¶ä»– LOD çº§åˆ« (level 1+)
 };
 
-// ------------------------ Ä£ĞÍÏà¹Ø ------------------------
+// ------------------------ æ¨¡å‹ç›¸å…³ ------------------------
 
-// Ä£ĞÍÊı¾İÀ´Ô´£¨RendererÄ£¿é×¨ÓÃµÄ¹ı¶ÉĞÍÊı¾İ¸ñÊ½£©
+// æ¨¡å‹æ•°æ®æ¥æºï¼ˆRendereræ¨¡å—ä¸“ç”¨çš„è¿‡æ¸¡å‹æ•°æ®æ ¼å¼ï¼‰
 struct ModelSourceData {
-  std::string path;                           // ÎÄ¼şÔ­Ê¼Â·¾¶
-  std::vector<uint8_t> mergedVertexData;      // ºÏ²¢ºóµÄ¶¥µãÊı¾İ
-  std::vector<uint32_t> mergedIndices;        // ºÏ²¢ºóµÄË÷ÒıÊı¾İ
-  std::vector<MeshSectionLODChain> sections;  // ×ÓÍø¸ñ·Ö¶ÎĞÅÏ¢
-  VertexLayout layout;                        // ¶¥µã²¼¾Ö(ËùÓĞ×ÓÍø¸ñ¹²Ïí)
-  glm::vec3 modelBboxMin;                     // Ä£ĞÍ¼¶°üÎ§ºĞ
+  std::string path;                           // æ–‡ä»¶åŸå§‹è·¯å¾„
+  std::vector<uint8_t> mergedVertexData;      // åˆå¹¶åçš„é¡¶ç‚¹æ•°æ®
+  std::vector<uint32_t> mergedIndices;        // åˆå¹¶åçš„ç´¢å¼•æ•°æ®
+  std::vector<MeshSectionLODChain> sections;  // å­ç½‘æ ¼åˆ†æ®µä¿¡æ¯
+  VertexLayout layout;                        // é¡¶ç‚¹å¸ƒå±€(æ‰€æœ‰å­ç½‘æ ¼å…±äº«)
+  glm::vec3 modelBboxMin;                     // æ¨¡å‹çº§åŒ…å›´ç›’
   glm::vec3 modelBboxMax;
 };
 
-// Ä£ĞÍGPU¾ä±ú
+// æ¨¡å‹GPUå¥æŸ„
 struct ModelGPUHandle {
-  std::string path;                            // ÎÄ¼şÔ­Ê¼Â·¾¶
-  uintptr_t vertexArray;                       // Õû¸öModelµÄVAO
-  uintptr_t vertexBuffer;                      // Õû¸öModelµÄVBO
-  uintptr_t indexBuffer;                       // Õû¸öModelµÄEBO
-  std::vector<MeshSectionLODChain> subMeshes;  // ×ÓMeshĞÅÏ¢
-  glm::vec3 bboxMin;                           // Ä£ĞÍ¼¶°üÎ§ºĞ
+  std::string path;                            // æ–‡ä»¶åŸå§‹è·¯å¾„
+  uintptr_t vertexArray;                       // æ•´ä¸ªModelçš„VAO
+  uintptr_t vertexBuffer;                      // æ•´ä¸ªModelçš„VBO
+  uintptr_t indexBuffer;                       // æ•´ä¸ªModelçš„EBO
+  std::vector<MeshSectionLODChain> subMeshes;  // å­Meshä¿¡æ¯
+  glm::vec3 bboxMin;                           // æ¨¡å‹çº§åŒ…å›´ç›’
   glm::vec3 bboxMax;
 };
 
-// ------------------------ Ö¡»º³åÏà¹Ø ------------------------
+// ------------------------ å¸§ç¼“å†²ç›¸å…³ ------------------------
 
-// Ö¡»º³å¸½¼şÀàĞÍÃ¶¾Ù
+// å¸§ç¼“å†²é™„ä»¶ç±»å‹æšä¸¾
 enum class FrameBufferAttachmentType {
-  Color = 0,    // ÑÕÉ«¸½¼ş
-  Depth,        // Éî¶È¸½¼ş
-  Stencil,      // Ä£°å¸½¼ş
-  DepthStencil  // Éî¶ÈÄ£°å×éºÏ¸½¼ş
+  Color = 0,    // é¢œè‰²é™„ä»¶
+  Depth,        // æ·±åº¦é™„ä»¶
+  Stencil,      // æ¨¡æ¿é™„ä»¶
+  DepthStencil  // æ·±åº¦æ¨¡æ¿ç»„åˆé™„ä»¶
 };
 
-// Ö¡»º³å¸½¼ş¹æ¸ñ½á¹¹Ìå
+// å¸§ç¼“å†²é™„ä»¶è§„æ ¼ç»“æ„ä½“
 struct FrameBufferAttachmentSpec {
   FrameBufferAttachmentType type = FrameBufferAttachmentType::Color;
-  GLenum internalFormat = GL_RGBA8;    // ÄÚ²¿¸ñÊ½
-  GLenum format = GL_RGBA;             // Êı¾İ¸ñÊ½
-  GLenum dataType = GL_UNSIGNED_BYTE;  // Êı¾İÀàĞÍ
-  bool generateMipmaps = false;        // ÊÇ·ñÉú³Émipmaps
+  GLenum internalFormat = GL_RGBA8;    // å†…éƒ¨æ ¼å¼
+  GLenum format = GL_RGBA;             // æ•°æ®æ ¼å¼
+  GLenum dataType = GL_UNSIGNED_BYTE;  // æ•°æ®ç±»å‹
+  bool generateMipmaps = false;        // æ˜¯å¦ç”Ÿæˆmipmaps
 };
 
-// Ö¡»º³å¹æ¸ñ½á¹¹Ìå
+// å¸§ç¼“å†²è§„æ ¼ç»“æ„ä½“
 struct FrameBufferSpec {
-  uint32_t width = 1280;                               // Ä¬ÈÏ¿í¶È
-  uint32_t height = 720;                               // Ä¬ÈÏ¸ß¶È
-  std::vector<FrameBufferAttachmentSpec> attachments;  // ¸½¼şÁĞ±í
-  uint32_t samples = 1;  // ¶àÖØ²ÉÑùÊı(Ä¬ÈÏÎª1£¬¼´²»ÆôÓÃ)
+  uint32_t width = 1280;                               // é»˜è®¤å®½åº¦
+  uint32_t height = 720;                               // é»˜è®¤é«˜åº¦
+  std::vector<FrameBufferAttachmentSpec> attachments;  // é™„ä»¶åˆ—è¡¨
+  uint32_t samples = 1;  // å¤šé‡é‡‡æ ·æ•°(é»˜è®¤ä¸º1ï¼Œå³ä¸å¯ç”¨)
 };
 };  // namespace mite
 

@@ -7,31 +7,31 @@
 
 namespace mite {
 /**
- * @brief Ïà»úÓÃÍ¾±êÇ©
+ * @brief ç›¸æœºç”¨é€”æ ‡ç­¾
  * 
- * Ä¿Ç°½öÓÃÓÚÇø·ÖÖ÷Ïà»úºÍÏĞÖÃÏà»ú£¬ºóĞø¿ÉÒÔÌí¼Ó£º
- * Player1View,  // ·ÖÆÁÍæ¼Ò1
- * ShadowMap,    // ÒõÓ°ÌùÍ¼
- * UI,           // UIÏà»ú
- * Debug         // µ÷ÊÔÊÓÍ¼
+ * ç›®å‰ä»…ç”¨äºåŒºåˆ†ä¸»ç›¸æœºå’Œé—²ç½®ç›¸æœºï¼Œåç»­å¯ä»¥æ·»åŠ ï¼š
+ * Player1View,  // åˆ†å±ç©å®¶1
+ * ShadowMap,    // é˜´å½±è´´å›¾
+ * UI,           // UIç›¸æœº
+ * Debug         // è°ƒè¯•è§†å›¾
  */
 enum class CameraUsage {
-  FreeView,  // ÏĞÖÃÏà»ú
-  MainView,  // Ö÷ÊÓÍ¼
+  FreeView,  // é—²ç½®ç›¸æœº
+  MainView,  // ä¸»è§†å›¾
 };
 
 /**
- * @brief ÉãÏñ»ú×é¼ş£¬½«CameraÓëECS¼¯³É
+ * @brief æ‘„åƒæœºç»„ä»¶ï¼Œå°†Cameraä¸ECSé›†æˆ
  *
- * Ö°Ôğ£º
- * 1. ¹ØÁªTransformComponentÊµÏÖÊÀ½ç¿Õ¼äÉãÏñ»ú
- * 2. ¹ÜÀíÖ÷ÉãÏñ»ú±ê¼Ç
- * 3. ´¦ÀíÊÓ¿ÚÊÊÅäÊÂ¼ş
- * 4. »ùÓÚÏà»ú¿É¼ûĞÔÑÚÂëÊµÏÖ·Ö²ãäÖÈ¾
+ * èŒè´£ï¼š
+ * 1. å…³è”TransformComponentå®ç°ä¸–ç•Œç©ºé—´æ‘„åƒæœº
+ * 2. ç®¡ç†ä¸»æ‘„åƒæœºæ ‡è®°
+ * 3. å¤„ç†è§†å£é€‚é…äº‹ä»¶
+ * 4. åŸºäºç›¸æœºå¯è§æ€§æ©ç å®ç°åˆ†å±‚æ¸²æŸ“
  * 
- * Ğ­×÷¹ØÏµ£º
- * - ±ØĞëÓëTransformComponent¹²´æ
- * - SceneViewÍ¨¹ı´Ë×é¼ş»ñÈ¡äÖÈ¾ÓÃÉãÏñ»ú
+ * åä½œå…³ç³»ï¼š
+ * - å¿…é¡»ä¸TransformComponentå…±å­˜
+ * - SceneViewé€šè¿‡æ­¤ç»„ä»¶è·å–æ¸²æŸ“ç”¨æ‘„åƒæœº
  */
 class CameraComponent : public ComponentTraits<CameraComponent, Component::Family::Render> {
  public:
@@ -39,7 +39,7 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
 
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
-  // ==================== Í¶Ó°²ÎÊı¿ØÖÆ ====================
+  // ==================== æŠ•å½±å‚æ•°æ§åˆ¶ ====================
   void SetPerspective(float fov, float near, float far);
   void SetOrthographic(float size, float near, float far);
   void Zoom(float amount);
@@ -47,52 +47,52 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
   //void Pan(float right, float up);
   //void Move(const glm::vec3 &direction);
 
-  // ==================== Ö÷ÉãÏñ»úÓëÉãÏñ»ú±ê¼Ç ====================
+  // ==================== ä¸»æ‘„åƒæœºä¸æ‘„åƒæœºæ ‡è®° ====================
   CameraUsage GetUsage() const;
   void SetUsage(CameraUsage usage);
   std::shared_ptr<Camera> GetCamera();
 
-  // ==================== ¾ØÕó»ñÈ¡ ====================
+  // ==================== çŸ©é˜µè·å– ====================
   glm::mat4 GetViewMatrix() const;
   glm::mat4 GetProjectionMatrix() const;
 
-  // ==================== ÊÓ¿ÚÊÊÅä ====================
+  // ==================== è§†å£é€‚é… ====================
   void SetViewportSize(uint32_t width, uint32_t height);
 
-  // ==================== ¿É¼ûĞÔÑÚÂë ====================
+  // ==================== å¯è§æ€§æ©ç  ====================
 
   /**
-   * @brief ÉèÖÃÏà»ú¿É¼ûĞÔÑÚÂë
-   * @param mask ¿É¼ûĞÔÑÚÂë£¨Ê¹ÓÃCameraVisibilityMaskÖĞµÄ¶¨Òå£©
+   * @brief è®¾ç½®ç›¸æœºå¯è§æ€§æ©ç 
+   * @param mask å¯è§æ€§æ©ç ï¼ˆä½¿ç”¨CameraVisibilityMaskä¸­çš„å®šä¹‰ï¼‰
    */
   void SetVisibilityMask(uint32_t mask);
 
   /**
-   * @brief »ñÈ¡Ïà»ú¿É¼ûĞÔÑÚÂë
-   * @return µ±Ç°¿É¼ûĞÔÑÚÂë
+   * @brief è·å–ç›¸æœºå¯è§æ€§æ©ç 
+   * @return å½“å‰å¯è§æ€§æ©ç 
    */
   uint32_t GetVisibilityMask() const;
 
   /**
-   * @brief Ìí¼Ó¿É¼ûĞÔ²ã¼¶
-   * @param mask ÒªÌí¼ÓµÄÑÚÂë
+   * @brief æ·»åŠ å¯è§æ€§å±‚çº§
+   * @param mask è¦æ·»åŠ çš„æ©ç 
    */
   void AddVisibilityLayer(uint32_t mask);
 
   /**
-   * @brief ÒÆ³ı¿É¼ûĞÔ²ã¼¶
-   * @param mask ÒªÒÆ³ıµÄÑÚÂë
+   * @brief ç§»é™¤å¯è§æ€§å±‚çº§
+   * @param mask è¦ç§»é™¤çš„æ©ç 
    */
   void RemoveVisibilityLayer(uint32_t mask);
 
   /**
-   * @brief ¼ì²éÊÇ·ñ°üº¬ÌØ¶¨¿É¼ûĞÔ²ã¼¶
-   * @param mask Òª¼ì²éµÄÑÚÂë
-   * @return ÊÇ·ñ°üº¬
+   * @brief æ£€æŸ¥æ˜¯å¦åŒ…å«ç‰¹å®šå¯è§æ€§å±‚çº§
+   * @param mask è¦æ£€æŸ¥çš„æ©ç 
+   * @return æ˜¯å¦åŒ…å«
    */
   bool HasVisibilityLayer(uint32_t mask) const;
 
-  // ĞòÁĞ»¯
+  // åºåˆ—åŒ–
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
@@ -101,30 +101,30 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
  private:
   std::shared_ptr<Camera> m_Camera;
   CameraUsage m_Usage = CameraUsage::FreeView;
-  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // Ä¬ÈÏ¿´µ½ËùÓĞ
+  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // é»˜è®¤çœ‹åˆ°æ‰€æœ‰
   
-// ==================== Êı¾İÍ¬²½ ====================
+// ==================== æ•°æ®åŒæ­¥ ====================
   struct TransformState {
     glm::vec3 position{0.0f};
     glm::vec3 rotation{0.0f};
-  } m_lastTransformState;  // ÉÏÒ»Ö¡µÄTransform×´Ì¬£¬ÓÃÓÚ½øĞĞCameraInputProcessorºÍTransformComponentÊı¾İÍ¬²½
+  } m_lastTransformState;  // ä¸Šä¸€å¸§çš„TransformçŠ¶æ€ï¼Œç”¨äºè¿›è¡ŒCameraInputProcessorå’ŒTransformComponentæ•°æ®åŒæ­¥
 
-  static constexpr float POSITION_EPSILON = 0.001f;  // Î»ÖÃÈİ²î£º1mm
-  static constexpr float ROTATION_EPSILON = 0.01f;   // Ğı×ªÈİ²î£º0.01¶È
+  static constexpr float POSITION_EPSILON = 0.001f;  // ä½ç½®å®¹å·®ï¼š1mm
+  static constexpr float ROTATION_EPSILON = 0.01f;   // æ—‹è½¬å®¹å·®ï¼š0.01åº¦
 
   bool IsTransformChanged(const TransformState &current, const TransformState &last);
 };
 
-// ÉãÏñ»ú×é¼şÏµÍ³
+// æ‘„åƒæœºç»„ä»¶ç³»ç»Ÿ
 class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
   DECLARE_COMPONENT_SYSTEM(CameraComponentSystem)
  public:
   std::vector<std::type_index> GetSystemDependencies() const override;
 
-  // »ñÈ¡MainÏà»úÊµÌå
+  // è·å–Mainç›¸æœºå®ä½“
   Entity GetMainCameraEntity() const;
 
-  // ÉèÖÃÖ÷Ïà»úÊµÌå£¨È·±£Î¨Ò»ĞÔ£©
+  // è®¾ç½®ä¸»ç›¸æœºå®ä½“ï¼ˆç¡®ä¿å”¯ä¸€æ€§ï¼‰
   void SetMainCameraEntity(Entity mainCamera);
 
  protected:
@@ -133,7 +133,7 @@ class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
 
 /**
  * @class MainCameraChangedEvent
- * @brief Ö÷ÉãÏñ»úĞŞ¸ÄÊÂ¼ş£¨ÔİÎ´ÆôÓÃ£©
+ * @brief ä¸»æ‘„åƒæœºä¿®æ”¹äº‹ä»¶ï¼ˆæš‚æœªå¯ç”¨ï¼‰
  */
 class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
  public:
@@ -150,7 +150,7 @@ class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
 
 /**
  * @class CameraVisibilityMaskChangedEvent
- * @brief ÉãÏñ»úÑÚÂëĞŞ¸ÄÊÂ¼ş£¨ÔİÎ´ÆôÓÃ£©
+ * @brief æ‘„åƒæœºæ©ç ä¿®æ”¹äº‹ä»¶ï¼ˆæš‚æœªå¯ç”¨ï¼‰
  */
 class CameraVisibilityMaskChangedEvent : public ComponentEvent<CameraComponent> {
  public:

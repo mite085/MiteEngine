@@ -7,8 +7,8 @@
 
 namespace mite {
 /**
- * 模型创建事件
- * 职责：委托RendererDevice创建GPU资源
+ * 妯″瀷鍒涘缓浜嬩欢
+ * 鑱岃矗锛氬鎵楻endererDevice鍒涘缓GPU璧勬簮
  *
  */
 class ModelLoadEvent : public Event {
@@ -38,8 +38,8 @@ class ModelLoadEvent : public Event {
 };
 
 /**
- * 纹理创建事件
- * 职责：委托RendererDevice创建GPU资源
+ * 绾圭悊鍒涘缓浜嬩欢
+ * 鑱岃矗锛氬鎵楻endererDevice鍒涘缓GPU璧勬簮
  */
 class TextureLoadEvent : public Event {
  public:
