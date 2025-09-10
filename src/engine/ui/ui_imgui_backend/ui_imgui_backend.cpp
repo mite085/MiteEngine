@@ -1,5 +1,4 @@
 #include "ui_imgui_backend.h"
-#include "ui_for_editor/ui_editor_viewport_panel.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
@@ -14,11 +13,6 @@ ImGuiBackend::ImGuiBackend()
       m_StyleAdapter(std::make_unique<ImGuiStyleAdapter>()),
       m_InputAdapter(std::make_unique<ImGuiInputAdapter>())
 {
-}
-
-ImGuiBackend::~ImGuiBackend()
-{
-  Shutdown();
 }
 
 bool ImGuiBackend::Initialize(void *glfwWindow)
@@ -49,11 +43,15 @@ bool ImGuiBackend::Initialize(void *glfwWindow)
     return false;
   }
 
+  // 初始化样式适配器
+  m_StyleAdapter->Initialize();
+
   // 初始化输入适配器
   m_InputAdapter->Initialize();
 
-  // 初始化字体
+  // 初始化字体为中文
   ImGuiFontManager::LoadFonts();
+  ImGuiFontManager::SetLanguageFont("zh-CN");
 
   // 初始化本地化渲染器
   ImGuiLocalizationRenderer::Initialize();
@@ -70,6 +68,9 @@ void ImGuiBackend::Shutdown()
   ImGuiLocalizationRenderer::Shutdown();
   if (m_InputAdapter) {
     m_InputAdapter->Shutdown();
+  }
+  if (m_StyleAdapter) {
+    m_StyleAdapter->Shutdown();
   }
 
   // 2. 销毁渲染器后端（OpenGL3）
@@ -202,18 +203,6 @@ void ImGuiBackend::DestroyDeviceObjects()
   ImGui_ImplOpenGL3_DestroyDeviceObjects();
 }
 
-void ImGuiBackend::RenderPanel(std::shared_ptr<UIPanel> panel)
-{
-  // 将面板转换为具体的实现类型进行渲染
-  if (auto viewportPanel = std::dynamic_pointer_cast<ViewportPanel>(panel)) {
-    RenderViewportPanel(viewportPanel);
-  }
-  else {
-    // 其他类型面板的渲染
-    panel->Render();
-  }
-}
-
 const char *ImGuiBackend::GetBackendName() const
 {
   return "ImGui (OpenGL3 + GLFW)";
@@ -285,28 +274,5 @@ bool ImGuiBackend::InitializeRendererBackend()
     return false;
   }
   return true;
-}
-
-void ImGuiBackend::RenderViewportPanel(std::shared_ptr<ViewportPanel> panel)
-{  
-  // 设置视口窗口样式(无内边距)
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-  ImGui::Begin(panel->GetTitle().c_str(), &panel->IsVisible());
-
-  // ===== 1. 更新视口状态 =====
-  m_ViewportFocused = ImGui::IsWindowFocused();
-  m_ViewportHovered = ImGui::IsWindowHovered();
-  updateViewportSize();
-
-  // ===== 2. 渲染场景内容 =====
-  if (m_Framebuffer && m_Framebuffer->IsComplete()) {
-    // 显示帧缓冲内容(注意UV坐标翻转)
-    ImGui::Image(m_Framebuffer->GetColorAttachmentID(),
-                 ImVec2(m_ViewportSize.x, m_ViewportSize.y),
-                 ImVec2(0, 1),  // UV起点(左下角)
-                 ImVec2(1, 0)   // UV终点(右上角)
-    );
-  }
-
 }
 }  // namespace mite

@@ -32,7 +32,7 @@ class ViewportPanel;
 class ImGuiBackend : public UIBackend {
  public:
   ImGuiBackend();
-  ~ImGuiBackend() override;
+  ~ImGuiBackend() = default;
 
   // ==================== UIBackend接口实现 ====================
   bool Initialize(void *window) override;
@@ -50,7 +50,6 @@ class ImGuiBackend : public UIBackend {
   bool IsMouseCursorVisible() const override;
   void CreateDeviceObjects() override;
   void DestroyDeviceObjects() override;
-  void RenderPanel(std::shared_ptr<UIPanel> panel) override;
   const char *GetBackendName() const override;
   void ApplyUIStyle(std::shared_ptr<UIStyle> newStyle) override;
   void ApplyLanguaged(const std::string &oldLanguage, const std::string &newLanguage) override;
@@ -72,9 +71,6 @@ class ImGuiBackend : public UIBackend {
 
   // 初始化渲染器后端
   bool InitializeRendererBackend();
-
-  // 渲染ViewPort
-  void RenderViewportPanel(std::shared_ptr<ViewportPanel> panel);
 
   // 成员变量
   GLFWwindow *m_Window;                               // GLFW窗口句柄
