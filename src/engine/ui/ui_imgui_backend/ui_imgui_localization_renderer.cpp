@@ -2,12 +2,16 @@
 #include "ui_imgui_localization_renderer.h"
 
 namespace mite {
+ImFont *ImGuiFontManager::m_EnglistFont = nullptr;
+ImFont *ImGuiFontManager::m_ChineseFont = nullptr;
+std::unordered_map<std::string, ImFont *> ImGuiFontManager::m_LanguageFonts = {};
+
 void ImGuiFontManager::LoadFonts()
 {
   ImGuiIO &io = ImGui::GetIO();
 
   // 加载默认字体（英文）
-  m_DefaultFont = io.Fonts->AddFontDefault();
+  m_EnglistFont = io.Fonts->AddFontDefault();
 
   // 加载中文字体
   std::string fontPath = FileSystem::GetAssetPath("localization/NotoSansSC-Regular.ttf").string();
@@ -17,11 +21,11 @@ void ImGuiFontManager::LoadFonts()
   }
   else {
     LOG_WARN("Chinese font not found: {}", fontPath);
-    m_ChineseFont = m_DefaultFont;
+    m_ChineseFont = m_EnglistFont;
   }
 
   // 构建字体映射
-  m_LanguageFonts["en-US"] = m_DefaultFont;
+  m_LanguageFonts["en-US"] = m_EnglistFont;
   m_LanguageFonts["zh-CN"] = m_ChineseFont;
 }
 

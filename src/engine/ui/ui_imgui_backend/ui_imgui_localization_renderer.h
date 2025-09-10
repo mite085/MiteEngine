@@ -17,7 +17,7 @@ class ImGuiFontManager {
   static bool SetLanguageFont(const std::string &languageCode);
 
  private:
-  static ImFont *m_DefaultFont;
+  static ImFont *m_EnglistFont;
   static ImFont *m_ChineseFont;
   static std::unordered_map<std::string, ImFont *> m_LanguageFonts;
 };
