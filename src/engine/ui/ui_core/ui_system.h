@@ -26,14 +26,25 @@ class UISystem {
    * @param renderer 渲染器依赖注入
    * @param window 窗口依赖注入
    */
-  UISystem(Renderer &renderer, Window &window);
-  ~UISystem();
+  UISystem();
+  ~UISystem() = default;
 
   // 禁用拷贝和移动
   UISystem(const UISystem &) = delete;
   UISystem(UISystem &&) = delete;
   UISystem &operator=(const UISystem &) = delete;
   UISystem &operator=(UISystem &&) = delete;
+
+  /**
+   * @brief 初始化UI系统
+   * @param nativeWindow 窗口句柄，如GLFWwindow
+   */
+  void Initialize(void *nativeWindow);
+
+  /**
+   * @brief 关闭UI系统
+   */
+  void Shutdown();
 
   /**
    * @brief 更新UI系统
@@ -67,7 +78,7 @@ class UISystem {
    * @param name 面板名称
    * @return 面板指针
    */
-  std::shared_ptr<UIPanel> CreatePanel(const std::string &name);
+  void RegisterPanel(std::shared_ptr<UIPanel>);
 
   /**
    * @brief 销毁面板
@@ -101,14 +112,12 @@ class UISystem {
   void SetVisible(bool visible);
 
  private:
-  // 初始化后端
-  bool InitializeBackend();
+  // 使用窗口句柄初始化后端
+  bool InitializeBackend(void *nativeWindow);
 
   bool m_Visible;
 
   // 核心依赖
-  Renderer &m_Renderer;
-  Window &m_Window;
   std::unique_ptr<UIBackend> m_Backend;
   std::unique_ptr<UIStyleManager> m_StyleManager;
 

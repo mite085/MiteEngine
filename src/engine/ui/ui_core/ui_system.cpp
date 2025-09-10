@@ -6,14 +6,17 @@
 
 namespace mite {
 
-UISystem::UISystem(Renderer &renderer, Window &window)
-    : m_Visible(true), m_Renderer(renderer), m_Window(window)
+UISystem::UISystem()
+    : m_Visible(true)
 {
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Backend");
-  m_Logger->info("Initializing UI ImGui Backend");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI System");
+  m_Logger->info("Initializing UI System");
+}
 
-  // 初始化后端
-  if (!InitializeBackend()) {
+void UISystem::Initialize(void *nativeWindow)
+{  
+    // 初始化后端
+  if (!InitializeBackend(nativeWindow)) {
     m_Logger->error("UI Backend Initialize FAILED!");
   }
 
@@ -22,15 +25,12 @@ UISystem::UISystem(Renderer &renderer, Window &window)
   m_StyleManager->Initialize();
   m_Backend->ApplyUIStyle(m_StyleManager->GetCurrentStyle());
 
-  // 初始化翻译系统
-  UILocalization::Get();
-
   // 发布初始化完成事件
   EventBus::Publish<UIInitializedEvent>(UIInitializedEvent());
 }
 
-UISystem::~UISystem()
-{
+void UISystem::Shutdown()
+{ 
   // 发布关闭事件
   EventBus::Publish<UIShutdownEvent>(UIShutdownEvent());
 
@@ -80,9 +80,8 @@ void UISystem::Render()
   if (m_Backend) {
     // 渲染所有可见面板
     for (auto &[id, panel] : m_Panels) {
-      if (panel->IsVisible()) {
-        m_Backend->RenderPanel(panel);
-      }
+      if (panel->IsVisible())
+        panel->Render();
     }
   }
 }
@@ -109,15 +108,20 @@ void UISystem::ProcessInputEvent(Event &event)
   }
 }
 
-std::shared_ptr<UIPanel> UISystem::CreatePanel(const std::string &name)
+void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
 {
-  auto panel = std::make_shared<UIPanel>(name);
+  // 需要检查UI的ID
+  if (m_Panels.find(panel->GetID()) != m_Panels.end()) {
+    m_Logger->error("Cannot Register Existing Panel: name = {}, UUID = {}",
+                    panel->GetName(),
+                    UUIDGenerator::UUIDToString(panel->GetID()));
+  }
+
+  // 注册进哈希表
   m_Panels[panel->GetID()] = panel;
 
   // 发布面板创建事件
-  EventBus::Publish<PanelOpenedEvent>(PanelOpenedEvent(panel->GetID(), name));
-
-  return panel;
+  EventBus::Publish<PanelOpenedEvent>(PanelOpenedEvent(panel->GetID(), panel->GetName()));
 }
 
 void UISystem::DestroyPanel(UUID panelId)
@@ -156,18 +160,15 @@ void UISystem::SetVisible(bool visible)
   m_Visible = visible;
 }
 
-bool UISystem::InitializeBackend()
+bool UISystem::InitializeBackend(void *nativeWindow)
 {
   // 目前只实现ImGui后端
   m_Backend = std::make_unique<ImGuiBackend>();
 
-  if (!m_Backend->Initialize(m_Window.GetNativeWindow())) {
+  if (!m_Backend->Initialize(nativeWindow)) {
     m_Logger->error("ImGui Backend Initialize FAILED !");
     return false;
   }
-
-  // 设置显示尺寸
-  m_Backend->SetDisplaySize(m_Window.GetWidth(), m_Window.GetHeight());
 
   m_Logger->info("ImGui Backend Initialize Successed: {}", m_Backend->GetBackendName());
   return true;
