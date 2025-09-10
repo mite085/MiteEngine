@@ -43,3 +43,11 @@ target_link_libraries(${PROJECT_NAME}
     MiteEngine_Engine_Window
     MiteEngine_Engine_Ui
 )
+
+# 添加自定义目标来复制assets文件夹到可执行文件目录（用于开发时方便）
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
+    COMMENT "Copying assets to executable directory"
+)

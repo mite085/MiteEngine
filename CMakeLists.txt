@@ -46,11 +46,11 @@ endif()
 # 添加第三方依赖目录
 include(thirdparty.cmake)
 
-# 添加配置目录
-add_subdirectory(config)
-
 # 添加核心目录
 add_subdirectory(src)
+
+# 添加配置目录
+add_subdirectory(config)
 
 # 添加测试目录
 if(BUILD_TESTS)
