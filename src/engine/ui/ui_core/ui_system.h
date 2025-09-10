@@ -35,15 +35,8 @@ class UISystem {
   UISystem &operator=(const UISystem &) = delete;
   UISystem &operator=(UISystem &&) = delete;
 
-  /**
-   * @brief 初始化UI系统
-   * @param nativeWindow 窗口句柄，如GLFWwindow
-   */
+  // 使用窗口句柄初始化（如GLFWwindow）
   void Initialize(void *nativeWindow);
-
-  /**
-   * @brief 关闭UI系统
-   */
   void Shutdown();
 
   /**

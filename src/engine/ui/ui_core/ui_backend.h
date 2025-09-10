@@ -18,18 +18,10 @@ class UIStyle;
 class UIBackend {
  public:
   virtual ~UIBackend() = default;
-
-  /**
-   * @brief 初始化后端
-   * @return 是否初始化成功
-   */
   virtual bool Initialize(void *window) = 0;
-
-  /**
-   * @brief 清理后端
-   */
   virtual void Shutdown() = 0;
 
+  // ==================== 渲染接口与事件处理 ====================
   /**
    * @brief 开始UI帧
    */
@@ -46,6 +38,7 @@ class UIBackend {
    */
   virtual void ProcessInputEvent(Event &event) = 0;
 
+  // ==================== 参数接口 ====================
   /**
    * @brief 设置显示尺寸
    * @param width 宽度
@@ -96,6 +89,7 @@ class UIBackend {
    */
   virtual bool IsMouseCursorVisible() const = 0;
 
+  // ==================== 渲染资源管理（暂时没有用到） ====================
   /**
    * @brief 创建后端特定的渲染资源
    */
@@ -111,6 +105,8 @@ class UIBackend {
    */
   virtual const char *GetBackendName() const = 0;
 
+
+  // ==================== 样式语言管理 ====================
   /**
    * @brief 样式管理
    */
