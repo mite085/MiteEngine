@@ -7,7 +7,10 @@ ImGuiStyleAdapter::ImGuiStyleAdapter()
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Style Adapter");
   m_Logger->info("Initializing ImGuiStyleAdapter");
+}
 
+void ImGuiStyleAdapter::Initialize()
+{ 
   // 备份原始ImGui样式
   m_BackupStyle = ImGui::GetStyle();
 
@@ -18,7 +21,7 @@ ImGuiStyleAdapter::ImGuiStyleAdapter()
   m_EventSubscriptions.Subscribe<StyleChangedEvent>(BIND_DISPATCH_FN(OnStyleChanged));
 }
 
-ImGuiStyleAdapter::~ImGuiStyleAdapter()
+void ImGuiStyleAdapter::Shutdown()
 {
   m_Logger->info("Shutting down ImGuiStyleAdapter");
   // 恢复原始ImGui样式

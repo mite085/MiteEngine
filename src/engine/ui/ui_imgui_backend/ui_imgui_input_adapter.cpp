@@ -94,7 +94,7 @@ void ImGuiInputAdapter::UpdateDisplaySize(GLFWwindow *window)
   ImGuiIO &io = ImGui::GetIO();
   io.DisplaySize = ImVec2(static_cast<float>(m_DisplaySize.x),
                           static_cast<float>(m_DisplaySize.y));
-  m_Logger->debug("Display size updated: {}x{}", width, height);
+  //m_Logger->debug("Display size updated: {}x{}", width, height);
 }
 
 void ImGuiInputAdapter::UpdateFramebufferScale(GLFWwindow *window)
@@ -122,8 +122,8 @@ void ImGuiInputAdapter::UpdateFramebufferScale(GLFWwindow *window)
   // 更新ImGui的显示缩放
   ImGuiIO &io = ImGui::GetIO();
   io.DisplayFramebufferScale = ImVec2(m_FramebufferScale.x, m_FramebufferScale.y);
-  m_Logger->debug(
-      "Framebuffer scale updated: {:.2f}x{:.2f}", m_FramebufferScale.x, m_FramebufferScale.y);
+  //m_Logger->debug(
+  //    "Framebuffer scale updated: {:.2f}x{:.2f}", m_FramebufferScale.x, m_FramebufferScale.y);
 }
 
 // 具体事件处理实现

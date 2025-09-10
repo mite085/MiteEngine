@@ -1,5 +1,6 @@
 #include "ui_localization_json.h"
 #include "ui_event/ui_events_lifecycle.h"
+#include "ui_imgui_backend/ui_imgui_localization_renderer.h"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
@@ -8,8 +9,13 @@ namespace mite {
 
 UILocalizationJson::UILocalizationJson()
 {
+  // 初始化日志系统
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI Localization Json");
+  m_Logger->info("Initializing UII Localization Json");
+
+
   InitializeBuiltinLanguages();
-  SetCurrentLanguage(SIMPLIFIED_CHINESE);  // 默认英文
+  SetCurrentLanguage(SIMPLIFIED_CHINESE);  // 默认中文
 
   // 订阅语言变更事件
   m_SubscriptionGroup.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
@@ -162,7 +168,7 @@ bool UILocalizationJson::ParseLanguagePack(const json &jsonData, LanguagePack &p
     }
 
     m_Logger->debug("Parsed language pack: {}, {} translations",
-                    metadata.value("language", "unknown"),
+                    metadata.value("language", ""),
                     pack.translations.size());
     return true;
   }
@@ -196,6 +202,8 @@ bool UILocalizationJson::SetCurrentLanguage(const std::string &languageCode)
 
   std::string oldLanguage = m_CurrentLanguage;
   m_CurrentLanguage = languageCode;
+
+  ImGuiFontManager::SetLanguageFont(languageCode);
 
   m_Logger->info("Language changed to: {}", languageCode);
   return true;
@@ -237,7 +245,7 @@ std::string UILocalizationJson::Translate(const std::string &key) const
   }
 
   m_Logger->debug("Translation key not found: {}", key);
-  return key;  // 返回键名作为默认值
+  return key;  // 无翻译，返回键名作为默认值
 }
 
 

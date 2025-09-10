@@ -14,7 +14,13 @@ namespace mite {
 class ImGuiStyleAdapter {
  public:
   ImGuiStyleAdapter();
-  ~ImGuiStyleAdapter();
+  ~ImGuiStyleAdapter() = default;
+
+  // 初始化
+  void Initialize();
+
+  // 关闭
+  void Shutdown();
 
   // 从UIStyle应用到ImGui
   bool ApplyUIStyle(const std::shared_ptr<UIStyle> uiStyle);
