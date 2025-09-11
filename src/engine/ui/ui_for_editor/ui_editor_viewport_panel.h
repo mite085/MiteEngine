@@ -2,7 +2,7 @@
 #define MITE_UI_VIEWPORT_PANEL
 
 #include "basic_data/framebuffer.h"
-#include "ui_widget/ui_panel.h"
+#include "ui_element/ui_panel.h"
 
 namespace mite {
 /**

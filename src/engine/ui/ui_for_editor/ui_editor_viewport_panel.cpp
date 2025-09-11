@@ -11,7 +11,7 @@ void ViewportPanel::Render()
 {
   // 设置视口窗口样式(无内边距)
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-  ImGui::Begin(UILocalization::Get().Translate(m_Title).c_str(), &m_Visible);
+  ImGui::Begin(UILocalization::Get().Translate(GetName()).c_str(), &m_Visible);
 
   // 获取视口可用区域大小
   ImVec2 contentSize = ImGui::GetContentRegionAvail();

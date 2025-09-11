@@ -3,7 +3,7 @@
 
 #include "event/event.h"
 #include "headers/headers.h"
-#include "ui_widget/ui_panel.h"
+#include "ui_element/ui_panel.h"
 
 namespace mite {
 

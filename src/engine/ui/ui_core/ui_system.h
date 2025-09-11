@@ -7,14 +7,9 @@
 #include "ui_event/ui_events_lifecycle.h"
 #include "ui_localization.h"
 #include "ui_style_manager.h"
-#include "ui_widget/ui_panel.h"
-#include "ui_widget/ui_widget.h"
+#include "ui_element/ui_panel.h"
 
 namespace mite {
-// 前向声明
-class Renderer;
-class Window;
-
 /**
  * @brief UI系统核心管理类
  * 负责管理UI系统的生命周期、事件处理、渲染集成等
