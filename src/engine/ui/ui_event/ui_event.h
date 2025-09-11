@@ -12,15 +12,19 @@ namespace mite {
  */
 class UIEvent : public Event {
  public:
+  UIEvent(UUID elementId) : m_ElementId(elementId){}
   virtual ~UIEvent() = default;
 
   /**
    * @brief 获取事件源控件ID
    */
-  virtual UUID GetSourceWidgetID() const
+  virtual UUID GetSourceElementID() const
   {
-    return {};
+    return m_ElementId;
   }
+
+ protected:
+  UUID m_ElementId;
 };
 
 }  // namespace mite
