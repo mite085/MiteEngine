@@ -8,7 +8,7 @@ namespace mite {
 /**
  * @brief 运行时UI初始化事件
  */
-class RuntimeUIInitializedEvent : public UIEvent {
+class RuntimeUIInitializedEvent : public Event {
  public:
   RuntimeUIInitializedEvent() = default;
 
@@ -28,7 +28,7 @@ class RuntimeUIInitializedEvent : public UIEvent {
 /**
  * @brief 运行时UI关闭事件
  */
-class RuntimeUIShutdownEvent : public UIEvent {
+class RuntimeUIShutdownEvent : public Event {
  public:
   RuntimeUIShutdownEvent() = default;
 
@@ -48,7 +48,7 @@ class RuntimeUIShutdownEvent : public UIEvent {
 /**
  * @brief 游戏开始事件
  */
-class GameStartEvent : public UIEvent {
+class GameStartEvent : public Event {
  public:
   GameStartEvent() = default;
 
@@ -68,7 +68,7 @@ class GameStartEvent : public UIEvent {
 /**
  * @brief 游戏暂停事件
  */
-class GamePauseEvent : public UIEvent {
+class GamePauseEvent : public Event {
  public:
   explicit GamePauseEvent(bool paused) : m_Paused(paused) {}
 
@@ -96,7 +96,7 @@ class GamePauseEvent : public UIEvent {
 /**
  * @brief 游戏停止事件
  */
-class GameStopEvent : public UIEvent {
+class GameStopEvent : public Event {
  public:
   GameStopEvent() = default;
 
@@ -116,7 +116,7 @@ class GameStopEvent : public UIEvent {
 /**
  * @brief 运行时设置修改事件
  */
-class RuntimeSettingChangedEvent : public UIEvent {
+class RuntimeSettingChangedEvent : public Event {
  public:
   explicit RuntimeSettingChangedEvent(const std::string &settingName,
                                       const std::string &settingValue)
@@ -153,7 +153,7 @@ class RuntimeSettingChangedEvent : public UIEvent {
 /**
  * @brief 运行时性能统计事件
  */
-class RuntimePerformanceEvent : public UIEvent {
+class RuntimePerformanceEvent : public Event {
  public:
   explicit RuntimePerformanceEvent(float fps,
                                    float frameTime,

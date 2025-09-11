@@ -8,9 +8,9 @@ namespace mite {
 /**
  * @brief UI初始化完成事件
  */
-class UIInitializedEvent : public UIEvent {
+class UISystemInitializedEvent : public Event {
  public:
-  UIInitializedEvent() = default;
+  UISystemInitializedEvent() = default;
 
   std::string ToString() const override
   {
@@ -19,7 +19,7 @@ class UIInitializedEvent : public UIEvent {
 
   Event *Clone() const override
   {
-    return new UIInitializedEvent();
+    return new UISystemInitializedEvent();
   }
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 };
@@ -27,9 +27,9 @@ class UIInitializedEvent : public UIEvent {
 /**
  * @brief UI关闭事件
  */
-class UIShutdownEvent : public UIEvent {
+class UISystemShutdownEvent : public Event {
  public:
-  UIShutdownEvent() = default;
+  UISystemShutdownEvent() = default;
 
   std::string ToString() const override
   {
@@ -38,7 +38,7 @@ class UIShutdownEvent : public UIEvent {
 
   Event *Clone() const override
   {
-    return new UIShutdownEvent();
+    return new UISystemShutdownEvent();
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
@@ -49,14 +49,9 @@ class UIShutdownEvent : public UIEvent {
  */
 class WidgetCreatedEvent : public UIEvent {
  public:
-  explicit WidgetCreatedEvent(UUID widgetId, const std::string &widgetType)
-      : m_WidgetId(widgetId), m_WidgetType(widgetType)
+  explicit WidgetCreatedEvent(UUID elementId, const std::string &widgetType)
+      : UIEvent(elementId), m_WidgetType(widgetType)
   {
-  }
-
-  UUID GetSourceWidgetID() const override
-  {
-    return m_WidgetId;
   }
   const std::string &GetWidgetType() const
   {
@@ -66,18 +61,17 @@ class WidgetCreatedEvent : public UIEvent {
   std::string ToString() const override
   {
     return "WidgetCreatedEvent: " + m_WidgetType +
-           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
+           " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) + ")";
   }
 
   Event *Clone() const override
   {
-    return new WidgetCreatedEvent(m_WidgetId, m_WidgetType);
+    return new WidgetCreatedEvent(m_ElementId, m_WidgetType);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 
  private:
-  UUID m_WidgetId;
   std::string m_WidgetType;
 };
 
@@ -86,14 +80,9 @@ class WidgetCreatedEvent : public UIEvent {
  */
 class WidgetDestroyedEvent : public UIEvent {
  public:
-  explicit WidgetDestroyedEvent(UUID widgetId, const std::string &widgetType)
-      : m_WidgetId(widgetId), m_WidgetType(widgetType)
+  explicit WidgetDestroyedEvent(UUID elementId, const std::string &widgetType)
+      : UIEvent(elementId), m_WidgetType(widgetType)
   {
-  }
-
-  UUID GetSourceWidgetID() const override
-  {
-    return m_WidgetId;
   }
   const std::string &GetWidgetType() const
   {
@@ -103,18 +92,17 @@ class WidgetDestroyedEvent : public UIEvent {
   std::string ToString() const override
   {
     return "WidgetDestroyedEvent: " + m_WidgetType +
-           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
+           " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) + ")";
   }
 
   Event *Clone() const override
   {
-    return new WidgetDestroyedEvent(m_WidgetId, m_WidgetType);
+    return new WidgetDestroyedEvent(m_ElementId, m_WidgetType);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 
  private:
-  UUID m_WidgetId;
   std::string m_WidgetType;
 };
 
@@ -123,15 +111,11 @@ class WidgetDestroyedEvent : public UIEvent {
  */
 class PanelOpenedEvent : public UIEvent {
  public:
-  explicit PanelOpenedEvent(UUID panelId, const std::string &panelName)
-      : m_PanelId(panelId), m_PanelName(panelName)
+  explicit PanelOpenedEvent(UUID elementId, const std::string &panelName)
+      : UIEvent(elementId), m_PanelName(panelName)
   {
   }
 
-  UUID GetSourceWidgetID() const override
-  {
-    return m_PanelId;
-  }
   const std::string &GetPanelName() const
   {
     return m_PanelName;
@@ -139,19 +123,19 @@ class PanelOpenedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "PanelOpenedEvent: " + m_PanelName + " (ID: " + UUIDGenerator::UUIDToString(m_PanelId) +
+    return "PanelOpenedEvent: " + m_PanelName +
+           " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) +
            ")";
   }
 
   Event *Clone() const override
   {
-    return new PanelOpenedEvent(m_PanelId, m_PanelName);
+    return new PanelOpenedEvent(m_ElementId, m_PanelName);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 
  private:
-  UUID m_PanelId;
   std::string m_PanelName;
 };
 
@@ -160,15 +144,11 @@ class PanelOpenedEvent : public UIEvent {
  */
 class PanelClosedEvent : public UIEvent {
  public:
-  explicit PanelClosedEvent(UUID panelId, const std::string &panelName)
-      : m_PanelId(panelId), m_PanelName(panelName)
+  explicit PanelClosedEvent(UUID elementId, const std::string &panelName)
+      : UIEvent(elementId), m_PanelName(panelName)
   {
   }
 
-  UUID GetSourceWidgetID() const override
-  {
-    return m_PanelId;
-  }
   const std::string &GetPanelName() const
   {
     return m_PanelName;
@@ -176,19 +156,19 @@ class PanelClosedEvent : public UIEvent {
 
   std::string ToString() const override
   {
-    return "PanelClosedEvent: " + m_PanelName + " (ID: " + UUIDGenerator::UUIDToString(m_PanelId) +
+    return "PanelClosedEvent: " + m_PanelName +
+           " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) +
            ")";
   }
 
   Event *Clone() const override
   {
-    return new PanelClosedEvent(m_PanelId, m_PanelName);
+    return new PanelClosedEvent(m_ElementId, m_PanelName);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 
  private:
-  UUID m_PanelId;
   std::string m_PanelName;
 };
 
@@ -197,16 +177,11 @@ class PanelClosedEvent : public UIEvent {
  */
 class LayoutChangedEvent : public UIEvent {
  public:
-  explicit LayoutChangedEvent(UUID layoutId,
+  explicit LayoutChangedEvent(UUID elementId,
                               const std::string &layoutType,
                               const glm::vec2 &newSize)
-      : m_LayoutId(layoutId), m_LayoutType(layoutType), m_NewSize(newSize)
+      : UIEvent(elementId), m_LayoutType(layoutType), m_NewSize(newSize)
   {
-  }
-
-  UUID GetSourceWidgetID() const override
-  {
-    return m_LayoutId;
   }
   const std::string &GetLayoutType() const
   {
@@ -220,18 +195,17 @@ class LayoutChangedEvent : public UIEvent {
   std::string ToString() const override
   {
     return "LayoutChangedEvent: " + m_LayoutType + " Size: " + std::to_string(m_NewSize.x) + "x" +
-           std::to_string(m_NewSize.y) + " (ID: " + UUIDGenerator::UUIDToString(m_LayoutId) + ")";
+           std::to_string(m_NewSize.y) + " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) + ")";
   }
 
   Event *Clone() const override
   {
-    return new LayoutChangedEvent(m_LayoutId, m_LayoutType, m_NewSize);
+    return new LayoutChangedEvent(m_ElementId, m_LayoutType, m_NewSize);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 
  private:
-  UUID m_LayoutId;
   std::string m_LayoutType;
   glm::vec2 m_NewSize;
 };
@@ -239,82 +213,54 @@ class LayoutChangedEvent : public UIEvent {
 /**
  * @brief 焦点获得事件
  */
-class FocusGainedEvent : public UIEvent {
+class UIFocusGainedEvent : public UIEvent {
  public:
-  explicit FocusGainedEvent(UUID widgetId, const std::string &widgetType)
-      : m_WidgetId(widgetId), m_WidgetType(widgetType)
+  explicit UIFocusGainedEvent(UUID elementId)
+      : UIEvent(elementId)
   {
-  }
-
-  UUID GetSourceWidgetID() const override
-  {
-    return m_WidgetId;
-  }
-  const std::string &GetWidgetType() const
-  {
-    return m_WidgetType;
   }
 
   std::string ToString() const override
   {
-    return "FocusGainedEvent: " + m_WidgetType +
-           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
+    return "FocusGainedEvent(ID: " + UUIDGenerator::UUIDToString(m_ElementId) + ")";
   }
 
   Event *Clone() const override
   {
-    return new FocusGainedEvent(m_WidgetId, m_WidgetType);
+    return new UIFocusGainedEvent(m_ElementId);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
-
- private:
-  UUID m_WidgetId;
-  std::string m_WidgetType;
 };
 
 /**
  * @brief 焦点失去事件
  */
-class FocusLostEvent : public UIEvent {
+class UIFocusLostEvent : public UIEvent {
  public:
-  explicit FocusLostEvent(UUID widgetId, const std::string &widgetType)
-      : m_WidgetId(widgetId), m_WidgetType(widgetType)
+  explicit UIFocusLostEvent(UUID elementId)
+      : UIEvent(elementId)
   {
-  }
-
-  UUID GetSourceWidgetID() const override
-  {
-    return m_WidgetId;
-  }
-  const std::string &GetWidgetType() const
-  {
-    return m_WidgetType;
   }
 
   std::string ToString() const override
   {
-    return "FocusLostEvent: " + m_WidgetType + " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) +
-           ")";
+    return "FocusLostEvent(ID: " + UUIDGenerator::UUIDToString(m_ElementId) + ")";
   }
 
   Event *Clone() const override
   {
-    return new FocusLostEvent(m_WidgetId, m_WidgetType);
+    return new UIFocusLostEvent(m_ElementId);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
-
- private:
-  UUID m_WidgetId;
-  std::string m_WidgetType;
 };
 
 /**
  * @brief 样式变更事件
  * 当样式或样式属性发生变化时触发
  */
-struct StyleChangedEvent : public UIEvent {
+struct StyleChangedEvent : public Event {
  public:
   explicit StyleChangedEvent(std::shared_ptr<UIStyle> style)
       : m_Style(style)
@@ -337,7 +283,7 @@ struct StyleChangedEvent : public UIEvent {
 /**
  * @brief 语言变更事件
  */
-class LanguageChangedEvent : public UIEvent {
+class LanguageChangedEvent : public Event {
  public:
   explicit LanguageChangedEvent(const std::string &newLanguageCode)
       : m_NewLanguageCode(newLanguageCode)
@@ -370,14 +316,10 @@ class LanguageChangedEvent : public UIEvent {
 class UIVisibilityChangedEvent : public UIEvent {
  public:
   explicit UIVisibilityChangedEvent(UUID widgetId, const std::string &widgetType, bool visible)
-      : m_WidgetId(widgetId), m_WidgetType(widgetType), m_Visible(visible)
+      : UIEvent(widgetId), m_WidgetType(widgetType), m_Visible(visible)
   {
   }
 
-  UUID GetSourceWidgetID() const override
-  {
-    return m_WidgetId;
-  }
   const std::string &GetWidgetType() const
   {
     return m_WidgetType;
@@ -390,18 +332,17 @@ class UIVisibilityChangedEvent : public UIEvent {
   std::string ToString() const override
   {
     return "UIVisibilityChangedEvent: " + m_WidgetType + (m_Visible ? " SHOWN" : " HIDDEN") +
-           " (ID: " + UUIDGenerator::UUIDToString(m_WidgetId) + ")";
+           " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) + ")";
   }
 
   Event *Clone() const override
   {
-    return new UIVisibilityChangedEvent(m_WidgetId, m_WidgetType, m_Visible);
+    return new UIVisibilityChangedEvent(m_ElementId, m_WidgetType, m_Visible);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 
  private:
-  UUID m_WidgetId;
   std::string m_WidgetType;
   bool m_Visible;
 };

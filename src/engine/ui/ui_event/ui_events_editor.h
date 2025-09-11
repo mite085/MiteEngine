@@ -9,7 +9,7 @@ namespace mite {
 /**
  * @brief 场景保存事件
  */
-class SceneSaveEvent : public UIEvent {
+class SceneSaveEvent : public Event {
  public:
   explicit SceneSaveEvent(const std::string &filePath) : m_FilePath(filePath) {}
 
@@ -37,7 +37,7 @@ class SceneSaveEvent : public UIEvent {
 /**
  * @brief 场景加载事件
  */
-class SceneLoadEvent : public UIEvent {
+class SceneLoadEvent : public Event {
  public:
   explicit SceneLoadEvent(const std::string &filePath) : m_FilePath(filePath) {}
 
@@ -63,46 +63,9 @@ class SceneLoadEvent : public UIEvent {
 };
 
 /**
- * @brief 视口渲染事件
- */
-class ViewportRenderEvent : public UIEvent {
- public:
-  explicit ViewportRenderEvent(UUID viewportId, const glm::vec2 &size)
-      : m_ViewportId(viewportId), m_Size(size)
-  {
-  }
-
-  UUID GetSourceWidgetID() const override
-  {
-    return m_ViewportId;
-  }
-  glm::vec2 GetSize() const
-  {
-    return m_Size;
-  }
-
-  std::string ToString() const override
-  {
-    return "ViewportRenderEvent: ID " + UUIDGenerator::UUIDToString(m_ViewportId) +
-           " Size: " + std::to_string(m_Size.x) + "x" + std::to_string(m_Size.y);
-  }
-
-  Event *Clone() const override
-  {
-    return new ViewportRenderEvent(m_ViewportId, m_Size);
-  }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
-
- private:
-  UUID m_ViewportId;
-  glm::vec2 m_Size;
-};
-
-/**
  * @brief 实体选择事件
  */
-class EntitySelectedEvent : public UIEvent {
+class EntitySelectedEvent : public Event {
  public:
   explicit EntitySelectedEvent(Entity entity, const std::string &entityName = "")
       : m_Entity(entity), m_EntityName(entityName)
@@ -138,7 +101,7 @@ class EntitySelectedEvent : public UIEvent {
 /**
  * @brief 实体取消选择事件
  */
-class EntityDeselectedEvent : public UIEvent {
+class EntityDeselectedEvent : public Event {
  public:
   explicit EntityDeselectedEvent(Entity entity) : m_Entity(entity) {}
 
@@ -166,7 +129,7 @@ class EntityDeselectedEvent : public UIEvent {
 /**
  * @brief Gizmo操作事件
  */
-class GizmoOperationEvent : public UIEvent {
+class GizmoOperationEvent : public Event {
  public:
   enum class OperationType { TRANSLATE, ROTATE, SCALE, NONE };
 
