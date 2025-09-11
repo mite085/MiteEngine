@@ -4,12 +4,10 @@
 #include "headers/headers.h"
 #include <imgui.h>
 
-
 namespace mite {
-
 /**
  * @brief ImGui控件渲染器 - 负责非本地化控件的渲染封装
- * 
+ *
  * 包含了
  * 1. 基础控件：按钮
  * 2. 布局控件：分割线
@@ -18,6 +16,12 @@ namespace mite {
  * 5. 颜色控件：带颜色的按钮，颜色选择器
  * 6. 图像控件：图像，带图像的按钮
  * 7. 形状控件：长方形，圆形（支持填充颜色）
+ * 8. 树形控件：树状结构，用于绘制SceneTree等
+ * 9. 表格控件：需要使用BeginTable和EndTable划定绘制范围
+ * 10.弹出窗口：现场绘制的窗口，可包含Button等控件
+ * 11.拖拽控件：拖拽浮点数、整数
+ * 12.滑块控件：滑块浮点数、整数、角度
+ * 13.矢量控件：Vec2、3、4变量的绘制
  *
  * 提供所有不需要文本翻译的ImGui控件渲染接口
  * 与ImGuiLocalizationRenderer互补，构成完整的控件渲染体系
@@ -148,7 +152,7 @@ class ImGuiControlRenderer {
 
   /**
    * @brief 渲染图像
-   * 
+   *
    * (注意OpenGL UV坐标翻转)
    */
   static void Image(ImTextureID user_texture_id,
@@ -528,7 +532,6 @@ class ImGuiControlRenderer {
 #define IMGUI_DUMMY(size) mite::ImGuiControlRenderer::Dummy(size)
 #define IMGUI_IMAGE(tex, size) mite::ImGuiControlRenderer::Image(tex, size)
 #define IMGUI_PROGRESS_BAR(frac) mite::ImGuiControlRenderer::ProgressBar(frac)
-
 }  // namespace mite
 
 #endif  // MITE_IMGUI_CONTROL_RENDERER_H
