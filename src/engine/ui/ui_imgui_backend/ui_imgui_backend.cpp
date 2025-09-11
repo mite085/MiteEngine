@@ -105,6 +105,9 @@ void ImGuiBackend::BeginFrame()
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
+  // 创建一个覆盖整个视口的停靠空间
+  //ImGui::DockSpaceOverViewport();
+
   // 使用Time模块设置DeltaTime
   ImGui::GetIO().DeltaTime = Time::DeltaTime();
 
@@ -115,6 +118,42 @@ void ImGuiBackend::BeginFrame()
   // 更新帧缓冲缩放
   m_InputAdapter->UpdateFramebufferScale(GetWindow());
   m_FramebufferScale = m_InputAdapter->GetFramebufferScale();
+
+  static bool opt_fullscreen = true;
+  static bool opt_padding = false;
+  static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+  // 设置全屏停靠窗口
+  ImGuiViewport *viewport = ImGui::GetMainViewport();
+  ImGui::SetNextWindowPos(viewport->WorkPos);
+  ImGui::SetNextWindowSize(viewport->WorkSize);
+  ImGui::SetNextWindowViewport(viewport->ID);
+
+  ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+  window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+  window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+  ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+  ImGui::PopStyleVar();
+  // 菜单栏
+  if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMenu("Options")) {
+      ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
+      ImGui::MenuItem("Padding", NULL, &opt_padding);
+      ImGui::Separator();
+      if (ImGui::MenuItem(
+              "Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
+      {
+      }
+      ImGui::EndMenu();
+    }
+    ImGui::EndMenuBar();
+  }
+  // 停靠空间
+  ImGuiID dockspace_id = ImGui::DockSpace(
+      ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), dockspace_flags);
+  ImGui::End();
+
 }
 
 void ImGuiBackend::EndFrame()
