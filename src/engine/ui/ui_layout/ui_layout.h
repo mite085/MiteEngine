@@ -5,30 +5,30 @@
 
 namespace mite {
 /**
- * @brief ²¼¾ÖËã·¨»ùÀà£¬¶¨Òå²¼¾Ö½Ó¿Ú
+ * @brief å¸ƒå±€ç®—æ³•åŸºç±»ï¼Œå®šä¹‰å¸ƒå±€æ¥å£
  */
 class UILayout {
  public:
-  // ¶ÔÆë·½Ê½Ã¶¾Ù
+  // å¯¹é½æ–¹å¼æšä¸¾
   enum class Alignment {
-    TopLeft,       // ×óÉÏ
-    TopCenter,     // ÖĞÉÏ
-    TopRight,      // ÓÒÉÏ
-    CenterLeft,    // ×óÖĞ
-    Center,        // ÖĞĞÄ
-    CenterRight,   // ÓÒÖĞ
-    BottomLeft,    // ×óÏÂ
-    BottomCenter,  // ÖĞÏÂ
-    BottomRight    // ÓÒÏÂ
+    TopLeft,       // å·¦ä¸Š
+    TopCenter,     // ä¸­ä¸Š
+    TopRight,      // å³ä¸Š
+    CenterLeft,    // å·¦ä¸­
+    Center,        // ä¸­å¿ƒ
+    CenterRight,   // å³ä¸­
+    BottomLeft,    // å·¦ä¸‹
+    BottomCenter,  // ä¸­ä¸‹
+    BottomRight    // å³ä¸‹
   };
-  // ²¼¾ÖÀàĞÍÃ¶¾Ù
+  // å¸ƒå±€ç±»å‹æšä¸¾
   enum class LayoutType {
-    Horizontal,  // Ë®Æ½²¼¾Ö
-    Vertical     // ´¹Ö±²¼¾Ö
+    Horizontal,  // æ°´å¹³å¸ƒå±€
+    Vertical     // å‚ç›´å¸ƒå±€
   };
 
   /**
-   * @brief ¸ù¾İÀàĞÍ´´½¨²¼¾Ö
+   * @brief æ ¹æ®ç±»å‹åˆ›å»ºå¸ƒå±€
    * @param type
    * @return
    */
@@ -38,11 +38,11 @@ class UILayout {
   virtual ~UILayout() = default;
 
   /**
-   * @brief ¼ÆËã²¼¾Ö
-   * @param elements ĞèÒª²¼¾ÖµÄÔªËØÁĞ±í
-   * @param containerSize ÈİÆ÷³ß´ç
-   * @param containerPosition ÈİÆ÷Î»ÖÃ
-   * @return ²¼¾ÖºóµÄÔªËØÎ»ÖÃĞÅÏ¢
+   * @brief è®¡ç®—å¸ƒå±€
+   * @param elements éœ€è¦å¸ƒå±€çš„å…ƒç´ åˆ—è¡¨
+   * @param containerSize å®¹å™¨å°ºå¯¸
+   * @param containerPosition å®¹å™¨ä½ç½®
+   * @return å¸ƒå±€åçš„å…ƒç´ ä½ç½®ä¿¡æ¯
    */
   virtual std::vector<glm::vec2> CalculateLayout(
       const std::vector<std::shared_ptr<UIElement>> &elements,
@@ -50,60 +50,60 @@ class UILayout {
       const glm::vec2 &containerPosition) = 0;
 
   /**
-   * @brief »ñÈ¡²¼¾ÖÀàĞÍÃû³Æ
+   * @brief è·å–å¸ƒå±€ç±»å‹åç§°
    */
   virtual const char *GetLayoutType() const = 0;
 
   /**
-   * @brief ÉèÖÃ¼ä¾à
+   * @brief è®¾ç½®é—´è·
    */
   virtual void SetSpacing(float spacing);
 
   /**
-   * @brief »ñÈ¡¼ä¾à
+   * @brief è·å–é—´è·
    */
   float GetSpacing() const;
 
   /**
-   * @brief ÉèÖÃ±ß¾à
+   * @brief è®¾ç½®è¾¹è·
    */
   virtual void SetPadding(const glm::vec4 &padding);
 
   /**
-   * @brief »ñÈ¡±ß¾à
+   * @brief è·å–è¾¹è·
    */
   glm::vec4 GetPadding() const;
 
   /**
-   * @brief ÉèÖÃÊÇ·ñÀ­Éì×ÓÔªËØÒÔÊÊÓ¦ÈİÆ÷
+   * @brief è®¾ç½®æ˜¯å¦æ‹‰ä¼¸å­å…ƒç´ ä»¥é€‚åº”å®¹å™¨
    */
   virtual void SetStretchChildren(bool stretch);
 
   /**
-   * @brief »ñÈ¡ÊÇ·ñÀ­Éì×ÓÔªËØ
+   * @brief è·å–æ˜¯å¦æ‹‰ä¼¸å­å…ƒç´ 
    */
   bool GetStretchChildren() const;
 
   /**
-   * @brief ÉèÖÃ¶ÔÆë·½Ê½
+   * @brief è®¾ç½®å¯¹é½æ–¹å¼
    */
   void SetAlignment(Alignment alignment);
 
   /**
-   * @brief »ñÈ¡¶ÔÆë·½Ê½
+   * @brief è·å–å¯¹é½æ–¹å¼
    */
   Alignment GetAlignment() const;
 
   /**
-   * @brief ¿ËÂ¡²¼¾Ö¶ÔÏó
+   * @brief å…‹éš†å¸ƒå±€å¯¹è±¡
    */
   virtual std::shared_ptr<UILayout> Clone() const = 0;
 
  protected:
-  float m_Spacing = 5.0f;                      // ÔªËØ¼ä¾à
-  glm::vec4 m_Padding = {0, 0, 0, 0};          // ±ß¾à: left, top, right, bottom
-  bool m_StretchChildren = false;              // ÊÇ·ñÀ­Éì×ÓÔªËØ
-  Alignment m_Alignment = Alignment::TopLeft;  // ¶ÔÆë·½Ê½£¬Ä¬ÈÏ´Ó×óµ½ÓÒ + ´ÓÉÏÍùÏÂ
+  float m_Spacing = 5.0f;                      // å…ƒç´ é—´è·
+  glm::vec4 m_Padding = {0, 0, 0, 0};          // è¾¹è·: left, top, right, bottom
+  bool m_StretchChildren = false;              // æ˜¯å¦æ‹‰ä¼¸å­å…ƒç´ 
+  Alignment m_Alignment = Alignment::TopLeft;  // å¯¹é½æ–¹å¼ï¼Œé»˜è®¤ä»å·¦åˆ°å³ + ä»ä¸Šå¾€ä¸‹
 };
 }  // namespace mite
 
