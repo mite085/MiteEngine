@@ -23,16 +23,15 @@ void UISystem::Initialize(void *nativeWindow)
   // 初始化Style Manager，并将CurrentStyle作用于后端
   m_StyleManager = std::make_unique<UIStyleManager>();
   m_StyleManager->Initialize();
-  m_Backend->ApplyUIStyle(m_StyleManager->GetCurrentStyle());
 
   // 发布初始化完成事件
-  EventBus::Publish<UIInitializedEvent>(UIInitializedEvent());
+  EventBus::Publish<UISystemInitializedEvent>(UISystemInitializedEvent());
 }
 
 void UISystem::Shutdown()
 { 
   // 发布关闭事件
-  EventBus::Publish<UIShutdownEvent>(UIShutdownEvent());
+  EventBus::Publish<UISystemShutdownEvent>(UISystemShutdownEvent());
 
   // 清理面板
   m_Panels.clear();
@@ -78,6 +77,10 @@ void UISystem::Render()
   }
 
   if (m_Backend) {
+    // 绘制菜单栏
+
+    // 设定停靠空间（Editor专用）
+
     // 渲染所有可见面板
     for (auto &[id, panel] : m_Panels) {
       if (panel->IsVisible())

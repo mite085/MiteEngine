@@ -19,10 +19,10 @@ void UIStyleManager::Initialize()
   // 创建并注册内置样式
   CreateBuiltinStyles();
 
-  // 设置默认样式为当前样式
-  if (HasStyle(s_LightStyleName)) {
-    SetCurrentStyle(s_LightStyleName);
-    m_Logger->info("Light style set as current style");
+  // 设置默认样式为dark
+  if (HasStyle(s_DarkStyleName)) {
+    SetCurrentStyle(s_DarkStyleName);
+    m_Logger->info("Dark style set as current style");
   }
   else {
     m_Logger->error("Failed to find light style during initialization");
