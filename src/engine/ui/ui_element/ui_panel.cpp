@@ -36,6 +36,18 @@ void UIPanel::Update(float deltaTime)
   UIWidget::Update(deltaTime);
 }
 
+void UIPanel::Render() {
+  if (!IsVisible())
+    return;
+
+  // 渲染所有子控件
+  for (const auto &widget : m_Widgets) {
+    if (widget->IsVisible()) {
+      widget->Render();
+    }
+  }
+}
+
 void UIPanel::AddWidget(std::shared_ptr<UIWidget> widget)
 {
   if (!widget) {
@@ -141,9 +153,11 @@ void UIPanel::ApplyLayout()
     if (visibleElements.empty()) {
       return;
     }
+
     // 计算布局位置
     auto positions = m_Layout->CalculateLayout(visibleElements, m_Size, m_Position);
-    // 应用布局结果
+
+    // 应用布局结果到控件
     size_t visibleIndex = 0;
     for (size_t i = 0; i < m_Widgets.size(); ++i) {
       if (!m_Widgets[i]->IsVisible()) {

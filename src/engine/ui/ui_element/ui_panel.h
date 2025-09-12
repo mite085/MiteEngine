@@ -21,7 +21,7 @@ class UIPanel : public UIWidget {
   virtual ~UIPanel();
 
   virtual void Update(float deltaTime) override;
-  virtual void Render() = 0;
+  virtual void Render() override;
 
   
   // ==================== 子控件管理 ====================
