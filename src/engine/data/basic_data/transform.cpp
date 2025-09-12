@@ -144,6 +144,43 @@ void Transform::RotateAround(const glm::vec3 &point, const glm::vec3 &axis, floa
   m_RotationDirty = true;
   m_MatrixDirty = true;
 }
+
+void Transform::RotateWithUpConstraint(float yaw,
+                                       float pitch,
+                                       float roll,
+                                       const glm::vec3 &worldUp)
+{
+  RotateWithUpConstraint(glm::vec3(pitch, yaw, roll), worldUp);
+}
+void Transform::RotateWithUpConstraint(const glm::vec3 &eulerDelta, const glm::vec3 &worldUp)
+{
+  // 应用偏航旋转（绕世界Y轴）
+  if (eulerDelta.y != 0.0f) {
+    Rotate(worldUp, eulerDelta.y);  // 绕世界向上轴旋转
+  }
+
+  // 应用俯仰旋转（绕本地X轴）
+  if (eulerDelta.x != 0.0f) {
+    glm::vec3 right = GetConstrainedRight(worldUp);
+    Rotate(right, eulerDelta.x);
+
+    // 限制俯仰角度避免翻转
+    glm::vec3 forward = GetConstrainedForward(worldUp);
+    float currentPitch = glm::degrees(asin(forward.z));  // 假设Z是向上方向
+
+    // 如果超过限制，回滚旋转
+    if (abs(currentPitch) > 89.0f) {
+      Rotate(right, -eulerDelta.x);  // 撤销本次俯仰旋转
+    }
+  }
+
+  // 通常编辑器相机不需要滚转，但保留接口
+  if (eulerDelta.z != 0.0f) {
+    glm::vec3 forward = GetConstrainedForward(worldUp);
+    Rotate(forward, eulerDelta.z);
+  }
+}
+
 void Transform::LookAt(const glm::vec3 &target, const glm::vec3 &up)
 {
   // 使用glm的lookAt函数计算旋转
@@ -260,6 +297,22 @@ glm::vec3 Transform::GetRight(const glm::vec3 &up) const
 {
   // 基于指定上方向计算右向量
   return glm::normalize(glm::cross(GetForward(), up));
+}
+
+glm::vec3 Transform::GetConstrainedForward(const glm::vec3 &worldUp) const
+{
+  glm::vec3 forward = GetForward();
+  glm::vec3 right = glm::normalize(glm::cross(forward, worldUp));
+  return glm::normalize(glm::cross(worldUp, right));
+}
+glm::vec3 Transform::GetConstrainedUp(const glm::vec3 &worldUp) const
+{
+  return worldUp;  // 强制使用指定的世界向上方向
+}
+glm::vec3 Transform::GetConstrainedRight(const glm::vec3 &worldUp) const
+{
+  glm::vec3 forward = GetConstrainedForward(worldUp);
+  return glm::normalize(glm::cross(forward, worldUp));
 }
 
 // ==================== 辅助方法实现 ====================
