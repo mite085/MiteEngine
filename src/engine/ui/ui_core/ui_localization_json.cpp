@@ -1,6 +1,6 @@
 #include "ui_localization_json.h"
 #include "ui_event/ui_events_lifecycle.h"
-#include "ui_imgui_backend/ui_imgui_localization_renderer.h"
+#include "ui_imgui_backend/ui_imgui_font_manager.h"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
