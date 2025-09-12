@@ -1,0 +1,77 @@
+#ifndef MITE_UI_IMGUI_RENDER_H
+#define MITE_UI_IMGUI_RENDER_H
+
+#include "ui_core/ui_localization.h"
+#include "ui_core/ui_render.h"
+
+namespace mite {
+/**
+ * @brief ImGui UI渲染实现
+ * 负责将抽象的UI渲染调用转换为具体的ImGui调用
+ */
+class ImGuiUIRender : public UIRender {
+ public:
+  ImGuiUIRender() = default;
+  ~ImGuiUIRender() override = default;
+
+  // ==================== 基础控件渲染 ====================
+  void RenderLabel(const LabelProps &props) override;
+  bool RenderButton(const ButtonProps &props) override;
+  bool RenderCheckbox(CheckboxProps &props) override;
+  bool RenderToggle(ToggleProps &props) override;
+  bool RenderTextInput(TextInputProps &props) override;
+  bool RenderTextArea(TextAreaProps &props) override;
+
+  // ==================== 选择器控件渲染 ====================
+  bool RenderCombobox(ComboboxProps &props) override;
+  bool RenderListBox(ListBoxProps &props) override;
+
+  // ==================== 数值输入控件渲染 ====================
+  bool RenderDragFloat(DragFloatProps &props) override;
+  bool RenderDragFloat2(DragFloat2Props &props) override;
+  bool RenderDragFloat3(DragFloat3Props &props) override;
+  bool RenderDragFloat4(DragFloat4Props &props) override;
+  bool RenderDragInt(DragIntProps &props) override;
+
+  // ==================== 特殊控件渲染 ====================
+  void RenderProgressBar(const ProgressBarProps &props) override;
+  bool RenderColorEdit(ColorEditProps &props) override;
+  void RenderImage(const ImageProps &props) override;
+
+  // ==================== 容器控件渲染 ====================
+  void RenderGroup(const GroupProps &props, const std::function<void()> &renderContent) override;
+  bool RenderTreeNode(TreeNodeProps &props, const std::function<void()> &renderContent) override;
+  bool RenderPopup(PopupProps &props, const std::function<void()> &renderContent) override;
+  void RenderTable(TableProps &props, const std::function<void()> &renderContent) override;
+
+  // ==================== 布局控件渲染 ====================
+  void RenderSeparator() override;
+  void RenderSpacer(const SpacerProps &props) override;
+  void SetSameLine(float offset = 0.0f, float spacing = -1.0f) override;
+  void SetNewLine() override;
+
+  // ==================== 状态管理 ====================
+  void BeginDisabled(bool disabled = true) override;
+  void EndDisabled() override;
+
+  // ==================== 工具函数 ====================
+  glm::vec2 GetCursorPos() override;
+  void SetCursorPos(const glm::vec2 &pos) override;
+  glm::vec2 CalcTextSize(const std::string &text) override;
+
+ private:
+  // ==================== 翻译辅助函数 ====================
+  std::string GetTranslatedText(const BaseRenderProps &props);  // 获取翻译后的文本内容
+  std::string GetTranslatedHint(const TextInputProps &props);  // 获取输入框提示文本的翻译
+  std::string GetTranslatedOverlay(const ProgressBarProps &props);  // 获取进度条覆盖文本的翻译
+  std::string GetTranslatedItem(const std::vector<std::string> &translationKeys,
+                                const std::vector<std::string> &fallbackItems,
+                                int index);                                   // 选项翻译处理
+  std::string GetTranslatedHeader(const TableProps &props, int columnIndex);  // 表头翻译处理
+
+  // ==================== 私有辅助函数 ====================
+  const char *GenerateImGuiId(const UUID &elementId);  // 生成ImGui所需的唯一标识符
+};
+}  // namespace mite
+
+#endif  // MITE_UI_IMGUI_RENDER_H
