@@ -1,7 +1,7 @@
 #include "ui_imgui_backend.h"
+#include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <imgui.h>
 
 namespace mite {
 ImGuiBackend::ImGuiBackend()
@@ -53,9 +53,6 @@ bool ImGuiBackend::Initialize(void *glfwWindow)
   ImGuiFontManager::LoadFonts();
   ImGuiFontManager::SetLanguageFont("zh-CN");
 
-  // 初始化本地化渲染器
-  ImGuiLocalizationRenderer::Initialize();
-
   m_Logger->info("ImGuiBackend initialized successfully");
   return true;
 }
@@ -64,8 +61,7 @@ void ImGuiBackend::Shutdown()
 {
   m_Logger->debug("ImGuiBackend shutdown started");
 
-  // 1. 清理本地化相关资源与适配器
-  ImGuiLocalizationRenderer::Shutdown();
+  // 1. 清理适配器
   if (m_InputAdapter) {
     m_InputAdapter->Shutdown();
   }

@@ -2,14 +2,11 @@
 #define MITE_IMGUI_BACKEND_H
 
 #include "ui_core/ui_backend.h"
-#include "ui_imgui_localization_renderer.h"
+#include "ui_imgui_font_manager.h"
 #include "ui_imgui_input_adapter.h"
 #include "ui_imgui_style_adapter.h"
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
+
 namespace mite {
-// 前向声明
-class ViewportPanel;
 
 /**
  * @brief ImGui后端实现
