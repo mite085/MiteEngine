@@ -5,19 +5,28 @@ set(ENGINE_UI_LIB_NAME MiteEngine_Engine_Ui)
 
 # 创建源代码组(筛选器)
 set(UI_CORE_SRCS
-    ui_core/ui_backend.h        # 后端抽象接口
+    ui_core/ui_system.h         # UI系统单例，管理全局UI状态
+    ui_core/ui_system.cpp
+
+    # 后端与渲染相关
+    ui_core/ui_backend.h        # 后端抽象接口（包含后端的初始化、Begin/End Frame、样式语言统一管理等）
+    ui_core/ui_render.h         # 渲染接口（包含具体渲染操作的抽象，如绘制button、float edit等）
+    ui_core/ui_render.cpp
+    ui_core/ui_render_props.h   # 渲染属性（执行渲染操作所需要的属性，如button上的text，float edit的值等）
+
+    # 样式相关
     ui_core/ui_style.h          # 样式抽象
     ui_core/ui_style.cpp
     ui_core/ui_style_manager.h  # 样式管理
     ui_core/ui_style_manager.cpp
-    ui_core/ui_localization.h   # 翻译
+
+    # 翻译相关
+    ui_core/ui_localization.h   # 本地化（翻译）
     ui_core/ui_localization.cpp
-    ui_core/ui_localization_json.h # 基于Json配置文件的翻译实现
+    ui_core/ui_localization_json.h # 基于Json配置文件的本地化实现
     ui_core/ui_localization_json.cpp
     ${CMAKE_BINARY_DIR}/src/engine/ui/ui_core/localization_json_config.h # Json配置文件索引
 
-    ui_core/ui_system.h         # UI系统单例，管理全局UI状态
-    ui_core/ui_system.cpp
 )
 source_group("ui core" FILES ${UI_CORE_SRCS})
 
@@ -55,16 +64,15 @@ source_group("ui layouts" FILES ${UI_LAYOUT_SRCS})
 set(UI_IMGUI_BACKEND_SRCS
     ui_imgui_backend/ui_imgui_backend.h         # ImGui后端实现
     ui_imgui_backend/ui_imgui_backend.cpp
+    ui_imgui_backend/ui_imgui_render.h          # ImGui渲染实现
+    ui_imgui_backend/ui_imgui_render.cpp
 
+    ui_imgui_backend/ui_imgui_font_manager.h    # ImGui字体管理器
+    ui_imgui_backend/ui_imgui_font_manager.cpp
     ui_imgui_backend/ui_imgui_style_adapter.h   # ImGui样式适配器
     ui_imgui_backend/ui_imgui_style_adapter.cpp
     ui_imgui_backend/ui_imgui_input_adapter.h   # ImGui输入适配器（事件转换）
     ui_imgui_backend/ui_imgui_input_adapter.cpp
-
-    ui_imgui_backend/ui_imgui_control_renderer.h   # ImGui控件渲染适配器(负责控件的渲染操作封装，不包含翻译)
-    ui_imgui_backend/ui_imgui_control_renderer.cpp
-    ui_imgui_backend/ui_imgui_localization_renderer.h   # ImGui本地化渲染适配器(包含FontManager，负责带翻译文本控件的渲染操作封装，与控件渲染适配器协同)
-    ui_imgui_backend/ui_imgui_localization_renderer.cpp
 )
 source_group("ui imgui backend" FILES ${UI_IMGUI_BACKEND_SRCS})
 
@@ -83,11 +91,18 @@ set(UI_EVENT_SRCS
 )
 source_group("ui events" FILES ${UI_EVENT_SRCS})
 
+set(UI_VIEWPORT_SRCS
+    ui_viewport/ui_viewport_panel.h     # 视口面板，核心接口
+    ui_viewport/ui_viewport_panel.cpp
+    ui_viewport/ui_viewport_overlay.h   # 视口覆盖层，绘制统计信息、参考线等
+    ui_viewport/ui_viewport_overlay.cpp
+    ui_viewport/ui_viewport_toolbar.h   # 视口工具层，提供视口相关的操作按钮和控件
+    ui_viewport/ui_viewport_toolbar.cpp
+)
+source_group("ui viewport" FILES ${UI_VIEWPORT_SRCS})
+
 set(UI_FOR_EDITOR_SRCS
     ui_for_editor/ui_editor_system.h    # 编辑器UI系统扩展（事件订阅中心）
-    
-    ui_for_editor/ui_editor_viewport_panel.h     # 编辑器专属Panel: Viewport视口
-    ui_for_editor/ui_editor_viewport_panel.cpp
 )
 source_group("ui for editor" FILES ${UI_FOR_EDITOR_SRCS})
 
@@ -104,6 +119,7 @@ add_library(${ENGINE_UI_LIB_NAME}
     ${UI_LAYOUT_SRCS}
     ${UI_IMGUI_BACKEND_SRCS}
     ${UI_EVENT_SRCS}
+    ${UI_VIEWPORT_SRCS}
     ${UI_FOR_EDITOR_SRCS}
     ${UI_FOR_RUNTIME_SRCS}
 )
