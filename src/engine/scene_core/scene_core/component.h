@@ -90,15 +90,6 @@ class Component {
   /**
    * @brief 返回组件是否依赖于其他组件
    * @return 依赖的组件类型列表
-   *
-   * 注意:
-   * 与场景树直接相关的组件(如TransformComponent、
-   * LightComponent、CameraComponent等)，需要依赖
-   * HierarchyComponent，它就是组成场景树的核心。
-   *
-   * 或者通过对TransformComponent的依赖，实现对
-   * HierarchyComponent的间接依赖(如MeshComponent、
-   * AnimationComponent等)。
    */
   virtual std::vector<std::type_index> GetDependencies() const
   {
@@ -106,42 +97,13 @@ class Component {
   }
 
   /**
-   * @brief 判断该组件所属的实体是否存在parent
-   * @param reg 注册表，用于查询
-   * @return 是否存在parent
-   */
-  bool HasParent(SceneRegistry &reg);
-
-  /**
-   * @brief 获取该组件所属的实体的parent实体
-   * @param reg 注册表，用于查询
-   * @return parent实体
-   * 
-   * 注意：
-   * 使用时应当与Component::HasParent配合使用
-   * 
-   * 注意2：
-   * HierarchyComponent的GetParent()方法无参数，
-   * 与基类Component的GetParent(SceneRegistry &)
-   * 并不存在继承关系。无需构建Virtual虚函数
-   */
-  Entity GetParent(SceneRegistry &reg);
-
-  /**
    * @brief 设定所属实体对象
    * @param entity 实体对象
-   *
-   * 注意：
-   * 由于SceneRegistry::AddComponent所调用的
-   * m_Registry.emplace<T>(entt::entity, Args &&...args)
-   * 方法对完美转发的参数包的要求，Component的构造函数
-   * 所传入的参数必须和参数包的参数类型一致，
-   * 故需要单独将SetOwnerEntity分离开执行。
-   *
-   * TODO: entt对这部分的设定，说明了Component的
-   * 内部逻辑不应当依赖于Entity对象。所以该函数
-   * 是违背entt的设计理念的。后续应当考虑删除
-   *
+   * 
+   * 问题：
+   * 组件是否应当维护实体？存疑。
+   * 原则上组件和实体应当是完全解耦的，
+   * 该方法应当删除
    */
   void SetOwnerEntity(Entity entity);
 
@@ -181,14 +143,12 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
   }
 
   /**
-   * 注意：Component克隆方法，和HierarchyComponent的禁用拷贝构造函数，
-   * 相互冲突，引发编译错误。现阶段优先确保HierarchyComponent禁止拷贝，
-   * 后续需要深拷贝时添加clone方法
+   * @brief 组件深拷贝专用函数
    */
-  // std::shared_ptr<Component> Clone() const override
-  //{
-  //   return std::make_shared<T>(static_cast<const T &>(*this));
-  // }
+  std::shared_ptr<Component> Clone() const override
+  {
+    return std::make_shared<T>(static_cast<const T &>(*this));
+  }
 
   // 启用静态类型检查的组件ID获取
   static std::type_index GetStaticType()

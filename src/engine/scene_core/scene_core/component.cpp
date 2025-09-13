@@ -1,6 +1,5 @@
 #include "component.h"
 #include "entity.h"
-#include "scene_core_components/hierarchy_component.h"
 #include "scene_registry.h"
 
 namespace mite {
@@ -55,20 +54,6 @@ bool Component::Deserialize(std::istream &input)
   // 基础组件反序列化只读取启用状态
   input.read(reinterpret_cast<char *>(&m_Enabled), sizeof(m_Enabled));
   return !input.fail();
-}
-
-bool Component::HasParent(SceneRegistry &reg)
-{
-  if (reg.HasComponent<HierarchyComponent>(GetEntity()))
-    return reg.GetComponent<HierarchyComponent>(GetEntity()).GetParent().IsValid();
-  else
-    return false;
-}
-
-Entity Component::GetParent(SceneRegistry &reg)
-{
-  // 与Component::HasParent配合使用，故不设置if分支进行正确性检查。
-  return reg.GetComponent<HierarchyComponent>(GetEntity()).GetParent();
 }
 
 void Component::SetOwnerEntity(Entity entity)
