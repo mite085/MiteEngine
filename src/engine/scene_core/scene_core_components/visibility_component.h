@@ -1,21 +1,20 @@
 #ifndef MITE_VISIBILITY_COMPONENT_H
 #define MITE_VISIBILITY_COMPONENT_H
 
-#include "bounding_volumes_types.h"
-#include "frustum.h"
+#include "basic_type/bounding_volumes_types.h"
+#include "basic_data/frustum.h"
 #include "scene_core/component_system.h"
-#include "scene_core_components/camera_component.h"
+#include "camera_component.h"
 
 namespace mite {
 /**
  * @class VisibilityComponent
- * @brief 可见性组件，用于管理实体的可见性状态和空间剔除
+ * @brief 可见性组件，专注于管理实体的可见性掩码和状态
  *
  * 功能特性：
- * 1. 支持视锥体裁剪和遮挡剔除
- * 2. 维护世界空间包围盒用于快速相交测试
- * 3. 提供可见性掩码支持分层渲染
- * 4. 与SceneGraph协同工作实现高效的空间查询
+ * 1. 提供可见性掩码支持分层渲染
+ * 2. 管理手动/自动可见性状态
+ * 3. 与SceneGraph协同实现高效的可见性管理
  */
 class VisibilityComponent
     : public ComponentTraits<VisibilityComponent, Component::Family::Visibility> {
