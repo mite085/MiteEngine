@@ -24,12 +24,6 @@ class VisibilityComponent
    */
   VisibilityComponent();
 
-  /**
-   * @brief 带初始包围盒的构造函数
-   * @param localAABB 局部空间包围盒
-   */
-  explicit VisibilityComponent(const AABB &localAABB);
-
   ~VisibilityComponent() override = default;
 
   /**
@@ -72,52 +66,23 @@ class VisibilityComponent
     return m_IsVisible != m_WasVisible;
   }
 
-  // ==================== 视锥体操作 ====================
-
   /**
-   * @brief 执行视锥体裁剪测试
-   * @param frustum 相机视锥体
-   * @return 相交类型
+   * @brief 清除手动覆盖，恢复自动可见性计算
    */
-  IntersectionType TestFrustum(const Frustum &frustum) const;
-
-  // ==================== 包围盒操作 ====================
-
-  /**
-   * @brief 获取局部空间包围盒
-   * @return 局部AABB
-   */
-  const AABB &GetLocalAABB() const
+  void ClearManualOverride()
   {
-    return m_LocalAABB;
+    m_ManualOverride = false;
+    MarkDirty();
   }
 
   /**
-   * @brief 设置局部空间包围盒
-   * @param aabb 新的局部AABB
+   * @brief 检查是否为手动覆盖模式
+   * @return 是否为手动覆盖
    */
-  void SetLocalAABB(const AABB &aabb);
-
-  /**
-   * @brief 获取世界空间包围盒
-   * @return 世界AABB
-   */
-  const AABB &GetWorldAABB() const
+  bool IsManualOverride() const
   {
-    return m_WorldAABB;
+    return m_ManualOverride;
   }
-
-  /**
-   * @brief 获取世界空间包围球（用于快速剔除）
-   * @return 世界包围球
-   */
-  Sphere GetWorldSphere() const;
-
-  /**
-   * @brief 更新世界空间包围盒
-   * @param reg 场景注册表
-   */
-  void UpdateWorldAABB(SceneRegistry &reg);
 
   // ==================== 掩码操作 ====================
 
@@ -146,30 +111,31 @@ class VisibilityComponent
     return (m_VisibilityMask & cameraMask) != 0;
   }
 
+  /**
+   * @brief 添加掩码位
+   * @param maskBits 要添加的掩码位
+   */
+  void AddMaskBits(uint32_t maskBits)
+  {
+    SetVisibilityMask(m_VisibilityMask | maskBits);
+  }
+
+  /**
+   * @brief 移除掩码位
+   * @param maskBits 要移除的掩码位
+   */
+  void RemoveMaskBits(uint32_t maskBits)
+  {
+    SetVisibilityMask(m_VisibilityMask & ~maskBits);
+  }
+
   // ==================== 组件接口 ====================
 
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
 
-  /**
-   * @brief 标记包围盒为脏状态（当变换改变时调用）
-   */
-  void MarkBoundsDirty();
-
-  /**
-   * @brief 检查包围盒是否需要更新
-   * @return 是否为脏状态
-   */
-  bool IsBoundsDirty() const
-  {
-    return m_BoundsDirty;
-  }
-
  private:
-  AABB m_LocalAABB;  // 局部空间包围盒
-  AABB m_WorldAABB;  // 世界空间包围盒（缓存）
-
   bool m_IsVisible = true;    // 当前可见性状态
   bool m_WasVisible = false;  // 上一帧可见性状态（用于检测变化）
 
@@ -186,42 +152,6 @@ class VisibilityComponent
  */
 class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponent> {
   DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
-
- public:
-  void Initialize() override;
-  std::vector<std::type_index> GetSystemDependencies() const override;
-
-  /**
-   * @brief 设置主相机视锥体
-   * @param frustum 相机视锥体
-   */
-  //void SetMainCameraFrustum(const Frustum &frustum);
-
-  /**
-   * @brief 设置相机可见性掩码
-   * @param mask 相机掩码
-   */
-  //void SetCameraVisibilityMask(uint32_t mask);
-
-  /**
-   * @brief 获取当前可见实体数量
-   * @return 可见实体数
-   */
-  //size_t GetVisibleCount() const
-  //{
-  //  return visibleCount;
-  //}
-
- protected:
-  void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
-  //bool OnMainCameraChanged(MainCameraChangedEvent &e);
-  //bool OnCameraVisibilityMaskChanged(CameraVisibilityMaskChangedEvent &e);
-
- private:
-  //Frustum mainCameraFrustum;  // 主相机视锥体
-  //uint32_t cameraVisibilityMask =
-  //    CameraVisibilityMask::ALL;  // 相机可见性掩码（通过掩码判断，支持不同通道渲染）
-  //size_t visibleCount = 0;  // 当前可见实体计数
 };
 
 // ==================== 事件定义 ====================
@@ -251,6 +181,38 @@ class VisibilityChangedEvent : public ComponentEvent<VisibilityComponent> {
  private:
   bool newVisibility;
 };
+/**
+ * @class VisibilityMaskChangedEvent
+ * @brief 可见性掩码改变事件
+ */
+class VisibilityMaskChangedEvent : public ComponentEvent<VisibilityComponent> {
+ public:
+  VisibilityMaskChangedEvent(Entity entity,
+                             VisibilityComponent &component,
+                             uint32_t oldMask,
+                             uint32_t newMask)
+      : ComponentEvent<VisibilityComponent>(entity, component), oldMask(oldMask), newMask(newMask)
+  {
+  }
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new VisibilityMaskChangedEvent(entity, component, oldMask, newMask);
+  }
+  uint32_t GetOldMask() const
+  {
+    return oldMask;
+  }
+  uint32_t GetNewMask() const
+  {
+    return newMask;
+  }
+
+ private:
+  uint32_t oldMask;
+  uint32_t newMask;
+};
+
 }  // namespace mite
 
 #endif  // MITE_VISIBILITY_COMPONENT_H
