@@ -5,41 +5,33 @@
 
 namespace mite {
 /**
- * @brief 独立摄像机类，封装视图/投影矩阵计算
+ * @brief 独立摄像机类，封装投影矩阵计算
+ *
+ * 视图矩阵完全交给Transform负责。
+ * （架构层面：ECS架构下，相机实体同时绑定CameraComponent和TransformComponent，View和Transform互相冲突）
+ * （数学层面：View负责将坐标从World空间转换到相机Local空间，与WorldMatrix作用刚好相反，即相机WorldMatrix的逆，为视图矩阵）
+ *
+ * 定位：纯数学计算工具，与ProjectionMatrix状态管理
  *
  * 职责：
  * 1. 管理摄像机参数（FOV、Clipping Planes等）
- * 2. 计算视图/投影矩阵
- * 3. 支持多种投影模式（透视/正交）
+ * 2. 矩阵计算（View/Projection）
+ * 3. 数学变换（旋转、平移、缩放）
  *
  * 注意：
- * - 不依赖ECS，纯数学工具类
- * - 与TransformComponent协同工作
- * - 默认朝向Z负方向，Up为Y轴正方向，欧拉角顺序为YXZ（更符合OpenGL标准）
- * - GLM使用了右手坐标系
+ * - 使用右手坐标系
+ * - 相机在局部空间Up为 +Y方向，Forward为 -Z方向，Right为 +X方向
+ * - glm::perspective和 glm::ortho生成右手坐标系的透视/正交投影矩阵
  * - GLM的mat4使用了列主序
- *   如:
- *   m_ViewMatrix[0]或者glm::column(m_ViewMatrix,1)   表示第一列[right.x,  up.x,  -forward.x,  0]
- *   glm::row(vpMatrix,0)   表示[ right.x  right.y  right.z  -dot(right, eye)]
  *   如：
- *   m_ProjectionMatrix[2]或者glm::column(m_ProjectionMatrix,2)表示第三列[0,  0,  -(f+n)/(f-n),  -1]
- * 
- * 对于标准的右手系视图矩阵
- * [ right.x     right.y     right.z     -dot(right, eye)  ]
- * [ up.x        up.y        up.z        -dot(up, eye)     ]
- * [ -forward.x -forward.y  -forward.z    dot(forward, eye)]
- * [ 0           0           0            1                ]
-
- * 
- * 标准的右手系透视投影矩阵
- * [ n/r   0     0             0        ]
- * [ 0     n/t   0             0        ]
- * [ 0     0    -(f+n)/(f-n)  -2fn/(f-n)]
- * [ 0     0    -1             0        ]
- * 其中
- * 近平面：n = near
- * 远平面：f = far
- * 宽高比：a = aspect
+ *   m_ProjectionMatrix[2]或者glm::column(m_ProjectionMatrix,2)表示第三列[0,  0,  -(f+n)/(f-n), -1]
+ *
+ * - 标准的右手系透视投影矩阵
+ *   [ n/r   0     0             0        ]
+ *   [ 0     n/t   0             0        ]
+ *   [ 0     0    -(f+n)/(f-n)  -2fn/(f-n)]
+ *   [ 0     0    -1             0        ]
+ *   其中：近平面：n = near，远平面：f = far
  */
 class Camera {
  public:
@@ -47,48 +39,33 @@ class Camera {
 
   Camera();
 
-  // 投影参数设置
-  void SetPerspective(float fov, float aspect, float near, float far);
-  void SetOrthographic(float size, float aspect, float near, float far);
-  void SetProjectionType(ProjectionType type);
-  void SetAspectRatio(float aspect);
+  // ==================== 投影参数设置 ====================
+  void SetPerspective(float fov, float aspect, float near, float far);    // 设定为透视相机
+  void SetOrthographic(float size, float aspect, float near, float far);  // 设定为正交相机
+  void SetProjectionType(ProjectionType type);  // 设定投影类型：透视/正交
+  void SetAspectRatio(float aspect);            // 设置宽高比
 
-  // 视图控制
-  void LookAt(const glm::vec3 &position,
-              const glm::vec3 &target,
-              const glm::vec3 &up = glm::vec3(0, 1, 0));
-  void SetViewMatrix(const glm::mat4 &view);
+  // ==================== 矩阵获取 ====================
+  const glm::mat4 &GetProjectionMatrix() const;  // 获取投影矩阵
 
-  // 矩阵获取
-  const glm::mat4 &GetProjectionMatrix() const;
-  const glm::mat4 &GetViewMatrix() const;
-  glm::mat4 GetViewProjectionMatrix() const;
+  // ==================== 参数访问 ====================
+  ProjectionType GetProjectionType() const;  // 获取投影类型
+  float GetNear() const;                     // 近平面
+  float GetFar() const;                      // 远平面
+  float GetFOV() const;                      // 视场角（deg，透视相机专属）
+  float GetAspectRatio() const;              // 宽高比
+  float GetOrthoSize() const;                // 正交尺寸
 
-  // 参数访问
-  ProjectionType GetProjectionType() const;
-  float GetNear() const;
-  float GetFar() const;
-  float GetFOV() const;
-  float GetAspectRatio() const;
-  glm::vec3 GetPosition() const;
-  glm::vec3 GetRotationEuler() const;
-  glm::vec3 GetRightVector() const;
-  glm::vec3 GetUpVector() const;
-  glm::vec3 GetForwardVector() const;
-  float GetDistance() const;
+  // ==================== 投影控制方法 ====================
+  void Zoom(float amount);
 
-  // 相机控制
-  void Translate(const glm::vec3 position);  // 世界空间定位
-  void Rotate(const glm::vec3 rotation);  // 欧拉角旋转（角度制，偏航/俯仰/滚转）
-  void Rotate(float yaw, float pitch, float roll = 0.0f);  // 欧拉角旋转（角度制，偏航/俯仰/滚转）
-  void Pan(float right, float up);                         // 屏幕空间平移
-  void Zoom(float amount);                                 // 视野缩放
-  void Move(const glm::vec3 direction);                    // 世界空间移动
+  // ==================== 状态检查 ====================
+  bool IsProjectionDirty() const;
+  void MarkProjectionClean();
 
  private:
   // 辅助方法
-  void RecalculateViewFromRotation();
-  void RecalculateProjection();
+  void UpdateProjection() const;  // 更新投影矩阵，清理脏标记
 
   // 投影类型，默认透视
   ProjectionType m_ProjectionType = ProjectionType::Perspective;
@@ -104,12 +81,11 @@ class Camera {
   float m_Near = 0.1f;
   float m_Far = 100.0f;
 
-  glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
-  glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
+  // 投影矩阵
+  mutable glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
 
-  // 存储当前的位置与欧拉角(degree)
-  glm::vec3 m_Position = glm::vec3(0.0f);
-  glm::vec3 m_RotationEuler = glm::vec3(0.0f);
+  // 脏标记：在Set()时Mark，在Get()时执行Update()并消除Mark
+  mutable bool m_ProjectionDirty = true;
 };
 };  // namespace mite
 
