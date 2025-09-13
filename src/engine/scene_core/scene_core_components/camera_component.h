@@ -45,9 +45,7 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
   void SetPerspective(float fov, float near, float far);
   void SetOrthographic(float size, float near, float far);
   void Zoom(float amount);
-  //void Rotate(float yaw, float pitch);
-  //void Pan(float right, float up);
-  //void Move(const glm::vec3 &direction);
+  void SetAspectRatio(float aspect);
 
   // ==================== 主摄像机与摄像机标记 ====================
   CameraUsage GetUsage() const;
@@ -55,14 +53,12 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
   std::shared_ptr<Camera> GetCamera();
 
   // ==================== 矩阵获取 ====================
-  glm::mat4 GetViewMatrix() const;
   glm::mat4 GetProjectionMatrix() const;
 
   // ==================== 视口适配 ====================
   void SetViewportSize(uint32_t width, uint32_t height);
 
   // ==================== 可见性掩码 ====================
-
   /**
    * @brief 设置相机可见性掩码
    * @param mask 可见性掩码（使用CameraVisibilityMask中的定义）
@@ -94,27 +90,16 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
    */
   bool HasVisibilityLayer(uint32_t mask) const;
 
-  // 序列化
+
+  // ==================== 组件接口 ====================
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
-
   std::vector<std::type_index> GetDependencies() const override;
 
  private:
   std::shared_ptr<Camera> m_Camera;
   CameraUsage m_Usage = CameraUsage::FreeView;
   uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 默认看到所有
-  
-// ==================== 数据同步 ====================
-  struct TransformState {
-    glm::vec3 position{0.0f};
-    glm::vec3 rotation{0.0f};
-  } m_lastTransformState;  // 上一帧的Transform状态，用于进行CameraInputProcessor和TransformComponent数据同步
-
-  static constexpr float POSITION_EPSILON = 0.001f;  // 位置容差：1mm
-  static constexpr float ROTATION_EPSILON = 0.01f;   // 旋转容差：0.01度
-
-  bool IsTransformChanged(const TransformState &current, const TransformState &last);
 };
 
 // 摄像机组件系统
@@ -128,9 +113,6 @@ class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
 
   // 设置主相机实体（确保唯一性）
   void SetMainCameraEntity(Entity mainCamera);
-
- protected:
-  void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry) override;
 };
 
 /**
