@@ -48,7 +48,25 @@ void Transform::Translate(const glm::vec3 &direction)
 }
 
 // ==================== 旋转相关方法实现 ====================
-glm::vec3 Transform::GetRotationEuler()
+// 旋转顺序
+Transform::EulerOrder Transform::GetRotationOrder() const
+{
+  return m_RotationOrder;
+}
+
+void Transform::SetRotationOrder(EulerOrder order)
+{
+  // 旋转顺序改变应当导致对外显示的欧拉角改变
+  // 不应当导致内部四元数的修改
+  if (m_RotationOrder != order) {
+    m_RotationOrder = order;
+    m_RotationDirty = true;
+    m_MatrixDirty = true;
+  }
+}
+
+// 欧拉角
+glm::vec3 Transform::GetRotationEuler() const
 {
   if (m_RotationDirty) {
     UpdateEulerFromRotation();
@@ -69,10 +87,13 @@ void Transform::SetRotationEuler(float x, float y, float z)
 {
   SetRotationEuler(glm::vec3(x, y, z));
 }
+
+// 四元数
 glm::quat Transform::GetRotationQuat() const
 {
   return m_Rotation;
 }
+
 void Transform::SetRotationQuat(const glm::quat &rotation)
 {
   // 欧拉角负责对外接口，所以无需优先保证欧拉角的正确
@@ -83,21 +104,9 @@ void Transform::SetRotationQuat(const glm::quat &rotation)
     m_MatrixDirty = true;
   }
 }
-Transform::EulerOrder Transform::GetRotationOrder() const
-{
-  return m_RotationOrder;
-}
-void Transform::SetRotationOrder(EulerOrder order)
-{
-  // 旋转顺序改变应当导致对外显示的欧拉角改变
-  // 不应当导致内部四元数的修改
-  if (m_RotationOrder != order) {
-    m_RotationOrder = order;
-    m_RotationDirty = true;
-    m_MatrixDirty = true;
-  }
-}
-void Transform::Rotate(const glm::vec3 &axis, float angleDegrees)
+
+// 世界轴旋转
+void Transform::RotateWorld(const glm::vec3 &axis, float angleDegrees)
 {
   // 转换为弧度
   float radians = glm::radians(angleDegrees);
@@ -111,18 +120,40 @@ void Transform::Rotate(const glm::vec3 &axis, float angleDegrees)
   m_RotationDirty = true;
   m_MatrixDirty = true;
 }
-void Transform::RotateX(float angleDegrees)
+void Transform::RotateWorldX(float angleDegrees)
 {
-  Rotate(glm::vec3(1.0f, 0.0f, 0.0f), angleDegrees);
+  RotateWorld(glm::vec3(1.0f, 0.0f, 0.0f), angleDegrees);
 }
-void Transform::RotateY(float angleDegrees)
+void Transform::RotateWorldY(float angleDegrees)
 {
-  Rotate(glm::vec3(0.0f, 1.0f, 0.0f), angleDegrees);
+  RotateWorld(glm::vec3(0.0f, 1.0f, 0.0f), angleDegrees);
 }
-void Transform::RotateZ(float angleDegrees)
+void Transform::RotateWorldZ(float angleDegrees)
 {
-  Rotate(glm::vec3(0.0f, 0.0f, 1.0f), angleDegrees);
+  RotateWorld(glm::vec3(0.0f, 0.0f, 1.0f), angleDegrees);
 }
+
+// 局部轴旋转
+void Transform::RotateLocal(const glm::vec3 &localAxis, float angleDegrees)
+{
+  // 将局部轴转换到世界空间
+  glm::vec3 worldAxis = m_Rotation * localAxis;
+  RotateWorld(worldAxis, angleDegrees);
+}
+void Transform::RotateLocalX(float angleDegrees)
+{
+  RotateLocal(glm::vec3(1.0f, 0.0f, 0.0f), angleDegrees);
+}
+void Transform::RotateLocalY(float angleDegrees)
+{
+  RotateLocal(glm::vec3(0.0f, 1.0f, 0.0f), angleDegrees);
+}
+void Transform::RotateLocalZ(float angleDegrees)
+{
+  RotateLocal(glm::vec3(0.0f, 0.0f, 1.0f), angleDegrees);
+}
+
+// 绕点旋转
 void Transform::RotateAround(const glm::vec3 &point, const glm::vec3 &axis, float angleDegrees)
 {
   // 转换为弧度
@@ -145,42 +176,46 @@ void Transform::RotateAround(const glm::vec3 &point, const glm::vec3 &axis, floa
   m_MatrixDirty = true;
 }
 
-void Transform::RotateWithUpConstraint(float yaw,
-                                       float pitch,
-                                       float roll,
-                                       const glm::vec3 &worldUp)
+// 偏航 - 俯仰 - 滚转旋转逻辑
+void Transform::RotateYaw(float degrees, const glm::vec3 &worldUp)
 {
-  RotateWithUpConstraint(glm::vec3(pitch, yaw, roll), worldUp);
+  // 直接绕世界Up轴旋转
+  RotateWorld(worldUp, degrees);
 }
-void Transform::RotateWithUpConstraint(const glm::vec3 &eulerDelta, const glm::vec3 &worldUp)
+void Transform::RotatePitch(float degrees, const glm::vec3 &worldUp)
 {
-  // 应用偏航旋转（绕世界Y轴）
-  if (eulerDelta.y != 0.0f) {
-    Rotate(worldUp, eulerDelta.y);  // 绕世界向上轴旋转
-  }
+  // 获取当前的右向量（考虑防翻滚）
+  glm::vec3 right = GetConstrainedRight(worldUp);
 
-  // 应用俯仰旋转（绕本地X轴）
-  if (eulerDelta.x != 0.0f) {
-    glm::vec3 right = GetConstrainedRight(worldUp);
-    Rotate(right, eulerDelta.x);
+  // 绕右轴旋转
+  RotateWorld(right, degrees);
 
-    // 限制俯仰角度避免翻转
-    glm::vec3 forward = GetConstrainedForward(worldUp);
-    float currentPitch = glm::degrees(asin(forward.z));  // 假设Z是向上方向
+  // 俯仰角度限制
+  glm::vec3 forward = GetConstrainedForward(worldUp);
+  float currentPitch = glm::degrees(asin(forward.z));
 
-    // 如果超过限制，回滚旋转
-    if (abs(currentPitch) > 89.0f) {
-      Rotate(right, -eulerDelta.x);  // 撤销本次俯仰旋转
-    }
-  }
-
-  // 通常编辑器相机不需要滚转，但保留接口
-  if (eulerDelta.z != 0.0f) {
-    glm::vec3 forward = GetConstrainedForward(worldUp);
-    Rotate(forward, eulerDelta.z);
+  if (abs(currentPitch) > 89.0f) {
+    // 超过限制，撤销旋转
+    RotateWorld(right, -degrees);
   }
 }
+void Transform::RotateRoll(float degrees, const glm::vec3 &worldUp)
+{
+  // 绕前向轴旋转（通常编辑器相机不需要）
+  glm::vec3 forward = GetConstrainedForward(worldUp);
+  RotateWorld(forward, degrees);
+}
+void Transform::RotateCamera(float yaw, float pitch, float roll, const glm::vec3 &worldUp)
+{
+  if (yaw != 0.0f)
+    RotateYaw(yaw, worldUp);
+  if (pitch != 0.0f)
+    RotatePitch(pitch, worldUp);
+  if (roll != 0.0f)
+    RotateRoll(roll, worldUp);
+}
 
+// LookAt功能
 void Transform::LookAt(const glm::vec3 &target, const glm::vec3 &up)
 {
   // 使用glm的lookAt函数计算旋转
@@ -192,27 +227,6 @@ void Transform::LookAt(const glm::vec3 &target, const glm::vec3 &up)
   m_RotationDirty = true;
   m_MatrixDirty = true;
 }
-
-// 旧版本使用degrees手动计算yaw和pitch的逻辑
-//void Transform::LookAt(const glm::vec3 &position, const glm::vec3 &target, const glm::vec3 &up)
-//{
-//  m_Position = position;
-//
-//  // 计算看向目标的方向向量
-//  glm::vec3 direction = glm::normalize(target - position);
-//
-//  // 直接从方向向量计算欧拉角（复用Camera的算法）
-//  m_RotationEuler.y = glm::degrees(atan2(-direction.x, -direction.z));  // yaw
-//  m_RotationEuler.x = glm::degrees(asin(direction.y));                  // pitch
-//  m_RotationEuler.z = 0.0f;
-//
-//  // 限制俯仰角度避免翻转
-//  m_RotationEuler.x = glm::clamp(m_RotationEuler.x, -89.0f, 89.0f);
-//
-//  // 更新四元数旋转
-//  UpdateRotationFromEuler();
-//  m_MatrixDirty = true;
-//}
 
 // ==================== 缩放相关方法实现 ====================
 const glm::vec3 &Transform::GetScale() const
@@ -287,32 +301,35 @@ glm::vec3 Transform::GetRight() const
   return m_Rotation * glm::vec3(1.0f, 0.0f, 0.0f);  // 右手系相机：Right为+X方向
 }
 
-glm::vec3 Transform::GetForward(const glm::vec3 &up) const
-{
-  // 基于指定上方向计算前向向量
-  glm::vec3 right = glm::normalize(glm::cross(GetForward(), up));
-  return glm::normalize(glm::cross(up, right));
-}
-glm::vec3 Transform::GetRight(const glm::vec3 &up) const
-{
-  // 基于指定上方向计算右向量
-  return glm::normalize(glm::cross(GetForward(), up));
-}
-
-glm::vec3 Transform::GetConstrainedForward(const glm::vec3 &worldUp) const
-{
-  glm::vec3 forward = GetForward();
-  glm::vec3 right = glm::normalize(glm::cross(forward, worldUp));
-  return glm::normalize(glm::cross(worldUp, right));
-}
 glm::vec3 Transform::GetConstrainedUp(const glm::vec3 &worldUp) const
 {
   return worldUp;  // 强制使用指定的世界向上方向
 }
+
 glm::vec3 Transform::GetConstrainedRight(const glm::vec3 &worldUp) const
 {
-  glm::vec3 forward = GetConstrainedForward(worldUp);
+  // 获取世界前向向量
+  // （无论是否防翻滚，这个值应当是固定朝向Target的，应当以该值作为基准进行计算）
+  glm::vec3 forward = GetForward(); 
+
+  // 确保前向向量不与世界Up轴平行
+  // （RotatePitch时会进行俯仰角度限制，基本不会触发该分支）
+  if (glm::length(glm::cross(forward, worldUp)) < 0.001f) {
+    // 如果平行，使用默认右向量
+    return glm::vec3(1.0f, 0.0f, 0.0f);
+  }
+
+  // 新的世界右向量 = 世界前向向量 × 世界Up向量
   return glm::normalize(glm::cross(forward, worldUp));
+}
+
+glm::vec3 Transform::GetConstrainedForward(const glm::vec3 &worldUp) const
+{
+  glm::vec3 right = GetConstrainedRight(worldUp);
+
+  // 世界前向向量 = 世界Up向量 × 右向量
+  // （直接返回GetForward()应当也是一样的结果，前向向量不应当随着Up改变）
+  return glm::normalize(glm::cross(worldUp, right));
 }
 
 // ==================== 辅助方法实现 ====================
@@ -334,6 +351,16 @@ bool Transform::IsIdentity() const
          m_Scale == glm::vec3(1.0f);
 }
 
+void Transform::CleanDirty()
+{
+  if (m_MatrixDirty) {
+    UpdateLocalMatrix();
+  }
+  if (m_RotationDirty) {
+    UpdateEulerFromRotation();
+  }
+}
+
 // ==================== 私有方法实现 ====================
 
 void Transform::UpdateLocalMatrix() const
@@ -345,12 +372,12 @@ void Transform::UpdateLocalMatrix() const
   m_MatrixDirty = false;
 }
 
-void Transform::UpdateRotationFromEuler()
+void Transform::UpdateRotationFromEuler() const
 {
   m_Rotation = EulerToQuatByOrder(m_RotationEuler, m_RotationOrder);
   m_RotationDirty = false;
 }
-void Transform::UpdateEulerFromRotation() 
+void Transform::UpdateEulerFromRotation() const
 {
   m_RotationEuler = QuatToEulerByOrder(m_Rotation, m_RotationOrder);
   m_RotationDirty = false;

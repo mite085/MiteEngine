@@ -12,11 +12,13 @@ namespace mite {
  * 2. 计算局部和世界变换矩阵
  * 3. 提供常用的变换操作接口
  * 4. 支持欧拉角（度）和四元数旋转表示
+ * 5. 提供相机ViewMatrix计算，与LookAt、RotateCamera等配套方法
  *
  * 设计特点：
  * - 使用右手坐标系，glm的矩阵计算（包括lookat，quat）均遵循右手系
  * - 相机在局部空间Up为+Y方向，Forward为-Z方向（GetForward等方法相关）
  * - 旋转内部使用四元数存储，外部接口使用欧拉角（度）
+ * - 支持yaw - pitch - roll的内旋->外旋方式旋转
  * - 提供高效的矩阵缓存机制（使用脏标记更新）
  * - 不依赖ECS，纯数学工具类，作为最底层设计
  */
@@ -65,8 +67,12 @@ class Transform {
   void Translate(const glm::vec3 &direction);
 
   // ==================== 旋转相关方法 ====================
+  // 旋转顺序控制
+  EulerOrder GetRotationOrder() const;
+  void SetRotationOrder(EulerOrder order);
+
   // 欧拉角操作（度）
-  glm::vec3 GetRotationEuler();
+  glm::vec3 GetRotationEuler() const;
   void SetRotationEuler(const glm::vec3 &eulerDegrees);
   void SetRotationEuler(float x, float y, float z);
 
@@ -74,92 +80,53 @@ class Transform {
   glm::quat GetRotationQuat() const;
   void SetRotationQuat(const glm::quat &rotation);
 
-  // 旋转顺序控制
-  EulerOrder GetRotationOrder() const;
-  void SetRotationOrder(EulerOrder order);
+  // 世界轴旋转
+  void RotateWorld(const glm::vec3 &axis, float angleDegrees);
+  void RotateWorldX(float angleDegrees);
+  void RotateWorldY(float angleDegrees);
+  void RotateWorldZ(float angleDegrees);
 
-  // 轴角旋转
-  // （注意，这个轴是世界轴，无需遵循EulerOrder，反映到欧拉角也仅有最后）
-  void Rotate(const glm::vec3 &axis, float angleDegrees);
-  void RotateX(float angleDegrees);
-  void RotateY(float angleDegrees);
-  void RotateZ(float angleDegrees);
+  // 局部轴旋转
+  void RotateLocal(const glm::vec3 &localAxis, float angleDegrees);
+  void RotateLocalX(float angleDegrees);
+  void RotateLocalY(float angleDegrees);
+  void RotateLocalZ(float angleDegrees);
 
   // 绕点旋转
   void RotateAround(const glm::vec3 &point, const glm::vec3 &axis, float angleDegrees);
 
   /**
-   * @brief 防止相机滚转的旋转方法
-   * @param yaw 偏航角（deg）
-   * @param pitch 俯仰角（deg）
-   * @param roll 翻滚角（deg，应当为0）
-   * @param worldUp 世界的向上方向（默认001，z轴朝上）
+   * @brief 基于相机语义的旋转接口（和组合接口）
+   * @param yaw 偏航角（相机左右环视）
+   * @param pitch 俯仰角（相机上下俯仰）
+   * @param roll 滚转角（相机画面旋转）
+   * @param worldUp 世界的向上方向
    * 
-   * 使用示例：
-   * 根据鼠标移动量（deltaX, deltaY）以及鼠标灵敏度（m_RotationSensitivity），
-   * 调整相机的俯仰角和偏航角；滚转角始终不变，始终朝向+Z方向（0，0，1）
+   * 旋转顺序为：yaw - pitch - roll
    * 
-   * // 函数声明
-   * EditCameraInputProcessor::HandleRotationWithOrder(float deltaX, float deltaY)
+   * 假设 WorldUp为 +Z方向，相机执行旋转分以下三步：
+   * 1. 首先应当绕着世界 Z轴“左右”旋转yaw，确定 Right方向（世界空间）
+   * 2. 随后应当绕着 Right方向所在的轴“上下”旋转pitch，确定 Forward方向（世界空间）
+   * 3. 最后应当绕着 Forward方向“顺/逆时针”旋转roll，完成整个旋转过程
    * 
-   * // 1. 获取当前的旋转顺序
-   * auto rotationOrder = transformComp->GetTransform().GetRotationOrder();
+   * 注意：
+   * 最终旋转结果与EulerOrder无关，因为对于给定的worldUp，经过yaw - pitch - roll三次
+   * 计算相机的Up、Right、Forward之后，结果都会是固定的。而这一组yaw - pitch - roll
+   * 也不是相机的欧拉角。相机的欧拉角应当是根据当前四元数与EulerOrder解算出的“结果”
    * 
-   * // 2. 根据鼠标移动量和灵敏度计算俯仰和偏航角
-   * glm::vec3 eulerDelta(0.0f);
-   * float yaw = -deltaX * m_RotationSensitivity;
-   * float pitch = -deltaY * m_RotationSensitivity;
-   * 
-   * // 3. 根据旋转顺序调整输入映射
-   * switch (rotationOrder) {
-   *    case Transform::RotationOrder::XYZ:
-   *        // XYZ顺序: X(roll), Y(pitch), Z(yaw)
-   *        // 对于相机，通常将鼠标X映射为偏航(Z)，Y映射为俯仰(Y)
-   *        eulerDelta = glm::vec3(0.0f, pitch, yaw); // roll, pitch, yaw
-   *        break;
-   *
-   *    case Transform::RotationOrder::XZY:
-   *        // XZY顺序: X(roll), Z(yaw), Y(pitch)
-   *        eulerDelta = glm::vec3(0.0f, yaw, pitch); // roll, yaw, pitch
-   *        break;
-   *
-   *    case Transform::RotationOrder::YXZ:
-   *        // YXZ顺序: Y(yaw), X(pitch), Z(roll)
-   *        // 这是最常用的相机旋转顺序
-   *        eulerDelta = glm::vec3(pitch, yaw, 0.0f); // pitch, yaw, roll
-   *        break;
-   *
-   *    case Transform::RotationOrder::YZX:
-   *        // YZX顺序: Y(yaw), Z(roll), X(pitch)
-   *        eulerDelta = glm::vec3(pitch, 0.0f, yaw); // pitch, roll, yaw
-   *        break;
-   *
-   *    case Transform::RotationOrder::ZXY:
-   *        // ZXY顺序: Z(roll), X(pitch), Y(yaw)
-   *        eulerDelta = glm::vec3(pitch, yaw, 0.0f); // pitch, yaw, roll
-   *        break;
-   *
-   *    case Transform::RotationOrder::ZYX:
-   *        // ZYX顺序: Z(yaw), Y(pitch), X(roll)
-   *        eulerDelta = glm::vec3(0.0f, pitch, yaw); // roll, pitch, yaw
-   *        break;
-   *
-   *    default:
-   *        // 默认使用YXZ顺序（最常用的相机顺序）
-   *        eulerDelta = glm::vec3(pitch, yaw, 0.0f); // pitch, yaw, roll
-   *        break;
-   *}
-   * // 4. 应用防翻滚旋转（Z轴向上）
-   * transformComp->RotateWithUpConstraint(eulerDelta, glm::vec3(0.0f, 0.0f, 1.0f));
+   * 若 WorldUp为 +Z方向
+   * 1. Yaw表示绕着Z轴逆时针旋转（从Z轴正方向向下看，RotateYaw(30.0f) → 相机向左转30度）
+   * 2. Pitch表示绕着Right轴逆时针旋转（从Right轴正方向向下看，RotatePitch(20.0f) → 相机向上抬头20度）
+   * 3. Roll表示将画面顺时针旋转（从Forward轴负方向向上看，RotateRoll(15.0f) → 相机向右倾斜15度）
    */
-  void RotateWithUpConstraint(float yaw,
-                              float pitch,
-                              float roll = 0.0f,
-                              const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
-
-  void RotateWithUpConstraint(const glm::vec3 &eulerDelta,
-                              const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
-    
+  void RotateCamera(float yaw,
+                    float pitch,
+                    float roll = 0.0f,
+                    const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
+  void RotateYaw(float degrees, const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
+  void RotatePitch(float degrees, const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
+  void RotateRoll(float degrees, const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
+  
 
   // LookAt功能（由调用方指定up方向）
   void LookAt(const glm::vec3 &target, const glm::vec3 &up = glm::vec3(0.0f, 0.0f, 1.0f));
@@ -173,24 +140,34 @@ class Transform {
   glm::mat4 GetLocalMatrix() const;
   void SetLocalMatrix(const glm::mat4 &matrix);
 
-  // 视图矩阵专用接口
+  /**
+   * @brief 视图矩阵专用接口
+   * 
+   * - 对于标准的右手系视图矩阵
+   *   [ right.x     right.y     right.z     -dot(right, eye)  ]
+   *   [ up.x        up.y        up.z        -dot(up, eye)     ]
+   *   [ -forward.x -forward.y  -forward.z    dot(forward, eye)]
+   *   [ 0           0           0            1                ]
+   * 
+   * GLM的mat4使用了列主序，如:
+   * 对于：m_ViewMatrix = GetViewMatrix();
+   * 此时：m_ViewMatrix[0]              表示第一列[right.x,  up.x,  -forward.x,  0]
+   *       glm::column(m_ViewMatrix,0)  表示第一列（同上）
+   *       glm::row(m_ViewMatrix,0)     表示第一行[ right.x  right.y  right.z  -dot(right, eye)]
+   */
   glm::mat4 GetViewMatrix() const;
   bool IsViewMatrixValid() const;
 
-  // ==================== 方向向量方法 ====================
-  glm::vec3 GetForward() const;  // 相机看向的方向（-Z方向）
-  glm::vec3 GetUp() const;       // 相机朝上的方向（+Y方向）
-  glm::vec3 GetRight() const;    // 相机朝右的方向（+X方向）
+  // ==================== 方向向量方法（相机专用） ====================
+  glm::vec3 GetForward() const;  // 在世界空间，相机看向的方向（-Z方向）
+  glm::vec3 GetUp() const;       // 在世界空间，相机朝上的方向（+Y方向）
+  glm::vec3 GetRight() const;    // 在世界空间，相机朝右的方向（+X方向）
 
-  // 基于指定上方向的方向向量
-  glm::vec3 GetForward(const glm::vec3 &up) const;
-  glm::vec3 GetRight(const glm::vec3 &up) const;
 
-  // 获取防翻滚后的方向向量，与RotateWithUpConstraint配合使用
-  glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
+  // 获取防翻滚（固定Up方向）后的方向向量，与RotateWithUpConstraint配合使用
   glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
   glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
-
+  glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
 
   // ==================== 辅助方法 ====================
 
@@ -205,6 +182,11 @@ class Transform {
    */
   bool IsIdentity() const;
 
+  /**
+   * @brief 清理脏标记
+   */
+  void CleanDirty();
+
  private:
   // ==================== 私有方法 ====================
   /**
@@ -215,31 +197,36 @@ class Transform {
   /**
    * @brief 从欧拉角更新四元数旋转
    */
-  void UpdateRotationFromEuler();
+  void UpdateRotationFromEuler() const;
 
   /**
    * @brief 从四元数更新欧拉角
    */
-  void UpdateEulerFromRotation();
+  void UpdateEulerFromRotation() const;
 
   // 旋转顺序相关的欧拉角转换
   glm::vec3 QuatToEulerByOrder(const glm::quat &quat, EulerOrder order) const;
   glm::quat EulerToQuatByOrder(const glm::vec3 &eulerDegrees, EulerOrder order) const;
 
  private:
+  // 脏标记
+  // 在Set()时Mark，在Get()时执行Update()并消除Mark
+  //
+  // 注意：
+  // 使用脏标记维护的属性（Rotation和Matrix）也应当是mutable的
+  mutable bool m_MatrixDirty = true;    // 矩阵脏标记
+  mutable bool m_RotationDirty = true;  // 旋转脏标记
+
   // 变换属性
   glm::vec3 m_Position = glm::vec3(0.0f);
-  glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);  // 四元数，仅用于变换计算
-  glm::vec3 m_RotationEuler = glm::vec3(0.0f);  // 欧拉角（度），仅用于对外接口
+  mutable glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);  // 四元数，仅用于变换计算
+  mutable glm::vec3 m_RotationEuler = glm::vec3(0.0f);  // 欧拉角（度），仅用于对外接口
   glm::vec3 m_Scale = glm::vec3(1.0f);
   EulerOrder m_RotationOrder = EulerOrder::XYZ;
 
   // 矩阵缓存
   mutable glm::mat4 m_LocalMatrix = glm::mat4(1.0f);
 
-  // 脏标记：在Set()时Mark，在Get()时执行Update()并消除Mark
-  mutable bool m_MatrixDirty = true;    // 矩阵脏标记
-  mutable bool m_RotationDirty = true;  // 旋转脏标记
 };
 }  // namespace mite
 
