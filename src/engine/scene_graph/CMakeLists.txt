@@ -5,14 +5,6 @@ set(ENGINE_SCENE_GRAPH_LIB_NAME MiteEngine_Engine_Scene_Graph)
 
 # 创建源代码组(筛选器)
 set(SCENE_GRAPH_INTERFACE_SRCS
-    bounding_volumes_types.h       # 基础几何类型定义（无依赖）
-    bounding_volumes_types.cpp
-    bounding_volumes.h             # AABB/OBB/Sphere等包围盒实现
-    bounding_volumes.cpp
-    ray.h                          # 射线类型定义和基础方法
-    ray.cpp
-    frustum.h                      # 视锥体类型定义和基础方法  
-    frustum.cpp
     scene_node.h                   # 场景节点（依赖基础几何类型）
     scene_node.cpp
     scene_node_manager.h           # 场景节点管理器（负责节点的创建、销毁、更新等）
@@ -23,8 +15,6 @@ set(SCENE_GRAPH_INTERFACE_SRCS
     spatial_partition.cpp
     simple_bvh.h                   # BVH实现（依赖SceneNode和几何类型）
     simple_bvh.cpp
-    hierarchy_scene_node_system.h  # SceneNode的层次系统，负责管理父子关系
-    hierarchy_scene_node_system.cpp
     transform_scene_node_system.h  # SceneNode的变换系统
     transform_scene_node_system.cpp
     visibility_component.h         # 可见性组件（依赖基础几何类型和视锥体）

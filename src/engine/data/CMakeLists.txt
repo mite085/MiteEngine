@@ -8,6 +8,8 @@ set(BASIC_TYPE_SRCS
     basic_type/asset_type.h
     basic_type/handle_type.h
     basic_type/camera_type.h
+    basic_type/bounding_volumes_types.h       # 基础几何类型定义（无依赖）
+    basic_type/bounding_volumes_types.cpp
 )
 source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 
@@ -28,6 +30,14 @@ set(BASIC_DATA_SRCS
     basic_data/texture.cpp
     basic_data/transform.h
     basic_data/transform.cpp
+
+
+    basic_data/bounding_volumes.h             # AABB/OBB/Sphere等包围盒实现
+    basic_data/bounding_volumes.cpp
+    basic_data/ray.h                          # 射线类型定义和基础方法
+    basic_data/ray.cpp
+    basic_data/frustum.h                      # 视锥体类型定义和基础方法  
+    basic_data/frustum.cpp
 )
 source_group("basic_data" FILES ${BASIC_DATA_SRCS})
 
