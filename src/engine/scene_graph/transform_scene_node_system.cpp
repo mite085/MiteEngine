@@ -2,7 +2,6 @@
 #include "bounding_volumes.h"
 #include "scene_core/component_system_manager.h"
 #include "scene_core/scene_registry.h"
-#include "hierarchy_scene_node_system.h"
 
 namespace mite {
 
@@ -52,7 +51,7 @@ std::vector<std::type_index> TransformSceneNodeSystem::GetComponentTypes() const
 
 std::vector<std::type_index> TransformSceneNodeSystem::GetSystemDependencies() const
 {
-  return {typeid(TransformComponentSystem), typeid(HierarchySceneNodeSystem)};// 依赖ECS变换和层级
+  return {typeid(TransformComponentSystem)};// 依赖ECS变换和层级
 }
 
 void TransformSceneNodeSystem::SetSceneGraph(SceneGraph *sceneGraph)

@@ -29,10 +29,10 @@ source_group("core" FILES ${SCENE_CORE_SRCS})
 
 set(SCENE_COMPONENTS_SRCS
     scene_core_components/component_headers.h
+    scene_core_components/boundingbox_component.h
+    scene_core_components/boundingbox_component.cpp
     scene_core_components/camera_component.h
     scene_core_components/camera_component.cpp
-    scene_core_components/hierarchy_component.h
-    scene_core_components/hierarchy_component.cpp
     scene_core_components/id_component.h
     scene_core_components/id_component.cpp
     scene_core_components/mesh_component.h
@@ -45,6 +45,8 @@ set(SCENE_COMPONENTS_SRCS
     scene_core_components/tag_component.cpp
     scene_core_components/transform_component.h
     scene_core_components/transform_component.cpp
+    scene_core_components/visibility_component.h
+    scene_core_components/visibility_component.cpp
 )
 source_group("components" FILES ${SCENE_COMPONENTS_SRCS})
 

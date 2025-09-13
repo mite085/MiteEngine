@@ -40,7 +40,7 @@ bool CameraInputProcessor::handleMouseMove(MouseMoveEvent &e)
 
   if (m_InputState.rotating) {
     // 右键旋转视角
-    m_Camera->Rotate(-delta.x * m_RotationSpeed, -delta.y * m_RotationSpeed);
+    m_Camera->RotateWorld(-delta.x * m_RotationSpeed, -delta.y * m_RotationSpeed);
     return true;  // 事件已处理
   }
   else if (m_InputState.panning) {
