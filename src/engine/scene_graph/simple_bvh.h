@@ -9,7 +9,7 @@ namespace mite {
  * @brief BVH树节点，用于构建层次包围盒结构
  */
 struct BVHNode {
-  AABB bounds;                          // 节点包围盒
+  BoundingVolumeAABB bounds;            // 节点包围盒
   BVHNode *left = nullptr;              // 左子节点
   BVHNode *right = nullptr;             // 右子节点
   std::vector<SceneNode *> sceneNodes;  // 关联的场景节点（叶子节点）
@@ -63,32 +63,34 @@ class SimpleBVH : public SpatialPartition {
    */
   ~SimpleBVH() override;
 
-  // SpatialPartition接口实现
+  // ==================== 空间划分生命周期管理 ====================
   void Insert(SceneNode *node) override;
   void Remove(SceneNode *node) override;
   void Update(SceneNode *node) override;
   void Clear() override;
   void Rebuild() override;
 
+  // ==================== 空间结构外部查询接口 ====================
   bool Raycast(const Ray &ray, std::vector<SceneNode *> &results) override;
   bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) override;
   int FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) override;
-  size_t SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results) override;
-  size_t AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results) override;
+  size_t VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results) override;
   size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) override;
   bool NearestNeighbor(const glm::vec3 &point,
                        SceneNode *&result,
                        float maxDistance = FLT_MAX) override;
 
+  // ==================== 空间结构内部查询接口 ====================
   void ForEachNode(std::function<bool(SceneNode *)> callback) override;
   size_t GetNodeCount() const override;
   bool IsEmpty() const override;
   int GetDepth() const override;
   const char *GetTypeName() const override;
   std::string GetStats() const override;
-  void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback) override;
+  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) override;
 
  private:
+  // ==================== 私有方法 ====================
   /**
    * @brief 递归构建BVH树
    * @param nodes 场景节点列表
@@ -160,24 +162,14 @@ class SimpleBVH : public SpatialPartition {
                             std::vector<SceneNode *> &results) const;
 
   /**
-   * @brief 递归球体查询
+   * @brief 递归包围盒查询
    * @param node 当前节点
    * @param sphere 球体
-   * @param results 结果列表
+   * @param results 包围盒内所有SceneNode的结果列表
    */
-  void SphereQueryRecursive(BVHNode *node,
-                            const Sphere &sphere,
+  void VolumeQueryRecursive(BVHNode *node,
+                            const BoundingVolume &sphere,
                             std::vector<SceneNode *> &results) const;
-
-  /**
-   * @brief 递归AABB查询
-   * @param node 当前节点
-   * @param aabb AABB
-   * @param results 结果列表
-   */
-  void AABBQueryRecursive(BVHNode *node,
-                          const AABB &aabb,
-                          std::vector<SceneNode *> &results) const;
 
   /**
    * @brief 递归遍历所有节点
@@ -193,7 +185,7 @@ class SimpleBVH : public SpatialPartition {
    * @param drawCallback 绘制回调
    */
   void DebugDrawRecursive(BVHNode *node,
-                          std::function<void(const AABB &, int depth)> drawCallback) const;
+                          std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) const;
 
   /**
    * @brief 递归统计节点信息
@@ -201,12 +193,6 @@ class SimpleBVH : public SpatialPartition {
    * @param stats 统计信息
    */
   void CollectStatsRecursive(BVHNode *node, struct BVHStats &stats) const;
-
-  /**
-   * @brief TODO: 更新场景节点在BVH中的位置
-   * @param node 场景节点
-   */
-  //void UpdateNode(SceneNode *node);
 
  private:
   BVHNode *m_Root = nullptr;            // BVH根节点
