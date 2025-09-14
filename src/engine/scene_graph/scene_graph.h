@@ -161,7 +161,7 @@ class SceneGraph {
    * @brief 调试绘制接口
    * @param drawCallback 绘制回调函数
    */
-  void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback);
+  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback);
 
   // ==================== 空间查询接口（为SceneView提供优化） ====================
   /**
@@ -215,7 +215,7 @@ class SceneGraph {
    * @return 结果节点列表
    */
   std::vector<SceneNode *> QuerySphere(SceneRegistry &registry,
-                                       const Sphere &sphere,
+                                       const BoundingVolumeSphere &sphere,
                                        uint32_t visibilityMask);
 
   /**
@@ -224,7 +224,7 @@ class SceneGraph {
    * @return 结果节点列表
    */
   std::vector<SceneNode *> QueryAABB(SceneRegistry &registry,
-                                     const AABB &aabb,
+                                     const BoundingVolumeAABB &aabb,
                                      uint32_t visibilityMask);
 
   // ==================== 节点更新接口（由SceneGraphSystem调用） ====================
@@ -233,7 +233,7 @@ class SceneGraph {
    * @param entity 目标实体
    * @param localBounds 局部包围盒
    */
-  void UpdateNodeBounds(SceneRegistry &registry, Entity entity, const AABB &localBounds);
+  void UpdateNodeBounds(SceneRegistry &registry, Entity entity, const BoundingVolumeAABB &localBounds);
 
   /**
    * @brief 标记节点需要更新（变换或包围盒变化）

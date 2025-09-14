@@ -131,7 +131,7 @@ std::string SceneGraph::GetSpatialPartitionStats() const
   return m_SpatialPartitionManager.GetSpatialPartitionStats();
 }
 
-void SceneGraph::DebugDraw(std::function<void(const AABB &, int depth)> drawCallback)
+void SceneGraph::DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
 {
   m_SpatialPartitionManager.DebugDraw(drawCallback);
 }
@@ -175,21 +175,21 @@ bool SceneGraph::QueryRaycastFirst(SceneRegistry &registry,
 }
 
 std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry,
-                                                 const Sphere &sphere,
+                                                 const BoundingVolumeSphere &sphere,
                                                  uint32_t visibilityMask)
 {
   return m_SpatialPartitionManager.QuerySphere(registry, sphere, visibilityMask);
 }
 
 std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry,
-                                               const AABB &aabb,
+                                               const BoundingVolumeAABB &aabb,
                                                uint32_t visibilityMask)
 {
   return m_SpatialPartitionManager.QueryAABB(registry, aabb, visibilityMask);
 }
 
 // ==================== 节点更新接口 ====================
-void SceneGraph::UpdateNodeBounds(SceneRegistry &registry, Entity entity, const AABB &localBounds)
+void SceneGraph::UpdateNodeBounds(SceneRegistry &registry, Entity entity, const BoundingVolumeAABB &localBounds)
 {
   m_NodeManager.UpdateNodeBounds(registry, entity, localBounds);
 }

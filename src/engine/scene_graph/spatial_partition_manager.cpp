@@ -92,7 +92,7 @@ std::string SpatialPartitionManager::GetSpatialPartitionStats() const
   return m_SpatialPartition->GetStats();
 }
 
-void SpatialPartitionManager::DebugDraw(std::function<void(const AABB &, int depth)> drawCallback)
+void SpatialPartitionManager::DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -172,7 +172,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryVisibleNodes(SceneRegistr
     else {
       // 没有VisibilityComponent的节点，使用保守估计
       // 检查世界包围盒与视锥体的相交测试
-      const AABB &worldAABB = node->GetWorldBounds();
+      const BoundingVolumeAABB &worldAABB = node->GetWorldBounds();
       IntersectionType intersection = frustum.TestAABB(worldAABB);
 
       if (intersection != IntersectionType::Outside) {
@@ -213,7 +213,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryRaycast(SceneRegistry &re
       // 如果有VisibilityComponent，使用其世界包围盒进行精确检测
       if (registry.HasComponent<VisibilityComponent>(entity)) {
         auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
-        const AABB &worldAABB = visibilityComp.GetWorldAABB();
+        const BoundingVolumeAABB &worldAABB = visibilityComp.GetWorldAABB();
 
         // 精确的射线与AABB相交测试
         if (SpatialPartition::RayIntersectsAABB(ray, worldAABB, distance)) {
@@ -222,7 +222,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryRaycast(SceneRegistry &re
       }
       else {
         // 没有VisibilityComponent，使用SceneNode的世界包围盒
-        const AABB &worldAABB = node->GetWorldBounds();
+        const BoundingVolumeAABB &worldAABB = node->GetWorldBounds();
         if (SpatialPartition::RayIntersectsAABB(ray, worldAABB, distance)) {
           results.push_back(node);
         }
@@ -286,7 +286,7 @@ bool SpatialPartitionManager::QueryRaycastFirst(SceneRegistry &registry,
 }
 
 std::vector<SceneNode *> SpatialPartitionManager::QuerySphere(SceneRegistry &registry,
-                                                              const Sphere &sphere,
+                                                              const BoundingVolumeSphere &sphere,
                                                               uint32_t visibilityMask)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
@@ -312,12 +312,12 @@ std::vector<SceneNode *> SpatialPartitionManager::QuerySphere(SceneRegistry &reg
       bool intersects = false;
       if (registry.HasComponent<VisibilityComponent>(entity)) {
         auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
-        const AABB &worldAABB = visibilityComp.GetWorldAABB();
-        intersects = BoundingVolumes::SphereIntersectsAABB(sphere, worldAABB);
+        const BoundingVolumeAABB &worldAABB = visibilityComp.GetWorldAABB();
+        intersects = BoundingVolume::SphereIntersectsAABB(sphere, worldAABB);
       }
       else {
-        const AABB &worldAABB = node->GetWorldBounds();
-        intersects = BoundingVolumes::SphereIntersectsAABB(sphere, worldAABB);
+        const BoundingVolumeAABB &worldAABB = node->GetWorldBounds();
+        intersects = BoundingVolume::SphereIntersectsAABB(sphere, worldAABB);
       }
       if (intersects) {
         results.push_back(node);
@@ -329,7 +329,7 @@ std::vector<SceneNode *> SpatialPartitionManager::QuerySphere(SceneRegistry &reg
 }
 
 std::vector<SceneNode *> SpatialPartitionManager::QueryAABB(SceneRegistry &registry,
-                                                            const AABB &aabb,
+                                                            const BoundingVolumeAABB &aabb,
                                                             uint32_t visibilityMask)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
@@ -355,12 +355,12 @@ std::vector<SceneNode *> SpatialPartitionManager::QueryAABB(SceneRegistry &regis
       bool intersects = false;
       if (registry.HasComponent<VisibilityComponent>(entity)) {
         auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
-        const AABB &worldAABB = visibilityComp.GetWorldAABB();
-        intersects = BoundingVolumes::AABBIntersectsAABB(aabb, worldAABB);
+        const BoundingVolumeAABB &worldAABB = visibilityComp.GetWorldAABB();
+        intersects = BoundingVolume::AABBIntersectsAABB(aabb, worldAABB);
       }
       else {
-        const AABB &worldAABB = node->GetWorldBounds();
-        intersects = BoundingVolumes::AABBIntersectsAABB(aabb, worldAABB);
+        const BoundingVolumeAABB &worldAABB = node->GetWorldBounds();
+        intersects = BoundingVolume::AABBIntersectsAABB(aabb, worldAABB);
       }
       if (intersects) {
         results.push_back(node);

@@ -64,7 +64,7 @@ class SpatialPartitionManager {
    * @brief 调试绘制接口
    * @param drawCallback 绘制回调函数
    */
-  void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback);
+  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback);
 
   // ==================== 空间查询接口（为SceneView提供优化） ====================
   /**
@@ -110,7 +110,7 @@ class SpatialPartitionManager {
    * @return 结果节点列表
    */
   std::vector<SceneNode *> QuerySphere(SceneRegistry &registry,
-                                       const Sphere &sphere,
+                                       const BoundingVolumeSphere &sphere,
                                        uint32_t visibilityMask);
 
   /**
@@ -119,7 +119,7 @@ class SpatialPartitionManager {
    * @return 结果节点列表
    */
   std::vector<SceneNode *> QueryAABB(SceneRegistry &registry,
-                                     const AABB &aabb,
+                                     const BoundingVolumeAABB &aabb,
                                      uint32_t visibilityMask);
 
  private:

@@ -188,7 +188,7 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
     return;
   }
 
-  AABB localBounds;
+  BoundingVolumeAABB localBounds;
   bool hasBounds = false;
 
   // 尝试从Mesh组件获取包围盒
@@ -197,7 +197,7 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
       auto &meshComp = registry.GetComponent<MeshComponent>(entity);
       if (meshComp.HasMesh()) {
         auto bbox = meshComp.GetBoundingBox();
-        localBounds = AABB(bbox.first, bbox.second);
+        localBounds = BoundingVolumeAABB(bbox.first, bbox.second);
         hasBounds = true;
       }
     }
@@ -209,7 +209,7 @@ void SceneGraphSystem::SyncBoundsToSceneGraph(SceneRegistry &registry, Entity en
 
   // 如果没有Mesh组件，使用默认包围盒
   if (!hasBounds) {
-    localBounds = AABB(glm::vec3(-0.5f), glm::vec3(0.5f));
+    localBounds = BoundingVolumeAABB(glm::vec3(-0.5f), glm::vec3(0.5f));
   }
 
   m_SceneGraph->UpdateNodeBounds(registry, entity, localBounds);
