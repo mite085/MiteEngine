@@ -69,7 +69,7 @@ class ComponentSystemManager {
       using U = typename T::ComponentType;
       static_assert(std::is_base_of<Component, U>::value,
                     "Registered component must inherit from class component");
-      m_Registry.GetEventCallbackAdapter().RegisterComponentCallbacks<U>();
+      m_Registry.GetEventPublisher().RegisterComponentCallbacks<U>();
     }
     return rawPtr;
   }
@@ -116,7 +116,7 @@ class ComponentSystemManager {
       using U = typename T::ComponentType;
       static_assert(std::is_base_of<Component, U>::value,
                     "Registered component must inherit from class component");
-      m_Registry.GetEventCallbackAdapter().UnregisterComponentCallbacks<U>();
+      m_Registry.GetEventPublisher().UnregisterComponentCallbacks<U>();
     }
   }
 

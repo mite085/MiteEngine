@@ -3,7 +3,7 @@
 
 #include "component.h"
 #include "entity.h"
-#include "scene_core_event_callback_adapter.h"
+#include "component_event_publisher.h"
 
 namespace mite {
 /**
@@ -17,7 +17,7 @@ class SceneRegistry {
   SceneRegistry();
   ~SceneRegistry();
 
-  SceneCoreEventCallbackAdapter &GetEventCallbackAdapter();
+  ComponentEventPublisher &GetEventPublisher();
 
   // 1. 实体管理 ============================================
 
@@ -72,7 +72,7 @@ class SceneRegistry {
     componentMap[entity] = component;
 
     // 触发构造事件
-    m_EventCallbackAdapter.OnComponentConstructed<T>(entity, *component);
+    m_ComponentEventPublisher.OnComponentConstructed<T>(entity, *component);
 
     return *component;
   }
@@ -106,7 +106,7 @@ class SceneRegistry {
       auto componentIt = it->second.find(entity);
       if (componentIt != it->second.end()) {
         // 触发移除事件
-        m_EventCallbackAdapter.OnComponentDestroyed<T>(
+        m_ComponentEventPublisher.OnComponentDestroyed<T>(
             entity, *static_cast<T *>(componentIt->second.get()));
 
         // 最后移除
@@ -305,7 +305,7 @@ class SceneRegistry {
   mutable std::shared_mutex m_ComponentMutex;  // 组件操作的读写锁
   ComponentTypeMap m_Components;               // 组件存储
 
-  SceneCoreEventCallbackAdapter m_EventCallbackAdapter;
+  ComponentEventPublisher m_ComponentEventPublisher;
 };
 };  // namespace mite
 

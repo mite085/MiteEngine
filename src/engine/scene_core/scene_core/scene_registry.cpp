@@ -1,19 +1,18 @@
 #include "scene_registry.h"
 #include "scene_core_components/id_component.h"
 #include "scene_core_components/tag_component.h"
-#include "scene_core_components/hierarchy_component.h"
 
 namespace mite {
-SceneRegistry::SceneRegistry() : m_EventCallbackAdapter() {}
+SceneRegistry::SceneRegistry() : m_ComponentEventPublisher() {}
 
 SceneRegistry::~SceneRegistry()
 {
   Clear();
 }
 
-SceneCoreEventCallbackAdapter &SceneRegistry::GetEventCallbackAdapter()
+ComponentEventPublisher &SceneRegistry::GetEventPublisher()
 {
-  return m_EventCallbackAdapter;
+  return m_ComponentEventPublisher;
 }
 
 // 1. 实体管理 ===================================================
@@ -29,10 +28,6 @@ Entity SceneRegistry::CreateEntity(const std::string& name)
   // 添加Tag组件，用于实体搜索和筛选
   auto &tag = AddComponent<TagComponent>(entity);
   tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
-
-  // 添加Hierachy组件，用于层次结构创建
-  AddComponent<HierarchyComponent>(entity);
-
 
   // 创建事件并发布
   EntityCreatedEvent event(entity);

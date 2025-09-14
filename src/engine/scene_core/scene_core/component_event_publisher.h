@@ -5,21 +5,17 @@
 
 namespace mite {
 /**
- * @brief 场景事件回调适配器
+ * @brief 组件事件生产者
+ * 
+ * 功能：负责组件创建/销毁事件的生产（仅负责创建/销毁，自定义事件无关）
  */
-class SceneCoreEventCallbackAdapter {
+class ComponentEventPublisher {
  public:
-  explicit SceneCoreEventCallbackAdapter();
-  ~SceneCoreEventCallbackAdapter();
+  explicit ComponentEventPublisher();
+  ~ComponentEventPublisher();
 
   // 组件回调函数类型
   using ComponentCallback = std::function<void(Entity, Component &)>;
-  // using ComponentUpdateCallback = std::function<void(Entity, Component &, Component &)>;
-
-  /**
-   * @brief 注册所有回调
-   */
-  void RegisterCallbacks();
 
   /**
    * @brief 注销所有回调
