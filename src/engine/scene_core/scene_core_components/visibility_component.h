@@ -9,11 +9,11 @@
 namespace mite {
 /**
  * @class VisibilityComponent
- * @brief 可见性组件，专注于管理实体的可见性掩码和状态
+ * @brief 可见性组件，专注于管理实体的可见性掩码和可见性状态
  *
  * 功能特性：
  * 1. 提供可见性掩码支持分层渲染
- * 2. 管理手动/自动可见性状态
+ * 2. 维护“可见/不可见”的可见性状态
  * 3. 与SceneGraph协同实现高效的可见性管理
  */
 class VisibilityComponent
@@ -32,102 +32,54 @@ class VisibilityComponent
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
   // ==================== 可见性操作 ====================
-
   /**
    * @brief 获取当前可见性状态
    * @return 是否可见
    */
-  bool IsVisible() const
-  {
-    return m_IsVisible;
-  }
-
+  bool IsVisible() const;
   /**
-   * @brief 设置可见性状态（手动覆盖）
+   * @brief 设置可见性状态（掩码无关的手动覆盖）
    * @param visible 是否可见
    */
   void SetVisible(bool visible);
-
   /**
    * @brief 获取上一帧的可见性状态
    * @return 上一帧是否可见
    */
-  bool WasVisible() const
-  {
-    return m_WasVisible;
-  }
-
+  bool WasVisible() const;
   /**
    * @brief 检查可见性状态是否发生变化
    * @return 是否发生变化
    */
-  bool VisibilityChanged() const
-  {
-    return m_IsVisible != m_WasVisible;
-  }
-
-  /**
-   * @brief 清除手动覆盖，恢复自动可见性计算
-   */
-  void ClearManualOverride()
-  {
-    m_ManualOverride = false;
-    MarkDirty();
-  }
-
-  /**
-   * @brief 检查是否为手动覆盖模式
-   * @return 是否为手动覆盖
-   */
-  bool IsManualOverride() const
-  {
-    return m_ManualOverride;
-  }
+  bool VisibilityChanged() const;
 
   // ==================== 掩码操作 ====================
-
   /**
    * @brief 获取可见性掩码
    * @return 32位掩码
    */
-  uint32_t GetVisibilityMask() const
-  {
-    return m_VisibilityMask;
-  }
-
+  uint32_t GetVisibilityMask() const;
   /**
    * @brief 设置可见性掩码
    * @param mask 新的掩码
    */
   void SetVisibilityMask(uint32_t mask);
-
   /**
    * @brief 检查是否与给定掩码匹配
    * @param cameraMask 相机掩码
    * @return 是否匹配
    */
-  bool MatchesMask(uint32_t cameraMask) const
-  {
-    return (m_VisibilityMask & cameraMask) != 0;
-  }
-
+  bool MatchesMask(uint32_t cameraMask) const;
   /**
    * @brief 添加掩码位
    * @param maskBits 要添加的掩码位
    */
-  void AddMaskBits(uint32_t maskBits)
-  {
-    SetVisibilityMask(m_VisibilityMask | maskBits);
-  }
-
+  void AddMaskBits(uint32_t maskBits);
   /**
    * @brief 移除掩码位
    * @param maskBits 要移除的掩码位
    */
-  void RemoveMaskBits(uint32_t maskBits)
-  {
-    SetVisibilityMask(m_VisibilityMask & ~maskBits);
-  }
+  void RemoveMaskBits(uint32_t maskBits);
 
   // ==================== 组件接口 ====================
 
@@ -140,8 +92,6 @@ class VisibilityComponent
   bool m_WasVisible = false;  // 上一帧可见性状态（用于检测变化）
 
   uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 可见性掩码
-  bool m_BoundsDirty = true;                              // 包围盒脏标记
-  bool m_ManualOverride = false;                          // 手动覆盖标志
 };
 
 // ==================== 组件系统 ====================

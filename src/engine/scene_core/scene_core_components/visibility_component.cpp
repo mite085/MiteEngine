@@ -1,14 +1,11 @@
 #include "visibility_component.h"
-#include "basic_data/bounding_volumes.h"
 #include "scene_core/component_id.h"
 #include "scene_core/scene_registry.h"
-#include "scene_core_components/transform_component.h"
 
 namespace mite {
 // ==================== VisibilityComponent ====================
 
-VisibilityComponent::VisibilityComponent() : ComponentTraits(){}
-
+VisibilityComponent::VisibilityComponent() : ComponentTraits() {}
 
 void VisibilityComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 {
@@ -17,13 +14,7 @@ void VisibilityComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
   }
   // 保存上一帧状态
   m_WasVisible = m_IsVisible;
-  // 如果没有手动覆盖，执行自动可见性计算
-  // 注意：现在可见性计算应该由专门的剔除系统处理
-  // 这里只处理基本的掩码匹配逻辑
-  if (!m_ManualOverride) {
-    // 默认可见，实际可见性应由专门的剔除系统设置
-    m_IsVisible = true;
-  }
+
   // 如果可见性发生变化，发布事件
   if (VisibilityChanged()) {
     EventBus::Publish<VisibilityChangedEvent>(
@@ -32,16 +23,32 @@ void VisibilityComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 
   ClearDirty();
 }
-
+// ==================== 可见性操作 ====================
+bool VisibilityComponent::IsVisible() const
+{
+  return m_IsVisible;
+}
 void VisibilityComponent::SetVisible(bool visible)
 {
   if (m_IsVisible != visible) {
     m_IsVisible = visible;
-    m_ManualOverride = true;  // 设置为手动覆盖模式
     MarkDirty();
   }
 }
+bool VisibilityComponent::WasVisible() const
+{
+  return m_WasVisible;
+}
+bool VisibilityComponent::VisibilityChanged() const
+{
+  return m_IsVisible != m_WasVisible;
+}
 
+// ==================== 掩码操作 ====================
+uint32_t VisibilityComponent::GetVisibilityMask() const
+{
+  return m_VisibilityMask;
+}
 void VisibilityComponent::SetVisibilityMask(uint32_t mask)
 {
   if (m_VisibilityMask != mask) {
@@ -54,7 +61,20 @@ void VisibilityComponent::SetVisibilityMask(uint32_t mask)
     MarkDirty();
   }
 }
+bool VisibilityComponent::MatchesMask(uint32_t cameraMask) const
+{
+  return (m_VisibilityMask & cameraMask) != 0;
+}
+void VisibilityComponent::AddMaskBits(uint32_t maskBits)
+{
+  SetVisibilityMask(m_VisibilityMask | maskBits);
+}
+void VisibilityComponent::RemoveMaskBits(uint32_t maskBits)
+{
+  SetVisibilityMask(m_VisibilityMask & ~maskBits);
+}
 
+// ==================== 组件接口 ====================
 std::vector<std::type_index> VisibilityComponent::GetDependencies() const
 {
   return {};
@@ -75,5 +95,4 @@ bool VisibilityComponent::Deserialize(std::istream &input)
   // TODO: 实现具体的反序列化逻辑
   return !input.fail();
 }
-
 }  // namespace mite
