@@ -36,7 +36,7 @@ void SceneCore::RegisterComponentSystems()
   m_SystemManager.RegisterSystem<CameraComponentSystem>();
   m_SystemManager.RegisterSystem<DestroyComponentSystem>();
   m_SystemManager.RegisterSystem<IDComponentSystem>();
-  m_SystemManager.RegisterSystem<HierarchyComponentSystem>();
+  m_SystemManager.RegisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.RegisterSystem<MaterialComponentSystem>();
   m_SystemManager.RegisterSystem<MeshComponentSystem>();
   m_SystemManager.RegisterSystem<TagComponentSystem>();
@@ -49,7 +49,7 @@ void SceneCore::UnregisterComponentSystems()
   m_SystemManager.UnregisterSystem<CameraComponentSystem>();
   m_SystemManager.UnregisterSystem<DestroyComponentSystem>();
   m_SystemManager.UnregisterSystem<IDComponentSystem>();
-  m_SystemManager.UnregisterSystem<HierarchyComponentSystem>();
+  m_SystemManager.UnregisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.UnregisterSystem<MaterialComponentSystem>();
   m_SystemManager.UnregisterSystem<MeshComponentSystem>();
   m_SystemManager.UnregisterSystem<TagComponentSystem>();

@@ -10,6 +10,8 @@ set(SCENE_CORE_SRCS
     scene_core/component.cpp
     scene_core/component_id.h
     scene_core/component_id.cpp
+    scene_core/component_event_publisher.h
+    scene_core/component_event_publisher.cpp
     scene_core/component_system.h
     scene_core/component_system.cpp
     scene_core/component_system_manager.h
@@ -20,8 +22,6 @@ set(SCENE_CORE_SRCS
     scene_core/scene_core.cpp
     scene_core/scene_core_event.h
     scene_core/scene_core_event.cpp
-    scene_core/scene_core_event_callback_adapter.h
-    scene_core/scene_core_event_callback_adapter.cpp
     scene_core/scene_registry.h
     scene_core/scene_registry.cpp
 )
@@ -29,8 +29,8 @@ source_group("core" FILES ${SCENE_CORE_SRCS})
 
 set(SCENE_COMPONENTS_SRCS
     scene_core_components/component_headers.h
-    scene_core_components/boundingbox_component.h
-    scene_core_components/boundingbox_component.cpp
+    scene_core_components/bounding_volume_component.h
+    scene_core_components/bounding_volume_component.cpp
     scene_core_components/camera_component.h
     scene_core_components/camera_component.cpp
     scene_core_components/id_component.h
