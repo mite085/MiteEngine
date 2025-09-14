@@ -24,7 +24,7 @@ glm::vec3 Ray::GetPoint(float t) const
   return origin + direction * t;
 }
 
-bool Ray::Intersects(const AABB &aabb, float &t) const
+bool Ray::Intersects(const BoundingVolumeAABB &aabb, float &t) const
 {
   // SLAB方法进行AABB相交测试
   float tmin = tMin;
@@ -56,7 +56,7 @@ bool Ray::Intersects(const AABB &aabb, float &t) const
   return true;
 }
 
-bool Ray::Intersects(const Sphere &sphere, float &t) const
+bool Ray::Intersects(const BoundingVolumeSphere &sphere, float &t) const
 {
   glm::vec3 oc = origin - sphere.center;
   float a = glm::dot(direction, direction);
@@ -88,7 +88,50 @@ bool Ray::Intersects(const Sphere &sphere, float &t) const
   return true;
 }
 
-bool Ray::Intersects(const Plane &plane, float &t) const
+bool Ray::Intersects(const BoundingVolumeOBB &obb, float &t) const
+{
+  // 使用SLAB方法，但针对OBB的三个主轴进行测试
+  float tmin = tMin;
+  float tmax = tMax;
+
+  glm::vec3 delta = obb.center - origin;
+
+  // 测试OBB的三个局部轴
+  for (int i = 0; i < 3; ++i) {
+    // 获取当前轴
+    glm::vec3 axis = glm::vec3(obb.orientation[i]);
+
+    // 计算射线方向在当前轴上的投影
+    float dirProj = glm::dot(direction, axis);
+    float deltaProj = glm::dot(delta, axis);
+    float extent = obb.extents[i];
+
+    if (std::abs(dirProj) < 1e-6f) {
+      // 射线与当前轴平行
+      if (deltaProj < -extent || deltaProj > extent) {
+        return false;
+      }
+    }
+    else {
+      float invDirProj = 1.0f / dirProj;
+      float t1 = (-extent - deltaProj) * invDirProj;
+      float t2 = (extent - deltaProj) * invDirProj;
+
+      if (t1 > t2)
+        std::swap(t1, t2);
+      tmin = std::max(tmin, t1);
+      tmax = std::min(tmax, t2);
+
+      if (tmin > tmax)
+        return false;
+    }
+  }
+
+  t = tmin;
+  return true;
+}
+
+bool Ray::Intersects(const BoundingVolumePlane &plane, float &t) const
 {
   float denom = glm::dot(plane.normal, direction);
   if (std::abs(denom) < 1e-6f)

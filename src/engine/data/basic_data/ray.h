@@ -1,7 +1,7 @@
 ﻿#ifndef MITE_RAY_H
 #define MITE_RAY_H
 
-#include "bounding_volumes_types.h"
+#include "basic_type/bounding_volumes_types.h"
 
 namespace mite {
 
@@ -41,7 +41,7 @@ class Ray {
    * @param t 相交距离（输出参数）
    * @return 是否相交
    */
-  bool Intersects(const AABB &aabb, float &t) const;
+  bool Intersects(const BoundingVolumeAABB &aabb, float &t) const;
 
   /**
    * @brief 判断射线是否与球相交
@@ -49,7 +49,15 @@ class Ray {
    * @param t 相交距离（输出参数）
    * @return 是否相交
    */
-  bool Intersects(const Sphere &sphere, float &t) const;
+  bool Intersects(const BoundingVolumeSphere &sphere, float &t) const;
+
+  /**
+   * @brief 判断射线是否与球相交
+   * @param obb 有向包围盒
+   * @param t 相交距离（输出参数）
+   * @return 是否相交
+   */
+  bool Intersects(const BoundingVolumeOBB &obb, float &t) const;
 
   /**
    * @brief 判断射线是否与平面相交
@@ -57,7 +65,7 @@ class Ray {
    * @param t 相交距离（输出参数）
    * @return 是否相交
    */
-  bool Intersects(const Plane &plane, float &t) const;
+  bool Intersects(const BoundingVolumePlane &plane, float &t) const;
 
   /**
    * @brief 判断射线是否与三角形相交（Möller–Trumbore算法）
