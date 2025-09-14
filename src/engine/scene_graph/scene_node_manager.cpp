@@ -1,6 +1,7 @@
 #include "scene_node_manager.h"
 #include "scene_core/scene_registry.h"
-#include "visibility_component.h"
+#include "scene_core_components/transform_component.h"
+#include "scene_core_components/bounding_volume_component.h"
 
 namespace mite {
 SceneNodeManager::SceneNodeManager(SpatialPartitionManager &spatialPartition)
@@ -11,8 +12,11 @@ SceneNodeManager::SceneNodeManager(SpatialPartitionManager &spatialPartition)
 void SceneNodeManager::Clear()
 {
   // 清空所有节点（会自动处理父子关系）
+  std::lock_guard<std::mutex> lock(m_Mutex);
   m_EntityToNodeMap.clear();
   m_DirtyNodes.clear();
+  m_PathToNodeCache.clear();
+  m_PathCacheDirty = false;
 }
 // ==================== 场景节点生命周期管理 ====================
 SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
@@ -21,7 +25,6 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
     m_Logger->warn("Attempted to create node for invalid entity");
     return nullptr;
   }
-
   std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 检查是否已存在节点
@@ -38,15 +41,14 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
     // 添加到映射表
     m_EntityToNodeMap[entity] = std::move(node);
 
-    // 如果实体有VisibilityComponent，初始化其局部包围盒
-    if (registry.HasComponent<VisibilityComponent>(entity)) {
-      auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
-      visibilityComp.SetLocalAABB(nodePtr->GetLocalBounds());
-      visibilityComp.MarkBoundsDirty();
-    }
+    // 立即更新节点的世界变换和包围盒
+    nodePtr->Update(registry, true);  // force update
 
     // 添加到空间划分结构
     m_SpatialPartition.AddNodeToSpatialPartition(nodePtr);
+
+    // 标记路径缓存为脏
+    m_PathCacheDirty = true;
 
     m_Logger->debug("Created scene node for entity {}", entity.GetUUIDString());
     return nodePtr;
@@ -57,17 +59,16 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
     return nullptr;
   }
 }
-
 bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
+  // 检查是否存在被删除的节点
   auto it = m_EntityToNodeMap.find(entity);
   if (it == m_EntityToNodeMap.end()) {
     m_Logger->warn("Scene node not found for entity {}", entity.GetUUIDString());
     return false;
   }
-
   SceneNode *node = it->second.get();
 
   // 从空间划分结构中移除
@@ -84,18 +85,15 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
     node->GetParent()->RemoveChild(node);
   }
 
-  // 清理VisibilityComponent相关状态
-  if (registry.HasComponent<VisibilityComponent>(entity)) {
-    auto &visibilityComp = registry.GetComponent<VisibilityComponent>(entity);
-    visibilityComp.SetVisible(false);  // 标记为不可见
-  }
-
   // 从映射表中移除
   m_EntityToNodeMap.erase(it);
 
   // 从脏节点列表中移除
   m_DirtyNodes.erase(std::remove(m_DirtyNodes.begin(), m_DirtyNodes.end(), entity),
                      m_DirtyNodes.end());
+
+  // 标记路径缓存为脏
+  m_PathCacheDirty = true;
 
   m_Logger->debug("Destroyed scene node for entity {}", entity.GetUUIDString());
   return true;
@@ -120,12 +118,12 @@ std::vector<SceneNode *> SceneNodeManager::GetRootNodes() const
   std::lock_guard<std::mutex> lock(m_Mutex);
   std::vector<SceneNode *> rootNodes;
 
+  // 执行遍历操作，检查Root
   for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (node->IsRoot()) {
       rootNodes.push_back(node.get());
     }
   }
-
   return rootNodes;
 }
 
@@ -135,10 +133,10 @@ std::vector<SceneNode *> SceneNodeManager::GetAllNodes() const
   std::vector<SceneNode *> nodes;
   nodes.reserve(m_EntityToNodeMap.size());
 
+  // 遍历赋值
   for (const auto &[entity, node] : m_EntityToNodeMap) {
     nodes.push_back(node.get());
   }
-
   return nodes;
 }
 
@@ -193,14 +191,30 @@ SceneNode *SceneNodeManager::FindNodeByPath(const std::string &path) const
   return nullptr;
 }
 
-void SceneNodeManager::TraverseTree(std::function<bool(SceneNode *)> callback) const
+void SceneNodeManager::TraverseTree(std::function<bool(SceneNode *)> callback,
+                                    TraversalType traversalType) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-
-  // 从所有根节点开始遍历
   for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (node->IsRoot()) {
-      if (!TraverseRecursive(node.get(), callback)) {
+      bool shouldContinue = true;
+
+      switch (traversalType) {
+        case TraversalType::DepthFirstPreOrder:
+          shouldContinue = TraverseDepthFirstPreOrder(node.get(), callback);
+          break;
+        case TraversalType::DepthFirstPostOrder:
+          shouldContinue = TraverseDepthFirstPostOrder(node.get(), callback);
+          break;
+        case TraversalType::BreadthFirst:
+          shouldContinue = TraverseBreadthFirst(node.get(), callback);
+          break;
+        case TraversalType::ReverseBreadthFirst:
+          shouldContinue = TraverseReverseBreadthFirst(node.get(), callback);
+          break;
+      }
+
+      if (!shouldContinue) {
         break;  // 回调函数要求中断遍历
       }
     }
@@ -226,7 +240,6 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
     m_Logger->warn("Invalid parenting operation: cyclic reference detected");
     return false;
   }
-
   std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 从原父节点移除
@@ -246,22 +259,12 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
   // 标记节点需要更新（父子关系变化影响世界变换）
   MarkNodeDirty(node->GetEntity());
 
+  // 标记路径缓存为脏（父子关系变化会影响路径）
+  m_PathCacheDirty = true;
+
   m_Logger->debug("Reparented node {}.", node->GetEntity().GetUUIDString());
 
   return true;
-}
-
-void SceneNodeManager::UpdateNodeBounds(SceneRegistry &registry,
-                                        Entity entity,
-                                        const AABB &localBounds)
-{
-  std::lock_guard<std::mutex> lock(m_Mutex);
-
-  auto it = m_EntityToNodeMap.find(entity);
-  if (it != m_EntityToNodeMap.end()) {
-    it->second->SetLocalBounds(localBounds);
-    MarkNodeDirty(entity);
-  }
 }
 
 void SceneNodeManager::MarkNodeDirty(Entity entity)
@@ -276,8 +279,6 @@ void SceneNodeManager::Update(SceneRegistry &registry)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  // 更新主相机的视锥体和可见性掩码
-
   // 更新所有脏节点
   if (m_DirtyNodes.empty()) {
     return;
@@ -286,7 +287,8 @@ void SceneNodeManager::Update(SceneRegistry &registry)
   for (Entity entity : m_DirtyNodes) {
     auto it = m_EntityToNodeMap.find(entity);
     if (it != m_EntityToNodeMap.end()) {
-      it->second->Update();
+      // 更新节点的世界变换和包围盒
+      it->second->Update(registry);
 
       // 更新空间划分结构中的节点位置
       m_SpatialPartition.Update(it->second.get());
@@ -297,26 +299,89 @@ void SceneNodeManager::Update(SceneRegistry &registry)
   m_DirtyNodes.clear();
 }
 // ==================== 私有工具方法 ====================
-
-bool SceneNodeManager::TraverseRecursive(SceneNode *node,
-                                         std::function<bool(SceneNode *)> callback) const
+bool SceneNodeManager::TraverseDepthFirstPreOrder(SceneNode *node,
+                                                  std::function<bool(SceneNode *)> callback) const
 {
   if (!node || !callback) {
     return true;
   }
-
   // 先处理当前节点
   if (!callback(node)) {
-    return false;  // 回调要求中断遍历
+    return false;
   }
-
   // 递归处理所有子节点
   for (SceneNode *child : node->GetChildren()) {
-    if (!TraverseRecursive(child, callback)) {
+    if (!TraverseDepthFirstPreOrder(child, callback)) {
       return false;
     }
   }
+  return true;
+}
+bool SceneNodeManager::TraverseDepthFirstPostOrder(SceneNode *node,
+                                                   std::function<bool(SceneNode *)> callback) const
+{
+  if (!node || !callback) {
+    return true;
+  }
+  // 先递归处理所有子节点
+  for (SceneNode *child : node->GetChildren()) {
+    if (!TraverseDepthFirstPostOrder(child, callback)) {
+      return false;
+    }
+  }
+  // 最后处理当前节点
+  if (!callback(node)) {
+    return false;
+  }
+  return true;
+}
+bool SceneNodeManager::TraverseBreadthFirst(SceneNode *node,
+                                            std::function<bool(SceneNode *)> callback) const
+{
+  if (!node || !callback) {
+    return true;
+  }
+  std::queue<SceneNode *> nodeQueue;
+  nodeQueue.push(node);
+  while (!nodeQueue.empty()) {
+    SceneNode *currentNode = nodeQueue.front();
+    nodeQueue.pop();
+    // 处理当前节点
+    if (!callback(currentNode)) {
+      return false;
+    }
+    // 将子节点加入队列
+    for (SceneNode *child : currentNode->GetChildren()) {
+      nodeQueue.push(child);
+    }
+  }
+  return true;
+}
+bool SceneNodeManager::TraverseReverseBreadthFirst(SceneNode *node,
+                                                   std::function<bool(SceneNode *)> callback) const
+{
+  if (!node || !callback) {
+    return true;
+  }
+  std::vector<SceneNode *> nodes;
+  std::queue<SceneNode *> nodeQueue;
+  nodeQueue.push(node);
+  // 先收集所有节点（广度优先顺序）
+  while (!nodeQueue.empty()) {
+    SceneNode *currentNode = nodeQueue.front();
+    nodeQueue.pop();
 
+    nodes.push_back(currentNode);
+    for (SceneNode *child : currentNode->GetChildren()) {
+      nodeQueue.push(child);
+    }
+  }
+  // 反向遍历节点（从底层到根）
+  for (auto it = nodes.rbegin(); it != nodes.rend(); ++it) {
+    if (!callback(*it)) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -337,4 +402,59 @@ bool SceneNodeManager::ValidateParenting(SceneNode *node, SceneNode *newParent) 
 
   return true;
 }
+void SceneNodeManager::BuildPathCache() const
+{
+  if (!m_PathCacheDirty) {
+    return;
+  }
+  m_PathToNodeCache.clear();
+  // 使用BFS构建路径缓存，避免递归深度过大
+  std::queue<SceneNode *> nodeQueue;
+
+  // 将所有根节点加入队列
+  for (const auto &[entity, node] : m_EntityToNodeMap) {
+    if (node->IsRoot()) {
+      nodeQueue.push(node.get());
+    }
+  }
+  while (!nodeQueue.empty()) {
+    SceneNode *current = nodeQueue.front();
+    nodeQueue.pop();
+    // 计算当前节点路径并加入缓存
+    std::string path = CalculateNodePath(current);
+    m_PathToNodeCache[path] = current;
+    // 将子节点加入队列
+    for (SceneNode *child : current->GetChildren()) {
+      nodeQueue.push(child);
+    }
+  }
+  // 清理脏标记
+  m_PathCacheDirty = false;
+  m_Logger->debug("Built path cache with {} entries", m_PathToNodeCache.size());
+}
+
+std::string SceneNodeManager::CalculateNodePath(SceneNode *node) const
+{
+  if (!node) {
+    return "Invalid";
+  }
+  std::vector<std::string> pathSegments;
+  SceneNode *current = node;
+  // 向上遍历构建路径段
+  while (current) {
+    pathSegments.push_back("Entity_" + current->GetEntity().GetUUIDString());
+    current = current->GetParent();
+  }
+  // 反转路径段（从根到当前节点）
+  std::reverse(pathSegments.begin(), pathSegments.end());
+  // 拼接路径字符串
+  std::string path;
+  for (size_t i = 0; i < pathSegments.size(); ++i) {
+    if (i > 0)
+      path += "/";
+    path += pathSegments[i];
+  }
+  return path;
+}
+
 }  // namespace mite
