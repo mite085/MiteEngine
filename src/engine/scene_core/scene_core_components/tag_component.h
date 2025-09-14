@@ -33,7 +33,7 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
   TagComponent(const std::string &tag, const glm::vec4 &color);
 
   /**
-   * @brief 针对dirty对象进行处理
+   * @brief 针对dirty对象进行处理（Tag没有Dirty延迟更新行为，无需处理）
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 

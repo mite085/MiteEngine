@@ -44,7 +44,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   IDComponent &operator=(const IDComponent &) = delete;
 
   /**
-   * @brief 针对dirty对象进行处理
+   * @brief 针对dirty对象进行处理（ID没有Dirty延迟更新行为，无需处理）
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 

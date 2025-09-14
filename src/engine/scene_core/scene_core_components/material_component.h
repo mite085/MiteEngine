@@ -30,7 +30,7 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
   ~MaterialComponent() override = default;
 
   /**
-   * @brief 针对dirty对象进行处理
+   * @brief 针对dirty对象进行处理（Material没有Dirty延迟更新行为，无需处理）
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 

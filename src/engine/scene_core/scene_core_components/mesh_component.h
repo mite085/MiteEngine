@@ -32,7 +32,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::G
   ~MeshComponent() override = default;
 
   /**
-   * @brief 针对dirty对象进行处理
+   * @brief 针对dirty对象进行处理（Mesh没有Dirty延迟更新行为，无需处理）
    */
   void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
 
