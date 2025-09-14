@@ -1,7 +1,7 @@
 #ifndef MITE_FRUSTUM_H
 #define MITE_FRUSTUM_H
 
-#include "bounding_volumes_types.h"
+#include "basic_data/bounding_volume.h"
 
 namespace mite {
 /**
@@ -39,20 +39,40 @@ class Frustum {
    * @param sphere 球体
    * @return 相交类型
    */
-  IntersectionType TestSphere(const Sphere &sphere) const;
-
+  BoundingVolumeIntersection::IntersectionType TestSphere(
+      const BoundingVolumeSphere &sphere) const;
   /**
    * @brief 判断AABB是否在视锥体内
    * @param aabb 轴对齐包围盒
    * @return 相交类型
    */
-  IntersectionType TestAABB(const AABB &aabb) const;
+  BoundingVolumeIntersection::IntersectionType TestAABB(const BoundingVolumeAABB &aabb) const;
+  /**
+   * @brief 判断OBB是否在视锥体内
+   * @param obb 有向包围盒
+   * @return 相交类型
+   */
+  BoundingVolumeIntersection::IntersectionType TestOBB(const BoundingVolumeOBB &obb) const;
+  /**
+   * @brief 判断OBB是否在视锥体内
+   * @param obb 有向包围盒
+   * @return 相交类型
+   */
+  BoundingVolumeIntersection::IntersectionType TestPlane(const BoundingVolumePlane &plane) const;
+  /**
+   * @brief 判断通用包围体是否在视锥体内
+   * @param volume 通用包围体
+   * @return 相交类型
+   */
+  BoundingVolumeIntersection::IntersectionType TestBoundingVolume(
+      const BoundingVolume &volume) const;
+  
 
   /**
    * @brief 获取视锥体的6个裁剪平面
    * @return 平面数组的指针
    */
-  const Plane *GetPlanes() const
+  const BoundingVolumePlane *GetPlanes() const
   {
     return m_Planes;
   }
@@ -62,13 +82,6 @@ class Frustum {
    * @param corners 角点数组（输出参数，需要8个元素）
    */
   void GetCorners(glm::vec3 corners[8]) const;
-
-  /**
-   * @brief 判断OBB是否在视锥体内
-   * @param obb 有向包围盒
-   * @return 相交类型
-   */
-  IntersectionType TestOBB(const OBB &obb) const;
 
  private:
   enum FrustumPlane { LEFT = 0, RIGHT = 1, BOTTOM = 2, TOP = 3, NEAR = 4, FAR = 5 };
@@ -82,7 +95,7 @@ class Frustum {
   void ExtractPlane(const glm::mat4 &matrix, FrustumPlane plane);
 
  private:
-  Plane m_Planes[6];  // 6个裁剪平面（左、右、下、上、近、远）
+  BoundingVolumePlane m_Planes[6];  // 6个裁剪平面（左、右、下、上、近、远）
 };
 }  // namespace mite
 

@@ -4,7 +4,7 @@ namespace mite {
 Frustum::Frustum()
 {
   for (int i = 0; i < 6; ++i) {
-    m_Planes[i] = Plane();
+    m_Planes[i] = BoundingVolumePlane();
   }
 }
 
@@ -56,7 +56,7 @@ void Frustum::ExtractPlane(const glm::mat4 &vpMatrix, FrustumPlane plane)
   }
   // 右手系平面方程：normal.x*x + normal.y*y + normal.z*z + d = 0
   // 其中 d = planeCoeffs.w（与左手系符号相反）
-  m_Planes[static_cast<int>(plane)] = Plane(glm::vec3(planeCoeffs), planeCoeffs.w);
+  m_Planes[static_cast<int>(plane)] = BoundingVolumePlane(glm::vec3(planeCoeffs), planeCoeffs.w);
 }
 
 bool Frustum::Contains(const glm::vec3 &point) const
@@ -69,15 +69,20 @@ bool Frustum::Contains(const glm::vec3 &point) const
   return true;
 }
 
-IntersectionType Frustum::TestSphere(const Sphere &sphere) const
+BoundingVolumeIntersection::IntersectionType Frustum::TestSphere(
+    const BoundingVolumeSphere &sphere) const
 {
   bool completelyInside = true;
 
   for (int i = 0; i < 6; ++i) {
     float distance = m_Planes[i].DistanceToPoint(sphere.center);
-
+    
+    // 注意：
+    // 视锥体六个平面的正方向都是朝向可视范围内的。
+    // 若球心处于任意平面的负方向，且距离平面超过radius
+    // 即可断定该球不可能与视锥体相交
     if (distance < -sphere.radius) {
-      return IntersectionType::Outside;
+      return BoundingVolumeIntersection::IntersectionType::Outside;
     }
 
     if (distance < sphere.radius) {
@@ -85,10 +90,12 @@ IntersectionType Frustum::TestSphere(const Sphere &sphere) const
     }
   }
 
-  return completelyInside ? IntersectionType::Inside : IntersectionType::Intersect;
+  return completelyInside ? BoundingVolumeIntersection::IntersectionType::Inside :
+                            BoundingVolumeIntersection::IntersectionType::Intersect;
 }
 
-IntersectionType Frustum::TestAABB(const AABB &aabb) const
+BoundingVolumeIntersection::IntersectionType Frustum::TestAABB(
+    const BoundingVolumeAABB &aabb) const
 {
   bool intersects = false;
   for (int i = 0; i < 6; ++i) {
@@ -136,7 +143,7 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
       }
       // 仅当8个点全部在视锥体外面时返回Outside
       if (allOutside) {
-        return IntersectionType::Outside;
+        return BoundingVolumeIntersection::IntersectionType::Outside;
       }
       // 否则认为是相交的
       intersects = true;
@@ -150,7 +157,76 @@ IntersectionType Frustum::TestAABB(const AABB &aabb) const
     }
   }
   // 根据intersects，判断结果为Inside完全在内，还是Intersect相交
-  return intersects ? IntersectionType::Intersect : IntersectionType::Inside;
+  return intersects ? BoundingVolumeIntersection::IntersectionType::Intersect :
+                      BoundingVolumeIntersection::IntersectionType::Inside;
+}
+
+BoundingVolumeIntersection::IntersectionType Frustum::TestOBB(const BoundingVolumeOBB &obb) const
+{
+  // 将OBB转换到视锥体空间测试
+  BoundingVolumeAABB localAABB = obb.GetAABB();
+  return TestAABB(localAABB);
+}
+
+BoundingVolumeIntersection::IntersectionType Frustum::TestPlane(
+    const BoundingVolumePlane &plane) const
+{
+  // 平面与视锥体的相交测试需要特殊处理
+
+  // 检查视锥体是否完全在平面的正侧
+  bool allPositive = true;
+  bool allNegative = true;
+
+  glm::vec3 corners[8];
+  GetCorners(corners);
+
+  for (int i = 0; i < 8; ++i) {
+    float distance = plane.DistanceToPoint(corners[i]);
+
+    if (distance >= 0.0f) {
+      allNegative = false;
+    }
+    else {
+      allPositive = false;
+    }
+
+    // 如果既有正侧点又有负侧点，说明相交
+    if (!allPositive && !allNegative) {
+      return BoundingVolumeIntersection::IntersectionType::Intersect;
+    }
+  }
+
+  // 根据最终结果返回
+  if (allPositive) {
+    return BoundingVolumeIntersection::IntersectionType::Inside;
+  }
+  else if (allNegative) {
+    return BoundingVolumeIntersection::IntersectionType::Outside;
+  }
+
+  return BoundingVolumeIntersection::IntersectionType::Intersect;
+}
+
+BoundingVolumeIntersection::IntersectionType Frustum::TestBoundingVolume(
+    const BoundingVolume &volume) const
+{
+  switch (volume.GetType()) {
+    case BoundingVolume::BoundingVolumeType::AABB:
+      return TestAABB(volume.GetAABB());
+
+    case BoundingVolume::BoundingVolumeType::Sphere:
+      return TestSphere(volume.GetSphere());
+
+    case BoundingVolume::BoundingVolumeType::OBB:
+      return TestOBB(volume.GetOBB());
+
+    case BoundingVolume::BoundingVolumeType::Plane:
+      return TestPlane(volume.GetPlane());
+
+    case BoundingVolume::BoundingVolumeType::None:
+    default:
+      return BoundingVolumeIntersection::IntersectionType::Outside;
+  }
 }
 
 void Frustum::GetCorners(glm::vec3 corners[8]) const
@@ -167,10 +243,4 @@ void Frustum::GetCorners(glm::vec3 corners[8]) const
   corners[7] = glm::vec3(1, 1, 1);     // 远右上
 }
 
-IntersectionType Frustum::TestOBB(const OBB &obb) const
-{
-  // 将OBB转换到视锥体空间测试
-  AABB localAABB = obb.GetAABB();
-  return TestAABB(localAABB);
-}
 }  // namespace mite
