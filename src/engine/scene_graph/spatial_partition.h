@@ -2,9 +2,9 @@
 #define MITE_SPATIAL_PARTITION_H
 
 #include "scene_node.h"
-#include "bounding_volumes.h"
-#include "frustum.h"
-#include "ray.h"
+#include "basic_data/bounding_volume.h"
+#include "basic_data/frustum.h"
+#include "basic_data/ray.h"
 
 namespace mite {
 
@@ -19,34 +19,32 @@ class SpatialPartition {
  public:
   virtual ~SpatialPartition() = default;
 
+  // ==================== 空间划分生命周期管理 ====================
   /**
    * @brief 插入场景节点到空间结构中
    * @param node 要插入的场景节点
    */
   virtual void Insert(SceneNode *node) = 0;
-
   /**
    * @brief 从空间结构中移除场景节点
    * @param node 要移除的场景节点
    */
   virtual void Remove(SceneNode *node) = 0;
-
   /**
    * @brief 更新场景节点在空间结构中的位置
    * @param node 要更新的场景节点
    */
   virtual void Update(SceneNode *node) = 0;
-
   /**
    * @brief 清空整个空间结构
    */
   virtual void Clear() = 0;
-
   /**
    * @brief 重建空间结构（优化性能）
    */
   virtual void Rebuild() = 0;
 
+  // ==================== 空间结构外部查询接口 ====================
   /**
    * @brief 射线检测，返回所有相交的场景节点
    * @param ray 检测射线
@@ -54,7 +52,6 @@ class SpatialPartition {
    * @return 是否找到相交节点
    */
   virtual bool Raycast(const Ray &ray, std::vector<SceneNode *> &results) = 0;
-
   /**
    * @brief 射线检测，返回第一个相交的场景节点
    * @param ray 检测射线
@@ -63,7 +60,6 @@ class SpatialPartition {
    * @return 是否找到相交节点
    */
   virtual bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) = 0;
-
   /**
    * @brief 视锥体裁剪，返回视锥体内的所有场景节点
    * @param frustum 视锥体
@@ -71,23 +67,13 @@ class SpatialPartition {
    * @return 可见节点数量
    */
   virtual int FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) = 0;
-
   /**
-   * @brief 球体查询，返回球体内的所有场景节点
-   * @param sphere 查询球体
+   * @brief 通用包围体查询，返回包围体内的所有场景节点
+   * @param volume 查询包围体
    * @param results 结果节点列表（输出参数）
    * @return 结果节点数量
    */
-  virtual size_t SphereQuery(const Sphere &sphere, std::vector<SceneNode *> &results) = 0;
-
-  /**
-   * @brief AABB查询，返回AABB内的所有场景节点
-   * @param aabb 查询AABB
-   * @param results 结果节点列表（输出参数）
-   * @return 结果节点数量
-   */
-  virtual size_t AABBQuery(const AABB &aabb, std::vector<SceneNode *> &results) = 0;
-
+  virtual size_t VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results) = 0;
   /**
    * @brief 点查询，返回包含点的所有场景节点
    * @param point 查询点
@@ -95,7 +81,6 @@ class SpatialPartition {
    * @return 结果节点数量
    */
   virtual size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) = 0;
-
   /**
    * @brief 最近邻查询，返回距离点最近的场景节点
    * @param point 查询点
@@ -107,120 +92,42 @@ class SpatialPartition {
                                SceneNode *&result,
                                float maxDistance = FLT_MAX) = 0;
 
+  // ==================== 空间结构内部查询接口 ====================
   /**
    * @brief 遍历所有场景节点执行回调函数
    * @param callback 回调函数，返回false可中断遍历
    */
   virtual void ForEachNode(std::function<bool(SceneNode *)> callback) = 0;
-
   /**
    * @brief 获取空间结构中节点的总数
    * @return 节点数量
    */
   virtual size_t GetNodeCount() const = 0;
-
   /**
    * @brief 判断空间结构是否为空
    * @return 是否为空
    */
   virtual bool IsEmpty() const = 0;
-
   /**
    * @brief 获取空间结构的深度（用于调试）
    * @return 结构深度
    */
   virtual int GetDepth() const = 0;
-
   /**
    * @brief 获取空间结构的类型名称
    * @return 类型名称字符串
    */
   virtual const char *GetTypeName() const = 0;
-
   /**
    * @brief 获取空间结构的性能统计信息
    * @return 统计信息字符串
    */
   virtual std::string GetStats() const = 0;
-
   /**
    * @brief 调试绘制接口（可选实现）
    * @param drawCallback 绘制回调函数
    */
-  virtual void DebugDraw(std::function<void(const AABB &, int depth)> drawCallback) = 0;
-
-  /**
-   * @brief 计算两个AABB的合并结果
-   * @param a 第一个AABB
-   * @param b 第二个AABB
-   * @return 合并后的AABB
-   */
-  static AABB MergeAABBs(const AABB &a, const AABB &b)
-  {
-    return AABB::Merge(a, b);
-  }
-
-  /**
-   * @brief 计算多个AABB的合并结果
-   * @param aabbs AABB列表
-   * @return 合并后的AABB
-   */
-  static AABB MergeAABBs(const std::vector<AABB> &aabbs)
-  {
-    if (aabbs.empty())
-      return AABB();
-
-    AABB result = aabbs[0];
-    for (size_t i = 1; i < aabbs.size(); ++i) {
-      result = MergeAABBs(result, aabbs[i]);
-    }
-    return result;
-  }
-
-  /**
-   * @brief 判断射线是否与AABB相交
-   * @param ray 射线
-   * @param aabb 包围盒
-   * @param t 相交距离（输出参数）
-   * @return 是否相交
-   */
-  static bool RayIntersectsAABB(const Ray &ray, const AABB &aabb, float &t)
-  {
-    return ray.Intersects(aabb, t);
-  }
-
-  /**
-   * @brief 判断视锥体与AABB的相交关系
-   * @param frustum 视锥体
-   * @param aabb 包围盒
-   * @return 相交类型
-   */
-  static IntersectionType FrustumIntersectsAABB(const Frustum &frustum, const AABB &aabb)
-  {
-    return frustum.TestAABB(aabb);
-  }
-
-  /**
-   * @brief 判断点是否在AABB内
-   * @param point 点
-   * @param aabb 包围盒
-   * @return 是否在内部
-   */
-  static bool PointInAABB(const glm::vec3 &point, const AABB &aabb)
-  {
-    return aabb.Contains(point);
-  }
-
-  /**
-   * @brief 判断球体是否与AABB相交
-   * @param sphere 球体
-   * @param aabb 包围盒
-   * @return 是否相交
-   */
-  static bool SphereIntersectsAABB(const Sphere &sphere, const AABB &aabb)
-  {
-    return BoundingVolumes::SphereIntersectsAABB(sphere, aabb);
-  }
+  virtual void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) = 0;
 };
 
 /**
