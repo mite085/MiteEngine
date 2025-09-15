@@ -110,57 +110,17 @@ class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponen
  */
 class VisibilityChangedEvent : public ComponentEvent<VisibilityComponent> {
  public:
-  VisibilityChangedEvent(Entity entity, VisibilityComponent &component, bool newVisibility)
-      : ComponentEvent<VisibilityComponent>(entity, component), newVisibility(newVisibility)
+  VisibilityChangedEvent(Entity entity, VisibilityComponent &component)
+      : ComponentEvent<VisibilityComponent>(entity, component)
   {
   }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
   Event *Clone() const override
   {
-    return new VisibilityChangedEvent(entity, component, newVisibility);
+    return new VisibilityChangedEvent(entity, component);
   }
-
-  bool GetNewVisibility() const
-  {
-    return newVisibility;
-  }
-
- private:
-  bool newVisibility;
 };
-/**
- * @class VisibilityMaskChangedEvent
- * @brief 可见性掩码改变事件
- */
-class VisibilityMaskChangedEvent : public ComponentEvent<VisibilityComponent> {
- public:
-  VisibilityMaskChangedEvent(Entity entity,
-                             VisibilityComponent &component,
-                             uint32_t oldMask,
-                             uint32_t newMask)
-      : ComponentEvent<VisibilityComponent>(entity, component), oldMask(oldMask), newMask(newMask)
-  {
-  }
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new VisibilityMaskChangedEvent(entity, component, oldMask, newMask);
-  }
-  uint32_t GetOldMask() const
-  {
-    return oldMask;
-  }
-  uint32_t GetNewMask() const
-  {
-    return newMask;
-  }
-
- private:
-  uint32_t oldMask;
-  uint32_t newMask;
-};
-
 }  // namespace mite
 
 #endif  // MITE_VISIBILITY_COMPONENT_H

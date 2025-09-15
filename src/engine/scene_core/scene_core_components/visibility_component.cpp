@@ -15,8 +15,7 @@ void VisibilityComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
 
   // 如果可见性发生变化，发布事件
   if (VisibilityChanged()) {
-    EventBus::Publish<VisibilityChangedEvent>(
-        VisibilityChangedEvent(GetEntity(), *this, m_IsVisible));
+    EventBus::Publish<VisibilityChangedEvent>(VisibilityChangedEvent(GetEntity(), *this));
   }
 
   ClearDirty();

@@ -103,33 +103,16 @@ class BoundingVolumeComponentSystem : public DirtyComponentSystem<BoundingVolume
 class BoundingVolumeChangedEvent : public ComponentEvent<BoundingVolumeComponent> {
  public:
   BoundingVolumeChangedEvent(Entity entity,
-                             BoundingVolumeComponent &component,
-                             BoundingVolume::BoundingVolumeType oldType,
-                             BoundingVolume::BoundingVolumeType newType)
-      : ComponentEvent<BoundingVolumeComponent>(entity, component),
-        oldType(oldType),
-        newType(newType)
+                             BoundingVolumeComponent &component)
+      : ComponentEvent<BoundingVolumeComponent>(entity, component)
   {
   }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
   Event *Clone() const override
   {
-    return new BoundingVolumeChangedEvent(entity, component, oldType, newType);
+    return new BoundingVolumeChangedEvent(entity, component);
   }
-
-  BoundingVolume::BoundingVolumeType GetOldType() const
-  {
-    return oldType;
-  }
-  BoundingVolume::BoundingVolumeType GetNewType() const
-  {
-    return newType;
-  }
-
- private:
-  BoundingVolume::BoundingVolumeType oldType;
-  BoundingVolume::BoundingVolumeType newType;
 };
 
 }  // namespace mite
