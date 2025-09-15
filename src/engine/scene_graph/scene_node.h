@@ -111,6 +111,32 @@ class SceneNode {
    */
   void MarkBoundsDirty();
 
+  // ==================== 可见性相关 ====================
+  /**
+   * @brief 获取世界可见性状态（考虑父子继承关系）
+   * @return 在世界空间中是否可见
+   */
+  bool IsWorldVisible() const;
+  /**
+   * @brief 获取本地可见性状态（从Component获取）
+   * @return 本地可见性状态
+   */
+  bool IsLocalVisible() const;
+  /**
+   * @brief 获取可见性掩码（本地掩码即为世界掩码）
+   * @return 32位可见性掩码
+   */
+  uint32_t GetVisibilityMask() const;
+  /**
+   * @brief 获取可见性脏状态
+   * @return 可见性是否需要重新计算
+   */
+  bool IsVisibilityDirty() const;
+  /**
+   * @brief 标记可见性为脏状态
+   */
+  void MarkVisibilityDirty();
+
   // ==================== 更新操作 ====================
   /**
    * @brief 更新世界变换
@@ -122,6 +148,11 @@ class SceneNode {
    * @param registry ECS注册表
    */
   void UpdateWorldBounds(const SceneRegistry &registry);
+  /**
+   * @brief 更新可见性
+   * @param registry ECS注册表
+   */
+  void UpdateVislbility(const SceneRegistry &registry);
   /**
    * @brief 执行更新操作
    * @param registry ECS注册表
@@ -138,6 +169,10 @@ class SceneNode {
    * @brief 递归更新子节点的包围盒状态
    */
   void MarkChildrenBoundsDirty();
+  /**
+   * @brief 递归更新子节点的可见性状态
+   */
+  void MarkChildrenVisibilityDirty();
 
  private:
   Entity m_Entity;                      // 关联的ECS实体
@@ -147,6 +182,11 @@ class SceneNode {
   // 世界空间缓存
   glm::mat4 m_WorldTransform = glm::mat4(1.0f);  // 世界变换矩阵
   BoundingVolume m_WorldBounds;                  // 世界空间包围盒
+
+  // 可见性状态
+  bool m_WorldVisible = true;              // 世界可见性状态（计算得出）
+  uint32_t m_VisibilityMask = 0xFFFFFFFF;  // 可见性掩码
+  bool m_VisibilityDirty = true;           // 可见性需要重新计算
 
   // 脏标记
   bool m_TransformDirty = true;  // 变换需要更新

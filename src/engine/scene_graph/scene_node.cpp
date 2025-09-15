@@ -49,6 +49,7 @@ void SceneNode::SetParent(SceneNode *parent)
   // 标记需要更新变换
   MarkTransformDirty();
   MarkBoundsDirty();
+  MarkVisibilityDirty();
 }
 SceneNode *SceneNode::GetParent() const
 {
@@ -71,6 +72,7 @@ void SceneNode::AddChild(SceneNode *child)
   // 标记子节点需要更新
   child->MarkTransformDirty();
   child->MarkBoundsDirty();
+  child->MarkVisibilityDirty();
 }
 bool SceneNode::RemoveChild(SceneNode *child)
 {
@@ -87,6 +89,7 @@ bool SceneNode::RemoveChild(SceneNode *child)
     // 标记子节点需要更新
     child->MarkTransformDirty();
     child->MarkBoundsDirty();
+    child->MarkVisibilityDirty();
     return true;
   }
 
@@ -181,12 +184,35 @@ void SceneNode::MarkBoundsDirty()
     MarkChildrenBoundsDirty();
   }
 }
+// ==================== 可见性相关 ====================
+bool SceneNode::IsWorldVisible() const
+{
+  return m_WorldVisible;
+}
+uint32_t SceneNode::GetVisibilityMask() const
+{
+  return m_VisibilityMask;
+}
+bool SceneNode::IsVisibilityDirty() const
+{
+  return m_VisibilityDirty;
+}
+bool SceneNode::IsVisibilityDirty() const
+{
+  return m_VisibilityDirty;
+}
+void SceneNode::MarkVisibilityDirty()
+{
+  if (!m_VisibilityDirty) {
+    m_VisibilityDirty = true;
 
+    // 向下传递Dirty标记
+    MarkChildrenVisibilityDirty();
+  }
+}
 // ==================== 更新操作 ====================
 void SceneNode::UpdateWorldTransform(const SceneRegistry &registry)
 {
-  if (!m_TransformDirty)
-    return;
   // 从TransformComponent获取局部变换矩阵
   if (registry.HasComponent<TransformComponent>(m_Entity)) {
     const auto &transformComp = registry.GetComponent<TransformComponent>(m_Entity);
@@ -207,8 +233,6 @@ void SceneNode::UpdateWorldTransform(const SceneRegistry &registry)
 }
 void SceneNode::UpdateWorldBounds(const SceneRegistry &registry)
 {
-  if (!m_BoundsDirty)
-    return;
   // 从BoundingVolumeComponent获取局部包围盒
   if (registry.HasComponent<BoundingVolumeComponent>(m_Entity)) {
     const auto &boundsComp = registry.GetComponent<BoundingVolumeComponent>(m_Entity);
@@ -228,8 +252,33 @@ void SceneNode::UpdateWorldBounds(const SceneRegistry &registry)
   }
   m_BoundsDirty = false;
 }
+void SceneNode::UpdateVisibility(const SceneRegistry &registry)
+{
+  // 从VisibilityComponent获取本地可见性BOOL与可见性掩码
+  if (registry.HasComponent<VisibilityComponent>(m_Entity)) {
+    const auto &visibilityComp = registry.GetComponent<VisibilityComponent>(m_Entity);
+
+    // 掩码直接使用本地值
+    m_VisibilityMask = visibilityComp.GetVisibilityMask();
+
+    // 计算世界可见性：本地可见且父世界可见
+    bool localVisible = visibilityComp.IsVisible();
+    bool parentWorldVisible = (m_Parent == nullptr || m_Parent->IsWorldVisible());
+    m_WorldVisible = localVisible && parentWorldVisible;
+  }
+  else {
+    // 没有VisibilityComponent时的默认行为
+    bool parentWorldVisible = (m_Parent == nullptr || m_Parent->IsWorldVisible());
+    m_WorldVisible = parentWorldVisible;  // 默认本地可见
+    m_VisibilityMask = 0xFFFFFFFF;        // 默认全掩码
+  }
+  m_VisibilityDirty = false;
+}
 void SceneNode::Update(const SceneRegistry &registry, bool force)
 {
+  if (m_VisibilityDirty || force) {
+    UpdateVisibility(registry);
+  }
   if (m_TransformDirty || force) {
     UpdateWorldTransform(registry);
   }
@@ -255,5 +304,10 @@ void SceneNode::MarkChildrenBoundsDirty()
     child->MarkBoundsDirty();
   }
 }
-
+void SceneNode::MarkChildrenVisibilityDirty()
+{
+  for (auto child : m_Children) {
+    child->MarkVisibilityDirty();
+  }
+}
 }  // namespace mite
