@@ -64,6 +64,7 @@ class SimpleBVH : public SpatialPartition {
   ~SimpleBVH() override;
 
   // ==================== 空间划分生命周期管理 ====================
+  bool Contains(SceneNode *node) const override;
   void Insert(SceneNode *node) override;
   void Remove(SceneNode *node) override;
   /**
@@ -158,8 +159,8 @@ class SimpleBVH : public SpatialPartition {
    */
   bool NeedsRefit(BVHNode *node) const;
   /**
-   * @brief 
-   * @param node 
+   * @brief
+   * @param node
    */
   void FindDirtyBVHNodes(BVHNode *node);
   /**
@@ -178,7 +179,7 @@ class SimpleBVH : public SpatialPartition {
    * @param node 当前节点
    * @param ray 射线
    * @param results 结果列表
-   * 
+   *
    * 最佳优先遍历特点：
    * 1. 尽早找到最近交点，提前终止
    * 2. 减少不必要的子树遍历
@@ -200,14 +201,14 @@ class SimpleBVH : public SpatialPartition {
    * @param node 当前节点
    * @param frustum 视锥体
    * @param results 结果列表
-   * 
+   *
    * 广度优先遍历特点：
    * 1. 缓存友好（连续内存访问）
    * 2. 适合处理与批量查询
    */
   void FrustumCullBFS(BVHNode *node,
-                            const Frustum &frustum,
-                            std::vector<SceneNode *> &results) const;
+                      const Frustum &frustum,
+                      std::vector<SceneNode *> &results) const;
   /**
    * @brief 递归包围盒查询（使用广度优先的遍历策略）
    * @param node 当前节点
@@ -215,8 +216,8 @@ class SimpleBVH : public SpatialPartition {
    * @param results 包围盒内所有SceneNode的结果列表
    */
   void VolumeQueryBFS(BVHNode *node,
-                            const BoundingVolume &sphere,
-                            std::vector<SceneNode *> &results) const;
+                      const BoundingVolume &sphere,
+                      std::vector<SceneNode *> &results) const;
   /**
    * @brief 递归遍历所有节点（深度优先遍历）
    * @param node 当前节点
@@ -250,12 +251,12 @@ class SimpleBVH : public SpatialPartition {
 
  private:
   // BVH基本属性
-  BVHNode *m_Root = nullptr;            // BVH根节点
-  std::vector<SceneNode *> m_AllNodes;  // 所有场景节点列表（用于快速重建）
-  int m_MaxDepth;                       // 最大构建深度
-  int m_MinLeafSize;                    // 叶子节点最小对象数
-  bool m_NeedsRebuild = false;          // 需要重建标记
-  size_t m_NodeCount = 0;               // 总节点数统计
+  BVHNode *m_Root = nullptr;                   // BVH根节点
+  std::unordered_set<SceneNode *> m_AllNodes;  // 所有场景节点列表（用于快速重建）
+  int m_MaxDepth;                              // 最大构建深度
+  int m_MinLeafSize;                           // 叶子节点最小对象数
+  bool m_NeedsRebuild = false;                 // 需要重建标记
+  size_t m_NodeCount = 0;                      // 总节点数统计
 
   // BVH增量更新
   std::unordered_set<SceneNode *> m_DirtyNodes;   // 脏节点集合

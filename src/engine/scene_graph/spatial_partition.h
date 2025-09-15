@@ -21,6 +21,11 @@ class SpatialPartition {
 
   // ==================== 空间划分生命周期管理 ====================
   /**
+   * @brief 更新场景节点在空间结构中的位置
+   * @param node 要更新的场景节点
+   */
+  virtual bool Contains(SceneNode *node) const = 0;
+  /**
    * @brief 插入场景节点到空间结构中
    * @param node 要插入的场景节点
    */

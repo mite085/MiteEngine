@@ -19,6 +19,10 @@ SimpleBVH::~SimpleBVH()
 {
   Clear();
 }
+bool SimpleBVH::Contains(SceneNode *node) const
+{
+  return m_AllNodes.find(node) != m_AllNodes.end();
+}
 // ==================== 空间划分生命周期管理 ====================
 void SimpleBVH::Insert(SceneNode *node)
 {
@@ -26,11 +30,11 @@ void SimpleBVH::Insert(SceneNode *node)
     return;
 
   // 检查是否已存在
-  if (std::find(m_AllNodes.begin(), m_AllNodes.end(), node) != m_AllNodes.end()) {
+  if (m_AllNodes.find(node) != m_AllNodes.end()) {
     return;
   }
 
-  m_AllNodes.push_back(node);
+  m_AllNodes.insert(node);
   m_NeedsRebuild = true;
 }
 void SimpleBVH::Remove(SceneNode *node)
@@ -38,9 +42,8 @@ void SimpleBVH::Remove(SceneNode *node)
   if (!node)
     return;
 
-  auto it = std::find(m_AllNodes.begin(), m_AllNodes.end(), node);
-  if (it != m_AllNodes.end()) {
-    m_AllNodes.erase(it);
+  if (m_AllNodes.find(node) != m_AllNodes.end()) {
+    m_AllNodes.erase(node);
     m_NeedsRebuild = true;
   }
 }
@@ -50,7 +53,7 @@ void SimpleBVH::Update(SceneNode *node)
     return;
 
   // 如果节点不在BVH中，忽略更新
-  if (std::find(m_AllNodes.begin(), m_AllNodes.end(), node) == m_AllNodes.end()) {
+  if (m_AllNodes.find(node) == m_AllNodes.end()) {
     return;
   }
 
@@ -98,7 +101,7 @@ void SimpleBVH::Rebuild()
   }
 
   // 构建新树
-  std::vector<SceneNode *> nodesToBuild = m_AllNodes;
+  std::vector<SceneNode *> nodesToBuild(m_AllNodes.begin(), m_AllNodes.end());
   m_Root = BuildTree(nodesToBuild, 0, static_cast<int>(nodesToBuild.size()), 0);
   m_NeedsRebuild = false;
   ClearDirtyFlags();
