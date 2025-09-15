@@ -1,8 +1,6 @@
 #ifndef MITE_VISIBILITY_COMPONENT_H
 #define MITE_VISIBILITY_COMPONENT_H
 
-#include "basic_type/bounding_volumes_types.h"
-#include "basic_data/frustum.h"
 #include "scene_core/component_system.h"
 #include "camera_component.h"
 

@@ -66,7 +66,7 @@ class SpatialPartition {
    * @param results 可见节点列表（输出参数）
    * @return 可见节点数量
    */
-  virtual int FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) = 0;
+  virtual size_t FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) = 0;
   /**
    * @brief 通用包围体查询，返回包围体内的所有场景节点
    * @param volume 查询包围体

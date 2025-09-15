@@ -70,7 +70,7 @@ class SimpleBVH : public SpatialPartition {
    * @brief 更新场景节点在空间结构中的位置
    * @param node
    *
-   * 当SceneNode的Tranform或者BoundingBolume改变时，触发该函数
+   * 当SceneNode的Parent、Tranform或者BoundingBolume改变时，触发该函数
    */
   void Update(SceneNode *node) override;
   void Clear() override;
@@ -79,7 +79,7 @@ class SimpleBVH : public SpatialPartition {
   // ==================== 空间结构外部查询接口 ====================
   bool Raycast(const Ray &ray, std::vector<SceneNode *> &results) override;
   bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) override;
-  int FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) override;
+  size_t FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) override;
   size_t VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results) override;
   size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) override;
   bool NearestNeighbor(const glm::vec3 &point,

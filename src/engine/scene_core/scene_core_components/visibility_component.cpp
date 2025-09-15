@@ -1,6 +1,4 @@
 #include "visibility_component.h"
-#include "scene_core/component_id.h"
-#include "scene_core/scene_registry.h"
 
 namespace mite {
 // ==================== VisibilityComponent ====================

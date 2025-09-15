@@ -138,7 +138,7 @@ bool SimpleBVH::RaycastFirst(const Ray &ray, SceneNode *&result, float &distance
   RaycastFirstBestFirst(m_Root, ray, result, distance);
   return result != nullptr;
 }
-int SimpleBVH::FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results)
+size_t SimpleBVH::FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -151,7 +151,7 @@ int SimpleBVH::FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &res
 
   // 使用广度优先遍历进行视锥体裁剪
   FrustumCullBFS(m_Root, frustum, results);
-  return static_cast<int>(results.size());
+  return results.size();
 }
 size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results)
 {
