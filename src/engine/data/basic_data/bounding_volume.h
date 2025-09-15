@@ -73,12 +73,6 @@ class BoundingVolume {
    */
   BoundingVolumeIntersection::IntersectionType Intersects(const BoundingVolume &other) const;
   /**
-   * @brief 与射线相交测试
-   */
-  bool IntersectsRay(const Ray& ray, float &t) const;
-    
-
-  /**
    * @brief 获取AABB近似（用于快速测试）
    */
   BoundingVolumeAABB GetAABBApproximation() const;

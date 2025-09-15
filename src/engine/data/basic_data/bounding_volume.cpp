@@ -224,21 +224,6 @@ BoundingVolumeIntersection::IntersectionType BoundingVolume::Intersects(
       return BoundingVolumeIntersection::IntersectionType::Outside;
   }
 }
-bool BoundingVolume::IntersectsRay(const Ray &ray, float &t) const
-{
-  switch (m_Type) {
-    case BoundingVolumeType::AABB:
-      return ray.Intersects(std::get<BoundingVolumeAABB>(m_Volume), t);
-    case BoundingVolumeType::Sphere:
-      return ray.Intersects(std::get<BoundingVolumeSphere>(m_Volume), t);
-    case BoundingVolumeType::OBB:
-      return ray.Intersects(std::get<BoundingVolumeOBB>(m_Volume), t);
-    case BoundingVolumeType::Plane:
-      return ray.Intersects(std::get<BoundingVolumePlane>(m_Volume), t);
-    default:
-      return false;
-  }
-}
 BoundingVolumeAABB BoundingVolume::GetAABBApproximation() const
 {
   switch (m_Type) {

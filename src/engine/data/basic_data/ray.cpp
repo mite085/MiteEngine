@@ -141,6 +141,22 @@ bool Ray::Intersects(const BoundingVolumePlane &plane, float &t) const
   return t >= tMin && t <= tMax;
 }
 
+bool Ray::Intersects(const BoundingVolume &volume, float &t) const
+{
+  switch (volume.GetType()) {
+    case BoundingVolume::BoundingVolumeType::AABB :
+      return Intersects(volume.GetAABB(), t);
+    case BoundingVolume::BoundingVolumeType::Sphere:
+      return Intersects(volume.GetSphere(), t);
+    case BoundingVolume::BoundingVolumeType::OBB:
+      return Intersects(volume.GetOBB(), t);
+    case BoundingVolume::BoundingVolumeType::Plane:
+      return Intersects(volume.GetPlane(), t);
+      default:
+        return false;
+    }
+}
+
 bool Ray::Intersects(const glm::vec3 &v0,
                      const glm::vec3 &v1,
                      const glm::vec3 &v2,

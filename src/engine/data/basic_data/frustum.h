@@ -37,7 +37,7 @@ class Frustum {
   /**
    * @brief 判断球是否在视锥体内
    * @param sphere 球体
-   * @return 相交类型
+   * @return 相交类型（不包含Contain，若物体将整个视锥体全部包含在内，那就和Outside没有区别了）
    */
   BoundingVolumeIntersection::IntersectionType TestSphere(
       const BoundingVolumeSphere &sphere) const;
