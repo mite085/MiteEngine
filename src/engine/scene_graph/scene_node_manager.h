@@ -2,7 +2,7 @@
 #define MITE_SCENE_NODE_MANAGER_H
 
 #include "scene_node.h"
-#include "spatial_partition_manager.h"
+#include "spatial_partition.h"
 
 namespace mite {
 // 前向声明
@@ -29,9 +29,11 @@ class SceneNodeManager {
     ReverseBreadthFirst   // 反向广度优先遍历（从底层到根）
   };
 
-  SceneNodeManager(SpatialPartitionManager &spatialPartition);
+  SceneNodeManager();
   ~SceneNodeManager() = default;
   void Clear();
+
+  SpatialPartition &GetSpatialPartition();
 
   // ==================== 场景节点生命周期管理 ====================
   /**
@@ -158,7 +160,7 @@ class SceneNodeManager {
   std::vector<Entity> m_DirtyNodes;
 
   // 空间划分结构
-  SpatialPartitionManager &m_SpatialPartition;
+  std::unique_ptr<SpatialPartition> m_SpatialPartition;
 
   // 路径到节点的映射缓存
   mutable std::unordered_map<std::string, SceneNode *> m_PathToNodeCache;
