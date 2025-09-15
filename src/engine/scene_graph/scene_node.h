@@ -118,11 +118,6 @@ class SceneNode {
    */
   bool IsWorldVisible() const;
   /**
-   * @brief 获取本地可见性状态（从Component获取）
-   * @return 本地可见性状态
-   */
-  bool IsLocalVisible() const;
-  /**
    * @brief 获取可见性掩码（本地掩码即为世界掩码）
    * @return 32位可见性掩码
    */
@@ -152,7 +147,7 @@ class SceneNode {
    * @brief 更新可见性
    * @param registry ECS注册表
    */
-  void UpdateVislbility(const SceneRegistry &registry);
+  void UpdateVisibility(const SceneRegistry &registry);
   /**
    * @brief 执行更新操作
    * @param registry ECS注册表

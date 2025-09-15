@@ -1,7 +1,4 @@
 #include "scene_node_manager.h"
-#include "scene_core/scene_registry.h"
-#include "scene_core_components/transform_component.h"
-#include "scene_core_components/bounding_volume_component.h"
 
 namespace mite {
 SceneNodeManager::SceneNodeManager()
@@ -10,6 +7,14 @@ SceneNodeManager::SceneNodeManager()
 
   // 默认使用BVH模式创建空间划分结构
   m_SpatialPartition = CreateSpatialPartition(SpatialPartitionType::BVH);
+
+  // 订阅事件
+  m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(
+      BIND_DISPATCH_FN(OnTransformComponentUpdated));
+  m_EventSubscriptions.Subscribe<BoundingVolumeChangedEvent>(
+      BIND_DISPATCH_FN(OnBoundingVolumeComponentUpdated));
+  m_EventSubscriptions.Subscribe<VisibilityChangedEvent>(
+      BIND_DISPATCH_FN(OnVisibilityComponentUpdated));
 
   m_Logger->info("SceneGraph NodeManager created with spatial partition type: {}, name: {}",
                  GetSpatialPartitionTypeName(SpatialPartitionType::BVH),
@@ -54,8 +59,10 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
     // 立即更新节点的世界变换和包围盒
     nodePtr->Update(registry, true);  // force update
 
-    // 添加到空间划分结构
-    m_SpatialPartition->Insert(nodePtr);
+    // 根据可见性决定是否添加到空间划分结构
+    if (nodePtr->IsWorldVisible()) {
+      m_SpatialPartition->Insert(nodePtr);
+    }
 
     // 标记路径缓存为脏
     m_PathCacheDirty = true;
@@ -81,7 +88,7 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   }
   SceneNode *node = it->second.get();
 
-  // 从空间划分结构中移除
+  // 从空间划分结构中移除（无论是否可见）
   m_SpatialPartition->Remove(node);
 
   // 处理父子关系：将所有子节点提升为根节点
@@ -99,8 +106,7 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   m_EntityToNodeMap.erase(it);
 
   // 从脏节点列表中移除
-  m_DirtyNodes.erase(std::remove(m_DirtyNodes.begin(), m_DirtyNodes.end(), entity),
-                     m_DirtyNodes.end());
+  m_DirtyNodes.erase(entity);
 
   // 标记路径缓存为脏
   m_PathCacheDirty = true;
@@ -266,8 +272,8 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
   // 设置节点的父节点引用
   node->SetParent(newParent);
 
-  // 标记节点需要更新（父子关系变化影响世界变换）
-  MarkNodeDirty(node->GetEntity());
+  // 递归标记节点及其所有子节点需要更新
+  MarkNodeDirtyRecursive(node->GetEntity());
 
   // 标记路径缓存为脏（父子关系变化会影响路径）
   m_PathCacheDirty = true;
@@ -280,11 +286,28 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
 void SceneNodeManager::MarkNodeDirty(Entity entity)
 {
   // 避免重复添加
-  if (std::find(m_DirtyNodes.begin(), m_DirtyNodes.end(), entity) == m_DirtyNodes.end()) {
-    m_DirtyNodes.push_back(entity);
+  if (m_DirtyNodes.find(entity) == m_DirtyNodes.end()) {
+    m_DirtyNodes.insert(entity);
   }
 }
+void SceneNodeManager::MarkNodeDirtyRecursive(Entity entity)
+{
+  SceneNode *node = GetNode(entity);
+  if (!node) {
+    return;
+  }
+  // 标记当前节点
+  MarkNodeDirty(entity);
+  // 递归标记所有子节点
+  std::function<void(SceneNode *)> markChildren = [&](SceneNode *currentNode) {
+    for (SceneNode *child : currentNode->GetChildren()) {
+      MarkNodeDirty(child->GetEntity());
+      markChildren(child);
+    }
+  };
 
+  markChildren(node);
+}
 void SceneNodeManager::Update(SceneRegistry &registry)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
@@ -312,26 +335,17 @@ void SceneNodeManager::Update(SceneRegistry &registry)
     return a.second < b.second;
   });
 
-  for (Entity entity : m_DirtyNodes) {
-    auto it = m_EntityToNodeMap.find(entity);
-    if (it != m_EntityToNodeMap.end()) {
-      // 更新节点的世界变换和包围盒
-      it->second->Update(registry);
-
-      // 更新空间划分结构中的节点位置
-      m_SpatialPartition->Update(it->second.get());
-    }
-  }
   // 按排序后的顺序更新节点
   for (const auto &[entity, depth] : sortedDirtyNodes) {
     auto it = m_EntityToNodeMap.find(entity);
     if (it != m_EntityToNodeMap.end()) {
       // 更新节点的世界变换、包围盒和可见性
       it->second->Update(registry);
+
       // 根据可见性状态更新空间划分结构
       if (it->second->IsWorldVisible()) {
         // 可见节点：插入或更新到空间划分结构
-        if (m_SpatialPartition->IsEmpty() || !m_SpatialPartition->Contains(it->second.get())) {
+        if (!m_SpatialPartition->Contains(it->second.get())) {
           m_SpatialPartition->Insert(it->second.get());
         }
         else {
@@ -505,6 +519,33 @@ std::string SceneNodeManager::CalculateNodePath(SceneNode *node) const
     path += pathSegments[i];
   }
   return path;
+}
+
+bool SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
+{
+  // 变换更新影响当前节点及其所有子节点的世界变换
+  MarkNodeDirtyRecursive(e.GetEntity());
+
+  e.Handled();
+  return e.handled;
+}
+
+bool SceneNodeManager::OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEvent &e)
+{
+  // 包围盒更新只影响当前节点的世界包围盒
+  MarkNodeDirty(e.GetEntity());
+
+  e.Handled();
+  return e.handled;
+}
+
+bool SceneNodeManager::OnVisibilityComponentUpdated(VisibilityChangedEvent &e)
+{
+  // 可见性更新影响当前节点及其所有子节点的世界可见性
+  MarkNodeDirtyRecursive(e.GetEntity());
+
+  e.Handled();
+  return e.handled;
 }
 
 }  // namespace mite
