@@ -123,10 +123,7 @@ class SceneRegistry {
     std::shared_lock lock(m_ComponentMutex);
 
     auto it = m_Components.find(typeid(T));
-    if (it != m_Components.end()) {
-      return it->second.find(entity) != it->second.end();
-    }
-    return false;
+    return it != m_Components.end() && it->second.find(entity) != it->second.end();
   }
 
   /**
@@ -146,14 +143,12 @@ class SceneRegistry {
       return false;
     }
 
-    // 使用折叠表达式检查所有组件
-    bool hasAll = true;
-    ((hasAll = hasAll && (m_Components.find(typeid(Components)) != m_Components.end() &&
-                          m_Components.at(typeid(Components)).find(entity) !=
-                              m_Components.at(typeid(Components)).end())),
-     ...);
-
-    return hasAll;
+    // 使用折叠表达式检查所有组件 - 避免重复查找
+    return (([](const auto &compMap, Entity e, auto type) -> bool {
+              auto it = compMap.find(type);
+              return it != compMap.end() && it->second.find(e) != it->second.end();
+            }(m_Components, entity, typeid(Components))) &&
+            ...);
   }
 
   /**
