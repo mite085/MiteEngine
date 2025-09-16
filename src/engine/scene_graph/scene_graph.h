@@ -97,9 +97,10 @@ class SceneGraph {
   /**
    * @brief 视锥体裁剪查询
    * @param frustum 视锥体
+   * @param visibleMask 可见性掩码（用于分层渲染）
    * @return 可见节点列表
    */
-  std::vector<SceneNode *> FrustumCull(const Frustum &frustum) const;
+  std::vector<SceneNode *> FrustumCull(const Frustum &frustum, const uint32_t visibleMask) const;
   /**
    * @brief 射线检测查询
    * @param ray 检测射线

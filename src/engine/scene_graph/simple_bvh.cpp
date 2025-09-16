@@ -141,7 +141,9 @@ bool SimpleBVH::RaycastFirst(const Ray &ray, SceneNode *&result, float &distance
   RaycastFirstBestFirst(m_Root, ray, result, distance);
   return result != nullptr;
 }
-size_t SimpleBVH::FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results)
+size_t SimpleBVH::FrustumCull(const Frustum &frustum,
+                              const uint32_t visibleMask,
+                              std::vector<SceneNode *> &results)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -153,7 +155,7 @@ size_t SimpleBVH::FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &
   results.clear();
 
   // 使用广度优先遍历进行视锥体裁剪
-  FrustumCullBFS(m_Root, frustum, results);
+  FrustumCullBFS(m_Root, frustum, visibleMask, results);
   return results.size();
 }
 size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results)
@@ -698,6 +700,7 @@ void SimpleBVH::RaycastFirstBestFirst(BVHNode *root,
 }
 void SimpleBVH::FrustumCullBFS(BVHNode *root,
                                const Frustum &frustum,
+                               const uint32_t visibleMask,
                                std::vector<SceneNode *> &results) const
 {
   std::queue<BVHNode *> queue;
@@ -723,8 +726,10 @@ void SimpleBVH::FrustumCullBFS(BVHNode *root,
                 frustum.TestBoundingVolume(sceneNode->GetWorldBounds()) !=
                 BoundingVolumeIntersection::IntersectionType::Outside)
         {
-          // 记录SceneNode，不被裁剪
-          results.push_back(sceneNode);
+          // 确保可见性匹配
+          if ((sceneNode->GetVisibilityMask() & visibleMask) != 0)
+            // 记录SceneNode，不被裁剪
+            results.push_back(sceneNode);
         }
       }
     }

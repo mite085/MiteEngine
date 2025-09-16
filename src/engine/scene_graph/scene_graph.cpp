@@ -80,10 +80,11 @@ bool SceneGraph::IsEmpty() const
 }
 
 // ==================== 空间查询接口 ====================
-std::vector<SceneNode *> SceneGraph::FrustumCull(const Frustum &frustum) const
+std::vector<SceneNode *> SceneGraph::FrustumCull(const Frustum &frustum,
+                                                 const uint32_t visibleMask) const
 {
   std::vector<SceneNode *> results;
-  m_SpatialPartition->FrustumCull(frustum, results);
+  m_SpatialPartition->FrustumCull(frustum, visibleMask, results);
   return results;
 }
 std::vector<SceneNode *> SceneGraph::Raycast(const Ray &ray) const

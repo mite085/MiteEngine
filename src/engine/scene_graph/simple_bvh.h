@@ -80,7 +80,9 @@ class SimpleBVH : public SpatialPartition {
   // ==================== 空间结构外部查询接口 ====================
   bool Raycast(const Ray &ray, std::vector<SceneNode *> &results) override;
   bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) override;
-  size_t FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) override;
+  size_t FrustumCull(const Frustum &frustum,
+                     const uint32_t visibleMask,
+                     std::vector<SceneNode *> &results) override;
   size_t VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results) override;
   size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) override;
   bool NearestNeighbor(const glm::vec3 &point,
@@ -208,6 +210,7 @@ class SimpleBVH : public SpatialPartition {
    */
   void FrustumCullBFS(BVHNode *node,
                       const Frustum &frustum,
+                      const uint32_t visibleMask,
                       std::vector<SceneNode *> &results) const;
   /**
    * @brief 递归包围盒查询（使用广度优先的遍历策略）

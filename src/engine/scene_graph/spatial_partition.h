@@ -63,20 +63,29 @@ class SpatialPartition {
    * @param result 相交结果（输出参数）
    * @param distance 相交距离（输出参数）
    * @return 是否找到相交节点
+   * 
+   * 作用场景：鼠标点击场景交互操作
    */
   virtual bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) = 0;
   /**
    * @brief 视锥体裁剪，返回视锥体内的所有场景节点
    * @param frustum 视锥体
+   * @param visibleMask 可见性掩码（用于分层渲染）
    * @param results 可见节点列表（输出参数）
    * @return 可见节点数量
+   * 
+   * 作用场景：光栅化渲染视锥体剔除
    */
-  virtual size_t FrustumCull(const Frustum &frustum, std::vector<SceneNode *> &results) = 0;
+  virtual size_t FrustumCull(const Frustum &frustum,
+                             const uint32_t visibleMask,
+                             std::vector<SceneNode *> &results) = 0;
   /**
    * @brief 通用包围体查询，返回包围体内的所有场景节点
    * @param volume 查询包围体
    * @param results 结果节点列表（输出参数）
    * @return 结果节点数量
+   * 
+   * 作用场景：鼠标框选场景操作
    */
   virtual size_t VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results) = 0;
   /**
@@ -92,6 +101,8 @@ class SpatialPartition {
    * @param result 最近节点（输出参数）
    * @param maxDistance 最大搜索距离
    * @return 是否找到节点
+   * 
+   * 作用场景：Runtime游戏交互操作
    */
   virtual bool NearestNeighbor(const glm::vec3 &point,
                                SceneNode *&result,
