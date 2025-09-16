@@ -3,11 +3,8 @@
 
 #include "basic_type/bounding_volumes_types.h"
 #include "basic_type/bounding_volumes_intersects.h"
-#include "basic_data/ray.h"
 
 namespace mite {
-
-
 /**
  * @class BoundingVolume
  * @brief 统一的包围体类，管理多种类型的包围体并提供统一接口

@@ -178,14 +178,14 @@ BoundingVolumeSphere BoundingVolumeSphere::Expand(const BoundingVolumeSphere &ot
 
   if (dist + other.radius <= radius) {
     // 另一个球完全在当前球内，无需扩展
-    return;
+    return *this;
   }
 
   if (dist + radius <= other.radius) {
     // 当前球完全在另一个球内，直接使用另一个球
     center = other.center;
     radius = other.radius;
-    return;
+    return other;
   }
 
   // 两个球相交，计算新的包围球
@@ -316,7 +316,8 @@ void WelzlAlgorithm(std::vector<glm::vec3> &points,
     WelzlAlgorithm(points, numPoints - 1, support, numSupport + 1, result);
   }
 }
-BoundingVolumeSphere CreateSphereFromPoints(const std::vector<glm::vec3> &points)
+BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPoints(
+    const std::vector<glm::vec3> &points)
 {
   if (points.empty()) {
     return BoundingVolumeSphere();
@@ -339,7 +340,8 @@ BoundingVolumeSphere CreateSphereFromPoints(const std::vector<glm::vec3> &points
 
   return result;
 }
-BoundingVolumeSphere CreateSphereFromPointsRitter(const std::vector<glm::vec3> &points)
+BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPointsRitter(
+    const std::vector<glm::vec3> &points)
 {
   if (points.empty()) {
     return BoundingVolumeSphere();
@@ -380,7 +382,8 @@ BoundingVolumeSphere CreateSphereFromPointsRitter(const std::vector<glm::vec3> &
 
   return sphere;
 }
-BoundingVolumeSphere CreateSphereFromPointsFast(const std::vector<glm::vec3> &points)
+BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPointsFast(
+    const std::vector<glm::vec3> &points)
 {
   if (points.empty()) {
     return BoundingVolumeSphere();
