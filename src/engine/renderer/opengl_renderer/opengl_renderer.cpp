@@ -79,38 +79,35 @@ void OpenGLRenderer::EndFrame()
   RenderCommand::Flush();
 }
 
-void OpenGLRenderer::RenderScene(const std::shared_ptr<Camera> mainCamera,
-                                 std::shared_ptr<RenderQueue> renderQueue)
+void OpenGLRenderer::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
+                                 const glm::mat4 viewMatrix,
+                                 const glm::mat4 projectionMatrix)
 {
   if (!renderQueue) {
     m_Logger->warn("OpenGLRenderer::Render called with null renderQueue");
     return;
   }
 
-  // 1. 获取视图和投影矩阵
-  const glm::mat4 viewMatrix = mainCamera->GetViewMatrix();
-  const glm::mat4 projectionMatrix = mainCamera->GetProjectionMatrix();
-
-  // 2. 按队列类型顺序渲染（通常：不透明 -> Alpha测试 -> 透明）
+  // 1. 按队列类型顺序渲染（通常：不透明 -> Alpha测试 -> 透明）
   const std::vector<RenderQueue::QueueType> renderOrder = {RenderQueue::QueueType::Opaque,
                                                            RenderQueue::QueueType::AlphaTest,
                                                            RenderQueue::QueueType::Transparent,
                                                            RenderQueue::QueueType::Custom};
 
-  // 3. 遍历所有队列类型
+  // 2. 遍历所有队列类型
   for (auto queueType : renderOrder) {
     const auto &items = renderQueue->GetItems(queueType);
     if (items.empty())
       continue;
 
-    // 4. 渲染当前队列的所有项
+    // 3. 渲染当前队列的所有项
     for (const auto &item : items) {
       if (!item.material || !item.mesh) {
         m_Logger->warn("Invalid renderable item - missing material or mesh");
         continue;
       }
 
-      // 通过RenderCommand提交绘制命令
+      // 4. 通过RenderCommand提交绘制命令
       RenderCommand::Submit(item, viewMatrix, projectionMatrix);
     }
   }

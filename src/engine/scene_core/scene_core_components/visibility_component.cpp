@@ -53,8 +53,7 @@ void VisibilityComponent::SetVisibilityMask(uint32_t mask)
     m_VisibilityMask = mask;
 
     // 发布掩码改变事件
-    EventBus::Publish<VisibilityMaskChangedEvent>(
-        VisibilityMaskChangedEvent(GetEntity(), *this, oldMask, mask));
+    EventBus::Publish<VisibilityChangedEvent>(VisibilityChangedEvent(GetEntity(), *this));
     MarkDirty();
   }
 }

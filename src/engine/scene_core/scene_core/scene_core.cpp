@@ -117,7 +117,7 @@ bool SceneCore::IsValid(Entity entity) const
   return entity && m_Registry.IsValid(entity);
 }
 
-std::shared_ptr<Camera> SceneCore::GetMainCamera() const
+Entity SceneCore::GetMainCamera() const
 {
   // 通过访问Camera组件系统，获取到其维护的主相机实体
   Entity mainCameraEntity =
@@ -126,31 +126,10 @@ std::shared_ptr<Camera> SceneCore::GetMainCamera() const
   // 无主相机情况报错，并返回nullptr
   if (!mainCameraEntity.IsValid()) {
     LOG_ERROR("Invalid Main Camera in CameraComponentSystem!");
-    return nullptr;
+    return Entity{};
   }
 
-  // 查询到组件，获取到相机并返回
-  std::shared_ptr<Camera> mainCamera =
-      m_Registry.GetComponent<CameraComponent>(mainCameraEntity).GetCamera();
-  return mainCamera;
-}
-
-uint32_t SceneCore::GetMainCameraVisibilityMask() const
-{
-  // 通过访问Camera组件系统，获取到其维护的主相机实体
-  Entity mainCameraEntity =
-      m_SystemManager.GetSystem<CameraComponentSystem>()->GetMainCameraEntity();
-
-  // 无主相机情况报错，并返回全部不可见
-  if (!mainCameraEntity.IsValid()) {
-    LOG_ERROR("Invalid Main Camera in CameraComponentSystem!");
-    return CameraVisibilityMask::NONE;
-  }
-
-  // 查询到组件，获取到相机可见性掩码并返回
-  uint32_t mainCameraVisibilityMask =
-      m_Registry.GetComponent<CameraComponent>(mainCameraEntity).GetVisibilityMask();
-  return mainCameraVisibilityMask;
+  return mainCameraEntity;
 }
 
 void SceneCore::SetMainCamera(Entity mainCameraEntity)

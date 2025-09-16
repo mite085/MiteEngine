@@ -29,8 +29,9 @@ class OpenGLRenderer : public Renderer {
   void EndFrame() override;
 
   // ---- 场景渲染 ----
-  void RenderScene(const std::shared_ptr<Camera> mainCamera,
-                   std::shared_ptr<RenderQueue> renderQueue) override;
+  void RenderScene(std::shared_ptr<RenderQueue> renderQueue,
+                   const glm::mat4 viewMatrix,
+                   const glm::mat4 projectionMatrix) override;
 
   // ---- 状态设置 ----
   void SetClearColor(const glm::vec4 &color) override;

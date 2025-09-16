@@ -40,8 +40,9 @@ class Renderer {
    * RenderScene()仅负责提交RenderCommand队列，
    * EndFrame()负责调用RenderCommand::Flush();执行所有命令
    */
-  virtual void RenderScene(const std::shared_ptr<Camera> mainCamera,
-                           std::shared_ptr<RenderQueue> renderQueue) = 0;
+  virtual void RenderScene(std::shared_ptr<RenderQueue> renderQueue,
+                           const glm::mat4 viewMatrix,
+                           const glm::mat4 projectionMatrix) = 0;
 
   // ---- 状态设置 ----
   virtual void SetClearColor(const glm::vec4 &color) = 0;
