@@ -63,13 +63,7 @@ void MiteApplication::LoadDefaultScene()
 
   // 0. 创建并绑定主相机（该步骤必须在m_SceneCore->InitializeComponentSystems();之后执行)
   Camera mainCamera;
-  // main_camera.LookAt({3.0, 3.0, 3.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
 
-  // 设定方便观看模型的角度
-  mainCamera.LookAt(glm::vec3(0.0f, 3.0f, 5.0f),  // 位置：在模型上方稍后方
-                     glm::vec3(0.0f, 0.0f, 0.0f),  // 看向模型中心
-                     glm::vec3(0.0f, 1.0f, 0.0f)   // 上方向
-  );
   // 投影参数
   mainCamera.SetPerspective(60.0f,  // FOV: 60度（便于计算）
                              1.0f,   // 宽高比: 1:1（正方形视口，简化计算）
@@ -82,6 +76,11 @@ void MiteApplication::LoadDefaultScene()
           mainCameraEntity, std::make_shared<Camera>(mainCamera));
   TransformComponent &mainCameraTransform =
       m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
+
+  // 设定方便观看模型的角度（相机没有Parent，暂时将Local坐标当成World坐标使用）
+  mainCameraTransform.SetLocalPosition(glm::vec3(0.0f, 3.0f, 5.0f));
+  mainCameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+
   m_SceneCore->SetMainCamera(mainCameraEntity);
 
   // 0. 创建ViewportPanel并设置FrameBuffer
@@ -289,13 +288,13 @@ void MiteApplication::InitializeSceneGraph()
   m_SceneGraph = std::make_unique<SceneGraph>();
 
   // 在SceneCore内注册SceneGraphSystem
-  m_SceneGraph->Initialize(m_SceneCore->GetComponentSystemManager());
+  m_SceneGraph->Initialize();
 }
 
 void MiteApplication::CleanUpSceneGraph()
 {
   m_Logger->info("Cleaning up scene graph");
-  m_SceneGraph->CleanUp(m_SceneCore->GetComponentSystemManager());
+  m_SceneGraph->CleanUp();
 }
 
 void MiteApplication::CleanUpSceneView() {}
@@ -348,22 +347,25 @@ void MiteApplication::Render()
   // 主场景渲染
 
   // 1. 获取主相机，构建视锥体
-  std::shared_ptr<Camera> mainCamera = m_SceneCore->GetMainCamera();
-  uint32_t mainCameraVisibilityMask = m_SceneCore->GetMainCameraVisibilityMask();
-  if (!mainCamera)
-    return;
-  Frustum mainCameraFrustum(mainCamera->GetViewProjectionMatrix());
+  Entity mainCamera = m_SceneCore->GetMainCamera();
+
+  glm::mat4 cameraView =
+      m_SceneCore->GetRegistry().GetComponent<TransformComponent>(mainCamera).CreateViewMatrix();
+  glm::mat4 cameraProjection =
+      m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetProjectionMatrix();
+  uint32_t mainCameraVisibilityMask = m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetVisibilityMask();
+
+  Frustum mainCameraFrustum(cameraProjection * cameraView);
 
   // 2. SceneGraph执行视锥体裁剪查询，获取可见节点列表
-  std::vector<SceneNode *> visibleNodes = m_SceneGraph->QueryVisibleNodes(
-      m_SceneCore->GetRegistry(), mainCameraFrustum, mainCameraVisibilityMask);
+  std::vector<SceneNode *> visibleNodes = m_SceneGraph->FrustumCull( mainCameraFrustum, mainCameraVisibilityMask);
 
   // 3. SceneView根据可见节点列表构建RendererQueue
   m_SceneView->Update(m_SceneCore->GetRegistry(), visibleNodes);
   std::shared_ptr<RenderQueue> renderQueue = m_SceneView->GetRenderQueue();
 
   // 4. 渲染器渲染场景
-  m_Renderer->RenderScene(mainCamera, renderQueue);  // 渲染场景
+  m_Renderer->RenderScene(renderQueue, cameraView, cameraProjection);  // 渲染场景
 
   // TODO：渲染调试信息
   // if (m_ShowDebug) {
