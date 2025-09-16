@@ -619,7 +619,7 @@ void SimpleBVH::RaycastBestFirst(BVHNode *root,
       // 处理叶子节点
       for (SceneNode *sceneNode : current.node->sceneNodes) {
         float hitDistance;
-        if (ray.Intersects(sceneNode->GetWorldBounds(), t)) {
+        if (ray.Intersects(sceneNode->GetWorldBounds(), hitDistance)) {
           results.push_back(sceneNode);
         }
       }
@@ -721,8 +721,8 @@ void SimpleBVH::FrustumCullBFS(BVHNode *root,
     // 有SceneNode的BVHNode就是叶子节点
     if (current->IsLeaf()) {
       for (SceneNode *sceneNode : current->sceneNodes) {
-        // 当前BVHNode在视锥体内，或者SceneNode不在视锥体外（相交或者在内）
-        if (intersection == BoundingVolumeIntersection::IntersectionType::Inside ||
+        // 当前BVHNode不在视锥体外（相交或者在内），或者SceneNode不在视锥体外（相交或者在内）
+        if (intersection != BoundingVolumeIntersection::IntersectionType::Outside||
                 frustum.TestBoundingVolume(sceneNode->GetWorldBounds()) !=
                 BoundingVolumeIntersection::IntersectionType::Outside)
         {
