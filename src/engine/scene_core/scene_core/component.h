@@ -47,6 +47,12 @@ class Component {
   virtual std::type_index GetType() const = 0;
 
   /**
+   * @brief 深拷贝（禁用，原则上组件不允许移动和拷贝，仅由Registry维护）
+   * @return 拷贝之后的智能指针
+   */
+  //virtual std::shared_ptr<Component> Clone() const = 0;
+
+  /**
    * @brief 标记组件为已修改
    */
   void MarkDirty();
@@ -143,12 +149,12 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
   }
 
   /**
-   * @brief 组件深拷贝专用函数
+   * @brief 组件深拷贝专用函数（禁用，原则上组件不允许移动和拷贝，仅由Registry维护）
    */
-  std::shared_ptr<Component> Clone() const override
-  {
-    return std::make_shared<T>(static_cast<const T &>(*this));
-  }
+  //std::shared_ptr<Component> Clone() const override
+  //{
+  //  return std::make_shared<T>(static_cast<const T &>(*this));
+  //}
 
   // 启用静态类型检查的组件ID获取
   static std::type_index GetStaticType()
