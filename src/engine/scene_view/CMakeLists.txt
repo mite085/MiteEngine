@@ -10,8 +10,6 @@ set(SCENE_VIEW_INTERFACE_SRCS
     renderable_item_builder.cpp
     render_queue.h              # Renderer模块接收的核心数据结构
     render_queue.cpp
-    scene_view_system.h         # ECS系统
-    scene_view_system.cpp
     scene_view.h                # 主控制器
     scene_view.cpp
     lod_processor.h             # LOD系统(基于距离和屏幕占比计算LOD级别，管理不同LOD层次的网格切换)
