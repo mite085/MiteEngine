@@ -110,7 +110,10 @@ bool ImGuiUIRender::RenderTextInput(TextInputProps &props)
   bool changed = false;
   if (props.isPassword) {
     char buffer[256] = {0};
-    strncpy(buffer, props.text.c_str(), sizeof(buffer) - 1);
+    std::copy_n(props.text.c_str(), std::min(props.text.size(), sizeof(buffer) - 1), buffer);
+    // 确保以null结尾
+    buffer[sizeof(buffer) - 1] = '\0';
+
     if (ImGui::InputTextWithHint(labelText.c_str(),
                                  hintText.c_str(),
                                  buffer,
