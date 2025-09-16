@@ -7,6 +7,7 @@ set(EDITOR_LIB_NAME MiteEngine_Editor)
 set(EDITOR_SRCS
     editor.h
     editor.cpp
+    object_factor.h
 )
 source_group("editor" FILES ${EDITOR_SRCS})
 
