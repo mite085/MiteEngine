@@ -25,8 +25,8 @@ set(INPUT_SRCS
 source_group("input" FILES ${INPUT_SRCS})
 
 set(INPUT_PROCESSOR_SRCS
-    input_processors/camera_input_processor.h
-    input_processors/camera_input_processor.cpp
+    # input_processors/camera_input_processor.h
+    # input_processors/camera_input_processor.cpp
 )
 source_group("input_processors" FILES ${INPUT_PROCESSOR_SRCS})
 

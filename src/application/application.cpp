@@ -1,6 +1,6 @@
 #include "application.h"
 #include "scene_core_components/component_headers.h"
-#include "ui_core/ui_localization.h"
+#include "ui_viewport/ui_viewport_panel.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -84,8 +84,8 @@ void MiteApplication::LoadDefaultScene()
   m_SceneCore->SetMainCamera(mainCameraEntity);
 
   // 0. 创建ViewportPanel并设置FrameBuffer
-  auto viewportPanel = std::make_shared<ViewportPanel>();
-  viewportPanel->setFramebuffer(m_Renderer->GetViewportFrameBuffer());
+  auto viewportPanel = std::make_shared<ViewportPanel>("viewport");
+  viewportPanel->SetFrameBuffer(m_Renderer->GetViewportFrameBuffer());
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
 
@@ -113,7 +113,9 @@ void MiteApplication::LoadDefaultScene()
     TransformComponent &plane_transform_component =
         m_SceneCore->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
 
-    // 6. 由SceneView自动推入渲染队列（EntityCreatedEvent事件驱动+PendingEntities延迟处理）
+    // 6. 创建包围盒
+    BoundingVolumeComponent &plane_bounding_volume_component =
+        m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(plane_submesh);
   }
 
   // 更新场景视图
@@ -319,9 +321,7 @@ void MiteApplication::Update()
   // 2. SceneGraphSystem同步ECS状态到场景图
   //    - 处理实体创建/销毁
   //    - 同步变换数据
-  //
-  // TODO：SceneGraphSystem作为ComponentSystem已经注册到SceneCore的组件管理器，
-  // 需要明确 m_SceneCore->OnUpdate的执行顺序，将SceneGraphSystem顺序放在最后
+  m_SceneGraph->Update(m_SceneCore->GetRegistry());
 
   // 3. 更新DirtySceneNode，由SceneGraph负责
   // 该步骤也由SceneGraphSystem负责了。
