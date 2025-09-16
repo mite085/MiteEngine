@@ -1,15 +1,10 @@
 #ifndef MITE_SCENE_GRAPH_H
 #define MITE_SCENE_GRAPH_H
 
-#include "spatial_partition_manager.h"
 #include "scene_node_manager.h"
+#include "spatial_partition.h"
 
 namespace mite {
-// 前向声明
-class ComponentSystemManager;
-class SceneRegistry;
-class Entity;
-
 /**
  * @class SceneGraph（负责协调与暴露接口，不直接实现）
  * @brief 场景图独立服务 - 负责场景节点层级管理和空间查询优化
@@ -20,12 +15,6 @@ class Entity;
  * 3. 提供高效的空间查询接口
  * 4. 作为编辑器场景树的唯一数据源
  * 5. 协助SceneView进行视锥体裁剪优化
- *
- * 设计原则：
- * - 独立于ECS架构，作为纯服务类存在
- * - 专注于空间数据结构和算法优化
- * - 提供稳定、高效的查询接口
- * - 支持编辑器的场景树操作
  */
 class SceneGraph {
  public:
@@ -33,8 +22,8 @@ class SceneGraph {
    * @brief 构造函数
    * @param spatialPartitionType 空间划分类型（默认BVH）
    */
-  explicit SceneGraph(SpatialPartitionType spatialPartitionType = SpatialPartitionType::BVH);
-  ~SceneGraph();
+  explicit SceneGraph();
+  ~SceneGraph() = default;
 
   // 禁止拷贝和移动
   SceneGraph(const SceneGraph &) = delete;
@@ -42,56 +31,131 @@ class SceneGraph {
   SceneGraph(SceneGraph &&) = delete;
   SceneGraph &operator=(SceneGraph &&) = delete;
 
-  // 初始化与清理均需要依赖SceneCore模块的组件系统管理器注册组件
-  void Initialize(ComponentSystemManager &manager);
-  void CleanUp(ComponentSystemManager &manager);
+  // 初始化与清理
+  void Initialize();
+  void CleanUp();
 
   // ==================== 场景节点生命周期管理 ====================
-
   /**
    * @brief 为实体创建场景节点
    * @param entity 目标实体
    * @return 创建的场景节点指针，失败返回nullptr
    */
   SceneNode *CreateNode(SceneRegistry &registry, Entity entity);
-
   /**
    * @brief 销毁实体的场景节点
    * @param entity 目标实体
    * @return 是否成功销毁
    */
   bool DestroyNode(SceneRegistry &registry, Entity entity);
+  /**
+   * @brief 重建空间划分结构
+   */
+  void RebuildSpatialPartition();
 
   // ==================== 场景节点查询接口 ====================
-
   /**
    * @brief 获取实体对应的场景节点
    * @param entity 实体句柄
    * @return 场景节点指针，不存在时返回nullptr
    */
   SceneNode *GetNode(Entity entity) const;
-
   /**
    * @brief 检查实体是否有对应的场景节点
    * @param entity 实体句柄
    * @return 是否存在场景节点
    */
   bool HasNode(Entity entity) const;
-
+  /**
+   * @brief 通过路径查找场景节点
+   * @param path 节点路径
+   * @return 场景节点指针
+   */
+  SceneNode *FindNodeByPath(const std::string &path) const;
   /**
    * @brief 获取根节点列表（没有父节点的节点）
    * @return 根节点指针列表
    */
   std::vector<SceneNode *> GetRootNodes() const;
-
   /**
    * @brief 获取所有场景节点
    * @return 所有场景节点指针列表
    */
   std::vector<SceneNode *> GetAllNodes() const;
-
   /**
    * @brief 获取场景节点数量
+   * @return 节点总数
+   */
+  size_t GetNodeCount() const;
+  /**
+   * @brief 判断场景图是否为空
+   * @return 是否为空
+   */
+  bool IsEmpty() const;
+
+  // ==================== 空间查询接口 ====================
+  /**
+   * @brief 视锥体裁剪查询
+   * @param frustum 视锥体
+   * @return 可见节点列表
+   */
+  std::vector<SceneNode *> FrustumCull(const Frustum &frustum) const;
+  /**
+   * @brief 射线检测查询
+   * @param ray 检测射线
+   * @return 相交节点列表
+   */
+  std::vector<SceneNode *> Raycast(const Ray &ray) const;
+  /**
+   * @brief 体积查询
+   * @param volume 查询体积
+   * @return 包含节点列表
+   */
+  std::vector<SceneNode *> VolumeQuery(const BoundingVolume &volume) const;
+  /**
+   * @brief 点查询
+   * @param point 查询点
+   * @return 包含节点列表
+   */
+  std::vector<SceneNode *> PointQuery(const glm::vec3 &point) const;
+
+  // ==================== 场景图遍历接口 ====================
+  /**
+   * @brief 遍历场景图
+   * @param callback 回调函数
+   * @param type 遍历类型
+   */
+  void Traverse(std::function<bool(SceneNode *)> callback,
+                SceneNodeManager::TraversalType type =
+                    SceneNodeManager::TraversalType::DepthFirstPreOrder) const;
+  /**
+   * @brief 遍历可见节点
+   * @param callback 回调函数
+   * @param type 遍历类型
+   */
+  void TraverseVisible(std::function<bool(SceneNode *)> callback,
+                       SceneNodeManager::TraversalType type =
+                           SceneNodeManager::TraversalType::DepthFirstPreOrder) const;
+
+  // ==================== 更新管理接口 ====================
+
+  /**
+   * @brief 标记节点需要更新
+   * @param entity ECS实体
+   * @param recursive 是否递归标记子节点
+   */
+  void MarkDirty(Entity entity, bool recursive = false);
+
+  /**
+   * @brief 更新场景图
+   * @param registry ECS注册表
+   */
+  void Update(SceneRegistry &registry);
+
+  // ==================== 状态查询接口 ====================
+
+  /**
+   * @brief 获取场景图节点数量
    * @return 节点总数
    */
   size_t GetNodeCount() const;
@@ -102,172 +166,56 @@ class SceneGraph {
    */
   bool IsEmpty() const;
 
-  // ==================== 场景树操作接口（编辑器支持） ====================
-
   /**
-   * @brief 设置节点的父节点
-   * @param node 目标节点
-   * @param newParent 新的父节点（nullptr表示设为根节点）
-   * @return 是否成功设置
-   */
-  bool SetParent(SceneNode *node, SceneNode *newParent);
-
-  /**
-   * @brief 获取节点的完整路径（用于编辑器序列化）
-   * @param node 目标节点
-   * @return 节点路径字符串（如"Root/Camera/Light"）
-   */
-  std::string GetNodePath(SceneNode *node) const;
-
-  /**
-   * @brief 通过路径查找场景节点
-   * @param path 节点路径
-   * @return 场景节点指针，找不到返回nullptr
-   */
-  SceneNode *FindNodeByPath(const std::string &path) const;
-
-  /**
-   * @brief 遍历场景树执行回调函数
-   * @param callback 回调函数，返回false可中断遍历
-   */
-  void TraverseTree(std::function<bool(SceneNode *)> callback) const;
-
-  // ==================== 空间划分管理接口 ====================
-
-  /**
-   * @brief 设置空间划分类型
-   * @param type 空间划分类型
-   */
-  void SetSpatialPartitionType(SpatialPartitionType type);
-
-  /**
-   * @brief 获取当前空间划分类型
-   * @return 空间划分类型
-   */
-  SpatialPartitionType GetSpatialPartitionType() const;
-
-  /**
-   * @brief 重新构建空间划分结构（优化性能）
-   */
-  void RebuildSpatialPartition(std::vector<SceneNode *> nodelist);
-
-  /**
-   * @brief 获取空间划分统计信息
+   * @brief 获取统计信息
    * @return 统计信息字符串
    */
-  std::string GetSpatialPartitionStats() const;
+  std::string GetStats() const;
 
+  // ==================== 调试接口 ====================
   /**
-   * @brief 调试绘制接口
+   * @brief 调试绘制
    * @param drawCallback 绘制回调函数
    */
-  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback);
-
-  // ==================== 空间查询接口（为SceneView提供优化） ====================
-  /**
-   * @brief 快速可见性检查（不返回具体节点，只计数）
-   * @return 可见节点数量
-   */
-  size_t QueryVisibleCount(SceneRegistry &registry,
-                           const Frustum &frustum,
-                           uint32_t visibilityMask);
-
-  /**
-   * @brief 获取可见节点数量（不执行可见性检查，只获取上次检查结果）
-   * @return 可见节点数量
-   */
-  size_t GetVisibleNodeCount() const;
-
-  /**
-   * @brief 视锥体裁剪查询 - 主要给SceneView使用
-   * @param frustum 视锥体
-   * @return 可见节点列表
-   */
-  std::vector<SceneNode *> QueryVisibleNodes(SceneRegistry &registry,
-                                             const Frustum &frustum,
-                                             uint32_t visibilityMask);
-
-  /**
-   * @brief 射线检测查询
-   * @param ray 检测射线
-   * @return 相交节点列表
-   */
-  std::vector<SceneNode *> QueryRaycast(SceneRegistry &registry,
-                                        const Ray &ray,
-                                        uint32_t visibilityMask);
-
-  /**
-   * @brief 射线检测查询（第一个命中）
-   * @param ray 检测射线
-   * @param result 命中的节点（输出参数）
-   * @param distance 相交距离（输出参数）
-   * @return 是否命中
-   */
-  bool QueryRaycastFirst(SceneRegistry &registry,
-                         const Ray &ray,
-                         SceneNode *&result,
-                         float &distance,
-                         uint32_t visibilityMask);
-
-  /**
-   * @brief 球体查询
-   * @param sphere 查询球体
-   * @return 结果节点列表
-   */
-  std::vector<SceneNode *> QuerySphere(SceneRegistry &registry,
-                                       const BoundingVolumeSphere &sphere,
-                                       uint32_t visibilityMask);
-
-  /**
-   * @brief AABB查询
-   * @param aabb 查询AABB
-   * @return 结果节点列表
-   */
-  std::vector<SceneNode *> QueryAABB(SceneRegistry &registry,
-                                     const BoundingVolumeAABB &aabb,
-                                     uint32_t visibilityMask);
-
-  // ==================== 节点更新接口（由SceneGraphSystem调用） ====================
-  /**
-   * @brief 更新场景节点的包围盒数据
-   * @param entity 目标实体
-   * @param localBounds 局部包围盒
-   */
-  void UpdateNodeBounds(SceneRegistry &registry, Entity entity, const BoundingVolumeAABB &localBounds);
-
-  /**
-   * @brief 标记节点需要更新（变换或包围盒变化）
-   * @param entity 目标实体
-   */
-  void MarkNodeDirty(Entity entity);
-
-  /**
-   * @brief 批量更新所有脏节点
-   */
-  void Update(SceneRegistry &registry);
-
-  // ==================== 序列化支持（为编辑器保存/加载） ====================
-
-  /**
-   * @brief 序列化场景图数据
-   * @param output 输出流
-   * @return 是否成功序列化
-   */
-  bool Serialize(std::ostream &output) const;
-
-  /**
-   * @brief 反序列化场景图数据
-   * @param input 输入流
-   * @return 是否成功反序列化
-   */
-  bool Deserialize(std::istream &input);
+  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) const;
 
  private:
-  SceneNodeManager m_NodeManager;
-  SpatialPartitionManager m_SpatialPartitionManager;
+  // ==================== 事件响应 ====================
+  /**
+   * @brief 处理实体创建事件
+   * @param event 实体创建事件
+   */
+  bool OnEntityCreated(EntityCreatedEvent &event);
+  /**
+   * @brief 处理实体销毁事件
+   * @param event 实体销毁事件
+   */
+  bool OnEntityDestroyed(EntityDestroyedEvent &event);
+  /**
+   * @brief 处理组件添加事件（用于检测必要组件）
+   * @param event 组件添加事件
+   */
+  bool OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &event);
+  bool OnBoundingVolumeComponentAdded(ComponentAddedEvent<BoundingVolumeComponent> &event);
+  /**
+   * @brief 执行延迟的节点创建与销毁
+   */
+  bool ProcessScheduledCreationsAndDestruction(SceneRegistry &registry);
 
-  // 日志器
-  Logger m_Logger;
+ private:
+  std::unique_ptr<SceneNodeManager> m_NodeManager;
+  std::unique_ptr<SpatialPartition> m_SpatialPartition;
+
+  
+  struct EntityComponents {
+    bool hasTransform = false;
+    bool hasBoundingVolume = false;
+  };
+  std::unordered_map<Entity, EntityComponents> m_PendingCreateNodes;  // 待创建的实体队列
+  std::unordered_set<Entity> m_PendingDestroyNodes;                   // 待销毁的实体队列
+
+  // 事件订阅
+  SubscriptionGroup m_EventSubscriptions;
 };
 }  // namespace mite
 

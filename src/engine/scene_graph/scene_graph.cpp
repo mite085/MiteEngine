@@ -1,223 +1,258 @@
 #include "scene_graph.h"
-#include "Hierarchy_scene_node_system.h"
-#include "scene_core/component_system_manager.h"
-#include "scene_graph_system.h"
-#include "simple_bvh.h"
-#include "transform_scene_node_system.h"
-#include "visibility_component.h"
 
 namespace mite {
-// ==================== 构造函数和析构函数 ====================
-SceneGraph::SceneGraph(SpatialPartitionType spatialPartitionType)
-    : m_SpatialPartitionManager(spatialPartitionType), m_NodeManager(m_SpatialPartitionManager)
+SceneGraph::SceneGraph()
 {
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph");
+  // 订阅实体生命周期事件
+  m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
+  m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
+
+  // 订阅必要组件构造事件
+  m_EventSubscriptions.Subscribe<ComponentAddedEvent<TransformComponent>>(
+      BIND_DISPATCH_FN(OnTransformComponentAdded));
+  m_EventSubscriptions.Subscribe<ComponentAddedEvent<BoundingVolumeComponent>>(
+      BIND_DISPATCH_FN(OnBoundingVolumeComponentAdded));
 }
 
-SceneGraph::~SceneGraph() {}
-
-void SceneGraph::Initialize(ComponentSystemManager &manager)
+void SceneGraph::Initialize()
 {
-  manager.RegisterSystem<SceneGraphSystem>();
-  manager.RegisterSystem<HierarchySceneNodeSystem>();
-  manager.RegisterSystem<TransformSceneNodeSystem>();
-  manager.RegisterSystem<VisibilityComponentSystem>();
-
-  // 将创建好的SceneGraph交付给注册在SceneCore模块的SceneGraph组件系统
-  manager.GetSystem<SceneGraphSystem>()->SetSceneGraph(this);
-  manager.GetSystem<HierarchySceneNodeSystem>()->SetSceneGraph(this);
-  manager.GetSystem<TransformSceneNodeSystem>()->SetSceneGraph(this);
-
-  m_Logger->trace("SceneGraph created with spatial partition type: {}",
-                  GetSpatialPartitionTypeName(m_SpatialPartitionManager.GetSpatialPartitionType()));
+  // 按照依赖顺序创建
+  m_SpatialPartition = CreateSpatialPartition(SpatialPartitionType::BVH);
+  m_NodeManager = std::make_unique<SceneNodeManager>(*m_SpatialPartition);
 }
 
-void SceneGraph::CleanUp(ComponentSystemManager &manager)
+void SceneGraph::CleanUp()
 {
-  m_Logger->info("Destroying SceneGraph");
-
-  manager.UnregisterSystem<SceneGraphSystem>();
-  manager.UnregisterSystem<HierarchySceneNodeSystem>();
-  manager.UnregisterSystem<TransformSceneNodeSystem>();
-  manager.UnregisterSystem<VisibilityComponentSystem>();
-
-  m_NodeManager.Clear();
-  m_SpatialPartitionManager.Clear();
-
-  m_Logger->debug("SceneGraph destroyed");
+  // 按照依赖倒序清理
+  m_NodeManager->Clear();
+  m_SpatialPartition->Clear();
 }
 
 // ==================== 场景节点生命周期管理 ====================
 SceneNode *SceneGraph::CreateNode(SceneRegistry &registry, Entity entity)
 {
-  return m_NodeManager.CreateNode(registry, entity);
+  // NodeManager->CreateNode()包含了SpatialPartition的Insert()
+  return m_NodeManager->CreateNode(registry, entity);
 }
-
 bool SceneGraph::DestroyNode(SceneRegistry &registry, Entity entity)
 {
-  return m_NodeManager.DestroyNode(registry, entity);
+  // NodeManager->DestroyNode()包含了SpatialPartition的Remove()
+  return m_NodeManager->DestroyNode(registry, entity);
 }
+void SceneGraph::RebuildSpatialPartition()
+{
+  m_SpatialPartition->Clear();
 
+  // 重新插入所有节点
+  auto allNodes = m_NodeManager->GetAllNodes();
+  for (SceneNode *node : allNodes) {
+    m_SpatialPartition->Insert(node);
+  }
+}
 // ==================== 场景节点查询接口 ====================
 SceneNode *SceneGraph::GetNode(Entity entity) const
 {
-  return m_NodeManager.GetNode(entity);
+  return m_NodeManager->GetNode(entity);
 }
-
 bool SceneGraph::HasNode(Entity entity) const
 {
-  return m_NodeManager.GetNode(entity);
+  return m_NodeManager->HasNode(entity);
 }
-
-std::vector<SceneNode *> SceneGraph::GetRootNodes() const
-{
-  return m_NodeManager.GetRootNodes();
-}
-
-std::vector<SceneNode *> SceneGraph::GetAllNodes() const
-{
-  return m_NodeManager.GetAllNodes();
-}
-
-size_t SceneGraph::GetNodeCount() const
-{
-  return m_NodeManager.GetNodeCount();
-}
-
-bool SceneGraph::IsEmpty() const
-{
-  return m_NodeManager.IsEmpty();
-}
-
-// ==================== 场景树操作接口（编辑器支持） ====================
-bool SceneGraph::SetParent(SceneNode *node, SceneNode *newParent)
-{
-  return m_NodeManager.SetParent(node, newParent);
-}
-
-std::string SceneGraph::GetNodePath(SceneNode *node) const
-{
-  return m_NodeManager.GetNodePath(node);
-}
-
 SceneNode *SceneGraph::FindNodeByPath(const std::string &path) const
 {
-  return m_NodeManager.FindNodeByPath(path);
+  return m_NodeManager->FindNodeByPath(path);
 }
-
-void SceneGraph::TraverseTree(std::function<bool(SceneNode *)> callback) const
+std::vector<SceneNode *> SceneGraph::GetRootNodes() const
 {
-  m_NodeManager.TraverseTree(callback);
+  return m_NodeManager->GetRootNodes();
 }
-
-// ==================== 空间划分管理接口 ====================
-void SceneGraph::SetSpatialPartitionType(SpatialPartitionType type)
+std::vector<SceneNode *> SceneGraph::GetAllNodes() const
 {
-  m_SpatialPartitionManager.SetSpatialPartitionType(type);
+  return m_NodeManager->GetAllNodes();
 }
-
-SpatialPartitionType SceneGraph::GetSpatialPartitionType() const
+size_t SceneGraph::GetNodeCount() const
 {
-  return m_SpatialPartitionManager.GetSpatialPartitionType();
+  return m_NodeManager->GetNodeCount();
 }
-
-void SceneGraph::RebuildSpatialPartition(std::vector<SceneNode *> nodelist)
+bool SceneGraph::IsEmpty() const
 {
-  m_SpatialPartitionManager.RebuildSpatialPartition(nodelist);
-}
-
-std::string SceneGraph::GetSpatialPartitionStats() const
-{
-  return m_SpatialPartitionManager.GetSpatialPartitionStats();
-}
-
-void SceneGraph::DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
-{
-  m_SpatialPartitionManager.DebugDraw(drawCallback);
+  return m_NodeManager->IsEmpty();
 }
 
 // ==================== 空间查询接口 ====================
-
-size_t SceneGraph::QueryVisibleCount(SceneRegistry &registry,
-                                     const Frustum &frustum,
-                                     uint32_t visibilityMask)
+std::vector<SceneNode *> SceneGraph::FrustumCull(const Frustum &frustum) const
 {
-  return m_SpatialPartitionManager.QueryVisibleNodes(registry, frustum, visibilityMask).size();
+  std::vector<SceneNode *> results;
+  m_SpatialPartition->FrustumCull(frustum, results);
+  return results;
+}
+std::vector<SceneNode *> SceneGraph::Raycast(const Ray &ray) const
+{
+  std::vector<SceneNode *> results;
+  m_SpatialPartition->Raycast(ray, results);
+  return results;
+}
+std::vector<SceneNode *> SceneGraph::VolumeQuery(const BoundingVolume &volume) const
+{
+  std::vector<SceneNode *> results;
+  m_SpatialPartition->VolumeQuery(volume, results);
+  return results;
+}
+std::vector<SceneNode *> SceneGraph::PointQuery(const glm::vec3 &point) const
+{
+  std::vector<SceneNode *> results;
+  m_SpatialPartition->PointQuery(point, results);
+  return results;
+}
+// ==================== 场景图遍历接口 ====================
+void SceneGraph::Traverse(std::function<bool(SceneNode *)> callback,
+                          SceneNodeManager::TraversalType type) const
+{
+  m_NodeManager->TraverseTree(callback, type);
+}
+void SceneGraph::TraverseVisible(std::function<bool(SceneNode *)> callback,
+                                 SceneNodeManager::TraversalType type) const
+{
+  // callback的再包装，添加WorldVisible判断
+  auto visibleFilter = [callback](SceneNode *node) {
+    if (node->IsWorldVisible()) {
+      return callback(node);
+    }
+    return true;  // 继续遍历
+  };
+
+  Traverse(visibleFilter, type);
 }
 
-size_t SceneGraph::GetVisibleNodeCount() const
+// ==================== 更新管理接口 ====================
+void SceneGraph::MarkDirty(Entity entity, bool recursive)
 {
-  return m_SpatialPartitionManager.GetVisibleNodeCount();
+  if (recursive) {
+    m_NodeManager->MarkNodeDirtyRecursive(entity);
+  }
+  else {
+    m_NodeManager->MarkNodeDirty(entity);
+  }
 }
-
-std::vector<SceneNode *> SceneGraph::QueryVisibleNodes(SceneRegistry &registry,
-                                                       const Frustum &frustum,
-                                                       uint32_t visibilityMask)
-{
-  return m_SpatialPartitionManager.QueryVisibleNodes(registry, frustum, visibilityMask);
-}
-
-std::vector<SceneNode *> SceneGraph::QueryRaycast(SceneRegistry &registry,
-                                                  const Ray &ray,
-                                                  uint32_t visibilityMask)
-{
-  return m_SpatialPartitionManager.QueryRaycast(registry, ray, visibilityMask);
-}
-
-bool SceneGraph::QueryRaycastFirst(SceneRegistry &registry,
-                                   const Ray &ray,
-                                   SceneNode *&result,
-                                   float &distance,
-                                   uint32_t visibilityMask)
-{
-  return m_SpatialPartitionManager.QueryRaycastFirst(
-      registry, ray, result, distance, visibilityMask);
-}
-
-std::vector<SceneNode *> SceneGraph::QuerySphere(SceneRegistry &registry,
-                                                 const BoundingVolumeSphere &sphere,
-                                                 uint32_t visibilityMask)
-{
-  return m_SpatialPartitionManager.QuerySphere(registry, sphere, visibilityMask);
-}
-
-std::vector<SceneNode *> SceneGraph::QueryAABB(SceneRegistry &registry,
-                                               const BoundingVolumeAABB &aabb,
-                                               uint32_t visibilityMask)
-{
-  return m_SpatialPartitionManager.QueryAABB(registry, aabb, visibilityMask);
-}
-
-// ==================== 节点更新接口 ====================
-void SceneGraph::UpdateNodeBounds(SceneRegistry &registry, Entity entity, const BoundingVolumeAABB &localBounds)
-{
-  m_NodeManager.UpdateNodeBounds(registry, entity, localBounds);
-}
-
-void SceneGraph::MarkNodeDirty(Entity entity)
-{
-  m_NodeManager.MarkNodeDirty(entity);
-}
-
 void SceneGraph::Update(SceneRegistry &registry)
 {
-  m_NodeManager.Update(registry);
+  // 处理等待队列
+  ProcessScheduledCreationsAndDestruction(registry);
+
+  // NodeManager->Update()包含了SpatialPartition的Update()
+  m_NodeManager->Update(registry);
 }
 
-// ==================== 序列化支持 ====================
-bool SceneGraph::Serialize(std::ostream &output) const
+// ==================== 状态查询接口 ====================
+size_t SceneGraph::GetNodeCount() const
 {
-  // TODO: 实现完整的场景图序列化
-  // 目前先预留接口
-  m_Logger->info("SceneGraph serialization called (not implemented)");
-  return !output.fail();
+  return m_NodeManager->GetNodeCount();
+}
+bool SceneGraph::IsEmpty() const
+{
+  return m_NodeManager->IsEmpty();
+}
+std::string SceneGraph::GetStats() const
+{
+  std::stringstream ss;
+  ss << "SceneGraph Stats:\n";
+  ss << "  Total Nodes: " << GetNodeCount() << "\n";
+  ss << "  Spatial Partition: " << m_SpatialPartition->GetTypeName() << "\n";
+  ss << "  Partition Depth: " << m_SpatialPartition->GetDepth() << "\n";
+  ss << m_SpatialPartition->GetStats();
+  return ss.str();
 }
 
-bool SceneGraph::Deserialize(std::istream &input)
+// ==================== 调试接口 ====================
+void SceneGraph::DebugDraw(
+    std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) const
 {
-  // TODO: 实现完整的场景图反序列化
-  // 目前先预留接口
-  m_Logger->info("SceneGraph deserialization called (not implemented)");
-  return !input.fail();
+  m_SpatialPartition->DebugDraw(drawCallback);
+}
+
+// ==================== 事件响应 ====================
+bool SceneGraph::OnEntityCreated(EntityCreatedEvent &event)
+{
+  Entity entity = event.GetEntity();
+
+  // 将实体加入待创建队列
+  if (m_PendingCreateNodes.find(entity) == m_PendingCreateNodes.end()) {
+    m_PendingCreateNodes.insert({entity, {false, false}});
+  }
+
+  // 阻断事件传播
+  event.Handled();
+  return true;
+}
+bool SceneGraph::OnEntityDestroyed(EntityDestroyedEvent &event)
+{
+  Entity entity = event.GetEntity();
+
+  // 如果该实体有对应的场景节点，则销毁
+  if (m_NodeManager->HasNode(entity) &&
+      m_PendingDestroyNodes.find(entity) == m_PendingDestroyNodes.end())
+  {
+    m_PendingDestroyNodes.insert(entity);
+  }
+
+  // 不应当阻断事件传播
+  return true;
+}
+bool SceneGraph::OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &event)
+{
+  Entity entity = event.GetEntity();
+
+  // 执行匹配
+  if (m_PendingCreateNodes.find(entity) != m_PendingCreateNodes.end()) {
+    m_PendingCreateNodes[entity].hasTransform = true;
+  }
+
+  // 不应当阻断事件传播
+  return true;
+}
+bool SceneGraph::OnBoundingVolumeComponentAdded(
+    ComponentAddedEvent<BoundingVolumeComponent> &event)
+{
+  Entity entity = event.GetEntity();
+
+  // 执行匹配
+  if (m_PendingCreateNodes.find(entity) != m_PendingCreateNodes.end()) {
+    m_PendingCreateNodes[entity].hasBoundingVolume = true;
+  }
+
+  // 不应当阻断事件传播
+  return true;
+}
+
+bool SceneGraph::ProcessScheduledCreationsAndDestruction(SceneRegistry &registry)
+{
+  if (!m_PendingCreateNodes.empty()) {
+    return;
+  }
+
+  // 1. 遍历待删除的实体队列(该步骤可能修改待创建队列,要先处理)
+  for (auto entity : m_PendingDestroyNodes) {
+    // 若存在于SceneNodeManager,正常销毁
+    if (m_NodeManager->HasNode(entity))
+      DestroyNode(registry, entity);
+
+    // 若存在于待添加队列,一并移除
+    if (m_PendingCreateNodes.find(entity) != m_PendingCreateNodes.end())
+      m_PendingCreateNodes.erase(entity);
+
+    // 待销毁队列仅维护一次,不管是否销毁都不再尝试,除非再次加入待销毁队列
+    m_PendingCreateNodes.erase(entity);
+  }
+
+  // 2. 遍历待创建的实体队列
+  for (auto [entity, hasComponents] : m_PendingCreateNodes) {
+    if (hasComponents.hasBoundingVolume && hasComponents.hasTransform) {
+      // 符合要求,创建Node并将其从待创建队列移除
+      CreateNode(registry, entity);
+      m_PendingCreateNodes.erase(entity);
+    }
+  }
+
+
 }
 }  // namespace mite
