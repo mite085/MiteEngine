@@ -38,7 +38,8 @@ class ViewportPanel : public UIPanel {
   ViewportPanel(const std::string &title);
   ~ViewportPanel() override;
   void Render() override;
-  void Update(float deltaTime) override;
+  void Update(float deltaTime) override {}
+
   // 帧缓冲区管理
   void SetFrameBuffer(std::shared_ptr<FrameBuffer> frameBuffer);
   std::shared_ptr<FrameBuffer> GetFrameBuffer() const;

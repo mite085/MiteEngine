@@ -1,4 +1,4 @@
-#include "ui_editor_viewport_panel.h"
+#include "ui_viewport_panel.h"
 #include "ui_core/ui_render.h"
 
 namespace mite {
@@ -132,26 +132,7 @@ void ViewportPanel::RenderOverlay()
 }
 void ViewportPanel::HandleInput()
 {
-  // 检查鼠标是否在视口内
-  auto inputSystem = InputSystem::GetInstance();
-  glm::vec2 mousePos = inputSystem->GetMousePosition();
-
-  m_IsHovered = (mousePos.x >= m_ViewportPosition.x &&
-                 mousePos.x <= m_ViewportPosition.x + m_ViewportSize.x &&
-                 mousePos.y >= m_ViewportPosition.y &&
-                 mousePos.y <= m_ViewportPosition.y + m_ViewportSize.y);
-
-  // 处理视口内的输入事件
-  if (m_IsHovered) {
-    // 摄像机控制、对象选择等
-    if (inputSystem->IsMouseButtonPressed(MouseButton::Right)) {
-      // 启动摄像机旋转
-    }
-
-    if (inputSystem->IsMouseButtonPressed(MouseButton::Left)) {
-      // 对象选择
-    }
-  }
+  
 }
 // ==================== 帧缓冲区管理 ====================
 void ViewportPanel::SetFrameBuffer(std::shared_ptr<FrameBuffer> frameBuffer)
