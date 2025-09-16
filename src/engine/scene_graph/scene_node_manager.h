@@ -30,11 +30,9 @@ class SceneNodeManager {
     ReverseBreadthFirst   // 反向广度优先遍历（从底层到根）
   };
 
-  SceneNodeManager();
+  SceneNodeManager(SpatialPartition &spatialPartition);
   ~SceneNodeManager() = default;
   void Clear();
-
-  SpatialPartition &GetSpatialPartition();
 
   // ==================== 场景节点生命周期管理 ====================
   /**
@@ -177,7 +175,7 @@ class SceneNodeManager {
   std::unordered_set<Entity> m_DirtyNodes;
 
   // 空间划分结构
-  std::unique_ptr<SpatialPartition> m_SpatialPartition;
+  SpatialPartition& m_SpatialPartition;
 
   // 路径到节点的映射缓存
   mutable std::unordered_map<std::string, SceneNode *> m_PathToNodeCache;

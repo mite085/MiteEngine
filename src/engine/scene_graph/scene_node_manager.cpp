@@ -1,12 +1,9 @@
 #include "scene_node_manager.h"
 
 namespace mite {
-SceneNodeManager::SceneNodeManager()
+SceneNodeManager::SceneNodeManager(SpatialPartition &spatialPartition) : m_SpatialPartition(spatialPartition)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph NodeManager");
-
-  // 默认使用BVH模式创建空间划分结构
-  m_SpatialPartition = CreateSpatialPartition(SpatialPartitionType::BVH);
 
   // 订阅事件
   m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(
@@ -18,7 +15,7 @@ SceneNodeManager::SceneNodeManager()
 
   m_Logger->info("SceneGraph NodeManager created with spatial partition type: {}, name: {}",
                  GetSpatialPartitionTypeName(SpatialPartitionType::BVH),
-                 m_SpatialPartition->GetTypeName());
+                 m_SpatialPartition.GetTypeName());
 }
 void SceneNodeManager::Clear()
 {
@@ -28,10 +25,6 @@ void SceneNodeManager::Clear()
   m_DirtyNodes.clear();
   m_PathToNodeCache.clear();
   m_PathCacheDirty = false;
-}
-SpatialPartition &SceneNodeManager::GetSpatialPartition()
-{
-  return *m_SpatialPartition;
 }
 // ==================== 场景节点生命周期管理 ====================
 SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
@@ -61,7 +54,7 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
 
     // 根据可见性决定是否添加到空间划分结构
     if (nodePtr->IsWorldVisible()) {
-      m_SpatialPartition->Insert(nodePtr);
+      m_SpatialPartition.Insert(nodePtr);
     }
 
     // 标记路径缓存为脏
@@ -89,7 +82,7 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   SceneNode *node = it->second.get();
 
   // 从空间划分结构中移除（无论是否可见）
-  m_SpatialPartition->Remove(node);
+  m_SpatialPartition.Remove(node);
 
   // 处理父子关系：将所有子节点提升为根节点
   auto children = node->GetChildren();
@@ -345,16 +338,16 @@ void SceneNodeManager::Update(SceneRegistry &registry)
       // 根据可见性状态更新空间划分结构
       if (it->second->IsWorldVisible()) {
         // 可见节点：插入或更新到空间划分结构
-        if (!m_SpatialPartition->Contains(it->second.get())) {
-          m_SpatialPartition->Insert(it->second.get());
+        if (!m_SpatialPartition.Contains(it->second.get())) {
+          m_SpatialPartition.Insert(it->second.get());
         }
         else {
-          m_SpatialPartition->Update(it->second.get());
+          m_SpatialPartition.Update(it->second.get());
         }
       }
       else {
         // 不可见节点：从空间划分结构中移除
-        m_SpatialPartition->Remove(it->second.get());
+        m_SpatialPartition.Remove(it->second.get());
       }
     }
   }

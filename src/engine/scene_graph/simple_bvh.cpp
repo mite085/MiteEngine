@@ -295,7 +295,7 @@ std::string SimpleBVH::GetStats() const
   }
 
   std::stringstream ss;
-  ss << "Nodes: " << m_NodeCount << " (Internal: " << stats.internalCount
+  ss << "BVHNodes: " << m_NodeCount << " (Internal: " << stats.internalCount
      << ", Leaves: " << stats.leafCount << "), Max Depth: " << stats.maxDepth
      << ", Avg Depth: " << stats.avgDepth;
   return ss.str();
