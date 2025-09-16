@@ -62,21 +62,6 @@ class RenderableItemBuilder {
    */
   RenderableItem BuildFromSceneNode(SceneRegistry &registry, SceneNode *sceneNode);
 
-  /**
-   * @brief 从Entity构建RenderableItem
-   * @param entity ECS实体
-   * @return 构建成功的RenderableItem，如果构建失败返回空对象
-   */
-  RenderableItem BuildFromEntity(SceneRegistry &registry, Entity entity);
-
-  /**
-   * @brief 批量构建RenderableItem
-   * @param entities ECS实体列表
-   * @return 构建成功的RenderableItem列表
-   */
-  std::vector<RenderableItem> BuildFromEntities(SceneRegistry &registry,
-                                                const std::vector<Entity> &entities);
-
   // ==================== 配置接口 ====================
   /**
    * @brief 设置自定义材质覆盖函数
@@ -131,13 +116,6 @@ class RenderableItemBuilder {
    */
   std::shared_ptr<MaterialInstance> ExtractMaterialComponent(SceneRegistry &registry,
                                                              Entity entity);
-
-  /**
-   * @brief 从实体提取变换组件
-   * @param entity ECS实体
-   * @return 世界变换矩阵
-   */
-  glm::mat4 ExtractTransformComponent(SceneRegistry &registry, Entity entity);
 
   // 自定义回调函数（用于扩展功能）
   std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>

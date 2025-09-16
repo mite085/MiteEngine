@@ -6,7 +6,6 @@
 #include "scene_node.h"
 
 namespace mite {
-
 RenderableItemBuilder::RenderableItemBuilder()
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView RenderableItem Builder");
@@ -22,14 +21,16 @@ RenderableItemBuilder::~RenderableItemBuilder()
 std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
     SceneRegistry &registry, const std::vector<SceneNode *> &sceneNodes)
 {
-
   std::vector<RenderableItem> items;
   items.reserve(sceneNodes.size());
 
   for (SceneNode *node : sceneNodes) {
-    RenderableItem item = BuildFromSceneNode(registry, node);
-    if (item.entity.IsValid()) {  // 检查是否构建成功
-      items.push_back(std::move(item));
+    // 判断是否为可渲染对象
+    if (IsRenderable(registry, node->GetEntity())) {
+      RenderableItem item = BuildFromSceneNode(registry, node);
+      if (item.entity.IsValid()) {  // 检查是否构建成功
+        items.push_back(std::move(item));
+      }
     }
   }
 
@@ -50,26 +51,11 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     return RenderableItem();
   }
 
-  return BuildFromEntity(registry, entity);
-}
-
-RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, Entity entity)
-{
-  if (!entity.IsValid()) {
-    m_Logger->warn("Attempted to build from null Entity");
-    return RenderableItem();
-  }
-
-  if (!IsRenderable(registry, entity)) {
-    //m_Logger->debug("Entity {} is not renderable", entity.GetUUIDString());
-    return RenderableItem();
-  }
-
   try {
     // 提取渲染所需组件数据
     auto mesh = ExtractMeshComponent(registry, entity);
     auto material = ExtractMaterialComponent(registry, entity);
-    glm::mat4 transform = ExtractTransformComponent(registry, entity);
+    glm::mat4 transform = sceneNode->GetWorldTransform();
 
     if (!mesh || !material) {
       m_Logger->warn("Entity {} missing mesh or material component", entity.GetUUIDString());
@@ -92,7 +78,7 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
     item.mesh = mesh;
     item.material = material;
 
-     //m_Logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
+    // m_Logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
     return item;
   }
   catch (const std::exception &e) {
@@ -102,43 +88,22 @@ RenderableItem RenderableItemBuilder::BuildFromEntity(SceneRegistry &registry, E
   }
 }
 
-std::vector<RenderableItem> RenderableItemBuilder::BuildFromEntities(
-    SceneRegistry &registry, 
-    const std::vector<Entity> &entities)
-{
-
-  std::vector<RenderableItem> items;
-  items.reserve(entities.size());
-
-  for (Entity entity : entities) {
-    RenderableItem item = BuildFromEntity(registry, entity);
-    if (item.entity.IsValid()) {  // 检查是否构建成功
-      items.push_back(std::move(item));
-    }
-  }
-
-  return items;
-}
-
 void RenderableItemBuilder::SetMaterialOverrideFunction(
     std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>
         func)
 {
-
   m_MaterialOverrideFunc = func;
 }
 
 void RenderableItemBuilder::SetTransformOverrideFunction(
     std::function<glm::mat4(Entity, const glm::mat4 &)> func)
 {
-
   m_TransformOverrideFunc = func;
 }
 
 void RenderableItemBuilder::SetLODSelectorFunction(
     std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> func)
 {
-
   m_LODSelectorFunc = func;
 }
 
@@ -182,14 +147,4 @@ std::shared_ptr<MaterialInstance> RenderableItemBuilder::ExtractMaterialComponen
   }
   return nullptr;
 }
-
-glm::mat4 RenderableItemBuilder::ExtractTransformComponent(SceneRegistry &registry, Entity entity)
-{
-  if (registry.HasComponent<TransformComponent>(entity)) {
-    auto &transformComp = registry.GetComponent<TransformComponent>(entity);
-    return transformComp.GetWorldMatrix(registry);
-  }
-  return glm::mat4(1.0f);  // 返回单位矩阵作为默认值
-}
-
 }  // namespace mite
