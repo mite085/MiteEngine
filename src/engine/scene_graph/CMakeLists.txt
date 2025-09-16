@@ -13,12 +13,8 @@ set(SCENE_GRAPH_INTERFACE_SRCS
     spatial_partition.cpp
     simple_bvh.h                   # BVH实现（依赖SceneNode和几何类型）
     simple_bvh.cpp
-    transform_scene_node_system.h  # SceneNode的变换系统
-    transform_scene_node_system.cpp
     scene_graph.h                  # 主管理器，场景图核心逻辑（依赖所有上述模块）
     scene_graph.cpp
-    scene_graph_system.h           # 场景图系统，负责ECS与SceneGraph之间的数据同步和协调
-    scene_graph_system.cpp
 )
 source_group("scene graph" FILES ${SCENE_GRAPH_INTERFACE_SRCS})
 
