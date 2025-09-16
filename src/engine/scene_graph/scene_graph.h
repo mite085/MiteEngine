@@ -82,16 +82,6 @@ class SceneGraph {
    * @return 所有场景节点指针列表
    */
   std::vector<SceneNode *> GetAllNodes() const;
-  /**
-   * @brief 获取场景节点数量
-   * @return 节点总数
-   */
-  size_t GetNodeCount() const;
-  /**
-   * @brief 判断场景图是否为空
-   * @return 是否为空
-   */
-  bool IsEmpty() const;
 
   // ==================== 空间查询接口 ====================
   /**
@@ -201,7 +191,7 @@ class SceneGraph {
   /**
    * @brief 执行延迟的节点创建与销毁
    */
-  bool ProcessScheduledCreationsAndDestruction(SceneRegistry &registry);
+  void ProcessScheduledCreationsAndDestruction(SceneRegistry &registry);
 
  private:
   std::unique_ptr<SceneNodeManager> m_NodeManager;

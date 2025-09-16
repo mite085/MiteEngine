@@ -63,14 +63,4 @@ bool BoundingVolumeComponent::Deserialize(std::istream &input)
 // ==================== BoundingVolumeComponentSystem ====================
 
 
-template<> ComponentID ComponentID::Get<BoundingVolumeComponent>()
-{
-  // 使用类型信息生成确定性UUID
-  const std::type_index typeIdx(typeid(BoundingVolumeComponent));
-  const size_t hash = typeIdx.hash_code();
-
-  static const mite::ComponentID id(UUIDGenerator::Generate(hash));
-  return id;
-}
-
 }  // namespace mite

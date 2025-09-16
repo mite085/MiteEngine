@@ -70,14 +70,6 @@ std::vector<SceneNode *> SceneGraph::GetAllNodes() const
 {
   return m_NodeManager->GetAllNodes();
 }
-size_t SceneGraph::GetNodeCount() const
-{
-  return m_NodeManager->GetNodeCount();
-}
-bool SceneGraph::IsEmpty() const
-{
-  return m_NodeManager->IsEmpty();
-}
 
 // ==================== 空间查询接口 ====================
 std::vector<SceneNode *> SceneGraph::FrustumCull(const Frustum &frustum,
@@ -225,12 +217,8 @@ bool SceneGraph::OnBoundingVolumeComponentAdded(
   return true;
 }
 
-bool SceneGraph::ProcessScheduledCreationsAndDestruction(SceneRegistry &registry)
+void SceneGraph::ProcessScheduledCreationsAndDestruction(SceneRegistry &registry)
 {
-  if (!m_PendingCreateNodes.empty()) {
-    return;
-  }
-
   // 1. 遍历待删除的实体队列(该步骤可能修改待创建队列,要先处理)
   for (auto entity : m_PendingDestroyNodes) {
     // 若存在于SceneNodeManager,正常销毁
@@ -246,14 +234,17 @@ bool SceneGraph::ProcessScheduledCreationsAndDestruction(SceneRegistry &registry
   }
 
   // 2. 遍历待创建的实体队列
+  std::vector<Entity> toRemove;
   for (auto [entity, hasComponents] : m_PendingCreateNodes) {
     if (hasComponents.hasBoundingVolume && hasComponents.hasTransform) {
-      // 符合要求,创建Node并将其从待创建队列移除
+      // 符合要求,创建Node并记录进待删除列表
       CreateNode(registry, entity);
-      m_PendingCreateNodes.erase(entity);
+      toRemove.push_back(entity);
     }
   }
-
-
+  // 遍历结束后统一删除
+  for (auto entity : toRemove) {
+    m_PendingCreateNodes.erase(entity);
+  }
 }
 }  // namespace mite

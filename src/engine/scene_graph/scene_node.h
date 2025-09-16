@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_NODE_H
 #define MITE_SCENE_NODE_H
 
-#include "basic_type/bounding_volumes_types.h"
+#include "basic_data/bounding_volume.h"
 #include "scene_core/entity.h"
 
 namespace mite {
@@ -101,7 +101,7 @@ class SceneNode {
    * @brief 获取世界包围盒（世界空间）
    * @return 世界包围盒
    */
-  const BoundingVolume &GetWorldBounds() const;
+  BoundingVolume GetWorldBounds() const;
   /**
    * @brief  获取包围盒的脏状态
    */

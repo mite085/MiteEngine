@@ -167,10 +167,12 @@ void SceneNode::MarkTransformDirty()
 }
 
 // ==================== 包围盒相关 ====================
-const BoundingVolume &SceneNode::GetWorldBounds() const
+
+BoundingVolume SceneNode::GetWorldBounds() const
 {
   return m_WorldBounds;
 }
+
 bool SceneNode::IsBoundsDirty() const
 {
   return m_BoundsDirty;
@@ -192,10 +194,6 @@ bool SceneNode::IsWorldVisible() const
 uint32_t SceneNode::GetVisibilityMask() const
 {
   return m_VisibilityMask;
-}
-bool SceneNode::IsVisibilityDirty() const
-{
-  return m_VisibilityDirty;
 }
 bool SceneNode::IsVisibilityDirty() const
 {

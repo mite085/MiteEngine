@@ -3,7 +3,7 @@
 
 #include "component_system.h"
 #include "scene_core_event.h"
-#include "scene_core_event_callback_adapter.h"
+#include "component_event_publisher.h"
 namespace mite {
 /**
  * @brief 组件系统管理器，集中管理所有组件系统
