@@ -2,13 +2,68 @@
 #define MITE_CORE_EVENT
 
 #include "event_types.h"
-#include <string>
+#include "headers/headers.h"
 
 namespace mite {
+/**
+ * @brief 事件处理结果枚举
+ */
+enum class EventResult : uint8_t {
+  None = 0,           // 未处理，继续传播
+  Handled = 1 << 0,   // 已处理，但继续传播（用于中间处理）
+  Consumed = 1 << 1,  // 已消费，停止传播（最终处理）
+  Failed = 1 << 2,    // 处理失败，但继续传播（错误处理）
+  Blocked = 1 << 3,   // 明确阻止传播（权限控制）
+  Deferred = 1 << 4,  // 延迟处理，稍后继续
+
+  // 组合标志
+  HandledAndStop = Handled | Consumed,
+  FailedAndStop = Failed | Consumed
+};
+/**
+ * @brief EventResult辅助函数
+ */
+namespace EventResultUtil {
+inline bool ShouldContinue(EventResult result)
+{
+  return (static_cast<uint8_t>(result) & static_cast<uint8_t>(EventResult::Consumed)) == 0;
+}
+
+inline bool WasSuccessful(EventResult result)
+{
+  return (static_cast<uint8_t>(result) & static_cast<uint8_t>(EventResult::Failed)) == 0;
+}
+
+inline bool WasHandled(EventResult result)
+{
+  return (static_cast<uint8_t>(result) & static_cast<uint8_t>(EventResult::Handled)) != 0;
+}
+}  // namespace EventResultUtil
+/**
+ * @brief 事件优先级枚举
+ */
+enum class EventPriority : int {
+  Lowest = 0,    // 最低优先级：结果收集、统计、日志等
+  Low = 100,     // 低优先级：UI更新、本地化等
+  Normal = 200,  // 普通优先级：大多数业务逻辑
+  High = 300,    // 高优先级：核心系统处理
+  Highest = 400  // 最高优先级：系统级关键处理
+};
+
 /**
  * @brief 事件基类(抽象类)
  *
  * 所有事件都应当派生自该类
+ * 
+ * 子类继承示例：
+ * 以class WindowResizeEvent: public Event为例
+ *
+ * WindowResizeEvent(int width, int height)
+ * : m_Width(width), m_Height(height) {}
+ *
+ * Event* Clone() const override {
+ *    return new WindowResizeEvent(m_Width, m_Height);
+ * }
  */
 class Event {
  public:
@@ -32,16 +87,6 @@ class Event {
    * 创建的事件临时变量，生命周期随着事件
    * 发布函数的完成而结束，将其克隆并存储，
    * 留待后续处理。
-   * 
-   * 子类继承示例：
-   * 以class WindowResizeEvent: public Event为例
-   *
-   * WindowResizeEvent(int width, int height)
-   * : m_Width(width), m_Height(height) {}
-   *
-   * Event* Clone() const override {
-   *    return new WindowResizeEvent(m_Width, m_Height);
-   * }
    */
   virtual Event *Clone() const = 0;
 
@@ -63,14 +108,47 @@ class Event {
   bool IsInCategory(EventCategory category);
 
   /**
-   * @brief 标记事件已处理，阻断传播
+   * @brief 设置事件处理结果
+   * @param result 处理结果
    */
-  void Handled() {
-    handled = true;
+  void SetResult(EventResult result)
+  {
+    m_Result = result;
+  }
+  /**
+   * @brief 获取事件处理结果
+   * @return 当前处理结果
+   */
+  EventResult GetResult() const
+  {
+    return m_Result;
+  }
+  /**
+   * @brief 检查是否应该继续传播
+   * @return 是否继续传播
+   */
+  bool ShouldContinue() const
+  {
+    return EventResultUtil::ShouldContinue(m_Result);
+  }
+  /**
+   * @brief 标记事件已处理（兼容旧接口）
+   */
+  void Handled()
+  {
+    m_Result = EventResult::HandledAndStop;
+  }
+  /**
+   * @brief 检查事件是否已被处理（兼容旧接口）
+   * @return 是否已处理
+   */
+  bool IsHandled() const
+  {
+    return !ShouldContinue();
   }
 
-  // 标记事件是否已被处理
-  bool handled = false;
+ private:
+  EventResult m_Result = EventResult::None;
 };
 }  // namespace mite
 
@@ -81,5 +159,25 @@ class Event {
   { \
     return category; \
   }
+
+// EventResult运算符重载
+inline mite::EventResult operator|(mite::EventResult lhs, mite::EventResult rhs)
+{
+  return static_cast<mite::EventResult>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+}
+inline mite::EventResult operator&(mite::EventResult lhs, mite::EventResult rhs)
+{
+  return static_cast<mite::EventResult>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+}
+inline mite::EventResult &operator|=(mite::EventResult &lhs, mite::EventResult rhs)
+{
+  lhs = lhs | rhs;
+  return lhs;
+}
+inline mite::EventResult &operator&=(mite::EventResult &lhs, mite::EventResult rhs)
+{
+  lhs = lhs & rhs;
+  return lhs;
+}
 
 #endif
