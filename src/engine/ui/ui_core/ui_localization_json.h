@@ -69,7 +69,7 @@ class UILocalizationJson : public UILocalization {
   Logger m_Logger;
 
   // 事件订阅系统
-  SubscriptionGroup m_SubscriptionGroup;  
+  SubscriptionGroup m_EventSubscriptions;  
 
 
 };

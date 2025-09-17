@@ -18,7 +18,7 @@ UILocalizationJson::UILocalizationJson()
   SetCurrentLanguage(SIMPLIFIED_CHINESE);  // 默认中文
 
   // 订阅语言变更事件
-  m_SubscriptionGroup.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
+  m_EventSubscriptions.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
 }
 
 UILocalizationJson::~UILocalizationJson() = default;
