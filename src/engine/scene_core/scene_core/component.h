@@ -2,6 +2,7 @@
 #define MITE_SCENE_COMPONENT
 
 #include "entity.h"
+#include "subscription_group.h"
 
 namespace mite {
 // 前向声明

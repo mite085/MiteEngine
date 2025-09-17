@@ -1,6 +1,7 @@
 # 创建可执行目标，添加其他源文件
 add_subdirectory(core)
 add_subdirectory(data)
+add_subdirectory(event)
 add_subdirectory(input)
 add_subdirectory(material)
 add_subdirectory(renderer)

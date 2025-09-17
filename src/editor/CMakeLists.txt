@@ -37,6 +37,7 @@ target_link_libraries(${EDITOR_LIB_NAME}
     # 引擎各模块库依赖
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
+    MiteEngine_Engine_Event
     MiteEngine_Engine_Input
     
     MiteEngine_Engine_Material

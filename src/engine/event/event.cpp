@@ -1,4 +1,4 @@
-#include "event/event.h"
+#include "event.h"
 #include <typeinfo>
 
 namespace mite {

@@ -2,6 +2,7 @@
 #define MITE_GLFW_WINDOW_CALLBACK_ADAPTER
 
 #include "headers/headers.h"
+#include "callback_adapter.h"
 
 namespace mite {
 /**

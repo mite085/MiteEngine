@@ -1,7 +1,7 @@
 #ifndef MITE_UI_EVENT_H
 #define MITE_UI_EVENT_H
 
-#include "event/event.h"
+#include "subscription_group.h"
 #include "uuid/mite_uuid.h"
 #include <glm/glm.hpp>
 

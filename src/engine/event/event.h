@@ -1,7 +1,7 @@
 #ifndef MITE_CORE_EVENT
 #define MITE_CORE_EVENT
 
-#include "event/event_types.h"
+#include "event_types.h"
 #include <string>
 
 namespace mite {

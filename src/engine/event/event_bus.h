@@ -1,8 +1,8 @@
 #ifndef MITE_CORE_EVENT_BUS
 #define MITE_CORE_EVENT_BUS
 
-#include "event/dispatcher.h"
-#include "event/event.h"
+#include "dispatcher.h"
+#include "event.h"
 #include <memory>
 #include <unordered_map>
 #include <vector>

@@ -37,5 +37,7 @@ target_link_libraries(${ENGINE_WINDOW_LIB_NAME}
     spdlog::spdlog
     ImGuizmo
     MiteEngine_Engine_Core
+    MiteEngine_Engine_Data
+    MiteEngine_Engine_Event
     MiteEngine_Engine_Input
 )

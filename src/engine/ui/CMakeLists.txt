@@ -140,6 +140,7 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
     # 强依赖
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
+    MiteEngine_Engine_Event
     MiteEngine_Engine_Renderer
     MiteEngine_Engine_Window
     MiteEngine_Engine_Input

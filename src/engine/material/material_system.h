@@ -4,6 +4,7 @@
 #include "material.h"
 #include "material_param_variant.h"
 #include "material_template.h"
+#include "subscription_group.h"
 
 namespace mite {
 /**

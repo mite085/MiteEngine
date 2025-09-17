@@ -2,7 +2,7 @@
 #define MITE_CORE_EVENT_DISPATCHER
 
 #include <functional>
-#include "event/event.h"
+#include "event.h"
 
 namespace mite {
 

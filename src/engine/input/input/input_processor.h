@@ -2,6 +2,7 @@
 #define MITE_INPUT_PROCESSOR
 
 #include "headers/headers.h"
+#include "input_event.h"
 
 namespace mite {
 /**

@@ -4,6 +4,7 @@
 #include "component.h"
 #include "component_id.h"
 #include "entity.h"
+#include "subscription_group.h"
 
 namespace mite {
 // 1. 场景事件	=====================================================

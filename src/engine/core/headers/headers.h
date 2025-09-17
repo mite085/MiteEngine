@@ -57,8 +57,4 @@
 // 时间系统
 #include "time/time.h"
 
-// 事件系统
-#include "event/subscription_group.h"
-#include "event/callback_adapter.h"
-
 #endif

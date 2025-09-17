@@ -2,6 +2,7 @@
 #define MITE_INPUT_EVENTS
 
 #include "headers/headers.h"
+#include "subscription_group.h"
 
 namespace mite {
 /**

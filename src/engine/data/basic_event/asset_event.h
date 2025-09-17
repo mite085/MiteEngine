@@ -4,6 +4,7 @@
 #include "basic_type/asset_type.h"
 #include "basic_type/handle_type.h"
 #include "headers/headers.h"
+#include "subscription_group.h"
 
 namespace mite {
 /**

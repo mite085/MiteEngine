@@ -52,21 +52,6 @@ set(LOGGER_SRCS
 )
 source_group("logger" FILES ${LOGGER_SRCS})
 
-set(EVENT_SRCS
-    event/callback_adapter.h
-    event/callback_adapter.cpp
-    event/dispatcher.h
-    event/dispatcher.cpp
-    event/event.h
-    event/event.cpp
-    event/event_bus.h
-    event/event_bus.cpp
-    event/event_types.h
-    event/subscription_group.h
-    event/subscription_group.cpp
-)
-source_group("event" FILES ${EVENT_SRCS})
-
 set(TIME_SRCS
     time/time.h
     time/time.cpp
@@ -91,7 +76,6 @@ add_library(${ENGINE_CORE_LIB_NAME}
     ${FILESYSTEM_CONFIG_SRCS}
     ${HEADERS_SRCS}
     ${LOGGER_SRCS}
-    ${EVENT_SRCS}
     ${TIME_SRCS}
     ${TIMER_SRCS}
     ${UUID_SRCS}

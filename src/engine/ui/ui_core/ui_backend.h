@@ -1,7 +1,6 @@
 #ifndef MITE_UI_BACKEND_H
 #define MITE_UI_BACKEND_H
 
-#include "event/event.h"
 #include "headers/headers.h"
 #include "ui_element/ui_panel.h"
 

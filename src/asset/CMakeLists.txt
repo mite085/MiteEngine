@@ -42,4 +42,5 @@ target_link_libraries(${ASSET_LIB_NAME}
     
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
+    MiteEngine_Engine_Event
 )
