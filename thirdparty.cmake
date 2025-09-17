@@ -26,6 +26,7 @@ add_subdirectory(thirdparty/assimp)
 add_subdirectory(thirdparty/meshoptimizer)
 add_subdirectory(thirdparty/googletest)
 include_directories(thirdparty/json/single_include)
+include_directories(thirdparty/threadpool/include)
 
 # imgui和imguizmo无cmakelist，为避免污染依赖库，此处手动添加
 include(imgui.cmake)
