@@ -197,7 +197,8 @@ template<typename T> void EventBus::PostAsync(T &event, SubscriptionFlags flags)
     priority = 10;  // 线程安全任务更高优先级
   }
 
-  GetThreadPool().submit_task(
+ // 使用[[maybe_unused]]来忽略返回值
+  [[maybe_unused]] auto future = GetThreadPool().submit_task(
       [this, eventPtr = eventCopy.release()]() {
         std::unique_ptr<Event> uniqueEvent(eventPtr);
         T &specificEvent = static_cast<T &>(*uniqueEvent);
