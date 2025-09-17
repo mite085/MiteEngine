@@ -9,8 +9,10 @@ set(EVENT_SRCS
     event.h
     event.cpp
     event_bus.h
+    event_bus.cpp
     event_types.h
     subscription_group.h
+    subscription_flags.h
 )
 source_group("event" FILES ${EVENT_SRCS})
 
@@ -30,4 +32,5 @@ target_link_libraries(${ENGINE_EVENT_LIB_NAME}
     PRIVATE 
     glfw
     spdlog::spdlog
+    MiteEngine_Engine_Core
 )
