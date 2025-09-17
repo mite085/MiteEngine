@@ -29,7 +29,10 @@ class SubscriptionGroup {
    * @brief 构造函数
    * @param bus 事件总线引用
    */
-  SubscriptionGroup() : m_EventBus(EventBus::Get()) {}
+  SubscriptionGroup(const std::string &groupName = "")
+      : m_EventBus(EventBus::Get()), m_GroupName(groupName)
+  {
+  }
 
   /**
    * @brief 析构函数 - 自动取消所有订阅
@@ -48,15 +51,41 @@ class SubscriptionGroup {
   SubscriptionGroup &operator=(SubscriptionGroup &&) = default;
 
   /**
-   * @brief 添加事件订阅到组内
-   * @tparam T 事件类型
-   * @param handler 事件处理函数
+   * @brief 添加事件订阅到组内，接收到事件同步处理
    */
-  template<typename T> void Subscribe(EventFn<T> handler)
+  template<typename T>
+  void SubscribeImmediate(EventFn<T> handler,
+                          int priority = static_cast<int>(EventPriority::Normal))
   {
-    m_Handlers.push_back(m_EventBus.Subscribe<T>(std::move(handler)));
+    Subscribe<T>(std::move(handler, priority, SubscriptionFlags::Sync));
   }
-
+  /**
+   * @brief 添加异步事件订阅
+   */
+  template<typename T>
+  void SubscribeAsync(EventFn<T> handler, int priority = static_cast<int>(EventPriority::Normal))
+  {
+    Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Async);
+  }
+  /**
+   * @brief 添加线程安全的异步事件订阅
+   */
+  template<typename T>
+  void SubscribeAsyncThreadSafe(EventFn<T> handler,
+                                int priority = static_cast<int>(EventPriority::Normal))
+  {
+    Subscribe<T>(
+        std::move(handler), priority, SubscriptionFlags::Async | SubscriptionFlags::ThreadSafe);
+  }
+  /**
+   * @brief 添加延迟事件订阅
+   */
+  template<typename T>
+  void SubscribeDeferred(EventFn<T> handler,
+                         int priority = static_cast<int>(EventPriority::Normal))
+  {
+    Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Deferred);
+  }
   /**
    * @brief 取消组内所有订阅
    */
@@ -76,7 +105,6 @@ class SubscriptionGroup {
   {
     return m_Handlers.empty();
   }
-
   /**
    * @brief 获取订阅数量
    * @return size_t 当前管理的订阅数
@@ -85,10 +113,40 @@ class SubscriptionGroup {
   {
     return m_Handlers.size();
   }
-
+  /**
+   * @brief 获取组名称
+   */
+  const std::string &GetGroupName() const
+  {
+    return m_GroupName;
+  }
+  /**
+   * @brief 设置组名称
+   */
+  void SetGroupName(const std::string &name)
+  {
+    m_GroupName = name;
+  }
  private:
+  /**
+   * @brief 添加事件订阅到组内
+   * @tparam T 事件类型
+   * @param handler 事件处理函数
+   * @param priority 处理优先级
+   * @param flags 处理标志
+   */
+  template<typename T>
+  void Subscribe(EventFn<T> handler,
+                 int priority = static_cast<int>(EventPriority::Normal),
+                 SubscriptionFlags flags = SubscriptionFlags::Sync)
+  {
+    m_Handlers.push_back(
+        m_EventBus.Subscribe<T>(std::move(handler), priority, flags, m_GroupName));
+  }
+
   EventBus &m_EventBus;                         // 事件总线引用
   std::vector<EventBus::HandlerID> m_Handlers;  // 存储所有订阅ID
+  std::string m_GroupName;                      // 组名称（暂未启用）
 };
 
 };

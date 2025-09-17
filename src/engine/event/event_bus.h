@@ -178,7 +178,7 @@ class EventBus {
     }
   }
   /**
-   * @brief 处理队列中的事件
+   * @brief 处理队列中的事件(每帧执行，处理延迟事件)
    */
   void ProcessQueue();
 
