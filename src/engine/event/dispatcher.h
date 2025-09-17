@@ -1,11 +1,9 @@
 #ifndef MITE_CORE_EVENT_DISPATCHER
 #define MITE_CORE_EVENT_DISPATCHER
 
-#include <functional>
 #include "event.h"
 
 namespace mite {
-
 template<typename T> using EventFn = std::function<void(T &)>;
 
 /**
@@ -63,11 +61,36 @@ class EventDispatcher {
     }
     return false;  // 事件类型不匹配，分发失败
   }
+  /**
+   * @brief 检查当前事件是否匹配指定类型
+   * @tparam T 要检查的事件类型
+   * @return 是否匹配
+   */
+  template<typename T> bool IsType() const
+  {
+    static_assert(std::is_base_of<Event, T>::value, "T must inherit from Event");
+    return m_Event && typeid(*m_Event) == typeid(T);
+  }
 
+  /**
+   * @brief 获取当前事件的类型信息
+   * @return 类型信息指针，如果没有事件则返回nullptr
+   */
+  const std::type_info *GetEventType() const
+  {
+    return m_Event ? &typeid(*m_Event) : nullptr;
+  }
+  /**
+   * @brief 检查是否有有效的事件关联
+   * @return 是否有关联的事件
+   */
+  bool HasEvent() const
+  {
+    return m_Event != nullptr;
+  }
  private:
   Event *m_Event = nullptr;  // 指向当前要分发的事件对象的指针
 };
-
 }  // namespace mite
 
 /**
@@ -77,9 +100,25 @@ class EventDispatcher {
  * auto handlerId = EventBus::Get().Subscribe<WindowResizeEvent>(
  *  BIND_DISPATCH_FN(OnWindowResized)
  * );
- * 此时，BIND_DISPATCH_FN(OnWindowResized) 等价于 [this](auto&& e) { OnWindowResized(e); }
+ * 此时，BIND_DISPATCH_FN(OnWindowResized) 等价于 [this](auto&& e) { this->OnWindowResized(e); }
  */
-#define BIND_DISPATCH_FN(fn) [this](auto &&event) -> bool { return this->fn(event); }
-
-
+#define BIND_DISPATCH_FN(fn) [this](auto &&event){ return this->fn(event); }
+/**
+ * @brief 辅助宏：用于静态函数的事件分发
+ *
+ * 使用示例：
+ * auto handlerId = EventBus::Get().Subscribe<WindowResizeEvent>(
+ *  BIND_DISPATCH_FN_STATIC(OnWindowResizedStatic)
+ * );
+ */
+#define BIND_DISPATCH_FN_STATIC(fn) [](auto &&event) { fn(event); }
+/**
+ * @brief 辅助宏：用于成员函数的事件分发（指定对象）
+ *
+ * 使用示例：
+ * auto handlerId = EventBus::Get().Subscribe<WindowResizeEvent>(
+ *  BIND_DISPATCH_FN_OBJ(obj, &MyClass::OnWindowResized)
+ * );
+ */
+#define BIND_DISPATCH_FN_OBJ(obj, fn) [obj](auto &&event) { (obj->*fn)(event); }
 #endif
