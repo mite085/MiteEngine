@@ -34,7 +34,7 @@ class UILocalizationJson : public UILocalization {
 
  private:
   // 消费语言切换事件
-  bool OnLanguageChanged(LanguageChangedEvent &e);
+  void OnLanguageChanged(LanguageChangedEvent &e) override;
 
   // 语言包定义
   struct LanguagePack {

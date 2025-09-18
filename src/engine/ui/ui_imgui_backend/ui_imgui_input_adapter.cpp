@@ -68,11 +68,11 @@ bool ImGuiInputAdapter::ProcessEvent(Event &e)
   });
 
   // 如果ImGui想要捕获该事件，标记为已处理
-  if (shouldCapture && e.handled) {
-    e.handled = true;
+  if (shouldCapture && e.IsHandled()) {
+    e.SetResult(EventResult::Handled);
   }
 
-  return e.handled;
+  return e.IsHandled();
 }
 
 void ImGuiInputAdapter::UpdateImGuiIO()

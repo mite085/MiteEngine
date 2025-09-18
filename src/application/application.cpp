@@ -127,7 +127,10 @@ void MiteApplication::Initialize()
   m_Logger->info("Initialize application");
 
   // 订阅事件，并管理订阅句柄
-  m_EventSubscriptions.Subscribe<WindowCloseEvent>(BIND_DISPATCH_FN(OnWindowClose));
+  m_EventSubscriptions.SubscribeImmediate<WindowCloseEvent>(
+      BIND_DISPATCH_FN(OnWindowClose),
+      EventPriority::Highest  // 最高优先级确保及时处理
+  );
 
   // 按照依赖关系，先初始化底层模块，后初始化顶层模块
   InitializeInputSystem();
@@ -423,13 +426,12 @@ void MiteApplication::HandlePendingOperations() {}
 
 void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
 
-bool MiteApplication::OnWindowClose(WindowCloseEvent &e)
+void MiteApplication::OnWindowClose(WindowCloseEvent &e)
 {
   m_Logger->info("Window close event triggered.");
   m_ShouldClose = true;
 
   // 标记事件已处理，阻断传播
-  e.Handled();
-  return e.handled;
+  e.SetResult(EventResult::Consumed);
 }
 }  // namespace mite

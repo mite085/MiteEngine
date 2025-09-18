@@ -74,11 +74,11 @@ bool ModularInputContext::ProcessEvent(Event &e)
   // 按优先级从高到低，遍历Processor
   for (auto processor : m_SortedProcessors) {
     if (processor->IsEnabled() && processor->HandleEvent(e)) {  // 最高优先级的处理器执行处理操作
-      e.handled = true;
+      e.SetResult(EventResult::Handled);
       break;  // 高优先级处理器已处理，终止传播
     }
   }
-  return e.handled;
+  return e.IsHandled();
 }
 
 void ModularInputContext::_SortProcessors()

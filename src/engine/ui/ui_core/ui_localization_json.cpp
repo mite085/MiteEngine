@@ -18,7 +18,10 @@ UILocalizationJson::UILocalizationJson()
   SetCurrentLanguage(SIMPLIFIED_CHINESE);  // 默认中文
 
   // 订阅语言变更事件
-  m_EventSubscriptions.Subscribe<LanguageChangedEvent>(BIND_DISPATCH_FN(OnLanguageChanged));
+  // Immediate同步模式：
+  // 语言切换需要立即生效以确保UI界面实时更新，避免异步导致的界面显示不一致
+  m_EventSubscriptions.SubscribeImmediate<LanguageChangedEvent>(
+      BIND_DISPATCH_FN(OnLanguageChanged), EventPriority::Normal);
 }
 
 UILocalizationJson::~UILocalizationJson() = default;
@@ -50,15 +53,17 @@ bool UILocalizationJson::LoadLanguagePack(const std::string &languageCode,
 }
 
 
-bool UILocalizationJson::OnLanguageChanged(LanguageChangedEvent &e)
+void UILocalizationJson::OnLanguageChanged(LanguageChangedEvent &e)
 {
   std::string languageCode = e.GetNewLanguage();
-  if (!SetCurrentLanguage(languageCode))
-    return false;
-
-  // 事件已消费，阻断传播
-  e.Handled();
-  return e.handled;
+  if (SetCurrentLanguage(languageCode)) {
+    // 语言切换成功，消费事件（其他本地化系统不需要重复处理）
+    e.SetResult(EventResult::Consumed);
+  }
+  else {
+    // 语言切换失败，标记处理失败但允许其他系统尝试
+    e.SetResult(EventResult::Failed);
+  }
 }
 
 bool UILocalizationJson::LoadLanguagePackFromFile(const std::string &languageCode,

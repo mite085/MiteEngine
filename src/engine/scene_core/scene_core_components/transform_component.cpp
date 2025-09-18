@@ -171,26 +171,4 @@ std::vector<std::type_index> TransformComponentSystem::GetSystemDependencies() c
 {
   return {};  // 依赖层级信息
 }
-
-bool TransformComponentSystem::OnComponentAdded(ComponentAddedEvent<TransformComponent> &e)
-{
-  Register(&e.GetComponent());
-
-  // 不应当标记事件已处理，继续传播给SceneGraph的TransformSceneNodeSystem
-  // e.Handled();
-  return e.handled;
-}
-
-/**
- * @brief 处理组件移除事件
- */
-bool TransformComponentSystem::OnComponentRemoved(ComponentRemovedEvent<TransformComponent> &e)
-{
-  Unregister(&e.GetComponent());
-
-  // 不应当标记事件已处理，继续传播给SceneGraph的TransformSceneNodeSystem
-  // e.Handled();
-  return e.handled;
-}
-
 };  // namespace mite

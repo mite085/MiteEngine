@@ -157,15 +157,15 @@ class SceneNodeManager {
   /**
    * @brief 处理Transform组件更新事件
    */
-  bool OnTransformComponentUpdated(TransformUpdatedEvent& e);
+  void OnTransformComponentUpdated(TransformUpdatedEvent& e);
   /**
    * @brief 处理BoundingVolume组件更新事件
    */
-  bool OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEvent &e);
+  void OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEvent &e);
   /**
    * @brief 处理Visibility组件更新事件
    */
-  bool OnVisibilityComponentUpdated(VisibilityChangedEvent &e);
+  void OnVisibilityComponentUpdated(VisibilityChangedEvent &e);
 
  private:
   // 实体到场景节点的映射表

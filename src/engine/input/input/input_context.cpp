@@ -7,11 +7,20 @@ InputContext::InputContext(const std::string &name) : m_Name(name)
   m_Logger->trace("Created input context: {}", name);
 
   // 订阅事件
-  m_EventSubscriptions.Subscribe<KeyPressedEvent>(BIND_DISPATCH_FN(_ProcessKeyPressedEvent));
-  m_EventSubscriptions.Subscribe<MouseButtonPressedEvent>(
-      BIND_DISPATCH_FN(_ProcessMouseButtonPressedEvent));
-  m_EventSubscriptions.Subscribe<MouseMoveEvent>(BIND_DISPATCH_FN(_ProcessMouseMoveEvent));
-  m_EventSubscriptions.Subscribe<MouseScrollEvent>(BIND_DISPATCH_FN(_ProcessMouseScrollEvent));
+  // Immediate同步模式：
+  // 输入事件需要立即处理以确保游戏响应的实时性，避免输入延迟影响体验
+  m_EventSubscriptions.SubscribeImmediate<KeyPressedEvent>(
+      BIND_DISPATCH_FN(_ProcessKeyPressedEvent),
+      EventPriority::Highest  // 输入事件优先级最高
+  );
+  m_EventSubscriptions.SubscribeImmediate<MouseButtonPressedEvent>(
+      BIND_DISPATCH_FN(_ProcessMouseButtonPressedEvent), EventPriority::Highest);
+  m_EventSubscriptions.SubscribeImmediate<MouseMoveEvent>(
+      BIND_DISPATCH_FN(_ProcessMouseMoveEvent),
+      EventPriority::High  // 鼠标移动频率高，但优先级仍较高
+  );
+  m_EventSubscriptions.SubscribeImmediate<MouseScrollEvent>(
+      BIND_DISPATCH_FN(_ProcessMouseScrollEvent), EventPriority::Highest);
 }
 
 InputContext::~InputContext()
@@ -96,7 +105,7 @@ float InputContext::GetActionValue(const std::string &name) const
   return it != m_Actions.end() ? it->second.value : 0.0f;
 }
 
-bool InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
+void InputContext::_ProcessKeyPressedEvent(KeyPressedEvent &e)
 {
   bool handled = false;
   // 遍历所有动作，检查是否匹配当前按键
@@ -111,10 +120,10 @@ bool InputContext::_ProcessKeyPressedEvent(const KeyPressedEvent &e)
       }
     }
   }
-  return handled;
+  e.SetResult(handled ? EventResult::Handled : EventResult::None);
 }
 
-bool InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e)
+void InputContext::_ProcessMouseButtonPressedEvent(MouseButtonPressedEvent &e)
 {
   bool handled = false;
   for (auto &[name, action] : m_Actions) {
@@ -127,10 +136,10 @@ bool InputContext::_ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent
       }
     }
   }
-  return handled;
+  e.SetResult(handled ? EventResult::Handled : EventResult::None);
 }
 
-bool InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
+void InputContext::_ProcessMouseMoveEvent(MouseMoveEvent &e)
 {
   bool handled = false;
   for (auto &[name, action] : m_Actions) {
@@ -144,10 +153,10 @@ bool InputContext::_ProcessMouseMoveEvent(const MouseMoveEvent &e)
       }
     }
   }
-  return handled;
+  e.SetResult(handled ? EventResult::Handled : EventResult::None);
 }
 
-bool InputContext::_ProcessMouseScrollEvent(const MouseScrollEvent &e)
+void InputContext::_ProcessMouseScrollEvent(MouseScrollEvent &e)
 {
   bool handled = false;
   for (auto &[name, action] : m_Actions) {
@@ -161,7 +170,7 @@ bool InputContext::_ProcessMouseScrollEvent(const MouseScrollEvent &e)
       }
     }
   }
-  return handled;
+  e.SetResult(handled ? EventResult::Handled : EventResult::None);
 }
 
 void InputContext::_UpdateActionValue(const std::string &actionName, float newValue)

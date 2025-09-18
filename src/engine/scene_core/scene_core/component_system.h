@@ -1,8 +1,8 @@
 #ifndef MITE_SCENE_COMPONENT_SYSTEM
 #define MITE_SCENE_COMPONENT_SYSTEM
 
-#include "scene_registry.h"
 #include "scene_core_event.h"
+#include "scene_registry.h"
 namespace mite {
 /**
  * @brief 组件系统基类，管理特定类型组件的更新逻辑
@@ -90,7 +90,7 @@ class ComponentSystem {
  * 所有具体的Component均应当继承自此类，
  * 具有自脏特性的可以直接继承自
  * DirtyComponentSystem<T, SelfDirtyPolicy>
- * 
+ *
  * 基本实现原理
  * 1. 标记为脏（Dirty）：当组件的状态发生变化时，将 m_Dirty 设为 true
  * 2. 处理脏状态：在适当的时机（如每帧更新时）检查并处理脏状态
@@ -104,7 +104,8 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   // 暴露组件类型
   using ComponentType = T;
 
-  DirtyComponentSystem() : ComponentSystem() {
+  DirtyComponentSystem() : ComponentSystem()
+  {
     // 创建日志系统
     m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Component System: {" + type_name<T>() +
                                                       "}");
@@ -117,9 +118,15 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
    */
   virtual void Initialize() override
   {
-    // 通过事件总线，订阅组件添加/改变/移除事件
-    m_EventSubscriptions.Subscribe<ComponentAddedEvent<T>>(BIND_DISPATCH_FN(OnComponentAdded));
-    m_EventSubscriptions.Subscribe<ComponentRemovedEvent<T>>(BIND_DISPATCH_FN(OnComponentRemoved));
+    // 订阅组件添加/改变/移除事件
+    // Immediate同步模式：
+    // 组件添加/移除是ECS核心操作，需要立即响应以确保系统状态一致性，避免异步导致的时序问题
+    m_EventSubscriptions.SubscribeImmediate<ComponentAddedEvent<T>>(
+        BIND_DISPATCH_FN(OnComponentAdded),
+        EventPriority::High  // 组件操作优先级较高
+    );
+    m_EventSubscriptions.SubscribeImmediate<ComponentRemovedEvent<T>>(
+        BIND_DISPATCH_FN(OnComponentRemoved), EventPriority::High);
   }
 
   /**
@@ -174,13 +181,12 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
    * @brief 处理组件添加事件
    * @param e 事件
    */
-  virtual bool OnComponentAdded(ComponentAddedEvent<T> &e) 
+  virtual void OnComponentAdded(ComponentAddedEvent<T> &e)
   {
     Register(&e.GetComponent());
 
-    // 标记事件已处理，阻断传播
-    e.Handled();
-    return e.handled;
+    // 标记事件已处理但允许继续传播（其他系统可能也需要知道组件添加）
+    e.SetResult(EventResult::Handled);
   }
 
   /**
@@ -190,18 +196,17 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
    * 仅当调用SceneRegistry的ReplaceComponent
    * 或PatchComponent，修改现有组件时触发。
    */
-  //virtual bool OnComponentUpdated(ComponentChangedEvent<T> &e) {}
+  // virtual bool OnComponentUpdated(ComponentChangedEvent<T> &e) {}
 
   /**
    * @brief 处理组件移除事件
    */
-  virtual bool OnComponentRemoved(ComponentRemovedEvent<T> &e) 
+  virtual void OnComponentRemoved(ComponentRemovedEvent<T> &e)
   {
     Unregister(&e.GetComponent());
 
-    // 标记事件已处理，阻断传播
-    e.Handled();
-    return e.handled;
+    // 标记事件已处理但允许继续传播（其他系统可能也需要知道组件添加）
+    e.SetResult(EventResult::Handled);
   }
 
  protected:
@@ -264,7 +269,6 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   std::vector<T *> m_DirtyComponents;
   std::mutex m_Mutex;
 };
-
 };  // namespace mite
 
 #endif

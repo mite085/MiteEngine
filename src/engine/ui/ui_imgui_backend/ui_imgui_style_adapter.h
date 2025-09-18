@@ -57,7 +57,7 @@ class ImGuiStyleAdapter {
   void CreateDefaultStyleMappings();
 
   // 样式变更事件响应
-  bool OnStyleChanged(StyleChangedEvent &event);
+  void OnStyleChanged(StyleChangedEvent &event);
 
   Logger m_Logger;
   ImGuiStyle m_BackupStyle;

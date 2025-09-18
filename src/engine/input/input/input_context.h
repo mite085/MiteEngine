@@ -60,10 +60,10 @@ class InputContext {
 
  protected:
   // 内部处理方法
-  bool _ProcessKeyPressedEvent(const KeyPressedEvent &e);
-  bool _ProcessMouseButtonPressedEvent(const MouseButtonPressedEvent &e);
-  bool _ProcessMouseMoveEvent(const MouseMoveEvent &e);
-  bool _ProcessMouseScrollEvent(const MouseScrollEvent &e);
+  void _ProcessKeyPressedEvent(KeyPressedEvent &e);
+  void _ProcessMouseButtonPressedEvent(MouseButtonPressedEvent &e);
+  void _ProcessMouseMoveEvent(MouseMoveEvent &e);
+  void _ProcessMouseScrollEvent(MouseScrollEvent &e);
   void _UpdateActionValue(const std::string &actionName, float newValue);
 
   std::string m_Name;

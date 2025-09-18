@@ -18,7 +18,10 @@ void ImGuiStyleAdapter::Initialize()
   CreateDefaultStyleMappings();
 
   // 订阅样式改变事件
-  m_EventSubscriptions.Subscribe<StyleChangedEvent>(BIND_DISPATCH_FN(OnStyleChanged));
+  // Immediate同步模式：
+  // 样式变更需要立即应用到ImGui以确保界面视觉一致性，避免异步导致的界面闪烁或样式不匹配
+  m_EventSubscriptions.SubscribeImmediate<StyleChangedEvent>(BIND_DISPATCH_FN(OnStyleChanged),
+                                                             EventPriority::Normal);
 }
 
 void ImGuiStyleAdapter::Shutdown()
@@ -363,13 +366,14 @@ ImGuiStyle &ImGuiStyleAdapter::GetImGuiStyle()
   return ImGui::GetStyle();
 }
 
-bool ImGuiStyleAdapter::OnStyleChanged(StyleChangedEvent& event)
+void ImGuiStyleAdapter::OnStyleChanged(StyleChangedEvent& event)
 {
   std::shared_ptr<UIStyle> style = event.GetUIStyle();
+
+  // 执行样式映射操作
   ApplyUIStyle(style);
 
-  // 标记事件已解决
-  event.Handled();
-  return event.handled;
+  // 标记事件已消费（样式应用是最终操作，其他系统不需要重复处理）
+  event.SetResult(EventResult::Consumed);
 }
 }  // namespace mite

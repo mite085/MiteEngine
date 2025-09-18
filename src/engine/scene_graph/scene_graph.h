@@ -176,18 +176,18 @@ class SceneGraph {
    * @brief 处理实体创建事件
    * @param event 实体创建事件
    */
-  bool OnEntityCreated(EntityCreatedEvent &event);
+  void OnEntityCreated(EntityCreatedEvent &event);
   /**
    * @brief 处理实体销毁事件
    * @param event 实体销毁事件
    */
-  bool OnEntityDestroyed(EntityDestroyedEvent &event);
+  void OnEntityDestroyed(EntityDestroyedEvent &event);
   /**
    * @brief 处理组件添加事件（用于检测必要组件）
    * @param event 组件添加事件
    */
-  bool OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &event);
-  bool OnBoundingVolumeComponentAdded(ComponentAddedEvent<BoundingVolumeComponent> &event);
+  void OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &event);
+  void OnBoundingVolumeComponentAdded(ComponentAddedEvent<BoundingVolumeComponent> &event);
   /**
    * @brief 执行延迟的节点创建与销毁
    */

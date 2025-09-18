@@ -64,7 +64,7 @@ class UILocalization {
  protected:
   UILocalization() = default;
 
-  virtual bool OnLanguageChanged(LanguageChangedEvent &e) = 0;
+  virtual void OnLanguageChanged(LanguageChangedEvent &e) = 0;
 
 };
 

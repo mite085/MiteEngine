@@ -3,15 +3,21 @@
 namespace mite {
 SceneGraph::SceneGraph()
 {
-  // 订阅实体生命周期事件
-  m_EventSubscriptions.Subscribe<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated));
-  m_EventSubscriptions.Subscribe<EntityDestroyedEvent>(BIND_DISPATCH_FN(OnEntityDestroyed));
+  // 订阅实体生命周期事件 - 高优先级
+  // Immediate同步模式：
+  // 场景图需要实时响应实体和组件的生命周期变化，确保场景状态一致性
+  m_EventSubscriptions.SubscribeImmediate<EntityCreatedEvent>(BIND_DISPATCH_FN(OnEntityCreated),
+                                                              EventPriority::High);
+  m_EventSubscriptions.SubscribeImmediate<EntityDestroyedEvent>(
+      BIND_DISPATCH_FN(OnEntityDestroyed), EventPriority::High);
 
-  // 订阅必要组件构造事件
-  m_EventSubscriptions.Subscribe<ComponentAddedEvent<TransformComponent>>(
-      BIND_DISPATCH_FN(OnTransformComponentAdded));
-  m_EventSubscriptions.Subscribe<ComponentAddedEvent<BoundingVolumeComponent>>(
-      BIND_DISPATCH_FN(OnBoundingVolumeComponentAdded));
+  // 订阅必要组件构造事件 - 普通优先级
+  // Immediate同步模式：
+  // 场景图需要实时响应实体和组件的生命周期变化，确保场景状态一致性
+  m_EventSubscriptions.SubscribeImmediate<ComponentAddedEvent<TransformComponent>>(
+      BIND_DISPATCH_FN(OnTransformComponentAdded), EventPriority::Normal);
+  m_EventSubscriptions.SubscribeImmediate<ComponentAddedEvent<BoundingVolumeComponent>>(
+      BIND_DISPATCH_FN(OnBoundingVolumeComponentAdded), EventPriority::Normal);
 }
 
 void SceneGraph::Initialize()
@@ -164,7 +170,7 @@ void SceneGraph::DebugDraw(
 }
 
 // ==================== 事件响应 ====================
-bool SceneGraph::OnEntityCreated(EntityCreatedEvent &event)
+void SceneGraph::OnEntityCreated(EntityCreatedEvent &event)
 {
   Entity entity = event.GetEntity();
 
@@ -173,11 +179,10 @@ bool SceneGraph::OnEntityCreated(EntityCreatedEvent &event)
     m_PendingCreateNodes.insert({entity, {false, false}});
   }
 
-  // 阻断事件传播
-  event.Handled();
-  return true;
+  // 标记已处理但允许传播（其他系统可能需要知道实体创建）
+  event.SetResult(EventResult::Handled);
 }
-bool SceneGraph::OnEntityDestroyed(EntityDestroyedEvent &event)
+void SceneGraph::OnEntityDestroyed(EntityDestroyedEvent &event)
 {
   Entity entity = event.GetEntity();
 
@@ -188,10 +193,10 @@ bool SceneGraph::OnEntityDestroyed(EntityDestroyedEvent &event)
     m_PendingDestroyNodes.insert(entity);
   }
 
-  // 不应当阻断事件传播
-  return true;
+  // 不阻断事件传播（其他系统需要知道实体销毁）
+  event.SetResult(EventResult::None);
 }
-bool SceneGraph::OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &event)
+void SceneGraph::OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &event)
 {
   Entity entity = event.GetEntity();
 
@@ -200,10 +205,10 @@ bool SceneGraph::OnTransformComponentAdded(ComponentAddedEvent<TransformComponen
     m_PendingCreateNodes[entity].hasTransform = true;
   }
 
-  // 不应当阻断事件传播
-  return true;
+  // 不阻断事件传播（其他系统可能需要Transform组件）
+  event.SetResult(EventResult::None);
 }
-bool SceneGraph::OnBoundingVolumeComponentAdded(
+void SceneGraph::OnBoundingVolumeComponentAdded(
     ComponentAddedEvent<BoundingVolumeComponent> &event)
 {
   Entity entity = event.GetEntity();
@@ -213,8 +218,8 @@ bool SceneGraph::OnBoundingVolumeComponentAdded(
     m_PendingCreateNodes[entity].hasBoundingVolume = true;
   }
 
-  // 不应当阻断事件传播
-  return true;
+  // 不阻断事件传播（其他系统可能需要BoundingVolume组件）
+  event.SetResult(EventResult::None);
 }
 
 void SceneGraph::ProcessScheduledCreationsAndDestruction(SceneRegistry &registry)

@@ -59,8 +59,8 @@ class OpenGLDevice : public IRenderDevice {
 
  private:
   // ---- 事件响应函数 ----
-  bool OnModelLoaded(ModelLoadEvent &e) override;
-  bool OnTextureLoaded(TextureLoadEvent &e) override;
+  void OnModelLoaded(ModelLoadEvent &e) override;
+  void OnTextureLoaded(TextureLoadEvent &e) override;
 
   // ---- 辅助方法 ----
   GLenum TranslateTextureFormat(TextureFormat format);

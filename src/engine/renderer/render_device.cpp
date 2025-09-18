@@ -33,8 +33,12 @@ void IRenderDevice::SetCurrent(std::unique_ptr<IRenderDevice> device)
 }
 IRenderDevice::IRenderDevice()
 {
-  // 订阅事件
-  m_EventSubscriptions.Subscribe<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded));
-  m_EventSubscriptions.Subscribe<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded));
+  // 订阅模型与纹理加载事件
+  // Async异步模式：
+  // 资源加载是IO密集型操作，使用异步模式可以避免阻塞主线程，提高应用程序响应性
+  m_EventSubscriptions.SubscribeAsync<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded),
+                                                      EventPriority::Normal);
+  m_EventSubscriptions.SubscribeAsync<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded),
+                                                        EventPriority::Normal);
 }
 };  // namespace mite

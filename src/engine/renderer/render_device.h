@@ -107,8 +107,8 @@ class IRenderDevice {
   IRenderDevice();
 
   // ---- 事件处理 ----
-  virtual bool OnModelLoaded(ModelLoadEvent &e) = 0;
-  virtual bool OnTextureLoaded(TextureLoadEvent &e) = 0;
+  virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
+  virtual void OnTextureLoaded(TextureLoadEvent &e) = 0;
 
   SubscriptionGroup m_EventSubscriptions;  // 事件订阅
 };

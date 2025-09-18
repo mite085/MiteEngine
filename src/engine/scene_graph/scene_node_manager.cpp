@@ -5,13 +5,19 @@ SceneNodeManager::SceneNodeManager(SpatialPartition &spatialPartition) : m_Spati
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph NodeManager");
 
-  // 订阅事件
-  m_EventSubscriptions.Subscribe<TransformUpdatedEvent>(
-      BIND_DISPATCH_FN(OnTransformComponentUpdated));
-  m_EventSubscriptions.Subscribe<BoundingVolumeChangedEvent>(
-      BIND_DISPATCH_FN(OnBoundingVolumeComponentUpdated));
-  m_EventSubscriptions.Subscribe<VisibilityChangedEvent>(
-      BIND_DISPATCH_FN(OnVisibilityComponentUpdated));
+  // 订阅变换、包围盒、可见性更新事件
+  // Immediate同步模式：
+  // 变换、包围盒、可见性更新是场景图核心操作，需要立即标记脏状态以确保后续渲染正确性
+  m_EventSubscriptions.SubscribeImmediate<TransformUpdatedEvent>(
+      BIND_DISPATCH_FN(OnTransformComponentUpdated),
+      EventPriority::High  // 变换更新优先级高，影响层级关系
+  );
+  m_EventSubscriptions.SubscribeImmediate<BoundingVolumeChangedEvent>(
+      BIND_DISPATCH_FN(OnBoundingVolumeComponentUpdated), EventPriority::Normal);
+  m_EventSubscriptions.SubscribeImmediate<VisibilityChangedEvent>(
+      BIND_DISPATCH_FN(OnVisibilityComponentUpdated),
+      EventPriority::High  // 可见性更新优先级高，影响渲染流程
+  );
 
   m_Logger->info("SceneGraph NodeManager created with spatial partition type: {}, name: {}",
                  GetSpatialPartitionTypeName(SpatialPartitionType::BVH),
@@ -514,31 +520,31 @@ std::string SceneNodeManager::CalculateNodePath(SceneNode *node) const
   return path;
 }
 
-bool SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
+void SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
 {
   // 变换更新影响当前节点及其所有子节点的世界变换
   MarkNodeDirtyRecursive(e.GetEntity());
 
-  e.Handled();
-  return e.handled;
+  // 标记已处理但允许传播（其他系统可能需要知道变换更新）
+  e.SetResult(EventResult::Handled);
 }
 
-bool SceneNodeManager::OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEvent &e)
+void SceneNodeManager::OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEvent &e)
 {
   // 包围盒更新只影响当前节点的世界包围盒
   MarkNodeDirty(e.GetEntity());
 
-  e.Handled();
-  return e.handled;
+  // 标记已处理但允许传播（碰撞检测等系统可能需要包围盒更新）
+  e.SetResult(EventResult::Handled);
 }
 
-bool SceneNodeManager::OnVisibilityComponentUpdated(VisibilityChangedEvent &e)
+void SceneNodeManager::OnVisibilityComponentUpdated(VisibilityChangedEvent &e)
 {
   // 可见性更新影响当前节点及其所有子节点的世界可见性
   MarkNodeDirtyRecursive(e.GetEntity());
 
-  e.Handled();
-  return e.handled;
+  // 标记已处理但允许传播（UI系统等可能需要可见性信息）
+  e.SetResult(EventResult::Handled);
 }
 
 }  // namespace mite

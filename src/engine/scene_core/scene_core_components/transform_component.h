@@ -96,12 +96,6 @@ class TransformComponentSystem : public DirtyComponentSystem<TransformComponent>
   DECLARE_COMPONENT_SYSTEM(TransformComponentSystem)
 
   std::vector<std::type_index> GetSystemDependencies() const override;
-
- private:
-  // 组件添加与移除事件响应函数override
-  // 后续SceneGraph模块的TransformSceneNodeSystem负责处理Entity和SceneNode的Transform同步，不应当阻断事件传播
-  bool OnComponentAdded(ComponentAddedEvent<TransformComponent> &e) override;
-  bool OnComponentRemoved(ComponentRemovedEvent<TransformComponent> &e) override;
 };
 // ==================== 事件定义 ====================
 /**
