@@ -26,10 +26,10 @@ set(COMMAND_EXECUTOR_SRCS
 )
 source_group("command executor" FILES ${COMMAND_EXECUTOR_SRCS})
 
-set(COMMAND_BUILTIN_COMMANDS_SRCS
-    command_builtin_commands/command_ui_viewport.h  # 视口操作命令
+set(COMMAND_BASE_COMMANDS_SRCS
+    command_base_commands/command_ui_viewport.h  # 视口操作命令
 )
-source_group("command builtin commands" FILES ${COMMAND_BUILTIN_COMMANDS_SRCS})
+source_group("command base commands" FILES ${COMMAND_BASE_COMMANDS_SRCS})
 
 # 创建静态库，添加源代码组
 add_library(${ENGINE_COMMAND_LIB_NAME}
@@ -37,7 +37,7 @@ add_library(${ENGINE_COMMAND_LIB_NAME}
     ${COMMAND_CORE_SRCS}
     ${COMMAND_HISTORY_SRCS}
     ${COMMAND_EXECUTOR_SRCS}
-    ${COMMAND_BUILTIN_COMMANDS_SRCS}
+    ${COMMAND_BASE_COMMANDS_SRCS}
 )
 
 # 设置头文件路径（供其他项目包含）
@@ -55,4 +55,6 @@ target_link_libraries(${ENGINE_COMMAND_LIB_NAME}
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
     MiteEngine_Engine_Event
+    MiteEngine_Engine_Scene_Core
+    MiteEngine_Engine_Scene_Graph
 )
