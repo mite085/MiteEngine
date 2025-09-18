@@ -63,5 +63,6 @@
 
 // 线程池
 #include "thread/thread_pool_manager.h"
+#include "thread/parallel_utils.h"
 
 #endif

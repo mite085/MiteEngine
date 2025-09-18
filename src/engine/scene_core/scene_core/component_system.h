@@ -259,10 +259,11 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
   virtual void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
   {
     // 并行处理优化
-    std::for_each(std::execution::par,
-                  m_DirtyComponents.begin(),
-                  m_DirtyComponents.end(),
-                  [&](T *comp) { static_cast<Component *>(comp)->Update(deltaTime, registry); });
+    ParallelUtils::ForEach(m_DirtyComponents, [deltaTime, &registry](T *comp) {
+      if (comp) {
+        static_cast<Component *>(comp)->Update(deltaTime, registry);
+      }
+    });
   }
 
   std::vector<T *> m_AllComponents;

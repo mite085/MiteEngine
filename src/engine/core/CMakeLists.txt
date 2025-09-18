@@ -68,6 +68,7 @@ set(THREAD_SRCS
     thread/thread_pool_manager.h
     thread/thread_pool_manager.cpp
     thread/thread_pool_config.h
+    thread/parallel_utils.h
 )
 source_group("thread" FILES ${THREAD_SRCS})
 
