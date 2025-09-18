@@ -240,39 +240,36 @@ class EventBus {
   EventBus() = default;
   ~EventBus();
 
-  // 事件处理实现
-  template<typename T> void ProcessEvent(Event &event)
+  /**
+   * @brief 使用预复制的订阅者列表处理事件（无锁版本）
+   * @tparam T 事件类型
+   * @param event 事件对象
+   * @param typeSubscribers 类型订阅者列表副本
+   * @param categorySubscribers 类别订阅者列表副本
+   */
+  template<typename T>
+  void ProcessEventWithSubscribers(T &event,
+                                   std::vector<Subscription> typeSubscribers,
+                                   std::vector<Subscription> categorySubscribers)
   {
-    std::type_index typeIndex = typeid(T);
-    std::vector<Subscription> typeSubscribers;
-    std::vector<Subscription> categorySubscribers;
-    {
-      std::lock_guard<std::mutex> lock(m_Mutex);
-
-      // 获取类型订阅者
-      if (auto it = m_Subscribers.find(typeIndex); it != m_Subscribers.end()) {
-        typeSubscribers = it->second;
-        EnsureSubscribersSorted(typeIndex, typeSubscribers);
-      }
-      // 获取类别订阅者
-      auto categories = event.GetCategoryFlags();
-      for (int i = 0; i < 32; ++i) {
-        EventCategory category = static_cast<EventCategory>(1 << i);
-        if ((categories & category) && m_CategorySubscribers.count(category)) {
-          auto &subs = m_CategorySubscribers[category];
-          categorySubscribers.insert(categorySubscribers.end(), subs.begin(), subs.end());
-          EnsureCategorySubscribersSorted(category, subs);
-        }
-      }
-    }
     // 处理类型订阅者
     for (auto &sub : typeSubscribers) {
       if (!event.ShouldContinue()) {
         break;
       }
-      sub.handler(event);
+      try {
+        sub.handler(event);
+      }
+      catch (const std::exception &e) {
+        // 记录处理错误，但不中断其他处理
+        LOG_ERROR("Event handler error: {}", e.what());
+      }
+      catch (...) {
+        LOG_ERROR("Unknown error in event handler");
+      }
     }
-    // 处理类别订阅者（按优先级排序）
+
+    // 处理类别订阅者（需要排序，因为来自多个类别）
     if (!categorySubscribers.empty()) {
       std::sort(categorySubscribers.begin(), categorySubscribers.end());
 
@@ -280,9 +277,66 @@ class EventBus {
         if (!event.ShouldContinue()) {
           break;
         }
-        sub.handler(event);
+        try {
+          sub.handler(event);
+        }
+        catch (const std::exception &e) {
+          LOG_ERROR("Category event handler error: {}", e.what());
+        }
+        catch (...) {
+          LOG_ERROR("Unknown error in category event handler");
+        }
       }
     }
+  }
+  /**
+   * @brief 复制事件相关的订阅者列表（带锁）
+   * @tparam T 事件类型
+   * @param event 事件对象
+   * @return 包含类型和类别订阅者的元组
+   */
+  template<typename T>
+  std::tuple<std::vector<Subscription>, std::vector<Subscription>> CopySubscribersForEvent(
+      const Event &event)
+  {
+    std::vector<Subscription> typeSubscribers;
+    std::vector<Subscription> categorySubscribers;
+
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    // 复制类型订阅者
+    std::type_index typeIndex = typeid(T);
+    if (auto it = m_Subscribers.find(typeIndex); it != m_Subscribers.end()) {
+      typeSubscribers = it->second;
+      EnsureSubscribersSorted(typeIndex, typeSubscribers);
+    }
+
+    // 复制类别订阅者
+    auto categories = event.GetCategoryFlags();
+    for (int i = 0; i < 32; ++i) {
+      EventCategory category = static_cast<EventCategory>(1 << i);
+      if ((categories & category) && m_CategorySubscribers.count(category)) {
+        auto &subs = m_CategorySubscribers[category];
+        // 复制并确保排序
+        std::vector<Subscription> categoryCopy = subs;
+        EnsureCategorySubscribersSorted(category, categoryCopy);
+        categorySubscribers.insert(
+            categorySubscribers.end(), categoryCopy.begin(), categoryCopy.end());
+      }
+    }
+
+    return {std::move(typeSubscribers), std::move(categorySubscribers)};
+  }
+
+  /**
+   * @brief 事件处理具体实现（带锁）
+   * @param event 
+   */
+  template<typename T> void ProcessEvent(Event &event)
+  {
+    auto [typeSubscribers, categorySubscribers] = CopySubscribersForEvent<T>(event);
+    ProcessEventWithSubscribers<T>(
+        event, std::move(typeSubscribers), std::move(categorySubscribers));
   }
 
   // 确保订阅者列表和大类订阅列表已排序
@@ -290,7 +344,7 @@ class EventBus {
   void EnsureCategorySubscribersSorted(EventCategory category,
                                        std::vector<Subscription> &subscribers);
 
-  // 异步发布
+  // 异步发布（子线程无锁）
   template<typename T> void PostAsync(T &event, SubscriptionFlags flags)
   {
     auto eventCopy = std::unique_ptr<Event>(event.Clone());
@@ -303,14 +357,21 @@ class EventBus {
       priority = 10;  // 线程安全任务更高优先级
     }
 
+    // 在提交任务前复制订阅者列表
+    auto [typeSubscribers, categorySubscribers] = CopySubscribersForEvent<T>(event);
+
     // 使用[[maybe_unused]]来忽略返回值（小型项目无需考虑Future管理的问题。待后续有需求时管理该返回值）
     [[maybe_unused]] auto future = GetThreadPool().submit_task(
-        [this, eventPtr = eventCopy.release()]() {
+        [this,
+         eventPtr = eventCopy.release(),
+         typeSubscribers = std::move(typeSubscribers),
+         categorySubscribers = std::move(categorySubscribers)]() mutable {
           std::unique_ptr<Event> uniqueEvent(eventPtr);
           T &specificEvent = static_cast<T &>(*uniqueEvent);
 
-          // 在worker线程中处理事件
-          ProcessEvent<T>(specificEvent);
+          // 使用复制的订阅者列表处理事件（完全无锁）
+          ProcessEventWithSubscribers<T>(
+              specificEvent, std::move(typeSubscribers), std::move(categorySubscribers));
         },
         priority  // 任务优先级
     );
