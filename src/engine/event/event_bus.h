@@ -233,7 +233,6 @@ class EventBus {
         : typeIndex(typeid(void)), flags(SubscriptionFlags::Sync), category(EventCategory::None)
     {
     }
-
   };
 
   // 单例模式：构造函数私有化
@@ -242,13 +241,11 @@ class EventBus {
 
   /**
    * @brief 使用预复制的订阅者列表处理事件（无锁版本）
-   * @tparam T 事件类型
    * @param event 事件对象
    * @param typeSubscribers 类型订阅者列表副本
    * @param categorySubscribers 类别订阅者列表副本
    */
-  template<typename T>
-  void ProcessEventWithSubscribers(T &event,
+  void ProcessEventWithSubscribers(Event &event,
                                    std::vector<Subscription> typeSubscribers,
                                    std::vector<Subscription> categorySubscribers)
   {
@@ -330,13 +327,12 @@ class EventBus {
 
   /**
    * @brief 事件处理具体实现（带锁）
-   * @param event 
+   * @param event
    */
   template<typename T> void ProcessEvent(Event &event)
   {
     auto [typeSubscribers, categorySubscribers] = CopySubscribersForEvent<T>(event);
-    ProcessEventWithSubscribers<T>(
-        event, std::move(typeSubscribers), std::move(categorySubscribers));
+    ProcessEventWithSubscribers(event, std::move(typeSubscribers), std::move(categorySubscribers));
   }
 
   // 确保订阅者列表和大类订阅列表已排序
@@ -347,6 +343,7 @@ class EventBus {
   // 异步发布（子线程无锁）
   template<typename T> void PostAsync(T &event, SubscriptionFlags flags)
   {
+    // 创建副本
     auto eventCopy = std::unique_ptr<Event>(event.Clone());
 
     // 根据优先级提交任务
@@ -363,15 +360,15 @@ class EventBus {
     // 使用[[maybe_unused]]来忽略返回值（小型项目无需考虑Future管理的问题。待后续有需求时管理该返回值）
     [[maybe_unused]] auto future = GetThreadPool().submit_task(
         [this,
-         eventPtr = eventCopy.release(),
+         eventPtr = eventCopy.release(),  // 转移所有权到原始指针
          typeSubscribers = std::move(typeSubscribers),
-         categorySubscribers = std::move(categorySubscribers)]() mutable {
+         categorySubscribers = std::move(categorySubscribers)]() {
+          // 重新包装为unique_ptr
           std::unique_ptr<Event> uniqueEvent(eventPtr);
-          T &specificEvent = static_cast<T &>(*uniqueEvent);
 
           // 使用复制的订阅者列表处理事件（完全无锁）
-          ProcessEventWithSubscribers<T>(
-              specificEvent, std::move(typeSubscribers), std::move(categorySubscribers));
+          ProcessEventWithSubscribers(
+              *uniqueEvent, std::move(typeSubscribers), std::move(categorySubscribers));
         },
         priority  // 任务优先级
     );
@@ -383,10 +380,7 @@ class EventBus {
     AsyncEventWrapper wrapper;
     wrapper.event = std::unique_ptr<Event>(event.Clone());
     wrapper.flags = SubscriptionFlags::Deferred;
-    wrapper.processor = [](Event &storedEvent) {
-      T &specificEvent = static_cast<T &>(storedEvent);
-      // 延迟处理逻辑会在ProcessQueue中执行
-    };
+    wrapper.processor = [this](Event &storedEvent) { this->ProcessEvent<T>(storedEvent); };
     std::lock_guard<std::mutex> lock(m_DeferredMutex);
     m_DeferredQueue.push_back(std::move(wrapper));
   }
