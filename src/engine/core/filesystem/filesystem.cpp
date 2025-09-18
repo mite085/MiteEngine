@@ -15,7 +15,7 @@ namespace mite {
 fs::path FileSystem::s_ExecutablePath;
 bool FileSystem::s_Initialized = false;
 Logger FileSystem::s_Logger = nullptr;
-void FileSystem::Init(int argc, char **argv)
+void FileSystem::Initialize(int argc, char **argv)
 {
   if (s_Initialized)
     return;

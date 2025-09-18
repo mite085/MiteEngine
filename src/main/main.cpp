@@ -18,9 +18,11 @@ int main(int argc, char **argv)
 #endif
 
   // 初始化日志系统
-  mite::LoggerSystem::Init();
+  mite::LoggerSystem::Initialize();
   // 初始化文件系统（需要在日志系统之后）
-  mite::FileSystem::Init(argc, argv);
+  mite::FileSystem::Initialize(argc, argv);
+  // 初始化线程池
+  mite::ThreadPoolManager::Initialize();
   LOG_INFO("Starting Mite Engine");
 
   // 运行程序
@@ -33,9 +35,10 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
+  // 关闭线程池
+  mite::ThreadPoolManager::Shutdown();
   // 结束日志系统
   LOG_INFO("Application exited successfully");
   mite::LoggerSystem::Shutdown();
-
   return 0;
 }

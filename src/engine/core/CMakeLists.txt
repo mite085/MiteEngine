@@ -64,6 +64,13 @@ set(TIMER_SRCS
 )
 source_group("timer" FILES ${TIMER_SRCS})
 
+set(THREAD_SRCS
+    thread/thread_pool_manager.h
+    thread/thread_pool_manager.cpp
+    thread/thread_pool_config.h
+)
+source_group("thread" FILES ${THREAD_SRCS})
+
 set(UUID_SRCS
     uuid/mite_uuid.h
 )
@@ -76,6 +83,7 @@ add_library(${ENGINE_CORE_LIB_NAME}
     ${FILESYSTEM_CONFIG_SRCS}
     ${HEADERS_SRCS}
     ${LOGGER_SRCS}
+    ${THREAD_SRCS}
     ${TIME_SRCS}
     ${TIMER_SRCS}
     ${UUID_SRCS}

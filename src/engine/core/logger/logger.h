@@ -17,7 +17,7 @@ typedef std::shared_ptr<spdlog::logger> Logger;
 
 class LoggerSystem {
  public:
-  static void Init();
+  static void Initialize();
   static void Shutdown();
 
   // 核心日志接口

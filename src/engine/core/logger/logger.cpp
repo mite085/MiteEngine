@@ -8,7 +8,7 @@ namespace mite {
 std::shared_ptr<spdlog::logger> LoggerSystem::s_CoreLogger;
 std::vector<std::shared_ptr<spdlog::logger>> LoggerSystem::s_ModuleLoggers;
 
-void LoggerSystem::Init()
+void LoggerSystem::Initialize()
 {
   // 创建多sink的logger
   std::vector<spdlog::sink_ptr> sinks;

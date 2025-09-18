@@ -18,7 +18,7 @@ namespace mite {
 class FileSystem {
  public:
   // 初始化文件系统(必须在程序启动时调用)
-  static void Init(int argc = 0, char **argv = nullptr);
+  static void Initialize(int argc = 0, char **argv = nullptr);
 
   // 获取资源完整路径
   static std::filesystem::path GetAssetPath(const std::string &relativePath);
