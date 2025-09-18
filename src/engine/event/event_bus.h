@@ -5,10 +5,6 @@
 #include "subscription_flags.h"
 
 namespace mite {
-// 线程池配置标志
-constexpr int THREAD_POOL_FLAGS = BS::tp::priority |             // 启用任务优先级
-                                  BS::tp::wait_deadlock_checks;  // 启用死锁检查
-
 /**
  * @brief 事件总线系统 - 核心类
  *
@@ -79,17 +75,6 @@ class EventBus {
   // 删除拷贝构造函数和赋值运算符
   EventBus(const EventBus &) = delete;
   EventBus &operator=(const EventBus &) = delete;
-
-  /**
-   * @brief 初始化线程池
-   * @param threadCount 线程数量，0表示自动检测
-   */
-  void InitializeThreadPool(size_t threadCount = 0);
-
-  /**
-   * @brief 关闭线程池
-   */
-  void ShutdownThreadPool();
 
   /**
    * @brief 订阅指定类型的事件
@@ -226,9 +211,9 @@ class EventBus {
   void Clear();
 
   /**
-   * @brief 获取线程池实例
+   * @brief 获取线程池实例（使用统一线程池管理器）
    */
-  BS::thread_pool<THREAD_POOL_FLAGS> &GetThreadPool();
+  BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &GetThreadPool();
 
  private:
   // 处理器信息
@@ -387,9 +372,6 @@ class EventBus {
   // 线程相关
   std::mutex m_Mutex;
   std::mutex m_DeferredMutex;
-
-  std::unique_ptr<BS::thread_pool<THREAD_POOL_FLAGS>>
-      m_ThreadPool;  // 启用任务优先级, 启用死锁检查
 
   // 下一个可用的处理器ID
   HandlerID m_NextHandlerID = 1;

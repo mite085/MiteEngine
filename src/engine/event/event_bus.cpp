@@ -1,24 +1,6 @@
 #include "event_bus.h"
 
 namespace mite {
-void EventBus::InitializeThreadPool(size_t threadCount)
-{
-  if (threadCount == 0) {
-    threadCount = std::thread::hardware_concurrency();
-    if (threadCount == 0)
-      threadCount = 1;  // 确保至少1个线程
-  }
-
-  m_ThreadPool.reset(new BS::thread_pool<THREAD_POOL_FLAGS>(threadCount));
-}
-void EventBus::ShutdownThreadPool()
-{
-  if (m_ThreadPool) {
-    m_ThreadPool->wait();
-    m_ThreadPool.reset();
-  }
-}
-
 EventBus::HandlerID EventBus::SubscribeByCategory(EventCategory category,
                                                   EventHandler handler,
                                                   EventPriority priority,
@@ -69,17 +51,14 @@ void EventBus::Clear()
   m_NextHandlerID = 1;
 }
 
-BS::thread_pool<THREAD_POOL_FLAGS> &EventBus::GetThreadPool()
+BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &EventBus::GetThreadPool()
 {
-  if (!m_ThreadPool) {
-    InitializeThreadPool();
-  }
-  return *m_ThreadPool;
+  // 使用统一的线程池管理器获取默认线程池
+  return ThreadPoolManager::GetDefaultPool();
 }
 
 EventBus::~EventBus()
 {
-  ShutdownThreadPool();
   Clear();
 }
 
