@@ -1,5 +1,5 @@
 #ifndef MITE_CORE_SUBSCRIPTION_GROUP
-#define MITE_CORE_SUBSCRIPTION_GROUP 
+#define MITE_CORE_SUBSCRIPTION_GROUP
 
 #include "event_bus.h"
 
@@ -9,7 +9,7 @@ namespace mite {
  *
  * 提供RAII风格的事件订阅管理，自动在析构时取消所有订阅
  * 适用于需要管理多个事件订阅的类，避免手动跟踪和取消订阅
- * 
+ *
  * 使用示例：
  *
  * 1. 创建并发布事件（触发事件）：
@@ -54,16 +54,15 @@ class SubscriptionGroup {
    * @brief 添加事件订阅到组内，接收到事件同步处理
    */
   template<typename T>
-  void SubscribeImmediate(EventFn<T> handler,
-                          int priority = static_cast<int>(EventPriority::Normal))
+  void SubscribeImmediate(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
   {
-    Subscribe<T>(std::move(handler, priority, SubscriptionFlags::Sync));
+    Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Sync);
   }
   /**
    * @brief 添加异步事件订阅
    */
   template<typename T>
-  void SubscribeAsync(EventFn<T> handler, int priority = static_cast<int>(EventPriority::Normal))
+  void SubscribeAsync(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
   {
     Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Async);
   }
@@ -71,8 +70,7 @@ class SubscriptionGroup {
    * @brief 添加线程安全的异步事件订阅
    */
   template<typename T>
-  void SubscribeAsyncThreadSafe(EventFn<T> handler,
-                                int priority = static_cast<int>(EventPriority::Normal))
+  void SubscribeAsyncThreadSafe(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
   {
     Subscribe<T>(
         std::move(handler), priority, SubscriptionFlags::Async | SubscriptionFlags::ThreadSafe);
@@ -81,8 +79,7 @@ class SubscriptionGroup {
    * @brief 添加延迟事件订阅
    */
   template<typename T>
-  void SubscribeDeferred(EventFn<T> handler,
-                         int priority = static_cast<int>(EventPriority::Normal))
+  void SubscribeDeferred(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
   {
     Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Deferred);
   }
@@ -127,6 +124,7 @@ class SubscriptionGroup {
   {
     m_GroupName = name;
   }
+
  private:
   /**
    * @brief 添加事件订阅到组内
@@ -137,7 +135,7 @@ class SubscriptionGroup {
    */
   template<typename T>
   void Subscribe(EventFn<T> handler,
-                 int priority = static_cast<int>(EventPriority::Normal),
+                 EventPriority priority = EventPriority::Normal,
                  SubscriptionFlags flags = SubscriptionFlags::Sync)
   {
     m_Handlers.push_back(
@@ -148,7 +146,6 @@ class SubscriptionGroup {
   std::vector<EventBus::HandlerID> m_Handlers;  // 存储所有订阅ID
   std::string m_GroupName;                      // 组名称（暂未启用）
 };
-
-};
+};  // namespace mite
 
 #endif

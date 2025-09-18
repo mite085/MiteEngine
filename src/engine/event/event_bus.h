@@ -35,12 +35,12 @@ class EventBus {
 
   // 订阅者信息结构
   struct Subscription {
-    HandlerID id;
+    HandlerID id = 0;
     EventHandler handler;
-    SubscriptionFlags flags;
-    std::string group;
+    SubscriptionFlags flags = SubscriptionFlags::Sync;
+    std::string group = "";
 
-    int priority;  // 优先级
+    int priority = static_cast<int>(EventPriority::Normal);  // 优先级
     bool operator<(const Subscription &other) const
     {
       return priority > other.priority;  // 优先级高（数字大）的在前
@@ -58,7 +58,17 @@ class EventBus {
    * @brief 单例模式：获取全局唯一实例
    * @return EventBus单例的引用
    */
-  static EventBus &Get();
+  static EventBus &Get()
+  {
+    // 使用"Meyer's singleton"方式（即函数局部静态变量）
+    //
+    // 这种实现具有以下特性：
+    // 线程安全：C++ 11标准保证静态局部变量的初始化是线程安全的
+    // 按需构造：只有在第一次调用Get()时才创建实例
+    // 自动销毁：程序结束时自动调用析构函数
+    static EventBus instance;
+    return instance;
+  }
 
   // 辅助的发布函数
   template<typename T> static void Publish(T &event)
@@ -92,7 +102,7 @@ class EventBus {
    */
   template<typename T>
   HandlerID Subscribe(EventFn<T> handler,
-                      int priority = static_cast<int>(EventPriority::Normal),
+                      EventPriority priority = EventPriority::Normal,
                       SubscriptionFlags flags = SubscriptionFlags::Sync,
                       const std::string &group = "")
   {
@@ -111,7 +121,7 @@ class EventBus {
     Subscription sub;
     sub.id = id;
     sub.handler = genericHandler;
-    sub.priority = priority;
+    sub.priority = static_cast<int>(priority);
     sub.flags = flags;
     sub.group = group;
 
@@ -148,7 +158,7 @@ class EventBus {
    */
   HandlerID SubscribeByCategory(EventCategory category,
                                 EventHandler handler,
-                                int priority = static_cast<int>(EventPriority::Normal),
+                                EventPriority priority = EventPriority::Normal,
                                 SubscriptionFlags flags = SubscriptionFlags::Sync,
                                 const std::string &group = "");
 
@@ -156,7 +166,35 @@ class EventBus {
    * @brief 取消订阅
    * @param id 订阅时返回的HandlerID
    */
-  void Unsubscribe(HandlerID id);
+  void Unsubscribe(HandlerID id)
+  {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    if (auto it = m_HandlerInfo.find(id); it != m_HandlerInfo.end()) {
+      auto &info = it->second;
+
+      if (info.category != EventCategory::None) {
+        // 首先尝试从类型订阅中移除
+        auto &handlers = m_CategorySubscribers[info.category];
+        handlers.erase(std::remove_if(handlers.begin(),
+                                      handlers.end(),
+                                      [id](const auto &sub) { return sub.id == id; }),
+                       handlers.end());
+        m_CategoryNeedsSorting[info.category] = true;
+      }
+      else {
+        // 然后尝试从类别订阅中移除
+        auto &handlers = m_Subscribers[info.typeIndex];
+        handlers.erase(std::remove_if(handlers.begin(),
+                                      handlers.end(),
+                                      [id](const auto &sub) { return sub.id == id; }),
+                       handlers.end());
+        m_NeedsSorting[info.typeIndex] = true;
+      }
+
+      m_HandlerInfo.erase(it);
+    }
+  }
 
   /**
    * @brief 发布事件
@@ -218,7 +256,49 @@ class EventBus {
   ~EventBus();
 
   // 事件处理实现
-  template<typename T> void ProcessEvent(Event &event);
+  template<typename T> void ProcessEvent(Event &event)
+  {
+    std::type_index typeIndex = typeid(T);
+    std::vector<Subscription> typeSubscribers;
+    std::vector<Subscription> categorySubscribers;
+    {
+      std::lock_guard<std::mutex> lock(m_Mutex);
+
+      // 获取类型订阅者
+      if (auto it = m_Subscribers.find(typeIndex); it != m_Subscribers.end()) {
+        typeSubscribers = it->second;
+        EnsureSubscribersSorted(typeIndex, typeSubscribers);
+      }
+      // 获取类别订阅者
+      auto categories = event.GetCategoryFlags();
+      for (int i = 0; i < 32; ++i) {
+        EventCategory category = static_cast<EventCategory>(1 << i);
+        if ((categories & category) && m_CategorySubscribers.count(category)) {
+          auto &subs = m_CategorySubscribers[category];
+          categorySubscribers.insert(categorySubscribers.end(), subs.begin(), subs.end());
+          EnsureCategorySubscribersSorted(category, subs);
+        }
+      }
+    }
+    // 处理类型订阅者
+    for (auto &sub : typeSubscribers) {
+      if (!event.ShouldContinue()) {
+        break;
+      }
+      sub.handler(event);
+    }
+    // 处理类别订阅者（按优先级排序）
+    if (!categorySubscribers.empty()) {
+      std::sort(categorySubscribers.begin(), categorySubscribers.end());
+
+      for (auto &sub : categorySubscribers) {
+        if (!event.ShouldContinue()) {
+          break;
+        }
+        sub.handler(event);
+      }
+    }
+  }
 
   // 确保订阅者列表和大类订阅列表已排序
   void EnsureSubscribersSorted(std::type_index typeIndex, std::vector<Subscription> &subscribers);
@@ -226,13 +306,65 @@ class EventBus {
                                        std::vector<Subscription> &subscribers);
 
   // 异步发布
-  template<typename T> void PostAsync(T &event, SubscriptionFlags flags);
+  template<typename T> void PostAsync(T &event, SubscriptionFlags flags)
+  {
+    auto eventCopy = std::unique_ptr<Event>(event.Clone());
+
+    // 根据优先级提交任务
+    int priority = 0;  // 默认优先级
+
+    // 使用辅助函数检查线程安全标志
+    if (SubscriptionFlagUtil::IsThreadSafe(flags)) {
+      priority = 10;  // 线程安全任务更高优先级
+    }
+
+    // 使用[[maybe_unused]]来忽略返回值（小型项目无需考虑Future管理的问题。待后续有需求时管理该返回值）
+    [[maybe_unused]] auto future = GetThreadPool().submit_task(
+        [this, eventPtr = eventCopy.release()]() {
+          std::unique_ptr<Event> uniqueEvent(eventPtr);
+          T &specificEvent = static_cast<T &>(*uniqueEvent);
+
+          // 在worker线程中处理事件
+          ProcessEvent<T>(specificEvent);
+        },
+        priority  // 任务优先级
+    );
+  }
 
   // 延迟发布
-  template<typename T> void PostDeferred(T &event);
+  template<typename T> void PostDeferred(T &event)
+  {
+    AsyncEventWrapper wrapper;
+    wrapper.event = std::unique_ptr<Event>(event.Clone());
+    wrapper.flags = SubscriptionFlags::Deferred;
+    wrapper.processor = [](Event &storedEvent) {
+      T &specificEvent = static_cast<T &>(storedEvent);
+      // 延迟处理逻辑会在ProcessQueue中执行
+    };
+    std::lock_guard<std::mutex> lock(m_DeferredMutex);
+    m_DeferredQueue.push_back(std::move(wrapper));
+  }
 
   // 处理延迟事件
-  void ProcessDeferredEvents();
+  void ProcessDeferredEvents()
+  {
+    std::vector<AsyncEventWrapper> deferredEvents;
+
+    {
+      std::lock_guard<std::mutex> lock(m_DeferredMutex);
+      deferredEvents = std::move(m_DeferredQueue);
+      m_DeferredQueue.clear();
+    }
+    for (auto &wrapper : deferredEvents) {
+      try {
+        // 在主线程中处理延迟事件
+        wrapper.processor(*wrapper.event);
+      }
+      catch (...) {
+        // 记录错误日志
+      }
+    }
+  }
 
  private:
   // 基于类型索引的订阅者列表
