@@ -9,7 +9,9 @@ set(COMMAND_CORE_SRCS
     command_core/command.h              # 命令抽象基类
     command_core/command_type.h         # 基本命令类型定义
     command_core/command_registry.h     # 命令注册管理
+    command_core/command_registry.cpp
     command_core/command_factory.h      # 命令工厂
+    command_core/command_factory.cpp
 )
 source_group("command core" FILES ${COMMAND_CORE_SRCS})
 
