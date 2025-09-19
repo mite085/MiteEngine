@@ -8,10 +8,11 @@ set(BASIC_TYPE_SRCS
     basic_type/asset_type.h
     basic_type/handle_type.h
     basic_type/camera_type.h
-    basic_type/bounding_volumes_types.h       # 包围盒类型定义
+    basic_type/bounding_volumes_types.h         # 包围盒类型定义
     basic_type/bounding_volumes_types.cpp
-    basic_type/bounding_volumes_intersects.h  # 包围盒相交测试
+    basic_type/bounding_volumes_intersects.h    # 包围盒相交测试
     basic_type/bounding_volumes_intersects.cpp
+    basic_type/snapshot.h                       # 快照抽象类
 )
 source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 
