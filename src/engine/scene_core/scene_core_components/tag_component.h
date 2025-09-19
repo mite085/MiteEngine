@@ -32,14 +32,6 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
    */
   TagComponent(const std::string &tag, const glm::vec4 &color);
 
-  /**
-   * @brief 针对dirty对象进行处理（Tag没有Dirty延迟更新行为，无需处理）
-   */
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
-
-  // 序列化支持
-  template<typename Archive> void serialize(Archive &archive);
-
   // ------------------------ 属性访问 ------------------------
   const std::string &GetTag() const
   {
@@ -92,7 +84,7 @@ class TagComponent : public ComponentTraits<TagComponent, Component::Family::Cor
   void UpdateSubTagsCache() const;
 };
 // Tag组件系统 =====================================================
-class TagComponentSystem : public DirtyComponentSystem<TagComponent> {
+class TagComponentSystem : public ComponentSystem<TagComponent> {
   DECLARE_COMPONENT_SYSTEM(TagComponentSystem)
 };
 

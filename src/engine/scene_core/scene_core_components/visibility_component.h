@@ -20,14 +20,9 @@ class VisibilityComponent
   /**
    * @brief 默认构造函数
    */
-  VisibilityComponent();
+  VisibilityComponent() = default;
 
   ~VisibilityComponent() override = default;
-
-  /**
-   * @brief 处理脏标记，更新可见性状态
-   */
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
 
   // ==================== 可见性操作 ====================
   /**
@@ -40,16 +35,6 @@ class VisibilityComponent
    * @param visible 是否可见
    */
   void SetVisible(bool visible);
-  /**
-   * @brief 获取上一帧的可见性状态
-   * @return 上一帧是否可见
-   */
-  bool WasVisible() const;
-  /**
-   * @brief 检查可见性状态是否发生变化
-   * @return 是否发生变化
-   */
-  bool VisibilityChanged() const;
 
   // ==================== 掩码操作 ====================
   /**
@@ -98,7 +83,7 @@ class VisibilityComponent
  * @class VisibilityComponentSystem
  * @brief 可见性组件系统，负责批量处理可见性计算和剔除
  */
-class VisibilityComponentSystem : public DirtyComponentSystem<VisibilityComponent> {
+class VisibilityComponentSystem : public ComponentSystem<VisibilityComponent> {
   DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
 };
 

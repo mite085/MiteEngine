@@ -1,25 +1,6 @@
 #include "visibility_component.h"
 
 namespace mite {
-// ==================== VisibilityComponent ====================
-
-VisibilityComponent::VisibilityComponent() : ComponentTraits() {}
-
-void VisibilityComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
-{
-  if (!IsDirty()) {
-    return;
-  }
-  // 保存上一帧状态
-  m_WasVisible = m_IsVisible;
-
-  // 如果可见性发生变化，发布事件
-  if (VisibilityChanged()) {
-    EventBus::Publish<VisibilityChangedEvent>(VisibilityChangedEvent(GetEntity(), *this));
-  }
-
-  ClearDirty();
-}
 // ==================== 可见性操作 ====================
 bool VisibilityComponent::IsVisible() const
 {
@@ -29,18 +10,9 @@ void VisibilityComponent::SetVisible(bool visible)
 {
   if (m_IsVisible != visible) {
     m_IsVisible = visible;
-    MarkDirty();
+    EventBus::Publish<VisibilityChangedEvent>(VisibilityChangedEvent(GetEntity(), *this));
   }
 }
-bool VisibilityComponent::WasVisible() const
-{
-  return m_WasVisible;
-}
-bool VisibilityComponent::VisibilityChanged() const
-{
-  return m_IsVisible != m_WasVisible;
-}
-
 // ==================== 掩码操作 ====================
 uint32_t VisibilityComponent::GetVisibilityMask() const
 {
@@ -54,7 +26,6 @@ void VisibilityComponent::SetVisibilityMask(uint32_t mask)
 
     // 发布掩码改变事件
     EventBus::Publish<VisibilityChangedEvent>(VisibilityChangedEvent(GetEntity(), *this));
-    MarkDirty();
   }
 }
 bool VisibilityComponent::MatchesMask(uint32_t cameraMask) const

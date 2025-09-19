@@ -114,10 +114,4 @@ void TagComponent::UpdateSubTagsCache() const
   // 添加最后一部分
   subTags.push_back(m_Tag.substr(start));
 }
-
-// 基于cereal库的序列化实现
-template<typename Archive> void TagComponent::serialize(Archive &archive)
-{
-  archive(cereal::make_nvp("Tag", m_Tag), cereal::make_nvp("Color", m_Color));
-}
 };  // namespace mite

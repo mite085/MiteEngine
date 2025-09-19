@@ -43,8 +43,6 @@ class TransformComponent
 
   ~TransformComponent() override = default;
 
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
-
   // ==================== 位置操作 ====================
   const glm::vec3 &GetLocalPosition() const;
   void SetLocalPosition(const glm::vec3 &position);
@@ -92,7 +90,7 @@ class TransformComponent
 };
 
 // ==================== 组件系统 ====================
-class TransformComponentSystem : public DirtyComponentSystem<TransformComponent> {
+class TransformComponentSystem : public ComponentSystem<TransformComponent> {
   DECLARE_COMPONENT_SYSTEM(TransformComponentSystem)
 
   std::vector<std::type_index> GetSystemDependencies() const override;

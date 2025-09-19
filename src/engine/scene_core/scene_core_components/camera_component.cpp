@@ -4,40 +4,23 @@
 namespace mite {
 CameraComponent::CameraComponent(std::shared_ptr<Camera> camera) : m_Camera(camera) {}
 
-void CameraComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
-{
-  // Camera现在只负责投影矩阵，不需要处理Transform同步
-  // 只需要确保投影矩阵是最新的
-  if (m_Camera->IsProjectionDirty()) {
-    // 强制计算投影矩阵（如果有脏标记）
-    m_Camera->GetProjectionMatrix();
-    m_Camera->MarkProjectionClean();
-  }
-
-  ClearDirty();
-}
-
 void CameraComponent::SetPerspective(float fov, float near, float far)
 {
   float aspect = m_Camera->GetAspectRatio();
   m_Camera->SetPerspective(fov, aspect, near, far);
-  MarkDirty();
 }
 void CameraComponent::SetOrthographic(float size, float near, float far)
 {
   float aspect = m_Camera->GetAspectRatio();
   m_Camera->SetOrthographic(size, aspect, near, far);
-  MarkDirty();
 }
 void CameraComponent::Zoom(float amount)
 {
   m_Camera->Zoom(amount);
-  MarkDirty();
 }
 void CameraComponent::SetAspectRatio(float aspect)
 {
   m_Camera->SetAspectRatio(aspect);
-  MarkDirty();
 }
 
 CameraUsage CameraComponent::GetUsage() const
@@ -47,7 +30,6 @@ CameraUsage CameraComponent::GetUsage() const
 void CameraComponent::SetUsage(CameraUsage usage)
 {
   m_Usage = usage;
-  MarkDirty();
 }
 std::shared_ptr<Camera> CameraComponent::GetCamera()
 {
@@ -56,6 +38,7 @@ std::shared_ptr<Camera> CameraComponent::GetCamera()
 
 glm::mat4 CameraComponent::GetProjectionMatrix() const
 {
+  // Get时处理Transform内部的Dirty，所以无需在组件ProcessDirty
   return m_Camera->GetProjectionMatrix();
 }
 
@@ -65,14 +48,12 @@ void CameraComponent::SetViewportSize(uint32_t width, uint32_t height)
     return;
   float aspect = static_cast<float>(width) / height;
   m_Camera->SetAspectRatio(aspect);
-  MarkDirty();
 }
 
 void CameraComponent::SetVisibilityMask(uint32_t mask)
 {
   if (m_VisibilityMask != mask) {
     m_VisibilityMask = mask;
-    MarkDirty();
     EventBus::Publish<CameraVisibilityMaskChangedEvent>(
         CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
@@ -88,7 +69,6 @@ void CameraComponent::AddVisibilityLayer(uint32_t mask)
   uint32_t old_mask = m_VisibilityMask;
   m_VisibilityMask |= mask;
   if (m_VisibilityMask != mask) {
-    MarkDirty();
     EventBus::Publish<CameraVisibilityMaskChangedEvent>(
         CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
@@ -98,7 +78,6 @@ void CameraComponent::RemoveVisibilityLayer(uint32_t mask)
   uint32_t old_mask = m_VisibilityMask;
   m_VisibilityMask &= ~mask;
   if (m_VisibilityMask != mask) {
-    MarkDirty();
     EventBus::Publish<CameraVisibilityMaskChangedEvent>(
         CameraVisibilityMaskChangedEvent(m_Entity, *this, m_VisibilityMask));
   }
@@ -119,8 +98,6 @@ bool CameraComponent::Serialize(std::ostream &output) const
 bool CameraComponent::Deserialize(std::istream &input)
 {
   // TODO: 反序列化并重建Camera状态
-
-  MarkDirty();
   return !input.fail();
 }
 
@@ -166,8 +143,8 @@ void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
     }
   }
 
-  // 如果新旧相同，则省略修改
-  if (oldMain == newMain)
+  // 如果新旧相同（旧的存在，都是nullptr的相同不算相同），则省略修改
+  if (oldMain && oldMain == newMain)
     return;
 
   // 清除之前的主相机标记

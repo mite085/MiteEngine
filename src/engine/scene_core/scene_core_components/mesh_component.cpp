@@ -80,34 +80,9 @@ bool MeshComponent::Deserialize(std::istream &input)
 
   return !input.fail();
 }
-
 // Mesh组件系统实现 ======================================
 std::vector<std::type_index> MeshComponentSystem::GetSystemDependencies() const
 {
   return {typeid(TransformComponentSystem)};  // 需要变换信息
-}
-
-void MeshComponentSystem::Initialize()
-{
-  DirtyComponentSystem<MeshComponent>::Initialize();
-  // 初始化系统资源
-}
-
-void MeshComponentSystem::Shutdown()
-{
-  DirtyComponentSystem<MeshComponent>::Shutdown();
-  // 清理系统资源
-}
-
-void MeshComponentSystem::Update(float deltaTime, SceneRegistry &registry)
-{
-  std::vector<Entity> view = registry.GetEntitiesWithAllOf<MeshComponent, TransformComponent>();
-
-  for (Entity entity : view) {
-    auto &mesh = registry.GetComponent<MeshComponent>(entity);
-    auto &transform = registry.GetComponent<TransformComponent>(entity);
-
-    // TODO: 处理每帧更新，如LOD计算等
-  }
 }
 };  // namespace mite

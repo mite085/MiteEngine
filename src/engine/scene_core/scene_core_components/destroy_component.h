@@ -23,11 +23,6 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
   DestroyComponent();
 
   /**
-   * @brief 针对dirty对象进行处理
-   */
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
-
-  /**
    * @brief 用于调试的字符串表示
    */
   std::string ToString() const
@@ -35,17 +30,17 @@ struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Fa
     return "DestroyComponent";
   }
 
-  // ------------------------ 序列化支持 ------------------------
-  // 标记组件不需要序列化，但保留接口以保持一致性
-
   /**
    * @brief 序列化操作(空实现)
    */
-  template<typename Archive> void serialize(Archive &) {}  // 无数据需要序列化
+  bool Serialize(std::ostream &output) const override
+  {
+    return true; // 无数据需要序列化
+  }  
 };
 
 // Destroy组件系统 =====================================================
-class DestroyComponentSystem : public DirtyComponentSystem<DestroyComponent> {
+class DestroyComponentSystem : public ComponentSystem<DestroyComponent> {
   DECLARE_COMPONENT_SYSTEM(DestroyComponentSystem)
 
 };

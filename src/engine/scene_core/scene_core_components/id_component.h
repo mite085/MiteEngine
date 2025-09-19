@@ -44,11 +44,6 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   IDComponent &operator=(const IDComponent &) = delete;
 
   /**
-   * @brief 针对dirty对象进行处理（ID没有Dirty延迟更新行为，无需处理）
-   */
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
-
-  /**
    * @brief 获取UUID字符串表示（RFC4122格式）
    * @return 示例："f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
    */
@@ -89,7 +84,7 @@ class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core>
   std::string m_UUIDString;  // 字符串缓存（优化频繁访问）
 };
 // ID组件系统 =====================================================
-class IDComponentSystem : public DirtyComponentSystem<IDComponent> {
+class IDComponentSystem : public ComponentSystem<IDComponent> {
   DECLARE_COMPONENT_SYSTEM(IDComponentSystem)
 };
 

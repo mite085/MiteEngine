@@ -60,11 +60,6 @@ class BoundingVolumeComponent
   // ==================== 组件接口 ====================
 
   /**
-   * @brief 处理脏标记（简单实现，主要供系统调用）
-   */
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
-
-  /**
    * @brief 获取组件依赖
    * @return 依赖组件类型列表
    */
@@ -90,7 +85,7 @@ class BoundingVolumeComponent
  * @class BoundingVolumeComponentSystem
  * @brief 包围体组件系统，负责管理包围体状态
  */
-class BoundingVolumeComponentSystem : public DirtyComponentSystem<BoundingVolumeComponent> {
+class BoundingVolumeComponentSystem : public ComponentSystem<BoundingVolumeComponent> {
   DECLARE_COMPONENT_SYSTEM(BoundingVolumeComponentSystem)
 };
 

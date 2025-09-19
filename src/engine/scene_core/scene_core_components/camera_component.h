@@ -39,8 +39,6 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
  public:
   CameraComponent(std::shared_ptr<Camera> camera);
 
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override;
-
   // ==================== 投影参数控制 ====================
   void SetPerspective(float fov, float near, float far);
   void SetOrthographic(float size, float near, float far);
@@ -103,7 +101,7 @@ class CameraComponent : public ComponentTraits<CameraComponent, Component::Famil
 };
 
 // 摄像机组件系统
-class CameraComponentSystem : public DirtyComponentSystem<CameraComponent> {
+class CameraComponentSystem : public ComponentSystem<CameraComponent> {
   DECLARE_COMPONENT_SYSTEM(CameraComponentSystem)
  public:
   std::vector<std::type_index> GetSystemDependencies() const override;

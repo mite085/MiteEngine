@@ -18,23 +18,8 @@ void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
   if (m_Material != material) {
     m_Material = material;
     EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
-    MarkDirty();
   }
 }
-
-//void MaterialComponent::SetMaterialFromTemplate(const std::string &templateName)
-//{
-//  try {
-//    // TODO: 创建出的newMaterial智能指针没有后续维护，不推荐使用
-//    std::shared_ptr<MaterialInstance> newMaterial = MaterialSystem::Get().CreateInstance(
-//        templateName);
-//    SetMaterial(newMaterial);
-//  }
-//  catch (const std::exception &e) {
-//    LOG_ERROR("Failed to create material from template '{}': {}", templateName, e.what());
-//    throw;
-//  }
-//}
 
 bool MaterialComponent::HasMaterial() const
 {
@@ -56,7 +41,6 @@ void MaterialComponent::SetFloatParam(const std::string &name, float value)
     return;
   }
   m_Material->SetFloat(name, value);
-  MarkDirty();
 }
 
 void MaterialComponent::SetColorParam(const std::string &name, const glm::vec3 &color)
@@ -64,7 +48,6 @@ void MaterialComponent::SetColorParam(const std::string &name, const glm::vec3 &
   if (!m_Material)
     return;
   m_Material->SetVector3(name, color);
-  MarkDirty();
 }
 
 void MaterialComponent::SetTextureParam(const std::string &name, std::shared_ptr<Texture> texture)
@@ -72,7 +55,6 @@ void MaterialComponent::SetTextureParam(const std::string &name, std::shared_ptr
   if (!m_Material)
     return;
   m_Material->SetTexture(name, std::move(texture));
-  MarkDirty();
 }
 
 // 组件接口实现 ========================================
@@ -106,45 +88,4 @@ std::vector<std::type_index> MaterialComponentSystem::GetSystemDependencies() co
   return {typeid(MeshComponentSystem)};  // 通常与Mesh配合使用
 }
 
-void MaterialComponentSystem::Initialize()
-{
-  DirtyComponentSystem<MaterialComponent>::Initialize();
-  // 初始化材质系统资源
-}
-
-void MaterialComponentSystem::Shutdown()
-{
-  DirtyComponentSystem<MaterialComponent>::Shutdown();
-  // 清理材质系统资源
-}
-
-void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry)
-{
-  // 处理材质参数动画等每帧更新
-  auto view = registry.GetEntitiesWith<MaterialComponent>();
-
-  // 按材质分组以减少状态切换
-  std::unordered_map<MaterialInstance *, std::vector<Entity>> materialGroups;
-  for (auto entity : view) {
-    auto &matComp = registry.GetComponent<MaterialComponent>(entity);
-    if (matComp.HasMaterial()) {
-      materialGroups[matComp.GetMaterial().get()].push_back(entity);
-    }
-  }
-
-  // 批量提交到渲染器
-  for (const auto &[material, entities] : materialGroups) {
-    // 绑定材质状态
-    // material->Apply();
-
-    // 提交关联实体
-    for (Entity entity : entities) {
-      // 示例：基于实体位置，修改u_Model材质参数，（可用于实现不同海拔高度下不同色彩表现）
-      // if (registry.HasComponent<TransformComponent>(entity)) {
-      //  const auto &transform = registry.GetComponent<TransformComponent>(entity);
-      //  material->GetShader()->SetMat4("u_Model", transform.GetWorldMatrix(registry));
-      //}
-    }
-  }
-}
 };  // namespace mite

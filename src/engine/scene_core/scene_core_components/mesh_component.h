@@ -31,12 +31,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::G
 
   ~MeshComponent() override = default;
 
-  /**
-   * @brief 针对dirty对象进行处理（Mesh没有Dirty延迟更新行为，无需处理）
-   */
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
-
-  // 网格操作 ==============================================
+  // ==================== 网格操作 ==========================
   /**
    * @brief 获取网格数据
    * @return 共享指针指向的网格数据
@@ -64,7 +59,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::G
     return m_Mesh->GetBoundingBox();
   }
 
-  // 渲染属性控制 ==========================================
+  // ================== 渲染属性控制 ========================
 
   /**
    * @brief 设置是否投射阴影
@@ -90,7 +85,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::G
    */
   bool ReceivesShadows() const;
 
-  // LOD控制 ==============================================
+  // ==================== LOD控制 ==========================
   /**
    * @brief 设置LOD级别
    * @param lodLevel LOD级别(0为最高细节)
@@ -103,7 +98,7 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::G
    */
   int GetLODLevel() const;
 
-  // 组件接口实现 ==========================================
+  // =================== 组件接口实现 =======================
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
@@ -117,18 +112,14 @@ class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::G
   int m_LODLevel = 0;            // LOD级别
 };
 
-// Mesh组件系统 =====================================================
-class MeshComponentSystem : public DirtyComponentSystem<MeshComponent> {
+// ========================= Mesh组件系统 ============================
+class MeshComponentSystem : public ComponentSystem<MeshComponent> {
   DECLARE_COMPONENT_SYSTEM(MeshComponentSystem)
  public:
   std::vector<std::type_index> GetSystemDependencies() const override;
-
-  void Initialize() override;
-  void Shutdown() override;
-  void Update(float deltaTime, SceneRegistry &registry) override;
 };
 
-// Mesh组件事件 =====================================================
+// ======================== Mesh组件事件 =============================
 /**
  * @class MeshChangedEvent
  * @brief 网格改变事件

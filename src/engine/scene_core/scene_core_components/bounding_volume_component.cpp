@@ -27,14 +27,6 @@ void BoundingVolumeComponent::SetVolume(const BoundingVolume &volume)
   if (oldType != newType) {
     EventBus::Publish<BoundingVolumeChangedEvent>(BoundingVolumeChangedEvent(GetEntity(), *this));
   }
-
-  MarkDirty();
-}
-
-void BoundingVolumeComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
-{
-  // 包围体组件通常不需要每帧处理
-  ClearDirty();
 }
 
 std::vector<std::type_index> BoundingVolumeComponent::GetDependencies() const

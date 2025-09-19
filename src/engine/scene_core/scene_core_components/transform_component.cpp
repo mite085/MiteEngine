@@ -15,15 +15,6 @@ TransformComponent::TransformComponent(const glm::mat4 &matrix, const Transform:
     : ComponentTraits(), m_Transform(matrix, order)
 {
 }
-
-void TransformComponent::ProcessDirty(float deltaTime, SceneRegistry &reg)
-{
-  // 由于Transform内部的DirtyFlag未确保清除，在此步骤执行CleanDirty操作
-  m_Transform.CleanDirty();
-
-  // 发布事件通知SceneNode系统更新变换
-  EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
-}
 // 位置相关方法 ==============================================
 
 const glm::vec3 &TransformComponent::GetLocalPosition() const
@@ -35,7 +26,12 @@ void TransformComponent::SetLocalPosition(const glm::vec3 &position)
 {
   if (m_Transform.GetPosition() != position) {
     m_Transform.SetPosition(position);
-    MarkDirty();
+
+    // 虽然 m_Transform.SetPosition 仅仅设置了m_MatrixDirty = true;
+    // 但一旦其他模块获取到事件之后，使用m_Transform.Get()获取值进行更新时
+    // 会自动执行UpdateMatrix，清除脏标记（Transform内部的Dirty自洽），
+    // 所以可以在Set之后立即发布事件，无需担心Transform内部数据迟滞的问题。
+    EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
   }
 }
 // 旋转相关方法 ==============================================
@@ -57,7 +53,7 @@ void TransformComponent::SetLocalRotation(const glm::vec3 &rotation)
 {
   if (m_Transform.GetRotationEuler() != rotation) {
     m_Transform.SetRotationEuler(rotation);
-    MarkDirty();
+    EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
   }
 }
 void TransformComponent::SetLocalRotation(float x, float y, float z)
@@ -68,13 +64,13 @@ void TransformComponent::SetLocalRotationQuat(const glm::quat &rotation)
 {
   if (m_Transform.GetRotationQuat() != rotation) {
     m_Transform.SetRotationQuat(rotation);
-    MarkDirty();
+    EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
   }
 }
 void TransformComponent::LookAt(const glm::vec3 &target, const glm::vec3 &up)
 {
   m_Transform.LookAt(target, up);
-  MarkDirty();
+  EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
 }
 
 // 缩放相关方法 ==============================================
@@ -87,7 +83,7 @@ void TransformComponent::SetLocalScale(const glm::vec3 &scale)
 {
   if (m_Transform.GetScale() != scale) {
     m_Transform.SetScale(scale);
-    MarkDirty();
+    EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
   }
 }
 void TransformComponent::SetLocalScale(float scale)
@@ -105,7 +101,7 @@ glm::mat4 TransformComponent::GetLocalMatrix() const
 void TransformComponent::SetLocalMatrix(const glm::mat4 &matrix)
 {
   m_Transform.SetLocalMatrix(matrix);
-  MarkDirty();
+  EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
 }
 glm::mat4 TransformComponent::CreateViewMatrix() const
 {

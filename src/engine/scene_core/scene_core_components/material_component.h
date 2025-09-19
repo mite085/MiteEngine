@@ -29,11 +29,6 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
 
   ~MaterialComponent() override = default;
 
-  /**
-   * @brief 针对dirty对象进行处理（Material没有Dirty延迟更新行为，无需处理）
-   */
-  void ProcessDirty(float deltaTime, SceneRegistry &reg) override {}
-
   //===================== 材质基础操作 ===================
   /**
    * @brief 获取材质数据
@@ -46,13 +41,6 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
    * @param material 新的材质数据
    */
   void SetMaterial(std::shared_ptr<MaterialInstance> material);
-
-  /**
-   * @brief 通过材质模板名称创建实例
-   * @param templateName 在MaterialSystem中注册的模板名称
-   * @throws std::out_of_range 如果模板不存在
-   */
-  //void SetMaterialFromTemplate(const std::string &templateName);
 
   /**
    * @brief 检查是否有有效材质数据
@@ -82,13 +70,10 @@ class MaterialComponent : public ComponentTraits<MaterialComponent, Component::F
 };
 
 //====================== Material组件系统 ========================
-class MaterialComponentSystem : public DirtyComponentSystem<MaterialComponent> {
+class MaterialComponentSystem : public ComponentSystem<MaterialComponent> {
   DECLARE_COMPONENT_SYSTEM(MaterialComponentSystem)
  public:
   std::vector<std::type_index> GetSystemDependencies() const override;
-  void Initialize() override;
-  void Shutdown() override;
-  void Update(float deltaTime, SceneRegistry &registry) override;
 };
 
 //====================== Material组件事件 ========================
