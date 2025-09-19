@@ -14,9 +14,9 @@ namespace mite {
  * 4. 支持组件依赖和执行顺序控制
  * 5. 提供系统间通信机制
  */
-class ComponentSystem {
+class IComponentSystem {
  public:
-  virtual ~ComponentSystem() = default;
+  virtual ~IComponentSystem() = default;
 
   /**
    * @brief 获取系统类型ID(使用辅助宏定义，无需在子类实现)
@@ -30,13 +30,13 @@ class ComponentSystem {
 
   /**
    * @brief 系统初始化（场景加载时调用）
-   * @param registry 关联的EnTT registry
    */
   virtual void Initialize() = 0;
 
   /**
    * @brief 系统更新（每帧调用）
    * @param deltaTime 帧间隔时间(秒)
+   * @param registry 注册表
    */
   virtual void Update(float deltaTime, SceneRegistry &registry) = 0;
 
@@ -57,11 +57,11 @@ class ComponentSystem {
 
  protected:
   // 保护构造函数，确保只能通过派生类实例化
-  ComponentSystem() = default;
+  IComponentSystem() = default;
 
   // 禁用拷贝
-  ComponentSystem(const ComponentSystem &) = delete;
-  ComponentSystem &operator=(const ComponentSystem &) = delete;
+  IComponentSystem(const IComponentSystem &) = delete;
+  IComponentSystem &operator=(const IComponentSystem &) = delete;
 
   // 日志系统
   Logger m_Logger;
@@ -84,6 +84,114 @@ class ComponentSystem {
   }
 
 /**
+ * @brief 基础组件系统模板类，负责组件管理和事件处理
+ *
+ * 职责：
+ * 1. 管理组件注册/注销
+ * 2. 处理组件添加/移除事件
+ * 3. 维护所有组件列表
+ * 4. Update方法为空，由子类实现具体更新逻辑
+ */
+template<typename T> class ComponentSystem : public IComponentSystem {
+  // 限制模板T必须继承自Component类型
+  static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+
+ public:
+  // 暴露组件类型
+  using ComponentType = T;
+
+  ComponentSystem() : IComponentSystem()
+  {
+    m_Logger = mite::LoggerSystem::CreateModuleLogger("Component System: {" + type_name<T>() +
+                                                      "}");
+    m_Logger->trace("Created base component system: {}", type_name<T>());
+  }
+  virtual void Initialize() override
+  {
+    // 订阅组件添加/移除事件
+    // Immediate同步模式：
+    // 组件添加/移除是ECS核心操作，需要立即响应以确保系统状态一致性，避免异步导致的时序问题
+    m_EventSubscriptions.SubscribeImmediate<ComponentAddedEvent<T>>(
+        BIND_DISPATCH_FN(OnComponentAdded), EventPriority::High);
+    m_EventSubscriptions.SubscribeImmediate<ComponentRemovedEvent<T>>(
+        BIND_DISPATCH_FN(OnComponentRemoved), EventPriority::High);
+  }
+  virtual void Shutdown() override
+  {
+    m_EventSubscriptions.UnsubscribeAll();
+    m_AllComponents.clear();
+  }
+  // 基础系统Update为空，由具体子类实现
+  virtual void Update(float deltaTime, SceneRegistry &registry) override{}
+
+  std::vector<std::type_index> GetComponentTypes() const override
+  {
+    return {typeid(T)};
+  }
+  virtual std::vector<std::type_index> GetSystemDependencies() const override
+  {
+    return {};
+  }
+  virtual Component::Family GetExecutionOrder() const override
+  {
+    return T::family;
+  }
+
+  /**
+   * @brief 获取所有管理的组件
+   */
+  const std::vector<T *> &GetAllComponents() const
+  {
+    return m_AllComponents;
+  }
+  /**
+   * @brief 获取组件数量
+   */
+  size_t GetComponentCount() const
+  {
+    return m_AllComponents.size();
+  }
+
+ protected:
+  /**
+   * @brief 处理组件添加事件
+   */
+  virtual void OnComponentAdded(ComponentAddedEvent<T> &e)
+  {
+    Register(&e.GetComponent());
+    e.SetResult(EventResult::Handled);
+  }
+  /**
+   * @brief 处理组件移除事件
+   */
+  virtual void OnComponentRemoved(ComponentRemovedEvent<T> &e)
+  {
+    Unregister(&e.GetComponent());
+    e.SetResult(EventResult::Handled);
+  }
+  /**
+   * @brief 注册组件
+   */
+  void Register(T *component)
+  {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_AllComponents.push_back(component);
+  }
+  /**
+   * @brief 注销组件
+   */
+  void Unregister(T *component)
+  {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_AllComponents.erase(std::remove(m_AllComponents.begin(), m_AllComponents.end(), component),
+                          m_AllComponents.end());
+  }
+  std::vector<T *> m_AllComponents;
+  std::mutex m_Mutex;
+};
+
+
+/**
  * @brief 基于Dirty Flag驱动的组件系统模板类
  *
  * 作用：
@@ -96,49 +204,9 @@ class ComponentSystem {
  * 2. 处理脏状态：在适当的时机（如每帧更新时）检查并处理脏状态
  * 3. 清除脏标记：处理完成后将 m_Dirty 设为 false
  */
-template<typename T> class DirtyComponentSystem : public ComponentSystem {
-  // 限制模板T必须继承自Component类型
-  static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
-
+template<typename T> class DirtyComponentSystem : public ComponentSystem<T> {
  public:
-  // 暴露组件类型
-  using ComponentType = T;
-
-  DirtyComponentSystem() : ComponentSystem()
-  {
-    // 创建日志系统
-    m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Component System: {" + type_name<T>() +
-                                                      "}");
-    m_Logger->trace("Created component system: {}", type_name<T>());
-  }
-
-  /**
-   * @brief 初始化操作
-   * @param registry
-   */
-  virtual void Initialize() override
-  {
-    // 订阅组件添加/改变/移除事件
-    // Immediate同步模式：
-    // 组件添加/移除是ECS核心操作，需要立即响应以确保系统状态一致性，避免异步导致的时序问题
-    m_EventSubscriptions.SubscribeImmediate<ComponentAddedEvent<T>>(
-        BIND_DISPATCH_FN(OnComponentAdded),
-        EventPriority::High  // 组件操作优先级较高
-    );
-    m_EventSubscriptions.SubscribeImmediate<ComponentRemovedEvent<T>>(
-        BIND_DISPATCH_FN(OnComponentRemoved), EventPriority::High);
-  }
-
-  /**
-   * @brief 清理操作
-   * @param registry
-   */
-  virtual void Shutdown() override
-  {
-    m_EventSubscriptions.UnsubscribeAll();
-    m_AllComponents.clear();
-    m_DirtyComponents.clear();
-  }
+  DirtyComponentSystem() : ComponentSystem<T>(){};
 
   /**
    * @brief 按照脏标记更新组件(逐帧调用)
@@ -152,84 +220,24 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
     // 阶段2：并行处理
     ProcessDirtyComponents(deltaTime, registry);
   }
-
   /**
-   * @brief 获取该系统管理的组件类型列表
+   * @brief 获取脏组件数量
    */
-  std::vector<std::type_index> GetComponentTypes() const
+  size_t GetDirtyComponentCount() const
   {
-    return {typeid(T)};
+    return m_DirtyComponents.size();
   }
-
   /**
-   * @brief 获取该系统依赖的其他系统类型
+   * @brief 强制标记所有组件为脏（用于特殊情况）
    */
-  virtual std::vector<std::type_index> GetSystemDependencies() const override
+  void MarkAllComponentsDirty()
   {
-    return {};
+    std::lock_guard<std::mutex> lock(this->m_Mutex);
+    for (auto comp : this->m_AllComponents) {
+      comp->MarkDirty();
+    }
   }
-
-  /**
-   * @brief 系统执行优先级(越小越先执行)
-   */
-  virtual Component::Family GetExecutionOrder() const
-  {
-    return T::family;
-  }
-
-  /**
-   * @brief 处理组件添加事件
-   * @param e 事件
-   */
-  virtual void OnComponentAdded(ComponentAddedEvent<T> &e)
-  {
-    Register(&e.GetComponent());
-
-    // 标记事件已处理但允许继续传播（其他系统可能也需要知道组件添加）
-    e.SetResult(EventResult::Handled);
-  }
-
-  /**
-   * @brief 处理组件替换事件
-   *
-   * 注意：
-   * 仅当调用SceneRegistry的ReplaceComponent
-   * 或PatchComponent，修改现有组件时触发。
-   */
-  // virtual bool OnComponentUpdated(ComponentChangedEvent<T> &e) {}
-
-  /**
-   * @brief 处理组件移除事件
-   */
-  virtual void OnComponentRemoved(ComponentRemovedEvent<T> &e)
-  {
-    Unregister(&e.GetComponent());
-
-    // 标记事件已处理但允许继续传播（其他系统可能也需要知道组件添加）
-    e.SetResult(EventResult::Handled);
-  }
-
  protected:
-  /**
-   * @brief 将组件注册进维护列表
-   * @param component 组件指针
-   */
-  void Register(T *component)
-  {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_AllComponents.push_back(component);
-  }
-
-  /**
-   * @brief 将组件从维护列表移除
-   * @param component 组件指针
-   */
-  void Unregister(T *component)
-  {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_AllComponents.erase(std::remove(m_AllComponents.begin(), m_AllComponents.end(), component),
-                          m_AllComponents.end());
-  }
   /**
    * @brief 获取脏组件列表
    */
@@ -266,9 +274,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem {
     });
   }
 
-  std::vector<T *> m_AllComponents;
   std::vector<T *> m_DirtyComponents;
-  std::mutex m_Mutex;
 };
 };  // namespace mite
 

@@ -44,7 +44,7 @@ class ComponentSystemManager {
    */
   template<typename T, typename... Args> T *RegisterSystem(Args &&...args)
   {
-    static_assert(std::is_base_of<ComponentSystem, T>::value,
+    static_assert(std::is_base_of<IComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
 
     const std::type_index type = typeid(T);
@@ -81,7 +81,7 @@ class ComponentSystemManager {
    */
   template<typename T> void UnregisterSystem()
   {
-    static_assert(std::is_base_of<ComponentSystem, T>::value,
+    static_assert(std::is_base_of<IComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
     const std::type_index type = typeid(T);
     // 1. 检查是否已注销，若已注销则直接返回
@@ -91,13 +91,13 @@ class ComponentSystemManager {
     }
 
     // 2. 从unordered_map中删除
-    ComponentSystem *systemPtr = mapIt->second;
+    IComponentSystem *systemPtr = mapIt->second;
     m_SystemMap.erase(mapIt);
 
     // 3. 从vector中移除对应的unique_ptr
     auto vecIt = std::find_if(m_Systems.begin(),
                               m_Systems.end(),
-                              [systemPtr](const std::unique_ptr<ComponentSystem> &ptr) {
+                              [systemPtr](const std::unique_ptr<IComponentSystem> &ptr) {
                                 return ptr.get() == systemPtr;
                               });
 
@@ -185,8 +185,8 @@ class ComponentSystemManager {
  private:
   SceneRegistry &m_Registry;
 
-  std::vector<std::unique_ptr<ComponentSystem>> m_Systems;             // 用于遍历
-  std::unordered_map<std::type_index, ComponentSystem *> m_SystemMap;  // 用于查找
+  std::vector<std::unique_ptr<IComponentSystem>> m_Systems;             // 用于遍历
+  std::unordered_map<std::type_index, IComponentSystem *> m_SystemMap;  // 用于查找
   bool m_SystemsSorted = false;
 };
 };  // namespace mite
