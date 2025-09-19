@@ -5,13 +5,14 @@ set(ENGINE_SCENE_CORE_LIB_NAME MiteEngine_Engine_Scene_Core)
 
 # 创建源代码组(筛选器)
 set(SCENE_CORE_SRCS
-
     scene_core/component.h
     scene_core/component.cpp
     scene_core/component_id.h
     scene_core/component_id.cpp
     scene_core/component_event_publisher.h
     scene_core/component_event_publisher.cpp
+    scene_core/component_snapshot.h
+    scene_core/component_snapshot.cpp
     scene_core/component_system.h
     scene_core/component_system.cpp
     scene_core/component_system_manager.h

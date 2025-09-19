@@ -3,6 +3,7 @@
 
 #include "entity.h"
 #include "subscription_group.h"
+#include "scene_core/component_snapshot.h"
 
 namespace mite {
 // 前向声明
