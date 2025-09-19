@@ -37,42 +37,15 @@ class Component {
 
   virtual ~Component() = default;
 
+  // ================== 组件标识相关 ======================
   /**
    * @brief 获取组件类型家族
    */
   virtual Family GetFamily() const = 0;
-
   /**
    * @brief 获取组件类型唯一ID
    */
   virtual std::type_index GetType() const = 0;
-
-  /**
-   * @brief 深拷贝（禁用，原则上组件不允许移动和拷贝，仅由Registry维护）
-   * @return 拷贝之后的智能指针
-   */
-  // virtual std::shared_ptr<Component> Clone() const = 0;
-
-  /**
-   * @brief 组件启用状态
-   */
-  void SetEnabled(bool enabled);
-  bool IsEnabled() const;
-
-  /**
-   * @brief 序列化组件数据
-   * @param output 输出流
-   * @return 是否成功
-   */
-  virtual bool Serialize(std::ostream &output) const;
-
-  /**
-   * @brief 反序列化组件数据
-   * @param input 输入流
-   * @return 是否成功
-   */
-  virtual bool Deserialize(std::istream &input);
-
   /**
    * @brief 返回组件是否依赖于其他组件
    * @return 依赖的组件类型列表
@@ -81,7 +54,62 @@ class Component {
   {
     return {};
   }
+  /**
+   * @brief 组件启用状态
+   */
+  void SetEnabled(bool enabled);
+  bool IsEnabled() const;
 
+  // ================== 快照相关 ======================
+  /**
+   * @brief 是否支持快照（用于Undo和Redo）
+   * 
+   * 1. 需要快照的组件类型（举例）：
+   *    TransformComponent - 核心变换数据
+   *    MeshRendererComponent - 渲染相关状态
+   *    LightComponent - 光源参数
+   *    CameraComponent - 相机设置
+   *    Hierarchy - 父子关系（SceneGraph）
+   * 
+   * 2. 不需要快照的组件类型（举例）：
+   *    TagComponent - 标签信息（通常不重要）
+   *    ScriptComponent - 脚本状态（复杂且难以序列化）
+   *    TemporaryComponent - 临时数据
+   *    SystemComponent - 系统内部状态
+   */
+  virtual bool SupportsSnapshot() const
+  {
+    return false; // 默认不支持，需要支持的直接override该方法
+  }
+  /**
+   * @brief 创建快照
+   * @return 组件快照对象
+   */
+  virtual std::unique_ptr<ComponentSnapshot> CreateSnapshot() const {}
+  /**
+   * @brief 应用快照
+   * @param snapshot 
+   */
+  virtual void ApplySnapshot(const ComponentSnapshot &snapshot){}
+
+
+  // ================== 序列化相关 ======================
+  /**
+   * @brief 序列化组件数据
+   * @param output 输出流
+   * @return 是否成功
+   */
+  virtual bool Serialize(std::ostream &output) const;
+  /**
+   * @brief 反序列化组件数据
+   * @param input 输入流
+   * @return 是否成功
+   */
+  virtual bool Deserialize(std::istream &input);
+
+
+
+  // ================== 实体绑定相关 ======================
   /**
    * @brief 设定所属实体对象
    * @param entity 实体对象
@@ -90,9 +118,11 @@ class Component {
    * 组件是否应当维护实体？存疑。
    * 原则上组件和实体应当是完全解耦的，
    * 该方法应当删除
+   * 
+   * 目前仅有事件发布和MainCamera维护需要实体
+   * 事件订阅者即便延迟处理事件，也需要记录Entity
    */
   void SetOwnerEntity(Entity entity);
-
   /**
    * @brief 获取组件绑定的实体
    */
@@ -101,6 +131,10 @@ class Component {
  protected:
   // 保护构造函数，确保只能通过子类实例化，
   explicit Component() = default;
+
+  // 禁用拷贝构造和赋值，组件仅由注册表维护
+  Component(const Component &) = delete;
+  Component &operator=(const Component &) = delete;
 
   Entity m_Entity;
 

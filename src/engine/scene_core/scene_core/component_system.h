@@ -52,7 +52,7 @@ class IComponentSystem {
   // 保护构造函数，确保只能通过派生类实例化
   IComponentSystem() = default;
 
-  // 禁用拷贝
+  // 禁用拷贝构造和赋值
   IComponentSystem(const IComponentSystem &) = delete;
   IComponentSystem &operator=(const IComponentSystem &) = delete;
 

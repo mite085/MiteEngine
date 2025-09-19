@@ -7,7 +7,7 @@ MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> material)
 {
 }
 
-// 材质基础操作 ========================================
+// =================== 材质基础操作 =====================
 std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterial() const
 {
   return m_Material;
@@ -26,13 +26,13 @@ bool MaterialComponent::HasMaterial() const
   return m_Material != nullptr;
 }
 
-// 着色器控制 ==========================================
+// =================== 着色器控制 =======================
 std::shared_ptr<OpenGLShader> MaterialComponent::GetShader() const
 {
   return m_Material ? m_Material->GetShader() : nullptr;
 }
 
-// 材质参数控制 ========================================
+// ================== 材质参数控制 ======================
 
 void MaterialComponent::SetFloatParam(const std::string &name, float value)
 {
@@ -57,7 +57,7 @@ void MaterialComponent::SetTextureParam(const std::string &name, std::shared_ptr
   m_Material->SetTexture(name, std::move(texture));
 }
 
-// 组件接口实现 ========================================
+// ================== 组件接口实现 ======================
 std::vector<std::type_index> MaterialComponent::GetDependencies() const
 {
   return {};
@@ -82,7 +82,7 @@ bool MaterialComponent::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-// Material组件系统实现 ==================================
+// ================= Material组件系统实现 =================
 std::vector<std::type_index> MaterialComponentSystem::GetSystemDependencies() const
 {
   return {typeid(MeshComponentSystem)};  // 通常与Mesh配合使用
