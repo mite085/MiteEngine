@@ -164,7 +164,7 @@ class ComponentSystemManager {
    *
    * @param deltaTime 帧间隔时间
    */
-  void UpdateAll(float deltaTime);
+  void UpdateDirtyComponentSystems(float deltaTime);
 
   /**
    * @brief 销毁所有系统

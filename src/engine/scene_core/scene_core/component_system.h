@@ -181,6 +181,13 @@ template<typename T> class ComponentSystem : public IComponentSystem {
   std::mutex m_Mutex;
 };
 
+// 非模板的基类
+class DirtyComponentSystemBase : public IComponentSystem {
+ public:
+  virtual ~DirtyComponentSystemBase() = default;
+  virtual void Update(float deltaTime, SceneRegistry &registry) = 0;
+  virtual size_t GetDirtyComponentCount() const = 0;
+};
 
 /**
  * @brief 基于Dirty Flag驱动的组件系统模板类
@@ -195,7 +202,10 @@ template<typename T> class ComponentSystem : public IComponentSystem {
  * 2. 处理脏状态：在适当的时机（如每帧更新时）检查并处理脏状态
  * 3. 清除脏标记：处理完成后将 m_Dirty 设为 false
  */
-template<typename T> class DirtyComponentSystem : public ComponentSystem<T> {
+template<typename T>
+class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSystemBase {
+  // 限制模板T必须继承自Component类型
+  static_assert(std::is_base_of<DirtyComponent, T>::value, "T must inherit from Dirty Component");
  public:
   DirtyComponentSystem() : ComponentSystem<T>(){};
 
@@ -204,7 +214,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem<T> {
    * @param deltaTime 帧间隔时间(秒)
    * @param registry 注册表
    */
-  virtual void Update(float deltaTime, SceneRegistry &registry)
+  virtual void Update(float deltaTime, SceneRegistry &registry) override
   {
     // 阶段1：收集脏组件
     CollectDirtyComponents();
@@ -215,10 +225,11 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem<T> {
   /**
    * @brief 获取脏组件数量
    */
-  size_t GetDirtyComponentCount() const
+  size_t GetDirtyComponentCount() const override
   {
     return m_DirtyComponents.size();
   }
+
   /**
    * @brief 强制标记所有组件为脏（用于特殊情况）
    */
@@ -261,7 +272,7 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem<T> {
     // 并行处理优化
     ParallelUtils::ForEach(m_DirtyComponents, [deltaTime, &registry](T *comp) {
       if (comp) {
-        static_cast<Component *>(comp)->Update(deltaTime, registry);
+        static_cast<DirtyComponent *>(comp)->Update(deltaTime, registry);
       }
     });
   }

@@ -26,13 +26,17 @@ void ComponentSystemManager::InitializeAll()
   }
 }
 
-void ComponentSystemManager::UpdateAll(float deltaTime)
+void ComponentSystemManager::UpdateDirtyComponentSystems(float deltaTime)
 {
-  // 按顺序更新
+  // 按顺序更新脏标记组件系统
   for (auto &system : m_Systems) {
-    auto entry = m_SystemMap.find(system->GetSystemType());
-    if (entry != m_SystemMap.end()) {
-      system->Update(deltaTime, m_Registry);
+    // 尝试转换为DirtyComponentSystem基类
+    auto *dirtySystem = dynamic_cast<DirtyComponentSystemBase *>(system.get());
+    if (dirtySystem) {
+      auto entry = m_SystemMap.find(system->GetSystemType());
+      if (entry != m_SystemMap.end()) {
+        dirtySystem->Update(deltaTime, m_Registry);
+      }
     }
   }
 }

@@ -58,8 +58,8 @@ void SceneCore::UnregisterComponentSystems()
 
 void SceneCore::OnUpdate(float timestep)
 {
-  // 更新所有注册的系统
-  m_SystemManager.UpdateAll(timestep);
+  // 更新所有注册的带脏标记的组件系统
+  m_SystemManager.UpdateDirtyComponentSystems(timestep);
 
   // 处理实体销毁队列
   auto entities = m_Registry.GetEntitiesWith<DestroyComponent>();
