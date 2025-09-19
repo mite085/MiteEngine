@@ -34,13 +34,6 @@ class IComponentSystem {
   virtual void Initialize() = 0;
 
   /**
-   * @brief 系统更新（每帧调用）
-   * @param deltaTime 帧间隔时间(秒)
-   * @param registry 注册表
-   */
-  virtual void Update(float deltaTime, SceneRegistry &registry) = 0;
-
-  /**
    * @brief 系统销毁（场景卸载时调用）
    */
   virtual void Shutdown() = 0;
@@ -121,8 +114,6 @@ template<typename T> class ComponentSystem : public IComponentSystem {
     m_EventSubscriptions.UnsubscribeAll();
     m_AllComponents.clear();
   }
-  // 基础系统Update为空，由具体子类实现
-  virtual void Update(float deltaTime, SceneRegistry &registry) override{}
 
   std::vector<std::type_index> GetComponentTypes() const override
   {
@@ -208,11 +199,12 @@ template<typename T> class DirtyComponentSystem : public ComponentSystem<T> {
  public:
   DirtyComponentSystem() : ComponentSystem<T>(){};
 
-  /**
-   * @brief 按照脏标记更新组件(逐帧调用)
-   * @param deltaTime 帧与帧时间间隔
+   /**
+   * @brief 系统更新（每帧调用）
+   * @param deltaTime 帧间隔时间(秒)
+   * @param registry 注册表
    */
-  virtual void Update(float deltaTime, SceneRegistry &registry) override
+  virtual void Update(float deltaTime, SceneRegistry &registry)
   {
     // 阶段1：收集脏组件
     CollectDirtyComponents();

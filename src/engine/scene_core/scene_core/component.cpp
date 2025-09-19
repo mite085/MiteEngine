@@ -6,31 +6,7 @@ namespace mite {
 // 基类方法的基础实现
 // 注意：大部分功能已在头文件中实现为纯虚函数
 
-void Component::MarkDirty()
-{
-  m_Dirty = true;
-}
 
-bool Component::IsDirty() const
-{
-  return m_Dirty;
-}
-
-void Component::ClearDirty()
-{
-  m_Dirty = false;
-}
-
-void Component::Update(float deltaTime, SceneRegistry &reg)
-{
-  if (IsDirty()) {
-    // 执行必要的更新或重新计算
-    ProcessDirty(deltaTime, reg);
-
-    // 清除脏标记
-    ClearDirty();
-  }
-}
 
 void Component::SetEnabled(bool enabled)
 {
@@ -65,4 +41,31 @@ Entity Component::GetEntity() const
 {
   return m_Entity;
 }
+
+void DirtyComponent::MarkDirty()
+{
+  m_Dirty = true;
+}
+
+bool DirtyComponent::IsDirty() const
+{
+  return m_Dirty;
+}
+
+void DirtyComponent::ClearDirty()
+{
+  m_Dirty = false;
+}
+
+void DirtyComponent::Update(float deltaTime, SceneRegistry &reg)
+{
+  if (IsDirty()) {
+    // 执行必要的更新或重新计算
+    ProcessDirty(deltaTime, reg);
+
+    // 清除脏标记
+    ClearDirty();
+  }
+}
+
 };  // namespace mite

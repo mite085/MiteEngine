@@ -51,28 +51,7 @@ class Component {
    * @brief 深拷贝（禁用，原则上组件不允许移动和拷贝，仅由Registry维护）
    * @return 拷贝之后的智能指针
    */
-  //virtual std::shared_ptr<Component> Clone() const = 0;
-
-  /**
-   * @brief 标记组件为已修改
-   */
-  void MarkDirty();
-  /**
-   * @brief 检查组件是否被修改过
-   */
-  bool IsDirty() const;
-  /**
-   * @brief 清理组件修改状态
-   */
-  void ClearDirty();
-  /**
-   * @brief 更新方法，通常每帧调用
-   */
-  void Update(float deltaTime, SceneRegistry &reg);
-  /**
-   * @brief 针对dirty对象进行处理
-   */
-  virtual void ProcessDirty(float deltaTime, SceneRegistry &reg) = 0;
+  // virtual std::shared_ptr<Component> Clone() const = 0;
 
   /**
    * @brief 组件启用状态
@@ -106,7 +85,7 @@ class Component {
   /**
    * @brief 设定所属实体对象
    * @param entity 实体对象
-   * 
+   *
    * 问题：
    * 组件是否应当维护实体？存疑。
    * 原则上组件和实体应当是完全解耦的，
@@ -125,8 +104,7 @@ class Component {
 
   Entity m_Entity;
 
-  std::atomic<bool> m_Dirty{false};  // 脏标记，标识组件是否被修改
-  bool m_Enabled = true;             // 组件是否启用
+  bool m_Enabled = true;  // 组件是否启用
 };
 
 /**
@@ -138,7 +116,7 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
  public:
   static constexpr Family family = F;
 
-  explicit ComponentTraits() : Component() {}
+  ComponentTraits() : Component() {}
 
   Family GetFamily() const override
   {
@@ -149,13 +127,67 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
     return typeid(T);
   }
 
+  // 启用静态类型检查的组件ID获取
+  static std::type_index GetStaticType()
+  {
+    return typeid(T);
+  }
+  static Family GetStaticFamily()
+  {
+    return family;
+  }
+};
+
+/**
+ * @brief 支持脏标记的组件基类，若需要处理脏标记则需要继承自该类
+ */
+class DirtyComponent : public Component {
+ public:
   /**
-   * @brief 组件深拷贝专用函数（禁用，原则上组件不允许移动和拷贝，仅由Registry维护）
+   * @brief 标记组件为已修改
    */
-  //std::shared_ptr<Component> Clone() const override
-  //{
-  //  return std::make_shared<T>(static_cast<const T &>(*this));
-  //}
+  void MarkDirty();
+  /**
+   * @brief 检查组件是否被修改过
+   */
+  bool IsDirty() const;
+  /**
+   * @brief 清理组件修改状态
+   */
+  void ClearDirty();
+
+  /**
+   * @brief 更新方法，每帧调用。
+   */
+  void Update(float deltaTime, SceneRegistry &reg);
+  /**
+   * @brief 针对dirty对象进行处理
+   */
+  virtual void ProcessDirty(float deltaTime, SceneRegistry &reg) = 0;
+
+ protected:
+  std::atomic<bool> m_Dirty{false};  // 脏标记，标识组件是否被修改
+};
+
+/**
+ * @brief 支持脏标记的组件类型特征模板，用于简化组件定义
+ * @tparam T 组件类型
+ * @tparam F 组件家族
+ */
+template<typename T, Component::Family F> class DirtyComponentTraits : public DirtyComponent {
+ public:
+  static constexpr Family family = F;
+
+  DirtyComponentTraits() : DirtyComponent() {}
+
+  Family GetFamily() const override
+  {
+    return family;
+  }
+  std::type_index GetType() const override
+  {
+    return typeid(T);
+  }
 
   // 启用静态类型检查的组件ID获取
   static std::type_index GetStaticType()
