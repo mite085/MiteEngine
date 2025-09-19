@@ -5,65 +5,65 @@
 
 namespace mite {
 
-// ÃüÁîÀà±ğ£¬Ö§³ÖÑÚÂëÅĞ¶Ï
+// å‘½ä»¤ç±»åˆ«ï¼Œæ”¯æŒæ©ç åˆ¤æ–­
 enum CommandCategory : uint64_t {
   COMMAND_CATEGORY_NONE = 0,
 
-  // »ù´¡²Ù×÷Àà±ğ
-  COMMAND_CATEGORY_SCENE = 1 << 0,      // ³¡¾°²Ù×÷ÃüÁî
-  COMMAND_CATEGORY_ENTITY = 1 << 1,     // ÊµÌå²Ù×÷ÃüÁî
-  COMMAND_CATEGORY_TRANSFORM = 1 << 2,  // ±ä»»²Ù×÷ÃüÁî
-  COMMAND_CATEGORY_ASSET = 1 << 3,      // ×Ê²ú²Ù×÷ÃüÁî
+  // åŸºç¡€æ“ä½œç±»åˆ«
+  COMMAND_CATEGORY_SCENE = 1 << 0,      // åœºæ™¯æ“ä½œå‘½ä»¤
+  COMMAND_CATEGORY_ENTITY = 1 << 1,     // å®ä½“æ“ä½œå‘½ä»¤
+  COMMAND_CATEGORY_TRANSFORM = 1 << 2,  // å˜æ¢æ“ä½œå‘½ä»¤
+  COMMAND_CATEGORY_ASSET = 1 << 3,      // èµ„äº§æ“ä½œå‘½ä»¤
 
-  // ±à¼­Æ÷ÌØ¶¨Àà±ğ
-  COMMAND_CATEGORY_EDITOR = 1 << 8,    // ±à¼­Æ÷²Ù×÷ÃüÁî
-  COMMAND_CATEGORY_VIEWPORT = 1 << 9,  // ÊÓ¿Ú²Ù×÷ÃüÁî
-  COMMAND_CATEGORY_UI = 1 << 10,       // UI²Ù×÷ÃüÁî
+  // ç¼–è¾‘å™¨ç‰¹å®šç±»åˆ«
+  COMMAND_CATEGORY_EDITOR = 1 << 8,    // ç¼–è¾‘å™¨æ“ä½œå‘½ä»¤
+  COMMAND_CATEGORY_VIEWPORT = 1 << 9,  // è§†å£æ“ä½œå‘½ä»¤
+  COMMAND_CATEGORY_UI = 1 << 10,       // UIæ“ä½œå‘½ä»¤
 
-  // ÏµÍ³Àà±ğ
-  COMMAND_CATEGORY_SYSTEM = 1 << 15,  // ÏµÍ³¼¶±ğÃüÁî
+  // ç³»ç»Ÿç±»åˆ«
+  COMMAND_CATEGORY_SYSTEM = 1 << 15,  // ç³»ç»Ÿçº§åˆ«å‘½ä»¤
 };
 
-// ÃüÁîÖ´ĞĞ×´Ì¬
+// å‘½ä»¤æ‰§è¡ŒçŠ¶æ€
 enum class CommandExecutionState {
-  PENDING,    // ÃüÁîµÈ´ıÖ´ĞĞ
-  EXECUTING,  // ÃüÁîÕıÔÚÖ´ĞĞ
-  SUCCEEDED,  // ÃüÁîÖ´ĞĞ³É¹¦
-  FAILED,     // ÃüÁîÖ´ĞĞÊ§°Ü
-  UNDONE,     // ÃüÁîÒÑ±»³·Ïú
-  REDONE      // ÃüÁîÒÑ±»ÖØ×ö
+  PENDING,    // å‘½ä»¤ç­‰å¾…æ‰§è¡Œ
+  EXECUTING,  // å‘½ä»¤æ­£åœ¨æ‰§è¡Œ
+  SUCCEEDED,  // å‘½ä»¤æ‰§è¡ŒæˆåŠŸ
+  FAILED,     // å‘½ä»¤æ‰§è¡Œå¤±è´¥
+  UNDONE,     // å‘½ä»¤å·²è¢«æ’¤é”€
+  REDONE      // å‘½ä»¤å·²è¢«é‡åš
 };
 
-// ÃüÁîÓÅÏÈ¼¶£¨ÓÃÓÚÖ´ĞĞË³Ğò¿ØÖÆ£©
+// å‘½ä»¤ä¼˜å…ˆçº§ï¼ˆç”¨äºæ‰§è¡Œé¡ºåºæ§åˆ¶ï¼‰
 enum class CommandPriority : uint8_t {
-  LOW = 0,        // µÍÓÅÏÈ¼¶ÃüÁî
-  NORMAL = 64,    // ÆÕÍ¨ÓÅÏÈ¼¶ÃüÁî
-  HIGH = 128,     // ¸ßÓÅÏÈ¼¶ÃüÁî
-  CRITICAL = 255  // ¹Ø¼üÓÅÏÈ¼¶ÃüÁî
+  LOW = 0,        // ä½ä¼˜å…ˆçº§å‘½ä»¤
+  NORMAL = 64,    // æ™®é€šä¼˜å…ˆçº§å‘½ä»¤
+  HIGH = 128,     // é«˜ä¼˜å…ˆçº§å‘½ä»¤
+  CRITICAL = 255  // å…³é”®ä¼˜å…ˆçº§å‘½ä»¤
 };
 
-// ÃüÁîÖ´ĞĞÉÏÏÂÎÄ±êÖ¾
+// å‘½ä»¤æ‰§è¡Œä¸Šä¸‹æ–‡æ ‡å¿—
 enum CommandContextFlags : uint32_t {
   CONTEXT_NONE = 0,
-  CONTEXT_EDITOR = 1 << 0,   // ±à¼­Æ÷ÉÏÏÂÎÄ
-  CONTEXT_RUNTIME = 1 << 1,  // ÔËĞĞÊ±ÉÏÏÂÎÄ
-  CONTEXT_PREVIEW = 1 << 2,  // Ô¤ÀÀÄ£Ê½ÉÏÏÂÎÄ
-  CONTEXT_PLAY = 1 << 3,     // ²¥·ÅÄ£Ê½ÉÏÏÂÎÄ
+  CONTEXT_EDITOR = 1 << 0,   // ç¼–è¾‘å™¨ä¸Šä¸‹æ–‡
+  CONTEXT_RUNTIME = 1 << 1,  // è¿è¡Œæ—¶ä¸Šä¸‹æ–‡
+  CONTEXT_PREVIEW = 1 << 2,  // é¢„è§ˆæ¨¡å¼ä¸Šä¸‹æ–‡
+  CONTEXT_PLAY = 1 << 3,     // æ’­æ”¾æ¨¡å¼ä¸Šä¸‹æ–‡
 };
 
-// ÃüÁîºÏ²¢²ßÂÔ
+// å‘½ä»¤åˆå¹¶ç­–ç•¥
 enum class CommandMergePolicy {
-  NONE,           // ²»ºÏ²¢ÃüÁî
-  BY_TYPE,        // °´ÀàĞÍºÏ²¢£¨ÏàÍ¬ÀàĞÍÃüÁîºÏ²¢£©
-  BY_TARGET,      // °´Ä¿±êºÏ²¢£¨ÏàÍ¬Ä¿±êÊµÌåµÄÃüÁîºÏ²¢£©
-  BY_TYPE_TARGET  // °´ÀàĞÍºÍÄ¿±êºÏ²¢
+  NONE,           // ä¸åˆå¹¶å‘½ä»¤
+  BY_TYPE,        // æŒ‰ç±»å‹åˆå¹¶ï¼ˆç›¸åŒç±»å‹å‘½ä»¤åˆå¹¶ï¼‰
+  BY_TARGET,      // æŒ‰ç›®æ ‡åˆå¹¶ï¼ˆç›¸åŒç›®æ ‡å®ä½“çš„å‘½ä»¤åˆå¹¶ï¼‰
+  BY_TYPE_TARGET  // æŒ‰ç±»å‹å’Œç›®æ ‡åˆå¹¶
 };
 
-// ÃüÁîÖ´ĞĞ½á¹û
+// å‘½ä»¤æ‰§è¡Œç»“æœ
 struct CommandResult {
-  bool success;                 // Ö´ĞĞÊÇ·ñ³É¹¦
-  CommandExecutionState state;  // Ö´ĞĞºóµÄ×´Ì¬
-  const char *message;          // Ö´ĞĞ½á¹ûÏûÏ¢£¨¿ÉÑ¡£©
+  bool success;                 // æ‰§è¡Œæ˜¯å¦æˆåŠŸ
+  CommandExecutionState state;  // æ‰§è¡Œåçš„çŠ¶æ€
+  const char *message;          // æ‰§è¡Œç»“æœæ¶ˆæ¯ï¼ˆå¯é€‰ï¼‰
 
   CommandResult(bool success, CommandExecutionState state, const char *message = nullptr)
       : success(success), state(state), message(message)
