@@ -114,7 +114,7 @@ class EntityTagChangedEvent : public EntityEvent {
   }
 };
 
-// 3. 组件事件	=====================================================
+// 3. 组件生命周期事件	=====================================================
 /**
  * @class ComponentEvent
  * @brief 组件事件基类(抽象类)
@@ -169,30 +169,46 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
     return new ComponentRemovedEvent<T>(entity, component);
   }
 };
-///**
-// * @class ComponentChangedEvent
-// * @brief 组件替换事件
-// */
-// template<typename T> class ComponentChangedEvent : public ComponentEvent<T> {
-// public:
-//  ComponentChangedEvent(Entity entity, T &newComponent, T &oldComponent)
-//      : ComponentEvent<T>(entity, newComponent), oldComponent(oldComponent)
-//  {
-//  }
-//  T &GetOldComponent()
-//  {
-//    return oldComponent;
-//  }
-//  EVENT_CLASS_TYPE(COMPONENT_CHANGED)
-//  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-//  Event *Clone() const override
-//  {
-//    return new ComponentChangedEvent<T>(entity, component, oldComponent);
-//  }
-//
-// private:
-//  T &oldComponent;  // 组件
-//};
+
+// 4. 组件快照事件	=====================================================
+/**
+ * @brief 快照应用事件模板类
+ * @tparam DataT 组件数据类型
+ * 
+ * 用于在事件总线中传递快照应用请求，实现解耦的快照应用机制
+ */
+template<typename DataT> class ApplySnapshotEvent : public Event {
+ public:
+  /**
+   * @brief 构造函数
+   * @param entityId 目标实体ID
+   * @param data 要应用的快照数据
+   */
+  ApplySnapshotEvent(Entity entityId, const DataT &data) : entityId(entityId), snapshotData(data)
+  {
+  }
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+
+  /**
+   * @brief 事件克隆方法
+   * @return Event* 克隆的事件对象
+   */
+  Event *Clone() const override
+  {
+    return new ApplySnapshotEvent<DataT>(*this);
+  }
+  Entity GetEntity() {
+    return entityId;
+  }
+  DataT& GetData() {
+    return snapshotData;
+  }
+
+ private:
+  Entity entityId;   // 目标实体标识符
+  DataT snapshotData;  // 要应用的快照数据
+};
+
 };  // namespace mite
 
 #endif
