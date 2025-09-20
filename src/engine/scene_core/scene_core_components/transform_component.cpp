@@ -1,19 +1,23 @@
 #include "transform_component.h"
 
 namespace mite {
-TransformComponent::TransformComponent() : ComponentTraits(), m_Transform() {}
+TransformComponent::TransformComponent() : SnapshotComponentTraits(), m_Transform() {}
 
 TransformComponent::TransformComponent(const glm::vec3 position,
                                        const glm::vec3 rotation,
                                        const glm::vec3 scale,
                                        const Transform::EulerOrder order)
-    : ComponentTraits(), m_Transform(position, rotation, scale, order)
+    : SnapshotComponentTraits(), m_Transform(position, rotation, scale, order)
 {
 }
 
 TransformComponent::TransformComponent(const glm::mat4 &matrix, const Transform::EulerOrder order)
-    : ComponentTraits(), m_Transform(matrix, order)
+    : SnapshotComponentTraits(), m_Transform(matrix, order)
 {
+}
+std::vector<std::type_index> TransformComponent::GetDependencies() const
+{
+  return {};
 }
 // 位置相关方法 ==============================================
 
@@ -142,12 +146,6 @@ glm::vec3 TransformComponent::GetConstrainedForward(const glm::vec3 &worldUp) co
 }
 
 // 组件接口实现 ==========================================
-
-std::vector<std::type_index> TransformComponent::GetDependencies() const
-{
-  return {};
-}
-
 bool TransformComponent::Serialize(std::ostream &output) const
 {
   Component::Serialize(output);
@@ -161,10 +159,18 @@ bool TransformComponent::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-// ==================== 组件系统实现 ====================
-
-std::vector<std::type_index> TransformComponentSystem::GetSystemDependencies() const
+// ==================== 快照接口实现 ====================
+Transform TransformComponent::GetSnapshotData() const
 {
-  return {};  // 依赖层级信息
+  return m_Transform;
 }
+
+void TransformComponent::SetSnapshotData(const Transform &data)
+{
+  m_Transform = data;
+  // 发布更新事件
+  EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
+}
+
+
 };  // namespace mite

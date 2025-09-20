@@ -14,7 +14,7 @@ namespace mite {
  * 3. 提供相机View矩阵创建功能
  */
 class TransformComponent
-    : public ComponentTraits<TransformComponent, Component::Family::Transform> {
+    : public SnapshotComponentTraits<Transform, Component::Family::Transform> {
  public:
   /**
    * @brief 默认构造函数
@@ -42,6 +42,7 @@ class TransformComponent
                               const Transform::EulerOrder order = Transform::EulerOrder::XYZ);
 
   ~TransformComponent() override = default;
+  std::vector<std::type_index> GetDependencies() const override;
 
   // ==================== 位置操作 ====================
   const glm::vec3 &GetLocalPosition() const;
@@ -80,20 +81,22 @@ class TransformComponent
   glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
   glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
 
-  // ==================== 组件接口 ====================
-  std::vector<std::type_index> GetDependencies() const override;
+  // ==================== 序列化接口 ====================
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
+
+ protected:
+  // ==================== 快照接口 ====================
+  Transform GetSnapshotData() const override;
+  void SetSnapshotData(const Transform &data) override;
 
  private:
   Transform m_Transform;  // 基础变换对象
 };
 
 // ==================== 组件系统 ====================
-class TransformComponentSystem : public ComponentSystem<TransformComponent> {
+class TransformComponentSystem : public SnapshotComponentSystem<TransformComponent> {
   DECLARE_COMPONENT_SYSTEM(TransformComponentSystem)
-
-  std::vector<std::type_index> GetSystemDependencies() const override;
 };
 // ==================== 事件定义 ====================
 /**
