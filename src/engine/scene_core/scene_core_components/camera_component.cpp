@@ -115,7 +115,7 @@ std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() cons
 
 Entity CameraComponentSystem::GetMainCameraEntity() const
 {
-  for (auto component : m_AllComponents) {
+  for (auto [entity, component] : m_AllComponents) {
     if (component && component->GetUsage() == CameraUsage::MainView) {
       return component->GetEntity();
     }
@@ -130,7 +130,7 @@ void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
   // 遍历组件列表，获取新camera组件和旧camera组件
   CameraComponent *oldMain = nullptr, *newMain = nullptr;
 
-  for (auto component : m_AllComponents) {
+  for (auto [entity, component] : m_AllComponents) {
     if (!component) {
       LOG_ERROR("Empty camera component pointer in camera component system!");
       continue;

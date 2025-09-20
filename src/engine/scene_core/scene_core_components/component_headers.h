@@ -11,8 +11,4 @@
 #include "transform_component.h"
 #include "visibility_component.h"
 
-namespace mite {
-
-
-}  // namespace mite
 #endif
