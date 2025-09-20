@@ -2,8 +2,8 @@
 #define MITE_SCENE_COMPONENT
 
 #include "entity.h"
-#include "subscription_group.h"
 #include "scene_core/component_snapshot.h"
+#include "subscription_group.h"
 
 namespace mite {
 // 前向声明
@@ -64,14 +64,14 @@ class Component {
   // ================== 快照相关 ======================
   /**
    * @brief 是否支持快照（用于Undo和Redo）
-   * 
+   *
    * 1. 需要快照的组件类型（举例）：
    *    TransformComponent - 核心变换数据
    *    MeshRendererComponent - 渲染相关状态
    *    LightComponent - 光源参数
    *    CameraComponent - 相机设置
    *    Hierarchy - 父子关系（SceneGraph）
-   * 
+   *
    * 2. 不需要快照的组件类型（举例）：
    *    TagComponent - 标签信息（通常不重要）
    *    ScriptComponent - 脚本状态（复杂且难以序列化）
@@ -80,19 +80,8 @@ class Component {
    */
   virtual bool SupportsSnapshot() const
   {
-    return false; // 默认不支持，需要支持的直接override该方法
+    return false;  // 默认不支持，需要支持的直接override该方法
   }
-  /**
-   * @brief 创建快照
-   * @return 组件快照对象
-   */
-  virtual std::unique_ptr<ComponentSnapshot> CreateSnapshot() const {}
-  /**
-   * @brief 应用快照
-   * @param snapshot 
-   */
-  virtual void ApplySnapshot(const ComponentSnapshot &snapshot){}
-
 
   // ================== 序列化相关 ======================
   /**
@@ -108,8 +97,6 @@ class Component {
    */
   virtual bool Deserialize(std::istream &input);
 
-
-
   // ================== 实体绑定相关 ======================
   /**
    * @brief 设定所属实体对象
@@ -119,7 +106,7 @@ class Component {
    * 组件是否应当维护实体？存疑。
    * 原则上组件和实体应当是完全解耦的，
    * 该方法应当删除
-   * 
+   *
    * 目前仅有事件发布和MainCamera维护需要实体
    * 事件订阅者即便延迟处理事件，也需要记录Entity
    */
@@ -144,33 +131,124 @@ class Component {
 
 /**
  * @brief 组件类型特征模板，用于简化组件定义
- * @tparam T 组件类型
+ * @tparam T 组件类型（主要用于快照和序列化）
  * @tparam F 组件家族
  */
-template<typename T, Component::Family F> class ComponentTraits : public Component {
+template<typename T, Component::Family F>
+class ComponentTraits : public Component {
  public:
   static constexpr Family family = F;
-
+  using DataType = T;
   ComponentTraits() : Component() {}
-
+  virtual ~ComponentTraits() = default;
   Family GetFamily() const override
   {
     return family;
   }
   std::type_index GetType() const override
   {
-    return typeid(T);
+    return typeid(*this);
   }
+};
 
-  // 启用静态类型检查的组件ID获取
-  static std::type_index GetStaticType()
-  {
-    return typeid(T);
-  }
-  static Family GetStaticFamily()
+/**
+ * @brief 支持快照的组件基类，若需要处理脏标记则需要继承自该类
+ * 
+ * 1. 需要快照的组件类型（举例）：
+ *    TransformComponent - 核心变换数据
+ *    MeshRendererComponent - 渲染相关状态
+ *    LightComponent - 光源参数
+ *    CameraComponent - 相机设置
+ *    Hierarchy - 父子关系（SceneGraph）
+ *
+ * 2. 不需要快照的组件类型（举例）：
+ *    TagComponent - 标签信息（通常不重要）
+ *    ScriptComponent - 脚本状态（复杂且难以序列化）
+ *    TemporaryComponent - 临时数据
+ *    SystemComponent - 系统内部状态
+ */
+class SnapshotComponent : public Component {
+ public:
+  virtual ~SnapshotComponent() = default;
+};
+
+/**
+ * @brief 支持快照的组件类型特征模板，用于简化组件定义
+ * @tparam T 组件类型
+ * @tparam F 组件家族
+ */
+template<typename T, Component::Family F>
+class SnapshotComponentTraits: public SnapshotComponent {
+ public:
+  // 添加自描述类型别名
+  using SnapshotDataType = T;
+  static constexpr Family family = F;
+  SnapshotComponentTraits() : SnapshotComponent() {}
+  virtual ~SnapshotComponentTraits() = default;
+  Family GetFamily() const override
   {
     return family;
   }
+  std::type_index GetType() const override
+  {
+    return typeid(*this);
+  }
+  // ================== 快照相关 ======================
+  /**
+   * @brief 创建组件快照
+   *
+   * 需要支持快照的组件必须重写此方法，返回该组件数据的快照
+   * 快照应该是组件数据的深拷贝，确保撤销/重做操作的安全性
+   *
+   * @return std::unique_ptr<ISnapshot> 组件快照智能指针
+   * @throws 如果组件不支持快照，默认实现返回nullptr
+   */
+  auto CreateSnapshot() const
+  {
+    return CreateComponentSnapshot<T>(GetEntity(), GetSnapshotData());
+  }
+  /**
+   * @brief 应用快照数据到组件
+   *
+   * 需要支持快照的组件必须重写此方法，将快照数据应用到当前组件
+   * 应用成功后应该发布相应的组件更新事件，通知其他系统数据变更
+   *
+   * @param snapshotData 快照的GetData()
+   * @return bool 是否成功应用快照
+   * @throws 如果组件不支持快照，默认实现返回false
+   */
+  bool ApplySnapshot(const T &snapshotData)
+  {
+    try {
+      SetSnapshotData(snapshotData);
+      return true;
+    }
+    catch (const std::exception &e) {
+      LOG_ERROR("Failed to apply snapshot: {}", e.what());
+      return false;
+    }
+  }
+  /**
+   * @brief 获取快照数据大小
+   *
+   * 用于内存统计和优化，返回该组件快照数据的大小
+   *
+   * @return size_t 快照数据大小（字节）
+   */
+  size_t GetSnapshotDataSize() const
+  {
+    return sizeof(T);
+  }
+ protected:
+  /**
+   * @brief 获取快照数据 - 子类必须实现
+   */
+  virtual T GetSnapshotData() const = 0;
+
+  /**
+   * @brief 设置快照数据 - 子类必须实现
+   */
+  virtual void SetSnapshotData(const T &data) = 0;
 };
 
 /**
@@ -178,6 +256,7 @@ template<typename T, Component::Family F> class ComponentTraits : public Compone
  */
 class DirtyComponent : public Component {
  public:
+  virtual ~DirtyComponent() = default;
   /**
    * @brief 标记组件为已修改
    */
@@ -212,26 +291,16 @@ class DirtyComponent : public Component {
 template<typename T, Component::Family F> class DirtyComponentTraits : public DirtyComponent {
  public:
   static constexpr Family family = F;
-
+  using DataType = T;
   DirtyComponentTraits() : DirtyComponent() {}
-
+  virtual ~DirtyComponentTraits() = default;
   Family GetFamily() const override
   {
     return family;
   }
   std::type_index GetType() const override
   {
-    return typeid(T);
-  }
-
-  // 启用静态类型检查的组件ID获取
-  static std::type_index GetStaticType()
-  {
-    return typeid(T);
-  }
-  static Family GetStaticFamily()
-  {
-    return family;
+    return typeid(*this);
   }
 };
 };  // namespace mite
