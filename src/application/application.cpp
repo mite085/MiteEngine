@@ -64,16 +64,15 @@ void MiteApplication::LoadDefaultScene()
   // 0. 创建并绑定主相机（该步骤必须在m_SceneCore->InitializeComponentSystems();之后执行)
   Camera mainCamera;
 
-  // 投影参数
-  mainCamera.SetPerspective(60.0f,  // FOV: 60度（便于计算）
-                             1.0f,   // 宽高比: 1:1（正方形视口，简化计算）
-                             1.0f,   // 近平面: 1m
-                             20.0f   // 远平面: 20m（足够包含场景）
-  );
+
   Entity mainCameraEntity = m_SceneCore->CreateEntity("main_camera");
-  CameraComponent &mainCameraComponent =
-      m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
-          mainCameraEntity, std::make_shared<Camera>(mainCamera));
+  CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
+      mainCameraEntity);
+  // 投影参数
+  mainCameraComponent.SetPerspective(60.0f,  // FOV: 60度（便于计算）
+                                     1.0f,   // 近平面: 1m
+                                     20.0f   // 远平面: 20m（足够包含场景）
+  );
   TransformComponent &mainCameraTransform =
       m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
 

@@ -3,26 +3,25 @@
 namespace mite {
 Camera::Camera()
 {
-  SetPerspective(45.0f, 16.0f / 9.0f, 0.01f, 1000.0f);
+  SetPerspective(45.0f, 0.01f, 1000.0f);
+  SetAspectRatio(16.0f / 9.0f);
 }
 
 // === 投影参数设置 ===
 
-void Camera::SetPerspective(float fov, float aspect, float near, float far)
+void Camera::SetPerspective(float fov, float near, float far)
 {
   m_ProjectionType = ProjectionType::Perspective;
   m_FOV = fov;
-  m_Aspect = aspect;
   m_Near = near;
   m_Far = far;
   m_ProjectionDirty = true;
 }
 
-void Camera::SetOrthographic(float size, float aspect, float near, float far)
+void Camera::SetOrthographic(float size, float near, float far)
 {
   m_ProjectionType = ProjectionType::Orthographic;
   m_OrthoSize = size;
-  m_Aspect = aspect;
   m_Near = near;
   m_Far = far;
   m_ProjectionDirty = true;
@@ -101,6 +100,34 @@ void Camera::Zoom(float amount)
     m_OrthoSize = glm::max(m_OrthoSize - amount * 0.1f, 0.1f);
     m_ProjectionDirty = true;
   }
+}
+
+// === 相机可见性掩码相关实现 ===
+void Camera::SetVisibilityMask(uint32_t mask)
+{
+  if (m_VisibilityMask != mask) {
+    m_VisibilityMask = mask;
+  }
+}
+
+uint32_t Camera::GetVisibilityMask() const
+{
+  return m_VisibilityMask;
+}
+
+void Camera::AddVisibilityLayer(uint32_t mask)
+{
+  m_VisibilityMask |= mask;
+}
+void Camera::RemoveVisibilityLayer(uint32_t mask)
+{
+  uint32_t old_mask = m_VisibilityMask;
+  m_VisibilityMask &= ~mask;
+}
+
+bool Camera::HasVisibilityLayer(uint32_t mask) const
+{
+  return (m_VisibilityMask & mask) != 0;
 }
 
 // === 辅助方法 ===

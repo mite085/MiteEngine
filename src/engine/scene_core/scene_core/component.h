@@ -241,13 +241,9 @@ class SnapshotComponentTraits: public SnapshotComponent {
   }
  protected:
   /**
-   * @brief 获取快照数据 - 子类必须实现
+   * @brief 获取 / 设置快照数据 - 子类必须实现
    */
   virtual T GetSnapshotData() const = 0;
-
-  /**
-   * @brief 设置快照数据 - 子类必须实现
-   */
   virtual void SetSnapshotData(const T &data) = 0;
 };
 

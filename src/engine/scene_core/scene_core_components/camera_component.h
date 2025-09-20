@@ -35,20 +35,20 @@ enum class CameraUsage {
  * - 必须与TransformComponent共存
  * - SceneView通过此组件获取渲染用摄像机
  */
-class CameraComponent : public ComponentTraits<Camera, Component::Family::Render> {
+class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family::Render> {
  public:
-  CameraComponent(std::shared_ptr<Camera> camera);
+  CameraComponent(Camera::ProjectionType type = Camera::ProjectionType::Perspective);
 
   // ==================== 投影参数控制 ====================
   void SetPerspective(float fov, float near, float far);
   void SetOrthographic(float size, float near, float far);
-  void Zoom(float amount);
   void SetAspectRatio(float aspect);
+  void SetProjectionType(Camera::ProjectionType type);
+  void Zoom(float amount);
 
   // ==================== 主摄像机与摄像机标记 ====================
   CameraUsage GetUsage() const;
   void SetUsage(CameraUsage usage);
-  std::shared_ptr<Camera> GetCamera();
 
   // ==================== 矩阵获取 ====================
   glm::mat4 GetProjectionMatrix() const;
@@ -57,35 +57,10 @@ class CameraComponent : public ComponentTraits<Camera, Component::Family::Render
   void SetViewportSize(uint32_t width, uint32_t height);
 
   // ==================== 可见性掩码 ====================
-  /**
-   * @brief 设置相机可见性掩码
-   * @param mask 可见性掩码（使用CameraVisibilityMask中的定义）
-   */
   void SetVisibilityMask(uint32_t mask);
-
-  /**
-   * @brief 获取相机可见性掩码
-   * @return 当前可见性掩码
-   */
   uint32_t GetVisibilityMask() const;
-
-  /**
-   * @brief 添加可见性层级
-   * @param mask 要添加的掩码
-   */
   void AddVisibilityLayer(uint32_t mask);
-
-  /**
-   * @brief 移除可见性层级
-   * @param mask 要移除的掩码
-   */
   void RemoveVisibilityLayer(uint32_t mask);
-
-  /**
-   * @brief 检查是否包含特定可见性层级
-   * @param mask 要检查的掩码
-   * @return 是否包含
-   */
   bool HasVisibilityLayer(uint32_t mask) const;
 
 
@@ -95,13 +70,16 @@ class CameraComponent : public ComponentTraits<Camera, Component::Family::Render
   std::vector<std::type_index> GetDependencies() const override;
 
  private:
-  std::shared_ptr<Camera> m_Camera;
+  virtual Camera GetSnapshotData() const;
+  virtual void SetSnapshotData(const Camera &data);
+
+  Camera m_Camera;
   CameraUsage m_Usage = CameraUsage::FreeView;
   uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 默认看到所有
 };
 
 // 摄像机组件系统
-class CameraComponentSystem : public ComponentSystem<CameraComponent> {
+class CameraComponentSystem : public SnapshotComponentSystem<CameraComponent> {
   DECLARE_COMPONENT_SYSTEM(CameraComponentSystem)
  public:
   std::vector<std::type_index> GetSystemDependencies() const override;
@@ -131,31 +109,21 @@ class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
 };
 
 /**
- * @class CameraVisibilityMaskChangedEvent
- * @brief 摄像机掩码修改事件（暂未启用）
+ * @class CameraChangedEvent
+ * @brief 摄像机修改事件
  */
-class CameraVisibilityMaskChangedEvent : public ComponentEvent<CameraComponent> {
+class CameraChangedEvent : public ComponentEvent<CameraComponent> {
  public:
-  CameraVisibilityMaskChangedEvent(Entity entity,
-                                   CameraComponent &component,
-                                   uint32_t newVisibilityMask)
-      : ComponentEvent<CameraComponent>(entity, component),
-        m_NewVisibilityMask(newVisibilityMask)
+  CameraChangedEvent(Entity entity, CameraComponent &component)
+      : ComponentEvent<CameraComponent>(entity, component)
   {
   }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new CameraVisibilityMaskChangedEvent(entity, component, m_NewVisibilityMask);
+    return new CameraChangedEvent(entity, component);
   }
-  uint32_t GetNewVisibleMask()
-  {
-    return m_NewVisibilityMask;
-  }
-
- private:
-  uint32_t m_NewVisibilityMask;
 };
 };  // namespace mite
 

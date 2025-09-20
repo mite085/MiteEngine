@@ -40,10 +40,10 @@ class Camera {
   Camera();
 
   // ==================== 投影参数设置 ====================
-  void SetPerspective(float fov, float aspect, float near, float far);    // 设定为透视相机
-  void SetOrthographic(float size, float aspect, float near, float far);  // 设定为正交相机
-  void SetProjectionType(ProjectionType type);  // 设定投影类型：透视/正交
-  void SetAspectRatio(float aspect);            // 设置宽高比
+  void SetPerspective(float fov, float near, float far);    // 设定为透视相机
+  void SetOrthographic(float size, float near, float far);  // 设定为正交相机
+  void SetProjectionType(ProjectionType type);              // 设定投影类型：透视/正交
+  void SetAspectRatio(float aspect);                        // 设置宽高比
 
   // ==================== 矩阵获取 ====================
   const glm::mat4 &GetProjectionMatrix() const;  // 获取投影矩阵
@@ -58,6 +58,38 @@ class Camera {
 
   // ==================== 投影控制方法 ====================
   void Zoom(float amount);
+
+  // ==================== 可见性掩码 ====================
+  /**
+   * @brief 设置相机可见性掩码
+   * @param mask 可见性掩码（使用CameraVisibilityMask中的定义）
+   */
+  void SetVisibilityMask(uint32_t mask);
+
+  /**
+   * @brief 获取相机可见性掩码
+   * @return 当前可见性掩码
+   */
+  uint32_t GetVisibilityMask() const;
+
+  /**
+   * @brief 添加可见性层级
+   * @param mask 要添加的掩码
+   */
+  void AddVisibilityLayer(uint32_t mask);
+
+  /**
+   * @brief 移除可见性层级
+   * @param mask 要移除的掩码
+   */
+  void RemoveVisibilityLayer(uint32_t mask);
+
+  /**
+   * @brief 检查是否包含特定可见性层级
+   * @param mask 要检查的掩码
+   * @return 是否包含
+   */
+  bool HasVisibilityLayer(uint32_t mask) const;
 
   // ==================== 状态检查 ====================
   bool IsProjectionDirty() const;
@@ -86,6 +118,9 @@ class Camera {
 
   // 脏标记：在Set()时Mark，在Get()时执行Update()并消除Mark
   mutable bool m_ProjectionDirty = true;
+
+  // 可见性掩码：用于分层渲染，和物体的VisibleMask匹配
+  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 默认全部渲染
 };
 };  // namespace mite
 
