@@ -2,14 +2,7 @@
 #define MITE_VISIBILITY_COMPONENT_H
 
 #include "scene_core/component_system.h"
-#include "camera_component.h"
-
-namespace {
-struct Visible {
-  bool m_IsVisible = true;                                // 当前可见性状态
-  uint32_t m_VisibilityMask = mite::CameraVisibilityMask::ALL;  // 可见性掩码
-};
-}  // namespace
+#include "basic_type/visible_type.h"
 
 namespace mite {
 
@@ -22,7 +15,8 @@ namespace mite {
  * 2. 维护“可见/不可见”的可见性状态
  * 3. 与SceneGraph协同实现高效的可见性管理
  */
-class VisibilityComponent : public ComponentTraits<Visible, Component::Family::Visibility> {
+class VisibilityComponent
+    : public SnapshotComponentTraits<Visibility, Component::Family::Visibility> {
  public:
   /**
    * @brief 默认构造函数
@@ -78,9 +72,10 @@ class VisibilityComponent : public ComponentTraits<Visible, Component::Family::V
   bool Deserialize(std::istream &input) override;
 
  private:
-  bool m_IsVisible = true;    // 当前可见性状态
+  virtual Visibility GetSnapshotData() const;
+  virtual void SetSnapshotData(const Visibility &data);
 
-  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 可见性掩码
+  Visibility m_Visibility;
 };
 
 // ==================== 组件系统 ====================
@@ -89,7 +84,7 @@ class VisibilityComponent : public ComponentTraits<Visible, Component::Family::V
  * @class VisibilityComponentSystem
  * @brief 可见性组件系统，负责批量处理可见性计算和剔除
  */
-class VisibilityComponentSystem : public ComponentSystem<VisibilityComponent> {
+class VisibilityComponentSystem : public SnapshotComponentSystem<VisibilityComponent> {
   DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
 };
 

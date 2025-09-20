@@ -7,7 +7,7 @@ set(ENGINE_DATA_LIB_NAME MiteEngine_Engine_Data)
 set(BASIC_TYPE_SRCS
     basic_type/asset_type.h
     basic_type/handle_type.h
-    basic_type/camera_type.h
+    basic_type/visible_type.h
     basic_type/bounding_volumes_types.h         # 包围盒类型定义
     basic_type/bounding_volumes_types.cpp
     basic_type/bounding_volumes_intersects.h    # 包围盒相交测试
@@ -33,7 +33,6 @@ set(BASIC_DATA_SRCS
     basic_data/texture.cpp
     basic_data/transform.h
     basic_data/transform.cpp
-
 
     basic_data/bounding_volume.h             # AABB/OBB/Sphere等包围盒实现
     basic_data/bounding_volume.cpp

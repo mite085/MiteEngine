@@ -5,10 +5,10 @@
 
 namespace mite {
 /**
- * @brief 相机可见性掩码定义
+ * @brief 可见性掩码定义
  * 用于分层渲染和选择性可见性控制
  */
-namespace CameraVisibilityMask {
+namespace VisibilityMask {
 // 基础可见性层级
 constexpr uint32_t DEFAULT = 0x00000001;      // 默认可见层
 constexpr uint32_t STATIC = 0x00000002;       // 静态物体层
@@ -27,10 +27,10 @@ constexpr uint32_t REFLECTION = 0x00000200;   // 反射渲染
 constexpr uint32_t REFRACTION = 0x00000400;   // 折射渲染
 
 // 游戏逻辑层级（待后续启用）
-//constexpr uint32_t PLAYER = 0x00001000;       // 玩家相关
-//constexpr uint32_t ENEMY = 0x00002000;        // 敌人相关
-//constexpr uint32_t NPC = 0x00004000;          // NPC相关
-//constexpr uint32_t ENVIRONMENT = 0x00008000;  // 环境物体
+// constexpr uint32_t PLAYER = 0x00001000;       // 玩家相关
+// constexpr uint32_t ENEMY = 0x00002000;        // 敌人相关
+// constexpr uint32_t NPC = 0x00004000;          // NPC相关
+// constexpr uint32_t ENVIRONMENT = 0x00008000;  // 环境物体
 
 // 组合掩码
 constexpr uint32_t ALL = 0xFFFFFFFF;   // 所有层级
@@ -39,24 +39,16 @@ constexpr uint32_t NONE = 0x00000000;  // 无层级
 // 常用组合
 constexpr uint32_t RENDER_ALL = DEFAULT | STATIC | DYNAMIC | TRANSPARENT;
 constexpr uint32_t EDITOR_VIEW = EDITOR | DEBUG | UI;
-}  // namespace CameraVisibilityMask
+}  // namespace VisibilityMask
 
 /**
- * @brief 相机类型枚举
+ * @brief 可见性
+ * @param m_IsVisible 是否可见，用于加速结构构建之前的剔除
+ * @param m_VisibilityMask 可见性掩码，用于加速结构查询之后，视锥体剔除
  */
-enum class CameraProjectionType {
-  PERSPECTIVE,   // 透视相机
-  ORTHOGRAPHIC,  // 正交相机
-};
-
-/**
- * @brief 相机清除标志
- */
-enum class CameraClearFlags {
-  SKYBOX,       // 清除为天空盒
-  SOLID_COLOR,  // 清除为纯色
-  DEPTH_ONLY,   // 只清除深度
-  DONT_CLEAR    // 不清除
+struct Visibility {
+  bool m_IsVisible = true;                          // 当前可见性状态
+  uint32_t m_VisibilityMask = VisibilityMask::ALL;  // 可见性掩码
 };
 }  // namespace mite
 
