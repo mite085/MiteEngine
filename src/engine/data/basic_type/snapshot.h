@@ -12,6 +12,7 @@ namespace mite {
  */
 class ISnapshot {
  public:
+  ISnapshot() : m_timestamp(Time::CurrentTimeMS()){}
   virtual ~ISnapshot() = default;
 
   // ================== 核心接口 ======================
@@ -68,8 +69,6 @@ class ISnapshot {
   uint64_t m_timestamp;  // 快照创建时间戳（毫秒）
 };
 
-// 快照智能指针
-using SnapshotPtr = std::unique_ptr<ISnapshot>;
 
 }  // namespace mite::scene
 
