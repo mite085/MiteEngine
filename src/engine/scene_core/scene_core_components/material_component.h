@@ -19,7 +19,7 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持GPU实例化
  */
-class MaterialComponent : public ComponentTraits<MaterialComponent, Component::Family::Geometry> {
+class MaterialComponent : public ComponentTraits<MaterialInstance, Component::Family::Geometry> {
  public:
   /**
    * @brief 带初始值的构造函数

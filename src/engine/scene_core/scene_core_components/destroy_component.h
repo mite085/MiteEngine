@@ -3,6 +3,11 @@
 
 #include "scene_core/component_system.h"
 
+// 匿名空distroy
+namespace {
+struct Distroy {};
+}  // namespace
+
 namespace mite {
 // 前向声明
 class SceneRegistry;
@@ -14,7 +19,7 @@ class SceneRegistry;
  *
  * 注意：这是一个空组件，仅作为标记使用，不包含任何数据成员。
  */
-struct DestroyComponent : public ComponentTraits<DestroyComponent, Component::Family::Cleanup> {
+struct DestroyComponent : public ComponentTraits<Distroy, Component::Family::Cleanup> {
   // 无数据成员，纯标记组件
 
   /**

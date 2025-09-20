@@ -16,7 +16,7 @@ namespace mite {
  * 3. 管理组件的序列化和脏标记
  */
 class BoundingVolumeComponent
-    : public ComponentTraits<BoundingVolumeComponent, Component::Family::Geometry> {
+    : public ComponentTraits<BoundingVolume, Component::Family::Geometry> {
  public:
   /**
    * @brief 默认构造函数

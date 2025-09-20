@@ -35,7 +35,7 @@ enum class CameraUsage {
  * - 必须与TransformComponent共存
  * - SceneView通过此组件获取渲染用摄像机
  */
-class CameraComponent : public ComponentTraits<CameraComponent, Component::Family::Render> {
+class CameraComponent : public ComponentTraits<Camera, Component::Family::Render> {
  public:
   CameraComponent(std::shared_ptr<Camera> camera);
 

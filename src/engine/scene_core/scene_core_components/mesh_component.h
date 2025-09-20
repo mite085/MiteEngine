@@ -19,7 +19,7 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持实例化渲染
  */
-class MeshComponent : public ComponentTraits<MeshComponent, Component::Family::Geometry> {
+class MeshComponent : public ComponentTraits<Mesh, Component::Family::Geometry> {
  public:
 
   /**

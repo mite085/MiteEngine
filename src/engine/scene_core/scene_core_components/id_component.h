@@ -25,7 +25,7 @@ class SceneRegistry;
  * 3.架构清晰性：
  *  - 避免将实例标识和类型标识混为一谈
  */
-class IDComponent : public ComponentTraits<IDComponent, Component::Family::Core> {
+class IDComponent : public ComponentTraits<UUID, Component::Family::Core> {
  public:
   /**
    * @brief 默认构造函数（生成新UUID）

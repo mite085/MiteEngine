@@ -4,7 +4,15 @@
 #include "scene_core/component_system.h"
 #include "camera_component.h"
 
+namespace {
+struct Visible {
+  bool m_IsVisible = true;                                // 当前可见性状态
+  uint32_t m_VisibilityMask = mite::CameraVisibilityMask::ALL;  // 可见性掩码
+};
+}  // namespace
+
 namespace mite {
+
 /**
  * @class VisibilityComponent
  * @brief 可见性组件，专注于管理实体的可见性掩码和可见性状态
@@ -14,8 +22,7 @@ namespace mite {
  * 2. 维护“可见/不可见”的可见性状态
  * 3. 与SceneGraph协同实现高效的可见性管理
  */
-class VisibilityComponent
-    : public ComponentTraits<VisibilityComponent, Component::Family::Visibility> {
+class VisibilityComponent : public ComponentTraits<Visible, Component::Family::Visibility> {
  public:
   /**
    * @brief 默认构造函数
@@ -72,7 +79,6 @@ class VisibilityComponent
 
  private:
   bool m_IsVisible = true;    // 当前可见性状态
-  bool m_WasVisible = false;  // 上一帧可见性状态（用于检测变化）
 
   uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 可见性掩码
 };
