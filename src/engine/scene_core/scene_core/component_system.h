@@ -149,7 +149,7 @@ template<typename T> class ComponentSystem : public IComponentSystem {
    */
   virtual void OnComponentAdded(ComponentAddedEvent<T> &e)
   {
-    Register(&e.GetComponent());
+    Register(e.GetEntity(), &e.GetComponent());
     e.SetResult(EventResult::Handled);
   }
   /**
@@ -157,29 +157,69 @@ template<typename T> class ComponentSystem : public IComponentSystem {
    */
   virtual void OnComponentRemoved(ComponentRemovedEvent<T> &e)
   {
-    Unregister(&e.GetComponent());
+    Unregister(e.GetEntity());
     e.SetResult(EventResult::Handled);
   }
   /**
    * @brief 注册组件
    */
-  void Register(T *component)
+  void Register(Entity entity, T *component)
   {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    m_AllComponents.push_back(component);
+    m_AllComponents.emplace(entity, component);
   }
   /**
    * @brief 注销组件
    */
-  void Unregister(T *component)
+  void Unregister(Entity entity)
   {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    m_AllComponents.erase(std::remove(m_AllComponents.begin(), m_AllComponents.end(), component),
-                          m_AllComponents.end());
+    m_AllComponents.erase(m_AllComponents.find(entity));
   }
-  std::vector<T *> m_AllComponents;
+  std::unordered_map<Entity, T *> m_AllComponents;
   std::mutex m_Mutex;
 };
+
+/**
+ * @brief 支持快照的组件系统模板类
+ * 
+ * 主要负责消费ApplySnapshotEvent事件，将改动同步到Component上
+ */
+template<typename T>
+class SnapshotComponentSystem : public ComponentSystem<T>{
+  // 限制模板T必须继承自Component类型
+  static_assert(std::is_base_of<SnapshotComponent, T>::value, "T must inherit from Snapshot Component");
+  // 添加自描述类型别名
+  using TraitsDataType = typename T::SnapshotDataType;
+  static constexpr Component::Family FamilyID = T::family;
+ public:
+  SnapshotComponentSystem() : ComponentSystem<T>(){};
+  virtual ~SnapshotComponentSystem() = default;
+  virtual void Initialize() override
+  {
+    // 订阅组件添加/移除事件
+    // Immediate同步模式
+    ComponentSystem::m_EventSubscriptions
+        .SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
+        BIND_DISPATCH_FN(OnSnapshotApplied), EventPriority::High);
+    
+    ComponentSystem::Initialize();
+  }
+
+ private:
+  void OnSnapshotApplied(ApplySnapshotEvent<TraitsDataType> &e)
+  {
+    Entity entity = e.GetEntity();
+      // 确保存在组件
+    if (m_AllComponents.find(entity) != m_AllComponents.end())
+      if (auto snapComponent = static_cast<SnapshotComponentTraits<TraitsDataType, FamilyID> *>(
+              m_AllComponents.at(entity)))
+        snapComponent->ApplySnapshot(e.GetData());
+
+    e.SetResult(EventResult::Handled);
+  }
+};
+
 
 // 非模板的基类
 class DirtyComponentSystemBase : public IComponentSystem {
@@ -208,7 +248,7 @@ class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSys
   static_assert(std::is_base_of<DirtyComponent, T>::value, "T must inherit from Dirty Component");
  public:
   DirtyComponentSystem() : ComponentSystem<T>(){};
-
+  virtual ~DirtyComponentSystem() = default;
    /**
    * @brief 系统更新（每帧调用）
    * @param deltaTime 帧间隔时间(秒)
