@@ -81,6 +81,14 @@ void MiteApplication::LoadDefaultScene()
   mainCameraTransform.SetLocalPosition(glm::vec3(0.0f, 3.0f, 5.0f));
   mainCameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
+  // 添加快照测试
+  std::unique_ptr<ComponentSnapshot<Transform>> transformSnap =
+      mainCameraTransform.CreateSnapshot();
+  // 相机看向远处点，不再看向远点
+  mainCameraTransform.LookAt(glm::vec3(110.0f, 120.0f, 120.0f));
+  // 获取组件恢复快照
+  transformSnap->Apply();
+
   m_SceneCore->SetMainCamera(mainCameraEntity);
 
   // 0. 创建ViewportPanel并设置FrameBuffer
