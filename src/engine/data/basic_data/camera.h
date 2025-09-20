@@ -2,9 +2,25 @@
 #define MITE_DATA_CAMERA
 
 #include "headers/headers.h"
-#include "basic_type/camera_type.h"
 
 namespace mite {
+/**
+ * @brief 相机类型枚举
+ */
+enum class CameraProjectionType {
+  PERSPECTIVE,   // 透视相机
+  ORTHOGRAPHIC,  // 正交相机
+};
+
+/**
+ * @brief 相机清除标志
+ */
+enum class CameraClearFlags {
+  SKYBOX,       // 清除为天空盒
+  SOLID_COLOR,  // 清除为纯色
+  DEPTH_ONLY,   // 只清除深度
+  DONT_CLEAR    // 不清除
+};
 /**
  * @brief 独立摄像机类，封装投影矩阵计算
  *
@@ -58,38 +74,6 @@ class Camera {
   // ==================== 投影控制方法 ====================
   void Zoom(float amount);
 
-  // ==================== 可见性掩码 ====================
-  /**
-   * @brief 设置相机可见性掩码
-   * @param mask 可见性掩码（使用CameraVisibilityMask中的定义）
-   */
-  void SetVisibilityMask(uint32_t mask);
-
-  /**
-   * @brief 获取相机可见性掩码
-   * @return 当前可见性掩码
-   */
-  uint32_t GetVisibilityMask() const;
-
-  /**
-   * @brief 添加可见性层级
-   * @param mask 要添加的掩码
-   */
-  void AddVisibilityLayer(uint32_t mask);
-
-  /**
-   * @brief 移除可见性层级
-   * @param mask 要移除的掩码
-   */
-  void RemoveVisibilityLayer(uint32_t mask);
-
-  /**
-   * @brief 检查是否包含特定可见性层级
-   * @param mask 要检查的掩码
-   * @return 是否包含
-   */
-  bool HasVisibilityLayer(uint32_t mask) const;
-
   // ==================== 状态检查 ====================
   bool IsProjectionDirty() const;
   void MarkProjectionClean();
@@ -117,9 +101,6 @@ class Camera {
 
   // 脏标记：在Set()时Mark，在Get()时执行Update()并消除Mark
   mutable bool m_ProjectionDirty = true;
-
-  // 可见性掩码：用于分层渲染，和物体的VisibleMask匹配
-  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 默认全部渲染
 };
 };  // namespace mite
 

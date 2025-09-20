@@ -14,6 +14,8 @@ namespace mite {
  * 1. 提供可见性掩码支持分层渲染
  * 2. 维护“可见/不可见”的可见性状态
  * 3. 与SceneGraph协同实现高效的可见性管理
+ * 
+ * 注意：相机实体也应当持有该组件，但相机不使用bool的可见性判断，仅使用可见性掩码进行匹配。
  */
 class VisibilityComponent
     : public SnapshotComponentTraits<Visibility, Component::Family::Visibility> {

@@ -102,34 +102,6 @@ void Camera::Zoom(float amount)
   }
 }
 
-// === 相机可见性掩码相关实现 ===
-void Camera::SetVisibilityMask(uint32_t mask)
-{
-  if (m_VisibilityMask != mask) {
-    m_VisibilityMask = mask;
-  }
-}
-
-uint32_t Camera::GetVisibilityMask() const
-{
-  return m_VisibilityMask;
-}
-
-void Camera::AddVisibilityLayer(uint32_t mask)
-{
-  m_VisibilityMask |= mask;
-}
-void Camera::RemoveVisibilityLayer(uint32_t mask)
-{
-  uint32_t old_mask = m_VisibilityMask;
-  m_VisibilityMask &= ~mask;
-}
-
-bool Camera::HasVisibilityLayer(uint32_t mask) const
-{
-  return (m_VisibilityMask & mask) != 0;
-}
-
 // === 辅助方法 ===
 
 void Camera::UpdateProjection() const

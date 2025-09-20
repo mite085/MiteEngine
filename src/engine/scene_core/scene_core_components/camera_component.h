@@ -2,7 +2,6 @@
 #define MITE_SCENE_CAMERA_COMPONENT
 
 #include "basic_data/camera.h"
-#include "basic_type/camera_type.h"
 #include "scene_core/component_system.h"
 
 namespace mite {
@@ -56,14 +55,6 @@ class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family
   // ==================== 视口适配 ====================
   void SetViewportSize(uint32_t width, uint32_t height);
 
-  // ==================== 可见性掩码 ====================
-  void SetVisibilityMask(uint32_t mask);
-  uint32_t GetVisibilityMask() const;
-  void AddVisibilityLayer(uint32_t mask);
-  void RemoveVisibilityLayer(uint32_t mask);
-  bool HasVisibilityLayer(uint32_t mask) const;
-
-
   // ==================== 组件接口 ====================
   bool Serialize(std::ostream &output) const override;
   bool Deserialize(std::istream &input) override;
@@ -75,7 +66,6 @@ class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family
 
   Camera m_Camera;
   CameraUsage m_Usage = CameraUsage::FreeView;
-  uint32_t m_VisibilityMask = CameraVisibilityMask::ALL;  // 默认看到所有
 };
 
 // 摄像机组件系统

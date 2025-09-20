@@ -64,17 +64,21 @@ void MiteApplication::LoadDefaultScene()
   // 0. 创建并绑定主相机（该步骤必须在m_SceneCore->InitializeComponentSystems();之后执行)
   Camera mainCamera;
 
-
   Entity mainCameraEntity = m_SceneCore->CreateEntity("main_camera");
+
+  // 主相机的相机组件与投影参数设定
   CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
       mainCameraEntity);
-  // 投影参数
   mainCameraComponent.SetPerspective(60.0f,  // FOV: 60度（便于计算）
                                      1.0f,   // 近平面: 1m
                                      20.0f   // 远平面: 20m（足够包含场景）
   );
+  // 主相机的变换组件
   TransformComponent &mainCameraTransform =
       m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
+  // 主相机的可见性组件
+  VisibilityComponent &mainCameraVisibility =
+      m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(mainCameraEntity);
 
   // 设定方便观看模型的角度（相机没有Parent，暂时将Local坐标当成World坐标使用）
   mainCameraTransform.SetLocalPosition(glm::vec3(0.0f, 3.0f, 5.0f));
@@ -363,7 +367,7 @@ void MiteApplication::Render()
       m_SceneCore->GetRegistry().GetComponent<TransformComponent>(mainCamera).CreateViewMatrix();
   glm::mat4 cameraProjection =
       m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetProjectionMatrix();
-  uint32_t mainCameraVisibilityMask = m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetVisibilityMask();
+  uint32_t mainCameraVisibilityMask = m_SceneCore->GetRegistry().GetComponent<VisibilityComponent>(mainCamera).GetVisibilityMask();
 
   Frustum mainCameraFrustum(cameraProjection * cameraView);
 

@@ -2,7 +2,7 @@
 #include "transform_component.h"
 
 namespace mite {
-CameraComponent::CameraComponent(Camera::ProjectionType type) : m_Camera(Camera())
+CameraComponent::CameraComponent(CameraProjectionType type) : m_Camera(Camera())
 {
   m_Camera.SetProjectionType(type);
 }
@@ -22,7 +22,7 @@ void CameraComponent::SetAspectRatio(float aspect)
 {
   m_Camera.SetAspectRatio(aspect);
 }
-void CameraComponent::SetProjectionType(Camera::ProjectionType type)
+void CameraComponent::SetProjectionType(CameraProjectionType type)
 {
   m_Camera.SetProjectionType(type);
 }
@@ -51,30 +51,6 @@ void CameraComponent::SetViewportSize(uint32_t width, uint32_t height)
     return;
   float aspect = static_cast<float>(width) / height;
   m_Camera.SetAspectRatio(aspect);
-}
-
-void CameraComponent::SetVisibilityMask(uint32_t mask)
-{
-  m_Camera.SetVisibilityMask(mask);
-}
-
-uint32_t CameraComponent::GetVisibilityMask() const
-{
-  return m_Camera.GetVisibilityMask();
-}
-
-void CameraComponent::AddVisibilityLayer(uint32_t mask)
-{
-  m_Camera.AddVisibilityLayer(mask);
-}
-void CameraComponent::RemoveVisibilityLayer(uint32_t mask)
-{
-  m_Camera.RemoveVisibilityLayer(mask);
-}
-
-bool CameraComponent::HasVisibilityLayer(uint32_t mask) const
-{
-  return m_Camera.HasVisibilityLayer(mask);
 }
 
 bool CameraComponent::Serialize(std::ostream &output) const
