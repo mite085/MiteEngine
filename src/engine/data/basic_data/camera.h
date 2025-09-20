@@ -2,6 +2,7 @@
 #define MITE_DATA_CAMERA
 
 #include "headers/headers.h"
+#include "basic_type/camera_type.h"
 
 namespace mite {
 /**
@@ -35,21 +36,19 @@ namespace mite {
  */
 class Camera {
  public:
-  enum class ProjectionType { Perspective, Orthographic };
-
   Camera();
 
   // ==================== 投影参数设置 ====================
   void SetPerspective(float fov, float near, float far);    // 设定为透视相机
   void SetOrthographic(float size, float near, float far);  // 设定为正交相机
-  void SetProjectionType(ProjectionType type);              // 设定投影类型：透视/正交
+  void SetProjectionType(CameraProjectionType type);        // 设定投影类型：透视/正交
   void SetAspectRatio(float aspect);                        // 设置宽高比
 
   // ==================== 矩阵获取 ====================
   const glm::mat4 &GetProjectionMatrix() const;  // 获取投影矩阵
 
   // ==================== 参数访问 ====================
-  ProjectionType GetProjectionType() const;  // 获取投影类型
+  CameraProjectionType GetProjectionType() const;  // 获取投影类型
   float GetNear() const;                     // 近平面
   float GetFar() const;                      // 远平面
   float GetFOV() const;                      // 视场角（deg，透视相机专属）
@@ -100,7 +99,7 @@ class Camera {
   void UpdateProjection() const;  // 更新投影矩阵，清理脏标记
 
   // 投影类型，默认透视
-  ProjectionType m_ProjectionType = ProjectionType::Perspective;
+  CameraProjectionType m_ProjectionType = CameraProjectionType::PERSPECTIVE;
 
   // 透视参数
   float m_FOV = 45.0f;  // 垂直FOV（度）

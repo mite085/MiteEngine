@@ -11,7 +11,7 @@ Camera::Camera()
 
 void Camera::SetPerspective(float fov, float near, float far)
 {
-  m_ProjectionType = ProjectionType::Perspective;
+  m_ProjectionType = CameraProjectionType::PERSPECTIVE;
   m_FOV = fov;
   m_Near = near;
   m_Far = far;
@@ -20,14 +20,14 @@ void Camera::SetPerspective(float fov, float near, float far)
 
 void Camera::SetOrthographic(float size, float near, float far)
 {
-  m_ProjectionType = ProjectionType::Orthographic;
+  m_ProjectionType = CameraProjectionType::ORTHOGRAPHIC;
   m_OrthoSize = size;
   m_Near = near;
   m_Far = far;
   m_ProjectionDirty = true;
 }
 
-void Camera::SetProjectionType(ProjectionType type)
+void Camera::SetProjectionType(CameraProjectionType type)
 {
   m_ProjectionType = type;
   m_ProjectionDirty = true;
@@ -51,7 +51,7 @@ const glm::mat4 &Camera::GetProjectionMatrix() const
 
 // === 参数访问 ===
 
-Camera::ProjectionType Camera::GetProjectionType() const
+CameraProjectionType Camera::GetProjectionType() const
 {
   return m_ProjectionType;
 }
@@ -90,7 +90,7 @@ void Camera::MarkProjectionClean()
 // === 相机控制方法实现 ===
 void Camera::Zoom(float amount)
 {
-  if (m_ProjectionType == ProjectionType::Perspective) {
+  if (m_ProjectionType == CameraProjectionType::PERSPECTIVE) {
     // 透视模式：调整FOV
     m_FOV = glm::clamp(m_FOV - amount, 1.0f, 170.0f);
     m_ProjectionDirty = true;
@@ -135,11 +135,11 @@ bool Camera::HasVisibilityLayer(uint32_t mask) const
 void Camera::UpdateProjection() const
 {
   // 透视相机
-  if (m_ProjectionType == ProjectionType::Perspective) {
+  if (m_ProjectionType == CameraProjectionType::PERSPECTIVE) {
     m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_Aspect, m_Near, m_Far);
   }
   // 正交相机
-  else if (m_ProjectionType == ProjectionType::Orthographic) {
+  else if (m_ProjectionType == CameraProjectionType::ORTHOGRAPHIC) {
     float width = m_OrthoSize * m_Aspect;
     float height = m_OrthoSize;
     m_ProjectionMatrix = glm::ortho(-width / 2, width / 2, -height / 2, height / 2, m_Near, m_Far);

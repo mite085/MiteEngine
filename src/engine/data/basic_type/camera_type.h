@@ -1,4 +1,3 @@
-// camera_types.h
 #ifndef MITE_CAMERA_TYPES_H
 #define MITE_CAMERA_TYPES_H
 
@@ -45,7 +44,7 @@ constexpr uint32_t EDITOR_VIEW = EDITOR | DEBUG | UI;
 /**
  * @brief 相机类型枚举
  */
-enum class CameraType {
+enum class CameraProjectionType {
   PERSPECTIVE,   // 透视相机
   ORTHOGRAPHIC,  // 正交相机
 };

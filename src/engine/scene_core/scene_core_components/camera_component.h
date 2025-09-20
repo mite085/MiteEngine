@@ -37,13 +37,13 @@ enum class CameraUsage {
  */
 class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family::Render> {
  public:
-  CameraComponent(Camera::ProjectionType type = Camera::ProjectionType::Perspective);
+  CameraComponent(CameraProjectionType type = CameraProjectionType::PERSPECTIVE);
 
   // ==================== 投影参数控制 ====================
   void SetPerspective(float fov, float near, float far);
   void SetOrthographic(float size, float near, float far);
   void SetAspectRatio(float aspect);
-  void SetProjectionType(Camera::ProjectionType type);
+  void SetProjectionType(CameraProjectionType type);
   void Zoom(float amount);
 
   // ==================== 主摄像机与摄像机标记 ====================
