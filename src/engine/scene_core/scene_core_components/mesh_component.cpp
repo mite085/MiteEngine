@@ -2,17 +2,17 @@
 #include "material_component.h"
 #include "transform_component.h"
 namespace mite {
-MeshComponent::MeshComponent(std::shared_ptr<Mesh> mesh) : ComponentTraits(), m_Mesh(mesh)
+MeshComponent::MeshComponent(Mesh mesh): m_Mesh(mesh)
 {
 }
 
 // 网格操作 ==============================================
-std::shared_ptr<Mesh> MeshComponent::GetMesh() const
+Mesh MeshComponent::GetMesh() const
 {
   return m_Mesh;
 }
 
-void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
+void MeshComponent::SetMesh(Mesh mesh)
 {
   m_Mesh = mesh;
   EventBus::Publish<MeshChangedEvent>(MeshChangedEvent(GetEntity(), *this));
@@ -20,7 +20,7 @@ void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
 
 bool MeshComponent::HasMesh() const
 {
-  return m_Mesh && m_Mesh->GetSection().indexCount != 0 && m_Mesh->GetSection().vertexCount != 0;
+  return m_Mesh.GetSection().indexCount != 0 && m_Mesh.GetSection().vertexCount != 0;
 }
 
 // 渲染属性控制 ==========================================
@@ -80,6 +80,19 @@ bool MeshComponent::Deserialize(std::istream &input)
 
   return !input.fail();
 }
+
+Mesh MeshComponent::GetSnapshotData() const
+{
+  return m_Mesh;
+}
+
+void MeshComponent::SetSnapshotData(const Mesh &data)
+{
+  m_Mesh = data;
+  // 发布更新事件
+  EventBus::Publish<MeshChangedEvent>(MeshChangedEvent(GetEntity(), *this));
+}
+
 // Mesh组件系统实现 ======================================
 std::vector<std::type_index> MeshComponentSystem::GetSystemDependencies() const
 {

@@ -19,7 +19,7 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持实例化渲染
  */
-class MeshComponent : public ComponentTraits<Mesh, Component::Family::Geometry> {
+class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Geometry> {
  public:
 
   /**
@@ -27,7 +27,7 @@ class MeshComponent : public ComponentTraits<Mesh, Component::Family::Geometry> 
    * @param mesh 网格数据
    * @param material 材质数据
    */
-  explicit MeshComponent(std::shared_ptr<Mesh> mesh);
+  explicit MeshComponent(Mesh mesh);
 
   ~MeshComponent() override = default;
 
@@ -36,13 +36,13 @@ class MeshComponent : public ComponentTraits<Mesh, Component::Family::Geometry> 
    * @brief 获取网格数据
    * @return 共享指针指向的网格数据
    */
-  std::shared_ptr<Mesh> GetMesh() const;
+  Mesh GetMesh() const;
 
   /**
    * @brief 设置网格数据
    * @param mesh 新的网格数据
    */
-  void SetMesh(std::shared_ptr<Mesh> mesh);
+  void SetMesh(Mesh mesh);
 
   /**
    * @brief 检查是否有有效网格数据
@@ -56,7 +56,7 @@ class MeshComponent : public ComponentTraits<Mesh, Component::Family::Geometry> 
    */
   const std::pair<glm::vec3, glm::vec3> GetBoundingBox() const
   {
-    return m_Mesh->GetBoundingBox();
+    return m_Mesh.GetBoundingBox();
   }
 
   // ================== 渲染属性控制 ========================
@@ -104,8 +104,12 @@ class MeshComponent : public ComponentTraits<Mesh, Component::Family::Geometry> 
   bool Deserialize(std::istream &input) override;
 
  private:
-  std::shared_ptr<Mesh> m_Mesh;  // 网格数据
+  Mesh GetSnapshotData() const override;
+  void SetSnapshotData(const Mesh &data) override;
 
+  Mesh m_Mesh;  // 网格数据
+
+  // 以下Flag不支持快照恢复，若需要支持则将定义移至Mesh中
   bool m_IsVisible = true;       // 可见性标志
   bool m_CastShadows = true;     // 是否投射阴影
   bool m_ReceiveShadows = true;  // 是否接收阴影
@@ -113,7 +117,7 @@ class MeshComponent : public ComponentTraits<Mesh, Component::Family::Geometry> 
 };
 
 // ========================= Mesh组件系统 ============================
-class MeshComponentSystem : public ComponentSystem<MeshComponent> {
+class MeshComponentSystem : public SnapshotComponentSystem<MeshComponent> {
   DECLARE_COMPONENT_SYSTEM(MeshComponentSystem)
  public:
   std::vector<std::type_index> GetSystemDependencies() const override;
