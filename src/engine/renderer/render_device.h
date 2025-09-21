@@ -57,7 +57,7 @@ class IRenderDevice {
    * 但Bind和Draw的操作是和Mesh强相关，
    * 所以这里实现Bind Mesh而非Bind Model
    */
-  virtual void BindMesh(std::shared_ptr<Mesh> mesh) const = 0;
+  virtual void BindMesh(Mesh mesh) const = 0;
   /**
    * @brief SelectMeshLODLevel 根据输入LOD偏差，选择单个Mesh的LOD层级
    * @param mesh 网格体对象
@@ -68,7 +68,7 @@ class IRenderDevice {
    * 
    * 针对超大Model（如地形）可以逐Mesh划分LOD，降低渲染压力
    */
-  virtual uint32_t SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
+  virtual uint32_t SelectMeshLODLevel(Mesh mesh,
                                       const glm::vec3 &cameraPosition,
                                       const glm::mat4 &worldTransform,
                                       const glm::mat4 &viewProjectionMatrix,
@@ -79,7 +79,7 @@ class IRenderDevice {
    * @param mesh
    * @param lodLevel
    */
-  virtual void DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const = 0;
+  virtual void DrawMeshLOD(Mesh mesh, uint32_t lodLevel) const = 0;
   /**
    * @brief DrawIndexed 按照顶点执行绘制任务
    * @param indexCount 绘制的顶点数量

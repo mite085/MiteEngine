@@ -68,7 +68,7 @@ class RenderCommand {
   // 绘制命令
   // TODO: 这一部分还可以继续优化，原则上仅需传递以下几个参数
   // const std::shared_ptr<OpenGLShader>& shader,
-  // const std::shared_ptr<Mesh> &mesh,
+  // const Mesh &mesh,
   // const glm::mat4 &transform  对应"u_Model"矩阵
   static void Submit(RenderableItem item,
                      glm::mat4 viewMatrix,
