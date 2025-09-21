@@ -69,8 +69,7 @@ class RenderableItemBuilder {
    * @note 可用于特殊渲染效果或调试目的
    */
   void SetMaterialOverrideFunction(
-      std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>
-          func);
+      std::function<MaterialInstanceHandle(Entity, MaterialInstanceHandle)> func);
 
   /**
    * @brief 设置自定义变换覆盖函数
@@ -84,7 +83,7 @@ class RenderableItemBuilder {
    * @param func LOD选择回调函数
    * @note 可用于自定义LOD选择策略
    */
-  void SetLODSelectorFunction(std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> func);
+  void SetLODSelectorFunction(std::function<uint32_t(Entity, const Mesh &)> func);
 
   // ==================== 工具接口 ====================
   /**
@@ -107,21 +106,19 @@ class RenderableItemBuilder {
    * @param entity ECS实体
    * @return 网格组件共享指针，如果不存在返回nullptr
    */
-  std::shared_ptr<Mesh> ExtractMeshComponent(SceneRegistry &registry, Entity entity);
+  Mesh ExtractMeshComponent(SceneRegistry &registry, Entity entity);
 
   /**
    * @brief 从实体提取材质组件
    * @param entity ECS实体
-   * @return 材质实例共享指针，如果不存在返回nullptr
+   * @return 材质实例Handle
    */
-  std::shared_ptr<MaterialInstance> ExtractMaterialComponent(SceneRegistry &registry,
-                                                             Entity entity);
+  MaterialInstanceHandle ExtractMaterialComponent(SceneRegistry &registry, Entity entity);
 
   // 自定义回调函数（用于扩展功能）
-  std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>
-      m_MaterialOverrideFunc;
+  std::function<MaterialInstanceHandle(Entity, MaterialInstanceHandle)> m_MaterialOverrideFunc;
   std::function<glm::mat4(Entity, const glm::mat4 &)> m_TransformOverrideFunc;
-  std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> m_LODSelectorFunc;
+  std::function<uint32_t(Entity, const Mesh &)> m_LODSelectorFunc;
 
   // 禁用拷贝构造和赋值
   RenderableItemBuilder(const RenderableItemBuilder &) = delete;

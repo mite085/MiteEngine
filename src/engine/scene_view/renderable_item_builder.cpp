@@ -57,11 +57,6 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     auto material = ExtractMaterialComponent(registry, entity);
     glm::mat4 transform = sceneNode->GetWorldTransform();
 
-    if (!mesh || !material) {
-      m_Logger->warn("Entity {} missing mesh or material component", entity.GetUUIDString());
-      return RenderableItem();
-    }
-
     // 应用自定义覆盖函数（如果设置）
     if (m_MaterialOverrideFunc) {
       material = m_MaterialOverrideFunc(entity, material);
@@ -89,7 +84,7 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
 }
 
 void RenderableItemBuilder::SetMaterialOverrideFunction(
-    std::function<std::shared_ptr<MaterialInstance>(Entity, std::shared_ptr<MaterialInstance>)>
+    std::function<MaterialInstanceHandle(Entity, MaterialInstanceHandle)>
         func)
 {
   m_MaterialOverrideFunc = func;
@@ -102,7 +97,7 @@ void RenderableItemBuilder::SetTransformOverrideFunction(
 }
 
 void RenderableItemBuilder::SetLODSelectorFunction(
-    std::function<uint32_t(Entity, const std::shared_ptr<Mesh> &)> func)
+    std::function<uint32_t(Entity, const Mesh &)> func)
 {
   m_LODSelectorFunc = func;
 }
@@ -128,23 +123,23 @@ bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, Entity entity)
   return hasMesh && hasMaterial && hasTransform;
 }
 
-std::shared_ptr<Mesh> RenderableItemBuilder::ExtractMeshComponent(SceneRegistry &registry,
+Mesh RenderableItemBuilder::ExtractMeshComponent(SceneRegistry &registry,
                                                                   Entity entity)
 {
   if (registry.HasComponent<MeshComponent>(entity)) {
     auto &meshComp = registry.GetComponent<MeshComponent>(entity);
     return meshComp.GetMesh();
   }
-  return nullptr;
+  return Mesh();
 }
 
-std::shared_ptr<MaterialInstance> RenderableItemBuilder::ExtractMaterialComponent(
+MaterialInstanceHandle RenderableItemBuilder::ExtractMaterialComponent(
     SceneRegistry &registry, Entity entity)
 {
   if (registry.HasComponent<MaterialComponent>(entity)) {
     auto &materialComp = registry.GetComponent<MaterialComponent>(entity);
-    return materialComp.GetMaterial();
+    return materialComp.GetMaterialInstanceHandel();
   }
-  return nullptr;
+  return MaterialInstanceHandle();
 }
 }  // namespace mite
