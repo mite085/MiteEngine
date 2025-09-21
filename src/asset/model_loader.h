@@ -31,7 +31,7 @@ class ModelLoader {
                                                    1.0f, 0.5f, 0.25f, 0.1f});
 
  private:
-  // 创建模型资源数据
+  // 创建合并的模型资源数据（以及合并的同时创建MeshSectionLODChain）
   static std::shared_ptr<ModelSourceData> CreateModelSourceData(std::shared_ptr<ModelAsset> model);
 
   // 处理Assimp的Mesh数据

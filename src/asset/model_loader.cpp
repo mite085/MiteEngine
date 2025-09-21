@@ -51,13 +51,12 @@ std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
   CalculateBoundingBox(
       model->subMeshData, model->metadata.boundingBoxMin, model->metadata.boundingBoxMax);
 
-  // 5. 构造RendererDevice可接收的ModelSourceData数据
+  // 5. 构造RendererDevice可接收的ModelSourceData数据（的同时创建MeshSectionLODChain）
   std::shared_ptr<ModelSourceData> sourceData = CreateModelSourceData(model);
 
   // 6. 发布事件，委托RendererDevice创建GPU资源
-  ModelLoadEvent event(sourceData, model->handle);
+  ModelLoadEvent event(sourceData, model);
   EventBus::Publish<ModelLoadEvent>(event);
-  // model->handle = IRenderDevice::Current().CreateModel(rendererData);
 
   return model;
 }
@@ -115,6 +114,8 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
       // 修正为合并到 ModelSourceData 后的绝对偏移（相对于合并后的顶点数据）
       index += vertexOffset;
     }
+
+    // 执行合并操作
     sourceData->mergedIndices.insert(
         sourceData->mergedIndices.end(), adjustedIndices.begin(), adjustedIndices.end());
 
@@ -136,7 +137,7 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
     return meshSection;
   };
 
-  // 遍历MeshData并逐个处理，并构建MeshSection
+  // 遍历MeshData并逐个执行合并操作，并构建MeshSection
   for (const MeshDataLODChain &meshLODChain : model->subMeshData) {
     MeshSectionLODChain sectionLODChain;
 
@@ -147,7 +148,9 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
     for (const MeshData &lodMeshData : meshLODChain.lodSections) {
       sectionLODChain.lodSections.push_back(MergeMeshDataToSourceData(lodMeshData));
     }
-    sourceData->sections.push_back(sectionLODChain);
+
+    // 由ModelAsset负责管理MeshSectionLODChain
+    model->subMeshSection.push_back(sectionLODChain);
   }
 
   return sourceData;

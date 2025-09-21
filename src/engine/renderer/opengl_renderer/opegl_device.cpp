@@ -203,11 +203,8 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
   m_ActiveVBOs.insert(VBO);
   m_ActiveEBOs.insert(EBO);
 
-  // 8. 保存ModelSourceData创建时生成的MeshSections（包含LOD信息）
-  handle.subMeshes = std::move(data->sections);
-
-  // 9. 记录LOD信息
-  m_Logger->debug("Created model with {} LOD levels for: {}", data->sections.size(), data->path);
+  // 8. 记录LOD信息
+  m_Logger->debug("Created model with for: {}", data->path);
 
   return handle;
 }
@@ -259,18 +256,13 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
   handle.indexBuffer = 0;
 }
 
-void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
+void OpenGLDevice::BindMesh(Mesh mesh) const
 {
-  std::shared_ptr<ModelGPUHandle> modelHandle = mesh->GetModelHandle();
-  MeshSection meshSection = mesh->GetSection();
+  ModelGPUHandle modelHandle = mesh.GetModelHandle();
+  MeshSection meshSection = mesh.GetSection();
 
   // 1. 参数有效性检查
-  if (!modelHandle) {
-    m_Logger->warn("Attempt to bind mesh with null model handle");
-    return;
-  }
-
-  if (modelHandle->vertexArray == 0) {
+  if (modelHandle.vertexArray == 0) {
     m_Logger->warn("Attempt to bind mesh with invalid VAO (handle=0)");
     return;
   }
@@ -283,19 +275,19 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   }
 
   // 2. 绑定整个模型的VAO
-  GLuint vao = static_cast<GLuint>(modelHandle->vertexArray);
+  GLuint vao = static_cast<GLuint>(modelHandle.vertexArray);
   glBindVertexArray(vao);
 
   // 3. 验证缓冲区是否有效
-  if (modelHandle->vertexBuffer == 0 || modelHandle->indexBuffer == 0) {
+  if (modelHandle.vertexBuffer == 0 || modelHandle.indexBuffer == 0) {
     m_Logger->error("Model buffers not initialized (VBO={}, EBO={})",
-                    modelHandle->vertexBuffer,
-                    modelHandle->indexBuffer);
+                    modelHandle.vertexBuffer,
+                    modelHandle.indexBuffer);
   }
 
   // 4. 绑定缓冲区（VAO已包含这些信息，但显式绑定更安全）
-  glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(modelHandle->vertexBuffer));
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLuint>(modelHandle->indexBuffer));
+  glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(modelHandle.vertexBuffer));
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLuint>(modelHandle.indexBuffer));
 
   // 5. 存储当前绑定的MeshSection（供后续Draw调用使用）
   // 注意：这需要OpenGLDevice有成员变量存储当前状态，或者使用其他状态管理机制
@@ -311,19 +303,19 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   //                meshSection.vertexOffset);
 }
 
-uint32_t OpenGLDevice::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
+uint32_t OpenGLDevice::SelectMeshLODLevel(Mesh mesh,
                                           const glm::vec3 &cameraPosition,
                                           const glm::mat4 &worldTransform,
                                           const glm::mat4 &viewProjectionMatrix,
                                           float screenWidth,
                                           float lodBias) const
 {
-  if (!mesh) {
+  if (mesh.GetVertexCount() == 0) {
     return 0;
   }
 
   // 获取网格的世界空间包围盒
-  auto localBBox = mesh->GetBoundingBox(0);
+  auto localBBox = mesh.GetBoundingBox(0);
   glm::vec3 localMin = localBBox.first;
   glm::vec3 localMax = localBBox.second;
 
@@ -374,8 +366,8 @@ uint32_t OpenGLDevice::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
 
   // 获取可用的LOD级别
   std::set<uint32_t> availableLODs;
-  availableLODs.insert(mesh->GetBaseSection().lodLevel);
-  for (const auto &lodSection : mesh->GetAllLODSections()) {
+  availableLODs.insert(mesh.GetBaseSection().lodLevel);
+  for (const auto &lodSection : mesh.GetAllLODSections()) {
     availableLODs.insert(lodSection.lodLevel);
   }
 
@@ -392,24 +384,15 @@ uint32_t OpenGLDevice::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
   return selectedLOD;
 }
 
-void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const
+void OpenGLDevice::DrawMeshLOD(Mesh mesh, uint32_t lodLevel) const
 {
-  std::shared_ptr<ModelGPUHandle> modelHandle = mesh->GetModelHandle();
-
-  if (!modelHandle) {
-    m_Logger->warn("Attempt to draw mesh with null model handle");
-    return;
-  }
-  if (modelHandle->subMeshes.empty()) {
-    m_Logger->warn("No subMeshes LOD chains found in model handle");
-    return;
-  }
+  ModelGPUHandle modelHandle = mesh.GetModelHandle();
 
   // 直接从Mesh对象获取指定LOD级别的MeshSection
-  const MeshSection *targetSection = &mesh->GetSection(lodLevel);
+  const MeshSection *targetSection = &mesh.GetSection(lodLevel);
 
   // 绑定模型
-  GLuint vao = static_cast<GLuint>(modelHandle->vertexArray);
+  GLuint vao = static_cast<GLuint>(modelHandle.vertexArray);
   glBindVertexArray(vao);
   // 绘制指定LOD级别的网格
   DrawIndexed(
@@ -573,8 +556,8 @@ void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
   // 1. 创建GPU资源
   ModelGPUHandle modelHandle = CreateModel(e.GetModelSourceData());
 
-  // 2. 更新ModelAsset
-  e.GetModelGPUHandle() = std::make_shared<ModelGPUHandle>(modelHandle);
+  // 2. 更新ModelAsset（值传递，避免modelHandle脱离作用域）
+  e.GetModelAsset()->handle = modelHandle;
 
   // 标记事件已消费，阻断传播
   e.SetResult(EventResult::Consumed);
@@ -586,7 +569,7 @@ void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
   TextureGPUHandle textureHandle = CreateTexture(e.GetTextureSourceData());
 
   // 2. 更新TextureAsset
-  e.GetTextureHandle() = std::make_shared<TextureGPUHandle>(textureHandle);
+  e.GetTextureAsset()->handle = textureHandle;
 
   // 标记事件已消费，阻断传播
   e.SetResult(EventResult::Consumed);

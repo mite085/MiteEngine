@@ -53,7 +53,7 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureData(const std::string &
   rendererData->generateMipmaps = true;
 
   // 8. 发布事件，委托RendererDevice创建GPU资源
-  TextureLoadEvent event(rendererData, textureAsset->handle);
+  TextureLoadEvent event(rendererData, textureAsset);
   EventBus::Publish<TextureLoadEvent>(event);
 
   return textureAsset;
