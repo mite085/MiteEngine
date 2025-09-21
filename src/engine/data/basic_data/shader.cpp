@@ -1,7 +1,7 @@
 #include "shader.h"
 
 namespace mite {
-OpenGLShader::OpenGLShader() : m_RendererID(0) {}
+OpenGLShader::OpenGLShader() {}
 
 OpenGLShader::~OpenGLShader()
 {
@@ -60,40 +60,43 @@ void OpenGLShader::LoadFromSource(const std::string &vertexSrc,
                             const std::string &geometrySrc)
 {
   // 1. 编译着色器
-  uint32_t vertexID = CompileShader(vertexSrc, GL_VERTEX_SHADER);
-  uint32_t fragmentID = CompileShader(fragmentSrc, GL_FRAGMENT_SHADER);
-  uint32_t geometryID = 0;
+  m_Handle.vertexShader = CompileShader(vertexSrc, GL_VERTEX_SHADER);
+  m_Handle.fragmentShader = CompileShader(fragmentSrc, GL_FRAGMENT_SHADER);
+  m_Handle.geometryShader = 0;
 
   // 可选几何着色器
   if (!geometrySrc.empty()) {
-    geometryID = CompileShader(geometrySrc, GL_GEOMETRY_SHADER);
+    m_Handle.geometryShader = CompileShader(geometrySrc, GL_GEOMETRY_SHADER);
   }
 
   // 2. 创建着色器程序
-  m_RendererID = glCreateProgram();
-  glAttachShader(m_RendererID, vertexID);
-  glAttachShader(m_RendererID, fragmentID);
-  if (geometryID != 0) {
-    glAttachShader(m_RendererID, geometryID);
+  m_Handle.programId = glCreateProgram();
+  glAttachShader(static_cast<GLuint>(m_Handle.programId),
+                 static_cast<GLuint>(m_Handle.vertexShader));
+  glAttachShader(static_cast<GLuint>(m_Handle.programId),
+                 static_cast<GLuint>(m_Handle.fragmentShader));
+  if (m_Handle.geometryShader != 0) {
+    glAttachShader(static_cast<GLuint>(m_Handle.programId),
+                   static_cast<GLuint>(m_Handle.geometryShader));
   }
 
   // 3. 链接程序
-  glLinkProgram(m_RendererID);
-  CheckCompileErrors(m_RendererID, GL_LINK_STATUS, true);
+  glLinkProgram(static_cast<GLuint>(m_Handle.programId));
+  CheckCompileErrors(static_cast<GLuint>(m_Handle.programId), GL_LINK_STATUS, true);
 
   // 4. 删除临时着色器对象（已链接到程序中）
-  glDeleteShader(vertexID);
-  glDeleteShader(fragmentID);
-  if (geometryID != 0) {
-    glDeleteShader(geometryID);
+  glDeleteShader(static_cast<GLuint>(m_Handle.vertexShader));
+  glDeleteShader(static_cast<GLuint>(m_Handle.fragmentShader));
+  if (m_Handle.geometryShader != 0) {
+    glDeleteShader(static_cast<GLuint>(m_Handle.geometryShader));
   }
 }
 
 void OpenGLShader::Destroy()
 {
-  if (m_RendererID != 0) {
-    glDeleteProgram(m_RendererID);
-    m_RendererID = 0;
+  if (m_Handle.programId != 0) {
+    glDeleteProgram(static_cast<GLuint>(m_Handle.programId));
+    m_Handle.programId = 0;
   }
   m_UniformLocationCache.clear();
 }
@@ -268,7 +271,7 @@ int OpenGLShader::GetUniformLocation(const std::string &name)
   }
 
   // 查询OpenGL并缓存结果
-  int location = glGetUniformLocation(m_RendererID, name.c_str());
+  int location = glGetUniformLocation(static_cast<GLuint>(m_Handle.programId), name.c_str());
   if (location == -1) {
     LOG_CRITICAL("WARNING: Uniform {} not found in shader!", name);
   }
@@ -278,7 +281,7 @@ int OpenGLShader::GetUniformLocation(const std::string &name)
 
 void OpenGLShader::Bind() const
 {
-  glUseProgram(m_RendererID);
+  glUseProgram(static_cast<GLuint>(m_Handle.programId));
 }
 
 void OpenGLShader::Unbind() const

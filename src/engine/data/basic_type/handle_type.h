@@ -1,11 +1,7 @@
 #ifndef MITE_HANDLE_TYPE
 #define MITE_HANDLE_TYPE
 
-#include <glad.h>
-#include <glm/glm.hpp>
-#include <string>
-#include <variant>
-#include <vector>
+#include "headers/headers.h"
 
 namespace mite {
 // ------------------------ 纹理相关 ------------------------
@@ -89,24 +85,46 @@ struct MeshSectionLODChain {
 
 // 模型数据来源（Renderer模块专用的过渡型数据格式）
 struct ModelSourceData {
-  std::string path;                           // 文件原始路径
-  std::vector<uint8_t> mergedVertexData;      // 合并后的顶点数据
-  std::vector<uint32_t> mergedIndices;        // 合并后的索引数据
-  std::vector<MeshSectionLODChain> sections;  // 子网格分段信息
-  VertexLayout layout;                        // 顶点布局(所有子网格共享)
-  glm::vec3 modelBboxMin;                     // 模型级包围盒
+  // 构建GPUHandle的核心部分
+  std::vector<uint8_t> mergedVertexData;  // 合并后的顶点数据
+  std::vector<uint32_t> mergedIndices;    // 合并后的索引数据
+  VertexLayout layout;                    // 顶点布局(所有子网格共享)
+
+  // 需要传递给GPUHandle的信息
+  std::string path;        // 文件原始路径（用于调试）
+  glm::vec3 modelBboxMin;  // 模型级包围盒
   glm::vec3 modelBboxMax;
 };
 
 // 模型GPU句柄
 struct ModelGPUHandle {
-  std::string path;                            // 文件原始路径
-  uintptr_t vertexArray;                       // 整个Model的VAO
-  uintptr_t vertexBuffer;                      // 整个Model的VBO
-  uintptr_t indexBuffer;                       // 整个Model的EBO
-  std::vector<MeshSectionLODChain> subMeshes;  // 子Mesh信息
-  glm::vec3 bboxMin;                           // 模型级包围盒
+  // GPUHandle的核心部分
+  uintptr_t vertexArray = 0;   // 整个Model的VAO
+  uintptr_t vertexBuffer = 0;  // 整个Model的VBO
+  uintptr_t indexBuffer = 0;   // 整个Model的EBO
+
+  // 从上层收到的信息
+  std::string path;   // 文件原始路径（用于调试打印）
+  glm::vec3 bboxMin;  // 模型级包围盒
   glm::vec3 bboxMax;
+};
+
+// ------------------------ 着色器相关 ------------------------
+
+// 着色器GPU句柄
+struct ShaderGPUHandle {
+  uintptr_t programId = 0;  // OpenGL程序对象ID
+
+  uintptr_t vertexShader = 0;    // 顶点着色器
+  uintptr_t fragmentShader = 0;  // 片段着色器
+  uintptr_t geometryShader = 0;  // 几何着色器
+  uintptr_t computeShader = 0;   // 计算着色器
+};
+
+// 材质句柄（仅存放ID，相关Uniform和Shader引用需要MaterialSystem通过ID获取）
+struct MaterialInstanceHandle {
+  UUID id{};  // 唯一标识，用于索引MaterialInstance对象
+  // TODO: 添加string name用于描述材质，便于查找
 };
 
 // ------------------------ 帧缓冲相关 ------------------------

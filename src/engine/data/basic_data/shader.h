@@ -2,10 +2,10 @@
 #define MITE_DATA_SHADER
 
 #include "headers/headers.h"
+#include "basic_type/handle_type.h"
 
 namespace mite {
-
-	/**
+/**
  * @brief Shader程序封装类（管理顶点/片段/几何着色器的编译、链接和Uniform操作）
  * @note 线程安全性：Shader对象应在渲染线程创建和使用
  */
@@ -46,7 +46,7 @@ class OpenGLShader {
   void SetVec4(const std::string &name, const glm::vec4 &value);
   void SetMat3(const std::string &name, const glm::mat3 &mat);
   void SetMat4(const std::string &name, const glm::mat4 &mat);
-  
+
   void SetIntArray(const std::string &name, const int *values, size_t count);
   void SetFloatArray(const std::string &name, const float *values, size_t count);
   void SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count);
@@ -56,9 +56,9 @@ class OpenGLShader {
   void Unbind() const;  // 解绑Shader
 
   // ---- 工具函数 ----
-  uint32_t GetID() const
+  ShaderGPUHandle GetHandle() const
   {
-    return m_RendererID;
+    return m_Handle;
   }
 
  private:
@@ -80,17 +80,16 @@ class OpenGLShader {
   void CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram);
 
   /**
-   * @brief 
-   * @param name 
-   * @return 
+   * @brief
+   * @param name
+   * @return
    */
   int GetUniformLocation(const std::string &name);
 
   // ---- 成员变量 ----
-  uint32_t m_RendererID;                                                // OpenGL程序对象ID
+  ShaderGPUHandle m_Handle;                                             // OpenGL程序GPU句柄
   mutable std::unordered_map<std::string, int> m_UniformLocationCache;  // Uniform位置缓存
 };
-
 }  // namespace mite
 
 #endif
