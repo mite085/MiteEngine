@@ -6,12 +6,12 @@ namespace mite {
 // ==================== BoundingVolumeComponent ====================
 
 BoundingVolumeComponent::BoundingVolumeComponent()
-    : ComponentTraits(), m_Volume(BoundingVolume::BoundingVolumeType::AABB)  // 默认创建AABB
+    : m_Volume(BoundingVolume::BoundingVolumeType::AABB)  // 默认创建AABB
 {
 }
 
 BoundingVolumeComponent::BoundingVolumeComponent(const BoundingVolume &volume)
-    : ComponentTraits(), m_Volume(volume)
+    : m_Volume(volume)
 {
 }
 
@@ -51,7 +51,17 @@ bool BoundingVolumeComponent::Deserialize(std::istream &input)
 
   return !input.fail();
 }
+BoundingVolume BoundingVolumeComponent::GetSnapshotData() const
+{
+  return m_Volume;
+}
 
+void BoundingVolumeComponent::SetSnapshotData(const BoundingVolume &data)
+{
+  m_Volume = data;
+  // 发布更新事件
+  EventBus::Publish<BoundingVolumeChangedEvent>(BoundingVolumeChangedEvent(GetEntity(), *this));
+}
 // ==================== BoundingVolumeComponentSystem ====================
 
 

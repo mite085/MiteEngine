@@ -16,7 +16,7 @@ namespace mite {
  * 3. 管理组件的序列化和脏标记
  */
 class BoundingVolumeComponent
-    : public ComponentTraits<BoundingVolume, Component::Family::Geometry> {
+    : public SnapshotComponentTraits<BoundingVolume, Component::Family::Geometry> {
  public:
   /**
    * @brief 默认构造函数
@@ -76,6 +76,9 @@ class BoundingVolumeComponent
   bool Deserialize(std::istream &input) override;
 
  private:
+  BoundingVolume GetSnapshotData() const override;
+  void SetSnapshotData(const BoundingVolume &data) override;
+
   BoundingVolume m_Volume;  // 局部空间包围体
 };
 
@@ -85,7 +88,7 @@ class BoundingVolumeComponent
  * @class BoundingVolumeComponentSystem
  * @brief 包围体组件系统，负责管理包围体状态
  */
-class BoundingVolumeComponentSystem : public ComponentSystem<BoundingVolumeComponent> {
+class BoundingVolumeComponentSystem : public SnapshotComponentSystem<BoundingVolumeComponent> {
   DECLARE_COMPONENT_SYSTEM(BoundingVolumeComponentSystem)
 };
 
