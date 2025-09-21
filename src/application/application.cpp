@@ -103,7 +103,7 @@ void MiteApplication::LoadDefaultScene()
   // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
   AssetID plane_model_asset_id = m_AssetManager->LoadModel(
       FileSystem::GetAssetPath("models/plane.obj").string(), true, true);
-  Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle);
+  Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle, m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件
@@ -112,8 +112,8 @@ void MiteApplication::LoadDefaultScene()
         plane_submesh, plane_model.GetSubMesh(i));
 
     // 3. 创建材质实例
-    std::shared_ptr<MaterialInstance> plane_material =
-        m_MaterialSystem->CreateInstanceWithOverrides<PureColorMaterialTemplate>(
+    MaterialInstanceHandle plane_material =
+        MaterialSystem::Get().CreateInstanceWithOverrides<PureColorMaterialTemplate>(
             {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
 
     // 4. 创建材质组件
@@ -243,8 +243,7 @@ void MiteApplication::InitializeMaterialSystem()
   m_Logger->info("Initializing material system");
 
   // 初始化材质系统
-  m_MaterialSystem = std::make_unique<MaterialSystem>();
-  m_MaterialSystem->Initialize();
+  MaterialSystem::Get().Initialize();
 }
 
 void MiteApplication::InitializeInputSystem()

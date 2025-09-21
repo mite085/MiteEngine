@@ -95,7 +95,6 @@ class MiteApplication {
   std::unique_ptr<SceneGraph> m_SceneGraph;
   std::unique_ptr<SceneView> m_SceneView;
   std::unique_ptr<UISystem> m_UISystem;
-  std::unique_ptr<MaterialSystem> m_MaterialSystem;
 
   // 状态信息
   WindowConfig m_Config;
