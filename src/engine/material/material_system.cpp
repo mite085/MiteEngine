@@ -2,15 +2,12 @@
 #include "basic_data/shader_cache.h"
 
 namespace mite {
-MaterialSystem::MaterialSystem()
+void MaterialSystem::Initialize()
 {
   // 初始化LOGGER
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
   m_Logger->info("Create logger for material system");
-}
 
-void MaterialSystem::Initialize()
-{
   // 注册材质
   m_Logger->info("Registering material templates");
 
@@ -56,7 +53,7 @@ bool MaterialSystem::HasTemplate(const std::string &name) const
   return m_Templates.find(name) != m_Templates.end();
 }
 
-std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::string &templateName)
+MaterialInstanceHandle MaterialSystem::CreateInstance(const std::string &templateName)
 {
   m_Logger->info("Creating material instance with material template: {}.", templateName);
   // 1. 查找模板
@@ -70,24 +67,26 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::stri
       m_Logger->error("There has not any fallback material to use.");
       throw std::out_of_range("There has not any fallback material to use.");
     }
-    return m_FallbackMaterial->CreateInstance();
+    std::unique_ptr<MaterialInstance> instance = m_FallbackMaterial->CreateInstance();
+    MaterialInstanceHandle handle = instance->GetHandle();
+    m_InstanceCache[handle.id] = std::move(instance);
+    return handle;
   }
 
   // 2. 创建实例（通过模板工厂方法）
-  return it->second->CreateInstance();
+  std::unique_ptr<MaterialInstance> instance = it->second->CreateInstance();
+  MaterialInstanceHandle handle = instance->GetHandle();
+  m_InstanceCache[handle.id] = std::move(instance);
+  return handle;
 }
 
-std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
+MaterialInstanceHandle MaterialSystem::CreateInstanceWithOverrides(
     const std::string &templateName,
     const std::unordered_map<std::string, UniformVariant> &overrides)
 {
   // 1. 创建基础材质实例（复用已有逻辑）
-  auto instance = CreateInstance(templateName);
-  if (!instance) {
-    // 无法创建材质实例
-    m_Logger->error("Cannot create material instance: {}", templateName);
-    return nullptr;
-  }
+  MaterialInstanceHandle handle = CreateInstance(templateName);
+  MaterialInstance *instance = GetInstance(handle);
 
   // 2. 应用覆盖参数（类型安全处理）
   for (const auto &[name, value] : overrides) {
@@ -129,7 +128,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
         break;
       }
       case UniformVariant::Type::Texture: {
-        instance->SetTexture(name, value.Get<std::shared_ptr<Texture>>());
+        instance->SetTexture(name, value.Get<TextureGPUHandle>());
         break;
       }
       default:
@@ -137,9 +136,10 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
         break;
     }
   }
-
-  return instance;
+  
+  return handle;
 }
+
 
 void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Material> newMaterial)
 {

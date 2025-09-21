@@ -8,12 +8,12 @@ PureColorMaterialTemplate::PureColorMaterialTemplate(std::shared_ptr<OpenGLShade
 {
 }
 
-std::shared_ptr<MaterialInstance> PureColorMaterialTemplate::CreateInstance() const
+std::unique_ptr<MaterialInstance> PureColorMaterialTemplate::CreateInstance() const
 {
   // 创建材质实例并应用默认参数
-  auto instance = std::make_shared<MaterialInstance>(m_Shader);
+  auto instance = std::make_unique<MaterialInstance>(m_Shader);
   ApplyParameters(*instance);
-  return instance;
+  return std::move(instance);
 }
 
 void PureColorMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
@@ -40,12 +40,12 @@ PBRMaterialTemplate::PBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
          "Metallic must be in range [0,1]");
 }
 
-std::shared_ptr<MaterialInstance> PBRMaterialTemplate::CreateInstance() const
+std::unique_ptr<MaterialInstance> PBRMaterialTemplate::CreateInstance() const
 {
   // 创建材质实例并应用默认参数
-  auto instance = std::make_shared<MaterialInstance>(m_Shader);
+  auto instance = std::make_unique<MaterialInstance>(m_Shader);
   ApplyParameters(*instance);
-  return instance;
+  return std::move(instance);
 }
 
 void PBRMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
@@ -61,8 +61,7 @@ void PBRMaterialTemplate::ApplyParameters(MaterialInstance &instance) const
   }
 }
 
-void PBRMaterialTemplate::SetDefaultTexture(const std::string &paramName,
-                                            std::shared_ptr<Texture> texture)
+void PBRMaterialTemplate::SetDefaultTexture(const std::string &paramName, TextureGPUHandle texture)
 {
   assert(!paramName.empty() && "Texture name should not be empty");
   m_DefaultTextures[paramName] = std::move(texture);
@@ -77,11 +76,11 @@ TransparentMaterialTemplate::TransparentMaterialTemplate(std::shared_ptr<OpenGLS
   assert((defaultAlpha >= 0.0f && defaultAlpha <= 1.0f) && "Alpha must be in range ");
 }
 
-std::shared_ptr<MaterialInstance> TransparentMaterialTemplate::CreateInstance() const
+std::unique_ptr<MaterialInstance> TransparentMaterialTemplate::CreateInstance() const
 {
   auto instance = PBRMaterialTemplate::CreateInstance();
   ApplyParameters(*instance);  // 补充透明参数
-  return instance;
+  return std::move(instance);
 }
 
 void TransparentMaterialTemplate::ApplyParameters(MaterialInstance &instance) const

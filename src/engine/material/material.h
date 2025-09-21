@@ -21,7 +21,7 @@ class Material {
    * @return 共享指针管理的MaterialInstance对象
    * @note 实例会继承模板的默认参数，但允许运行时修改
    */
-  virtual std::shared_ptr<MaterialInstance> CreateInstance() const = 0;
+  virtual std::unique_ptr<MaterialInstance> CreateInstance() const = 0;
 
   /**
    * @brief 应用默认参数到材质实例

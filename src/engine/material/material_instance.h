@@ -3,6 +3,7 @@
 
 #include "basic_data/shader.h"
 #include "basic_data/texture.h"
+#include "basic_type/handle_type.h"
 #include "material_param_variant.h"
 
 namespace mite {
@@ -36,9 +37,8 @@ class MaterialInstance {
   void SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count);
 
   // ---- 纹理设置 ----
-  void SetTexture(const std::string &name, std::shared_ptr<Texture> texture);
-  void SetTextureArray(const std::string &name,
-                       const std::vector<std::shared_ptr<Texture>> &textures);
+  void SetTexture(const std::string &name, TextureGPUHandle texture);
+  void SetTextureArray(const std::string &name, const std::vector<TextureGPUHandle> &textures);
 
   // ---- 状态控制 ----
   /**
@@ -51,19 +51,23 @@ class MaterialInstance {
   // ---- 属性访问 ----
   std::shared_ptr<OpenGLShader> GetShader() const
   {
-    return m_Shader;
+    if (m_Shader)
+      return m_Shader;
+    else {
+      LOG_ERROR("Invaid Shader");
+      return nullptr;
+    }
   }
-  const auto &GetTextures() const
+  MaterialInstanceHandle GetHandle() const
   {
-    return m_Textures;
+    return m_Handle;
   }
-
  private:
-  std::shared_ptr<OpenGLShader> m_Shader;                                // 关联的Shader程序
-  std::unordered_map<std::string, UniformVariant> m_Uniforms;            // Uniform值存储
-  std::unordered_map<std::string, std::shared_ptr<Texture>> m_Textures;  // 纹理绑定
-  std::unordered_map<std::string, std::vector<std::shared_ptr<Texture>>>
-      m_TextureArrays;  // 纹理数组
+  MaterialInstanceHandle m_Handle;                                        // 材质实例句柄，方便Component存储
+  std::shared_ptr<OpenGLShader> m_Shader;                                 // 关联的Shader程序
+  std::unordered_map<std::string, UniformVariant> m_Uniforms;             // Uniform值存储
+  std::unordered_map<std::string, TextureGPUHandle> m_Textures;           // 纹理绑定
+  std::unordered_map<std::string, std::vector<TextureGPUHandle>> m_TextureArrays;  // 纹理数组
 };
 };  // namespace mite
 

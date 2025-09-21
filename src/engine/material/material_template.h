@@ -31,7 +31,7 @@ class PureColorMaterialTemplate : public Material {
   }
 
   // ---- 核心接口 ----
-  std::shared_ptr<MaterialInstance> CreateInstance() const override;
+  std::unique_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
   
   // ---- 参数设置 ----
@@ -78,7 +78,7 @@ class PBRMaterialTemplate : public Material {
   }
 
   // ---- 核心接口 ----
-  std::shared_ptr<MaterialInstance> CreateInstance() const override;
+  std::unique_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
 
   // ---- 参数设置 ----
@@ -94,7 +94,7 @@ class PBRMaterialTemplate : public Material {
   {
     m_DefaultMetallic = metallic;
   }
-  void SetDefaultTexture(const std::string &paramName, std::shared_ptr<Texture> texture);
+  void SetDefaultTexture(const std::string &paramName, TextureGPUHandle texture);
 
  protected:
   // ---- 默认参数 ----
@@ -102,7 +102,7 @@ class PBRMaterialTemplate : public Material {
   glm::vec3 m_DefaultAlbedo;               // 默认漫反射颜色
   float m_DefaultRoughness;                // 默认粗糙度
   float m_DefaultMetallic;                 // 默认金属度
-  std::unordered_map<std::string, std::shared_ptr<Texture>> m_DefaultTextures;  // 默认纹理绑定
+  std::unordered_map<std::string, TextureGPUHandle> m_DefaultTextures;  // 默认纹理绑定
 };
 
 /**
@@ -123,7 +123,7 @@ class TransparentMaterialTemplate : public PBRMaterialTemplate {
     return StaticType();
   }
 
-  std::shared_ptr<MaterialInstance> CreateInstance() const override;
+  std::unique_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
 
   void SetDefaultAlpha(float alpha)

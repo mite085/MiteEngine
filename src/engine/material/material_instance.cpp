@@ -1,11 +1,15 @@
 #include "material_instance.h"
 
 namespace mite {
-MaterialInstance::MaterialInstance(std::shared_ptr<OpenGLShader> shader) : m_Shader(std::move(shader))
+MaterialInstance::MaterialInstance(std::shared_ptr<OpenGLShader> shader)
+    : m_Shader(std::move(shader))
 {
   if (!m_Shader) {
     LOG_ERROR("MaterialInstance created with null shader!");
   }
+
+  // 生成唯一id。Shader可复用但材质实例不可复用。
+  m_Handle.id = UUIDGenerator::Generate();
 }
 
 MaterialInstance::~MaterialInstance() {
@@ -67,26 +71,19 @@ void MaterialInstance::SetVector3Array(const std::string &name,
 }
 
 // ===================== 纹理设置方法 =====================
-void MaterialInstance::SetTexture(const std::string &name, std::shared_ptr<Texture> texture)
+void MaterialInstance::SetTexture(const std::string &name, TextureGPUHandle texture)
 {
-  if (texture) {
     m_Textures[name] = std::move(texture);
-  }
-  else {
-    LOG_WARN("Null texture assigned to slot: {}", name);
-    m_Textures.erase(name);
-  }
 }
 
 void MaterialInstance::SetTextureArray(const std::string &name,
-                                       const std::vector<std::shared_ptr<Texture>> &textures)
+                                       const std::vector<TextureGPUHandle> &textures)
 {
   if (!textures.empty()) {
     m_TextureArrays[name] = textures;
   }
   else {
     LOG_WARN("Empty texture array assigned to slot: {}", name);
-    m_TextureArrays.erase(name);
   }
 }
 
@@ -150,7 +147,7 @@ void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *over
   uint32_t textureSlot = 0;
   for (const auto &[name, texture] : m_Textures) {
     // 使用传入的纹理绑定函数进行纹理绑定
-    textureBindFunc(texture->GetHandle(), textureSlot);
+    textureBindFunc(texture, textureSlot);
     targetShader->SetInt(name, static_cast<int>(textureSlot));
     textureSlot++;
   }
@@ -160,7 +157,7 @@ void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *over
     std::vector<int> slots;
     for (const auto &texture : textures) {
       // 使用传入的纹理绑定函数进行纹理绑定
-      textureBindFunc(texture->GetHandle(), textureSlot);
+      textureBindFunc(texture, textureSlot);
       slots.push_back(static_cast<int>(textureSlot));
       textureSlot++;
     }

@@ -29,8 +29,11 @@ namespace mite {
  */
 class MaterialSystem {
  public:
-  // ---- 构造函数 ----
-  MaterialSystem();
+  static MaterialSystem &Get()
+  {
+    static MaterialSystem system;
+    return system;
+  }
 
   // ---- 初始化：注册材质----
   void Initialize();
@@ -56,20 +59,20 @@ class MaterialSystem {
    * @param templateName 模板名称
    * @return 共享指针管理的材质实例
    * @throws std::out_of_range 如果模板不存在
-   * 
+   *
    * 作用：
    * 当在运行时动态决定材质类型时（如从配置文件读取）使用，更便捷且可扩展性更强
    */
-  std::shared_ptr<MaterialInstance> CreateInstance(const std::string &templateName);
+  MaterialInstanceHandle CreateInstance(const std::string &templateName);
 
   /**
    * @brief 创建材质实例--模板方法
    * @tparam T 材质模板类型
-   * 
+   *
    * 作用：
    * 代码内部创建实例时使用，更加清晰，可避免字符串匹配错误
    */
-  template<typename T> std::shared_ptr<MaterialInstance> CreateInstance()
+  template<typename T> MaterialInstanceHandle CreateInstance()
   {
     return CreateInstance(Material::GetMaterialTypeStatic<T>());
   }
@@ -79,7 +82,7 @@ class MaterialSystem {
    * @param templateName    模板名称
    * @param overrides       参数覆盖键值对（如{{"u_Color", glm::vec3(1,0,0)}}）
    */
-  std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
+  MaterialInstanceHandle CreateInstanceWithOverrides(
       const std::string &templateName,
       const std::unordered_map<std::string, UniformVariant> &overrides);
 
@@ -89,10 +92,21 @@ class MaterialSystem {
    * @param overrides   参数覆盖键值对（如{{"u_Color", glm::vec3(1,0,0)}}）
    */
   template<typename T>
-  std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
+  MaterialInstanceHandle CreateInstanceWithOverrides(
       const std::unordered_map<std::string, UniformVariant> &overrides)
   {
     return CreateInstanceWithOverrides(Material::GetMaterialTypeStatic<T>(), overrides);
+  }
+
+  /**
+   * @brief 根据ID获取材质实例
+   */
+  static MaterialInstance *GetInstance(MaterialInstanceHandle handle)
+  {
+    MaterialSystem &system = Get();
+
+    auto it = system.m_InstanceCache.find(handle.id);
+    return it != system.m_InstanceCache.end() ? it->second.get() : nullptr;
   }
 
   // ---- 热重载支持 ----
@@ -112,13 +126,18 @@ class MaterialSystem {
   void SetFallbackMaterial(std::unique_ptr<Material> material);
 
  private:
+  // ---- 私有构造函数 ----
+  MaterialSystem() = default;
+  ~MaterialSystem() = default;
+
   // 日志系统
   Logger m_Logger;
 
   // ---- 成员变量 ----
   std::unordered_map<std::string, std::unique_ptr<Material>> m_Templates;  // 模板存储
   std::unique_ptr<Material> m_FallbackMaterial;                            // 错误回退材质
-  std::unordered_map<size_t, std::weak_ptr<MaterialInstance>> m_InstanceCache;  // 实例弱引用缓存
+  std::unordered_map<UUID, std::unique_ptr<MaterialInstance>>
+      m_InstanceCache;  // 管理所有创建的实例
 };
 
 /**
