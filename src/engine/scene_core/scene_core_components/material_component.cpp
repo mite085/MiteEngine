@@ -2,59 +2,53 @@
 #include "mesh_component.h"
 
 namespace mite {
-MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> material)
-    : ComponentTraits(), m_Material(material)
-{
-}
+MaterialComponent::MaterialComponent(MaterialInstanceHandle handle) : m_Handle(handle) {}
 
 // =================== 材质基础操作 =====================
-std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterial() const
+MaterialInstanceHandle MaterialComponent::GetMaterialInstanceHandel() const
 {
-  return m_Material;
+  return m_Handle;
 }
 
-void MaterialComponent::SetMaterial(std::shared_ptr<MaterialInstance> material)
+void MaterialComponent::SetMaterialInstanceHandel(MaterialInstanceHandle handle)
 {
-  if (m_Material != material) {
-    m_Material = material;
+    m_Handle = handle;
     EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
-  }
-}
-
-bool MaterialComponent::HasMaterial() const
-{
-  return m_Material != nullptr;
 }
 
 // =================== 着色器控制 =======================
 std::shared_ptr<OpenGLShader> MaterialComponent::GetShader() const
 {
-  return m_Material ? m_Material->GetShader() : nullptr;
+  MaterialInstance* material = MaterialSystem::Get().GetInstance(m_Handle);
+  return material ? material->GetShader() : nullptr;
 }
 
 // ================== 材质参数控制 ======================
 
 void MaterialComponent::SetFloatParam(const std::string &name, float value)
 {
-  if (!m_Material) {
+  MaterialInstance *material = MaterialSystem::Get().GetInstance(m_Handle);
+  if (!material) {
     LOG_WARN("Attempt to set param on null material");
     return;
   }
-  m_Material->SetFloat(name, value);
+  material->SetFloat(name, value);
 }
 
 void MaterialComponent::SetColorParam(const std::string &name, const glm::vec3 &color)
 {
-  if (!m_Material)
+  MaterialInstance *material = MaterialSystem::Get().GetInstance(m_Handle);
+  if (!material)
     return;
-  m_Material->SetVector3(name, color);
+  material->SetVector3(name, color);
 }
 
-void MaterialComponent::SetTextureParam(const std::string &name, std::shared_ptr<Texture> texture)
+void MaterialComponent::SetTextureParam(const std::string &name, TextureGPUHandle texture)
 {
-  if (!m_Material)
+  MaterialInstance *material = MaterialSystem::Get().GetInstance(m_Handle);
+  if (!material)
     return;
-  m_Material->SetTexture(name, std::move(texture));
+  material->SetTexture(name, texture);
 }
 
 // ================== 组件接口实现 ======================
@@ -80,6 +74,18 @@ bool MaterialComponent::Deserialize(std::istream &input)
   // TODO: 实现材质参数的反序列化
 
   return !input.fail();
+}
+
+MaterialInstanceHandle MaterialComponent::GetSnapshotData() const
+{
+  return m_Handle;
+}
+
+void MaterialComponent::SetSnapshotData(const MaterialInstanceHandle &data)
+{
+  m_Handle = data;
+  // 发布更新事件
+  EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
 }
 
 // ================= Material组件系统实现 =================
