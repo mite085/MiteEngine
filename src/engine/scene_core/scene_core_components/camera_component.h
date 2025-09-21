@@ -61,8 +61,8 @@ class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family
   std::vector<std::type_index> GetDependencies() const override;
 
  private:
-  virtual Camera GetSnapshotData() const;
-  virtual void SetSnapshotData(const Camera &data);
+  Camera GetSnapshotData() const override;
+  void SetSnapshotData(const Camera &data) override;
 
   Camera m_Camera;
   CameraUsage m_Usage = CameraUsage::FreeView;
