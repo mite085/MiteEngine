@@ -62,15 +62,20 @@ struct TextureAsset {
   TextureMetadata metadata;
   TetxureData textureData;
 
-  std::shared_ptr<TextureGPUHandle> handle;
+  TextureGPUHandle handle;
 };
 
 // 模型逻辑句柄
 struct ModelAsset {
   AssetID id;
+
+  // 原始数据存储
   ModelMetadata metadata;
   std::vector<MeshDataLODChain> subMeshData;  // 子网格集合
-  std::shared_ptr<ModelGPUHandle> handle;     // 模型GPU句柄
+
+  // GPU相关
+  ModelGPUHandle handle;                            // 模型GPU句柄
+  std::vector<MeshSectionLODChain> subMeshSection;  // 子Mesh信息
 };
 };  // namespace mite
 

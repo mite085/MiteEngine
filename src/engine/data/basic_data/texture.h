@@ -6,15 +6,11 @@
 
 namespace mite {
 /**
- * GPU纹理运行时封装
- * 职责：
- * - 维护纹理采样状态（Wrap/Filter等）
- * - 提供类型安全的绑定接口
- * - 不管理生命周期（由Renderer负责）
+ * GPU纹理运行时封装（提供的功能太少，暂时弃用）
  */
 class Texture {
  public:
-  Texture(const TextureGPUHandle &handle);
+  Texture(const TextureGPUHandle &handle) : m_Handle(handle) {}
 
   // ---- 元数据访问 ----
   /**

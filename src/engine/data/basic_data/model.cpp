@@ -1,16 +1,12 @@
 #include "model.h"
 
 namespace mite {
-Model::Model(std::shared_ptr<ModelGPUHandle> modelHandle)
-    : m_ModelHandle(modelHandle), m_BoundingBox(modelHandle->bboxMin, modelHandle->bboxMax)
+Model::Model(ModelGPUHandle modelHandle, std::vector<MeshSectionLODChain> meshs)
+    :m_Path(modelHandle.path), m_BoundingBox(modelHandle.bboxMin, modelHandle.bboxMax)
 {
-  if (!m_ModelHandle) {
-    throw std::invalid_argument("Model handle cannot be null");
-  }
-
   // 基于每个原始 LOD 创建的分组，逐个构建 Mesh 对象
-  for (MeshSectionLODChain &lodChain : m_ModelHandle->subMeshes) {
-    auto mesh = std::make_shared<Mesh>(modelHandle, lodChain);
+  for (MeshSectionLODChain &lodChain : meshs) {
+    Mesh mesh = Mesh(modelHandle, lodChain);
     m_SubMeshes.push_back(mesh);
   }
 }
@@ -20,18 +16,21 @@ size_t Model::GetSubMeshCount() const
   return m_SubMeshes.size();
 }
 
-const std::vector<std::shared_ptr<Mesh>> &Model::GetAllSubMeshes() const
+const std::vector<Mesh> &Model::GetAllSubMeshes() const
 {
   return m_SubMeshes;
 }
 
-std::shared_ptr<Mesh> Model::GetSubMesh(size_t index) const
+Mesh Model::GetSubMesh(size_t index) const
 {
-  if (index >= m_SubMeshes.size()) {
-    LOG_ERROR("Invalid submesh index: {}", index);
-    return nullptr;
+  // 越界检查
+  if (index < m_SubMeshes.size())
+    return m_SubMeshes[index];
+  else {
+    LOG_ERROR("Invalid getting submesh index: {}, Model path: {}, return empty mesh",
+              index, m_Path);
+    return Mesh();
   }
-  return m_SubMeshes[index];
 }
 
 std::vector<uint32_t> Model::GetSupportedLODLevels() const
@@ -40,7 +39,7 @@ std::vector<uint32_t> Model::GetSupportedLODLevels() const
 
   // 遍历所有SubMesh，获取Lod层级
   for (const auto &mesh : m_SubMeshes) {
-    for (const auto &section : mesh->GetAllLODSections()) {
+    for (const auto &section : mesh.GetAllLODSections()) {
       lodLevels.insert(section.lodLevel);
     }
   }
@@ -59,7 +58,7 @@ const std::pair<glm::vec3, glm::vec3> &Model::GetBoundingBox() const
 
 const std::string Model::GetPath() const
 {
-  return m_ModelHandle->path;
+  return m_Path;
 }
 
 bool Model::HasLOD() const

@@ -14,13 +14,14 @@ namespace mite {
  */
 class Mesh {
  public:
+  Mesh() = default;
   /**
    * 构造函数
    * @param modelHandle 父模型的GPU资源
    * @param baseSection 基础LOD级别的网格数据段信息
    * @param lodSections_ 所有LOD级别的网格数据段信息
    */
-  explicit Mesh(std::shared_ptr<ModelGPUHandle> modelHandle, const MeshSectionLODChain &lodChain);
+  explicit Mesh(ModelGPUHandle modelHandle, const MeshSectionLODChain &lodChain);
 
   /**
    * 获取指定LOD级别的顶点数量
@@ -53,7 +54,7 @@ class Mesh {
   /**
    * 获取父模型GPU资源
    */
-  std::shared_ptr<ModelGPUHandle> GetModelHandle() const;
+  ModelGPUHandle GetModelHandle() const;
   /**
    * 获取子网格级包围盒
    */
@@ -64,7 +65,7 @@ class Mesh {
   uint32_t GetMaterialIndex() const;
 
  private:
-  std::shared_ptr<ModelGPUHandle> m_ModelGPUHandle;  // 父模型资源
+  ModelGPUHandle m_ModelGPUHandle;  // 父模型资源
   MeshSectionLODChain m_LODChain;  // 包含网格体Section的LODChain对象，可从中提取到Offset信息
 };
 };  // namespace mite

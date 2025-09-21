@@ -1,13 +1,9 @@
 #include "mesh.h"
 
 namespace mite {
-Mesh::Mesh(std::shared_ptr<ModelGPUHandle> modelHandle, const MeshSectionLODChain &lodChain)
+Mesh::Mesh(ModelGPUHandle modelHandle, const MeshSectionLODChain &lodChain)
     : m_ModelGPUHandle(modelHandle), m_LODChain(lodChain)
 {
-  if (!m_ModelGPUHandle) {
-    throw std::invalid_argument("Model handle cannot be null");
-  }
-
   // 检查是否为空Mesh
   if (m_LODChain.baseSection.vertexCount == 0 || m_LODChain.baseSection.indexCount == 0) {
     throw std::invalid_argument("Invalid mesh section: vertex or index count is zero");
@@ -74,7 +70,7 @@ uint32_t Mesh::GetLODCount() const
   return static_cast<uint32_t>(m_LODChain.lodSections.size());
 }
 
-std::shared_ptr<ModelGPUHandle> Mesh::GetModelHandle() const
+ModelGPUHandle Mesh::GetModelHandle() const
 {
   return m_ModelGPUHandle;
 }
