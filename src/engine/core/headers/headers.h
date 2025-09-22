@@ -19,6 +19,7 @@
 #include <queue>
 #include <set>
 #include <shared_mutex>
+#include <stack>
 #include <stdexcept>
 #include <stdint.h>
 #include <string>

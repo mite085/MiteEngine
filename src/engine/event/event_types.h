@@ -14,9 +14,10 @@ enum EventCategory : uint64_t {
   EVENT_CATEGORY_WINDOW = 1 << 0,  // 窗口事件
   EVENT_CATEGORY_INPUT = 1 << 1,   // 键盘/鼠标输入事件
 
-  EVENT_CATEGORY_SCENE_CHANGE = 1 << 6,    // 场景变更事件
-  EVENT_CATEGORY_RENDER = 1 << 7,          // 渲染事件
-  EVENT_CATEGORY_ASSET = 1 << 8,           // 资产事件
+  EVENT_CATEGORY_COMMAND = 1 << 5,       // 命令相关事件
+  EVENT_CATEGORY_SCENE_CHANGE = 1 << 6,  // 场景变更事件
+  EVENT_CATEGORY_RENDER = 1 << 7,        // 渲染事件
+  EVENT_CATEGORY_ASSET = 1 << 8,         // 资产事件
 
   UI_EVENT_CATEGORY_INTERACTION = 1 << 9,  // 界面：基础交互事件
   UI_EVENT_CATEGORY_LIFECYCLE = 1 << 10,   // 界面：生命周期事件
