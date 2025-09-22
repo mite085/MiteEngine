@@ -7,24 +7,27 @@ set(ENGINE_COMMAND_LIB_NAME MiteEngine_Engine_Command)
 
 set(COMMAND_CORE_SRCS
     command_core/command.h              # 命令抽象基类
+    command_core/command.cpp
     command_core/command_type.h         # 基本命令类型定义
+    command_core/command_event.h        # 命令相关事件定义
     command_core/command_registry.h     # 命令注册管理
     command_core/command_registry.cpp
     command_core/command_factory.h      # 命令工厂
     command_core/command_factory.cpp
+    command_core/command_system.h       # 命令系统，负责统筹所有模块，对外暴露接口
+    command_core/command_system.cpp
 )
 source_group("command core" FILES ${COMMAND_CORE_SRCS})
 
-set(COMMAND_HISTORY_SRCS
-    command_history/command_history.h       # 历史管理核心
-    command_history/command_redo_stack.h    # 重做堆栈
-    command_history/command_undo_stack.h    # 撤销堆栈
-)
-source_group("command history" FILES ${COMMAND_HISTORY_SRCS})
-
 set(COMMAND_EXECUTOR_SRCS
-    command_executor/command_executor.h              # 执行上下文
-    command_executor/command_execution_context.h     # 命令执行器
+    command_executor/command_executor.h             # 执行上下文
+    command_executor/command_executor.cpp
+    command_executor/command_execution_context.h    # 命令执行器
+    command_executor/command_execution_context.cpp
+    command_executor/command_redo_stack.h           # 重做堆栈
+    command_executor/command_redo_stack.cpp
+    command_executor/command_undo_stack.h           # 撤销堆栈
+    command_executor/command_undo_stack.cpp
 )
 source_group("command executor" FILES ${COMMAND_EXECUTOR_SRCS})
 
@@ -37,7 +40,6 @@ source_group("command base commands" FILES ${COMMAND_BASE_COMMANDS_SRCS})
 add_library(${ENGINE_COMMAND_LIB_NAME}
     STATIC
     ${COMMAND_CORE_SRCS}
-    ${COMMAND_HISTORY_SRCS}
     ${COMMAND_EXECUTOR_SRCS}
     ${COMMAND_BASE_COMMANDS_SRCS}
 )
