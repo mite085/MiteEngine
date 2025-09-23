@@ -17,7 +17,6 @@ CommandExecutor::~CommandExecutor()
 void CommandExecutor::Start()
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-
   if (!m_IsRunning) {
     m_IsRunning = true;
     m_Logger->info("CommandExecutor started");
@@ -29,10 +28,8 @@ void CommandExecutor::Stop(bool waitForCompletion)
     std::lock_guard<std::mutex> lock(m_Mutex);
     if (!m_IsRunning)
       return;
-
     m_IsRunning = false;
   }
-
   if (waitForCompletion) {
     // 等待所有任务完成
     for (auto &future : m_TaskFutures) {
@@ -47,7 +44,7 @@ void CommandExecutor::Stop(bool waitForCompletion)
     }
     m_TaskFutures.clear();
   }
-
+  // 即便waitForCompletion=false，BSThread也会逐个执行完毕各个子线程，这里只是提前退出而已
   m_Logger->info("CommandExecutor stopped");
 }
 bool CommandExecutor::IsRunning() const
@@ -55,13 +52,13 @@ bool CommandExecutor::IsRunning() const
   return m_IsRunning;
 }
 // ==================== 命令提交接口实现 ====================
-bool CommandExecutor::SubmitCommandAsync(CommandPtr command,
+bool CommandExecutor::SubmitCommandAsync(CommandHandle handle,
                                          CommandExecutionContext *context,
                                          BS::priority_t priority)
 {
   // 检查命令本身
-  if (!command) {
-    m_Logger->warn("Attempted to submit null command");
+  if (!handle.IsValid()) {
+    m_Logger->warn("Attempted to submit invalid command handle");
     return false;
   }
   std::lock_guard<std::mutex> lock(m_Mutex);
@@ -78,73 +75,82 @@ bool CommandExecutor::SubmitCommandAsync(CommandPtr command,
   auto *execContext = context ? context : GetDefaultExecutionContext();
   // 检查执行上下文的可用性
   if (!execContext) {
-    m_Logger->warn("No execution context available for command '{}'", command->GetName());
+    m_Logger->warn("No execution context available for command handle: {}", handle.ToString());
     return false;
   }
-  // 检查命令可用性
-  if (!execContext->IsCommandAvailable(command.get())) {
-    m_Logger->warn("Command '{}' is not available in context '{}'",
-                 command->GetName(),
-                 execContext->GetName());
+  // 检查命令可用性（基于句柄）
+  if (!execContext->IsCommandAvailable(handle)) {
+    m_Logger->warn("Command handle {} is not available in context '{}'",
+                   handle.ToString(),
+                   execContext->GetName());
     return false;
   }
+
+  // 获取命令类型信息用于类型安全检查
+  const Command *command = CommandRegistry::Get().PeekCommand(handle);
+  if (!command) {
+    m_Logger->warn("Command handle not found: {}", handle.ToString());
+    return false;
+  }
+  std::type_index expectedType = typeid(*command);
 
   // 使用线程池提交任务
   auto &threadPool = ThreadPoolManager::GetDefaultPool();
 
-  // 用共享指针保持命令对象存活直到执行完成
-  auto commandShared = std::make_shared<CommandPtr>(std::move(command));
-
+  // 提交给线程池执行命令
   auto taskFuture = threadPool.submit_task(
-      [this, cmdPtr = commandShared, execContext]() mutable {
-        if (!*cmdPtr)
-          return;
-
-        // 使用命令和上下文创建Task，执行单次命令
-        CommandTask task(std::move(*cmdPtr), execContext);
-        auto result = ExecuteSingleCommand(std::move(task));
+      [this, task = CommandTask(handle, execContext, expectedType)]() mutable {
+        ExecuteSingleCommand(std::move(task));
       },
       priority);
 
+  // 管理taskFuture
   m_TaskFutures.push_back(std::move(taskFuture));
   m_TotalCommands++;
   m_ExecutingCommands++;
-
-  m_Logger->debug("Command '{}' submitted for execution in context '{}' with priority {}",
-                  (*commandShared)->GetName(),
+  m_Logger->debug("Command handle {} submitted for execution in context '{}' with priority {}",
+                  handle.ToString(),
                   execContext->GetName(),
                   static_cast<int>(priority));
   return true;
 }
-CommandResult CommandExecutor::ExecuteCommand(CommandPtr command, CommandExecutionContext *context)
+CommandResult CommandExecutor::ExecuteCommand(CommandHandle handle,
+                                              CommandExecutionContext *context)
 {
   // 检查命令本身
-  if (!command)
-    return CommandResult::Failure("Invalid command");
+  if (!handle.IsValid()) {
+    return CommandResult::Failure("Invalid command handle");
+  }
   // 检查执行上下文的可用性
   auto *execContext = context ? context : GetDefaultExecutionContext();
   if (!execContext) {
     return CommandResult::Failure("No execution context available");
   }
   // 检查命令可用性
-  if (!execContext->IsCommandAvailable(command.get())) {
-    m_Logger->warn("Command '{}' is not available in context '{}'",
-                   command->GetName(),
+  if (!execContext->IsCommandAvailable(handle)) {
+    m_Logger->warn("Command handle {} is not available in context '{}'",
+                   handle.ToString(),
                    execContext->GetName());
     return CommandResult::Failure("Command not available in current context");
   }
 
-  // 使用命令和上下文创建Task
-  CommandTask task(std::move(command), execContext);
+  // 获取命令类型信息用于类型安全检查
+  const Command *command = CommandRegistry::Get().PeekCommand(handle);
+  if (!command) {
+    return CommandResult::Failure("Command handle not found: " + handle.ToString());
+  }
+  std::type_index expectedType = typeid(*command);
 
-  m_Logger->debug("Executing command '{}' synchronously in context '{}'",
-                  task.command->GetName(),
-                  task.context->GetName());
+  // 使用命令和上下文创建Task
+  CommandTask task(handle, execContext, expectedType);
+  m_Logger->debug("Executing command handle {} synchronously in context '{}'",
+                  handle.ToString(),
+                  execContext->GetName());
 
   // 主线程内执行单次命令
   return ExecuteSingleCommand(std::move(task));
 }
-size_t CommandExecutor::SubmitCommands(std::vector<CommandPtr> commands,
+size_t CommandExecutor::SubmitCommands(const std::vector<CommandHandle> &handles,
                                        CommandExecutionContext *context,
                                        BS::priority_t priority)
 {
@@ -159,7 +165,7 @@ size_t CommandExecutor::SubmitCommands(std::vector<CommandPtr> commands,
     m_Logger->warn("Cannot submit commands - executor is paused");
     return 0;
   }
-
+  // 检查命令可用性
   auto *execContext = context ? context : GetDefaultExecutionContext();
   if (!execContext) {
     m_Logger->warn("No execution context available for batch submission");
@@ -169,21 +175,28 @@ size_t CommandExecutor::SubmitCommands(std::vector<CommandPtr> commands,
   auto &threadPool = ThreadPoolManager::GetDefaultPool();
   size_t submittedCount = 0;
 
-  for (auto &command : commands) {
-    if (!command)
+  for (const auto &handle : handles) {
+    if (!handle.IsValid())
       continue;
+    if (!execContext->IsCommandAvailable(handle)) {
+      m_Logger->warn("Command handle {} not available in context", handle.ToString());
+      continue;
+    }
+    // 获取命令类型信息用于类型安全检查
+    auto &registry = CommandRegistry::Get();
+    const Command *command = registry.PeekCommand(handle);
+    if (!command) {
+      m_Logger->warn("Command handle not found: {}", handle.ToString());
+      continue;
+    }
+    std::type_index expectedType = typeid(*command);
 
-    // 使用命令和上下文创建Task
-    CommandTask task(std::move(command), execContext);
-
-    // 子线程提交任务
+    // 使用命令和上下文创建Task,子线程提交任务
     auto future = threadPool.submit_task(
-        [this, task = std::move(task)]() mutable {
-          // 执行单次命令
-          auto result = ExecuteSingleCommand(std::move(task));  
+        [this, task = CommandTask(handle, execContext, expectedType)]() mutable {
+          ExecuteSingleCommand(std::move(task));
         },
         priority);
-
     m_TaskFutures.push_back(std::move(future));
     submittedCount++;
     m_TotalCommands++;
@@ -191,12 +204,11 @@ size_t CommandExecutor::SubmitCommands(std::vector<CommandPtr> commands,
   }
 
   if (submittedCount > 0) {
-    m_Logger->debug("Submitted {} commands for execution in context '{}' with priority {}",
+    m_Logger->debug("Submitted {} command handles for execution in context '{}' with priority {}",
                     submittedCount,
                     execContext->GetName(),
                     static_cast<int>(priority));
   }
-
   return submittedCount;
 }
 // ==================== 执行上下文管理接口实现 ====================
@@ -210,8 +222,8 @@ CommandExecutionContext *CommandExecutor::GetDefaultExecutionContext() const
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_DefaultContext.get();
 }
-CommandExecutionContext *CommandExecutor::CreateDefaultExecutionContext(uint32_t contextFlags,
-                                                                        const std::string &name)
+CommandExecutionContext *CommandExecutor::CreateDefaultExecutionContext(
+    CommandContextFlags contextFlags, const std::string &name)
 {
   auto context = std::make_unique<CommandExecutionContext>(contextFlags, name);
   auto *contextPtr = context.get();
@@ -219,7 +231,7 @@ CommandExecutionContext *CommandExecutor::CreateDefaultExecutionContext(uint32_t
   return contextPtr;
 }
 // ==================== 执行统计接口实现 ====================
-//size_t CommandExecutor::GetPendingCommandCount() const
+// size_t CommandExecutor::GetPendingCommandCount() const
 //{
 //  // BS线程池内部管理队列，无法直接获取
 //  return 0;
@@ -257,67 +269,146 @@ size_t CommandExecutor::ClearPendingCommands()
 {
   // BS线程池内部管理队列，无法直接清空
   // 只能停止新任务的提交，等待现有任务完成
+  //
+  // 原因：
+  // BS::thread_pool 的限制。BS线程池遵循"任务完成"模型，
+  // 一旦任务提交，就保证会执行完成。而安全地中断线程，
+  // 需要复杂的协调机制，容易引入竞态条件。
+  //
+  // 解决方案：
+  // 子线程尽可能执行简单命令，复杂命令拆分后分发。
+  // 确保命令短时间内可以执行完成，用户不感知到Pending即可
   m_Logger->warn("ClearPendingCommands not supported with BS thread pool");
   return 0;
 }
 // ==================== 单个命令执行实现 ====================
 CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
 {
-  if (!task.command || !task.context) {
+  // 1. 执行前阶段
+  if (!task.handle.IsValid() || !task.context) {
     m_ExecutingCommands--;
-    return CommandResult::Failure("Invalid command or context");
+    return CommandResult::Failure("Invalid command handle or context");
   }
 
-  // 检查命令是否在上下文中可用
-  if (!task.context->IsCommandAvailable(task.command.get())) {
-    m_Logger->warn("Command '{}' is not available in context '{}'",
-                   task.command->GetName(),
-                   task.context->GetName());
+  // 1.1. 从注册表获取命令对象（转移所有权）
+  CommandPtr command = CommandRegistry::Get().AcquireCommand(task.handle, task.expectedType);
+  if (!command) {
     m_ExecutingCommands--;
-    return CommandResult::Failure("Command not available in current context");
+    return CommandResult::Failure("Failed to acquire command from registry: " +
+                                  task.handle.ToString());
   }
 
-  // 记录执行开始
-  task.context->RecordCommandExecutionStart(task.command.get());
+  // 1.2. 变更CommandExecutionState状态
+  CommandExecutionState preExecutingState;
+  switch (CommandRegistry::Get().GetCommandState(task.handle)) {
+    case CommandExecutionState::PENDING:
+      preExecutingState = CommandExecutionState::EXECUTING;  // 命令等待执行（可执行）
+      break;
+    case CommandExecutionState::SUCCEEDED:
+      preExecutingState = CommandExecutionState::UNDOING;  // 命令执行成功（可撤销）
+      break;
+    case CommandExecutionState::UNDONE:
+      preExecutingState = CommandExecutionState::REDOING;  // 命令已被撤销（可重做）
+      break;
+    case CommandExecutionState::REDONE:
+      preExecutingState = CommandExecutionState::UNDOING;  // 命令已被重做（可再次撤销）
+      break;
+    default:
+      return CommandResult::Failure("Invalid Command Execution State");  // 与情况不符
+  }
+  CommandRegistry::Get().SetCommandState(task.handle, preExecutingState);
 
-  // 发布执行开始事件
-  EventBus::Publish<CommandExecuteEvent>(
-      CommandExecuteEvent(task.command.get(), task.context, task.command->GetPriority()));
+  // 1.3. 发布执行开始事件
+  EventBus::Publish<CommandExecuteEvent>(CommandExecuteEvent(command.get(), task.context));
 
-  m_Logger->info(
-      "Executing command '{}' in context '{}'", task.command->GetName(), task.context->GetName());
+  // 1.4. 记录开始执行
+  task.context->RecordCommandExecutionStart(task.handle);
+  m_Logger->info("Executing command '{}' (handle: {}) in context '{}'",
+                 command->GetName(),
+                 task.handle.ToString(),
+                 task.context->GetName());
 
-  // 执行命令
+  // 2. 执行阶段
   CommandResult result;
   try {
-    result = task.command->Execute();
+    switch (CommandRegistry::Get().GetCommandState(task.handle)) {
+      case CommandExecutionState::EXECUTING:
+        result = command->Execute();  // 执行命令
+        break;
+      case CommandExecutionState::UNDOING:
+        result = command->Undo();  // 执行撤销
+        break;
+      case CommandExecutionState::REDOING:
+        result = command->Execute();  // 执行重做
+        break;
+      default:
+        result = CommandResult::Failure("Invalid Command Execution State");  // 与情况不符
+    }
   }
   catch (const std::exception &e) {
     m_Logger->error(
-        "Command '{}' execution failed with exception: {}", task.command->GetName(), e.what());
+        "Command '{}' execution failed with exception: {}", command->GetName(), e.what());
     result = CommandResult::Failure(std::string("Exception: ") + e.what());
   }
   catch (...) {
-    m_Logger->error("Command '{}' execution failed with unknown exception",
-                    task.command->GetName());
+    m_Logger->error("Command '{}' execution failed with unknown exception", command->GetName());
     result = CommandResult::Failure("Unknown exception");
   }
 
-  // 记录执行完成
-  task.context->RecordCommandExecutionComplete(task.command.get(), result);
+  // 3. 执行完成阶段
 
-  // 发布执行完成事件
-  EventBus::Publish<CommandCompletedEvent>(CommandCompletedEvent(std::move(result)));
+  // 3.1. 记录执行完成
+  task.context->RecordCommandExecutionComplete(task.handle, result);
 
-  // 更新统计
+  // 3.2. 变更CommandExecutionState状态
+  CommandExecutionState postExecutingState;
+  if (result.success) {
+    switch (CommandRegistry::Get().GetCommandState(task.handle)) {
+      case CommandExecutionState::EXECUTING:
+        preExecutingState = CommandExecutionState::SUCCEEDED;  // 命令执行成功
+        break;
+      case CommandExecutionState::UNDOING:
+        preExecutingState = CommandExecutionState::UNDONE;  // 命令撤销成功
+        break;
+      case CommandExecutionState::REDOING:
+        preExecutingState = CommandExecutionState::REDONE;  // 命令重做撤销
+        break;
+      default:
+        return CommandResult::Failure("Invalid Command Execution State");  // 与情况不符
+    }
+  }
+  else {
+    postExecutingState = CommandExecutionState::FAILED;
+  }
+  CommandRegistry::Get().SetCommandState(task.handle, postExecutingState);
+
+  // 3.3. 如果执行成功，将命令重新存储到注册表
+  if (result.success && command->CanUndo()) {
+    // 重新存储到原句柄（不改变CommandExecutionState状态。状态与Store解耦）
+    if (CommandRegistry::Get().ReStoreCommand(task.handle, std::move(command))) {
+      // 发布事件，使用原句柄
+      result.commandHandle = task.handle;
+      CommandCompletedEvent event(result);
+      EventBus::Publish(event);
+
+      m_Logger->debug("Command re-stored to original handle: {}", task.handle.ToString());
+    }
+    else {
+      // 回退方案：生成新句柄
+      result.commandHandle = CommandRegistry::Get().StoreCommand(std::move(command));
+      CommandCompletedEvent event(result);
+      EventBus::Publish(event);
+
+      m_Logger->debug("Command stored with new handle: {}", result.commandHandle.ToString());
+    }
+  }
+
+  // 3.4. 更新统计
   m_ExecutingCommands--;
   m_CompletedCommands++;
-
   m_Logger->info("Command '{}' completed with result: {}",
-                 task.command->GetName(),
+                 command->GetName(),
                  result.success ? "success" : "failure");
-
-  // 返回包含命令的Result 
-  return CommandResult(result.success, result.state, result.message, std::move(task.command));
+  return result;
 }
 }  // namespace mite
