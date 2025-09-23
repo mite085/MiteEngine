@@ -1,7 +1,7 @@
 #ifndef MITE_ENGINE_COMMAND_TYPE
 #define MITE_ENGINE_COMMAND_TYPE
 
-#include <cstdint>
+#include "headers/headers.h"
 
 namespace mite {
 /**
@@ -10,11 +10,12 @@ namespace mite {
  * 用于在不同线程内传递命令。命令本身由注册表负责创建和维护，
  * 注册表负责多线程安全，CommandHandle为命令传递和获取的唯一凭证。
  */
-struct CommandHandle {
-  UUID id{};  // 唯一标识，用于在注册表内索引CommandPtr对象
+class CommandHandle {
+ public:
+  UUID id;  // 唯一标识，用于在注册表内索引CommandPtr对象，默认为空ID
 
-  CommandHandle() = default;
-  explicit CommandHandle(const UUID &uuid) : id(uuid) {}
+  CommandHandle() : id(UUID()){}
+  explicit CommandHandle(const UUID uuid) : id(uuid) {}
   bool IsValid() const
   {
     return !id.is_nil();
@@ -64,12 +65,15 @@ enum CommandCategory : uint64_t {
 
 // 命令执行状态
 enum class CommandExecutionState {
-  PENDING,    // 命令等待执行
+  INVALID,    // 命令不可用
+  PENDING,    // 命令等待执行（可执行）
   EXECUTING,  // 命令正在执行
-  SUCCEEDED,  // 命令执行成功
+  SUCCEEDED,  // 命令执行成功（可撤销）
   FAILED,     // 命令执行失败
-  UNDONE,     // 命令已被撤销
-  REDONE      // 命令已被重做
+  UNDOING,    // 命令正在撤销
+  UNDONE,     // 命令已被撤销（可重做）
+  REDOING,    // 命令正在重做
+  REDONE      // 命令已被重做（可再次撤销）
 };
 
 // 命令优先级（用于执行顺序控制）
@@ -99,35 +103,37 @@ enum class CommandMergePolicy {
 
 /**
  * @brief 命令执行结果
- * 
+ *
  * 负责在命令执行结束时作为Command::Execute()的返回值返回
- * 
+ *
  * 使用示例：
- * 
+ *
  * // 1: 默认构造
  * mite::CommandResult result1;
- * // result1: success=false, state=PENDING, message="Default constructed result", command = nullptr
- * 
+ * // result1: success=false, state=PENDING, message="Default constructed result", command =
+ * nullptr
+ *
  * // 2: 使用静态工厂方法（注意CommandResult所有权移交）
  * auto result2 = mite::CommandResult::Success(std::move(cmd), "Operation completed");
  * // result2: success=true, state=SUCCEEDED, message="Operation completed"
- * 
+ *
  * auto result3 = mite::CommandResult::Failure("File not found", std::move(cmd));
  * // result3: success=false, state=FAILED, message="File not found"
- * 
+ *
  * // 3: 参数化构造（注意CommandResult所有权移交）
- * mite::CommandResult result4(true, mite::CommandExecutionState::SUCCEEDED, "Created entity", std::move(cmd));
+ * mite::CommandResult result4(true, mite::CommandExecutionState::SUCCEEDED, "Created entity",
+ * std::move(cmd));
  * // result4: success=true, state=SUCCEEDED, message="Created entity"
- * 
+ *
  * // 4: 布尔检查
  * if (result2) {
  *     LOG_INFO("Command succeeded: {}", result2.message);
  * }
- * 
+ *
  * // 5: 字符串表示
  * LOG_DEBUG("Result: {}", result3.ToString());
  * // 输出: "Result: CommandResult{success: false, state: FAILED, message: "File not found"}"
- * 
+ *
  * // 6: 有效性检查
  * if (!result1.IsValid()) {
  *     LOG_WARN("Result is default constructed");
@@ -137,7 +143,7 @@ struct CommandResult {
   bool success;                 // 执行是否成功
   CommandExecutionState state;  // 执行后的状态
   std::string message;          // 执行结果消息（可选填充）
-  CommandHandle commandHandle;  // 命令句柄（用于撤销重做）
+  CommandHandle commandHandle;  // 命令句柄（用于撤销重做，复用命令的原句柄）
 
   // ==================== 构造函数 ====================
   /**
@@ -204,11 +210,12 @@ struct CommandResult {
   {
     return state != CommandExecutionState::PENDING || message != "Default constructed result";
   }
+
   /**
    * @brief 转换为字符串表示（用于调试）
    * @return std::string 字符串表示
    */
-  std::string ToString() const
+  static std::string StateToString(CommandExecutionState state)
   {
     std::string stateStr;
     switch (state) {
@@ -234,6 +241,11 @@ struct CommandResult {
         stateStr = "UNKNOWN";
         break;
     }
+    return stateStr;
+  }
+  std::string ToString() const
+  {
+    std::string stateStr = StateToString(state);
     std::string handleStr = commandHandle.IsValid() ? commandHandle.ToString() : "Invalid";
 
     return "CommandResult{success: " + std::string(success ? "true" : "false") +
@@ -276,7 +288,16 @@ struct CommandResult {
     return !(*this == other);
   }
 };
-
 }  // namespace mite
+
+// 为 CommandHandle 特化 std::hash
+namespace std {
+template<> struct hash<mite::CommandHandle> {
+  size_t operator()(const mite::CommandHandle &handle) const noexcept
+  {
+    return std::hash<mite::UUID>{}(handle.id);
+  }
+};
+}  // namespace std
 
 #endif  // MITE_ENGINE_COMMAND_TYPE
