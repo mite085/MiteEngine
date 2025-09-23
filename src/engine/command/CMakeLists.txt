@@ -12,8 +12,6 @@ set(COMMAND_CORE_SRCS
     command_core/command_event.h        # 命令相关事件定义
     command_core/command_registry.h     # 命令注册管理
     command_core/command_registry.cpp
-    command_core/command_factory.h      # 命令工厂
-    command_core/command_factory.cpp
     command_core/command_system.h       # 命令系统，负责统筹所有模块，对外暴露接口
     command_core/command_system.cpp
 )
