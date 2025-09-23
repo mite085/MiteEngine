@@ -2,7 +2,7 @@
 #define MITE_ENGINE_COMMAND_EXECUTOR_COMMAND_EXECUTOR
 
 #include "command_core/command.h"
-#include "command_core/command_factory.h"
+#include "command_core/command_registry.h"
 #include "command_execution_context.h"
 
 namespace mite {
@@ -10,8 +10,8 @@ namespace mite {
 /**
  * @brief 命令执行器
  *
- * 负责命令的调度和执行，支持同步和异步执行模式
- * 提供优先级队列、执行上下文管理等功能
+ * 负责命令的调度和执行，使用CommandHandle作为命令的唯一标识
+ * 支持同步和异步执行模式，正确处理命令所有权转移
  * 
  * 使用示例：
  *
@@ -81,34 +81,30 @@ class CommandExecutor {
 
   // ==================== 命令提交接口 ====================
   /**
-   * @brief 提交命令执行（异步, 使用事件通知结果）
-   * @param command 要执行的命令
+   * @brief 提交命令执行（异步，使用句柄）
+   * @param handle 命令句柄
    * @param context 执行上下文（可选）
    * @param priority 执行优先级
    * @return bool 提交是否成功
-   * 
-   * 优先级支持：BS::pr::low、BS::pr::normal、BS::pr::high、BS::pr::critical
    */
-  bool SubmitCommandAsync(CommandPtr command,
+  bool SubmitCommandAsync(CommandHandle handle,
                           CommandExecutionContext *context = nullptr,
                           BS::priority_t priority = BS::pr::normal);
   /**
-   * @brief 提交命令执行（同步）
-   * @param command 要执行的命令
+   * @brief 提交命令执行（同步，使用句柄）
+   * @param handle 命令句柄
    * @param context 执行上下文（可选）
    * @return CommandResult 执行结果
    */
-  CommandResult ExecuteCommand(CommandPtr command, CommandExecutionContext *context = nullptr);
+  CommandResult ExecuteCommand(CommandHandle handle, CommandExecutionContext *context = nullptr);
   /**
-   * @brief 批量提交命令（共享同一个上下文）
-   * @param commands 命令列表
+   * @brief 批量提交命令（使用句柄列表）
+   * @param handles 命令句柄列表
    * @param context 执行上下文（可选）
    * @param priority 执行优先级
    * @return size_t 成功提交的命令数量
-   * 
-   * 优先级支持：BS::pr::low、BS::pr::normal、BS::pr::high、BS::pr::critical
    */
-  size_t SubmitCommands(std::vector<CommandPtr> commands,
+  size_t SubmitCommands(const std::vector<CommandHandle> &handles,
                         CommandExecutionContext *context = nullptr,
                         BS::priority_t priority = BS::pr::normal);
 
@@ -129,8 +125,8 @@ class CommandExecutor {
    * @param name 上下文名称
    * @return CommandExecutionContext* 新创建的上下文指针
    */
-  CommandExecutionContext *CreateDefaultExecutionContext(uint32_t contextFlags = CONTEXT_NONE,
-                                                         const std::string &name = "Default");
+  CommandExecutionContext *CreateDefaultExecutionContext(
+      CommandContextFlags contextFlags = CONTEXT_NONE, const std::string &name = "Default");
 
   // ==================== 执行统计接口 ====================
   /**
@@ -177,25 +173,31 @@ class CommandExecutor {
 
  private:
   // ==================== 内部结构 ====================
-  // 存储命令信息的结构体，方便执行。
   struct CommandTask {
-    CommandPtr command; // Unique指针，独占所有权，确保生命周期
+    CommandHandle handle;
     CommandExecutionContext *context;
+    std::type_index expectedType;
+    CommandTask(CommandHandle h, CommandExecutionContext *ctx, std::type_index type)
+        : handle(h), context(ctx), expectedType(type)
+    {
+    }
 
-    CommandTask(CommandPtr cmd, CommandExecutionContext *ctx)
-        : command(std::move(cmd)), context(ctx)
-    {
-    }
-    // 支持移动语义
+    // 拷贝构造函数
+    CommandTask(const CommandTask &other) = default;
+    // 拷贝赋值运算符
+    CommandTask &operator=(const CommandTask &other) = default;
+    // 移动构造函数
     CommandTask(CommandTask &&other) noexcept
-        : command(std::move(other.command)), context(other.context)
+        : handle(other.handle), context(other.context), expectedType(other.expectedType)
     {
     }
+    // 移动赋值运算符
     CommandTask &operator=(CommandTask &&other) noexcept
     {
       if (this != &other) {
-        command = std::move(other.command);
+        handle = other.handle;
         context = other.context;
+        expectedType = other.expectedType;
       }
       return *this;
     }
