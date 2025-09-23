@@ -75,32 +75,6 @@ class Command {
     return (GetCategory() & category) != 0;
   }
 
-  // ==================== 状态管理接口 ====================
-  /**
-   * @brief 获取命令执行状态
-   * @return CommandExecutionState 执行状态
-   */
-  CommandExecutionState GetState() const
-  {
-    return m_state;
-  }
-  /**
-   * @brief 检查命令是否已完成
-   * @return bool 是否已完成
-   */
-  bool IsCompleted() const
-  {
-    return m_state == CommandExecutionState::SUCCEEDED || m_state == CommandExecutionState::FAILED;
-  }
-  /**
-   * @brief 检查命令是否可执行
-   * @return bool 是否可执行
-   */
-  bool IsExecutable() const
-  {
-    return m_state == CommandExecutionState::PENDING;
-  }
-
   // ==================== 优先级管理接口 ====================
   /**
    * @brief 获取命令优先级
@@ -165,65 +139,8 @@ class Command {
     return CommandMergePolicy::NONE;
   }
 
-  // ==================== 回调函数接口 ====================
-  /**
-   * @brief 设定命令完成回调函数
-   * @param cb 回调函数
-   */
-  void SetCallback(CommandCallback cb)
-  {
-    m_callback = cb;
-  }
-  /**
-   * @brief 清除命令回调函数
-   */
-  void ClearCallback()
-  {
-    m_callback = nullptr;
-  }
-  /**
-   * @brief 检查是否有回调函数
-   * @return bool 是否有回调
-   */
-  bool HasCallback() const
-  {
-    return m_callback != nullptr;
-  }
-
- protected:
-  // ==================== 受保护的构造函数和接口 ====================
-  /**
-   * @brief 受保护的构造函数，确保只能通过子类创建
-   * @param priority 命令优先级
-   */
-  explicit Command(CommandPriority priority = CommandPriority::NORMAL)
-      : m_priority(priority), m_state(CommandExecutionState::PENDING)
-  {
-  }
-  /**
-   * @brief 设置命令执行状态（供子类使用）
-   * @param state 新的执行状态
-   */
-  void SetState(CommandExecutionState state)
-  {
-    m_state = state;
-  }
-  /**
-   * @brief 完成命令执行并触发回调
-   * @param result 执行结果
-   */
-  void complete(CommandResult result);
-  /**
-   * @brief 触发状态变更事件
-   * @param oldState 旧状态
-   * @param newState 新状态
-   */
-  void notifyStateChanged(CommandExecutionState oldState, CommandExecutionState newState);
-
  private:
   CommandPriority m_priority;     // 命令优先级
-  CommandExecutionState m_state;  // 命令执行状态
-  CommandCallback m_callback;     // 命令完成回调
   // 禁止拷贝和赋值
   Command(const Command &) = delete;
   Command &operator=(const Command &) = delete;
