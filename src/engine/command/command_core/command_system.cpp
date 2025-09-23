@@ -60,7 +60,7 @@ void CommandSystem::Shutdown(bool waitForCompletion)
   // 停止执行器
   m_executor->Stop(waitForCompletion);
 
-  // 清空栈
+   // 清空栈和上下文
   ClearStacks();
   m_contexts.clear();
   m_initialized = false;
@@ -73,61 +73,50 @@ bool CommandSystem::IsInitialized() const
 }
 
 // ==================== 命令执行接口实现 ====================
-CommandResult CommandSystem::Execute(CommandPtr command, const std::string &contextName)
+CommandResult CommandSystem::Execute(CommandHandle handle, const std::string &contextName)
 {
-  if (!command) {
-    return CommandResult::Failure("Invalid command");
+  if (!handle.IsValid()) {
+    return CommandResult::Failure("Invalid command handle");
   }
-
   auto *context = GetContext(contextName);
   if (!context) {
     return CommandResult::Failure("Context not found: " + contextName);
   }
-
   // 检查命令可用性
-  if (!context->IsCommandAvailable(command.get())) {
+  if (!context->IsCommandAvailable(handle)) {
     return CommandResult::Failure("Command not available in context: " + contextName);
   }
-
   // 执行命令
-  CommandResult result = m_executor->ExecuteCommand(std::move(command), context);
+  CommandResult result = m_executor->ExecuteCommand(handle, context);
 
-  // 如果执行成功且命令可撤销，添加到撤销栈
-  if (result.success && result.command->CanUndo()) {
-    m_undoStack->Push(std::move(result.command));
-    m_redoStack->Clear();  // 执行新命令时清空重做栈
-  }
-
+  // 注意：撤销栈的维护现在通过事件处理，这里不再直接处理
   return result;
 }
 
-CommandResult CommandSystem::Submit(CommandPtr command,
+CommandResult CommandSystem::Submit(CommandHandle handle,
                                     const std::string &contextName,
                                     BS::priority_t priority)
 {
-  if (!command)
-    return CommandResult::Failure("Invalid command");
-
+  if (!handle.IsValid()) {
+    return CommandResult::Failure("Invalid command handle");
+  }
   auto *context = GetContext(contextName);
   if (!context) {
     m_Logger->warn("Context not found: {}", contextName);
     return CommandResult::Failure("Context not found");
   }
-
-  if (!context->IsCommandAvailable(command.get())) {
-    m_Logger->warn("Command not available in context: {}", contextName);
+  if (!context->IsCommandAvailable(handle)) {
+    m_Logger->warn(
+        "Command handle {} not available in context: {}", handle.ToString(), contextName);
     return CommandResult::Failure("Command not available in context");
   }
-
   // 异步提交
-  bool submited = m_executor->SubmitCommandAsync(std::move(command), context, priority);
-  if (submited) {
-    // 成功提交，返回Pending状态
-    return CommandResult::Pending(std::string("Command Submit pending"));
+  bool submitted = m_executor->SubmitCommandAsync(handle, context, priority);
+  if (submitted) {
+    return CommandResult::Pending("Command submitted for execution");
   }
   else {
-    // 提交失败
-    return CommandResult::Failure(std::string("Command Submit failed"));
+    return CommandResult::Failure("Command submission failed");
   }
 }
 
@@ -165,21 +154,30 @@ CommandResult CommandSystem::Undo()
   if (!CanUndo()) {
     return CommandResult::Failure("Nothing to undo");
   }
-
-  // 获取“撤销”的命令
-  auto command = m_undoStack->Pop();
-  if (!command) {
+  // 从撤销栈获取句柄
+  CommandHandle handle = m_undoStack->Pop();
+  if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to pop from undo stack");
   }
+  // 使用default上下文执行撤销操作
+  auto result = m_executor->ExecuteCommand(handle, GetContext("Default"));
 
-  // 执行撤销
-  auto result = m_executor->ExecuteCommand(std::move(command), GetContext("Default"));
-  if (result.success) {
-    // 将撤销后的命令移至“重做”中
-    m_redoStack->Push(std::move(result.command));
-  }
-
+  // 注意：重做栈的维护通过事件处理，这里不再直接处理
   return result;
+}
+
+bool CommandSystem::UndoSubmit()
+{
+  if (!CanUndo()) {
+    return false;
+  }
+  // 从撤销栈获取句柄
+  CommandHandle handle = m_undoStack->Pop();
+  if (!handle.IsValid()) {
+    return false;
+  }
+  // 使用default上下文执行异步撤销操作
+  return m_executor->SubmitCommandAsync(handle, GetContext("Default"));
 }
 
 CommandResult CommandSystem::Redo()
@@ -187,21 +185,30 @@ CommandResult CommandSystem::Redo()
   if (!CanRedo()) {
     return CommandResult::Failure("Nothing to redo");
   }
-
-  // 获取“重做”的命令
-  auto command = m_redoStack->Pop();
-  if (!command) {
+  // 从重做栈获取句柄
+  CommandHandle handle = m_redoStack->Pop();
+  if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to pop from redo stack");
   }
+  // 使用default上下文执行重做操作
+  auto result = m_executor->ExecuteCommand(handle, GetContext("Default"));
 
-  // 执行重做
-  auto result = m_executor->ExecuteCommand(std::move(command), GetContext("Default"));
-  if (result.success) {
-    // 将撤销后的命令移至“撤销”中
-    m_undoStack->Push(std::move(result.command));
-  }
-
+  // 注意：撤销栈的维护通过事件处理，这里不再直接处理
   return result;
+}
+
+bool CommandSystem::RedoSubmit()
+{
+  if (!CanRedo()) {
+    return false;
+  }
+  // 从重做栈获取句柄
+  CommandHandle handle = m_redoStack->Pop();
+  if (!handle.IsValid()) {
+    return false;
+  }  
+  // 使用default上下文执行异步重做操作
+  return m_executor->SubmitCommandAsync(handle, GetContext("Default"));
 }
 
 bool CommandSystem::CanUndo() const
@@ -238,10 +245,6 @@ CommandExecutor &CommandSystem::GetExecutor()
 {
   return *m_executor;
 }
-CommandFactory &CommandSystem::GetFactory()
-{
-  return CommandFactory::Get();
-}
 CommandRegistry &CommandSystem::GetRegistry()
 {
   return CommandRegistry::Get();
@@ -257,20 +260,28 @@ CommandRedoStack &CommandSystem::GetRedoStack()
 
 void CommandSystem::OnCommandCompleted(CommandCompletedEvent &event)
 {
-  if (event.IsSuccess() && event.HasCommand()) {
-    // 从事件中获取命令对象所有权
-    auto command = event.ReleaseCommand();
+  if (event.GetResult().success && event.HasCommandHandle()) {
+    CommandHandle handle = event.GetCommandHandle();
 
-    // 判断是否可以撤销
-    if (command && command->CanUndo()) {
-      // 添加到撤销栈
-      GetUndoStack().Push(std::move(command));
-      // 清空重做栈
-      GetRedoStack().Clear();
-
-      m_Logger->debug("Command '{}' added to undo stack", command->GetName());
+    // 根据事件类型决定如何维护栈
+    if (event.GetResult().state == CommandExecutionState::SUCCEEDED) {
+      // 正常命令执行完成：添加到撤销栈，清空重做栈
+      m_undoStack->Push(handle);
+      m_redoStack->Clear();
+      m_Logger->debug("Command handle {} added to undo stack", handle.ToString());
+    }
+    else if (event.GetResult().state == CommandExecutionState::UNDONE) {
+      // 撤销操作完成：添加到重做栈
+      m_redoStack->Push(handle);
+      m_Logger->debug("Command handle {} added to redo stack (undo completed)", handle.ToString());
+    }
+    else if (event.GetResult().state == CommandExecutionState::REDONE) {
+      // 重做操作完成：添加到撤销栈
+      m_undoStack->Push(handle);
+      m_Logger->debug("Command handle {} added to undo stack (redo completed)", handle.ToString());
     }
   }
+  // Failed则无需处理
 }
 
 }  // namespace mite

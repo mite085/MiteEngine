@@ -6,17 +6,18 @@
 #include "command_core/command.h"
 #include "command_executor/command_execution_context.h"
 #include "command_executor/command_executor.h"
-#include "command_core/command_factory.h"
 #include "command_core/command_registry.h"
 #include "command_executor/command_redo_stack.h"
 #include "command_executor/command_undo_stack.h"
 
 namespace mite {
-
 /**
- * @brief 命令系统 - 统一管理所有命令相关功能
+ * @brief 命令系统 - 基于CommandHandle的统一管理
  *
- * 提供简化的接口，外部只需与CommandSystem交互即可完成绝大多数命令操作
+ * 职责：
+ * 1. 作为统一接口，封装命令相关操作
+ * 2. 订阅命令完成事件，维护撤销/重做栈
+ * 3. 管理执行上下文
  */
 class CommandSystem {
  public:
@@ -65,33 +66,41 @@ class CommandSystem {
    */
   template<typename T> bool IsCommandTypeRegistered() const;
 
-  // ==================== 命令执行接口（简化版）====================
+  // ==================== 命令执行接口 ====================
   /**
-   * @brief 执行命令（自动处理Undo/Redo栈）
-   * @param command 要执行的命令
+   * @brief 执行命令（同步，自动处理Undo/Redo栈）
+   * @param handle 命令句柄
    * @param contextName 上下文名称（可选）
    * @return CommandResult 执行结果
    */
-  CommandResult Execute(CommandPtr command, const std::string &contextName = "Default");
+  CommandResult Execute(CommandHandle handle, const std::string &contextName = "Default");
   /**
    * @brief 异步提交命令
-   * @param command 要执行的命令
+   * @param handle 命令句柄
    * @param contextName 上下文名称（可选）
    * @param priority 执行优先级
-   * @return bool 提交是否成功
+   * @return CommandResult 提交结果
    */
-  CommandResult Submit(CommandPtr command,
+  CommandResult Submit(CommandHandle handle,
                        const std::string &contextName = "Default",
                        BS::priority_t priority = BS::pr::normal);
   /**
    * @brief 创建并执行命令
    * @tparam T 命令类型
-   * @param args 命令参数
    * @param contextName 上下文名称
    * @return CommandResult 执行结果
    */
-  template<typename T, typename... Args>
-  CommandResult ExecuteNew(Args &&...args, const std::string &contextName = "Default");
+  template<typename T> CommandResult ExecuteNew(const std::string &contextName = "Default");
+  /**
+   * @brief 创建并异步提交命令
+   * @tparam T 命令类型
+   * @param contextName 上下文名称
+   * @param priority 执行优先级
+   * @return CommandResult 提交结果
+   */
+  template<typename T>
+  CommandResult SubmitNew(const std::string &contextName = "Default",
+                          BS::priority_t priority = BS::pr::normal);
 
   // ==================== 上下文管理接口 ====================
   /**
@@ -121,10 +130,20 @@ class CommandSystem {
    */
   CommandResult Undo();
   /**
+   * @brief 执行异步撤销操作
+   * @return bool 提交成功与否
+   */
+  bool UndoSubmit();
+  /**
    * @brief 执行重做操作
    * @return CommandResult 重做执行结果
    */
   CommandResult Redo();
+  /**
+   * @brief 执行异步撤销操作
+   * @return bool 提交成功与否
+   */
+  bool RedoSubmit();
   /**
    * @brief 检查是否可以撤销
    * @return bool 是否可以撤销
@@ -155,17 +174,12 @@ class CommandSystem {
    */
   void SetMaxStackSize(size_t maxSize);
 
-  // ==================== 底层组件访问接口（高级用法）====================
+  // ==================== 底层组件访问接口 ====================
   /**
    * @brief 获取命令执行器
    * @return CommandExecutor& 执行器引用
    */
   CommandExecutor &GetExecutor();
-  /**
-   * @brief 获取命令工厂
-   * @return CommandFactory& 工厂引用
-   */
-  CommandFactory &GetFactory();
   /**
    * @brief 获取命令注册表
    * @return CommandRegistry& 注册表引用
@@ -207,7 +221,7 @@ class CommandSystem {
 
 template<typename T> bool CommandSystem::RegisterCommandType()
 {
-  return GetRegistry().RegisterCommandType<T>();
+  return CommandRegistry::Get().RegisterCommandType<T>();
 }
 
 template<typename... Types> void CommandSystem::RegisterCommandTypes()
@@ -215,21 +229,28 @@ template<typename... Types> void CommandSystem::RegisterCommandTypes()
   (RegisterCommandType<Types>(), ...);
 }
 
-template<typename T> inline bool CommandSystem::IsCommandTypeRegistered() const
+template<typename T> bool CommandSystem::IsCommandTypeRegistered() const
 {
-  return GetRegistry().IsCommandTypeRegistered<T>();
+  return CommandRegistry::Get().IsCommandTypeRegistered<T>();
 }
 
-template<typename T, typename... Args>
-CommandResult CommandSystem::ExecuteNew(Args &&...args, const std::string &contextName)
+template<typename T> CommandResult CommandSystem::ExecuteNew(const std::string &contextName)
 {
-  auto command = GetFactory().Create<T>();
-  if (!command) {
+  CommandHandle handle = CommandFactory::Get().Create<T>();
+  if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to create command");
   }
-  return Execute(std::move(command), contextName);
+  return Execute(handle, contextName);
 }
-
+template<typename T>
+CommandResult CommandSystem::SubmitNew(const std::string &contextName, BS::priority_t priority)
+{
+  CommandHandle handle = CommandFactory::Get().Create<T>();
+  if (!handle.IsValid()) {
+    return CommandResult::Failure("Failed to create command");
+  }
+  return Submit(handle, contextName, priority);
+}
 }  // namespace mite
 
 #endif  // MITE_ENGINE_COMMAND_SYSTEM_COMMAND_SYSTEM
