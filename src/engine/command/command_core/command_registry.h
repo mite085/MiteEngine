@@ -59,12 +59,7 @@ class CommandRegistry {
    * @return bool 是否已注册
    */
   template<typename T> bool IsCommandTypeRegistered() const;
-  /**
-   * @brief 检查命令类型是否已注册
-   * @param typeIndex 命令类型的type_index
-   * @return bool 是否已注册
-   */
-  bool IsCommandTypeRegistered(std::type_index typeIndex) const;
+  bool IsCommandTypeRegistered(std::type_index index) const;
 
   // ==================== 命令创建/获取/存储/释放接口 ====================
   /**
@@ -100,17 +95,70 @@ class CommandRegistry {
    */
   CommandHandle StoreCommand(CommandPtr command);
   /**
-   * @brief 检查句柄是否有效
-   * @param handle 命令句柄
-   * @return bool 是否有效
+   * @brief 重新存储命令对象到现有句柄（UndoStack需要该功能）
+   * @param handle 现有句柄
+   * @param command 命令对象
+   * @return bool 是否成功（句柄必须有效且当前无命令关联）
    */
-  bool IsHandleValid(const CommandHandle &handle) const;
+  bool ReStoreCommand(const CommandHandle &handle,
+                      CommandPtr command);
+  /**
+   * @brief 检查句柄是否有关联的命令对象
+   * @param handle 命令句柄
+   * @return bool 是否有关联的命令
+   */
+  bool HasCommand(const CommandHandle &handle) const;
+  /**
+   * @brief 预分配句柄（不关联命令对象）
+   * @return CommandHandle 预分配的句柄
+   */
+  CommandHandle PreAllocateHandle();
+  /**
+   * @brief 将命令关联到预分配的句柄
+   * @param handle 预分配的句柄
+   * @param command 命令对象
+   * @return bool 是否成功
+   */
+  bool AssociateCommand(const CommandHandle &handle, CommandPtr command);
   /**
    * @brief 释放命令对象
    * @param handle 命令句柄
    * @return bool 释放是否成功
    */
   bool ReleaseCommand(const CommandHandle &handle);
+
+  // ==================== 命令状态管理接口 ====================
+  /**
+   * @brief 设置命令状态
+   * @param handle 命令句柄
+   * @param state 新的状态
+   * @return bool 设置是否成功
+   */
+  bool SetCommandState(const CommandHandle &handle, CommandExecutionState state);
+  /**
+   * @brief 获取命令状态
+   * @param handle 命令句柄
+   * @return CommandExecutionState 命令状态，如果句柄无效返回PENDING
+   */
+  CommandExecutionState GetCommandState(const CommandHandle &handle) const;
+  /**
+   * @brief 检查命令是否可被执行
+   * @param handle 命令句柄
+   * @return bool 是否正在执行
+   */
+  bool IsCommandExecutable(const CommandHandle &handle) const;
+  /**
+   * @brief 检查命令是否正在执行
+   * @param handle 命令句柄
+   * @return bool 是否正在执行
+   */
+  bool IsCommandExecuting(const CommandHandle &handle) const;
+  /**
+   * @brief 检查命令是否已完成
+   * @param handle 命令句柄
+   * @return bool 是否已完成
+   */
+  bool IsCommandCompleted(const CommandHandle &handle) const;
 
   // ==================== 批量操作接口 ====================
   /**
@@ -190,6 +238,9 @@ class CommandRegistry {
   bool IsEmpty() const;
 
  private:
+  // ==================== 内部辅助方法 ====================
+  bool ValidateStateTransition(CommandExecutionState from, CommandExecutionState to);
+
   // ==================== 私有构造函数和成员 ====================
   CommandRegistry();
   ~CommandRegistry() = default;
@@ -212,6 +263,23 @@ class CommandRegistry {
     CommandPtr command;
     std::type_index type;
     std::chrono::system_clock::time_point createTime;
+    CommandExecutionState state;  // 命令执行状态
+    bool isAcquired;              // 是否被获取（命令对象是否被移走）
+
+    // 删除默认构造函数
+    CommandInstance() = delete;
+
+    // 必须提供 type 参数的构造函数
+    CommandInstance(CommandPtr cmd,
+                    std::type_index cmdType,
+                    CommandExecutionState cmdState = CommandExecutionState::PENDING)
+        : command(std::move(cmd)),
+          type(cmdType),
+          createTime(std::chrono::system_clock::now()),
+          state(cmdState),
+          isAcquired(false)
+    {
+    }
   };
 
   // 日志管理

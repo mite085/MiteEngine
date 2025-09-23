@@ -47,14 +47,22 @@ CommandPtr CommandRegistry::AcquireCommand(const CommandHandle &handle,
   // 类型安全检查
   if (expectedType != std::type_index(typeid(void)) && it->second.type != expectedType) {
     m_Logger->error("Command type mismatch. Expected: {}, Actual: {}",
-                  expectedType.name(),
-                  it->second.type.name());
+                    expectedType.name(),
+                    it->second.type.name());
     return nullptr;
   }
 
+  // 检查命令是否已被获取
+  if (it->second.isAcquired) {
+    m_Logger->warn("Command handle {} already acquired", handle.ToString());
+    return nullptr;
+  }
+  // 标记为正在执行
+  it->second.state = CommandExecutionState::EXECUTING;
+  it->second.isAcquired = true;
+
   // 移交所有权
   CommandPtr command = std::move(it->second.command);
-  m_commandInstances.erase(it);
 
   m_Logger->debug("Acquired command: {} ({})", command->GetName(), handle.ToString());
   return command;
@@ -75,21 +83,95 @@ CommandHandle CommandRegistry::StoreCommand(CommandPtr command)
   if (!command) {
     return CommandHandle();
   }
+  std::unique_lock lock(m_instancesMutex);
+
   CommandHandle handle = CommandHandle::Create();
   std::type_index typeIndex = typeid(*command);
-  std::unique_lock lock(m_instancesMutex);
-  m_commandInstances[handle] = {std::move(command), typeIndex, std::chrono::system_clock::now()};
-  m_Logger->debug(
-      "Stored command: {} ({})", m_commandInstances[handle].command->GetName(), handle.ToString());
+
+  // 使用新的句柄创建新的实例
+  m_commandInstances.try_emplace(handle,
+                                 std::move(command),
+                                 typeIndex,
+                                 CommandExecutionState::PENDING  // 新实例直接设定为Pending
+  );
+
+  m_Logger->debug("Stored command, handle: {}", handle.ToString());
   return handle;
 }
-bool CommandRegistry::IsHandleValid(const CommandHandle &handle) const
+bool CommandRegistry::ReStoreCommand(const CommandHandle &handle,
+                                     CommandPtr command)
+{
+  if (!handle.IsValid() || !command) {
+    return false;
+  }
+  std::unique_lock lock(m_instancesMutex);
+
+  auto it = m_commandInstances.find(handle);
+  if (it == m_commandInstances.end()) {
+    // 如果句柄不存在，创建新的实例
+    std::type_index typeIndex = typeid(*command);
+    m_commandInstances.try_emplace(
+        handle,
+        std::move(command),
+        typeIndex,
+        CommandExecutionState::PENDING  // 新实例无视state输入，直接设定为Pending，确保状态管理正确
+    );
+  }
+  else {
+    // 替换现有实例
+    if (it->second.command && !it->second.isAcquired) {
+      m_Logger->warn("Handle {} already has associated command", handle.ToString());
+      return false;
+    }
+
+    it->second.command = std::move(command);
+    it->second.type = typeid(*it->second.command);
+    it->second.createTime = std::chrono::system_clock::now();
+    //it->second.state = state;                         // 保持原有状态
+    it->second.isAcquired = false;                      // 重置获取
+  }
+  m_Logger->debug("Re-stored command to handle: {}", handle.ToString());
+  return true;
+}
+bool CommandRegistry::HasCommand(const CommandHandle &handle) const
 {
   if (!handle.IsValid()) {
     return false;
   }
   std::shared_lock lock(m_instancesMutex);
   return m_commandInstances.find(handle) != m_commandInstances.end();
+}
+CommandHandle CommandRegistry::PreAllocateHandle()
+{
+  CommandHandle handle = CommandHandle::Create();
+
+  std::unique_lock lock(m_instancesMutex);
+  // 预分配时命令对象为空
+  m_commandInstances.try_emplace(handle, nullptr, std::type_index(typeid(void)));
+
+  m_Logger->debug("Pre-allocated handle: {}", handle.ToString());
+  return handle;
+}
+bool CommandRegistry::AssociateCommand(const CommandHandle &handle, CommandPtr command)
+{
+  if (!handle.IsValid() || !command) {
+    return false;
+  }
+  std::unique_lock lock(m_instancesMutex);
+  auto it = m_commandInstances.find(handle);
+  if (it == m_commandInstances.end()) {
+    m_Logger->warn("Handle {} not found for association", handle.ToString());
+    return false;
+  }
+  if (it->second.command) {
+    m_Logger->warn("Handle {} already has associated command", handle.ToString());
+    return false;
+  }
+  it->second.command = std::move(command);
+  it->second.type = typeid(*it->second.command);
+  it->second.createTime = std::chrono::system_clock::now();
+  m_Logger->debug("Associated command to pre-allocated handle: {}", handle.ToString());
+  return true;
 }
 bool CommandRegistry::ReleaseCommand(const CommandHandle &handle)
 {
@@ -105,7 +187,67 @@ bool CommandRegistry::ReleaseCommand(const CommandHandle &handle)
   m_commandInstances.erase(it);
   return true;
 }
+// ==================== 状态管理接口实现 ====================
+bool CommandRegistry::SetCommandState(const CommandHandle &handle, CommandExecutionState state)
+{
+  if (!handle.IsValid()) {
+    return false;
+  }
+  std::unique_lock lock(m_instancesMutex);
+  auto it = m_commandInstances.find(handle);
+  if (it == m_commandInstances.end()) {
+    return false;
+  }
+  // 状态转换验证
+  if (!ValidateStateTransition(it->second.state, state)) {
+    m_Logger->warn("Invalid state transition from {} to {} for handle {}",
+                   CommandResult::StateToString(it->second.state),
+                   CommandResult::StateToString(state),
+                   handle.ToString());
+    return false;
+  }
+  it->second.state = state;
+  m_Logger->trace("Command handle {} state changed to {}",
+                  handle.ToString(),
+                  CommandResult::StateToString(state));
+  return true;
+}
+CommandExecutionState CommandRegistry::GetCommandState(const CommandHandle &handle) const
+{
+  if (!handle.IsValid()) {
+    return CommandExecutionState::INVALID; // 句柄不存在视为Invalid
+  }
+  std::shared_lock lock(m_instancesMutex);
+  auto it = m_commandInstances.find(handle);
+  if (it == m_commandInstances.end()) {
+    return CommandExecutionState::INVALID;  // 句柄未被管理也视为Invalid
+  }
+  return it->second.state;
+}
+bool CommandRegistry::IsCommandExecutable(const CommandHandle &handle) const
+{
+  CommandExecutionState state = GetCommandState(handle);
 
+  // 待执行、待撤销（Successed）、待重做（UnDone）、待再次撤销（ReDone）完成均视为Executable
+  return state == CommandExecutionState::PENDING || state == CommandExecutionState::SUCCEEDED ||
+         state == CommandExecutionState::UNDONE || state == CommandExecutionState::REDONE;
+}
+bool CommandRegistry::IsCommandExecuting(const CommandHandle &handle) const
+{
+  CommandExecutionState state = GetCommandState(handle);
+
+  // 正在执行、正在撤销、正在重做均是为Executing
+  return state == CommandExecutionState::EXECUTING || state == CommandExecutionState::UNDOING ||
+         state == CommandExecutionState::REDOING;
+}
+bool CommandRegistry::IsCommandCompleted(const CommandHandle &handle) const
+{
+  CommandExecutionState state = GetCommandState(handle);
+
+  // 成功、失败、撤销完成、重做完成均视为Complete
+  return state == CommandExecutionState::SUCCEEDED || state == CommandExecutionState::FAILED ||
+         state == CommandExecutionState::UNDONE || state == CommandExecutionState::REDONE;
+}
 // ==================== 批量操作接口 ====================
 std::vector<CommandHandle> CommandRegistry::GetActiveHandles() const
 {
@@ -129,7 +271,7 @@ size_t CommandRegistry::GetActiveCommandCount() const
 {
   std::shared_lock lock(m_instancesMutex);
   return m_commandInstances.size();
-}  
+}
 
 // ==================== 类型信息查询接口实现 ====================
 std::string CommandRegistry::GetCommandTypeName(std::type_index typeIndex) const
@@ -213,5 +355,41 @@ bool CommandRegistry::IsCommandTypeRegistered(std::type_index typeIndex) const
   std::shared_lock lock(m_typesMutex);
   return m_commandTypes.find(typeIndex) != m_commandTypes.end();
 }
+// ==================== 内部辅助方法 ====================
+bool CommandRegistry::ValidateStateTransition(CommandExecutionState from, CommandExecutionState to)
+{
+  // 定义允许的状态转换
+  static const std::unordered_map<CommandExecutionState, std::unordered_set<CommandExecutionState>>
+      validTransitions = {{CommandExecutionState::PENDING,
+                           {CommandExecutionState::EXECUTING}},  // 待执行状态仅可以转换为执行状态
 
+                          {CommandExecutionState::EXECUTING,
+                           {CommandExecutionState::SUCCEEDED,
+                            CommandExecutionState::FAILED}},  // 执行状态仅有成功和失败两个结果
+
+                          {CommandExecutionState::SUCCEEDED,
+                           {CommandExecutionState::UNDOING}},  // 执行成功后才可转撤销状态
+
+                          {CommandExecutionState::FAILED,
+                           {CommandExecutionState::PENDING}},  // 失败后可以转待执行状态等待重试
+
+                          {CommandExecutionState::UNDOING,
+                           {CommandExecutionState::UNDONE,
+                            CommandExecutionState::FAILED}},  // 撤销状态仅有成功和失败两个结果
+
+                          {CommandExecutionState::UNDONE,
+                           {CommandExecutionState::REDOING}},  // 撤销成功后可以转重做
+
+                          {CommandExecutionState::REDOING,
+                           {CommandExecutionState::REDONE,
+                            CommandExecutionState::FAILED}},  // 撤销状态仅有成功和失败两个结果
+
+                          {CommandExecutionState::REDONE,
+                           {CommandExecutionState::UNDOING}}};  // 重做成功后可以转撤销
+  auto it = validTransitions.find(from);
+  if (it == validTransitions.end()) {
+    return false;
+  }
+  return it->second.find(to) != it->second.end();
+}
 }  // namespace mite
