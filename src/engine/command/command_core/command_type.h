@@ -76,12 +76,12 @@ enum class CommandExecutionState {
   REDONE      // 命令已被重做（可再次撤销）
 };
 
-// 命令优先级（用于执行顺序控制）
-enum class CommandPriority : uint8_t {
-  LOW = 0,        // 低优先级命令
-  NORMAL = 64,    // 普通优先级命令
-  HIGH = 128,     // 高优先级命令
-  CRITICAL = 255  // 关键优先级命令
+// 命令优先级（用于执行顺序控制）（与BS::priority_t保持一致）
+enum class CommandPriority : int8_t {
+  LOW = -64,        // 低优先级命令
+  NORMAL = 0,    // 普通优先级命令
+  HIGH = +64,     // 高优先级命令
+  CRITICAL = +127  // 关键优先级命令
 };
 
 // 命令执行上下文标志
@@ -91,14 +91,6 @@ enum CommandContextFlags : uint32_t {
   CONTEXT_RUNTIME = 1 << 1,  // 运行时上下文
   CONTEXT_PREVIEW = 1 << 2,  // 预览模式上下文
   CONTEXT_PLAY = 1 << 3,     // 播放模式上下文
-};
-
-// 命令合并策略
-enum class CommandMergePolicy {
-  NONE,           // 不合并命令
-  BY_TYPE,        // 按类型合并（相同类型命令合并）
-  BY_TARGET,      // 按目标合并（相同目标实体的命令合并）
-  BY_TYPE_TARGET  // 按类型和目标合并
 };
 
 /**

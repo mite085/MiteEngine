@@ -95,7 +95,7 @@ CommandResult CommandSystem::Execute(CommandHandle handle, const std::string &co
 
 CommandResult CommandSystem::Submit(CommandHandle handle,
                                     const std::string &contextName,
-                                    BS::priority_t priority)
+                                    CommandPriority priority)
 {
   if (!handle.IsValid()) {
     return CommandResult::Failure("Invalid command handle");

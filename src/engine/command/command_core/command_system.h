@@ -83,7 +83,7 @@ class CommandSystem {
    */
   CommandResult Submit(CommandHandle handle,
                        const std::string &contextName = "Default",
-                       BS::priority_t priority = BS::pr::normal);
+                       CommandPriority priority = CommandPriority::NORMAL);
   /**
    * @brief 创建并执行命令
    * @tparam T 命令类型
@@ -100,7 +100,7 @@ class CommandSystem {
    */
   template<typename T>
   CommandResult SubmitNew(const std::string &contextName = "Default",
-                          BS::priority_t priority = BS::pr::normal);
+                          CommandPriority priority = CommandPriority::NORMAL);
 
   // ==================== 上下文管理接口 ====================
   /**
@@ -236,16 +236,16 @@ template<typename T> bool CommandSystem::IsCommandTypeRegistered() const
 
 template<typename T> CommandResult CommandSystem::ExecuteNew(const std::string &contextName)
 {
-  CommandHandle handle = CommandFactory::Get().Create<T>();
+  CommandHandle handle = CommandRegistry::Get().CreateCommand<T>();
   if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to create command");
   }
   return Execute(handle, contextName);
 }
 template<typename T>
-CommandResult CommandSystem::SubmitNew(const std::string &contextName, BS::priority_t priority)
+CommandResult CommandSystem::SubmitNew(const std::string &contextName, CommandPriority priority)
 {
-  CommandHandle handle = CommandFactory::Get().Create<T>();
+  CommandHandle handle = CommandRegistry::Get().CreateCommand<T>();
   if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to create command");
   }

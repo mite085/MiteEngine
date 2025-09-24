@@ -54,7 +54,7 @@ bool CommandExecutor::IsRunning() const
 // ==================== 命令提交接口实现 ====================
 bool CommandExecutor::SubmitCommandAsync(CommandHandle handle,
                                          CommandExecutionContext *context,
-                                         BS::priority_t priority)
+                                         CommandPriority priority)
 {
   // 检查命令本身
   if (!handle.IsValid()) {
@@ -102,7 +102,7 @@ bool CommandExecutor::SubmitCommandAsync(CommandHandle handle,
       [this, task = CommandTask(handle, execContext, expectedType)]() mutable {
         ExecuteSingleCommand(std::move(task));
       },
-      priority);
+      static_cast<BS::priority_t>(priority));
 
   // 管理taskFuture
   m_TaskFutures.push_back(std::move(taskFuture));
@@ -152,7 +152,7 @@ CommandResult CommandExecutor::ExecuteCommand(CommandHandle handle,
 }
 size_t CommandExecutor::SubmitCommands(const std::vector<CommandHandle> &handles,
                                        CommandExecutionContext *context,
-                                       BS::priority_t priority)
+                                       CommandPriority priority)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
   // 若并非在System的Start()和Stop()窗口提交，则提交失败（此时并非运行状态）
@@ -196,7 +196,7 @@ size_t CommandExecutor::SubmitCommands(const std::vector<CommandHandle> &handles
         [this, task = CommandTask(handle, execContext, expectedType)]() mutable {
           ExecuteSingleCommand(std::move(task));
         },
-        priority);
+        static_cast<BS::priority_t>(priority));
     m_TaskFutures.push_back(std::move(future));
     submittedCount++;
     m_TotalCommands++;
@@ -297,6 +297,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
     return CommandResult::Failure("Failed to acquire command from registry: " +
                                   task.handle.ToString());
   }
+  std::string commandName = command->GetName();
 
   // 1.2. 变更CommandExecutionState状态
   CommandExecutionState preExecutingState;
@@ -324,7 +325,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
   // 1.4. 记录开始执行
   task.context->RecordCommandExecutionStart(task.handle);
   m_Logger->info("Executing command '{}' (handle: {}) in context '{}'",
-                 command->GetName(),
+                 commandName,
                  task.handle.ToString(),
                  task.context->GetName());
 
@@ -346,12 +347,11 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
     }
   }
   catch (const std::exception &e) {
-    m_Logger->error(
-        "Command '{}' execution failed with exception: {}", command->GetName(), e.what());
+    m_Logger->error("Command '{}' execution failed with exception: {}", commandName, e.what());
     result = CommandResult::Failure(std::string("Exception: ") + e.what());
   }
   catch (...) {
-    m_Logger->error("Command '{}' execution failed with unknown exception", command->GetName());
+    m_Logger->error("Command '{}' execution failed with unknown exception", commandName);
     result = CommandResult::Failure("Unknown exception");
   }
 
@@ -365,13 +365,13 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
   if (result.success) {
     switch (CommandRegistry::Get().GetCommandState(task.handle)) {
       case CommandExecutionState::EXECUTING:
-        preExecutingState = CommandExecutionState::SUCCEEDED;  // 命令执行成功
+        postExecutingState = CommandExecutionState::SUCCEEDED;  // 命令执行成功
         break;
       case CommandExecutionState::UNDOING:
-        preExecutingState = CommandExecutionState::UNDONE;  // 命令撤销成功
+        postExecutingState = CommandExecutionState::UNDONE;  // 命令撤销成功
         break;
       case CommandExecutionState::REDOING:
-        preExecutingState = CommandExecutionState::REDONE;  // 命令重做撤销
+        postExecutingState = CommandExecutionState::REDONE;  // 命令重做撤销
         break;
       default:
         return CommandResult::Failure("Invalid Command Execution State");  // 与情况不符
@@ -394,12 +394,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
       m_Logger->debug("Command re-stored to original handle: {}", task.handle.ToString());
     }
     else {
-      // 回退方案：生成新句柄
-      result.commandHandle = CommandRegistry::Get().StoreCommand(std::move(command));
-      CommandCompletedEvent event(result);
-      EventBus::Publish(event);
-
-      m_Logger->debug("Command stored with new handle: {}", result.commandHandle.ToString());
+      m_Logger->error("Command re-stored failed: {}", result.commandHandle.ToString());
     }
   }
 
@@ -407,7 +402,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
   m_ExecutingCommands--;
   m_CompletedCommands++;
   m_Logger->info("Command '{}' completed with result: {}",
-                 command->GetName(),
+                 commandName,
                  result.success ? "success" : "failure");
   return result;
 }

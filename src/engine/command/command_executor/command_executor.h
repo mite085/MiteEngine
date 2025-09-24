@@ -89,7 +89,7 @@ class CommandExecutor {
    */
   bool SubmitCommandAsync(CommandHandle handle,
                           CommandExecutionContext *context = nullptr,
-                          BS::priority_t priority = BS::pr::normal);
+                          CommandPriority priority = CommandPriority::NORMAL);
   /**
    * @brief 提交命令执行（同步，使用句柄）
    * @param handle 命令句柄
@@ -106,7 +106,7 @@ class CommandExecutor {
    */
   size_t SubmitCommands(const std::vector<CommandHandle> &handles,
                         CommandExecutionContext *context = nullptr,
-                        BS::priority_t priority = BS::pr::normal);
+                        CommandPriority priority = CommandPriority::NORMAL);
 
   // ==================== 执行上下文管理接口 ====================
   /**
