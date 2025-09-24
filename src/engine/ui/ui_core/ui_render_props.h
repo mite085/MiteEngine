@@ -4,7 +4,6 @@
 #include "headers/headers.h"
 
 namespace mite {
-
 // ==================== 基础属性结构 ====================
 
 /**
@@ -13,8 +12,6 @@ namespace mite {
  */
 struct BaseRenderProps {
   UUID elementId;       // 控件唯一标识
-  glm::vec2 position;   // 屏幕位置
-  glm::vec2 size;       // 控件尺寸
   bool visible = true;  // 是否可见
   bool enabled = true;  // 是否启用
 
@@ -48,6 +45,7 @@ struct LabelProps : public TextRenderProps {
  */
 struct ButtonProps : public TextRenderProps {
   // 按钮的文本通过translationKey和fallbackText管理
+  glm::uvec2 size = {0, 0};
 };
 
 /**
@@ -84,6 +82,7 @@ struct TextInputProps : public TextRenderProps {
  */
 struct TextAreaProps : public TextInputProps {
   int lineCount = 3;  // 显示行数
+  glm::uvec2 size = {0, 0};
 };
 
 // ==================== 选择器控件属性 ====================
@@ -108,6 +107,7 @@ struct ListBoxProps : public TextRenderProps {
   std::vector<std::string> itemTranslationKeys;  // 列表项的翻译键
   int selectedIndex = -1;                        // 选中项索引
   float itemHeight = 20.0f;                      // 单项高度
+  glm::uvec2 size = {0, 0};
 };
 
 // ==================== 数值输入控件属性 ====================
@@ -178,6 +178,7 @@ struct ProgressBarProps : public TextRenderProps {
   float progress = 0.0f;              // 进度值（0.0-1.0）
   std::string overlayTranslationKey;  // 覆盖文本的翻译键
   std::string overlayFallbackText;    // 覆盖文本的回退文本
+  glm::uvec2 size = {0, 0};
 };
 
 /**
@@ -198,7 +199,8 @@ struct ColorEditProps : public TextRenderProps {
  * 用于显示纹理图像的控件
  */
 struct ImageProps : public TextRenderProps {
-  uintptr_t textureId = 0;  // 纹理ID（后端相关）
+  uintptr_t textureId = 0;       // 纹理ID（后端相关）
+  glm::uvec2 size = {0, 0};      // 纹理尺寸
   glm::vec2 uv0 = {0.0f, 0.0f};  // UV坐标起始点
   glm::vec2 uv1 = {1.0f, 1.0f};  // UV坐标结束点
 };
@@ -251,7 +253,32 @@ struct TableProps : public TextRenderProps {
  * 用于布局 spacing 的空白控件
  */
 struct SpacerProps : public BaseRenderProps {
-  // 空白控件没有额外属性
+  glm::uvec2 size = {0, 0};
+};
+
+// ==================== 面板控件属性 ====================
+/**
+ * @brief 面板属性
+ * 用于创建和管理面板窗口
+ */
+struct PanelProps : public BaseRenderProps {
+  bool closable = false;               // 是否可关闭
+  bool movable = true;                 // 是否可移动
+  bool resizable = true;               // 是否可调整大小
+  bool scrollable = true;              // 是否可滚动
+  bool collapsed = false;              // 是否折叠
+  bool bringToFront = false;           // 是否置顶
+  glm::vec2 initialSize = {0, 0};      // 初始尺寸（0表示自动）
+  glm::vec2 minSize = {100, 100};      // 最小尺寸
+  glm::vec2 maxSize = {10000, 10000};  // 最大尺寸
+};
+/**
+ * @brief 子窗口属性
+ * 用于创建子窗口区域
+ */
+struct ChildProps : public BaseRenderProps {
+  bool border = false;      // 是否显示边框
+  glm::vec2 size = {0, 0};  // 子窗口尺寸（0表示自动）
 };
 
 }  // namespace mite
