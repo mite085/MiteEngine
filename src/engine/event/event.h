@@ -17,8 +17,8 @@ enum class EventResult : uint8_t {
   Deferred = 1 << 4,  // 延迟处理，稍后继续
 
   // 组合标志
-  HandledAndStop = Handled | Consumed,
-  FailedAndStop = Failed | Consumed
+  HandledAndStop = Handled | Consumed,  // 已处理，阻断传播
+  FailedAndStop = Failed | Consumed     // 已失败，阻断传播
 };
 /**
  * @brief EventResult辅助函数
@@ -54,7 +54,7 @@ enum class EventPriority : int {
  * @brief 事件基类(抽象类)
  *
  * 所有事件都应当派生自该类
- * 
+ *
  * 子类继承示例：
  * 以class WindowResizeEvent: public Event为例
  *
@@ -151,7 +151,6 @@ class Event {
   EventResult m_Result = EventResult::None;
 };
 }  // namespace mite
-
 
 // Event派生类辅助宏，用于确定Categories
 #define EVENT_CLASS_CATEGORY(category) \

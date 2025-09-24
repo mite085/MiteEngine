@@ -15,7 +15,7 @@ EventBus::HandlerID EventBus::SubscribeByCategory(EventCategory category,
   sub.id = id;
   sub.handler = handler;
   sub.priority = static_cast<int>(priority);
-  sub.flags = flags;
+  sub.flags = flags;  // 订阅时决定处理方式
   sub.group = group;
 
   // 按照大类存储订阅者（用于处理事件时按大类查询）
@@ -25,7 +25,7 @@ EventBus::HandlerID EventBus::SubscribeByCategory(EventCategory category,
   m_CategoryNeedsSorting[category] = true;
 
   // 按照累增ID维护Handler信息（用于取消订阅）
-  m_HandlerInfo[id] = HandlerInfo(typeid(void), flags, category);
+  m_HandlerInfo[id] = HandlerInfo(typeid(void), category);
   return id;
 }
 
@@ -51,12 +51,6 @@ void EventBus::Clear()
   m_NextHandlerID = 1;
 }
 
-BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &EventBus::GetThreadPool()
-{
-  // 使用统一的线程池管理器获取默认线程池
-  return ThreadPoolManager::GetDefaultPool();
-}
-
 EventBus::~EventBus()
 {
   Clear();
@@ -65,6 +59,7 @@ EventBus::~EventBus()
 void EventBus::EnsureSubscribersSorted(std::type_index typeIndex,
                                        std::vector<Subscription> &subscribers)
 {
+  std::lock_guard<std::mutex> lock(m_Mutex);  // 加锁保护排序操作
   if (m_NeedsSorting[typeIndex]) {
     std::sort(subscribers.begin(), subscribers.end());
     m_NeedsSorting[typeIndex] = false;
@@ -73,6 +68,7 @@ void EventBus::EnsureSubscribersSorted(std::type_index typeIndex,
 void EventBus::EnsureCategorySubscribersSorted(EventCategory category,
                                                std::vector<Subscription> &subscribers)
 {
+  std::lock_guard<std::mutex> lock(m_Mutex);  // 加锁保护排序操作
   if (m_CategoryNeedsSorting[category]) {
     std::sort(subscribers.begin(), subscribers.end());
     m_CategoryNeedsSorting[category] = false;

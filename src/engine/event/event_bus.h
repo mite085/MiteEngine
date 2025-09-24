@@ -35,19 +35,19 @@ class EventBus {
     EventHandler handler;
     SubscriptionFlags flags = SubscriptionFlags::Sync;
     std::string group = "";
-
     int priority = static_cast<int>(EventPriority::Normal);  // 优先级
+
     bool operator<(const Subscription &other) const
     {
       return priority > other.priority;  // 优先级高（数字大）的在前
     }
   };
 
-  // 异步事件包装器
-  struct AsyncEventWrapper {
+  // 延迟事件包装器
+  struct DeferredEventWrapper {
     std::unique_ptr<Event> event;
     std::function<void(Event &)> processor;
-    SubscriptionFlags flags;
+    bool isAsync = false;
   };
 
   /**
@@ -72,9 +72,21 @@ class EventBus {
     Get().Post<T>(event);
   }
 
-  // 删除拷贝构造函数和赋值运算符
-  EventBus(const EventBus &) = delete;
-  EventBus &operator=(const EventBus &) = delete;
+  /**
+   * @brief 发布事件
+   * @tparam T 事件类型
+   * @param event 事件对象
+   */
+  template<typename T> void Post(T &event)
+  {
+    static_assert(std::is_base_of<Event, T>::value, "Must inherit from Event");
+
+    // 复制订阅者列表（带锁）
+    auto [typeSubscribers, categorySubscribers] = CopySubscribersForEvent<T>(event);
+
+    // 根据每个订阅者的flags分别处理（无锁）
+    ProcessEventWithSubscribers(event, std::move(typeSubscribers), std::move(categorySubscribers));
+  }
 
   /**
    * @brief 订阅指定类型的事件
@@ -120,7 +132,7 @@ class EventBus {
     m_NeedsSorting[typeIndex] = true;
 
     // 按照累增ID维护Handler信息（用于取消订阅）
-    m_HandlerInfo[id] = HandlerInfo(typeIndex, flags);
+    m_HandlerInfo[id] = HandlerInfo(typeIndex);
     return id;
   }
 
@@ -182,25 +194,6 @@ class EventBus {
   }
 
   /**
-   * @brief 发布事件
-   * @tparam T 事件类型
-   * @param event 事件对象
-   * @param flags 处理标志（覆盖订阅者的默认标志）
-   */
-  template<typename T> void Post(T &event, SubscriptionFlags flags = SubscriptionFlags::Sync)
-  {
-    static_assert(std::is_base_of<Event, T>::value, "Must inherit from Event");
-    if (SubscriptionFlagUtil::IsAsync(flags)) {
-      PostAsync<T>(event, flags);
-    }
-    else if (SubscriptionFlagUtil::IsDeferred(flags)) {
-      PostDeferred<T>(event);
-    }
-    else {
-      ProcessEvent<T>(event);
-    }
-  }
-  /**
    * @brief 处理队列中的事件(每帧执行，处理延迟事件)
    */
   void ProcessQueue();
@@ -210,82 +203,218 @@ class EventBus {
    */
   void Clear();
 
-  /**
-   * @brief 获取线程池实例（使用统一线程池管理器）
-   */
-  BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &GetThreadPool();
-
  private:
   // 处理器信息
   struct HandlerInfo {
     std::type_index typeIndex;
-    SubscriptionFlags flags;
     EventCategory category = EventCategory::None;
     // 提供构造函数
-    HandlerInfo(std::type_index index,
-                SubscriptionFlags f,
-                EventCategory cat = EventCategory::None)
-        : typeIndex(index), flags(f), category(cat)
+    HandlerInfo(std::type_index index, EventCategory cat = EventCategory::None)
+        : typeIndex(index), category(cat)
     {
     }
     // 默认构造函数（需要有效的type_index）
-    HandlerInfo()
-        : typeIndex(typeid(void)), flags(SubscriptionFlags::Sync), category(EventCategory::None)
-    {
-    }
+    HandlerInfo() : typeIndex(typeid(void)), category(EventCategory::None) {}
   };
 
-  // 单例模式：构造函数私有化
-  EventBus() = default;
-  ~EventBus();
-
   /**
-   * @brief 使用预复制的订阅者列表处理事件（无锁版本）
-   * @param event 事件对象
-   * @param typeSubscribers 类型订阅者列表副本
-   * @param categorySubscribers 类别订阅者列表副本
+   * @brief 核心处理逻辑：根据订阅者的flags分别处理（无锁）
    */
   void ProcessEventWithSubscribers(Event &event,
                                    std::vector<Subscription> typeSubscribers,
                                    std::vector<Subscription> categorySubscribers)
   {
-    // 处理类型订阅者
+    // 分离同步、异步、延迟处理
+    std::vector<Subscription> syncSubscribers;
+    std::vector<Subscription> asyncSubscribers;
+    std::vector<Subscription> deferredSyncSubscribers;   // 延迟但同步执行
+    std::vector<Subscription> deferredAsyncSubscribers;  // 延迟且异步执行
+    // 定义分类函数
+    auto classifySubscriber = [&](Subscription &sub) {
+      if (SubscriptionFlagUtil::IsDeferredAsync(sub.flags))
+      {  // 优先处理组合指令，避免被误认为单纯的IsDeferred或者IsAsync
+        deferredAsyncSubscribers.push_back(sub);
+      }
+      else if (SubscriptionFlagUtil::IsDeferred(sub.flags)) {
+        deferredSyncSubscribers.push_back(sub);
+      }
+      else if (SubscriptionFlagUtil::IsAsync(sub.flags)) {
+        asyncSubscribers.push_back(sub);
+      }
+      else {
+        syncSubscribers.push_back(sub);
+      }
+    };
+    // 分类处理类型订阅者
     for (auto &sub : typeSubscribers) {
+      classifySubscriber(sub);
+    }
+    // 分类处理类别订阅者
+    if (!categorySubscribers.empty()) {
+      std::sort(categorySubscribers.begin(), categorySubscribers.end());
+      for (auto &sub : categorySubscribers) {
+        classifySubscriber(sub);
+      }
+    }
+    // 立即同步处理
+    ProcessSyncSubscribers(event, syncSubscribers);
+
+    // 立即异步处理
+    if (!asyncSubscribers.empty()) {
+      ProcessAsyncSubscribers(event, asyncSubscribers);  // 非延迟模式
+    }
+
+    // 延迟同步处理（加入延迟队列，但ProcessQueue时同步执行）
+    if (!deferredSyncSubscribers.empty()) {
+      ProcessDeferredSubscribers(event, deferredSyncSubscribers, false);
+    }
+
+    // 延迟异步处理（加入延迟队列，ProcessQueue时异步执行）
+    if (!deferredAsyncSubscribers.empty()) {
+      ProcessDeferredSubscribers(event, deferredAsyncSubscribers, true);
+    }
+  }
+  /**
+   * @brief 处理同步订阅者
+   */
+  void ProcessSyncSubscribers(Event &event, std::vector<Subscription> &subscribers)
+  {
+    for (auto &sub : subscribers) {
       if (!event.ShouldContinue()) {
         break;
       }
       try {
+        // 主线程直接执行
         sub.handler(event);
       }
       catch (const std::exception &e) {
-        // 记录处理错误，但不中断其他处理
         LOG_ERROR("Event handler error: {}", e.what());
       }
       catch (...) {
         LOG_ERROR("Unknown error in event handler");
       }
     }
+  } /**
+     * @brief 处理异步订阅者
+     */
+  void ProcessAsyncSubscribers(Event &event, std::vector<Subscription> subscribers)
+  {
+    // 创建副本
+    auto eventCopy = std::unique_ptr<Event>(event.Clone());
 
-    // 处理类别订阅者（需要排序，因为来自多个类别）
-    if (!categorySubscribers.empty()) {
-      std::sort(categorySubscribers.begin(), categorySubscribers.end());
+    // 使用[[maybe_unused]]来忽略返回值（小型项目暂时无需考虑Future管理的问题。待后续有需求时管理该返回值）
+    [[maybe_unused]] auto future = ThreadPoolManager::GetDefaultPool().submit_task(
+        [eventPtr = eventCopy.release(), subscribers = std::move(subscribers)]() {
+          std::unique_ptr<Event> uniqueEvent(
+              eventPtr);  // 转移所有权到原始指针，重新包装为unique_ptr(BSThread不支持Unique传参)
 
-      for (auto &sub : categorySubscribers) {
-        if (!event.ShouldContinue()) {
-          break;
+          for (auto &sub : subscribers) {
+            if (!uniqueEvent->ShouldContinue()) {
+              break;
+            }
+            try {
+              // 在子线程内处理事件（完全无锁）
+              sub.handler(*uniqueEvent);
+            }
+            catch (const std::exception &e) {
+              LOG_ERROR("Async event handler error: {}", e.what());
+            }
+            catch (...) {
+              LOG_ERROR("Unknown error in async event handler");
+            }
+          }
+        });
+  }
+  /**
+   * @brief 处理延迟订阅者
+   */
+  void ProcessDeferredSubscribers(Event &event,
+                                  std::vector<Subscription> subscribers,
+                                  bool isAsync = false)
+  {
+    DeferredEventWrapper wrapper;
+    wrapper.event = std::unique_ptr<Event>(event.Clone());
+    wrapper.isAsync = isAsync;
+
+    // 根据同步/异步创建包装器
+    if (isAsync) {
+      // 延迟异步：ProcessQueue时在子线程执行
+      wrapper.processor = [subscribers = std::move(subscribers)](Event &storedEvent) {
+        // 在子线程中批量执行
+        for (auto &sub : subscribers) {
+          if (!storedEvent.ShouldContinue()) {
+            break;
+          }
+          try {
+            sub.handler(storedEvent);
+          }
+          catch (const std::exception &e) {
+            LOG_ERROR("Deferred async event handler error: {}", e.what());
+          }
+          catch (...) {
+            LOG_ERROR("Unknown error in deferred async event handler");
+          }
         }
-        try {
-          sub.handler(event);
+      };
+    }
+    else {
+      // 延迟同步：ProcessQueue时在主线程执行
+      wrapper.processor = [subscribers = std::move(subscribers)](Event &storedEvent) {
+        for (auto &sub : subscribers) {
+          if (!storedEvent.ShouldContinue()) {
+            break;
+          }
+          try {
+            sub.handler(storedEvent);
+          }
+          catch (const std::exception &e) {
+            LOG_ERROR("Deferred sync event handler error: {}", e.what());
+          }
+          catch (...) {
+            LOG_ERROR("Unknown error in deferred sync event handler");
+          }
         }
-        catch (const std::exception &e) {
-          LOG_ERROR("Category event handler error: {}", e.what());
+      };
+    }
+
+    std::lock_guard<std::mutex> lock(m_DeferredMutex);
+    m_DeferredQueue.push_back(std::move(wrapper));
+  }
+  /**
+   * @brief 处理延迟事件队列
+   */
+  void ProcessDeferredEvents()
+  {
+    std::vector<DeferredEventWrapper> deferredEvents;
+    {
+      std::lock_guard<std::mutex> lock(m_DeferredMutex);
+      deferredEvents = std::move(m_DeferredQueue);
+      m_DeferredQueue.clear();
+    }
+
+    for (auto &wrapper : deferredEvents) {
+      try {
+        if (wrapper.isAsync) {
+          // 异步执行：提交到线程池
+          [[maybe_unused]] auto future = ThreadPoolManager::GetDefaultPool().submit_task(
+              [processor = std::move(wrapper.processor),
+               eventPtr = wrapper.event.release()]() mutable {
+                std::unique_ptr<Event> uniqueEvent(
+                    eventPtr);  // 转移所有权到原始指针，重新包装为unique_ptr(BSThread不支持Unique传参)
+                processor(*uniqueEvent);
+              });
         }
-        catch (...) {
-          LOG_ERROR("Unknown error in category event handler");
+        else {
+          // 同步执行：在当前线程（主线程）执行
+          wrapper.processor(*wrapper.event);
         }
+      }
+      catch (...) {
+        // 记录错误日志
       }
     }
   }
+
   /**
    * @brief 复制事件相关的订阅者列表（带锁）
    * @tparam T 事件类型
@@ -299,13 +428,11 @@ class EventBus {
     std::vector<Subscription> typeSubscribers;
     std::vector<Subscription> categorySubscribers;
 
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
     // 复制类型订阅者
     std::type_index typeIndex = typeid(T);
     if (auto it = m_Subscribers.find(typeIndex); it != m_Subscribers.end()) {
       typeSubscribers = it->second;
-      EnsureSubscribersSorted(typeIndex, typeSubscribers);
+      EnsureSubscribersSorted(typeIndex, typeSubscribers); // 排序需要上锁
     }
 
     // 复制类别订阅者
@@ -325,88 +452,20 @@ class EventBus {
     return {std::move(typeSubscribers), std::move(categorySubscribers)};
   }
 
-  /**
-   * @brief 事件处理具体实现（带锁）
-   * @param event
-   */
-  template<typename T> void ProcessEvent(Event &event)
-  {
-    auto [typeSubscribers, categorySubscribers] = CopySubscribersForEvent<T>(event);
-    ProcessEventWithSubscribers(event, std::move(typeSubscribers), std::move(categorySubscribers));
-  }
-
   // 确保订阅者列表和大类订阅列表已排序
   void EnsureSubscribersSorted(std::type_index typeIndex, std::vector<Subscription> &subscribers);
   void EnsureCategorySubscribersSorted(EventCategory category,
                                        std::vector<Subscription> &subscribers);
 
-  // 异步发布（子线程无锁）
-  template<typename T> void PostAsync(T &event, SubscriptionFlags flags)
-  {
-    // 创建副本
-    auto eventCopy = std::unique_ptr<Event>(event.Clone());
-
-    // 根据优先级提交任务
-    int priority = 0;  // 默认优先级
-
-    // 使用辅助函数检查线程安全标志
-    if (SubscriptionFlagUtil::IsThreadSafe(flags)) {
-      priority = 10;  // 线程安全任务更高优先级
-    }
-
-    // 在提交任务前复制订阅者列表
-    auto [typeSubscribers, categorySubscribers] = CopySubscribersForEvent<T>(event);
-
-    // 使用[[maybe_unused]]来忽略返回值（小型项目无需考虑Future管理的问题。待后续有需求时管理该返回值）
-    [[maybe_unused]] auto future = GetThreadPool().submit_task(
-        [this,
-         eventPtr = eventCopy.release(),  // 转移所有权到原始指针
-         typeSubscribers = std::move(typeSubscribers),
-         categorySubscribers = std::move(categorySubscribers)]() {
-          // 重新包装为unique_ptr
-          std::unique_ptr<Event> uniqueEvent(eventPtr);
-
-          // 使用复制的订阅者列表处理事件（完全无锁）
-          ProcessEventWithSubscribers(
-              *uniqueEvent, std::move(typeSubscribers), std::move(categorySubscribers));
-        },
-        priority  // 任务优先级
-    );
-  }
-
-  // 延迟发布
-  template<typename T> void PostDeferred(T &event)
-  {
-    AsyncEventWrapper wrapper;
-    wrapper.event = std::unique_ptr<Event>(event.Clone());
-    wrapper.flags = SubscriptionFlags::Deferred;
-    wrapper.processor = [this](Event &storedEvent) { this->ProcessEvent<T>(storedEvent); };
-    std::lock_guard<std::mutex> lock(m_DeferredMutex);
-    m_DeferredQueue.push_back(std::move(wrapper));
-  }
-
-  // 处理延迟事件
-  void ProcessDeferredEvents()
-  {
-    std::vector<AsyncEventWrapper> deferredEvents;
-
-    {
-      std::lock_guard<std::mutex> lock(m_DeferredMutex);
-      deferredEvents = std::move(m_DeferredQueue);
-      m_DeferredQueue.clear();
-    }
-    for (auto &wrapper : deferredEvents) {
-      try {
-        // 在主线程中处理延迟事件
-        wrapper.processor(*wrapper.event);
-      }
-      catch (...) {
-        // 记录错误日志
-      }
-    }
-  }
-
  private:
+  // 单例模式：构造函数私有化
+  EventBus() = default;
+  ~EventBus();
+
+  // 删除拷贝构造函数和赋值运算符
+  EventBus(const EventBus &) = delete;
+  EventBus &operator=(const EventBus &) = delete;
+
   // 基于类型索引的订阅者列表
   std::unordered_map<std::type_index, std::vector<Subscription>> m_Subscribers;
 
@@ -417,8 +476,7 @@ class EventBus {
   std::unordered_map<HandlerID, HandlerInfo> m_HandlerInfo;
 
   // 事件队列
-  std::vector<AsyncEventWrapper> m_DeferredQueue;
-  std::queue<AsyncEventWrapper> m_AsyncQueue;
+  std::vector<DeferredEventWrapper> m_DeferredQueue;
 
   // 排序标记
   std::unordered_map<std::type_index, bool> m_NeedsSorting;
