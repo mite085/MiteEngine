@@ -33,12 +33,13 @@ void IRenderDevice::SetCurrent(std::unique_ptr<IRenderDevice> device)
 }
 IRenderDevice::IRenderDevice()
 {
-  // 订阅模型与纹理加载事件
-  // Async异步模式：
-  // 资源加载是IO密集型操作，使用异步模式可以避免阻塞主线程，提高应用程序响应性
-  m_EventSubscriptions.SubscribeAsync<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded),
+  // 订阅模型与纹理加载完成事件
+  // Immediate同步模式：
+  // OnModelLoaded是使用加载好的模型数据创建GPU资源，
+  // 而OpenGL上下文是线程相关的，一般只在主线程使用。至于模型本身数据的加载则可以异步
+  m_EventSubscriptions.SubscribeImmediate<ModelLoadEvent>(BIND_DISPATCH_FN(OnModelLoaded),
                                                       EventPriority::Normal);
-  m_EventSubscriptions.SubscribeAsync<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded),
+  m_EventSubscriptions.SubscribeImmediate<TextureLoadEvent>(BIND_DISPATCH_FN(OnTextureLoaded),
                                                         EventPriority::Normal);
 }
 };  // namespace mite
