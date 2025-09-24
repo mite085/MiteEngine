@@ -70,10 +70,10 @@ class SubscriptionGroup {
    * @brief 添加线程安全的异步事件订阅
    */
   template<typename T>
-  void SubscribeAsyncThreadSafe(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
+  void SubscribeAsyncDeferred(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
   {
     Subscribe<T>(
-        std::move(handler), priority, SubscriptionFlags::Async | SubscriptionFlags::ThreadSafe);
+        std::move(handler), priority, SubscriptionFlags::Async | SubscriptionFlags::Deferred);
   }
   /**
    * @brief 添加延迟事件订阅

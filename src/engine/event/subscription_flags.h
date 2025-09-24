@@ -4,15 +4,15 @@
 #include "headers/headers.h"
 
 namespace mite {
-
 /**
  * @brief 订阅标志位
  */
 enum class SubscriptionFlags : uint8_t {
-  Sync = 0,            // 同步处理（默认）
-  Async = 1 << 0,      // 异步处理
-  Deferred = 1 << 1,   // 延迟到下一帧处理
-  ThreadSafe = 1 << 2  // 线程安全处理
+  Sync = 0,                          // 同步处理（默认）
+  Async = 1 << 0,                    // 异步处理
+  Deferred = 1 << 1,                 // 延迟到下一帧处理
+  DeferredAsync = Async | Deferred,  // 组合标志，延迟+异步
+  ThreadSafe = 1 << 2                // 线程安全处理（暂未启用）
 };
 
 /**
@@ -63,7 +63,10 @@ inline bool IsDeferred(SubscriptionFlags flags)
 {
   return HasFlag(flags, SubscriptionFlags::Deferred);
 }
-
+inline bool IsDeferredAsync(SubscriptionFlags flags)
+{
+  return HasFlag(flags, SubscriptionFlags::Async) && HasFlag(flags, SubscriptionFlags::Deferred);
+}
 // 检查是否包含线程安全标志
 inline bool IsThreadSafe(SubscriptionFlags flags)
 {
