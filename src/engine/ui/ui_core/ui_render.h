@@ -14,12 +14,45 @@ class UIRender {
 
   // 单例访问
   static UIRender &Get();
+  // ==================== 面板管理接口 ====================
+  /**
+   * @brief 开始面板渲染
+   * @param props 面板属性
+   * @return 是否成功开始渲染（面板可见且未关闭）
+   */
+  virtual bool BeginPanel(PanelProps &props) = 0;
+  /**
+   * @brief 结束面板渲染
+   */
+  virtual void EndPanel() = 0;
+  /**
+   * @brief 开始子窗口渲染
+   * @param props 子窗口属性
+   * @return 是否成功开始渲染
+   */
+  virtual bool BeginChild(ChildProps &props) = 0;
+  /**
+   * @brief 结束子窗口渲染
+   */
+  virtual void EndChild() = 0;
+  // ==================== 面板状态查询 ====================
+  /**
+   * @brief 获取面板内容区域可用尺寸
+   */
+  virtual glm::vec2 GetContentRegionAvail() = 0;
+  /**
+   * @brief 获取面板是否聚焦
+   */
+  virtual bool IsPanelFocused() = 0;
+  /**
+   * @brief 获取面板是否悬停
+   */
+  virtual bool IsPanelHovered() = 0;
 
   // ==================== 基础控件渲染 ====================
   virtual void RenderLabel(const LabelProps &props) = 0;    // 文本显示
   virtual bool RenderButton(const ButtonProps &props) = 0;  // 按键
   virtual bool RenderCheckbox(CheckboxProps &props) = 0;    // 复选框（是否选中）
-  virtual bool RenderToggle(ToggleProps &props) = 0;        // bool开关（开关状态控制）
   virtual bool RenderTextInput(TextInputProps &props) = 0;  // 文本输入
   virtual bool RenderTextArea(TextAreaProps &props) = 0;    // 多行文本输入
 

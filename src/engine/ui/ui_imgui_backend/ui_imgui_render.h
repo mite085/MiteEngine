@@ -13,12 +13,18 @@ class ImGuiUIRender : public UIRender {
  public:
   ImGuiUIRender() = default;
   ~ImGuiUIRender() override = default;
-
+  // ==================== 面板管理接口实现 ====================
+  bool BeginPanel(PanelProps &props) override;
+  void EndPanel() override;
+  bool BeginChild(ChildProps &props) override;
+  void EndChild() override;
+  glm::vec2 GetContentRegionAvail() override;
+  bool IsPanelFocused() override;
+  bool IsPanelHovered() override;
   // ==================== 基础控件渲染 ====================
   void RenderLabel(const LabelProps &props) override;
   bool RenderButton(const ButtonProps &props) override;
   bool RenderCheckbox(CheckboxProps &props) override;
-  bool RenderToggle(ToggleProps &props) override;
   bool RenderTextInput(TextInputProps &props) override;
   bool RenderTextArea(TextAreaProps &props) override;
 

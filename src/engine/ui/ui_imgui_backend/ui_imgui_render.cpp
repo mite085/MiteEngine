@@ -1,8 +1,76 @@
 #include "ui_imgui_render.h"
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
 
 namespace mite {
+// ==================== 面板管理接口实现 ====================
+bool ImGuiUIRender::BeginPanel(PanelProps &props)
+{
+  std::string titleText = GetTranslatedText(props);
+
+  // 设置窗口尺寸约束
+  ImGui::SetNextWindowSizeConstraints(ImVec2(props.minSize.x, props.minSize.y),
+                                      ImVec2(props.maxSize.x, props.maxSize.y));
+
+  // 构建ImGui窗口标志
+  ImGuiWindowFlags flags = ImGuiWindowFlags_None;
+  if (!props.movable)
+    flags |= ImGuiWindowFlags_NoMove;
+  if (!props.resizable)
+    flags |= ImGuiWindowFlags_NoResize;
+  if (!props.scrollable)
+    flags |= ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+  if (props.collapsed)
+    flags |= ImGuiWindowFlags_NoTitleBar;
+  if (props.bringToFront)
+    flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+  // 添加Dock相关标志
+  if (props.dockable) {
+    flags |= ImGuiConfigFlags_DockingEnable;
+  }
+
+  // 开始面板
+  return ImGui::Begin(titleText.c_str(), &props.visible, flags);
+}
+void ImGuiUIRender::EndPanel()
+{
+  ImGui::End();
+}
+bool ImGuiUIRender::BeginChild(ChildProps &props)
+{
+  if (!props.visible) {
+    return false;
+  }
+  std::string childId = GetTranslatedText(props);
+  if (childId.empty()) {
+    childId = GenerateImGuiId(props.elementId);
+  }
+  ImGuiWindowFlags flags = ImGuiWindowFlags_None;
+  if (props.border)
+    flags |= ImGuiWindowFlags_ChildWindow;
+  return ImGui::BeginChild(
+      childId.c_str(), ImVec2(props.size.x, props.size.y), props.border, flags);
+}
+void ImGuiUIRender::EndChild()
+{
+  ImGui::EndChild();
+}
+glm::vec2 ImGuiUIRender::GetContentRegionAvail()
+{
+  ImVec2 avail = ImGui::GetContentRegionAvail();
+  return glm::vec2(avail.x, avail.y);
+}
+bool ImGuiUIRender::IsPanelFocused()
+{
+  return ImGui::IsWindowFocused();
+}
+bool ImGuiUIRender::IsPanelHovered()
+{
+  return ImGui::IsWindowHovered();
+}
+
 // ==================== 基础控件渲染实现 ====================
 
 void ImGuiUIRender::RenderLabel(const LabelProps &props)
@@ -20,7 +88,8 @@ bool ImGuiUIRender::RenderButton(const ButtonProps &props)
     return false;
 
   std::string displayText = GetTranslatedText(props);
-  return ImGui::Button(displayText.c_str(), ImVec2(props.size.x, props.size.y));
+  return ImGui::Button(displayText.c_str(),
+                       ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
 }
 
 bool ImGuiUIRender::RenderCheckbox(CheckboxProps &props)
@@ -37,66 +106,6 @@ bool ImGuiUIRender::RenderCheckbox(CheckboxProps &props)
   }
 
   return changed;
-}
-
-bool ImGuiUIRender::RenderToggle(ToggleProps &props)
-{
-  if (!props.visible)
-    return false;
-
-  // IMGUI没有原生的Toggle开关控件
-  // 通过绘制按钮和滑块实现该功能
-  std::string labelText = GetTranslatedText(props);
-  ImDrawList *draw_list = ImGui::GetWindowDrawList();
-  ImGuiStyle &style = ImGui::GetStyle();
-
-  // 计算布局
-  ImVec2 pos = ImGui::GetCursorScreenPos();
-  float height = ImGui::GetFrameHeight();
-  float width = height * 1.8f;
-  float radius = height * 0.5f;
-
-  // 创建不可见按钮用于交互
-  ImGui::InvisibleButton(GenerateImGuiId(props.elementId), ImVec2(width, height));
-  bool isHovered = ImGui::IsItemHovered();
-  bool isClicked = ImGui::IsItemClicked();
-
-  if (isClicked) {
-    props.value = !props.value;
-  }
-
-  // 计算颜色
-  ImU32 bg_color;
-  ImU32 circle_color;
-
-  if (!props.enabled) {
-    bg_color = ImGui::GetColorU32(ImGuiCol_FrameBg);
-    circle_color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  }
-  else if (isHovered) {
-    bg_color = props.value ? IM_COL32(0, 135, 255, 255) : IM_COL32(100, 100, 100, 255);
-    circle_color = IM_COL32(255, 255, 255, 255);
-  }
-  else {
-    bg_color = props.value ? IM_COL32(0, 120, 240, 255) : IM_COL32(70, 70, 70, 255);
-    circle_color = IM_COL32(240, 240, 240, 255);
-  }
-
-  // 绘制背景
-  draw_list->AddRectFilled(pos, ImVec2(pos.x + width, pos.y + height), bg_color, height * 0.5f);
-
-  // 绘制圆形滑块
-  float circle_x = props.value ? (pos.x + width - radius) : (pos.x + radius);
-  draw_list->AddCircleFilled(ImVec2(circle_x, pos.y + radius), radius - 1.5f, circle_color);
-
-  // 绘制标签
-  if (!labelText.empty()) {
-    ImGui::SameLine();
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (height - ImGui::GetTextLineHeight()) * 0.5f);
-    ImGui::Text("%s", labelText.c_str());
-  }
-
-  return isClicked;
 }
 
 bool ImGuiUIRender::RenderTextInput(TextInputProps &props)
@@ -138,7 +147,9 @@ bool ImGuiUIRender::RenderTextArea(TextAreaProps &props)
 
   std::string labelText = GetTranslatedText(props);
   return ImGui::InputTextMultiline(
-      labelText.c_str(), &props.text, ImVec2(props.size.x, props.size.y));
+      labelText.c_str(),
+      &props.text,
+      ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
 }
 
 // ==================== 选择器控件渲染实现 ====================
@@ -177,7 +188,10 @@ bool ImGuiUIRender::RenderListBox(ListBoxProps &props)
   std::string labelText = GetTranslatedText(props);
   bool changed = false;
 
-  if (ImGui::BeginListBox(labelText.c_str(), ImVec2(props.size.x, props.size.y))) {
+  if (ImGui::BeginListBox(
+          labelText.c_str(),
+          ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y))))
+  {
     for (int i = 0; i < props.items.size(); ++i) {
       std::string itemText = GetTranslatedItem(props.itemTranslationKeys, props.items, i);
       bool isSelected = (i == props.selectedIndex);
@@ -273,7 +287,7 @@ void ImGuiUIRender::RenderProgressBar(const ProgressBarProps &props)
 
   std::string overlayText = GetTranslatedOverlay(props);
   ImGui::ProgressBar(props.progress,
-                     ImVec2(props.size.x, props.size.y),
+                     ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)),
                      overlayText.empty() ? nullptr : overlayText.c_str());
 }
 
@@ -326,7 +340,7 @@ void ImGuiUIRender::RenderImage(const ImageProps &props)
     return;
 
   ImGui::Image(props.textureId,
-               ImVec2(props.size.x, props.size.y),
+               ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)),
                ImVec2(props.uv0.x, props.uv0.y),
                ImVec2(props.uv1.x, props.uv1.y));
 }
@@ -446,7 +460,7 @@ void ImGuiUIRender::RenderSpacer(const SpacerProps &props)
 {
   if (!props.visible)
     return;
-  ImGui::Dummy(ImVec2(props.size.x, props.size.y));
+  ImGui::Dummy(ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
 }
 
 void ImGuiUIRender::SetSameLine(float offset, float spacing)
