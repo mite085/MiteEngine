@@ -57,14 +57,6 @@ struct CheckboxProps : public TextRenderProps {
 };
 
 /**
- * @brief 布尔开关属性
- * 开关形式的二选一控件
- */
-struct ToggleProps : public TextRenderProps {
-  bool value = false;  // 开关状态
-};
-
-/**
  * @brief 文本输入框属性
  * 单行文本输入控件
  */
@@ -262,15 +254,16 @@ struct SpacerProps : public BaseRenderProps {
  * 用于创建和管理面板窗口
  */
 struct PanelProps : public BaseRenderProps {
-  bool closable = false;               // 是否可关闭
   bool movable = true;                 // 是否可移动
   bool resizable = true;               // 是否可调整大小
   bool scrollable = true;              // 是否可滚动
-  bool collapsed = false;              // 是否折叠
+  bool collapsed = false;              // 是否折叠标题
   bool bringToFront = false;           // 是否置顶
-  glm::vec2 initialSize = {0, 0};      // 初始尺寸（0表示自动）
   glm::vec2 minSize = {100, 100};      // 最小尺寸
   glm::vec2 maxSize = {10000, 10000};  // 最大尺寸
+
+  // ============ Dock相关属性 ============
+  bool dockable = true;                                    // 是否可停靠
 };
 /**
  * @brief 子窗口属性

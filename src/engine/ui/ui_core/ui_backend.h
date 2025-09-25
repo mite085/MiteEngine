@@ -2,7 +2,7 @@
 #define MITE_UI_BACKEND_H
 
 #include "headers/headers.h"
-#include "ui_element/ui_panel.h"
+#include "subscription_group.h"
 
 namespace mite {
 

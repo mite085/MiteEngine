@@ -80,6 +80,7 @@ class ImGuiBackend : public UIBackend {
   std::unique_ptr<ImGuiInputAdapter> m_InputAdapter;  // 输入适配器
 
   Logger m_Logger;                        // 日志系统
+  SubscriptionGroup m_EventSubscriptions; // 事件订阅
 };
 }  // namespace mite
 
