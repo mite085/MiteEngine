@@ -46,24 +46,18 @@ class Renderer {
 
   // ---- 状态设置 ----
   virtual void SetClearColor(const glm::vec4 &color) = 0;
-  virtual void SetViewport(uint32_t width, uint32_t height) = 0;
 
   // ---- 供UI模块调用的接口 ----
   /**
    * @brief 获取视口FrameBuffer
    * @return FrameBuffer智能指针
    */
-  virtual std::shared_ptr<FrameBuffer> GetViewportFrameBuffer() const = 0;
-
-  /**
-   * @brief 获取视口FrameBuffer的纹理ID（兼容旧接口）
-   * @return 纹理ID的intptr_t表示
-   */
-  virtual intptr_t GetViewportFramebufferID() const = 0;
+  virtual std::shared_ptr<FrameBuffer> GetMainFrameBuffer() const = 0;
+  virtual std::shared_ptr<FrameBuffer> GetDisplayFrameBuffer() const = 0;
 
  protected:
   glm::vec4 m_ClearColor = {0.1f, 0.1f, 0.1f, 1.0f};  // 清屏颜色
-  glm::ivec2 m_ViewportSize = {1280, 720};            // 视口尺寸
+  //glm::ivec2 m_ViewportSize = {1280, 720};            // 视口尺寸
 };
 }  // namespace mite
 

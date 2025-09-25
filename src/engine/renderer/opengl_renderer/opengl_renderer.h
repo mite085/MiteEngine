@@ -35,11 +35,10 @@ class OpenGLRenderer : public Renderer {
 
   // ---- 状态设置 ----
   void SetClearColor(const glm::vec4 &color) override;
-  void SetViewport(uint32_t width, uint32_t height) override;
 
   // ---- UI接口 ----
-  std::shared_ptr<FrameBuffer> GetViewportFrameBuffer() const override;
-  intptr_t GetViewportFramebufferID() const override;
+  std::shared_ptr<FrameBuffer> GetMainFrameBuffer() const override;
+  std::shared_ptr<FrameBuffer> GetDisplayFrameBuffer() const override;
 
  private:
   // ---- 私有方法 ----
@@ -47,9 +46,15 @@ class OpenGLRenderer : public Renderer {
    * @brief 创建默认FrameBuffer
    */
   void CreateDefaultFrameBuffer();
+  /**
+   * @brief 双缓冲管理
+   */
+  void SwapFrameBuffers();
 
-  // ---- 成员变量 ----
-  std::shared_ptr<FrameBuffer> m_ViewportFrameBuffer;  // 视口FrameBuffer
+  // ---- 双缓冲成员变量 ----
+  std::shared_ptr<FrameBuffer> m_MainFrameBuffer;     // 主渲染缓冲（用于3D场景渲染）
+  std::shared_ptr<FrameBuffer> m_DisplayFrameBuffer;  // 显示缓冲（用于UI显示）
+  bool m_IsRenderingScene = false;                    // 标记当前渲染阶段
   Logger m_Logger;                                     // 日志系统
 };
 }  // namespace mite

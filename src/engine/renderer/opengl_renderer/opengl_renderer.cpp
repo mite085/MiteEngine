@@ -28,42 +28,47 @@ void OpenGLRenderer::CreateDefaultFrameBuffer()
 {
   // 创建FrameBuffer规格
   FrameBufferSpec spec;
-  spec.width = m_ViewportSize.x;
-  spec.height = m_ViewportSize.y;
   spec.attachments = {
       {FrameBufferAttachmentType::Color, GL_RGBA8},  // 颜色附件
       {FrameBufferAttachmentType::Depth}             // 深度附件
   };
 
-  // 创建FrameBuffer
-  m_ViewportFrameBuffer = std::make_shared<FrameBuffer>(spec);
+  // 创建两个相同的FrameBuffer用于双缓冲
+  m_MainFrameBuffer = std::make_shared<FrameBuffer>(spec);
+  m_DisplayFrameBuffer = std::make_shared<FrameBuffer>(spec);
 
-  if (!m_ViewportFrameBuffer->IsComplete()) {
-    m_Logger->error("Failed to create complete framebuffer");
-    throw std::runtime_error("Framebuffer is incomplete");
+  if (!m_MainFrameBuffer->IsComplete() || !m_DisplayFrameBuffer->IsComplete()) {
+    m_Logger->error("Failed to create complete framebuffers for double buffering");
+    throw std::runtime_error("Framebuffers are incomplete");
   }
 
-  m_Logger->info("Created default framebuffer ({}x{})", m_ViewportSize.x, m_ViewportSize.y);
+  m_Logger->info("Created default framebuffer");
 }
 
 void OpenGLRenderer::BeginFrame()
 {
-  // 通过RenderCommand提交清屏命令
-  RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, m_ClearColor);
+  // 重置渲染状态
+  m_IsRenderingScene = true;
 
-  // 绑定视口FrameBuffer
-  RenderCommand::BindFrameBuffer(m_ViewportFrameBuffer);
+  // 绑定主渲染FrameBuffer
+  RenderCommand::BindFrameBuffer(m_MainFrameBuffer);
 
   // 本次绘制首次绑定FrameBuffer，提交FrameBuffer的清屏命令
   RenderCommand::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, m_ClearColor);
 
-  // 设置视口大小
-  RenderCommand::SetViewport(0, 0, m_ViewportSize.x, m_ViewportSize.y);
+  // 根据MainBuffer设置视口大小
+  auto size = m_MainFrameBuffer->GetSize();
+  RenderCommand::SetViewport(0, 0, size.x, size.y);
+
+  //m_Logger->debug("BeginFrame: Submitted commands for scene rendering");
 }
 
 void OpenGLRenderer::EndFrame()
 {
-  // 解绑FrameBuffer
+  // 结束场景渲染阶段
+  m_IsRenderingScene = false;
+
+  // 提交解绑FrameBuffer命令
   RenderCommand::UnbindFrameBuffer();
 
   // 重置OpenGL状态
@@ -77,6 +82,11 @@ void OpenGLRenderer::EndFrame()
 
   // 执行所有命令
   RenderCommand::Flush();
+
+  // 交换双缓冲
+  SwapFrameBuffers();
+
+  //m_Logger->debug("EndFrame: Executed all commands and swapped buffers");
 }
 
 void OpenGLRenderer::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
@@ -85,6 +95,12 @@ void OpenGLRenderer::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
 {
   if (!renderQueue) {
     m_Logger->warn("OpenGLRenderer::Render called with null renderQueue");
+    return;
+  }
+
+  // 检查是否在正确的渲染阶段
+  if (!m_IsRenderingScene) {
+    m_Logger->warn("RenderScene called outside of scene rendering phase");
     return;
   }
 
@@ -111,6 +127,8 @@ void OpenGLRenderer::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
       RenderCommand::Submit(item, viewMatrix, projectionMatrix);
     }
   }
+
+  //m_Logger->debug("RenderScene: Submitted scene rendering commands");
 }
 
 void OpenGLRenderer::SetClearColor(const glm::vec4 &color)
@@ -118,28 +136,22 @@ void OpenGLRenderer::SetClearColor(const glm::vec4 &color)
   m_ClearColor = color;
 }
 
-void OpenGLRenderer::SetViewport(uint32_t width, uint32_t height)
+std::shared_ptr<FrameBuffer> OpenGLRenderer::GetMainFrameBuffer() const
 {
-  m_ViewportSize = {width, height};
-
-  // 调整FrameBuffer大小
-  if (m_ViewportFrameBuffer) {
-    m_ViewportFrameBuffer->Resize(width, height);
-  }
-
-  // 提交视口设置命令
-  RenderCommand::SetViewport(0, 0, width, height);
+  return m_MainFrameBuffer;
 }
 
-std::shared_ptr<FrameBuffer> OpenGLRenderer::GetViewportFrameBuffer() const
+std::shared_ptr<FrameBuffer> OpenGLRenderer::GetDisplayFrameBuffer() const
 {
-  return m_ViewportFrameBuffer;
+  return m_DisplayFrameBuffer;
 }
 
-intptr_t OpenGLRenderer::GetViewportFramebufferID() const
+void OpenGLRenderer::SwapFrameBuffers()
 {
-  // 返回颜色附件0的纹理ID
-  return static_cast<intptr_t>(m_ViewportFrameBuffer->GetColorAttachmentID());
+  // 简单的指针交换（双缓冲）
+  std::swap(m_MainFrameBuffer, m_DisplayFrameBuffer);
+
+  //m_Logger->debug("SwapFrameBuffers: Swapped buffers for UI display");
 }
 
 }  // namespace mite
