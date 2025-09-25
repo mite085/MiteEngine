@@ -30,6 +30,10 @@ class FrameBuffer {
   FrameBuffer(const FrameBuffer &) = delete;
   FrameBuffer &operator=(const FrameBuffer &) = delete;
 
+  glm::uvec2 GetSize() const {
+    return {m_Spec.width, m_Spec.height};
+  }
+
   /**
    * @brief 重新设置帧缓冲大小
    * @param width 新宽度

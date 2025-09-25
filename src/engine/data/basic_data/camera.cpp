@@ -108,7 +108,23 @@ void Camera::UpdateProjection() const
 {
   // 透视相机
   if (m_ProjectionType == CameraProjectionType::PERSPECTIVE) {
-    m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_Aspect, m_Near, m_Far);
+
+    // glm::perspective第一个参数T fovy 是垂直方向的视野角度，固定了垂直方向的视野范围
+    // 使用glm::radians(m_FOV)，当m_Aspect改变时，水平视野随窗口自适应，垂直视野固定为视场角
+
+    // 使用短边FOV模式：
+    // 宽和高更短的一边决定fov，另一边自适应拉长，
+    // 以确保视野范围足够宽广，仿照Blender的显示模式
+    if (m_Aspect >= 1.0f) {
+      // 宽高比 >= 1，使用垂直FOV（短边是高度）
+      m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_Aspect, m_Near, m_Far);
+    }
+    else {
+      // 宽高比 < 1，使用水平FOV（短边是宽度）
+      // 将垂直FOV转换为水平FOV：fov_horizontal = 2 * atan(tan(fov_vertical/2) * aspect)
+      float horizontalFOV = 2.0f * glm::atan(glm::tan(glm::radians(m_FOV) * 0.5f) / m_Aspect);
+      m_ProjectionMatrix = glm::perspective(horizontalFOV, m_Aspect, m_Near, m_Far);
+    }
   }
   // 正交相机
   else if (m_ProjectionType == CameraProjectionType::ORTHOGRAPHIC) {
