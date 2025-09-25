@@ -21,6 +21,9 @@ namespace mite {
  * - 支持yaw - pitch - roll的内旋->外旋方式旋转
  * - 提供高效的矩阵缓存机制（使用脏标记更新）
  * - 不依赖ECS，纯数学工具类，作为最底层设计
+ * 
+ * Blender导出OBJ模型时，选择Up为+Y，Forward为-Z即可。GLTF则默认设置
+ * 这样可以保证建模结果的朝上和朝前方向，与导入结果的朝上和朝前方向一致
  */
 class Transform {
  public:
@@ -35,7 +38,10 @@ class Transform {
     ZXY,
     ZYX
   };
-
+  // 默认的世界向上方向为+Y轴：glm::vec3(0.0f, 1.0f, 0.0f)
+  // 默认的世界向前方向为-Z轴：glm::vec3(0.0f, 0.0f,-1.0f)
+  static const glm::vec3 s_WorldUp;
+  static const glm::vec3 s_WorldForward;
   /**
    * @brief 默认构造函数（单位变换）
    * @param order 欧拉角顺序
@@ -122,14 +128,14 @@ class Transform {
   void RotateCamera(float yaw,
                     float pitch,
                     float roll = 0.0f,
-                    const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
-  void RotateYaw(float degrees, const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
-  void RotatePitch(float degrees, const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
-  void RotateRoll(float degrees, const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f));
+                    const glm::vec3 &worldUp = s_WorldUp);
+  void RotateYaw(float degrees, const glm::vec3 &worldUp = s_WorldUp);
+  void RotatePitch(float degrees, const glm::vec3 &worldUp = s_WorldUp);
+  void RotateRoll(float degrees, const glm::vec3 &worldUp = s_WorldUp);
   
 
   // LookAt功能（由调用方指定up方向）
-  void LookAt(const glm::vec3 &target, const glm::vec3 &up = glm::vec3(0.0f, 0.0f, 1.0f));
+  void LookAt(const glm::vec3 &target, const glm::vec3 &up = s_WorldUp);
 
   // ==================== 缩放相关方法 ====================
   const glm::vec3 &GetScale() const;
@@ -165,9 +171,9 @@ class Transform {
 
 
   // 获取防翻滚（固定Up方向）后的方向向量，与RotateWithUpConstraint配合使用
-  glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
-  glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
-  glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
+  glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = s_WorldUp) const;
+  glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = s_WorldUp) const;
+  glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = s_WorldUp) const;
 
   // ==================== 辅助方法 ====================
 

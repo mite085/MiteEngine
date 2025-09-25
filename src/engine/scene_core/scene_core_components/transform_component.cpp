@@ -132,17 +132,17 @@ glm::vec3 TransformComponent::GetRight() const
 
 glm::vec3 TransformComponent::GetConstrainedUp(const glm::vec3 &worldUp) const
 {
-  return m_Transform.GetConstrainedUp();
+  return m_Transform.GetConstrainedUp(worldUp);
 }
 
 glm::vec3 TransformComponent::GetConstrainedRight(const glm::vec3 &worldUp) const
 {
-  return m_Transform.GetConstrainedRight();
+  return m_Transform.GetConstrainedRight(worldUp);
 }
 
 glm::vec3 TransformComponent::GetConstrainedForward(const glm::vec3 &worldUp) const
 {
-  return m_Transform.GetConstrainedForward();
+  return m_Transform.GetConstrainedForward(worldUp);
 }
 
 // 组件接口实现 ==========================================

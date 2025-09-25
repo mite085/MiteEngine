@@ -2,6 +2,9 @@
 
 namespace mite {
 
+const glm::vec3 Transform::s_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+const glm::vec3 Transform::s_WorldForward = glm::vec3(0.0f, 0.0f, -1.0f);
+
 Transform::Transform(EulerOrder order) : m_RotationOrder(order)
 {
   // 默认构造已经是单位变换
@@ -220,9 +223,11 @@ void Transform::LookAt(const glm::vec3 &target, const glm::vec3 &up)
 {
   // 使用glm的lookAt函数计算旋转
   glm::mat4 viewMatrix = glm::lookAt(m_Position, target, up);
-  glm::mat3 rotationMat = glm::mat3(viewMatrix);
 
-  // 从视图矩阵提取旋转四元数
+  // 视图矩阵的逆为相机的旋转矩阵
+  glm::mat3 rotationMat = glm::mat3(glm::inverse(viewMatrix));
+
+  // 从旋转矩阵提取旋转四元数
   m_Rotation = glm::quat_cast(rotationMat);
   m_RotationDirty = true;
   m_MatrixDirty = true;

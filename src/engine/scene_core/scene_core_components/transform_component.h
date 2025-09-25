@@ -55,7 +55,7 @@ class TransformComponent
   void SetLocalRotation(const glm::vec3 &rotation);
   void SetLocalRotation(float x, float y, float z);
   void SetLocalRotationQuat(const glm::quat &rotation);
-  void LookAt(const glm::vec3 &target, const glm::vec3 &up = glm::vec3(0.0f, 0.0f, 1.0f));
+  void LookAt(const glm::vec3 &target, const glm::vec3 &up = Transform::s_WorldUp);
 
   // ==================== 缩放操作 ====================
   const glm::vec3 &GetLocalScale() const;
@@ -77,9 +77,9 @@ class TransformComponent
   glm::vec3 GetRight() const;
 
   // 防翻滚的方向获取，Up直接修正为WorldUp，保持Forward不变，基于这两个向量修正Right
-  glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
-  glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
-  glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = glm::vec3(0.0f, 0.0f, 1.0f)) const;
+  glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = Transform::s_WorldUp) const;
+  glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = Transform::s_WorldUp) const;
+  glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = Transform::s_WorldUp) const;
 
   // ==================== 序列化接口 ====================
   bool Serialize(std::ostream &output) const override;
