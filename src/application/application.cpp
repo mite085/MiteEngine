@@ -1,6 +1,6 @@
 #include "application.h"
 #include "scene_core_components/component_headers.h"
-#include "ui_viewport/ui_viewport_panel.h"
+#include "ui_panel/ui_viewport_panel.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -27,11 +27,11 @@ void MiteApplication::run()
     // 2. 更新输入系统
     Input::Update();
 
-    // 3. 开始新的一帧
-    BeginFrame();
-
     // 4. 更新场景
     Update();
+
+    // 3. 开始新的一帧
+    BeginFrame();
 
     // 5. 渲染场景
     Render();
@@ -81,7 +81,7 @@ void MiteApplication::LoadDefaultScene()
       m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(mainCameraEntity);
 
   // 设定方便观看模型的角度（相机没有Parent，暂时将Local坐标当成World坐标使用）
-  mainCameraTransform.SetLocalPosition(glm::vec3(0.0f, 3.0f, 5.0f));
+  mainCameraTransform.SetLocalPosition(glm::vec3(10.0f, 6.0f, 0.0f));
   mainCameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
   // 添加快照测试
@@ -95,14 +95,13 @@ void MiteApplication::LoadDefaultScene()
   m_SceneCore->SetMainCamera(mainCameraEntity);
 
   // 0. 创建ViewportPanel并设置FrameBuffer
-  auto viewportPanel = std::make_shared<ViewportPanel>("viewport");
-  viewportPanel->SetFrameBuffer(m_Renderer->GetViewportFrameBuffer());
+  auto viewportPanel = std::make_shared<ViewportPanel>("viewport", mainCameraComponent, *m_Renderer.get());
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
 
   // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
   AssetID plane_model_asset_id = m_AssetManager->LoadModel(
-      FileSystem::GetAssetPath("models/plane.obj").string(), true, true);
+      FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
   Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle, m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
