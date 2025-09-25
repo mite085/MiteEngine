@@ -7,7 +7,7 @@
 #include "ui_event/ui_events_lifecycle.h"
 #include "ui_localization.h"
 #include "ui_style_manager.h"
-#include "ui_element/ui_panel.h"
+#include "ui_panel/ui_panel.h"
 
 namespace mite {
 /**

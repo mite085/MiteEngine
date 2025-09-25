@@ -84,7 +84,7 @@ void UISystem::Render()
     // 渲染所有可见面板
     for (auto &[id, panel] : m_Panels) {
       if (panel->IsVisible())
-        panel->Render();
+        panel->RenderPanel();
     }
   }
 }
@@ -114,17 +114,18 @@ void UISystem::ProcessInputEvent(Event &event)
 void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
 {
   // 需要检查UI的ID
-  if (m_Panels.find(panel->GetID()) != m_Panels.end()) {
+  if (m_Panels.find(panel->GetPanelProps().elementId) != m_Panels.end()) {
     m_Logger->error("Cannot Register Existing Panel: name = {}, UUID = {}",
                     panel->GetName(),
-                    UUIDGenerator::UUIDToString(panel->GetID()));
+                    UUIDGenerator::UUIDToString(panel->GetPanelProps().elementId));
   }
 
   // 注册进哈希表
-  m_Panels[panel->GetID()] = panel;
+  m_Panels[panel->GetPanelProps().elementId] = panel;
 
   // 发布面板创建事件
-  EventBus::Publish<PanelOpenedEvent>(PanelOpenedEvent(panel->GetID(), panel->GetName()));
+  EventBus::Publish<PanelOpenedEvent>(
+      PanelOpenedEvent(panel->GetPanelProps().elementId, panel->GetName()));
 }
 
 void UISystem::DestroyPanel(UUID panelId)
