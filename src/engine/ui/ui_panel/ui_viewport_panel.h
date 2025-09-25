@@ -1,0 +1,44 @@
+#ifndef MITE_VIEWPORT_PANEL_H
+#define MITE_VIEWPORT_PANEL_H
+
+#include "renderer.h"
+#include "ui_core/ui_render_props.h"
+#include "ui_panel.h"
+#include "scene_core_components/camera_component.h"
+
+namespace mite {
+/**
+ * @brief 视口面板 - 仅负责显示和调整FrameBuffer尺寸
+ *
+ * 职责：
+ * 1. 显示DisplayFrameBuffer的内容
+ * 2. 根据面板尺寸调整MainFrameBuffer
+ * 3. 同步相机宽高比
+ * 4. 无事件处理，仅显示和Resize
+ */
+class ViewportPanel : public UIPanel {
+ public:
+  explicit ViewportPanel(const std::string &name, CameraComponent &camera, Renderer &renderer);
+  virtual ~ViewportPanel() = default;
+  // UIPanel接口
+  virtual void Update(float deltaTime) override;
+  virtual void Render() override;
+
+ private:
+  // ==================== 私有方法 ====================
+  void InitializePanelProps();
+  void UpdateImagePropsFromDisplayBuffer();
+  void HandleSizeChange(const glm::uvec2 &newSize);
+  void ResizeMainFrameBuffer(const glm::uvec2 &newSize);
+  // ==================== 依赖注入 ====================
+  CameraComponent &m_CameraComponent;  // 用于设置宽高比
+  Renderer &m_Renderer;                // 用于获取FrameBuffer和执行Resize
+  // ==================== 状态管理 ====================
+  ImageProps m_ImageProps;     // 图像渲染属性
+  glm::uvec2 m_CurrentSize;    // 当前面板尺寸
+  glm::uvec2 m_RequestedSize;  // 请求调整的尺寸
+  bool m_SizeDirty = false;    // 尺寸脏标记
+};
+}  // namespace mite
+
+#endif  // MITE_VIEWPORT_PANEL_H
