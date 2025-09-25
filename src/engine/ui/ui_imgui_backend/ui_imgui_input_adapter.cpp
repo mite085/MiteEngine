@@ -25,7 +25,7 @@ void ImGuiInputAdapter::Shutdown()
   m_Logger->info("Shutting down ImGuiInputAdapter");
 }
 
-bool ImGuiInputAdapter::ProcessEvent(Event &e)
+void ImGuiInputAdapter::ProcessEvent(Event &e)
 {
   // 检查ImGui是否想要捕获该类型输入
   ImGuiIO &io = ImGui::GetIO();
@@ -67,18 +67,10 @@ bool ImGuiInputAdapter::ProcessEvent(Event &e)
     return ProcessKeyTypedEvent(event);
   });
 
-  // 如果ImGui想要捕获该事件，标记为已处理
+  // 如果ImGui想要捕获该事件，标记为已处理，阻断传播
   if (shouldCapture && e.IsHandled()) {
-    e.SetResult(EventResult::Handled);
+    e.SetResult(EventResult::HandledAndStop);
   }
-
-  return e.IsHandled();
-}
-
-void ImGuiInputAdapter::UpdateImGuiIO()
-{
-  // 1.87之后的ImGui，不需要每帧手动更新键盘状态
-  // 所有键盘状态通过AddKeyEvent()实时添加
 }
 
 void ImGuiInputAdapter::UpdateDisplaySize(GLFWwindow *window)
@@ -127,40 +119,36 @@ void ImGuiInputAdapter::UpdateFramebufferScale(GLFWwindow *window)
 }
 
 // 具体事件处理实现
-bool ImGuiInputAdapter::ProcessMouseMoveEvent(MouseMoveEvent &e)
+void ImGuiInputAdapter::ProcessMouseMoveEvent(MouseMoveEvent &e)
 {
   ImGuiIO &io = ImGui::GetIO();
   io.AddMousePosEvent(static_cast<float>(e.GetXPos()), static_cast<float>(e.GetYPos()));
   m_LastMousePos = glm::vec2(e.GetXPos(), e.GetYPos());
-  return false;  // 不阻止事件继续传递
 }
 
-bool ImGuiInputAdapter::ProcessMouseButtonEvent(MouseButtonPressedEvent &e)
+void ImGuiInputAdapter::ProcessMouseButtonEvent(MouseButtonPressedEvent &e)
 {
   ImGuiKey mouseKey = ConvertGlfwMouseButtonToImGuiKey(e.GetButton());
   if (mouseKey != ImGuiKey_None) {
     ImGui::GetIO().AddKeyEvent(mouseKey, true);
   }
-  return false;
 }
 
-bool ImGuiInputAdapter::ProcessMouseButtonEvent(MouseButtonReleasedEvent &e)
+void ImGuiInputAdapter::ProcessMouseButtonEvent(MouseButtonReleasedEvent &e)
 {
   ImGuiKey mouseKey = ConvertGlfwMouseButtonToImGuiKey(e.GetButton());
   if (mouseKey != ImGuiKey_None) {
     ImGui::GetIO().AddKeyEvent(mouseKey, false);
   }
-  return false;
 }
 
-bool ImGuiInputAdapter::ProcessMouseScrollEvent(MouseScrollEvent &e)
+void ImGuiInputAdapter::ProcessMouseScrollEvent(MouseScrollEvent &e)
 {
   ImGuiIO &io = ImGui::GetIO();
   io.AddMouseWheelEvent(static_cast<float>(e.GetXOffset()), static_cast<float>(e.GetYOffset()));
-  return false;
 }
 
-bool ImGuiInputAdapter::ProcessKeyEvent(KeyPressedEvent &e)
+void ImGuiInputAdapter::ProcessKeyEvent(KeyPressedEvent &e)
 {
   ImGuiKey key = ConvertGlfwKeyToImGuiKey(e.GetKey());
   if (key != ImGuiKey_None) {
@@ -173,27 +161,24 @@ bool ImGuiInputAdapter::ProcessKeyEvent(KeyPressedEvent &e)
     io.AddKeyEvent(ImGuiKey_ModAlt, (e.GetMods() & GLFW_MOD_ALT) != 0);
     io.AddKeyEvent(ImGuiKey_ModSuper, (e.GetMods() & GLFW_MOD_SUPER) != 0);
   }
-  return false;
 }
 
-bool ImGuiInputAdapter::ProcessKeyEvent(KeyReleasedEvent &e)
+void ImGuiInputAdapter::ProcessKeyEvent(KeyReleasedEvent &e)
 {
   ImGuiKey key = ConvertGlfwKeyToImGuiKey(e.GetKey());
   if (key != ImGuiKey_None) {
     ImGuiIO &io = ImGui::GetIO();
     io.AddKeyEvent(key, false);
   }
-  return false;
 }
 
-bool ImGuiInputAdapter::ProcessKeyTypedEvent(KeyTypedEvent &e)
+void ImGuiInputAdapter::ProcessKeyTypedEvent(KeyTypedEvent &e)
 {
   ImGuiIO &io = ImGui::GetIO();
   io.AddInputCharacter(e.GetCodepoint());
-  return false;
 }
 
-// GLFW键码到ImGuiKey的转换
+// GLFW键码到ImGuiKey的转换（参考ImGui_ImplGlfw_KeyToImGuiKey）
 ImGuiKey ImGuiInputAdapter::ConvertGlfwKeyToImGuiKey(int glfwKey)
 {
   switch (glfwKey) {
@@ -245,6 +230,10 @@ ImGuiKey ImGuiInputAdapter::ConvertGlfwKeyToImGuiKey(int glfwKey)
       return ImGuiKey_LeftBracket;
     case GLFW_KEY_BACKSLASH:
       return ImGuiKey_Backslash;
+    case GLFW_KEY_WORLD_1:
+      return ImGuiKey_Oem102;
+    case GLFW_KEY_WORLD_2:
+      return ImGuiKey_Oem102;
     case GLFW_KEY_RIGHT_BRACKET:
       return ImGuiKey_RightBracket;
     case GLFW_KEY_GRAVE_ACCENT:
@@ -407,10 +396,35 @@ ImGuiKey ImGuiInputAdapter::ConvertGlfwKeyToImGuiKey(int glfwKey)
       return ImGuiKey_F11;
     case GLFW_KEY_F12:
       return ImGuiKey_F12;
+    case GLFW_KEY_F13:
+      return ImGuiKey_F13;
+    case GLFW_KEY_F14:
+      return ImGuiKey_F14;
+    case GLFW_KEY_F15:
+      return ImGuiKey_F15;
+    case GLFW_KEY_F16:
+      return ImGuiKey_F16;
+    case GLFW_KEY_F17:
+      return ImGuiKey_F17;
+    case GLFW_KEY_F18:
+      return ImGuiKey_F18;
+    case GLFW_KEY_F19:
+      return ImGuiKey_F19;
+    case GLFW_KEY_F20:
+      return ImGuiKey_F20;
+    case GLFW_KEY_F21:
+      return ImGuiKey_F21;
+    case GLFW_KEY_F22:
+      return ImGuiKey_F22;
+    case GLFW_KEY_F23:
+      return ImGuiKey_F23;
+    case GLFW_KEY_F24:
+      return ImGuiKey_F24;
     default:
       return ImGuiKey_None;
   }
 }
+
 ImGuiKey ImGuiInputAdapter::ConvertGlfwMouseButtonToImGuiKey(int glfwButton)
 {
   switch (glfwButton) {
