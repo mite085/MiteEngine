@@ -81,7 +81,81 @@ struct TextureAsset {
 };
 
 // ------------------------ 材质相关 ------------------------
+// 材质来源类型枚举
+enum class MaterialSourceType {
+  GLTF_PBR = 0,     // GLTF PBR材质
+  MATERIALX = 1,    // MaterialX材质
+  BUILTIN = 2,      // 引擎内置材质
+  USER_CREATED = 3  // 用户创建材质
+};
 
+// 透明度模式（GLTF标准）
+enum class AlphaMode {
+  OPAQUE = 0,  // 不透明材质
+  MASK = 1,    // 透明度裁剪（硬边缘，仅支持0和1的透明度，无需考虑渲染顺序）
+  BLEND = 2    // 透明度混合（软边缘，需要从后向前渲染）
+};
+
+// 材质纹理槽位定义（GLTF PBR标准）
+struct MaterialTextureSlot {
+  TextureAssetID textureId;            // 纹理资产ID
+  glm::vec2 scale = glm::vec2(1.0f);   // 纹理缩放
+  glm::vec2 offset = glm::vec2(0.0f);  // 纹理偏移
+
+  MaterialTextureSlot() = default;
+  explicit MaterialTextureSlot(TextureAssetID id) : textureId(id) {}
+};
+
+// 材质元数据 - 资源描述和序列化信息
+struct MaterialMetadata {
+  std::string sourcePath;         // 源文件路径（GLTF文件路径等）
+  MaterialSourceType sourceType;  // 材质来源类型
+
+  // 基础信息
+  std::string name;          // 材质名称
+  std::string templateName;  // 对应的MaterialTemplate名称
+
+  // GLTF PBR参数（序列化需要）
+  glm::vec4 baseColorFactor = glm::vec4(1.0f);  // 基础颜色因子（RGBA）
+  float metallicFactor = 1.0f;                  // 金属度因子
+  float roughnessFactor = 1.0f;                 // 粗糙度因子
+  glm::vec3 emissiveFactor = glm::vec3(0.0f);   // 自发光因子
+
+  // 透明度相关参数
+  AlphaMode alphaMode = AlphaMode::OPAQUE;  // 透明度模式
+  float alphaCutoff = 0.5f;                 // Alpha测试阈值（MASK模式使用）
+
+  // 渲染属性
+  bool doubleSided = false;  // 是否双面渲染
+
+  // 纹理引用（使用AssetID而非路径）
+  MaterialTextureSlot baseColorTexture;          // 基础颜色纹理
+  MaterialTextureSlot metallicRoughnessTexture;  // 金属粗糙度纹理（R:粗糙度, G:金属度）
+  MaterialTextureSlot normalTexture;             // 法线纹理
+  MaterialTextureSlot emissiveTexture;           // 自发光纹理
+  MaterialTextureSlot occlusionTexture;          // 环境光遮蔽纹理
+
+  // 来源特定信息
+  struct GLTFSourceInfo {
+    std::string gltfFilePath;  // GLTF文件路径
+    uint32_t materialIndex;    // 材质在文件中的索引
+  };
+
+  // 使用variant支持不同来源的扩展信息（C++17）
+  std::variant<GLTFSourceInfo> sourceInfo;
+
+  MaterialMetadata() : sourceType(MaterialSourceType::BUILTIN) {}
+};
+
+// 材质资产
+struct MaterialAsset {
+  MaterialAssetID id;         // 资产ID（由Asset管理）
+  MaterialMetadata metadata;  // 材质元数据
+
+  // 注意：不直接存储MaterialInstance，由MaterialSystem管理
+
+  MaterialAsset() : id(MaterialAssetID{}) {}
+};
 
 // ------------------------ 模型/网格相关 ------------------------
 
