@@ -43,3 +43,6 @@
 [submodule "thirdparty/materialx"]
 	path = thirdparty/materialx
 	url = https://github.com/AcademySoftwareFoundation/MaterialX.git
+[submodule "thirdparty/imnode"]
+	path = thirdparty/imnode
+	url = https://github.com/Nelarius/imnodes.git
