@@ -5,8 +5,6 @@ set(ENGINE_MATERIAL_LIB_NAME MiteEngine_Engine_Material)
 
 # 创建源代码组(筛选器)
 set(MATERIAL_SRCS
-    material.h
-    material.cpp
     material_instance.h
     material_instance.cpp
     material_param_variant.h
@@ -15,6 +13,8 @@ set(MATERIAL_SRCS
     material_system.cpp
     material_template.h
     material_template.cpp
+    material_pure_color.h
+    material_pure_color.cpp
 )
 source_group("material_system" FILES ${MATERIAL_SRCS})
 

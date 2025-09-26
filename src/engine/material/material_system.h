@@ -1,7 +1,6 @@
 #ifndef MITE_MATERIAL_SYSTEM
 #define MITE_MATERIAL_SYSTEM
 
-#include "material.h"
 #include "material_param_variant.h"
 #include "material_template.h"
 #include "subscription_group.h"
@@ -45,7 +44,7 @@ class MaterialSystem {
    * @param template 材质模板对象（所有权转移给系统）
    * @throws std::invalid_argument 如果名称已存在
    */
-  void RegisterTemplate(const std::string &name, std::unique_ptr<Material> material);
+  void RegisterTemplate(const std::string &name, std::unique_ptr<MaterialTemplate> material);
 
   /**
    * @brief 检查材质模板是否存在
@@ -74,7 +73,7 @@ class MaterialSystem {
    */
   template<typename T> MaterialInstanceHandle CreateInstance()
   {
-    return CreateInstance(Material::GetMaterialTypeStatic<T>());
+    return CreateInstance(MaterialTemplate::GetMaterialTypeStatic<T>());
   }
 
   /**
@@ -95,7 +94,7 @@ class MaterialSystem {
   MaterialInstanceHandle CreateInstanceWithOverrides(
       const std::unordered_map<std::string, UniformVariant> &overrides)
   {
-    return CreateInstanceWithOverrides(Material::GetMaterialTypeStatic<T>(), overrides);
+    return CreateInstanceWithOverrides(MaterialTemplate::GetMaterialTypeStatic<T>(), overrides);
   }
 
   /**
@@ -116,14 +115,14 @@ class MaterialSystem {
    * @param newMaterial 新材质模板
    * @note 会触发MaterialReloadedEvent事件
    */
-  void ReloadTemplate(const std::string &name, std::unique_ptr<Material> newMaterial);
+  void ReloadTemplate(const std::string &name, std::unique_ptr<MaterialTemplate> newMaterial);
 
   // ---- 错误处理 ----
   /**
    * @brief 设置默认回退材质（当模板不存在时使用）
    * @param material 默认材质模板
    */
-  void SetFallbackMaterial(std::unique_ptr<Material> material);
+  void SetFallbackMaterial(std::unique_ptr<MaterialTemplate> material);
 
  private:
   // ---- 私有构造函数 ----
@@ -134,8 +133,8 @@ class MaterialSystem {
   Logger m_Logger;
 
   // ---- 成员变量 ----
-  std::unordered_map<std::string, std::unique_ptr<Material>> m_Templates;  // 模板存储
-  std::unique_ptr<Material> m_FallbackMaterial;                            // 错误回退材质
+  std::unordered_map<std::string, std::unique_ptr<MaterialTemplate>> m_Templates;  // 模板存储
+  std::unique_ptr<MaterialTemplate> m_FallbackMaterial;                            // 错误回退材质
   std::unordered_map<UUID, std::unique_ptr<MaterialInstance>>
       m_InstanceCache;  // 管理所有创建的实例
 };
@@ -147,8 +146,8 @@ class MaterialSystem {
 class MaterialReloadedEvent : public Event {
  public:
   MaterialReloadedEvent(const std::string &templateName,
-                        Material *oldMaterial,
-                        Material *newMaterial)
+                        MaterialTemplate *oldMaterial,
+                        MaterialTemplate *newMaterial)
       : m_TemplateName(templateName), m_OldMaterial(oldMaterial), m_NewMaterial(newMaterial)
   {
   }
@@ -160,8 +159,8 @@ class MaterialReloadedEvent : public Event {
 
  private:
   std::string m_TemplateName;         // 被重载的模板名
-  Material *m_OldMaterial = nullptr;  // 旧材质指针（可能已失效）
-  Material *m_NewMaterial = nullptr;  // 新材质指针
+  MaterialTemplate *m_OldMaterial = nullptr;  // 旧材质指针（可能已失效）
+  MaterialTemplate *m_NewMaterial = nullptr;  // 新材质指针
 };
 };  // namespace mite
 

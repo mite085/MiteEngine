@@ -1,139 +1,64 @@
 #ifndef MITE_MATERIAL_TEMPLATE
 #define MITE_MATERIAL_TEMPLATE
 
-#include "material.h"
+#include "material_instance.h"
 
 namespace mite {
 /**
- * @brief 纯色材质模板（仅用于测试）
+ * @brief 材质模板的抽象基类
  * @note 职责：
- * 1. 仅接受一个Color("u_Color")参数并将其显示出来的简单着色模型
- * 2. 关联Basic着色器程序
+ * 1. 定义材质的通用接口（创建实例、应用参数）
+ * 2. 提供基础属性（名称、类型标识等）
+ * 3. 派生类需实现具体材质类型的逻辑（如PBR、Phong）
  */
-class PureColorMaterialTemplate : public Material {
+class MaterialTemplate {
  public:
-  /**
-   * @brief 构造函数（需传入已编译的PBR Shader）
-   * @param shader 关联的PBR着色器程序
-   * @param defaultAlbedo 默认漫反射颜色（sRGB空间）
-   */
-  explicit PureColorMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
-                                 const glm::vec3 &color = glm::vec3(0.8f));
-
-  // ---- 类型声明 ----
-  static std::string StaticType()
-  {
-    return "PureColorMaterial";
-  }
-  std::string GetMaterialType() const override
-  {
-    return StaticType();
-  }
+  virtual ~MaterialTemplate() = default;
 
   // ---- 核心接口 ----
-  std::unique_ptr<MaterialInstance> CreateInstance() const override;
-  void ApplyParameters(MaterialInstance &instance) const override;
-  
-  // ---- 参数设置 ----
-  void SetColor(const glm::vec3 &color)
+  /**
+   * @brief 创建材质实例
+   * @return 共享指针管理的MaterialInstance对象
+   * @note 实例会继承模板的默认参数，但允许运行时修改
+   */
+  virtual std::unique_ptr<MaterialInstance> CreateInstance() const = 0;
+
+  /**
+   * @brief 应用默认参数到材质实例
+   * @param instance 目标材质实例
+   * @note 用于初始化或重置实例参数
+   */
+  virtual void ApplyParameters(MaterialInstance &instance) const = 0;
+
+  // ---- 通用属性 ----
+  void SetName(const std::string &name)
   {
-    m_Color = color;
+    m_Name = name;
+  }
+  const std::string &GetName() const
+  {
+    return m_Name;
+  }
+
+  /**
+   * @brief 获取材质类型标识（用于运行时类型检查）
+   * @return 字符串类型标识（如"PBR"、"Phong"）
+   */
+  virtual std::string GetMaterialType() const = 0;
+
+  /**
+   * @brief 获取材质类型标识--静态模板方法
+   * @return 字符串类型标识
+   */
+  template<typename T> static std::string GetMaterialTypeStatic()
+  {
+    static_assert(std::is_base_of<MaterialTemplate, T>::value, "Must inherit from Material");
+    return T::StaticType();
   }
 
  protected:
-  // ---- 默认参数 ----
-  std::shared_ptr<OpenGLShader> m_Shader;  // 关联的PBR着色器程序
-  glm::vec3 m_Color;                  // 默认基础颜色
+  std::string m_Name = "Unnamed_Material";  // 材质名称（用于调试和UI显示）
 };
-
-/**
- * @brief PBR材质模板（基于物理的渲染）
- * @note 职责：
- * 1. 定义PBR材质的默认参数（albedo/roughness/metallic等）
- * 2. 关联PBR着色器程序
- * 3. 提供材质实例的创建和参数应用接口
- */
-class PBRMaterialTemplate : public Material {
- public:
-  /**
-   * @brief 构造函数（需传入已编译的PBR Shader）
-   * @param shader 关联的PBR着色器程序
-   * @param defaultAlbedo 默认漫反射颜色（sRGB空间）
-   * @param defaultRoughness 默认粗糙度（0.0-1.0）
-   * @param defaultMetallic 默认金属度（0.0-1.0）
-   */
-  explicit PBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
-                               const glm::vec3 &defaultAlbedo = glm::vec3(0.8f),
-                               float defaultRoughness = 0.5f,
-                               float defaultMetallic = 0.0f);
-
-  // ---- 类型声明 ----
-  static std::string StaticType()
-  {
-    return "DefaultPBR";
-  }
-  std::string GetMaterialType() const override
-  {
-    return StaticType();
-  }
-
-  // ---- 核心接口 ----
-  std::unique_ptr<MaterialInstance> CreateInstance() const override;
-  void ApplyParameters(MaterialInstance &instance) const override;
-
-  // ---- 参数设置 ----
-  void SetDefaultAlbedo(const glm::vec3 &albedo)
-  {
-    m_DefaultAlbedo = albedo;
-  }
-  void SetDefaultRoughness(float roughness)
-  {
-    m_DefaultRoughness = roughness;
-  }
-  void SetDefaultMetallic(float metallic)
-  {
-    m_DefaultMetallic = metallic;
-  }
-  void SetDefaultTexture(const std::string &paramName, TextureGPUHandle texture);
-
- protected:
-  // ---- 默认参数 ----
-  std::shared_ptr<OpenGLShader> m_Shader;  // 关联的PBR着色器程序
-  glm::vec3 m_DefaultAlbedo;               // 默认漫反射颜色
-  float m_DefaultRoughness;                // 默认粗糙度
-  float m_DefaultMetallic;                 // 默认金属度
-  std::unordered_map<std::string, TextureGPUHandle> m_DefaultTextures;  // 默认纹理绑定
 };
-
-/**
- * @brief 透明材质模板（继承自PBR材质，扩展Alpha混合支持）
- */
-class TransparentMaterialTemplate : public PBRMaterialTemplate {
- public:
-  explicit TransparentMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
-                                       float defaultAlpha = 0.5f);
-
-  // ---- 类型声明 ----
-  static std::string StaticType()
-  {
-    return "TransparentPBR";
-  }
-  std::string GetMaterialType() const override
-  {
-    return StaticType();
-  }
-
-  std::unique_ptr<MaterialInstance> CreateInstance() const override;
-  void ApplyParameters(MaterialInstance &instance) const override;
-
-  void SetDefaultAlpha(float alpha)
-  {
-    m_DefaultAlpha = alpha;
-  }
-
- private:
-  float m_DefaultAlpha;  // 默认透明度（0.0-1.0）
-};
-};  // namespace mite
 
 #endif

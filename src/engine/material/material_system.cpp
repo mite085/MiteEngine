@@ -1,5 +1,6 @@
 #include "material_system.h"
 #include "basic_data/shader_cache.h"
+#include "material_pure_color.h"
 
 namespace mite {
 void MaterialSystem::Initialize()
@@ -29,7 +30,7 @@ void MaterialSystem::Initialize()
   RegisterTemplate(pbrType, std::move(pbrMaterialTemplate));
 }
 
-void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<Material> material)
+void MaterialSystem::RegisterTemplate(const std::string &name, std::unique_ptr<MaterialTemplate> material)
 {
   if (name.empty()) {
     // 材质模板名称不能为空
@@ -141,7 +142,7 @@ MaterialInstanceHandle MaterialSystem::CreateInstanceWithOverrides(
 }
 
 
-void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Material> newMaterial)
+void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<MaterialTemplate> newMaterial)
 {
   auto it = m_Templates.find(name);
   if (it == m_Templates.end()) {
@@ -151,7 +152,7 @@ void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Mat
   }
 
   // 1. 触发事件（旧材质即将被替换）
-  Material *oldMaterial = it->second.get();
+  MaterialTemplate *oldMaterial = it->second.get();
   MaterialReloadedEvent event(name, oldMaterial, newMaterial.get());
   EventBus::Publish<MaterialReloadedEvent>(event);
 
@@ -161,7 +162,7 @@ void MaterialSystem::ReloadTemplate(const std::string &name, std::unique_ptr<Mat
   m_Logger->info("Material template has been reloaded: {}", name);
 }
 
-void MaterialSystem::SetFallbackMaterial(std::unique_ptr<Material> material)
+void MaterialSystem::SetFallbackMaterial(std::unique_ptr<MaterialTemplate> material)
 {
   if (!material) {
     // 回退材质不能为空
