@@ -76,7 +76,7 @@ TransparentMaterialTemplate::TransparentMaterialTemplate(std::shared_ptr<OpenGLS
   assert((defaultAlpha >= 0.0f && defaultAlpha <= 1.0f) && "Alpha must be in range ");
 }
 
-std::unique_ptr<MaterialInstance> TransparentMaterialTemplate::CreateInstance() const
+std::shared_ptr<MaterialInstance> TransparentMaterialTemplate::CreateInstance() const
 {
   auto instance = PBRMaterialTemplate::CreateInstance();
   ApplyParameters(*instance);  // 补充透明参数

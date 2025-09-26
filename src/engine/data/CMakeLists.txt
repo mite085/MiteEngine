@@ -5,6 +5,7 @@ set(ENGINE_DATA_LIB_NAME MiteEngine_Engine_Data)
 
 # 创建源代码组(筛选器)
 set(BASIC_TYPE_SRCS
+    basic_type/asset_id.h
     basic_type/asset_type.h
     basic_type/handle_type.h
     basic_type/visible_type.h

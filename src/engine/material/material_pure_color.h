@@ -31,7 +31,7 @@ class PureColorMaterialTemplate : public MaterialTemplate {
   }
 
   // ---- 核心接口 ----
-  std::unique_ptr<MaterialInstance> CreateInstance() const override;
+  std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
   
   // ---- 参数设置 ----
@@ -78,7 +78,7 @@ class PBRMaterialTemplate : public MaterialTemplate {
   }
 
   // ---- 核心接口 ----
-  std::unique_ptr<MaterialInstance> CreateInstance() const override;
+  std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
 
   // ---- 参数设置 ----
@@ -123,7 +123,7 @@ class TransparentMaterialTemplate : public PBRMaterialTemplate {
     return StaticType();
   }
 
-  std::unique_ptr<MaterialInstance> CreateInstance() const override;
+  std::shared_ptr<MaterialInstance> CreateInstance() const override;
   void ApplyParameters(MaterialInstance &instance) const override;
 
   void SetDefaultAlpha(float alpha)

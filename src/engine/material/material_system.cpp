@@ -54,7 +54,7 @@ bool MaterialSystem::HasTemplate(const std::string &name) const
   return m_Templates.find(name) != m_Templates.end();
 }
 
-MaterialInstanceHandle MaterialSystem::CreateInstance(const std::string &templateName)
+std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::string &templateName)
 {
   m_Logger->info("Creating material instance with material template: {}.", templateName);
   // 1. 查找模板
@@ -68,20 +68,20 @@ MaterialInstanceHandle MaterialSystem::CreateInstance(const std::string &templat
       m_Logger->error("There has not any fallback material to use.");
       throw std::out_of_range("There has not any fallback material to use.");
     }
-    std::unique_ptr<MaterialInstance> instance = m_FallbackMaterial->CreateInstance();
+    std::shared_ptr<MaterialInstance> instance = m_FallbackMaterial->CreateInstance();
     MaterialInstanceHandle handle = instance->GetHandle();
     m_InstanceCache[handle.id] = std::move(instance);
     return handle;
   }
 
   // 2. 创建实例（通过模板工厂方法）
-  std::unique_ptr<MaterialInstance> instance = it->second->CreateInstance();
+  std::shared_ptr<MaterialInstance> instance = it->second->CreateInstance();
   MaterialInstanceHandle handle = instance->GetHandle();
   m_InstanceCache[handle.id] = std::move(instance);
   return handle;
 }
 
-MaterialInstanceHandle MaterialSystem::CreateInstanceWithOverrides(
+std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
     const std::string &templateName,
     const std::unordered_map<std::string, UniformVariant> &overrides)
 {

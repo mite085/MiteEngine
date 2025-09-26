@@ -62,7 +62,7 @@ class MaterialSystem {
    * 作用：
    * 当在运行时动态决定材质类型时（如从配置文件读取）使用，更便捷且可扩展性更强
    */
-  MaterialInstanceHandle CreateInstance(const std::string &templateName);
+  std::shared_ptr<MaterialInstance> CreateInstance(const std::string &templateName);
 
   /**
    * @brief 创建材质实例--模板方法
@@ -71,7 +71,7 @@ class MaterialSystem {
    * 作用：
    * 代码内部创建实例时使用，更加清晰，可避免字符串匹配错误
    */
-  template<typename T> MaterialInstanceHandle CreateInstance()
+  template<typename T> std::shared_ptr<MaterialInstance> CreateInstance()
   {
     return CreateInstance(MaterialTemplate::GetMaterialTypeStatic<T>());
   }
@@ -81,7 +81,7 @@ class MaterialSystem {
    * @param templateName    模板名称
    * @param overrides       参数覆盖键值对（如{{"u_Color", glm::vec3(1,0,0)}}）
    */
-  MaterialInstanceHandle CreateInstanceWithOverrides(
+  std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
       const std::string &templateName,
       const std::unordered_map<std::string, UniformVariant> &overrides);
 
@@ -91,7 +91,7 @@ class MaterialSystem {
    * @param overrides   参数覆盖键值对（如{{"u_Color", glm::vec3(1,0,0)}}）
    */
   template<typename T>
-  MaterialInstanceHandle CreateInstanceWithOverrides(
+  std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
       const std::unordered_map<std::string, UniformVariant> &overrides)
   {
     return CreateInstanceWithOverrides(MaterialTemplate::GetMaterialTypeStatic<T>(), overrides);
@@ -134,9 +134,8 @@ class MaterialSystem {
 
   // ---- 成员变量 ----
   std::unordered_map<std::string, std::unique_ptr<MaterialTemplate>> m_Templates;  // 模板存储
-  std::unique_ptr<MaterialTemplate> m_FallbackMaterial;                            // 错误回退材质
-  std::unordered_map<UUID, std::unique_ptr<MaterialInstance>>
-      m_InstanceCache;  // 管理所有创建的实例
+  std::unique_ptr<MaterialTemplate> m_FallbackMaterial;  // 错误回退材质
+  std::unordered_map<UUID, std::shared_ptr<MaterialInstance>> m_InstanceCache;  // 实例管理
 };
 
 /**
@@ -158,7 +157,7 @@ class MaterialReloadedEvent : public Event {
   }
 
  private:
-  std::string m_TemplateName;         // 被重载的模板名
+  std::string m_TemplateName;                 // 被重载的模板名
   MaterialTemplate *m_OldMaterial = nullptr;  // 旧材质指针（可能已失效）
   MaterialTemplate *m_NewMaterial = nullptr;  // 新材质指针
 };
