@@ -65,47 +65,43 @@ void OpenGLDevice::CleanupResources()
 // ------------------------ 纹理操作 ------------------------
 TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> data)
 {
-  GLuint textureID;
-  glGenTextures(1, &textureID);
-  glBindTexture(GL_TEXTURE_2D, textureID);
-
-  // 设置纹理参数
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  // 上传纹理数据
-  GLenum format = TranslateTextureFormat(data->format);
-  GLenum internalFormat = /*!isHDR ? GL_SRGB8_ALPHA8 :*/ format;
-  glTexImage2D(GL_TEXTURE_2D,
-               0,               // Mipmap级别
-               internalFormat,  // 内部格式
-               data->width,
-               data->height,
-               0,                 // 历史遗留参数
-               internalFormat,    // 像素数据格式
-               GL_UNSIGNED_BYTE,  // 数据类型（HDR需改为GL_FLOAT）
-               data->pixelData    // 原始数据指针
-  );
-
-  if (data->generateMipmaps) {
-    glGenerateMipmap(GL_TEXTURE_2D);
+  if (!data) {
+    LOG_ERROR("Invalid texture source data provided");
+    return TextureGPUHandle{0};
   }
 
-  // 记录活动纹理
-  m_ActiveTextures.insert(textureID);
+  // GL生成纹理ID
+  GLuint textureId = 0;
+  glGenTextures(1, &textureId);
+  if (textureId == 0) {
+    LOG_ERROR("Failed to generate OpenGL texture");
+    return TextureGPUHandle{0};
+  }
 
-  TextureGPUHandle handle;
-  handle.path = data->path;
-  handle.apiHandle = static_cast<uintptr_t>(textureID);
+  // 绑定纹理
+  glBindTexture(static_cast<GLenum>(data->target), textureId);
 
-  // 应用指定的包装和过滤模式
-  SetTextureWrapMode(handle, data->wrapMode);
-  SetTextureFilterMode(handle, data->filterMode);
+  // 设置纹理参数
+  SetTextureParameters(data);
 
-  m_Logger->debug("Created texture handle: {}", data->path);
-  return handle;
+  // 上传纹理数据
+  if (!UploadTextureData(data, textureId)) {
+    glDeleteTextures(1, &textureId);
+    return TextureGPUHandle{0};
+  }
+
+  // 生成Mipmaps（如果需要）
+  if (data->generateMipmaps && data->existingMipLevels <= 1) {
+    glGenerateMipmap(static_cast<GLenum>(data->target));
+  }
+
+  // 解除纹理绑定
+  glBindTexture(static_cast<GLenum>(data->target), 0);
+
+  m_Logger->debug("Created texture handle: {}", textureId);
+
+  // 返回纹理句柄
+  return TextureGPUHandle{static_cast<uintptr_t>(textureId)};
 }
 
 void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
@@ -124,38 +120,7 @@ void OpenGLDevice::BindTexture(TextureGPUHandle handle, uint32_t slot) const
   glActiveTexture(GL_TEXTURE0 + slot);
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(handle.apiHandle));
 }
-void OpenGLDevice::SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode)
-{
-  // 初始化纹理时，不需要激活纹理单元
-  GLuint glTexture = static_cast<GLuint>(handle.apiHandle);
-  glBindTexture(GL_TEXTURE_2D, glTexture);
 
-  GLenum glWrapMode = ConvertWrapMode(mode);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode);
-
-  // 如果是3D纹理则需要设置R轴
-  // glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, glWrapMode);
-}
-void OpenGLDevice::SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode)
-{
-  GLuint glTexture = static_cast<GLuint>(handle.apiHandle);
-  glBindTexture(GL_TEXTURE_2D, glTexture);
-
-  GLenum minFilter, magFilter;
-  ConvertFilterMode(mode, minFilter, magFilter);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
-}
-
-void OpenGLDevice::GenerateMipmaps(TextureGPUHandle handle)
-{
-  GLuint glTexture = static_cast<GLuint>(handle.apiHandle);
-  glBindTexture(GL_TEXTURE_2D, glTexture);
-
-  glGenerateMipmap(GL_TEXTURE_2D);
-}
 
 // ------------------------ 模型操作 ------------------------
 ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
@@ -534,22 +499,7 @@ void OpenGLDevice::DestroyFrameBuffer(FrameBuffer::Ptr framebuffer)
 }
 
 // ------------------------ 辅助方法 ------------------------
-GLenum OpenGLDevice::TranslateTextureFormat(TextureFormat format)
-{
-  switch (format) {
-    case TextureFormat::RGB8:
-      return GL_RGB;
-    case TextureFormat::RGBA8:
-      return GL_RGBA;
-    case TextureFormat::RGB16F:
-      return GL_RGB16F;
-    case TextureFormat::RGBA16F:
-      return GL_RGBA16F;
-    default:
-      m_Logger->warn("Unsupported texture format: {}", static_cast<int>(format));
-      return GL_RGBA;  // 默认回退
-  }
-}
+
 
 void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
 {
@@ -569,58 +519,10 @@ void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
   TextureGPUHandle textureHandle = CreateTexture(e.GetTextureSourceData());
 
   // 2. 更新TextureAsset
-  e.GetTextureAsset()->handle = textureHandle;
+  e.GetTextureAsset()->instance.gpuHandle = textureHandle;
 
   // 标记事件已消费，阻断传播
   e.SetResult(EventResult::Consumed);
-}
-
-GLenum OpenGLDevice::ConvertWrapMode(TextureWrapMode mode) const
-{
-  switch (mode) {
-    case TextureWrapMode::Repeat:
-      return GL_REPEAT;
-    case TextureWrapMode::ClampToEdge:
-      return GL_CLAMP_TO_EDGE;
-    case TextureWrapMode::MirroredRepeat:
-      return GL_MIRRORED_REPEAT;
-    default:
-      m_Logger->error("Unknown wrap mode");
-      return GL_REPEAT;
-  }
-}
-void OpenGLDevice::ConvertFilterMode(TextureFilterMode mode,
-                                     GLenum &outMinFilter,
-                                     GLenum &outMagFilter) const
-{
-  switch (mode) {
-    case TextureFilterMode::Nearest:
-      outMinFilter = GL_NEAREST;
-      outMagFilter = GL_NEAREST;
-      break;
-
-    case TextureFilterMode::Linear:
-      outMinFilter = GL_LINEAR;
-      outMagFilter = GL_LINEAR;
-      break;
-
-    case TextureFilterMode::Anisotropic:
-      outMinFilter = GL_LINEAR_MIPMAP_LINEAR;  // 需要mipmap
-      outMagFilter = GL_LINEAR;
-
-      // 设置各向异性过滤（需检查扩展支持）
-      if (GL_EXT_texture_filter_anisotropic) {
-        float maxAniso = 0.0f;
-        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso);
-      }
-      break;
-
-    default:
-      m_Logger->error("Unknown filter mode");
-      outMinFilter = GL_LINEAR;
-      outMagFilter = GL_LINEAR;
-  }
 }
 
 void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
@@ -695,4 +597,116 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
     m_Logger->error("Vertex attribute offset {} doesn't match layout stride {}", offset, stride);
   }
 }
+
+void OpenGLDevice::SetTextureParameters(std::shared_ptr<TextureSourceData> data)
+{
+  // 设置包装模式
+  glTexParameteri(
+      static_cast<GLenum>(data->target), GL_TEXTURE_WRAP_S, static_cast<GLint>(data->wrapModeS));
+  glTexParameteri(
+      static_cast<GLenum>(data->target), GL_TEXTURE_WRAP_T, static_cast<GLint>(data->wrapModeT));
+
+  // 设置过滤模式
+  glTexParameteri(static_cast<GLenum>(data->target),
+                  GL_TEXTURE_MIN_FILTER,
+                  static_cast<GLint>(data->minFilter));
+  glTexParameteri(static_cast<GLenum>(data->target),
+                  GL_TEXTURE_MAG_FILTER,
+                  static_cast<GLint>(data->magFilter));
+
+  // 设置各向异性过滤（如果支持）
+  if (GLAD_GL_EXT_texture_filter_anisotropic) {
+    GLfloat maxAnisotropy;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+    glTexParameterf(
+        static_cast<GLenum>(data->target), GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
+  }
+}
+bool OpenGLDevice::UploadTextureData(std::shared_ptr<TextureSourceData> data, GLuint textureId)
+{
+  // 获取OpenGL格式信息
+  GLenum internalFormat, format, type;
+  if (!GetGLTextureFormats(data->format, internalFormat, format, type)) {
+    LOG_ERROR("Unsupported texture format: {}", static_cast<int>(data->format));
+    return false;
+  }
+
+  try {
+    // 上传纹理数据
+    glTexImage2D(static_cast<GLenum>(data->target),
+                 0,
+                 internalFormat,
+                 data->width,
+                 data->height,
+                 0,
+                 format,
+                 type,
+                 data->pixelData.data());
+
+    // 检查OpenGL错误
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+      LOG_ERROR("OpenGL error during texture upload: {}", error);
+      return false;
+    }
+
+    return true;
+  }
+  catch (const std::exception &e) {
+    LOG_ERROR("Exception during texture upload: {}", e.what());
+    return false;
+  }
+}
+bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
+                                       GLenum &internalFormat,
+                                       GLenum &format,
+                                       GLenum &type)
+{
+  switch (textureFormat) {
+    case TextureFormat::R8:
+      internalFormat = GL_R8;
+      format = GL_RED;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::RG8:
+      internalFormat = GL_RG8;
+      format = GL_RG;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::RGB8:
+      internalFormat = GL_RGB8;
+      format = GL_RGB;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::RGBA8:
+      internalFormat = GL_RGBA8;
+      format = GL_RGBA;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::SRGB8:
+      internalFormat = GL_SRGB8;
+      format = GL_RGB;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::SRGB8_ALPHA8:
+      internalFormat = GL_SRGB8_ALPHA8;
+      format = GL_RGBA;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::DEPTH_COMPONENT16:
+      internalFormat = GL_DEPTH_COMPONENT16;
+      format = GL_DEPTH_COMPONENT;
+      type = GL_UNSIGNED_SHORT;
+      break;
+    case TextureFormat::DEPTH24_STENCIL8:
+      internalFormat = GL_DEPTH24_STENCIL8;
+      format = GL_DEPTH_STENCIL;
+      type = GL_UNSIGNED_INT_24_8;
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
 };  // namespace mite

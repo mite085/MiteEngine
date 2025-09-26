@@ -40,9 +40,6 @@ class IRenderDevice {
   virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
   virtual void BindTexture(TextureGPUHandle handle, uint32_t slot) const = 0;
-  virtual void SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode) = 0;
-  virtual void SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode) = 0;
-  virtual void GenerateMipmaps(TextureGPUHandle handle) = 0;
 
   // ---- 模型/网格操作 ----
   virtual ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) = 0;

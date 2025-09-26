@@ -22,9 +22,6 @@ class OpenGLDevice : public IRenderDevice {
   TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) override;
   void DestroyTexture(TextureGPUHandle handle) override;
   void BindTexture(TextureGPUHandle handle, uint32_t slot) const override;
-  void SetTextureWrapMode(TextureGPUHandle handle, TextureWrapMode mode) override;
-  void SetTextureFilterMode(TextureGPUHandle handle, TextureFilterMode mode) override;
-  void GenerateMipmaps(TextureGPUHandle handle) override;
 
   // ---- 模型操作 ----
   ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) override;
@@ -63,10 +60,13 @@ class OpenGLDevice : public IRenderDevice {
   void OnTextureLoaded(TextureLoadEvent &e) override;
 
   // ---- 辅助方法 ----
-  GLenum TranslateTextureFormat(TextureFormat format);
-  GLenum ConvertWrapMode(TextureWrapMode mode) const;
-  void ConvertFilterMode(TextureFilterMode mode, GLenum &outMinFilter, GLenum &outMagFilter) const;
   void SetVertexAttributes(const VertexLayout &layout);
+  void SetTextureParameters(std::shared_ptr<TextureSourceData> data);
+  bool UploadTextureData(std::shared_ptr<TextureSourceData> data, GLuint textureId);
+  bool GetGLTextureFormats(TextureFormat textureFormat,
+                           GLenum &internalFormat,
+                           GLenum &format,
+                           GLenum &type);
 
   // 资源追踪（用于调试和泄漏检测）
   std::unordered_set<GLuint> m_ActiveTextures;  // 活动纹理集合
