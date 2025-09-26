@@ -5,7 +5,7 @@
 
 namespace mite {
 
-// ÀàĞÍ°²È«µÄ×Ê²úID°ü×°Æ÷
+// ç±»å‹å®‰å…¨çš„èµ„äº§IDåŒ…è£…å™¨
 template<typename Tag> class TypedAssetID {
  private:
   UUID id_;
@@ -24,7 +24,7 @@ template<typename Tag> class TypedAssetID {
     return id_.IsValid();
   }
 
-  // ±È½Ï²Ù×÷
+  // æ¯”è¾ƒæ“ä½œ
   bool operator==(const TypedAssetID &other) const
   {
     return id_ == other.id_;
@@ -38,7 +38,7 @@ template<typename Tag> class TypedAssetID {
     return id_ < other.id_;
   }
 
-  // ¹şÏ£Ö§³Ö
+  // å“ˆå¸Œæ”¯æŒ
   struct Hash {
     size_t operator()(const TypedAssetID &id) const
     {
@@ -47,12 +47,12 @@ template<typename Tag> class TypedAssetID {
   };
 };
 
-// ¾ßÌåµÄ×Ê²úÀàĞÍ±êÇ©
+// å…·ä½“çš„èµ„äº§ç±»å‹æ ‡ç­¾
 struct TextureAssetTag {};
 struct MaterialAssetTag {};
 struct ModelAssetTag {};
 
-// ÀàĞÍ°²È«µÄ×Ê²úID
+// ç±»å‹å®‰å…¨çš„èµ„äº§ID
 using TextureAssetID = TypedAssetID<TextureAssetTag>;
 using MaterialAssetID = TypedAssetID<MaterialAssetTag>;
 using ModelAssetID = TypedAssetID<ModelAssetTag>;
