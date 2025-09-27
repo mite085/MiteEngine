@@ -2,6 +2,7 @@
 #define MITE_HANDLE_TYPE
 
 #include "headers/headers.h"
+#include "material_param_variant.h"
 
 namespace mite {
 // ------------------------ 纹理相关 ------------------------
@@ -84,6 +85,61 @@ struct TextureSourceData {
   // Mipmap设置
   bool generateMipmaps = true;     // 是否生成Mipmap
   uint32_t existingMipLevels = 1;  // 源数据已有的mip层级数
+};
+
+// 纹理实例 - 纯粹的运行时渲染对象
+struct TextureInstance {
+  TextureGPUHandle gpuHandle;  // GPU资源句柄
+  TextureTarget target;        // 纹理目标类型
+  TextureFormat format;        // 内部格式
+  uint32_t width;              // 实际纹理宽度
+  uint32_t height;             // 实际纹理高度
+  uint32_t mipLevels;          // Mipmap层级数
+
+  // 采样状态
+  TextureWrapMode wrapModeS;
+  TextureWrapMode wrapModeT;
+  TextureFilterMode minFilter;
+  TextureFilterMode magFilter;
+};
+
+// ------------------------ 材质相关 ------------------------
+// 透明度模式（GLTF标准）
+enum class AlphaMode {
+  OPAQUE = 0,  // 不透明材质
+  MASK = 1,  // 透明度裁剪（硬边缘，仅支持0和1的透明度，无需考虑渲染顺序）
+  BLEND = 2  // 透明度混合（软边缘，需要从后向前渲染）
+};
+
+// 运行时纹理槽位纹理槽，包含纹理GPUHandle和缩放偏移，仅渲染前的材质Apply时需要
+struct TextureGPUSlot {
+  TextureGPUHandle gpuHandle;
+  glm::vec2 scale = glm::vec2(1.0f);   // 纹理缩放
+  glm::vec2 offset = glm::vec2(0.0f);  // 纹理偏移
+
+  TextureGPUSlot() = default;
+  TextureGPUSlot(TextureGPUHandle handle, const glm::vec2 &s, const glm::vec2 &o)
+      : gpuHandle(handle), scale(s), offset(o)
+  {
+  }
+};
+
+// 材质数据来源（MaterialSystem专用的过渡型数据格式）
+struct MaterialSourceData {
+  // 核心标识信息
+  std::string name;               // 材质名称
+  std::string templateName;       // 对应的MaterialTemplate名称（用于索引模板）
+
+  // 通用参数存储
+  std::unordered_map<std::string, UniformVariant> parameters;
+
+  // 运行时纹理槽位（包含GPU句柄，支持Instance和offset）
+  std::unordered_map<std::string, TextureGPUSlot> textureSlots;
+
+  // 渲染属性
+  AlphaMode alphaMode = AlphaMode::OPAQUE;  // 透明度模式
+  float alphaCutoff = 0.5f;                 // Alpha测试阈值
+  bool doubleSided = false;                 // 是否双面渲染
 };
 
 // ------------------------ 网格相关 ------------------------
