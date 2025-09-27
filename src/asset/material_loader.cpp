@@ -1,5 +1,7 @@
 #include "material_loader.h"
 #include "texture_loader.h"
+#include "material_templates/material_template_pure_color.h"
+#include "material_templates/material_template_gltf_pbr.h"
 #include <assimp/material.h>
 #include <assimp/pbrmaterial.h>
 #include <assimp/scene.h>
@@ -19,6 +21,16 @@ std::vector<std::shared_ptr<MaterialAsset>> MaterialLoader::LoadMaterialsFromGLT
     return materials;
   }
 
+  // 创建纹理解析器回调函数
+  auto textureResolver = [&loadedTextures](const TextureAssetID &id) -> TextureInstance {
+    for (const auto &texture : loadedTextures) {
+      if (texture && texture->id == id) {
+        return texture->instance;
+      }
+    }
+    return TextureInstance{};  // 返回空的纹理实例
+  };
+
   // 处理场景中的所有材质
   for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
     aiMaterial *aiMat = scene->mMaterials[i];
@@ -27,19 +39,33 @@ std::vector<std::shared_ptr<MaterialAsset>> MaterialLoader::LoadMaterialsFromGLT
     if (material) {
       materials.push_back(material);
       LOG_INFO("Successfully loaded material: " + material->metadata.name);
+
+      // 生成MaterialSourceData并发布事件
+      MaterialSourceData sourceData = material->metadata.generateSourceData(textureResolver);
+      // 发布材质加载事件
+      EventBus::Publish(MaterialLoadedEvent(sourceData));
     }
     else {
       LOG_WARN("Failed to process material at index: " + std::to_string(i));
       // 创建默认材质作为回退
-      auto fallbackMaterial = CreateBuiltinMaterial("Fallback_Material_" + std::to_string(i));
+      auto fallbackMaterial = CreatePureColorMaterial("Fallback_Material_" + std::to_string(i));
       materials.push_back(fallbackMaterial);
+
+      // 为默认材质也发布事件
+      MaterialSourceData sourceData = fallbackMaterial->metadata.generateSourceData(
+          textureResolver);
+      EventBus::Publish(MaterialLoadedEvent(sourceData));
     }
   }
 
-  // 如果没有材质，创建一个默认材质
+  // 如果没有材质，创建一个PureColor材质
   if (materials.empty()) {
     LOG_INFO("No materials found in scene, creating default material");
-    materials.push_back(CreateBuiltinMaterial("Default_Material"));
+    materials.push_back(CreatePureColorMaterial("Default_Material"));
+
+    // 发布默认材质事件
+    MaterialSourceData sourceData = materials.back()->metadata.generateSourceData(textureResolver);
+    EventBus::Publish(MaterialLoadedEvent(sourceData));
   }
 
   return materials;
@@ -65,9 +91,8 @@ std::shared_ptr<MaterialAsset> MaterialLoader::ProcessGLTFMaterial(
 
   // 设置基础元数据
   materialAsset->metadata.sourcePath = modelPath;
-  materialAsset->metadata.sourceType = MaterialSourceType::GLTF_PBR;
   materialAsset->metadata.name = materialName;
-  materialAsset->metadata.templateName = "GLTFPBRMaterialTemplate";  // 对应的材质模板
+  materialAsset->metadata.templateName = GLTFPBRMaterialTemplate::StaticType();  // 对应的材质模板
 
   // 提取GLTF PBR参数
   ExtractPBRParameters(aiMat, materialAsset->metadata);
@@ -92,34 +117,34 @@ void MaterialLoader::ExtractPBRParameters(aiMaterial *aiMat, MaterialMetadata &m
 
   // 基础颜色因子（支持RGBA）
   if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color) == AI_SUCCESS) {
-    metadata.baseColorFactor = glm::vec4(color.r, color.g, color.b, 1.0f);
+    metadata.parameters["baseColorFactor"] = glm::vec4(color.r, color.g, color.b, 1.0f);
   }
 
   // 单独检查Alpha值（如果有）
   // 先尝试获取完整的baseColorFactor（包含alpha）
   aiColor4D color4D;
   if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color4D) == AI_SUCCESS) {
-    metadata.baseColorFactor = glm::vec4(color4D.r, color4D.g, color4D.b, color4D.a);
+    metadata.parameters["baseColorFactor"] = glm::vec4(color4D.r, color4D.g, color4D.b, color4D.a);
   }
   else if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color) == AI_SUCCESS)
   {
     // 回退到RGB版本
-    metadata.baseColorFactor = glm::vec4(color.r, color.g, color.b, 1.0f);
+    metadata.parameters["baseColorFactor"] = glm::vec4(color.r, color.g, color.b, 1.0f);
   }
 
   // 金属度因子
   if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, value) == AI_SUCCESS) {
-    metadata.metallicFactor = value;
+    metadata.parameters["metallicFactor"] = value;
   }
 
   // 粗糙度因子
   if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, value) == AI_SUCCESS) {
-    metadata.roughnessFactor = value;
+    metadata.parameters["roughnessFactor"] = value;
   }
 
   // 自发光因子
   if (aiMat->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) {
-    metadata.emissiveFactor = glm::vec3(color.r, color.g, color.b);
+    metadata.parameters["emissiveFactor"] = glm::vec3(color.r, color.g, color.b);
   }
 
   // 透明度模式
@@ -149,9 +174,9 @@ void MaterialLoader::ExtractPBRParameters(aiMaterial *aiMat, MaterialMetadata &m
   }
 
   // 回退到传统材质参数（兼容非GLTF格式）
-  if (metadata.baseColorFactor == glm::vec4(1.0f)) {
+  if (metadata.parameters.find("baseColorFactor") == metadata.parameters.end()) {
     if (aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
-      metadata.baseColorFactor = glm::vec4(color.r, color.g, color.b, 1.0f);
+      metadata.parameters["baseColorFactor"] = glm::vec4(color.r, color.g, color.b, 1.0f);
     }
   }
 }
@@ -171,21 +196,22 @@ void MaterialLoader::ExtractTextureReferences(
   {
     TextureAssetID texId = FindTextureAssetID(texturePath.C_Str(), loadedTextures);
     if (texId.IsValid()) {
-      metadata.baseColorTexture = MaterialTextureSlot(texId);
+      MaterialTextureSlot slot(texId);
       ExtractTextureTransform(aiMat,
                               AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE,
-                              metadata.baseColorTexture.scale,
-                              metadata.baseColorTexture.offset);
+                              slot.scale,
+                              slot.offset);
+      metadata.textureSlots["baseColorTexture"] = slot;
     }
   }
 
-  // 金属粗糙度纹理
+  // 金属粗糙度纹理（也应当支持偏移，但很罕见）
   if (aiMat->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE,
                         &texturePath) == AI_SUCCESS)
   {
     TextureAssetID texId = FindTextureAssetID(texturePath.C_Str(), loadedTextures);
     if (texId.IsValid()) {
-      metadata.metallicRoughnessTexture = MaterialTextureSlot(texId);
+      metadata.textureSlots["metallicRoughnessTexture"] = MaterialTextureSlot(texId);
     }
   }
 
@@ -193,7 +219,7 @@ void MaterialLoader::ExtractTextureReferences(
   if (aiMat->GetTexture(aiTextureType_NORMALS, 0, &texturePath) == AI_SUCCESS) {
     TextureAssetID texId = FindTextureAssetID(texturePath.C_Str(), loadedTextures);
     if (texId.IsValid()) {
-      metadata.normalTexture = MaterialTextureSlot(texId);
+      metadata.textureSlots["normalTexture"] = MaterialTextureSlot(texId);
     }
   }
 
@@ -201,7 +227,7 @@ void MaterialLoader::ExtractTextureReferences(
   if (aiMat->GetTexture(aiTextureType_EMISSIVE, 0, &texturePath) == AI_SUCCESS) {
     TextureAssetID texId = FindTextureAssetID(texturePath.C_Str(), loadedTextures);
     if (texId.IsValid()) {
-      metadata.emissiveTexture = MaterialTextureSlot(texId);
+      metadata.textureSlots["emissiveTexture"] = MaterialTextureSlot(texId);
     }
   }
 
@@ -209,7 +235,7 @@ void MaterialLoader::ExtractTextureReferences(
   if (aiMat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &texturePath) == AI_SUCCESS) {
     TextureAssetID texId = FindTextureAssetID(texturePath.C_Str(), loadedTextures);
     if (texId.IsValid()) {
-      metadata.occlusionTexture = MaterialTextureSlot(texId);
+      metadata.textureSlots["occlusionTexture"] = MaterialTextureSlot(texId);
     }
   }
 }
@@ -248,17 +274,12 @@ void MaterialLoader::ExtractTextureTransform(aiMaterial *aiMat,
   offset = glm::vec2(0.0f);
 
   // 尝试提取GLTF的纹理变换参数
-  // 注意：这需要GLTF纹理变换扩展支持
-
-  // 缩放参数
   aiUVTransform uvTransform;
   if (aiMat->Get(AI_MATKEY_UVTRANSFORM(textureType, textureIndex), uvTransform) == AI_SUCCESS) {
     scale.x = uvTransform.mScaling.x;
     scale.y = uvTransform.mScaling.y;
     offset.x = uvTransform.mTranslation.x;
     offset.y = uvTransform.mTranslation.y;
-
-    // 注意：这里忽略了旋转，因为GLTF标准变换通常只包含缩放和偏移
   }
 }
 
@@ -279,22 +300,22 @@ std::string MaterialLoader::GenerateMaterialName(aiMaterial *aiMat,
   return fileName + "_Material_" + std::to_string(index);
 }
 
-std::shared_ptr<MaterialAsset> MaterialLoader::CreateBuiltinMaterial(const std::string &name,
+std::shared_ptr<MaterialAsset> MaterialLoader::CreatePureColorMaterial(const std::string &name,
                                                                      const glm::vec3 &color)
 {
 
   auto materialAsset = std::make_shared<MaterialAsset>();
 
   materialAsset->id = MaterialAssetID{UUIDGenerator::Generate(name.c_str())};
-  materialAsset->metadata.sourceType = MaterialSourceType::BUILTIN;
   materialAsset->metadata.name = name;
-  materialAsset->metadata.templateName = "PureColorMaterialTemplate";
+  materialAsset->metadata.templateName = PureColorMaterialTemplate::StaticType();
 
-  // 设置纯色材质参数
-  materialAsset->metadata.baseColorFactor = glm::vec4(color, 1.0f);
-  materialAsset->metadata.metallicFactor = 0.0f;
-  materialAsset->metadata.roughnessFactor = 1.0f;
-  materialAsset->metadata.emissiveFactor = glm::vec3(0.0f);
+  // 设置纯色材质参数到通用参数存储
+  materialAsset->metadata.parameters["baseColorFactor"] = glm::vec4(color, 1.0f);
+  materialAsset->metadata.parameters["metallicFactor"] = 0.0f;
+  materialAsset->metadata.parameters["roughnessFactor"] = 1.0f;
+  materialAsset->metadata.parameters["emissiveFactor"] = glm::vec3(0.0f);
+
   materialAsset->metadata.alphaMode = AlphaMode::OPAQUE;
   materialAsset->metadata.doubleSided = false;
 

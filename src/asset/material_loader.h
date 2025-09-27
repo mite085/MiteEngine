@@ -36,7 +36,7 @@ class MaterialLoader {
    * @param color 基础颜色
    * @return 材质资产指针
    */
-  static std::shared_ptr<MaterialAsset> CreateBuiltinMaterial(
+  static std::shared_ptr<MaterialAsset> CreatePureColorMaterial(
       const std::string &name = "PureColor", const glm::vec3 &color = glm::vec3(1.0f));
 
  private:
