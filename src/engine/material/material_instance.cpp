@@ -7,13 +7,9 @@ MaterialInstance::MaterialInstance(std::shared_ptr<OpenGLShader> shader)
   if (!m_Shader) {
     LOG_ERROR("MaterialInstance created with null shader!");
   }
-
-  // 生成唯一id。Shader可复用但材质实例不可复用。
-  m_Handle.id = UUIDGenerator::Generate();
 }
 
-MaterialInstance::~MaterialInstance() {
-}
+MaterialInstance::~MaterialInstance() {}
 
 // ===================== 参数设置方法 =====================
 void MaterialInstance::SetFloat(const std::string &name, float value)
@@ -71,21 +67,21 @@ void MaterialInstance::SetVector3Array(const std::string &name,
 }
 
 // ===================== 纹理设置方法 =====================
-void MaterialInstance::SetTexture(const std::string &name, TextureGPUHandle texture)
+void MaterialInstance::SetTexture(const std::string &name, TextureGPUSlot texture)
 {
-    m_Textures[name] = std::move(texture);
+  m_Textures[name] = texture;
 }
 
-void MaterialInstance::SetTextureArray(const std::string &name,
-                                       const std::vector<TextureGPUHandle> &textures)
-{
-  if (!textures.empty()) {
-    m_TextureArrays[name] = textures;
-  }
-  else {
-    LOG_WARN("Empty texture array assigned to slot: {}", name);
-  }
-}
+// void MaterialInstance::SetTextureArray(const std::string &name,
+//                                        const std::vector<TextureGPUHandle> &textures)
+//{
+//   if (!textures.empty()) {
+//     m_TextureArrays[name] = textures;
+//   }
+//   else {
+//     LOG_WARN("Empty texture array assigned to slot: {}", name);
+//   }
+// }
 
 // ===================== 核心Apply方法 =====================
 void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader) const
@@ -144,24 +140,44 @@ void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *over
   }
 
   // ---- 绑定纹理（纹理单独处理部分） ----
-  uint32_t textureSlot = 0;
+  uint32_t textureSlot = 0;  // 注意：每个材质实例的Apply都是从 GL_TEXTURE0 + slot = 0 开始计数的，若需要多材质渲染，需要不同材质实例共享textureSlot
   for (const auto &[name, texture] : m_Textures) {
     // 使用传入的纹理绑定函数进行纹理绑定
-    textureBindFunc(texture, textureSlot);
+    textureBindFunc(texture.gpuHandle, textureSlot);
     targetShader->SetInt(name, static_cast<int>(textureSlot));
+
+    // TODO: 需要将Solt的offset和scale传入Shader
     textureSlot++;
   }
 
-  // ---- 绑定纹理数组 ----
-  for (const auto &[name, textures] : m_TextureArrays) {
-    std::vector<int> slots;
-    for (const auto &texture : textures) {
-      // 使用传入的纹理绑定函数进行纹理绑定
-      textureBindFunc(texture, textureSlot);
-      slots.push_back(static_cast<int>(textureSlot));
-      textureSlot++;
-    }
-    targetShader->SetIntArray(name, slots.data(), static_cast<int>(slots.size()));
+  //// ---- 绑定纹理数组 ----
+  // for (const auto &[name, textures] : m_TextureArrays) {
+  //   std::vector<int> slots;
+  //   for (const auto &texture : textures) {
+  //     // 使用传入的纹理绑定函数进行纹理绑定
+  //     textureBindFunc(texture, textureSlot);
+  //     slots.push_back(static_cast<int>(textureSlot));
+  //     textureSlot++;
+  //   }
+  //   targetShader->SetIntArray(name, slots.data(), static_cast<int>(slots.size()));
+  // }
+}
+
+std::shared_ptr<OpenGLShader> MaterialInstance::GetShader() const
+{
+  if (m_Shader)
+    return m_Shader;
+  else {
+    LOG_ERROR("Invaid Shader");
+    return nullptr;
   }
+}
+std::string MaterialInstance::GetName() const
+{
+  return m_Name;
+}
+void MaterialInstance::SetName(const std::string &name)
+{
+  m_Name = name;
 }
 };  // namespace mite
