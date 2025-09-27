@@ -17,7 +17,7 @@ UniformVariant::Type UniformVariant::GetType() const
       Type::IntArray,     // int[]
       Type::FloatArray,   // float[]
       Type::Vector3Array, // vec3[]
-      Type::Texture,
+      Type::Texture,       // TextureAssetID
   };
   return typeMap[m_Data.index()];
 }

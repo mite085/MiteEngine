@@ -1,7 +1,7 @@
 #ifndef MITE_MATERIAL_PARAM_VARIANT
 #define MITE_MATERIAL_PARAM_VARIANT
 
-#include "basic_data/texture.h"
+#include "basic_type/asset_type.h"
 #include "headers/headers.h"
 
 namespace mite {
@@ -29,7 +29,7 @@ class UniformVariant {
                                    std::vector<int>,        // int[]
                                    std::vector<float>,      // float[]
                                    std::vector<glm::vec3>,  // vec3[]
-                                   TextureGPUHandle         // 纹理类型
+                                   TextureGPUSlot           // 纹理类型
                                    >;
 
   // ---- 类型枚举 ----

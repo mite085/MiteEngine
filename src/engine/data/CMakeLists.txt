@@ -5,15 +5,17 @@ set(ENGINE_DATA_LIB_NAME MiteEngine_Engine_Data)
 
 # 创建源代码组(筛选器)
 set(BASIC_TYPE_SRCS
-    basic_type/asset_id.h
-    basic_type/asset_type.h
-    basic_type/handle_type.h
-    basic_type/visible_type.h
+    basic_type/asset_id.h                       # 类型安全的资产UUID
+    basic_type/asset_type.h                     # 资产基本数据类型
+    basic_type/handle_type.h                    # GPU相关的句柄类型
+    basic_type/visible_type.h                   # 可见性掩码定义
     basic_type/bounding_volumes_types.h         # 包围盒类型定义
     basic_type/bounding_volumes_types.cpp
     basic_type/bounding_volumes_intersects.h    # 包围盒相交测试
     basic_type/bounding_volumes_intersects.cpp
     basic_type/snapshot.h                       # 快照抽象类
+    basic_type/material_param_variant.h         # 材质专用的variant类型
+    basic_type/material_param_variant.cpp
 )
 source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 
