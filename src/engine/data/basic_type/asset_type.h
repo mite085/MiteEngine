@@ -3,26 +3,9 @@
 
 #include "asset_id.h"
 #include "handle_type.h"
-#include "uuid/mite_uuid.h"
-#include <glm/glm.hpp>
 
 namespace mite {
 // ------------------------ 纹理相关 ------------------------
-// 纹理实例 - 纯粹的运行时渲染对象
-struct TextureInstance {
-  TextureGPUHandle gpuHandle;  // GPU资源句柄
-  TextureTarget target;        // 纹理目标类型
-  TextureFormat format;        // 内部格式
-  uint32_t width;              // 实际纹理宽度
-  uint32_t height;             // 实际纹理高度
-  uint32_t mipLevels;          // Mipmap层级数
-
-  // 采样状态
-  TextureWrapMode wrapModeS;
-  TextureWrapMode wrapModeT;
-  TextureFilterMode minFilter;
-  TextureFilterMode magFilter;
-};
 
 // 纹理元数据 - 资源描述和序列化信息
 struct TextureMetadata {
@@ -42,9 +25,7 @@ struct TextureMetadata {
   bool generateMipmaps;
 
   // 资源信息
-  TextureTarget target;     // 纹理目标类型
-  bool isSRGB;              // 是否sRGB色彩空间
-  std::string compression;  // 压缩格式标识（如有）
+  TextureTarget target;  // 纹理目标类型
 
   TextureSourceData generateSourceData(std::vector<uint8_t> &&pixelData) const
   {
@@ -81,70 +62,85 @@ struct TextureAsset {
 };
 
 // ------------------------ 材质相关 ------------------------
-// 材质来源类型枚举
-enum class MaterialSourceType {
-  GLTF_PBR = 0,     // GLTF PBR材质
-  MATERIALX = 1,    // MaterialX材质
-  BUILTIN = 2,      // 引擎内置材质
-  USER_CREATED = 3  // 用户创建材质
-};
-
-// 透明度模式（GLTF标准）
-enum class AlphaMode {
-  OPAQUE = 0,  // 不透明材质
-  MASK = 1,    // 透明度裁剪（硬边缘，仅支持0和1的透明度，无需考虑渲染顺序）
-  BLEND = 2    // 透明度混合（软边缘，需要从后向前渲染）
-};
 
 // 材质纹理槽位定义（GLTF PBR标准）
 struct MaterialTextureSlot {
-  TextureAssetID textureId;            // 纹理资产ID
+  TextureAssetID textureAssetId;       // 纹理资产ID
   glm::vec2 scale = glm::vec2(1.0f);   // 纹理缩放
   glm::vec2 offset = glm::vec2(0.0f);  // 纹理偏移
 
   MaterialTextureSlot() = default;
-  explicit MaterialTextureSlot(TextureAssetID id) : textureId(id) {}
+  explicit MaterialTextureSlot(TextureAssetID id) : textureAssetId(id) {}
 };
 
-// 材质元数据 - 资源描述和序列化信息
+// 材质元数据 - 基于UniformVariant的通用参数存储（目前支持GLTF，后续扩展MaterialX）
 struct MaterialMetadata {
-  std::string sourcePath;         // 源文件路径（GLTF文件路径等）
-  MaterialSourceType sourceType;  // 材质来源类型
+  std::string sourcePath;         // 源文件路径
 
   // 基础信息
   std::string name;          // 材质名称
-  std::string templateName;  // 对应的MaterialTemplate名称
+  std::string templateName;  // 对应的MaterialTemplate名称（用于索引材质）
 
-  // GLTF PBR参数（序列化需要）
-  glm::vec4 baseColorFactor = glm::vec4(1.0f);  // 基础颜色因子（RGBA）
-  float metallicFactor = 1.0f;                  // 金属度因子
-  float roughnessFactor = 1.0f;                 // 粗糙度因子
-  glm::vec3 emissiveFactor = glm::vec3(0.0f);   // 自发光因子
+  // 通用参数存储（支持GLTF PBR和未来MaterialX）
+  std::unordered_map<std::string, UniformVariant> parameters;
 
-  // 透明度相关参数
-  AlphaMode alphaMode = AlphaMode::OPAQUE;  // 透明度模式
-  float alphaCutoff = 0.5f;                 // Alpha测试阈值（MASK模式使用）
+  // 通用纹理槽位存储
+  std::unordered_map<std::string, MaterialTextureSlot> textureSlots;
 
   // 渲染属性
-  bool doubleSided = false;  // 是否双面渲染
+  AlphaMode alphaMode = AlphaMode::OPAQUE;  // 透明度模式
+  float alphaCutoff = 0.5f;                 // Alpha测试阈值
+  bool doubleSided = false;                 // 是否双面渲染
 
-  // 纹理引用（使用AssetID而非路径）
-  MaterialTextureSlot baseColorTexture;          // 基础颜色纹理
-  MaterialTextureSlot metallicRoughnessTexture;  // 金属粗糙度纹理（R:粗糙度, G:金属度）
-  MaterialTextureSlot normalTexture;             // 法线纹理
-  MaterialTextureSlot emissiveTexture;           // 自发光纹理
-  MaterialTextureSlot occlusionTexture;          // 环境光遮蔽纹理
-
-  // 来源特定信息
+  // 来源特定信息（仅存储原始信息，不包含任何操作）
   struct GLTFSourceInfo {
     std::string gltfFilePath;  // GLTF文件路径
     uint32_t materialIndex;    // 材质在文件中的索引
   };
+  // struct MaterialXSourceInfo {
+  //   std::string materialxFilePath;  // MaterialX文件路径
+  //   std::string nodeDefName;        // MaterialX节点定义名称
+  // };
+  //  使用variant支持不同来源的扩展信息
+  std::variant<GLTFSourceInfo, /*MaterialXSourceInfo*/> sourceInfo;
 
-  // 使用variant支持不同来源的扩展信息（C++17）
-  std::variant<GLTFSourceInfo> sourceInfo;
+  MaterialMetadata() {}
+  /**
+   * @brief 生成材质源数据，过滤掉与渲染无关的信息
+   * @param textureResolver 纹理解析回调函数，用于将TextureAssetID转换为TextureGPUHandle
+   * @return 包含所有用于创建材质实例信息的MaterialSourceData
+   */
+  MaterialSourceData generateSourceData(
+      std::function<TextureInstance(const TextureAssetID &)> textureResolver) const
+  {
+    MaterialSourceData sourceData;
 
-  MaterialMetadata() : sourceType(MaterialSourceType::BUILTIN) {}
+    // 复制核心标识信息
+    sourceData.templateName = templateName;
+    sourceData.name = name;
+
+    // 复制参数
+    sourceData.parameters = parameters;
+
+    // 转换纹理槽位：TextureAssetID -> TextureGPUHandle
+    for (const auto &[slotName, textureSlot] : textureSlots) {
+      if (textureSlot.textureAssetId.IsValid()) {
+        // 使用回调函数解析纹理资产ID为纹理实例
+        TextureInstance textureInstance = textureResolver(textureSlot.textureAssetId);
+
+        // 创建运行时纹理槽位
+        sourceData.textureSlots[slotName] = TextureGPUSlot(
+            textureInstance.gpuHandle, textureSlot.scale, textureSlot.offset);
+      }
+    }
+
+    // 复制渲染属性
+    sourceData.alphaMode = alphaMode;
+    sourceData.alphaCutoff = alphaCutoff;
+    sourceData.doubleSided = doubleSided;
+
+    return sourceData;
+  }
 };
 
 // 材质资产
