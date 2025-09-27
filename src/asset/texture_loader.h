@@ -2,6 +2,7 @@
 #define MITE_ASSET_TEXTURE_LOADER
 
 #include "basic_type/asset_type.h"
+#include "basic_event/asset_event.h"
 #include "headers/headers.h"
 
 class aiTexture;

@@ -1,5 +1,4 @@
 #include "texture_loader.h"
-#include "basic_event/asset_event.h"
 #include <assimp/scene.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_STATIC
@@ -10,7 +9,6 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTexture(const std::string &path
                                                          int desiredChannels,
                                                          bool flipVertical)
 {
-
   // 检查路径有效性
   if (path.empty()) {
     LOG_ERROR("Texture path is empty");
@@ -31,7 +29,6 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadEmbeddedTexture(const std::stri
                                                                  int desiredChannels,
                                                                  bool flipVertical)
 {
-
   // 参数检查
   if (!aiTexture) {
     LOG_ERROR("Null aiTexture provided for embedded texture");
@@ -59,7 +56,6 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureInternal(
     int desiredChannels,
     bool flipVertical)
 {
-
   // 设置STB图像加载配置
   stbi_set_flip_vertically_on_load(flipVertical);
   // 准备加载变量
@@ -86,11 +82,13 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureInternal(
   }
   // 计算实际通道数
   int actualChannels = (desiredChannels > 0) ? desiredChannels : channels;
+
   // 创建纹理资产
   auto textureAsset = std::make_shared<TextureAsset>();
 
   // 设置资产ID（基于路径生成）
   textureAsset->id = TextureAssetID{UUIDGenerator::Generate(path.c_str())};
+
   // 填充元数据
   textureAsset->metadata.sourcePath = path;
   textureAsset->metadata.originalWidth = static_cast<uint32_t>(width);
@@ -98,7 +96,7 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureInternal(
   textureAsset->metadata.channelCount = static_cast<uint32_t>(actualChannels);
   textureAsset->metadata.sourceFormat = DetermineTextureFormat(actualChannels);
   textureAsset->metadata.target = DetermineTextureTarget(path);
-  textureAsset->metadata.isSRGB = true;  // 默认假设为sRGB纹理
+
   // 设置默认采样参数
   SetupDefaultSamplingParams(textureAsset->metadata);
   // 创建像素数据向量并转移所有权
@@ -141,6 +139,9 @@ bool TextureLoader::IsEmbeddedTexturePath(const std::string &path)
 
 TextureFormat TextureLoader::DetermineTextureFormat(int channels)
 {
+  // 目前仅支持8位无符号归一化格式，
+  // 若要支持其他格式，需要先扩展uint8_t *pixelData
+
   switch (channels) {
     case 1:
       return TextureFormat::R8;
@@ -179,5 +180,4 @@ void TextureLoader::SetupDefaultSamplingParams(TextureMetadata &metadata)
     metadata.magFilter = TextureFilterMode::Linear;
   }
 }
-
 };  // namespace mite
