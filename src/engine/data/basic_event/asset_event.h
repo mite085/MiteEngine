@@ -39,6 +39,29 @@ class ModelLoadEvent : public Event {
 };
 
 /**
+ * 材质创建事件
+ * 职责：委托MaterialSystem创建材质实例（Asset模块仅存储Metadata，不存储材质实例）
+ */
+class MaterialLoadedEvent : public Event {
+ public:
+  explicit MaterialLoadedEvent(const MaterialSourceData &sourceData) : m_SourceData(sourceData) {}
+
+  const MaterialSourceData &GetSourceData() const
+  {
+    return m_SourceData;
+  }
+
+    EVENT_CLASS_CATEGORY(EVENT_CATEGORY_ASSET)
+  Event *Clone() const override
+  {
+    return new MaterialLoadedEvent(m_SourceData);
+  }
+
+ private:
+  MaterialSourceData m_SourceData;
+};
+
+/**
  * 纹理创建事件
  * 职责：委托RendererDevice创建GPU资源
  */
