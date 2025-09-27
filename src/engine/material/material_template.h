@@ -13,36 +13,35 @@ namespace mite {
  */
 class MaterialTemplate {
  public:
+  MaterialTemplate(std::shared_ptr<OpenGLShader> shader);
   virtual ~MaterialTemplate() = default;
 
   // ---- 核心接口 ----
   /**
-   * @brief 创建材质实例
-   * @return 共享指针管理的MaterialInstance对象
-   * @note 实例会继承模板的默认参数，但允许运行时修改
+   * @brief 创建空的材质实例
+   * @return 材质实例
+   * @note 实例直接调用ApplyDefaultParams
    */
-  virtual std::shared_ptr<MaterialInstance> CreateInstance() const = 0;
+  std::shared_ptr<MaterialInstance> CreateInstance();
+  /**
+   * @brief 从源数据创建材质实例
+   * @param sourceData 材质源数据（包含所有渲染所需信息）
+   * @return 共享指针管理的MaterialInstance对象
+   * @note 实例会直接从sourceData解析参数，不调用ApplyDefaultParams
+   */
+  virtual std::shared_ptr<MaterialInstance> CreateInstance(
+      const MaterialSourceData &sourceData) const = 0;
 
   /**
    * @brief 应用默认参数到材质实例
    * @param instance 目标材质实例
-   * @note 用于初始化或重置实例参数
+   * @note 用于初始化或重置实例参数到模板默认值
    */
-  virtual void ApplyParameters(MaterialInstance &instance) const = 0;
-
-  // ---- 通用属性 ----
-  void SetName(const std::string &name)
-  {
-    m_Name = name;
-  }
-  const std::string &GetName() const
-  {
-    return m_Name;
-  }
+  virtual void ApplyDefaultParams(MaterialInstance &instance) const = 0;
 
   /**
    * @brief 获取材质类型标识（用于运行时类型检查）
-   * @return 字符串类型标识（如"PBR"、"Phong"）
+   * @return 字符串类型标识（如"GLTFPBRMaterial"、"PureColorMaterial"）
    */
   virtual std::string GetMaterialType() const = 0;
 
@@ -56,9 +55,81 @@ class MaterialTemplate {
     return T::StaticType();
   }
 
+  // ---- 通用属性 ----
+  void SetName(const std::string &name);
+  const std::string &GetName() const;
+
  protected:
+  // ---- 通用数据获取工具方法（供派生类使用） ----
+  /**
+   * @brief 从源数据获取参数值（带默认值）
+   * @tparam T 参数类型
+   * @param sourceData 源数据
+   * @param key 参数键名
+   * @param defaultValue 默认值
+   * @return 参数值或默认值
+   */
+  template<typename T>
+  static T GetParameter(const MaterialSourceData &sourceData,
+                        const std::string &key,
+                        const T &defaultValue)
+  {
+    auto it = sourceData.parameters.find(key);
+    if (it != sourceData.parameters.end() && it->second.Is<T>()) {
+      return it->second.Get<T>();
+    }
+    return defaultValue;
+  }
+  /**
+   * @brief 从源数据获取纹理槽位
+   * @param sourceData 源数据
+   * @param slotName 纹理槽位名称
+   * @return 纹理槽位指针，如果不存在返回nullptr
+   */
+  static const TextureGPUSlot *GetTextureSlot(const MaterialSourceData &sourceData,
+                                              const std::string &slotName);
+  /**
+   * @brief 检查源数据是否包含特定参数
+   * @param sourceData 源数据
+   * @param key 参数键名
+   * @return 是否包含该参数
+   */
+  static bool HasParameter(const MaterialSourceData &sourceData, const std::string &key);
+  /**
+   * @brief 检查源数据是否包含特定纹理槽位
+   * @param sourceData 源数据
+   * @param slotName 纹理槽位名称
+   * @return 是否包含该纹理槽位
+   */
+  static bool HasTextureSlot(const MaterialSourceData &sourceData, const std::string &slotName);
+  /**
+   * @brief 应用源数据中的所有参数到材质实例
+   * @param instance 目标材质实例
+   * @param sourceData 源数据
+   * @note 派生类可以在CreateInstance中调用此方法应用所有参数
+   */
+  static void ApplySourceDataToInstance(MaterialInstance &instance,
+                                        const MaterialSourceData &sourceData);
+  /**
+   * @brief 获取渲染属性（供派生类使用）
+   */
+  static AlphaMode GetAlphaMode(const MaterialSourceData &sourceData)
+  {
+    return sourceData.alphaMode;
+  }
+  static float GetAlphaCutoff(const MaterialSourceData &sourceData)
+  {
+    return sourceData.alphaCutoff;
+  }
+  static bool IsDoubleSided(const MaterialSourceData &sourceData)
+  {
+    return sourceData.doubleSided;
+  }
+
+ protected:
+  std::shared_ptr<OpenGLShader> m_Shader;   // 着色器对象
   std::string m_Name = "Unnamed_Material";  // 材质名称（用于调试和UI显示）
 };
-};
+};  // namespace mite
 
 #endif
