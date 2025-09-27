@@ -114,11 +114,13 @@ void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
   m_ActiveTextures.erase(textureID);
 }
 
-void OpenGLDevice::BindTexture(TextureGPUHandle handle, uint32_t slot) const
+void OpenGLDevice::BindTexture(TextureGPUHandle haneld, uint32_t slot) const
 {
-  // 渲染时，才需要激活纹理单元
+  // 渲染时，才需要激活纹理单元。对于单个MaterialInstance，slot仅支持0-31。
+  // 通常情况下基础颜色纹理、金属粗糙度纹理、法线纹理、自发光纹理、环境光遮蔽纹理
+  // 这五个就足够绘制了，32个纹理槽足够用。
   glActiveTexture(GL_TEXTURE0 + slot);
-  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(handle.apiHandle));
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(haneld.apiHandle));
 }
 
 

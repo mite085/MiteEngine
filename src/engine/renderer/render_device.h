@@ -5,6 +5,7 @@
 #include "basic_data/mesh.h"
 #include "basic_data/model.h"
 #include "basic_data/texture.h"
+#include "basic_type/asset_type.h"
 #include "basic_event/asset_event.h"
 
 namespace mite {

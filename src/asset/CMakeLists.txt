@@ -9,8 +9,8 @@ set(ASSET_SRCS
     asset_cache.cpp
     asset_manager.h
     asset_manager.cpp
-    asset_utils.h
-    asset_utils.cpp
+    material_loader.h
+    material_loader.cpp
     model_loader.h
     model_loader.cpp
     texture_loader.h
@@ -43,4 +43,5 @@ target_link_libraries(${ASSET_LIB_NAME}
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
     MiteEngine_Engine_Event
+    MiteEngine_Engine_Material
 )

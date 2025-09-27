@@ -7,22 +7,26 @@ set(ENGINE_MATERIAL_LIB_NAME MiteEngine_Engine_Material)
 set(MATERIAL_SRCS
     material_instance.h
     material_instance.cpp
-    material_param_variant.h
-    material_param_variant.cpp
     material_system.h
     material_system.cpp
     material_template.h
     material_template.cpp
-    material_pure_color.h
-    material_pure_color.cpp
 )
-source_group("material_system" FILES ${MATERIAL_SRCS})
+source_group("material system" FILES ${MATERIAL_SRCS})
 
+set(MATERIAL_TEMPLATES_SRCS
+    material_templates/material_template_gltf_pbr.h
+    material_templates/material_template_gltf_pbr.cpp
+    material_templates/material_template_pure_color.h
+    material_templates/material_template_pure_color.cpp
+)
+source_group("material templates" FILES ${MATERIAL_TEMPLATES_SRCS})
 
 # 创建静态库
 add_library(${ENGINE_MATERIAL_LIB_NAME}  
     STATIC  
     ${MATERIAL_SRCS}  
+    ${MATERIAL_TEMPLATES_SRCS}  
 )
 
 # 设置头文件路径（供其他项目包含）
