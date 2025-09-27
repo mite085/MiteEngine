@@ -1,9 +1,9 @@
 #ifndef MITE_MATERIAL_SYSTEM
 #define MITE_MATERIAL_SYSTEM
 
-#include "material_param_variant.h"
+#include "material_instance.h"
 #include "material_template.h"
-#include "subscription_group.h"
+#include "basic_event/asset_event.h"
 
 namespace mite {
 /**
@@ -44,13 +44,13 @@ class MaterialSystem {
    * @param template 材质模板对象（所有权转移给系统）
    * @throws std::invalid_argument 如果名称已存在
    */
-  void RegisterTemplate(const std::string &name, std::unique_ptr<MaterialTemplate> material);
+  void RegisterTemplate(std::unique_ptr<MaterialTemplate> material);
 
   /**
    * @brief 检查材质模板是否存在
    * @param name 材质模板名称
    */
-  bool HasTemplate(const std::string &name) const;
+  bool HasTemplate(const std::string &materialType) const;
 
   // ---- 实例管理 ----
   /**
@@ -62,7 +62,8 @@ class MaterialSystem {
    * 作用：
    * 当在运行时动态决定材质类型时（如从配置文件读取）使用，更便捷且可扩展性更强
    */
-  std::shared_ptr<MaterialInstance> CreateInstance(const std::string &templateName);
+  std::shared_ptr<MaterialInstance> CreateInstance(const std::string &templateName,
+                                                   const std::string &instanceName = "");
 
   /**
    * @brief 创建材质实例--模板方法
@@ -71,9 +72,10 @@ class MaterialSystem {
    * 作用：
    * 代码内部创建实例时使用，更加清晰，可避免字符串匹配错误
    */
-  template<typename T> std::shared_ptr<MaterialInstance> CreateInstance()
+  template<typename T>
+  std::shared_ptr<MaterialInstance> CreateInstance(const std::string &instanceName = "")
   {
-    return CreateInstance(MaterialTemplate::GetMaterialTypeStatic<T>());
+    return CreateInstance(MaterialTemplate::GetMaterialTypeStatic<T>(instanceName));
   }
 
   /**
@@ -83,7 +85,8 @@ class MaterialSystem {
    */
   std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
       const std::string &templateName,
-      const std::unordered_map<std::string, UniformVariant> &overrides);
+      const std::unordered_map<std::string, UniformVariant> &overrides,
+      const std::string &instanceName = "");
 
   /**
    * @brief 创建带有初始参数的材质实例--模板方法
@@ -92,30 +95,40 @@ class MaterialSystem {
    */
   template<typename T>
   std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
-      const std::unordered_map<std::string, UniformVariant> &overrides)
+      const std::unordered_map<std::string, UniformVariant> &overrides,
+      const std::string &instanceName = "")
   {
-    return CreateInstanceWithOverrides(MaterialTemplate::GetMaterialTypeStatic<T>(), overrides);
+    return CreateInstanceWithOverrides(
+        MaterialTemplate::GetMaterialTypeStatic<T>(), overrides, instanceName);
   }
+
+  /**
+   * @brief 基于资产模块载入的材质源数据创建材质实例
+   * @param sourceData 
+   * @return 
+   */
+  std::shared_ptr<MaterialInstance> CreateInstanceFromMaterialSourceData(
+      const MaterialSourceData &sourceData);
 
   /**
    * @brief 根据ID获取材质实例
    */
-  static MaterialInstance *GetInstance(MaterialInstanceHandle handle)
+  static MaterialInstance *GetInstance(std::string name)
   {
     MaterialSystem &system = Get();
 
-    auto it = system.m_InstanceCache.find(handle.id);
+    auto it = system.m_InstanceCache.find(name);
     return it != system.m_InstanceCache.end() ? it->second.get() : nullptr;
   }
 
-  // ---- 热重载支持 ----
+  // ---- 热重载支持（预留接口） ----
   /**
    * @brief 重新加载材质模板（用于开发时实时编辑）
    * @param name 模板名称
    * @param newMaterial 新材质模板
    * @note 会触发MaterialReloadedEvent事件
    */
-  void ReloadTemplate(const std::string &name, std::unique_ptr<MaterialTemplate> newMaterial);
+  //void ReloadTemplate(const std::string &name, std::unique_ptr<MaterialTemplate> newMaterial);
 
   // ---- 错误处理 ----
   /**
@@ -129,37 +142,24 @@ class MaterialSystem {
   MaterialSystem() = default;
   ~MaterialSystem() = default;
 
+  // 消费MaterialLoad事件，生成材质实例
+  void OnMaterialLoaded(MaterialLoadedEvent &event);
+
+  // 生成实例名称（TemplateName.001格式）
+  std::string GenerateInstanceName(const std::string &templateName,
+                                   const std::string &instanceName = "");
+
   // 日志系统
   Logger m_Logger;
 
+  // 事件订阅
+  SubscriptionGroup m_EventSubscription;
+
   // ---- 成员变量 ----
   std::unordered_map<std::string, std::unique_ptr<MaterialTemplate>> m_Templates;  // 模板存储
+  std::unordered_map<std::string, uint32_t> m_TemplateInstanceCounters; // 记录每个模板的实例计数
   std::unique_ptr<MaterialTemplate> m_FallbackMaterial;  // 错误回退材质
-  std::unordered_map<UUID, std::shared_ptr<MaterialInstance>> m_InstanceCache;  // 实例管理
-};
-
-/**
- * @class MaterialReloadedEvent
- * @brief 材质模板重载修改事件
- */
-class MaterialReloadedEvent : public Event {
- public:
-  MaterialReloadedEvent(const std::string &templateName,
-                        MaterialTemplate *oldMaterial,
-                        MaterialTemplate *newMaterial)
-      : m_TemplateName(templateName), m_OldMaterial(oldMaterial), m_NewMaterial(newMaterial)
-  {
-  }
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new MaterialReloadedEvent(m_TemplateName, m_OldMaterial, m_NewMaterial);
-  }
-
- private:
-  std::string m_TemplateName;                 // 被重载的模板名
-  MaterialTemplate *m_OldMaterial = nullptr;  // 旧材质指针（可能已失效）
-  MaterialTemplate *m_NewMaterial = nullptr;  // 新材质指针
+  std::unordered_map<std::string, std::shared_ptr<MaterialInstance>> m_InstanceCache;  // 实例管理
 };
 };  // namespace mite
 
