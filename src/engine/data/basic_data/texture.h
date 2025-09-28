@@ -20,12 +20,6 @@ class Texture {
   {
     return m_Handle;
   }
-  /**
-   * 获取文件路径，用于调试
-   */
-  const std::string GetPath() const {
-    return m_Handle.path;
-  }
 
  private:
   TextureGPUHandle m_Handle;

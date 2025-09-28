@@ -40,25 +40,34 @@ class ModelLoadEvent : public Event {
 
 /**
  * 材质创建事件
- * 职责：委托MaterialSystem创建材质实例（Asset模块仅存储Metadata，不存储材质实例）
+ * 职责：委托MaterialSystem创建材质实例
  */
 class MaterialLoadedEvent : public Event {
  public:
-  explicit MaterialLoadedEvent(const MaterialSourceData &sourceData) : m_SourceData(sourceData) {}
+  explicit MaterialLoadedEvent(const MaterialSourceData &sourceData,
+                               std::shared_ptr<MaterialAsset> asset)
+      : m_SourceData(sourceData), m_Asset(asset)
+  {
+  }
 
   const MaterialSourceData &GetSourceData() const
   {
     return m_SourceData;
   }
+  std::shared_ptr<MaterialAsset> GetMaterialAsset()
+  {
+    return m_Asset;
+  }
 
-    EVENT_CLASS_CATEGORY(EVENT_CATEGORY_ASSET)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_ASSET)
   Event *Clone() const override
   {
-    return new MaterialLoadedEvent(m_SourceData);
+    return new MaterialLoadedEvent(m_SourceData, m_Asset);
   }
 
  private:
   MaterialSourceData m_SourceData;
+  std::shared_ptr<MaterialAsset> m_Asset;
 };
 
 /**

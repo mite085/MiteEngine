@@ -2,6 +2,8 @@
 #include "scene_core_components/component_headers.h"
 #include "ui_panel/ui_viewport_panel.h"
 
+#include "material_templates/material_template_pure_color.h"
+
 namespace mite {
 MiteApplication::MiteApplication()
 {
@@ -100,7 +102,7 @@ void MiteApplication::LoadDefaultScene()
   m_UISystem->RegisterPanel(viewportPanel);
 
   // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
-  AssetID plane_model_asset_id = m_AssetManager->LoadModel(
+  ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
       FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
   Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle, m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
@@ -111,8 +113,8 @@ void MiteApplication::LoadDefaultScene()
         plane_submesh, plane_model.GetSubMesh(i));
 
     // 3. 创建材质实例
-    MaterialInstanceHandle plane_material =
-        MaterialSystem::Get().CreateInstanceWithOverrides<PureColorMaterialTemplate>(
+    std::shared_ptr<MaterialInstance> plane_material =
+        MaterialFactory::Get().CreateInstanceWithOverrides<PureColorMaterialTemplate>(
             {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
 
     // 4. 创建材质组件
@@ -242,7 +244,7 @@ void MiteApplication::InitializeMaterialSystem()
   m_Logger->info("Initializing material system");
 
   // 初始化材质系统
-  MaterialSystem::Get().Initialize();
+  MaterialFactory::Get().Initialize();
 }
 
 void MiteApplication::InitializeInputSystem()

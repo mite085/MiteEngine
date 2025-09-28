@@ -2,7 +2,7 @@
 #define MITE_APPLICATION
 
 #include "asset_manager.h"
-#include "material_system.h"
+#include "material_factory.h"
 #include "input/input.h"
 #include "input/modular_input_context.h"
 #include "opengl_renderer/opengl_renderer.h"

@@ -25,7 +25,6 @@ set(UI_CORE_SRCS
     ui_core/ui_localization.cpp
     ui_core/ui_localization_json.h # 基于Json配置文件的本地化实现
     ui_core/ui_localization_json.cpp
-    ${CMAKE_BINARY_DIR}/src/engine/ui/ui_core/localization_json_config.h # Json配置文件索引
 
 )
 source_group("ui core" FILES ${UI_CORE_SRCS})

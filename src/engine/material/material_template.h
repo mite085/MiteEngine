@@ -1,7 +1,8 @@
 #ifndef MITE_MATERIAL_TEMPLATE
 #define MITE_MATERIAL_TEMPLATE
 
-#include "material_instance.h"
+#include "basic_data/material_instance.h"
+#include "basic_type/asset_type.h"
 
 namespace mite {
 /**
@@ -113,18 +114,9 @@ class MaterialTemplate {
   /**
    * @brief 获取渲染属性（供派生类使用）
    */
-  static AlphaMode GetAlphaMode(const MaterialSourceData &sourceData)
-  {
-    return sourceData.alphaMode;
-  }
-  static float GetAlphaCutoff(const MaterialSourceData &sourceData)
-  {
-    return sourceData.alphaCutoff;
-  }
-  static bool IsDoubleSided(const MaterialSourceData &sourceData)
-  {
-    return sourceData.doubleSided;
-  }
+  static AlphaMode GetAlphaMode(const MaterialSourceData &sourceData);
+  static float GetAlphaCutoff(const MaterialSourceData &sourceData);
+  static bool IsDoubleSided(const MaterialSourceData &sourceData);
 
  protected:
   std::shared_ptr<OpenGLShader> m_Shader;   // 着色器对象
