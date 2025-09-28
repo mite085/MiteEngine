@@ -1,10 +1,10 @@
-#include "material_system.h"
+#include "material_factory.h"
 #include "basic_data/shader_cache.h"
 #include "material_templates/material_template_pure_color.h"
 #include "material_templates/material_template_gltf_pbr.h"
 
 namespace mite {
-void MaterialSystem::Initialize()
+void MaterialFactory::Initialize()
 {
   // 初始化LOGGER
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Material System");
@@ -32,7 +32,7 @@ void MaterialSystem::Initialize()
   RegisterTemplate(std::move(pbrMaterialTemplate));
 }
 
-void MaterialSystem::RegisterTemplate(std::unique_ptr<MaterialTemplate> material)
+void MaterialFactory::RegisterTemplate(std::unique_ptr<MaterialTemplate> material)
 {
   // 使用MaterialType作为Key，不允许重复，
   std::string name = material->GetMaterialType();
@@ -54,12 +54,12 @@ void MaterialSystem::RegisterTemplate(std::unique_ptr<MaterialTemplate> material
   m_Templates.emplace(name, std::move(material));
 }
 
-bool MaterialSystem::HasTemplate(const std::string &materialType) const
+bool MaterialFactory::HasTemplate(const std::string &materialType) const
 {
   return m_Templates.find(materialType) != m_Templates.end();
 }
 
-std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::string &templateName, const std::string &instanceName)
+std::shared_ptr<MaterialInstance> MaterialFactory::CreateInstance(const std::string &templateName, const std::string &instanceName)
 {
   m_Logger->info("Creating material instance with material template: {}.", templateName);
   // 1. 查找模板
@@ -74,23 +74,15 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstance(const std::stri
       throw std::out_of_range("There has not any fallback material to use.");
     }
     std::shared_ptr<MaterialInstance> fallbackInstance = m_FallbackMaterial->CreateInstance();
-    std::string fallbackInstanceName = GenerateInstanceName(m_FallbackMaterial->GetMaterialType(), instanceName);
-    if (fallbackInstance)
-      fallbackInstance->SetName(fallbackInstanceName);
-    m_InstanceCache[fallbackInstanceName] = fallbackInstance;
     return fallbackInstance;
   }
 
   // 2. 创建实例（通过模板工厂方法）
   std::shared_ptr<MaterialInstance> createInstance = it->second->CreateInstance();
-  std::string createInstanceName = GenerateInstanceName(templateName, instanceName);
-  if (createInstance)
-    createInstance->SetName(createInstanceName);
-  m_InstanceCache[createInstanceName] = createInstance;
   return createInstance;
 }
 
-std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
+std::shared_ptr<MaterialInstance> MaterialFactory::CreateInstanceWithOverrides(
     const std::string &templateName,
     const std::unordered_map<std::string, UniformVariant> &overrides,
     const std::string &instanceName)
@@ -150,7 +142,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceWithOverrides(
   return instance;
 }
 
-std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceFromMaterialSourceData(
+std::shared_ptr<MaterialInstance> MaterialFactory::CreateInstanceFromMaterialSourceData(
     const MaterialSourceData &sourceData)
 {
   std::string templateName = sourceData.templateName;
@@ -170,20 +162,11 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceFromMaterialSour
     }
     std::shared_ptr<MaterialInstance> fallbackInstance = m_FallbackMaterial->CreateInstance(
         sourceData);
-    std::string fallbackInstanceName = GenerateInstanceName(m_FallbackMaterial->GetMaterialType(),
-                                                            instanceName);
-    if (fallbackInstance)
-      fallbackInstance->SetName(fallbackInstanceName);
-    m_InstanceCache[fallbackInstanceName] = fallbackInstance;
     return fallbackInstance;
   }
 
   // 2. 创建实例（通过模板工厂方法）
   std::shared_ptr<MaterialInstance> createInstance = it->second->CreateInstance(sourceData);
-  std::string createInstanceName = GenerateInstanceName(templateName, instanceName);
-  if (createInstance)
-    createInstance->SetName(createInstanceName);
-  m_InstanceCache[createInstanceName] = createInstance;
   return createInstance;
 }
 
@@ -208,7 +191,7 @@ std::shared_ptr<MaterialInstance> MaterialSystem::CreateInstanceFromMaterialSour
 //  m_Logger->info("Material template has been reloaded: {}", name);
 //}
 
-void MaterialSystem::SetFallbackMaterial(std::unique_ptr<MaterialTemplate> material)
+void MaterialFactory::SetFallbackMaterial(std::unique_ptr<MaterialTemplate> material)
 {
   if (!material) {
     // 回退材质不能为空
@@ -220,40 +203,19 @@ void MaterialSystem::SetFallbackMaterial(std::unique_ptr<MaterialTemplate> mater
   m_Logger->debug("Setting fallback material: {}", m_FallbackMaterial->GetName());
 }
 
-void MaterialSystem::OnMaterialLoaded(MaterialLoadedEvent &event) 
+void MaterialFactory::OnMaterialLoaded(MaterialLoadedEvent &event) 
 {
     // 获取sourcedata
   MaterialSourceData sourceData = event.GetSourceData();
 
-  // 使用sourcedata创建材质实例（TODO: 可以将创建好的材质实例返回给Asset模块，暂不启用，后续反序列化时可以考虑）
-  CreateInstanceFromMaterialSourceData(sourceData);
+  // 使用sourcedata创建材质实例
+  std::shared_ptr<MaterialInstance> materialInstance = CreateInstanceFromMaterialSourceData(sourceData);
 
-    // 阻断事件传播
+  // 委托Asset模块管理实例
+  event.GetMaterialAsset()->instance = materialInstance;
+
+  // 阻断事件传播
   event.SetResult(EventResult::HandledAndStop);
-}
-
-// 生成实例名称（TemplateName.001格式）
-std::string MaterialSystem::GenerateInstanceName(const std::string &templateName,
-                                                 const std::string &instanceName)
-{
-  // 若输入的InstanceName不为空且未被注册进Counter，则代表可以直接使用。执行注册后返回
-  if (!instanceName.empty() && m_TemplateInstanceCounters.find(instanceName) == m_TemplateInstanceCounters.end()) {
-    uint32_t &instanceCounter = m_TemplateInstanceCounters[instanceName];
-    instanceCounter++;
-    return instanceName;
-  }
-
-  // 获取或初始化计数器（templateName不存在则初始化为0）
-  uint32_t &counter = m_TemplateInstanceCounters[templateName];
-  counter++;
-
-  // 格式化为三位数字（001, 002, ...）
-  std::string numberStr = std::to_string(counter);
-  if (numberStr.length() < 3) {
-    numberStr = std::string(3 - numberStr.length(), '0') + numberStr;
-  }
-
-  return templateName + "." + numberStr;
 }
 
 };  // namespace mite

@@ -1,36 +1,36 @@
-#ifndef MITE_MATERIAL_SYSTEM
-#define MITE_MATERIAL_SYSTEM
+#ifndef MITE_MATERIAL_FACTORY
+#define MITE_MATERIAL_FACTORY
 
-#include "material_instance.h"
-#include "material_template.h"
 #include "basic_event/asset_event.h"
+#include "basic_data/material_instance.h"
+#include "material_template.h"
 
 namespace mite {
 /**
- * @brief 材质系统核心管理器
+ * @brief 材质工厂，负责使用注册好的材质模板创建材质实例
  * @职责：
  * 1. 全局材质模板的注册与生命周期管理
- * 2. 材质实例的创建与缓存
- * 3. 材质热重载支持（通过文件监视或手动触发）
- * 4. 错误材质回退机制
+ * 2. 材质实例的创建
+ * 3. 材质热重载支持（暂不启用）
+ * 4. 错误材质回退机制（模板参数错误也能正常返回实例）
  *
- * @使用示例：
+ * 使用示例：
  *
- * // 初始化阶段
+ * // 模板注册阶段
  * auto pbrTemplate = std::make_unique<PBRMaterialTemplate>(shader);
  * MaterialSystem::Get().RegisterTemplate("DefaultPBR", std::move(pbrTemplate));
 
- * // 运行时创建实例
+ * // 实例创建阶段
  * auto material = MaterialSystem::Get().CreateInstanceWithOverrides(
  *     "DefaultPBR",
  *     {{"u_Albedo", glm::vec3(1.0, 0.0, 0.0)}, {"u_Roughness", 0.8f}}
  * );
  */
-class MaterialSystem {
+class MaterialFactory {
  public:
-  static MaterialSystem &Get()
+  static MaterialFactory &Get()
   {
-    static MaterialSystem system;
+    static MaterialFactory system;
     return system;
   }
 
@@ -110,17 +110,6 @@ class MaterialSystem {
   std::shared_ptr<MaterialInstance> CreateInstanceFromMaterialSourceData(
       const MaterialSourceData &sourceData);
 
-  /**
-   * @brief 根据ID获取材质实例
-   */
-  static MaterialInstance *GetInstance(std::string name)
-  {
-    MaterialSystem &system = Get();
-
-    auto it = system.m_InstanceCache.find(name);
-    return it != system.m_InstanceCache.end() ? it->second.get() : nullptr;
-  }
-
   // ---- 热重载支持（预留接口） ----
   /**
    * @brief 重新加载材质模板（用于开发时实时编辑）
@@ -139,15 +128,11 @@ class MaterialSystem {
 
  private:
   // ---- 私有构造函数 ----
-  MaterialSystem() = default;
-  ~MaterialSystem() = default;
+  MaterialFactory() = default;
+  ~MaterialFactory() = default;
 
   // 消费MaterialLoad事件，生成材质实例
   void OnMaterialLoaded(MaterialLoadedEvent &event);
-
-  // 生成实例名称（TemplateName.001格式）
-  std::string GenerateInstanceName(const std::string &templateName,
-                                   const std::string &instanceName = "");
 
   // 日志系统
   Logger m_Logger;
@@ -157,9 +142,7 @@ class MaterialSystem {
 
   // ---- 成员变量 ----
   std::unordered_map<std::string, std::unique_ptr<MaterialTemplate>> m_Templates;  // 模板存储
-  std::unordered_map<std::string, uint32_t> m_TemplateInstanceCounters; // 记录每个模板的实例计数
   std::unique_ptr<MaterialTemplate> m_FallbackMaterial;  // 错误回退材质
-  std::unordered_map<std::string, std::shared_ptr<MaterialInstance>> m_InstanceCache;  // 实例管理
 };
 };  // namespace mite
 
