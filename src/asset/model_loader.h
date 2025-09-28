@@ -1,11 +1,14 @@
 #ifndef MITE_ASSET_MODEL_LOADER
 #define MITE_ASSET_MODEL_LOADER
 
-#include "assimp/scene.h"
 #include "basic_type/asset_type.h"
-#include "headers/headers.h"
+#include "asset_cache.h"
+
+struct aiScene;
+struct aiMesh;
 
 namespace mite {
+
 /**
  * 模型加载器（纯数据解析，不涉及GPU资源创建）
  * 职责：
@@ -16,7 +19,38 @@ namespace mite {
 class ModelLoader {
  public:
   /**
-   * @brief LoadModel 加载模型文件
+   * @brief LoadGLTFModel 加载GLTF模型到缓存
+   * @param path 模型文件路径
+   * @param flipUVs 是否翻转UV垂直坐标（适配OpenGL坐标系）
+   * @param generateLODs 是否生成多级LOD
+   * @param lodLevels LOD级别配置（每个级别的简化比例）
+   */
+  static ModelAssetID LoadGLTFModel(ModelCache &modelCache,
+                                    MaterialCache &materialCache,
+                                    TextureCache &textureCache,
+                                    const std::string &path,
+                                    bool flipUVs = false,
+                                    bool generateLODs = false,
+                                    const std::vector<float> &lodLevels = {
+                                        1.0f, 0.5f, 0.25f, 0.1f});
+  /**
+   * 加载OBJ模型到缓存
+   * @param path 模型文件路径
+   * @param flipUVs 是否翻转UV垂直坐标（适配OpenGL坐标系）
+   * @param generateLODs 是否生成多级LOD
+   * @param lodLevels LOD级别配置（每个级别的简化比例）
+   */
+  static ModelAssetID LoadObjModel(ModelCache &modelCache,
+                                   MaterialCache &materialCache,
+                                   TextureCache &textureCache,
+                                   const std::string &path,
+                                   bool flipUVs = true,  // OBJ通常需要翻转UV
+                                   bool generateLODs = false,
+                                   const std::vector<float> &lodLevels = {
+                                       1.0f, 0.5f, 0.25f, 0.1f});
+
+  /**
+   * @brief 通用模型加载（PLY、FBX等格式调用，暂未针对性优化）
    * @param path 模型文件路径
    * @param flipUVs 是否翻转UV垂直坐标（适配OpenGL坐标系）
    * @param generateLODs 是否生成多级LOD
@@ -24,15 +58,25 @@ class ModelLoader {
    * @return 包含模型元数据和所有子网格数据的结构体
    * @throws std::runtime_error 当模型加载失败时抛出异常
    */
-  static std::shared_ptr<ModelAsset> LoadModel(const std::string &path,
-                                               bool flipUVs = true,
-                                               bool generateLODs = false,
-                                               const std::vector<float> &lodLevels = {
-                                                   1.0f, 0.5f, 0.25f, 0.1f});
+  static ModelAssetID LoadModel(ModelCache &modelCache,
+                                MaterialCache &materialCache,
+                                TextureCache &textureCache,
+                                const std::string &path,
+                                bool flipUVs = false,
+                                bool generateLODs = false,
+                                const std::vector<float> &lodLevels = {1.0f, 0.5f, 0.25f, 0.1f});
 
  private:
-  // 创建合并的模型资源数据（以及合并的同时创建MeshSectionLODChain）
-  static std::shared_ptr<ModelSourceData> CreateModelSourceData(std::shared_ptr<ModelAsset> model);
+  /**
+   * 核心加载实现
+   */
+  static ModelAssetID LoadModelInternal(ModelCache &modelCache,
+                                        MaterialCache &materialCache,
+                                        TextureCache &textureCache,
+                                        const aiScene *scene,
+                                        const std::string &path,
+                                        bool generateLODs,
+                                        const std::vector<float> &lodLevels);
 
   // 处理Assimp的Mesh数据
   static MeshData ProcessMesh(const aiMesh *aiMesh, const aiScene *scene);
@@ -47,8 +91,16 @@ class ModelLoader {
   static void CalculateBoundingBox(const std::vector<MeshDataLODChain> &subMeshes,
                                    glm::vec3 &outMin,
                                    glm::vec3 &outMax);
-  // 提取材质路径列表
-  static std::vector<std::string> ExtractMaterialPaths(const aiScene *scene);
+
+  // 创建合并的模型资源数据（以及合并的同时创建MeshSectionLODChain）
+  static std::shared_ptr<ModelSourceData> CreateModelSourceData(
+      std::shared_ptr<ModelAsset> model, const std::vector<MeshDataLODChain> &subMeshData);
+
+  // 配置Assimp导入器标志（格式特化）
+  static unsigned int GetAssimpImportFlags(const std::string &extension, bool flipUVs);
+
+  // 通过路径查找已缓存的模型
+  static ModelAssetID FindModelByPath(ModelCache &cache, const std::string &path);
 };
 };  // namespace mite
 

@@ -1,159 +1,149 @@
 #include "model_loader.h"
+#include "material_loader.h"
+#include "texture_loader.h"
 #include "basic_event/asset_event.h"
 #include "meshoptimizer.h"
+#include <assimp/scene.h>
 #include <assimp/Importer.hpp>   // Assimp模型导入器
 #include <assimp/postprocess.h>  // Assimp后处理标志
+#include <assimp/pbrmaterial.h>  // AssimpPBR材质处理 
 
 namespace mite {
-std::shared_ptr<ModelAsset> ModelLoader::LoadModel(const std::string &path,
-                                                   bool flipUVs,
-                                                   bool generateLODs,
-                                                   const std::vector<float> &lodLevels)
+ModelAssetID ModelLoader::LoadGLTFModel(ModelCache &modelCache,
+                                        MaterialCache &materialCache,
+                                        TextureCache &textureCache,
+                                        const std::string &path,
+                                        bool flipUVs,
+                                        bool generateLODs,
+                                        const std::vector<float> &lodLevels)
 {
-  // 1. 配置Assimp导入器
+
+  // GLTF特化配置
   Assimp::Importer importer;
-  unsigned int flags = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace |
-                       aiProcess_JoinIdenticalVertices | (flipUVs ? aiProcess_FlipUVs : 0);
+  unsigned int flags = GetAssimpImportFlags("gltf", flipUVs);
 
-  // 2. 加载模型文件
+  // GLTF特定优化
+  flags |= aiProcess_ImproveCacheLocality;  // GLTF已经优化过，可以跳过一些预处理
+
   const aiScene *scene = importer.ReadFile(path, flags);
-  if (!scene || scene == NULL || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-    LOG_ERROR("Assimp load failed: " + std::string(importer.GetErrorString()));
-    return {};
+  if (!scene || !scene->mRootNode) {
+    LOG_ERROR("GLTF load failed: " + std::string(importer.GetErrorString()));
+    return ModelAssetID{};
   }
+  return LoadModelInternal(
+      modelCache, materialCache, textureCache, scene, path, generateLODs, lodLevels);
+}
 
-  std::shared_ptr<ModelAsset> model = std::make_shared<ModelAsset>();
-  model->id = UUIDGenerator::Generate(path.c_str());  // 生成唯一ID
-  model->metadata.path = path;
-  model->metadata.materialPaths = ExtractMaterialPaths(scene);
+ModelAssetID ModelLoader::LoadObjModel(ModelCache &modelCache,
+                                       MaterialCache &materialCache,
+                                       TextureCache &textureCache,
+                                       const std::string &path,
+                                       bool flipUVs,
+                                       bool generateLODs,
+                                       const std::vector<float> &lodLevels)
+{
 
-  // 3. 处理所有子网格
+  // OBJ特化配置
+  Assimp::Importer importer;
+  unsigned int flags = GetAssimpImportFlags("obj", flipUVs);
+
+  // OBJ特定处理
+  flags |= aiProcess_OptimizeMeshes;  // OBJ通常需要网格优化
+
+  const aiScene *scene = importer.ReadFile(path, flags);
+  if (!scene || !scene->mRootNode) {
+    LOG_ERROR("OBJ load failed: " + std::string(importer.GetErrorString()));
+    return ModelAssetID{};
+  }
+  return LoadModelInternal(
+      modelCache, materialCache, textureCache, scene, path, generateLODs, lodLevels);
+}
+
+ModelAssetID ModelLoader::LoadModel(ModelCache &modelCache,
+                                    MaterialCache &materialCache,
+                                    TextureCache &textureCache,
+                                    const std::string &path,
+                                    bool flipUVs,
+                                    bool generateLODs,
+                                    const std::vector<float> &lodLevels)
+{
+
+  // 通用模型加载
+  Assimp::Importer importer;
+  std::string extension = path.substr(path.find_last_of(".") + 1);
+  unsigned int flags = GetAssimpImportFlags(extension, flipUVs);
+
+  const aiScene *scene = importer.ReadFile(path, flags);
+  if (!scene || !scene->mRootNode) {
+    LOG_ERROR("Model load failed: " + std::string(importer.GetErrorString()));
+    return ModelAssetID{};
+  }
+  return LoadModelInternal(
+      modelCache, materialCache, textureCache, scene, path, generateLODs, lodLevels);
+}
+
+ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
+                                            MaterialCache &materialCache,
+                                            TextureCache &textureCache,
+                                            const aiScene *scene,
+                                            const std::string &path,
+                                            bool generateLODs,
+                                            const std::vector<float> &lodLevels)
+{
+
+  // 检查缓存
+  ModelAssetID existingModelID = FindModelByPath(modelCache, path);
+  if (existingModelID.IsValid()) {
+    LOG_INFO("Model already cached: " + path);
+    return existingModelID;
+  }
+  // 1. 加载材质（使用缓存系统）
+  std::vector<MaterialAssetID> materialIDs = MaterialLoader::LoadMaterialsFromGLTF(
+      materialCache, textureCache, scene, path);
+  // 2. 处理所有子网格
+  std::vector<MeshDataLODChain> subMeshData;
   for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-    // 构建MeshLod链
     MeshDataLODChain subMeshLodChain{ProcessMesh(scene->mMeshes[i], scene), {}};
-
-    // 4. 生成多级LOD
+    // 生成多级LOD
     if (generateLODs) {
       for (size_t lodLevel = 0; lodLevel < lodLevels.size(); lodLevel++) {
-        // 跳过原始LOD级别
         if (lodLevels[lodLevel] < 1.0f) {
           MeshData simplifiedMesh = SimplifyMesh(subMeshLodChain.baseSection, lodLevels[lodLevel]);
-          // LOD级别从1开始
           simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel + 1);
           subMeshLodChain.lodSections.push_back(simplifiedMesh);
         }
       }
     }
-    model->subMeshData.push_back(subMeshLodChain);
+    subMeshData.push_back(subMeshLodChain);
   }
+  // 3. 创建模型资产
+  auto modelAsset = std::make_shared<ModelAsset>();
+  modelAsset->id = ModelAssetID{UUIDGenerator::Generate(path.c_str())};
 
-  // 4. 计算模型包围盒
+  // 3.1. 设置元数据
+  modelAsset->metadata.path = path;
   CalculateBoundingBox(
-      model->subMeshData, model->metadata.boundingBoxMin, model->metadata.boundingBoxMax);
+      subMeshData, modelAsset->metadata.boundingBoxMin, modelAsset->metadata.boundingBoxMax);
 
-  // 5. 构造RendererDevice可接收的ModelSourceData数据（的同时创建MeshSectionLODChain）
-  std::shared_ptr<ModelSourceData> sourceData = CreateModelSourceData(model);
+  // 3.2. 存储材质引用（MaterialAssetID）
+  modelAsset->materialRefs = materialIDs;
 
-  // 6. 发布事件，委托RendererDevice创建GPU资源
-  ModelLoadEvent event(sourceData, model);
+  // 4. 创建ModelSourceData并构建MeshSectionLODChain
+  std::shared_ptr<ModelSourceData> sourceData = CreateModelSourceData(modelAsset, subMeshData);
+
+  // 5. 发布事件，委托RendererDevice创建GPU资源
+  ModelLoadEvent event(sourceData, modelAsset);
   EventBus::Publish<ModelLoadEvent>(event);
 
-  return model;
-}
-
-std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
-    std::shared_ptr<ModelAsset> model)
-{
-  std::shared_ptr<ModelSourceData> sourceData = std::make_shared<ModelSourceData>();
-
-  // 1. 准备合并所有子网格数据
-  sourceData->path = model->metadata.path;
-  sourceData->modelBboxMin = model->metadata.boundingBoxMin;
-  sourceData->modelBboxMax = model->metadata.boundingBoxMax;
-  if (!model->subMeshData.empty()) {
-    sourceData->layout = model->subMeshData[0].baseSection.layout;
+  // 6. 存储到缓存
+  if (modelCache.Store(modelAsset)) {
+    LOG_INFO("Successfully loaded and cached model: " + path);
+    return modelAsset->id;
   }
-
-  // 2. 合并顶点和索引数据
-  size_t totalVertexBytes = 0;
-  size_t totalIndices = 0;
-
-  // 预计算总大小
-  for (const auto &lodChain : model->subMeshData) {
-    // 基础 LOD
-    totalVertexBytes += lodChain.baseSection.vertexData.size();
-    totalIndices += lodChain.baseSection.indices.size();
-
-    // 其他 LOD 级别
-    for (const auto &lodSection : lodChain.lodSections) {
-      totalVertexBytes += lodSection.vertexData.size();
-      totalIndices += lodSection.indices.size();
-    }
+  else {
+    LOG_ERROR("Failed to store model in cache: " + path);
+    return ModelAssetID{};
   }
-
-  // 预分配空间
-  sourceData->mergedVertexData.reserve(totalVertexBytes);
-  sourceData->mergedIndices.reserve(totalIndices);
-
-  // 3. 实际合并数据并记录MeshSection
-  uint32_t vertexOffset = 0;
-  uint32_t indexOffset = 0;
-
-  // 定义Lambda函数，兼顾合并顶点到sourceData、更新Offset、构建MeshSection三个功能
-  auto MergeMeshDataToSourceData =
-      [&sourceData, &vertexOffset, &indexOffset](const MeshData &meshData) -> MeshSection {
-    // 添加顶点数据
-    sourceData->mergedVertexData.insert(sourceData->mergedVertexData.end(),
-                                        meshData.vertexData.begin(),
-                                        meshData.vertexData.end());
-
-    // 添加索引数据
-    std::vector<uint32_t> adjustedIndices = meshData.indices;
-    for (auto &index : adjustedIndices) {
-      // 修正索引值偏移，将单个 MeshData 存储的相对偏移（相对于自己的顶点数据），
-      // 修正为合并到 ModelSourceData 后的绝对偏移（相对于合并后的顶点数据）
-      index += vertexOffset;
-    }
-
-    // 执行合并操作
-    sourceData->mergedIndices.insert(
-        sourceData->mergedIndices.end(), adjustedIndices.begin(), adjustedIndices.end());
-
-    // 创建基础 MeshSection
-    MeshSection meshSection = MeshSection{
-        vertexOffset,  // 顶点偏移（以顶点计数为单位）
-        indexOffset,   // 索引偏移（以索引计数为单位）
-        static_cast<uint32_t>(meshData.vertexData.size() / meshData.layout.stride),
-        static_cast<uint32_t>(meshData.indices.size()),
-        meshData.boundingBoxMin,
-        meshData.boundingBoxMax,
-        meshData.materialIndex,
-        meshData.lodLevel};
-
-    // 更新偏移量
-    vertexOffset += meshSection.vertexCount;
-    indexOffset = static_cast<uint32_t>(sourceData->mergedIndices.size());
-
-    return meshSection;
-  };
-
-  // 遍历MeshData并逐个执行合并操作，并构建MeshSection
-  for (const MeshDataLODChain &meshLODChain : model->subMeshData) {
-    MeshSectionLODChain sectionLODChain;
-
-    // 处理基础 LOD
-    sectionLODChain.baseSection = MergeMeshDataToSourceData(meshLODChain.baseSection);
-
-    // 处理其他 LOD 级别
-    for (const MeshData &lodMeshData : meshLODChain.lodSections) {
-      sectionLODChain.lodSections.push_back(MergeMeshDataToSourceData(lodMeshData));
-    }
-
-    // 由ModelAsset负责管理MeshSectionLODChain
-    model->subMeshSection.push_back(sectionLODChain);
-  }
-
-  return sourceData;
 }
 
 MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)
@@ -344,21 +334,131 @@ void ModelLoader::CalculateBoundingBox(const std::vector<MeshDataLODChain> &subM
   }
 }
 
-std::vector<std::string> ModelLoader::ExtractMaterialPaths(const aiScene *scene)
-{
-  std::vector<std::string> materialPaths;
-  materialPaths.reserve(scene->mNumMaterials);
 
-  for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
-    aiString path;
-    if (scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
-      materialPaths.emplace_back(path.C_Str());
-    }
-    else {
-      materialPaths.emplace_back("");  // 空路径表示无材质
+std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
+    std::shared_ptr<ModelAsset> model, const std::vector<MeshDataLODChain> &subMeshData)
+{
+  std::shared_ptr<ModelSourceData> sourceData = std::make_shared<ModelSourceData>();
+
+  // 1. 准备合并所有子网格数据
+  sourceData->path = model->metadata.path;
+  sourceData->modelBboxMin = model->metadata.boundingBoxMin;
+  sourceData->modelBboxMax = model->metadata.boundingBoxMax;
+
+  // 获取layout类型
+  if (!subMeshData.empty()) {
+    sourceData->layout = subMeshData[0].baseSection.layout;
+  }
+
+  // 2. 合并顶点和索引数据
+  size_t totalVertexBytes = 0;
+  size_t totalIndices = 0;
+
+  // 预计算总大小
+  for (const auto &lodChain : subMeshData) {
+    // 基础 LOD
+    totalVertexBytes += lodChain.baseSection.vertexData.size();
+    totalIndices += lodChain.baseSection.indices.size();
+
+    // 其他 LOD 级别
+    for (const auto &lodSection : lodChain.lodSections) {
+      totalVertexBytes += lodSection.vertexData.size();
+      totalIndices += lodSection.indices.size();
     }
   }
 
-  return materialPaths;
+  // 预分配空间
+  sourceData->mergedVertexData.reserve(totalVertexBytes);
+  sourceData->mergedIndices.reserve(totalIndices);
+
+  // 3. 实际合并数据并记录MeshSection
+  uint32_t vertexOffset = 0;
+  uint32_t indexOffset = 0;
+
+  // 定义Lambda函数，兼顾合并顶点到sourceData、更新Offset、构建MeshSection三个功能
+  auto MergeMeshDataToSourceData =
+      [&sourceData, &vertexOffset, &indexOffset](const MeshData &meshData) -> MeshSection {
+    // 添加顶点数据
+    sourceData->mergedVertexData.insert(sourceData->mergedVertexData.end(),
+                                        meshData.vertexData.begin(),
+                                        meshData.vertexData.end());
+
+    // 添加索引数据
+    std::vector<uint32_t> adjustedIndices = meshData.indices;
+    for (auto &index : adjustedIndices) {
+      // 修正索引值偏移，将单个 MeshData 存储的相对偏移（相对于自己的顶点数据），
+      // 修正为合并到 ModelSourceData 后的绝对偏移（相对于合并后的顶点数据）
+      index += vertexOffset;
+    }
+
+    // 执行合并操作
+    sourceData->mergedIndices.insert(
+        sourceData->mergedIndices.end(), adjustedIndices.begin(), adjustedIndices.end());
+
+    // 创建基础 MeshSection
+    MeshSection meshSection = MeshSection{
+        vertexOffset,  // 顶点偏移（以顶点计数为单位）
+        indexOffset,   // 索引偏移（以索引计数为单位）
+        static_cast<uint32_t>(meshData.vertexData.size() / meshData.layout.stride),
+        static_cast<uint32_t>(meshData.indices.size()),
+        meshData.boundingBoxMin,
+        meshData.boundingBoxMax,
+        meshData.materialIndex,
+        meshData.lodLevel};
+
+    // 更新偏移量
+    vertexOffset += meshSection.vertexCount;
+    indexOffset = static_cast<uint32_t>(sourceData->mergedIndices.size());
+
+    return meshSection;
+  };
+
+  // 遍历MeshData并逐个执行合并操作，并构建MeshSection
+  for (const MeshDataLODChain &meshLODChain : subMeshData) {
+    MeshSectionLODChain sectionLODChain;
+
+    // 处理基础 LOD
+    sectionLODChain.baseSection = MergeMeshDataToSourceData(meshLODChain.baseSection);
+
+    // 处理其他 LOD 级别
+    for (const MeshData &lodMeshData : meshLODChain.lodSections) {
+      sectionLODChain.lodSections.push_back(MergeMeshDataToSourceData(lodMeshData));
+    }
+
+    // 由ModelAsset负责管理MeshSectionLODChain
+    model->subMeshSection.push_back(sectionLODChain);
+  }
+
+  return sourceData;
 }
+
+unsigned int ModelLoader::GetAssimpImportFlags(const std::string &extension, bool flipUVs)
+{
+  unsigned int flags = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace |
+                       aiProcess_JoinIdenticalVertices;
+
+  if (flipUVs) {
+    flags |= aiProcess_FlipUVs;
+  }
+
+  // 格式特化配置
+  if (extension == "gltf" || extension == "glb") {
+    flags |= aiProcess_ImproveCacheLocality;
+  }
+  else if (extension == "obj") {
+    flags |= aiProcess_OptimizeMeshes;
+  }
+  else if (extension == "fbx") {
+    flags |= aiProcess_LimitBoneWeights;  // FBX通常有骨骼动画
+  }
+
+  return flags;
+}
+ModelAssetID ModelLoader::FindModelByPath(ModelCache &cache, const std::string &path)
+{
+  ModelAssetID searchId{UUIDGenerator::Generate(path.c_str())};
+  auto model = cache.Get(searchId);
+  return model ? searchId : ModelAssetID{};
+}
+
 };  // namespace mite
