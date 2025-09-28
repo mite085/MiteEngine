@@ -1,4 +1,7 @@
 #include "asset_manager.h"
+#include "material_loader.h"
+#include "texture_loader.h"
+#include "model_loader.h"
 
 namespace mite {
 
@@ -7,106 +10,193 @@ AssetManager::~AssetManager()
   // 析构时自动清理所有缓存资源
   m_TextureCache.PurgeUnused();
   m_ModelCache.PurgeUnused();
+  m_MaterialCache.PurgeUnused();
 }
 
 // ===================== 纹理管理 =====================
-AssetID AssetManager::LoadTexture(const std::string &path)
+TextureAssetID AssetManager::LoadTexture(const std::string &path)
 {
-  AssetID id = UUIDGenerator::Generate(path.c_str());
   std::lock_guard<std::mutex> lock(m_Mutex);
-
-  auto cachedTex = m_TextureCache.Get(id);
-
-  // 缓存不存在则执行加载
-  if (!cachedTex) {
-    LoadTextureInternalToCache(path);
-    cachedTex = m_TextureCache.Get(id);
-  }
-
-  m_TextureCache.AddRefCount(id);  // 增加引用计数
-  return cachedTex->id;
-  
+  return LoadTextureInternal(path);
 }
-
-std::shared_ptr<TextureAsset> AssetManager::GetTexture(AssetID id) const
-{
-  return m_TextureCache.Get(id);
-}
-
-void AssetManager::LoadTextureInternalToCache(const std::string &path)
+TextureAssetID AssetManager::LoadTextureInternal(const std::string &path)
 {
   try {
-    // 1. 使用TextureLoader加载原始数据
-    std::shared_ptr<TextureAsset> textureAsset = TextureLoader::LoadTextureData(path);
+    // 使用新的TextureLoader（支持缓存）
+    TextureAssetID textureID = TextureLoader::LoadTexture(m_TextureCache, path);
 
-    // 2. 缓存资源（textureAsset的所有权转让给TextureAsset）
-    m_TextureCache.Store(textureAsset);
+    if (textureID.IsValid()) {
+      LOG_INFO("[AssetManager] Texture loaded and cached: " + path);
+      return textureID;
+    }
+    else {
+      LOG_ERROR("[AssetManager] Texture load failed: " + path);
+      return TextureAssetID{};
+    }
   }
   catch (const std::exception &e) {
-    LOG_ERROR("[AssetManager] Texture load failed: {}", e.what());
+    LOG_ERROR("[AssetManager] Texture load exception: " + std::string(e.what()));
+    return TextureAssetID{};
   }
 }
-
-void AssetManager::ReleaseTexture(AssetID id)
+std::shared_ptr<TextureAsset> AssetManager::GetTexture(TextureAssetID id) const
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  m_TextureCache.AddRefCount(id);  // 增加引用计数
+  return m_TextureCache.Get(id);
+}
+void AssetManager::ReleaseTexture(TextureAssetID id)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
   if (m_TextureCache.Release(id) <= 0) {
     m_TextureCache.ForceRemove(id);
+    LOG_DEBUG("[AssetManager] Texture released and removed from cache");
   }
 }
 
 // ===================== 模型管理 =====================
-AssetID AssetManager::LoadModel(const std::string &path,
-                                bool flipUVs,
-                                bool generateLODs,
-                                const std::vector<float> &lodLevels)
+ModelAssetID AssetManager::LoadGLTFModel(const std::string &path,
+                                         bool flipUVs,
+                                         bool generateLODs,
+                                         const std::vector<float> &lodLevels)
 {
-  
   std::lock_guard<std::mutex> lock(m_Mutex);
-
-  AssetID id = UUIDGenerator::Generate(path.c_str());
-  auto cachedModel = m_ModelCache.Get(id);
-
-  // 缓存不存在则执行加载
-  if (!cachedModel) {
-    LoadModelInternalToCache(path ,flipUVs, generateLODs, lodLevels);
-    cachedModel = m_ModelCache.Get(id);
-  }
-
-  m_ModelCache.AddRefCount(id);  // 增加引用计数
-  return cachedModel->id;
+  return LoadModelInternal(path, flipUVs, generateLODs, lodLevels, true, false);
 }
-
-std::shared_ptr<ModelAsset> AssetManager::GetModel(AssetID id) const
+ModelAssetID AssetManager::LoadObjModel(const std::string &path,
+                                        bool flipUVs,
+                                        bool generateLODs,
+                                        const std::vector<float> &lodLevels)
 {
-  return m_ModelCache.Get(id);
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  return LoadModelInternal(path, flipUVs, generateLODs, lodLevels, false, true);
+}
+ModelAssetID AssetManager::LoadModel(const std::string &path,
+                                     bool flipUVs,
+                                     bool generateLODs,
+                                     const std::vector<float> &lodLevels)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  return LoadModelInternal(path, flipUVs, generateLODs, lodLevels, false, false);
 }
 
-void AssetManager::LoadModelInternalToCache(const std::string &path,
-                                            bool flipUVs,
-                                            bool generateLODs,
-                                            const std::vector<float> &lodLevels)
+ModelAssetID AssetManager::LoadModelInternal(const std::string &path,
+                                             bool flipUVs,
+                                             bool generateLODs,
+                                             const std::vector<float> &lodLevels,
+                                             bool isGLTF,
+                                             bool isOBJ)
 {
   try {
-    // 1. 使用ModelLoader加载模型数据
-    std::shared_ptr<ModelAsset> model = ModelLoader::LoadModel(
-        path, flipUVs, generateLODs, lodLevels);
+    ModelAssetID modelID;
 
-    // 2. 缓存资源
-    AssetID id = UUIDGenerator::Generate(path.c_str());
-    m_ModelCache.Store(model);
+    if (isGLTF) {
+      modelID = ModelLoader::LoadGLTFModel(
+          m_ModelCache, m_MaterialCache, m_TextureCache, path, flipUVs, generateLODs, lodLevels);
+    }
+    else if (isOBJ) {
+      modelID = ModelLoader::LoadObjModel(
+          m_ModelCache, m_MaterialCache, m_TextureCache, path, flipUVs, generateLODs, lodLevels);
+    }
+    else {
+      modelID = ModelLoader::LoadModel(
+          m_ModelCache, m_MaterialCache, m_TextureCache, path, flipUVs, generateLODs, lodLevels);
+    }
+
+    if (modelID.IsValid()) {
+      LOG_INFO("[AssetManager] Model loaded and cached: " + path);
+      return modelID;
+    }
+    else {
+      LOG_ERROR("[AssetManager] Model load failed: " + path);
+      return ModelAssetID{};
+    }
   }
   catch (const std::exception &e) {
-    LOG_ERROR("[AssetManager] Model load failed: {}", e.what());
+    LOG_ERROR("[AssetManager] Model load exception: " + std::string(e.what()));
+    return ModelAssetID{};
   }
 }
 
-void AssetManager::ReleaseModel(AssetID id)
+std::shared_ptr<ModelAsset> AssetManager::GetModel(ModelAssetID id) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
+  m_ModelCache.AddRefCount(id);  // 增加引用计数
+  return m_ModelCache.Get(id);
+}
+void AssetManager::ReleaseModel(ModelAssetID id)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+
+  // 先获取模型资产，以便释放相关材质引用
+  auto model = m_ModelCache.Get(id);
+  if (model) {
+    // 释放模型引用的所有材质
+    for (const auto &materialID : model->materialRefs) {
+      ReleaseMaterial(materialID);
+    }
+  }
+
   if (m_ModelCache.Release(id) <= 0) {
     m_ModelCache.ForceRemove(id);
+    LOG_DEBUG("[AssetManager] Model released and removed from cache");
   }
 }
 
+// ===================== 材质管理 =====================
+MaterialAssetID AssetManager::GetOrCreateMaterial(const std::string &name, const glm::vec3 &color)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+
+  // 生成材质唯一标识
+  std::string materialKey = "builtin::" + name;
+  MaterialAssetID materialID{UUIDGenerator::Generate(materialKey.c_str())};
+
+  // 检查缓存中是否已存在
+  auto existingMaterial = m_MaterialCache.Get(materialID);
+  if (existingMaterial) {
+    return materialID;
+  }
+
+  // 创建新的纯色材质
+  auto materialAsset = MaterialLoader::CreatePureColorMaterial(m_MaterialCache, name, color);
+  if (materialAsset.IsValid()) {
+    LOG_DEBUG("[AssetManager] Created pure color material: " + name);
+    return materialAsset;
+  }
+
+  return MaterialAssetID{};
+}
+std::shared_ptr<MaterialAsset> AssetManager::GetMaterial(MaterialAssetID id) const
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  return m_MaterialCache.Get(id);
+}
+void AssetManager::ReleaseMaterial(MaterialAssetID id)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  if (m_MaterialCache.Release(id) <= 0) {
+    m_MaterialCache.ForceRemove(id);
+    LOG_DEBUG("[AssetManager] Material released and removed from cache");
+  }
+}
+// ===================== 缓存管理 =====================
+size_t AssetManager::PurgeUnusedAssets()
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+
+  size_t texturePurged = m_TextureCache.PurgeUnused();
+  size_t modelPurged = m_ModelCache.PurgeUnused();
+  size_t materialPurged = m_MaterialCache.PurgeUnused();
+
+  size_t totalPurged = texturePurged + modelPurged + materialPurged;
+
+  if (totalPurged > 0) {
+    LOG_INFO("[AssetManager] Purged " + std::to_string(totalPurged) + " unused assets: " +
+             std::to_string(texturePurged) + " textures, " + std::to_string(modelPurged) +
+             " models, " + std::to_string(materialPurged) + " materials");
+  }
+
+  return totalPurged;
+}
 };
