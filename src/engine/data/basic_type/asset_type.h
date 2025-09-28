@@ -2,7 +2,9 @@
 #define MITE_ASSET_TYPE
 
 #include "asset_id.h"
+#include "basic_data/material_instance.h"
 #include "handle_type.h"
+#include "material_param_variant.h"
 
 namespace mite {
 // ------------------------ 纹理相关 ------------------------
@@ -12,20 +14,19 @@ struct TextureMetadata {
   std::string sourcePath;  // 原始文件路径或资源标识
 
   // 基础属性（用于重新生成TextureSourceData）
-  TextureFormat sourceFormat;  // 源数据格式
-  uint32_t originalWidth;      // 原始图片宽度
-  uint32_t originalHeight;     // 原始图片高度
-  uint32_t channelCount;       // 原始通道数
+  TextureFormat sourceFormat = TextureFormat::RGBA8;  // 数据格式（RGB8/RGBA8等）
+  uint32_t originalWidth = 0;                         // 原始图片宽度
+  uint32_t originalHeight = 0;                        // 原始图片高度
 
   // 采样配置（序列化需要）
-  TextureWrapMode wrapModeS;
-  TextureWrapMode wrapModeT;
-  TextureFilterMode minFilter;
-  TextureFilterMode magFilter;
-  bool generateMipmaps;
+  TextureWrapMode wrapModeS = TextureWrapMode::Repeat;  // 分离S/T方向包装模式
+  TextureWrapMode wrapModeT = TextureWrapMode::Repeat;
+  TextureFilterMode minFilter = TextureFilterMode::LinearMipmapLinear;  // 分离缩小/放大过滤
+  TextureFilterMode magFilter = TextureFilterMode::LinearMipmapLinear;
+  bool generateMipmaps = true;  // 是否生成Mipmap
 
   // 资源信息
-  TextureTarget target;  // 纹理目标类型
+  TextureTarget target = TextureTarget::TEXTURE_2D;  // 纹理目标类型
 
   TextureSourceData generateSourceData(std::vector<uint8_t> &&pixelData) const
   {
@@ -58,7 +59,19 @@ struct TextureAsset {
   TextureMetadata metadata;  // 元数据
   TextureInstance instance;  // 纹理实例
 
+  // 默认构造函数（无效ID）
   TextureAsset() : id(TextureAssetID{}) {}
+
+  // Cache所必须的设定
+  using AssetIDType = TextureAssetID;
+  TextureAssetID GetID() const
+  {
+    return id;
+  }
+  void SetID(const TextureAssetID &newId)
+  {
+    id = newId;
+  }
 };
 
 // ------------------------ 材质相关 ------------------------
@@ -73,9 +86,27 @@ struct MaterialTextureSlot {
   explicit MaterialTextureSlot(TextureAssetID id) : textureAssetId(id) {}
 };
 
+// 材质数据来源（MaterialSystem专用的过渡型数据格式）
+struct MaterialSourceData {
+  // 核心标识信息
+  std::string name;          // 材质名称
+  std::string templateName;  // 对应的MaterialTemplate名称（用于索引模板）
+
+  // 通用参数存储
+  std::unordered_map<std::string, UniformVariant> parameters;
+
+  // 运行时纹理槽位（包含GPU句柄，支持Instance和offset）
+  std::unordered_map<std::string, TextureGPUSlot> textureSlots;
+
+  // 渲染属性
+  AlphaMode alphaMode = AlphaMode::OPAQUE;  // 透明度模式
+  float alphaCutoff = 0.5f;                 // Alpha测试阈值
+  bool doubleSided = false;                 // 是否双面渲染
+};
+
 // 材质元数据 - 基于UniformVariant的通用参数存储（目前支持GLTF，后续扩展MaterialX）
 struct MaterialMetadata {
-  std::string sourcePath;         // 源文件路径
+  std::string sourcePath;  // 源文件路径
 
   // 基础信息
   std::string name;          // 材质名称
@@ -95,14 +126,14 @@ struct MaterialMetadata {
   // 来源特定信息（仅存储原始信息，不包含任何操作）
   struct GLTFSourceInfo {
     std::string gltfFilePath;  // GLTF文件路径
-    uint32_t materialIndex;    // 材质在文件中的索引
+    uint32_t materialIndex = 0;    // 材质在文件中的索引
   };
   // struct MaterialXSourceInfo {
   //   std::string materialxFilePath;  // MaterialX文件路径
   //   std::string nodeDefName;        // MaterialX节点定义名称
   // };
   //  使用variant支持不同来源的扩展信息
-  std::variant<GLTFSourceInfo, /*MaterialXSourceInfo*/> sourceInfo;
+  std::variant<GLTFSourceInfo /*, MaterialXSourceInfo*/> sourceInfo;
 
   MaterialMetadata() {}
   /**
@@ -145,12 +176,23 @@ struct MaterialMetadata {
 
 // 材质资产
 struct MaterialAsset {
-  MaterialAssetID id;         // 资产ID（由Asset管理）
-  MaterialMetadata metadata;  // 材质元数据
+  MaterialAssetID id;                          // 资产ID（由Asset管理）
+  MaterialMetadata metadata;                   // 材质元数据（包含纹理ID引用）
+  std::shared_ptr<MaterialInstance> instance;  // 材质实例（包含纹理实例SharedPtr）
 
-  // 注意：不直接存储MaterialInstance，由MaterialSystem管理
+  // 默认构造函数（无效ID）
+  MaterialAsset() : id(MaterialAssetID{}), metadata(), instance(nullptr) {}
 
-  MaterialAsset() : id(MaterialAssetID{}) {}
+  // Cache所必须的设定
+  using AssetIDType = MaterialAssetID;
+  MaterialAssetID GetID() const
+  {
+    return id;
+  }
+  void SetID(const MaterialAssetID &newId)
+  {
+    id = newId;
+  }
 };
 
 // ------------------------ 模型/网格相关 ------------------------
@@ -177,7 +219,6 @@ struct MeshDataLODChain {
 // 模型元数据（临时结构，用于加载）
 struct ModelMetadata {
   std::string path;
-  std::vector<MaterialInfo> materials;            // 材质信息
   glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // 模型包围盒
   glm::vec3 boundingBoxMax = glm::vec3(-FLT_MAX);
 };
@@ -188,16 +229,27 @@ struct ModelAsset {
 
   // 原始数据存储
   ModelMetadata metadata;
-  std::vector<MeshDataLODChain> subMeshData;
 
   // 引用的材质ID（而不是MaterialInfo）
-  std::vector<MaterialAssetID> materialIDs;
+  std::vector<MaterialAssetID> materialRefs;
 
   // GPU相关
   ModelGPUHandle handle;
   std::vector<MeshSectionLODChain> subMeshSection;
 
+  // 默认构造函数（无效ID）
   ModelAsset() : id(ModelAssetID()) {}
+
+  // Cache所必须的设定
+  using AssetIDType = ModelAssetID;
+  ModelAssetID GetID() const
+  {
+    return id;
+  }
+  void SetID(const ModelAssetID &newId)
+  {
+    id = newId;
+  }
 };
 };  // namespace mite
 

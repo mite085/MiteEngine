@@ -2,7 +2,6 @@
 #define MITE_HANDLE_TYPE
 
 #include "headers/headers.h"
-#include "material_param_variant.h"
 
 namespace mite {
 // ------------------------ 纹理相关 ------------------------
@@ -124,24 +123,6 @@ struct TextureGPUSlot {
   }
 };
 
-// 材质数据来源（MaterialSystem专用的过渡型数据格式）
-struct MaterialSourceData {
-  // 核心标识信息
-  std::string name;               // 材质名称
-  std::string templateName;       // 对应的MaterialTemplate名称（用于索引模板）
-
-  // 通用参数存储
-  std::unordered_map<std::string, UniformVariant> parameters;
-
-  // 运行时纹理槽位（包含GPU句柄，支持Instance和offset）
-  std::unordered_map<std::string, TextureGPUSlot> textureSlots;
-
-  // 渲染属性
-  AlphaMode alphaMode = AlphaMode::OPAQUE;  // 透明度模式
-  float alphaCutoff = 0.5f;                 // Alpha测试阈值
-  bool doubleSided = false;                 // 是否双面渲染
-};
-
 // ------------------------ 网格相关 ------------------------
 
 // 顶点属性标志（描述顶点结构）
@@ -201,8 +182,8 @@ struct ModelGPUHandle {
 
   // 从上层收到的信息
   std::string path;   // 文件原始路径（用于调试打印）
-  glm::vec3 bboxMin;  // 模型级包围盒
-  glm::vec3 bboxMax;
+  glm::vec3 bboxMin = glm::vec3(FLT_MAX);  // 模型级包围盒
+  glm::vec3 bboxMax = glm::vec3(-FLT_MAX);
 };
 
 // ------------------------ 着色器相关 ------------------------
