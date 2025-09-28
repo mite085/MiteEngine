@@ -1,7 +1,7 @@
 #ifndef MITE_RENDERABLE_ITEM_BUILDER_H
 #define MITE_RENDERABLE_ITEM_BUILDER_H
 
-#include "material_instance.h"
+#include "basic_data/material_instance.h"
 #include "renderable_item.h"
 #include "scene_core/entity.h"
 #include "scene_core/scene_registry.h"
@@ -62,29 +62,6 @@ class RenderableItemBuilder {
    */
   RenderableItem BuildFromSceneNode(SceneRegistry &registry, SceneNode *sceneNode);
 
-  // ==================== 配置接口 ====================
-  /**
-   * @brief 设置自定义材质覆盖函数
-   * @param func 材质覆盖回调函数
-   * @note 可用于特殊渲染效果或调试目的
-   */
-  void SetMaterialOverrideFunction(
-      std::function<MaterialInstanceHandle(Entity, MaterialInstanceHandle)> func);
-
-  /**
-   * @brief 设置自定义变换覆盖函数
-   * @param func 变换覆盖回调函数
-   * @note 可用于特殊变换效果或调试目的
-   */
-  void SetTransformOverrideFunction(std::function<glm::mat4(Entity, const glm::mat4 &)> func);
-
-  /**
-   * @brief 设置LOD选择函数
-   * @param func LOD选择回调函数
-   * @note 可用于自定义LOD选择策略
-   */
-  void SetLODSelectorFunction(std::function<uint32_t(Entity, const Mesh &)> func);
-
   // ==================== 工具接口 ====================
   /**
    * @brief 检查SceneNode是否可渲染
@@ -113,12 +90,8 @@ class RenderableItemBuilder {
    * @param entity ECS实体
    * @return 材质实例Handle
    */
-  MaterialInstanceHandle ExtractMaterialComponent(SceneRegistry &registry, Entity entity);
-
-  // 自定义回调函数（用于扩展功能）
-  std::function<MaterialInstanceHandle(Entity, MaterialInstanceHandle)> m_MaterialOverrideFunc;
-  std::function<glm::mat4(Entity, const glm::mat4 &)> m_TransformOverrideFunc;
-  std::function<uint32_t(Entity, const Mesh &)> m_LODSelectorFunc;
+  std::shared_ptr<MaterialInstance> ExtractMaterialComponent(SceneRegistry &registry,
+                                                             Entity entity);
 
   // 禁用拷贝构造和赋值
   RenderableItemBuilder(const RenderableItemBuilder &) = delete;

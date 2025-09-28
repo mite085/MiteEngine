@@ -57,15 +57,6 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     auto material = ExtractMaterialComponent(registry, entity);
     glm::mat4 transform = sceneNode->GetWorldTransform();
 
-    // 应用自定义覆盖函数（如果设置）
-    if (m_MaterialOverrideFunc) {
-      material = m_MaterialOverrideFunc(entity, material);
-    }
-
-    if (m_TransformOverrideFunc) {
-      transform = m_TransformOverrideFunc(entity, transform);
-    }
-
     // 构建RenderableItem
     RenderableItem item;
     item.entity = entity;
@@ -82,26 +73,6 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     return RenderableItem();
   }
 }
-
-void RenderableItemBuilder::SetMaterialOverrideFunction(
-    std::function<MaterialInstanceHandle(Entity, MaterialInstanceHandle)>
-        func)
-{
-  m_MaterialOverrideFunc = func;
-}
-
-void RenderableItemBuilder::SetTransformOverrideFunction(
-    std::function<glm::mat4(Entity, const glm::mat4 &)> func)
-{
-  m_TransformOverrideFunc = func;
-}
-
-void RenderableItemBuilder::SetLODSelectorFunction(
-    std::function<uint32_t(Entity, const Mesh &)> func)
-{
-  m_LODSelectorFunc = func;
-}
-
 bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, SceneNode *sceneNode) const
 {
   if (!sceneNode)
@@ -133,13 +104,13 @@ Mesh RenderableItemBuilder::ExtractMeshComponent(SceneRegistry &registry,
   return Mesh();
 }
 
-MaterialInstanceHandle RenderableItemBuilder::ExtractMaterialComponent(
+std::shared_ptr<MaterialInstance> RenderableItemBuilder::ExtractMaterialComponent(
     SceneRegistry &registry, Entity entity)
 {
   if (registry.HasComponent<MaterialComponent>(entity)) {
     auto &materialComp = registry.GetComponent<MaterialComponent>(entity);
     return materialComp.GetMaterialInstanceHandel();
   }
-  return MaterialInstanceHandle();
+  return std::shared_ptr<MaterialInstance>();
 }
 }  // namespace mite
