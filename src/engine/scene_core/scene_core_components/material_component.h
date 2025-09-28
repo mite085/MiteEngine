@@ -2,12 +2,11 @@
 #define MITE_SCENE_MATERIAL_COMPONENT
 
 #include "scene_core/component_system.h"
-#include "material_system.h"
+#include "basic_data/material_instance.h"
 
 namespace mite {
 /**
  * @brief 材质组件，管理实体的渲染材质属性
- * 材质实例应当通过使用MaterialSystem的GetInstance查询获取
  *
  * 功能特性：
  * 1. 管理着色器
@@ -20,14 +19,14 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持GPU实例化
  */
-class MaterialComponent
-    : public SnapshotComponentTraits<MaterialInstanceHandle, Component::Family::Geometry> {
+class MaterialComponent : public SnapshotComponentTraits<std::shared_ptr<MaterialInstance>,
+                                                         Component::Family::Geometry> {
  public:
   /**
    * @brief 带初始值的构造函数
    * @param material 材质实例
    */
-  explicit MaterialComponent(MaterialInstanceHandle handle);
+  explicit MaterialComponent(std::shared_ptr<MaterialInstance> handle);
 
   ~MaterialComponent() override = default;
 
@@ -36,13 +35,13 @@ class MaterialComponent
    * @brief 获取材质数据
    * @return 材质句柄
    */
-  MaterialInstanceHandle GetMaterialInstanceHandel() const;
+  std::shared_ptr<MaterialInstance> GetMaterialInstanceHandel() const;
 
   /**
    * @brief 设置材质数据
    * @param material 新的材质数据
    */
-  void SetMaterialInstanceHandel(MaterialInstanceHandle handle);
+  void SetMaterialInstanceHandel(std::shared_ptr<MaterialInstance> handle);
 
   //===================== 着色器控制 =====================
   /**
@@ -54,7 +53,7 @@ class MaterialComponent
   //==================== 材质参数快捷设置 ====================
   void SetFloatParam(const std::string &name, float value);
   void SetColorParam(const std::string &name, const glm::vec3 &color);
-  void SetTextureParam(const std::string &name, TextureGPUHandle texture);
+  void SetTextureParam(const std::string &name, TextureGPUSlot texture);
 
   //==================== 组件接口实现 ====================
   std::vector<std::type_index> GetDependencies() const override;
@@ -62,10 +61,10 @@ class MaterialComponent
   bool Deserialize(std::istream &input) override;
 
  private:
-  MaterialInstanceHandle GetSnapshotData() const override;
-  void SetSnapshotData(const MaterialInstanceHandle &data) override;
+  std::shared_ptr<MaterialInstance> GetSnapshotData() const override;
+  void SetSnapshotData(const std::shared_ptr<MaterialInstance> &data) override;
 
-  MaterialInstanceHandle m_Handle;  // 材质数据
+  std::shared_ptr<MaterialInstance> m_MaterialInstance;  // 材质实例
 };
 
 //====================== Material组件系统 ========================
