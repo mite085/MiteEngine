@@ -1,53 +1,57 @@
 #ifndef MITE_ASSET_MATERIAL_LOADER
 #define MITE_ASSET_MATERIAL_LOADER
 
-#include "basic_type/asset_type.h"
-#include "headers/headers.h"
+#include "basic_event/asset_event.h"
+#include "asset_cache.h"
 
 struct aiMaterial;
 struct aiScene;
+enum aiTextureType;
 
 namespace mite {
-
 /**
  * 材质加载器 - 专门处理GLTF PBR材质导入
  * 职责：
  * 1. 从Assimp场景中提取材质信息并转换为MaterialAsset
- * 2. 处理材质参数和纹理引用
+ * 2. 主动创建纹理资产并建立引用关系
  * 3. 生成标准的材质元数据供MaterialSystem使用
  */
 class MaterialLoader {
  public:
   /**
-   * 从GLTF文件加载所有材质
+   * 从GLTF文件加载所有材质到缓存
+   * @param materialCache 材质缓存引用
+   * @param textureCache 纹理缓存引用（用于纹理依赖）
    * @param scene Assimp场景对象
-   * @param modelPath 模型文件路径（用于纹理路径解析）
-   * @param loadedTextures 已加载的纹理资产列表（用于关联引用）
-   * @return 材质资产列表，失败返回空列表
+   * @param modelPath 模型文件路径
+   * @return 加载的材质AssetID列表
    */
-  static std::vector<std::shared_ptr<MaterialAsset>> LoadMaterialsFromGLTF(
-      const aiScene *scene,
-      const std::string &modelPath,
-      const std::vector<std::shared_ptr<TextureAsset>> &loadedTextures);
+  static std::vector<MaterialAssetID> LoadMaterialsFromGLTF(MaterialCache &materialCache,
+                                                            TextureCache &textureCache,
+                                                            const aiScene *scene,
+                                                            const std::string &modelPath);
 
   /**
-   * 创建内置测试材质（纯色材质）
+   * 创建内置测试材质到缓存
+   * @param materialCache 材质缓存引用
    * @param name 材质名称
    * @param color 基础颜色
-   * @return 材质资产指针
+   * @return 材质AssetID
    */
-  static std::shared_ptr<MaterialAsset> CreatePureColorMaterial(
-      const std::string &name = "PureColor", const glm::vec3 &color = glm::vec3(1.0f));
+  static MaterialAssetID CreatePureColorMaterial(MaterialCache &materialCache,
+                                                 const std::string &name = "PureColor",
+                                                 const glm::vec3 &color = glm::vec3(1.0f));
 
  private:
   /**
-   * 处理单个Assimp材质
+   * 处理单个Assimp材质到缓存
    */
-  static std::shared_ptr<MaterialAsset> ProcessGLTFMaterial(
-      aiMaterial *aiMat,
-      uint32_t materialIndex,
-      const std::string &modelPath,
-      const std::vector<std::shared_ptr<TextureAsset>> &loadedTextures);
+  static MaterialAssetID ProcessGLTFMaterial(MaterialCache &materialCache,
+                                             TextureCache &textureCache,
+                                             aiMaterial *aiMat,
+                                             uint32_t materialIndex,
+                                             const std::string &modelPath,
+                                             const aiScene *scene);
 
   /**
    * 提取GLTF PBR材质参数
@@ -55,20 +59,21 @@ class MaterialLoader {
   static void ExtractPBRParameters(aiMaterial *aiMat, MaterialMetadata &metadata);
 
   /**
-   * 提取材质纹理引用
+   * 提取并创建材质纹理引用
    */
-  static void ExtractTextureReferences(
-      aiMaterial *aiMat,
-      MaterialMetadata &metadata,
-      const std::string &modelPath,
-      const std::vector<std::shared_ptr<TextureAsset>> &loadedTextures);
+  static void ExtractAndCreateTextureReferences(TextureCache &textureCache,
+                                                aiMaterial *aiMat,
+                                                MaterialMetadata &metadata,
+                                                const std::string &modelPath,
+                                                const aiScene *scene);
 
   /**
-   * 根据纹理路径查找对应的TextureAssetID
+   * 根据纹理路径创建或获取纹理资产ID
    */
-  static TextureAssetID FindTextureAssetID(
-      const std::string &texturePath,
-      const std::vector<std::shared_ptr<TextureAsset>> &loadedTextures);
+  static TextureAssetID CreateOrGetTextureAssetID(TextureCache &textureCache,
+                                                  const std::string &texturePath,
+                                                  const std::string &modelPath,
+                                                  const aiScene *scene);
 
   /**
    * 提取纹理变换参数（缩放/偏移）
@@ -85,8 +90,13 @@ class MaterialLoader {
   static std::string GenerateMaterialName(aiMaterial *aiMat,
                                           uint32_t index,
                                           const std::string &modelPath);
-};
 
+  /**
+   * 解析纹理完整路径（处理相对路径）
+   */
+  static std::string ResolveTexturePath(const std::string &texturePath,
+                                        const std::string &modelPath);
+};
 }  // namespace mite
 
 #endif
