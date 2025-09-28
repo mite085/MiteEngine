@@ -4,14 +4,13 @@
 #include "uuid/mite_uuid.h"
 
 namespace mite {
-
 // 类型安全的资产ID包装器
 template<typename Tag> class TypedAssetID {
  private:
   UUID id_;
 
  public:
-  TypedAssetID() : id_(UUIDGenerator::Generate()) {}
+  TypedAssetID() : id_() {}  // 默认无效ID
   explicit TypedAssetID(const UUID &id) : id_(id) {}
   explicit TypedAssetID(const char *str) : id_(UUIDGenerator::Generate(str)) {}
 
@@ -21,7 +20,7 @@ template<typename Tag> class TypedAssetID {
   }
   bool IsValid() const
   {
-    return id_.IsValid();
+    return !id_.is_nil();
   }
 
   // 比较操作
@@ -56,7 +55,6 @@ struct ModelAssetTag {};
 using TextureAssetID = TypedAssetID<TextureAssetTag>;
 using MaterialAssetID = TypedAssetID<MaterialAssetTag>;
 using ModelAssetID = TypedAssetID<ModelAssetTag>;
-
 }  // namespace mite
 
 #endif

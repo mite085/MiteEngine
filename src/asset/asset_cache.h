@@ -21,6 +21,13 @@ namespace mite {
 template<typename AssetType> class AssetCache {
  public:
   using AssetPtr = std::shared_ptr<AssetType>;
+  using AssetIDType = typename AssetType::AssetIDType;
+
+  /**
+   * @brief 构造函数
+   * @param maxSize 最大缓存数量（0表示无限制）
+   */
+  explicit AssetCache(size_t maxSize = 1000) : m_MaxSize(maxSize) {}
 
   /**
    * @brief 添加资源到缓存
@@ -34,24 +41,24 @@ template<typename AssetType> class AssetCache {
    * @param id 资源ID
    * @return 资源指针（不存在返回nullptr）
    */
-  AssetPtr Get(AssetID id) const;
+  AssetPtr Get(const AssetIDType &id) const;
 
   /**
    * @brief 释放资源引用
    * @param id 资源ID
    * @return 当前剩余引用计数（-1表示资源不存在）
    */
-  int Release(AssetID id);
+  int Release(const AssetIDType &id);
 
   /**
    * @brief 获取当前资源引用计数
    */
-  int GetRefCount(AssetID id) const;
+  int GetRefCount(const AssetIDType &id) const;
 
   /**
    * @brief 增加当前资源引用计数
    */
-  void AddRefCount(AssetID id);
+  void AddRefCount(const AssetIDType &id) const;
 
   /**
    * @brief 清理所有未被引用的资源
@@ -63,29 +70,40 @@ template<typename AssetType> class AssetCache {
    * @brief 强制移除资源（无视引用计数）
    * @return 是否成功移除
    */
-  bool ForceRemove(AssetID id);
+  bool ForceRemove(const AssetIDType &id);
+
+  /**
+   * @brief 获取当前缓存大小
+   */
+  size_t Size() const;
+
+  /**
+   * @brief 设置最大缓存大小
+   */
+  void SetMaxSize(size_t maxSize);
 
  private:
   // ---- 内部数据结构 ----
   struct CachedAsset {
     AssetPtr data;
     int refCount = 0;
-    typename std::list<AssetID>::iterator lruIt;  // 用于LRU链表
+    typename std::list<AssetIDType>::iterator lruIt;  // 用于LRU链表
   };
 
-  // ---- 成员变量 ----
+  // ---- 成员变量（因为const的Get操作需要维护链表添加计数，所以为了避免上层歧义，添加mutable限定符） ----
   mutable std::mutex m_Mutex;
-  std::unordered_map<AssetID, CachedAsset> m_Cache;
+  mutable std::unordered_map<AssetIDType, CachedAsset, typename AssetIDType::Hash> m_Cache;
 
   // LRU实现：（Least recently used，最近最少使用）
   // 该算法根据数据的历史访问记录来进行淘汰数据，
   // 确保缓存占用小，且被重复访问的效率高.
-  mutable std::list<AssetID> m_LruList;  // 最近使用顺序
+  mutable std::list<AssetIDType> m_LruList;  // 最近使用顺序
   mutable size_t m_MaxSize = 1000;       // 最大缓存数量
 };
 
 // 常用缓存类型别名
 using TextureCache = AssetCache<TextureAsset>;
+using MaterialCache = AssetCache<MaterialAsset>;
 using ModelCache = AssetCache<ModelAsset>;
 };  // namespace mite
 
