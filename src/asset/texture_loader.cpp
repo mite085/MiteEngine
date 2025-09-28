@@ -1,66 +1,91 @@
 #include "texture_loader.h"
 #include <assimp/scene.h>
+#include <assimp/MemoryIOWrapper.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_STATIC
 #include <stb_image.h>
 
 namespace mite {
-std::shared_ptr<TextureAsset> TextureLoader::LoadTexture(const std::string &path,
-                                                         int desiredChannels,
-                                                         bool flipVertical)
+TextureAssetID TextureLoader::LoadTexture(TextureCache &cache,
+                                          const std::string &path,
+                                          int desiredChannels,
+                                          bool flipVertical)
 {
   // 检查路径有效性
   if (path.empty()) {
     LOG_ERROR("Texture path is empty");
-    return nullptr;
+    return TextureAssetID();  // 返回无效ID
   }
-  // 嵌入式纹理需要特殊处理
+  // 嵌入式纹理需要调用LoadEmbeddedTexture，输入ModelPath。这个函数无法处理
   if (IsEmbeddedTexturePath(path)) {
     LOG_ERROR("External texture path should not be embedded format: " + path);
-    return nullptr;
+    return TextureAssetID();  // 返回无效ID
   }
+
+  // 检查缓存中是否已存在相同路径的纹理
+  TextureAssetID existingId = FindTextureByPath(cache, path);
+  if (existingId.IsValid()) {
+    LOG_INFO("Texture already cached: " + path);
+    return existingId;
+  }
+
   // 调用内部加载实现，嵌入式数据为空
-  return LoadTextureInternal(path, {}, desiredChannels, flipVertical);
+  return LoadTextureInternal(cache, path, {}, desiredChannels, flipVertical);
 }
 
-std::shared_ptr<TextureAsset> TextureLoader::LoadEmbeddedTexture(const std::string &embeddedId,
-                                                                 const std::string &modelPath,
-                                                                 const aiTexture *aiTexture,
-                                                                 int desiredChannels,
-                                                                 bool flipVertical)
+TextureAssetID TextureLoader::LoadEmbeddedTexture(TextureCache &cache,
+                                                  const std::string &embeddedId,
+                                                  const std::string &modelPath,
+                                                  const aiTexture *aiTexture,
+                                                  int desiredChannels,
+                                                  bool flipVertical)
 {
   // 参数检查
   if (!aiTexture) {
     LOG_ERROR("Null aiTexture provided for embedded texture");
-    return nullptr;
+    return TextureAssetID();
   }
+
   if (embeddedId.empty() || embeddedId[0] != '*') {
     LOG_ERROR("Invalid embedded texture ID: " + embeddedId);
-    return nullptr;
+    return TextureAssetID();
   }
+
   // 生成唯一的纹理路径标识：模型路径 + 嵌入式ID
   std::string texturePath = modelPath + embeddedId;
+
+  // 检查缓存中是否已存在
+  TextureAssetID existingId = FindTextureByPath(cache, texturePath);
+  if (existingId.IsValid()) {
+    LOG_INFO("Embedded texture already cached: " + texturePath);
+    return existingId;
+  }
+
   // 从Assimp纹理提取嵌入式数据
   std::vector<uint8_t> embeddedData = ExtractEmbeddedData(aiTexture);
+
   if (embeddedData.empty()) {
     LOG_ERROR("Failed to extract embedded data from aiTexture: " + texturePath);
-    return nullptr;
+    return TextureAssetID();
   }
+
   // 调用内部加载实现
-  return LoadTextureInternal(texturePath, embeddedData, desiredChannels, flipVertical);
+  return LoadTextureInternal(cache, texturePath, embeddedData, desiredChannels, flipVertical);
 }
 
-std::shared_ptr<TextureAsset> TextureLoader::LoadTextureInternal(
-    const std::string &path,
-    const std::vector<uint8_t> &embeddedData,
-    int desiredChannels,
-    bool flipVertical)
+TextureAssetID TextureLoader::LoadTextureInternal(TextureCache &cache,
+                                                  const std::string &path,
+                                                  const std::vector<uint8_t> &embeddedData,
+                                                  int desiredChannels,
+                                                  bool flipVertical)
 {
   // 设置STB图像加载配置
   stbi_set_flip_vertically_on_load(flipVertical);
+
   // 准备加载变量
   int width = 0, height = 0, channels = 0;
   uint8_t *pixelData = nullptr;
+
   // 区分外部文件和嵌入式数据加载
   if (embeddedData.empty()) {
     // 外部文件加载
@@ -78,8 +103,9 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureInternal(
   // 检查加载结果
   if (!pixelData) {
     LOG_ERROR("Failed to load texture: " + path + ", reason: " + stbi_failure_reason());
-    return nullptr;
+    return TextureAssetID();
   }
+
   // 计算实际通道数
   int actualChannels = (desiredChannels > 0) ? desiredChannels : channels;
 
@@ -93,41 +119,83 @@ std::shared_ptr<TextureAsset> TextureLoader::LoadTextureInternal(
   textureAsset->metadata.sourcePath = path;
   textureAsset->metadata.originalWidth = static_cast<uint32_t>(width);
   textureAsset->metadata.originalHeight = static_cast<uint32_t>(height);
-  textureAsset->metadata.channelCount = static_cast<uint32_t>(actualChannels);
   textureAsset->metadata.sourceFormat = DetermineTextureFormat(actualChannels);
   textureAsset->metadata.target = DetermineTextureTarget(path);
 
   // 设置默认采样参数
   SetupDefaultSamplingParams(textureAsset->metadata);
+
   // 创建像素数据向量并转移所有权
   size_t dataSize = width * height * actualChannels;
   std::vector<uint8_t> pixelVector(pixelData, pixelData + dataSize);
 
   // 释放STB分配的内存
   stbi_image_free(pixelData);
+
   // 生成TextureSourceData供Renderer使用
   TextureSourceData sourceData = textureAsset->metadata.generateSourceData(std::move(pixelVector));
+
   // 发布纹理加载事件，委托Renderer创建GPU资源
   TextureLoadEvent event(std::make_shared<TextureSourceData>(std::move(sourceData)), textureAsset);
   EventBus::Publish<TextureLoadEvent>(event);
-  LOG_INFO("Successfully loaded texture: " + path + " (" + std::to_string(width) + "x" +
-           std::to_string(height) + ", channels: " + std::to_string(actualChannels) + ")");
-  return textureAsset;
+
+ // 将纹理资产存入缓存
+  if (cache.Store(textureAsset)) {
+    TextureAssetID textureId = textureAsset->GetID();
+    LOG_INFO("Successfully loaded and cached texture: " + path + " (" + std::to_string(width) +
+             "x" + std::to_string(height) + ", channels: " + std::to_string(actualChannels) +
+             ")");
+    return textureId;
+  }
+  else {
+    LOG_ERROR("Failed to store texture in cache: " + path);
+    return TextureAssetID();
+  }
 }
 
 std::vector<uint8_t> TextureLoader::ExtractEmbeddedData(const aiTexture *aiTexture)
 {
   std::vector<uint8_t> data;
-  if (!aiTexture) {
+  if (!aiTexture)
     return data;
-  }
-  // 处理压缩格式纹理（JPEG/PNG等）
   if (aiTexture->mHeight == 0) {
-    data.assign(aiTexture->pcData, aiTexture->pcData + aiTexture->mWidth);
+    // 使用Assimp的内存IO接口
+    Assimp::MemoryIOStream stream(reinterpret_cast<const uint8_t *>(aiTexture->pcData),
+                                  aiTexture->mWidth);
+
+    // 读取直到EOF
+    std::vector<uint8_t> buffer;
+    const size_t chunkSize = 4096;
+    uint8_t chunk[chunkSize];
+
+    while (true) {
+      size_t read = stream.Read(chunk, 1, chunkSize);
+      if (read == 0)
+        break;
+      buffer.insert(buffer.end(), chunk, chunk + read);
+    }
+
+    data = std::move(buffer);
+    LOG_DEBUG("Extracted compressed texture using stream, size: " + std::to_string(data.size()));
   }
   else {
-    // 返回空数据，表示不支持“未压缩ARGB数据”（很少见，需要格式转换）
-    LOG_WARN("Uncompressed embedded texture detected, format conversion may be needed");
+    // 处理未压缩的RGBA纹理数据
+    unsigned int pixelCount = aiTexture->mWidth * aiTexture->mHeight;
+    unsigned int dataSize = pixelCount * 4;  // RGBA
+    data.resize(dataSize);
+
+    const aiTexel *texelData = aiTexture->pcData;
+
+    // 将ARGB数据转换为RGBA
+    for (unsigned int i = 0; i < pixelCount; ++i) {
+      data[i * 4 + 0] = texelData[i].r;  // R
+      data[i * 4 + 1] = texelData[i].g;  // G
+      data[i * 4 + 2] = texelData[i].b;  // B
+      data[i * 4 + 3] = texelData[i].a;  // A
+    }
+
+    LOG_DEBUG("Extracted uncompressed embedded texture, " + std::to_string(aiTexture->mWidth) +
+              "x" + std::to_string(aiTexture->mHeight));
   }
   return data;
 }
@@ -180,4 +248,21 @@ void TextureLoader::SetupDefaultSamplingParams(TextureMetadata &metadata)
     metadata.magFilter = TextureFilterMode::Linear;
   }
 }
+
+TextureAssetID TextureLoader::FindTextureByPath(TextureCache &cache, const std::string &path)
+{
+  // 基于路径生成ID进行查找
+  TextureAssetID searchId(UUIDGenerator::Generate(path.c_str()));
+  auto texture = cache.Get(searchId);
+
+  if (texture) {
+    // 验证路径是否匹配（防止哈希冲突）
+    if (texture->metadata.sourcePath == path) {
+      return searchId;
+    }
+  }
+
+  return TextureAssetID();  // 返回无效ID表示未找到
+}
+
 };  // namespace mite

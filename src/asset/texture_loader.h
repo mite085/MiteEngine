@@ -1,11 +1,10 @@
 #ifndef MITE_ASSET_TEXTURE_LOADER
 #define MITE_ASSET_TEXTURE_LOADER
 
-#include "basic_type/asset_type.h"
 #include "basic_event/asset_event.h"
-#include "headers/headers.h"
+#include "asset_cache.h"
 
-class aiTexture;
+struct aiTexture;
 
 namespace mite {
 /**
@@ -18,29 +17,33 @@ namespace mite {
 class TextureLoader {
  public:
   /**
-   * 加载外部纹理文件
+   * 加载外部纹理文件到缓存
+   * @param cache 纹理缓存引用
    * @param path 纹理文件路径
    * @param desiredChannels 期望通道数（0=保持原样，3=RGB，4=RGBA）
    * @param flipVertical 是否垂直翻转（适配OpenGL坐标系）
-   * @return 纹理资产指针，失败返回nullptr
+   * @return 纹理资产ID，失败返回无效ID
    */
-  static std::shared_ptr<TextureAsset> LoadTexture(const std::string &path,
-                                                   int desiredChannels = 4,
-                                                   bool flipVertical = true);
+  static TextureAssetID LoadTexture(TextureCache &cache,
+                                    const std::string &path,
+                                    int desiredChannels = 4,
+                                    bool flipVertical = true);
   /**
-   * 专门处理Assimp嵌入式纹理
+   * 专门处理Assimp嵌入式纹理到缓存
+   * @param cache 纹理缓存引用
    * @param embeddedId 嵌入式纹理标识（如"*0"）
    * @param modelPath 模型文件路径（用于生成唯一路径标识）
    * @param aiTexture Assimp纹理对象
    * @param desiredChannels 期望通道数
    * @param flipVertical 是否垂直翻转
-   * @return 纹理资产指针，失败返回nullptr
+   * @return 纹理资产ID，失败返回无效ID
    */
-  static std::shared_ptr<TextureAsset> LoadEmbeddedTexture(const std::string &embeddedId,
-                                                           const std::string &modelPath,
-                                                           const aiTexture *aiTexture,
-                                                           int desiredChannels = 4,
-                                                           bool flipVertical = true);
+  static TextureAssetID LoadEmbeddedTexture(TextureCache &cache,
+                                            const std::string &embeddedId,
+                                            const std::string &modelPath,
+                                            const aiTexture *aiTexture,
+                                            int desiredChannels = 4,
+                                            bool flipVertical = true);
   /**
    * 检查路径是否为嵌入式纹理标识（以'*'开头）
    */
@@ -60,11 +63,11 @@ class TextureLoader {
   /**
    * 核心加载实现 - 处理像素数据加载和资产构建
    */
-  static std::shared_ptr<TextureAsset> LoadTextureInternal(
-      const std::string &path,
-      const std::vector<uint8_t> &embeddedData,
-      int desiredChannels,
-      bool flipVertical);
+  static TextureAssetID LoadTextureInternal(TextureCache &cache,
+                                            const std::string &path,
+                                            const std::vector<uint8_t> &embeddedData,
+                                            int desiredChannels,
+                                            bool flipVertical);
   /**
    * 从Assimp纹理对象提取嵌入式数据
    */
@@ -73,6 +76,10 @@ class TextureLoader {
    * 设置默认采样参数（可后续通过材质系统覆盖）
    */
   static void SetupDefaultSamplingParams(TextureMetadata &metadata);
+  /**
+   * 通过路径查找已缓存的纹理
+   */
+  static TextureAssetID FindTextureByPath(TextureCache &cache, const std::string &path);
 };
 };  // namespace mite
 
