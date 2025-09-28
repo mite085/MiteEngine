@@ -88,7 +88,7 @@ void RenderQueue::SortQueue(QueueType queueType)
         std::sort(queue.items.begin(),
                   queue.items.end(),
                   [](const RenderableItem &a, const RenderableItem &b) {
-                    return a.material.id < b.material.id;
+                    return a.material->GetName() < b.material->GetName();
                   });
         break;
 
@@ -98,8 +98,8 @@ void RenderQueue::SortQueue(QueueType queueType)
             queue.items.begin(),
             queue.items.end(),
             [](const RenderableItem &a, const RenderableItem &b) {
-              return MaterialSystem::GetInstance(a.material)->GetShader()->GetHandle().programId <
-                     MaterialSystem::GetInstance(b.material)->GetShader()->GetHandle().programId;
+              return a.material->GetShader()->GetHandle().programId <
+                     b.material->GetShader()->GetHandle().programId;
             });
         break;
     }

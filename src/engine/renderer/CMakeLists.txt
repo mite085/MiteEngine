@@ -39,7 +39,6 @@ target_link_libraries(${ENGINE_RENDERER_LIB_NAME}
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
     MiteEngine_Engine_Event
-    MiteEngine_Engine_Material
     MiteEngine_Engine_Scene_Core
     MiteEngine_Engine_Scene_View
     MiteEngine_Engine_Scene_Graph

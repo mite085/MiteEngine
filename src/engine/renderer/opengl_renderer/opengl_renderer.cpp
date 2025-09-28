@@ -118,7 +118,7 @@ void OpenGLRenderer::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
 
     // 3. 渲染当前队列的所有项
     for (const auto &item : items) {
-      if (MaterialSystem::GetInstance(item.material)->GetShader()->GetHandle().programId == 0) {
+      if (item.material->GetShader()->GetHandle().programId == 0) {
         m_Logger->warn("Invalid renderable item - missing material");
         continue;
       }

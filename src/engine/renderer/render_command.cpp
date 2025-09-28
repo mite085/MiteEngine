@@ -94,7 +94,8 @@ void RenderCommand::Submit(RenderableItem item, glm::mat4 viewMatrix, glm::mat4 
   auto &instance = Get();
   std::lock_guard<std::mutex> lock(instance.m_QueueMutex);
 
-  auto bindTextureFunc = [](TextureGPUHandle handle, uint32_t slot) {
+  std::function<void(TextureGPUHandle, uint32_t)> bindTextureFunc = [](TextureGPUHandle handle,
+                                                                       uint32_t slot) {
     IRenderDevice::Current().BindTexture(handle, slot);
   };
 
@@ -102,16 +103,14 @@ void RenderCommand::Submit(RenderableItem item, glm::mat4 viewMatrix, glm::mat4 
       {CommandType::DrawIndexed,
        [=]() {
          // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
-         MaterialInstance *material = MaterialSystem::GetInstance(item.material);
-         if (!material) {
-           LOG_ERROR("Invalid Material Instance with id: {}",
-                     UUIDGenerator::UUIDToString(item.material.id));
+         if (!item.material) {
+           LOG_ERROR("Invalid Material Instance");
            return;
          }
-         material->Apply(bindTextureFunc);
+         item.material->Apply(bindTextureFunc);
 
          // 2. 设置模型矩阵（从世界变换获取）
-         auto shader = material->GetShader();
+         auto shader = item.material->GetShader();
          if (shader) {
            shader->SetMat4("u_Model", item.worldTransform);
            shader->SetMat4("u_View", viewMatrix);
