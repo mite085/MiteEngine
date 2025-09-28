@@ -43,6 +43,8 @@ set(BASIC_DATA_SRCS
     basic_data/ray.cpp
     basic_data/frustum.h                      # 视锥体类型定义和基础方法  
     basic_data/frustum.cpp
+    basic_data/material_instance.h            # 材质实例
+    basic_data/material_instance.cpp
 )
 source_group("basic_data" FILES ${BASIC_DATA_SRCS})
 
@@ -69,4 +71,5 @@ target_link_libraries(${ENGINE_DATA_LIB_NAME}
     glfw
     spdlog::spdlog
     MiteEngine_Engine_Core
+    MiteEngine_Engine_Event
 )

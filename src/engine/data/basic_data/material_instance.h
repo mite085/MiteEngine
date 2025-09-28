@@ -3,7 +3,8 @@
 
 #include "basic_data/shader.h"
 #include "basic_data/texture.h"
-#include "basic_type/asset_type.h"
+#include "basic_type/handle_type.h"
+#include "basic_type/material_param_variant.h"
 
 namespace mite {
 // 定义纹理绑定函数类型

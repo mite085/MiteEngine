@@ -5,10 +5,8 @@ set(ENGINE_MATERIAL_LIB_NAME MiteEngine_Engine_Material)
 
 # 创建源代码组(筛选器)
 set(MATERIAL_SRCS
-    material_instance.h
-    material_instance.cpp
-    material_system.h
-    material_system.cpp
+    material_factory.h
+    material_factory.cpp
     material_template.h
     material_template.cpp
 )
