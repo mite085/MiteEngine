@@ -1,0 +1,74 @@
+#ifndef MITE_FORWARD_STAGE
+#define MITE_FORWARD_STAGE
+
+#include "render_stage.h"
+
+namespace mite {
+
+/**
+ * @brief 前向渲染阶段（接管原OpenGLRenderer的场景渲染功能）
+ *
+ * 职责：
+ * 1. 渲染不透明、Alpha测试、透明物体
+ * 2. 管理材质和Shader状态
+ * 3. 处理渲染队列的排序和提交
+ */
+class ForwardStage : public RenderStage {
+ public:
+  ForwardStage();
+  ~ForwardStage() override;
+
+  // ---- 生命周期管理 ----
+  void Initialize() override;
+  void Execute(RenderContext &context) override;
+  void Shutdown() override;
+
+ private:
+  // ---- 私有方法（接管原OpenGLRenderer的渲染逻辑）----
+
+  /**
+   * @brief 渲染不透明物体队列
+   */
+  void RenderOpaqueQueue(RenderContext &context);
+
+  /**
+   * @brief 渲染Alpha测试物体队列
+   */
+  void RenderAlphaTestQueue(RenderContext &context);
+
+  /**
+   * @brief 渲染透明物体队列
+   */
+  void RenderTransparentQueue(RenderContext &context);
+
+  /**
+   * @brief 渲染自定义物体队列
+   */
+  void RenderCustomQueue(RenderContext &context);
+
+  /**
+   * @brief 验证渲染项的有效性
+   */
+  bool ValidateRenderableItem(const RenderableItem &item) const;
+
+  /**
+   * @brief 设置渲染状态（根据队列类型）
+   */
+  void SetupRenderStateForQueue(RenderQueue::QueueType queueType);
+
+  // ---- 渲染状态配置 ----
+  RenderState m_OpaqueState;
+  RenderState m_AlphaTestState;
+  RenderState m_TransparentState;
+  RenderState m_CustomState;
+
+  // ---- 性能统计 ----
+  size_t m_LastFrameOpaqueCount = 0;
+  size_t m_LastFrameAlphaTestCount = 0;
+  size_t m_LastFrameTransparentCount = 0;
+  size_t m_LastFrameCustomCount = 0;
+};
+
+}  // namespace mite
+
+#endif
