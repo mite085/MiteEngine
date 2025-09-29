@@ -4,27 +4,48 @@ cmake_minimum_required(VERSION 3.10)
 set(ENGINE_RENDERER_LIB_NAME MiteEngine_Engine_Renderer)
 
 # 创建源代码组(筛选器)
-set(RENDERER_INTERFACE_SRCS
-    renderer.h
-    renderer.cpp
-    render_command.h
-    render_command.cpp
-    render_device.h
-    render_device.cpp
-
+set(RENDERER_CORE_SRCS
+    render_core/render_command.h
+    render_core/render_command.cpp
+    render_core/render_context.h
+    render_core/render_context.cpp
+    render_core/render_device.h
+    render_core/render_device.cpp
+    render_core/render_pipeline.h
+    render_core/render_pipeline.cpp
 )
-source_group("interface" FILES ${RENDERER_INTERFACE_SRCS})
+source_group("render core" FILES ${RENDERER_CORE_SRCS})
 
-set(OPENGL_RENDERER_SRCS
-    opengl_renderer/opegl_device.h
-    opengl_renderer/opegl_device.cpp
-    opengl_renderer/opengl_renderer.h
-    opengl_renderer/opengl_renderer.cpp
+set(RENDERER_OPENGL_SRCS
+    render_opengl/opengl_command.h
+    render_opengl/opengl_command.cpp
+    render_opengl/opengl_device.h
+    render_opengl/opengl_device.cpp
+    render_opengl/opengl_pipeline.h
+    render_opengl/opengl_pipeline.cpp
 )
-source_group("opengl renderer" FILES ${OPENGL_RENDERER_SRCS})
+source_group("render opengl" FILES ${RENDERER_OPENGL_SRCS})
+
+set(RENDERER_STAGES_SRCS
+    render_stages/render_stage.h
+    render_stages/render_stage.cpp
+
+    render_stages/deferred_lighting_stage.h
+    render_stages/deferred_lighting_stage.cpp
+    render_stages/forward_stage.h
+    render_stages/forward_stage.cpp
+    render_stages/gbuffer_stage.h
+    render_stages/gbuffer_stage.cpp
+)
+source_group("render stage" FILES ${RENDERER_STAGES_SRCS})
 
 # 创建静态库
-add_library(${ENGINE_RENDERER_LIB_NAME}  STATIC  ${RENDERER_INTERFACE_SRCS}  ${OPENGL_RENDERER_SRCS})
+add_library(${ENGINE_RENDERER_LIB_NAME}  
+    STATIC
+    ${RENDERER_CORE_SRCS}
+    ${RENDERER_OPENGL_SRCS}
+    ${RENDERER_STAGES_SRCS}
+)
 
 # 设置头文件路径（供其他项目包含）
 target_include_directories(${ENGINE_RENDERER_LIB_NAME}
