@@ -9,7 +9,7 @@ set(MiteEngine_VERSION "${MiteEngine_VERSION_MAJOR}.${MiteEngine_VERSION_MINOR}.
 # 项目基本属性
 project(MiteEngine
   VERSION ${MiteEngine_VERSION}
-  DESCRIPTION "3D Scene Editor based on OpenGL"
+  DESCRIPTION "3D Scene Editor based on OpenGL 430"
   LANGUAGES CXX C
   HOMEPAGE_URL "https://github.com/mite085/MiteEngine"
 )

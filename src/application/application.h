@@ -5,7 +5,7 @@
 #include "material_factory.h"
 #include "input/input.h"
 #include "input/modular_input_context.h"
-#include "opengl_renderer/opengl_renderer.h"
+#include "render_core/render_pipeline.h"
 #include "scene_core/scene_core.h"
 #include "scene_graph.h"
 #include "scene_view.h"
@@ -90,7 +90,7 @@ class MiteApplication {
   std::unique_ptr<AssetManager> m_AssetManager;
 
   std::unique_ptr<Window> m_Window;
-  std::unique_ptr<Renderer> m_Renderer;
+  std::unique_ptr<RenderPipeline> m_Renderer;
   std::unique_ptr<SceneCore> m_SceneCore;
   std::unique_ptr<SceneGraph> m_SceneGraph;
   std::unique_ptr<SceneView> m_SceneView;

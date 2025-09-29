@@ -1,7 +1,7 @@
 #include "application.h"
 #include "scene_core_components/component_headers.h"
 #include "ui_panel/ui_viewport_panel.h"
-
+#include "render_opengl/opengl_pipeline.h"
 #include "material_templates/material_template_pure_color.h"
 
 namespace mite {
@@ -198,11 +198,8 @@ void MiteApplication::InitializeRenderWithOpenGL()
 {
   m_Logger->info("Initializing renderer with OpenGL mode");
 
-  // 初始化 OpenGL 设备
-  IRenderDevice::SetCurrent(std::make_unique<OpenGLDevice>());
-
-  // 初始化OpenGL渲染器
-  m_Renderer = std::make_unique<OpenGLRenderer>();
+  // 初始化OpenGL渲染管线
+  m_Renderer = std::make_unique<OpenGLPipeline>();
   m_Renderer->Initialize();
 }
 

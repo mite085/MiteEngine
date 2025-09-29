@@ -2,7 +2,9 @@
 #include "imgui.h"
 
 namespace mite {
-ViewportPanel::ViewportPanel(const std::string &name, CameraComponent &camera, Renderer &renderer)
+ViewportPanel::ViewportPanel(const std::string &name,
+                             CameraComponent &camera,
+                             RenderPipeline &renderer)
     : UIPanel(name), m_CameraComponent(camera), m_Renderer(renderer)
 {
   // 初始化面板属性

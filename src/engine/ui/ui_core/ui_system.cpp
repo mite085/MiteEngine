@@ -2,7 +2,6 @@
 #include "ui_imgui_backend/ui_imgui_backend.h"
 #include "ui_localization_json.h"
 #include "window.h"
-#include "renderer.h"
 
 namespace mite {
 
