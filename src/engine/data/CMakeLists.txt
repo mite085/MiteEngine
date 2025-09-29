@@ -28,10 +28,6 @@ set(BASIC_DATA_SRCS
     basic_data/mesh.cpp
     basic_data/model.h
     basic_data/model.cpp
-    basic_data/shader.h
-    basic_data/shader.cpp
-    basic_data/shader_cache.h
-    basic_data/shader_cache.cpp
     basic_data/texture.h
     basic_data/texture.cpp
     basic_data/transform.h
@@ -48,6 +44,18 @@ set(BASIC_DATA_SRCS
 )
 source_group("basic_data" FILES ${BASIC_DATA_SRCS})
 
+set(BASIC_SHADER_SRCS
+    basic_shader/shader.h
+    basic_shader/shader.cpp
+    basic_shader/shader_cache.h
+    basic_shader/shader_cache.cpp
+    basic_shader/shader_ubo.h
+    basic_shader/shader_ubo.cpp
+    basic_shader/shader_ssbo.h
+    basic_shader/shader_ssbo.cpp
+)
+source_group("basic_shader" FILES ${BASIC_SHADER_SRCS})
+
 set(BASIC_EVENT_SRCS
     basic_event/asset_event.h
 )
@@ -59,6 +67,7 @@ add_library(${ENGINE_DATA_LIB_NAME}
     ${BASIC_TYPE_SRCS}
     ${BASIC_DATA_SRCS}
     ${BASIC_EVENT_SRCS}
+    ${BASIC_SHADER_SRCS}
 )
 
 # 设置头文件路径（供其他项目包含）

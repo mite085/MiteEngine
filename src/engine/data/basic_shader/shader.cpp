@@ -155,13 +155,11 @@ void OpenGLShader::SetIntArray(const std::string &name, const int *values, size_
 
   glUniform1iv(location, static_cast<GLsizei>(count), values);
 
-// 4. OpenGL错误检查（调试模式）
-#ifdef _DEBUG
+// 4. OpenGL错误检查
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     LOG_ERROR("OpenGL error in SetIntArray({}): {}", name, err);
   }
-#endif
 }
 
 void OpenGLShader::SetFloatArray(const std::string &name, const float *values, size_t count)
@@ -181,8 +179,7 @@ void OpenGLShader::SetFloatArray(const std::string &name, const float *values, s
   // 3. 调用OpenGL接口
   glUniform1fv(location, static_cast<GLsizei>(count), values);
 
-// 4. OpenGL错误检查（调试模式）
-#ifdef _DEBUG
+// 4. OpenGL错误检查
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     LOG_ERROR("[OpenGL] SetFloatArray({}) failed with error 0x{:X}", name, err);
@@ -196,7 +193,6 @@ void OpenGLShader::SetFloatArray(const std::string &name, const float *values, s
         break;
     }
   }
-#endif
 }
 
 void OpenGLShader::SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count)
@@ -216,8 +212,7 @@ void OpenGLShader::SetVector3Array(const std::string &name, const glm::vec3 *val
   // 3. 调用OpenGL接口
   glUniform3fv(location, static_cast<GLsizei>(count), glm::value_ptr(values[0]));
 
-// 4. OpenGL错误检查（调试模式）
-#ifdef _DEBUG
+// 4. OpenGL错误检查
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     LOG_ERROR("[OpenGL] SetVector3Array({}) failed with error 0x{:X}", name, err);
@@ -228,8 +223,94 @@ void OpenGLShader::SetVector3Array(const std::string &name, const glm::vec3 *val
               values[0].y,
               values[0].z);
   }
-#endif
 }
+
+void OpenGLShader::SetUniformBlockBinding(const std::string &uniformBlockName,
+                                          uint32_t bindingPoint)
+{
+  uint32_t blockIndex = GetUniformBlockIndex(uniformBlockName);
+  if (blockIndex != GL_INVALID_INDEX) {
+    glUniformBlockBinding(static_cast<GLuint>(m_Handle.programId), blockIndex, bindingPoint);
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+      LOG_ERROR("Failed to set uniform block binding: {} -> {}, error: 0x{:X}",
+                uniformBlockName,
+                bindingPoint,
+                error);
+    }
+    else {
+      LOG_DEBUG("Uniform block '{}' bound to point {}", uniformBlockName, bindingPoint);
+    }
+  }
+  else {
+    LOG_WARN("Uniform block '{}' not found in shader", uniformBlockName);
+  }
+}
+
+void OpenGLShader::SetShaderStorageBlockBinding(const std::string &storageBlockName,
+                                                uint32_t bindingPoint)
+{
+  uint32_t blockIndex = GetShaderStorageBlockIndex(storageBlockName);
+  if (blockIndex != GL_INVALID_INDEX) {
+    glShaderStorageBlockBinding(static_cast<GLuint>(m_Handle.programId), blockIndex, bindingPoint);
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+      LOG_ERROR("Failed to set shader storage block binding: {} -> {}, error: 0x{:X}",
+                storageBlockName,
+                bindingPoint,
+                error);
+    }
+    else {
+      LOG_DEBUG("Shader storage block '{}' bound to point {}", storageBlockName, bindingPoint);
+    }
+  }
+  else {
+    LOG_WARN("Shader storage block '{}' not found in shader", storageBlockName);
+  }
+}
+
+uint32_t OpenGLShader::GetUniformBlockIndex(const std::string &uniformBlockName) const
+{
+  // 检查缓存
+  if (auto it = m_UniformBlockCache.find(uniformBlockName); it != m_UniformBlockCache.end()) {
+    return it->second;
+  }
+
+  // 查询OpenGL
+  uint32_t blockIndex = glGetUniformBlockIndex(static_cast<GLuint>(m_Handle.programId),
+                                               uniformBlockName.c_str());
+
+  m_UniformBlockCache[uniformBlockName] = blockIndex;
+
+  if (blockIndex == GL_INVALID_INDEX) {
+    LOG_TRACE("Uniform block '{}' not found in shader", uniformBlockName);
+  }
+
+  return blockIndex;
+}
+
+uint32_t OpenGLShader::GetShaderStorageBlockIndex(const std::string &storageBlockName) const
+{
+  // 检查缓存
+  if (auto it = m_StorageBlockCache.find(storageBlockName); it != m_StorageBlockCache.end()) {
+    return it->second;
+  }
+
+  // 查询OpenGL
+  uint32_t blockIndex = glGetProgramResourceIndex(
+      static_cast<GLuint>(m_Handle.programId), GL_SHADER_STORAGE_BLOCK, storageBlockName.c_str());
+
+  m_StorageBlockCache[storageBlockName] = blockIndex;
+
+  if (blockIndex == GL_INVALID_INDEX) {
+    LOG_TRACE("Shader storage block '{}' not found in shader", storageBlockName);
+  }
+
+  return blockIndex;
+}
+
 
 // =============== 私有工具方法 ===============
 uint32_t OpenGLShader::CompileShader(const std::string &source, uint32_t type)

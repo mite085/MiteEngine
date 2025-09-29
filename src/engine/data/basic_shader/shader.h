@@ -1,8 +1,8 @@
 #ifndef MITE_DATA_SHADER
 #define MITE_DATA_SHADER
 
-#include "headers/headers.h"
 #include "basic_type/handle_type.h"
+#include "headers/headers.h"
 
 namespace mite {
 /**
@@ -37,7 +37,7 @@ class OpenGLShader {
 
   void Destroy();  // 显式释放GPU资源
 
-  // ---- Uniform设置 ----
+  // ---- Uniform Value设置 ----
   void SetBool(const std::string &name, bool value);
   void SetInt(const std::string &name, int value);
   void SetFloat(const std::string &name, float value);
@@ -47,9 +47,39 @@ class OpenGLShader {
   void SetMat3(const std::string &name, const glm::mat3 &mat);
   void SetMat4(const std::string &name, const glm::mat4 &mat);
 
+  // ---- Uniform Array设置 ----
   void SetIntArray(const std::string &name, const int *values, size_t count);
   void SetFloatArray(const std::string &name, const float *values, size_t count);
   void SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count);
+
+  // ---- Uniform Buffer/ Storage Buffer设置 ----
+  /**
+   * @brief 设置Uniform缓冲区对象绑定点
+   * @param uniformBlockName Uniform块名称
+   * @param bindingPoint 绑定点索引
+   */
+  void SetUniformBlockBinding(const std::string &uniformBlockName, uint32_t bindingPoint);
+
+  /**
+   * @brief 设置着色器存储缓冲区对象绑定点
+   * @param storageBlockName 存储块名称
+   * @param bindingPoint 绑定点索引
+   */
+  void SetShaderStorageBlockBinding(const std::string &storageBlockName, uint32_t bindingPoint);
+
+  /**
+   * @brief 获取Uniform块索引
+   * @param uniformBlockName Uniform块名称
+   * @return 块索引，如果不存在返回GL_INVALID_INDEX
+   */
+  uint32_t GetUniformBlockIndex(const std::string &uniformBlockName) const;
+
+  /**
+   * @brief 获取着色器存储块索引
+   * @param storageBlockName 存储块名称
+   * @return 块索引，如果不存在返回GL_INVALID_INDEX
+   */
+  uint32_t GetShaderStorageBlockIndex(const std::string &storageBlockName) const;
 
   // ---- 状态控制 ----
   void Bind() const;    // 绑定当前Shader为激活状态
@@ -87,8 +117,10 @@ class OpenGLShader {
   int GetUniformLocation(const std::string &name);
 
   // ---- 成员变量 ----
-  ShaderGPUHandle m_Handle;                                             // OpenGL程序GPU句柄
-  mutable std::unordered_map<std::string, int> m_UniformLocationCache;  // Uniform位置缓存
+  ShaderGPUHandle m_Handle;                                               // OpenGL程序GPU句柄
+  mutable std::unordered_map<std::string, int> m_UniformLocationCache;    // Uniform位置缓存
+  mutable std::unordered_map<std::string, uint32_t> m_UniformBlockCache;  // Uniform区块缓存
+  mutable std::unordered_map<std::string, uint32_t> m_StorageBlockCache;  // Storage区块缓存
 };
 }  // namespace mite
 
