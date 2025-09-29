@@ -1,8 +1,7 @@
 #ifndef MITE_OPENGL_DEVICE
 #define MITE_OPENGL_DEVICE
 
-#include "render_device.h"
-#include "basic_data/mesh.h"
+#include "render_core/render_device.h"
 
 namespace mite {
 /**
@@ -12,7 +11,7 @@ namespace mite {
  * 2. 管理OpenGL状态和资源生命周期
  * 3. 提供与AssetManager的桥梁
  */
-class OpenGLDevice : public IRenderDevice {
+class OpenGLDevice : public RenderDevice {
  public:
   OpenGLDevice();
   ~OpenGLDevice() override;
@@ -47,8 +46,7 @@ class OpenGLDevice : public IRenderDevice {
   void DrawIndexed(uint32_t indexCount,
                    uint32_t indexOffset,
                    GLenum mode = GL_TRIANGLES,
-                   GLenum indexType = GL_UNSIGNED_INT,
-                   bool enableDepthTest = true) const override;
+                   GLenum indexType = GL_UNSIGNED_INT) const override;
 
   // ---- FrameBuffer 操作 ----
   FrameBuffer::Ptr CreateFrameBuffer(const FrameBufferSpec &spec) override;
@@ -67,6 +65,7 @@ class OpenGLDevice : public IRenderDevice {
                            GLenum &internalFormat,
                            GLenum &format,
                            GLenum &type);
+  void CheckGLError();
 
   // 资源追踪（用于调试和泄漏检测）
   std::unordered_set<GLuint> m_ActiveTextures;  // 活动纹理集合

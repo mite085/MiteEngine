@@ -1,8 +1,8 @@
-#include "opengl_renderer/opegl_device.h"
+#include "opengl_device.h"
 
 namespace mite {
 // ------------------------ 构造函数/析构函数 ------------------------
-OpenGLDevice::OpenGLDevice() : IRenderDevice()
+OpenGLDevice::OpenGLDevice() : RenderDevice()
 {
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Device");
@@ -122,7 +122,6 @@ void OpenGLDevice::BindTexture(TextureGPUHandle haneld, uint32_t slot) const
   glActiveTexture(GL_TEXTURE0 + slot);
   glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(haneld.apiHandle));
 }
-
 
 // ------------------------ 模型操作 ------------------------
 ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
@@ -363,14 +362,13 @@ void OpenGLDevice::DrawMeshLOD(Mesh mesh, uint32_t lodLevel) const
   glBindVertexArray(vao);
   // 绘制指定LOD级别的网格
   DrawIndexed(
-      targetSection->indexCount, targetSection->indexOffset, GL_TRIANGLES, GL_UNSIGNED_INT, true);
+      targetSection->indexCount, targetSection->indexOffset, GL_TRIANGLES, GL_UNSIGNED_INT);
 }
 
 void OpenGLDevice::DrawIndexed(uint32_t indexCount,
                                uint32_t indexOffset,
                                GLenum mode,
-                               GLenum indexType,
-                               bool enableDepthTest) const
+                               GLenum indexType) const
 {
   // 1. 参数验证
   if (indexCount == 0) {
@@ -400,14 +398,6 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
     return;
   }
 
-  // 3. 设置深度测试状态
-  if (enableDepthTest) {
-    glEnable(GL_DEPTH_TEST);
-  }
-  else {
-    glDisable(GL_DEPTH_TEST);
-  }
-
   // 4. 计算索引偏移量
   void *indicesPtr = nullptr;
   size_t typeSize = 0;
@@ -429,49 +419,6 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
 
   // 5. 执行绘制命令
   glDrawElements(mode, indexCount, indexType, indicesPtr);
-
-  // 6. 增强的错误检查
-  GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    const char *errorStr = "";
-    switch (err) {
-      case GL_INVALID_ENUM:
-        errorStr = "GL_INVALID_ENUM";
-        break;
-      case GL_INVALID_VALUE:
-        errorStr = "GL_INVALID_VALUE";
-        break;
-      case GL_INVALID_OPERATION:
-        errorStr = "GL_INVALID_OPERATION";
-        break;
-      case GL_INVALID_FRAMEBUFFER_OPERATION:
-        errorStr = "GL_INVALID_FRAMEBUFFER_OPERATION";
-        break;
-      case GL_OUT_OF_MEMORY:
-        errorStr = "GL_OUT_OF_MEMORY";
-        break;
-      default:
-        errorStr = "Unknown Error";
-    }
-
-    m_Logger->error(
-        "OpenGL Draw Error: {} ({})\n"
-        "More infomation:\n"
-        "- Mode: {}\n"
-        "- Index Count: {}\n"
-        "- Index Type: {}\n"
-        "- VAO: {}\n"
-        "- Shader: {}\n"
-        "- EBO: {}",
-        err,
-        errorStr,
-        mode,
-        indexCount,
-        indexType,
-        currentVAO,
-        currentProgram,
-        elementBuffer);
-  }
 }
 
 // ------------------------ FrameBuffer 操作 ------------------------
@@ -501,7 +448,6 @@ void OpenGLDevice::DestroyFrameBuffer(FrameBuffer::Ptr framebuffer)
 }
 
 // ------------------------ 辅助方法 ------------------------
-
 
 void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
 {
@@ -711,4 +657,5 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
   return true;
 }
 
+void OpenGLDevice::CheckGLError() {}
 };  // namespace mite

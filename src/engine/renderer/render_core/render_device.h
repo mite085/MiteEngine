@@ -23,19 +23,18 @@ namespace mite {
  * 3. 支持未来多后端扩展
  *
  * 单例模式：
- * 使用单例模式的目的是方便Texture和Mesh每次创建时可以不通过对IRenderDevice的
+ * 使用单例模式的目的是方便Texture和Mesh每次创建时可以不通过对RenderDevice的
  * 依赖注入，且可独立实现Draw方法，确保代码的简洁性。
  *
  * 存在风险：
  * 1. 如果渲染指令需在多个线程提交（如渲染线程 vs. 资源加载线程），
  *	  单例的全局锁可能成为性能瓶颈。此时需设计无锁队列或线程局部存储（TLS）。
- * 2. 单例的 IRenderDevice 会阻碍单元测试中对渲染接口的模拟（Mocking）。
- *    依赖注入更利于隔离测试。
- * 3. 即使当前无需多渲染器，未来可能支持多视口、多GPU或离线渲染。单例会限制架构灵活性。
+ * 2. 即使当前无需多渲染器，未来可能支持多视口、多GPU或离线渲染。单例会限制架构灵活性。
  */
-class IRenderDevice {
+class RenderDevice {
  public:
-  virtual ~IRenderDevice() = default;
+  RenderDevice();
+  virtual ~RenderDevice() = default;
 
   // ---- 纹理操作 ----
   virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
@@ -89,20 +88,13 @@ class IRenderDevice {
   virtual void DrawIndexed(uint32_t indexCount,
                            uint32_t indexOffset,
                            GLenum mode = GL_TRIANGLES,
-                           GLenum indexType = GL_UNSIGNED_INT,
-                           bool enableDepthTest = true) const = 0;
+                           GLenum indexType = GL_UNSIGNED_INT) const = 0;
 
-  // ---- FrameBuffer 操作 (新增) ----
+  // ---- FrameBuffer 操作 ----
   virtual FrameBuffer::Ptr CreateFrameBuffer(const FrameBufferSpec &spec) = 0;
   virtual void DestroyFrameBuffer(FrameBuffer::Ptr framebuffer) = 0;
 
-  // ---- 设备管理 ----
-  static IRenderDevice &Current();
-  static void SetCurrent(std::unique_ptr<IRenderDevice> device);
-
  protected:
-  // 私有构造函数
-  IRenderDevice();
 
   // ---- 事件处理 ----
   virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
