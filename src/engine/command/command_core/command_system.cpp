@@ -16,14 +16,6 @@ CommandSystem::CommandSystem()
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Command System");
   m_Logger->debug("Command System created");
-
-  // 订阅命令结束事件，作为维护撤销栈的唯一依据
-  // Immediate立即模式
-  // 命令完成可能是在子线程内
-  m_EventSubscriptions.SubscribeImmediate<CommandCompletedEvent>(
-      BIND_DISPATCH_FN(OnCommandCompleted),
-      EventPriority::Normal
-  );
 }
 CommandSystem::~CommandSystem()
 {
@@ -37,6 +29,12 @@ void CommandSystem::Initialize(const CommandSystemInitParams &initParams)
     m_Logger->warn("CommandSystem already initialized");
     return;
   }
+
+  // 订阅命令结束事件，作为维护撤销栈的唯一依据
+  // Immediate立即模式
+  // 命令完成可能是在子线程内
+  m_EventSubscriptions.SubscribeImmediate<CommandCompletedEvent>(
+      BIND_DISPATCH_FN(OnCommandCompleted), EventPriority::Normal);
 
   // 配置栈大小
   m_undoStack->SetMaxSize(initParams.maxUndoStackSize);

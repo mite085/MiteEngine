@@ -88,18 +88,18 @@ struct TextureSourceData {
 
 // 纹理实例 - 纯粹的运行时渲染对象
 struct TextureInstance {
-  TextureGPUHandle gpuHandle;  // GPU资源句柄
-  TextureTarget target;        // 纹理目标类型
-  TextureFormat format;        // 内部格式
-  uint32_t width;              // 实际纹理宽度
-  uint32_t height;             // 实际纹理高度
-  uint32_t mipLevels;          // Mipmap层级数
+  TextureGPUHandle gpuHandle;                        // GPU资源句柄
+  TextureTarget target = TextureTarget::TEXTURE_2D;  // 纹理目标类型
+  TextureFormat format = TextureFormat::RGBA8;       // 内部格式
+  uint32_t width = 0;                                // 实际纹理宽度
+  uint32_t height = 0;                               // 实际纹理高度
+  uint32_t mipLevels = 1;                            // Mipmap层级数
 
   // 采样状态
-  TextureWrapMode wrapModeS;
-  TextureWrapMode wrapModeT;
-  TextureFilterMode minFilter;
-  TextureFilterMode magFilter;
+  TextureWrapMode wrapModeS = TextureWrapMode::Repeat;
+  TextureWrapMode wrapModeT = TextureWrapMode::Repeat;
+  TextureFilterMode minFilter = TextureFilterMode::LinearMipmapLinear;
+  TextureFilterMode magFilter = TextureFilterMode::LinearMipmapLinear;
 };
 
 // ------------------------ 材质相关 ------------------------
@@ -181,7 +181,7 @@ struct ModelGPUHandle {
   uintptr_t indexBuffer = 0;   // 整个Model的EBO
 
   // 从上层收到的信息
-  std::string path;   // 文件原始路径（用于调试打印）
+  std::string path;                        // 文件原始路径（用于调试打印）
   glm::vec3 bboxMin = glm::vec3(FLT_MAX);  // 模型级包围盒
   glm::vec3 bboxMax = glm::vec3(-FLT_MAX);
 };

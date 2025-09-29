@@ -278,7 +278,7 @@ std::string CommandRegistry::GetCommandTypeName(std::type_index typeIndex) const
 {
   std::shared_lock lock(m_typesMutex);
   auto it = m_commandTypes.find(typeIndex);
-  return it != m_commandTypes.end() ? it->second.typeName : nullptr;
+  return it != m_commandTypes.end() ? it->second.typeName : "";
 }
 CommandCategory CommandRegistry::GetCommandCategory(std::type_index typeIndex) const
 {
