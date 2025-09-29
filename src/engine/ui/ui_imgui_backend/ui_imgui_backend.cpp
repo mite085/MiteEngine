@@ -303,7 +303,7 @@ bool ImGuiBackend::InitializeRendererBackend()
 {
   // 版本设定应当与GLFWWindow中设定的glfwWindowHint一致
   // （原则上应当将版本号作为参数传入）
-  const char *glsl_version = "#version 410";
+  const char *glsl_version = "#version 430";
   if (!ImGui_ImplOpenGL3_Init(glsl_version)) {
     m_Logger->error("Failed to initialize ImGui OpenGL3 backend");
     return false;

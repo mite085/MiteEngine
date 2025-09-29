@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 in vec2 v_TexCoord;        // 来自顶点着色器的纹理坐标
 
 uniform vec3 u_Color;       // 基础颜色
