@@ -140,39 +140,71 @@ MaterialAssetID MaterialLoader::ProcessGLTFMaterial(MaterialCache &materialCache
 void MaterialLoader::ExtractPBRParameters(aiMaterial *aiMat, MaterialMetadata &metadata)
 {
   aiColor3D color;
+  aiColor4D color4D;
   float value;
 
   // 基础颜色因子（支持RGBA）
-  if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color) == AI_SUCCESS) {
-    metadata.parameters["baseColorFactor"] = glm::vec4(color.r, color.g, color.b, 1.0f);
-  }
-
-  // 单独检查Alpha值（如果有）
-  // 先尝试获取完整的baseColorFactor（包含alpha）
-  aiColor4D color4D;
   if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color4D) == AI_SUCCESS) {
-    metadata.parameters["baseColorFactor"] = glm::vec4(color4D.r, color4D.g, color4D.b, color4D.a);
+    metadata.parameters[MaterialParamKeys::BASE_COLOR] = glm::vec4(
+        color4D.r, color4D.g, color4D.b, color4D.a);
   }
   else if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, color) == AI_SUCCESS)
   {
-    // 回退到RGB版本
-    metadata.parameters["baseColorFactor"] = glm::vec4(color.r, color.g, color.b, 1.0f);
+    // 回退到RGB版本，alpha设为1.0
+    metadata.parameters[MaterialParamKeys::BASE_COLOR] = glm::vec4(
+        color.r, color.g, color.b, 1.0f);
+  }
+  else {
+    // 回退到传统漫反射颜色
+    if (aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+      metadata.parameters[MaterialParamKeys::BASE_COLOR] = glm::vec4(
+          color.r, color.g, color.b, 1.0f);
+    }
+    else {
+      // 默认基础颜色（0.8度灰）
+      metadata.parameters[MaterialParamKeys::BASE_COLOR] = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+    }
   }
 
-  // 金属度因子
+  // 金属度因子（默认为0）
   if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, value) == AI_SUCCESS) {
-    metadata.parameters["metallicFactor"] = value;
+    metadata.parameters[MaterialParamKeys::METALLIC] = value;
+  }
+  else {
+    metadata.parameters[MaterialParamKeys::METALLIC] = 0.0f;
   }
 
-  // 粗糙度因子
+  // 粗糙度因子（默认为1）
   if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, value) == AI_SUCCESS) {
-    metadata.parameters["roughnessFactor"] = value;
+    metadata.parameters[MaterialParamKeys::ROUGHNESS] = value;
+  }
+  else {
+    metadata.parameters[MaterialParamKeys::ROUGHNESS] = 1.0f;
   }
 
-  // 自发光因子
+  // 自发光因子（默认为0）
   if (aiMat->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) {
-    metadata.parameters["emissiveFactor"] = glm::vec3(color.r, color.g, color.b);
+    metadata.parameters[MaterialParamKeys::EMISSION_COLOR] = glm::vec3(color.r, color.g, color.b);
   }
+  else {
+    metadata.parameters[MaterialParamKeys::EMISSION_COLOR] = glm::vec3(0.0f);
+  }
+
+  // 自发光强度（GLTF中没有单独的强度参数，若存在emissionColor则默认为1.0）
+  glm::vec3 emissionColor =
+      metadata.parameters[MaterialParamKeys::EMISSION_COLOR].Get<glm::vec3>();
+  if (glm::length(emissionColor) > 0.0f) {
+    metadata.parameters[MaterialParamKeys::EMISSION_INTENSITY] = 1.0f;
+  }
+  else {
+    metadata.parameters[MaterialParamKeys::EMISSION_INTENSITY] = 0.0f;
+  }
+
+  // 环境光遮蔽
+  metadata.parameters[MaterialParamKeys::AO] = 1.0f;  // GLTF默认值
+
+  // 法线缩放
+  metadata.parameters[MaterialParamKeys::NORMAL_SCALE] = 1.0f;  // GLTF默认值
 
   // 透明度模式
   aiString alphaMode;
@@ -199,13 +231,6 @@ void MaterialLoader::ExtractPBRParameters(aiMaterial *aiMat, MaterialMetadata &m
   if (aiMat->Get(AI_MATKEY_TWOSIDED, twoSided) == AI_SUCCESS) {
     metadata.doubleSided = (twoSided != 0);
   }
-
-  // 回退到传统材质参数（兼容非GLTF格式）
-  if (metadata.parameters.find("baseColorFactor") == metadata.parameters.end()) {
-    if (aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
-      metadata.parameters["baseColorFactor"] = glm::vec4(color.r, color.g, color.b, 1.0f);
-    }
-  }
 }
 
 void MaterialLoader::ExtractAndCreateTextureReferences(TextureCache &textureCache,
@@ -226,7 +251,7 @@ void MaterialLoader::ExtractAndCreateTextureReferences(TextureCache &textureCach
       MaterialTextureSlot slot(texId);
       ExtractTextureTransform(
           aiMat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, slot.scale, slot.offset);
-      metadata.textureSlots["baseColorTexture"] = slot;
+      metadata.textureSlots[MaterialParamKeys::BASE_COLOR_TEXTURE] = slot;
     }
   }
 
@@ -237,7 +262,12 @@ void MaterialLoader::ExtractAndCreateTextureReferences(TextureCache &textureCach
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      metadata.textureSlots["metallicRoughnessTexture"] = MaterialTextureSlot(texId);
+      MaterialTextureSlot slot(texId);
+      ExtractTextureTransform(aiMat,
+                              AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE,
+                              slot.scale,
+                              slot.offset);
+      metadata.textureSlots[MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE] = slot;
     }
   }
 
@@ -246,7 +276,9 @@ void MaterialLoader::ExtractAndCreateTextureReferences(TextureCache &textureCach
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      metadata.textureSlots["normalTexture"] = MaterialTextureSlot(texId);
+      MaterialTextureSlot slot(texId);
+      ExtractTextureTransform(aiMat, aiTextureType_NORMALS, 0, slot.scale, slot.offset);
+      metadata.textureSlots[MaterialParamKeys::NORMAL_TEXTURE] = slot;
     }
   }
 
@@ -255,7 +287,9 @@ void MaterialLoader::ExtractAndCreateTextureReferences(TextureCache &textureCach
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      metadata.textureSlots["emissiveTexture"] = MaterialTextureSlot(texId);
+      MaterialTextureSlot slot(texId);
+      ExtractTextureTransform(aiMat, aiTextureType_EMISSIVE, 0, slot.scale, slot.offset);
+      metadata.textureSlots[MaterialParamKeys::EMISSIVE_TEXTURE] = slot;
     }
   }
 
@@ -264,7 +298,9 @@ void MaterialLoader::ExtractAndCreateTextureReferences(TextureCache &textureCach
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      metadata.textureSlots["occlusionTexture"] = MaterialTextureSlot(texId);
+      MaterialTextureSlot slot(texId);
+      ExtractTextureTransform(aiMat, aiTextureType_AMBIENT_OCCLUSION, 0, slot.scale, slot.offset);
+      metadata.textureSlots[MaterialParamKeys::OCCLUSION_TEXTURE] = slot;
     }
   }
 }
@@ -358,10 +394,13 @@ MaterialAssetID MaterialLoader::CreatePureColorMaterial(MaterialCache &materialC
   materialAsset->metadata.templateName = PureColorMaterialTemplate::StaticType();
 
   // 设置纯色材质参数到通用参数存储
-  materialAsset->metadata.parameters["baseColorFactor"] = glm::vec4(color, 1.0f);
-  materialAsset->metadata.parameters["metallicFactor"] = 0.0f;
-  materialAsset->metadata.parameters["roughnessFactor"] = 1.0f;
-  materialAsset->metadata.parameters["emissiveFactor"] = glm::vec3(0.0f);
+  materialAsset->metadata.parameters[MaterialParamKeys::BASE_COLOR] = glm::vec4(color, 1.0f);
+  materialAsset->metadata.parameters[MaterialParamKeys::METALLIC] = 0.0f;
+  materialAsset->metadata.parameters[MaterialParamKeys::ROUGHNESS] = 1.0f;
+  materialAsset->metadata.parameters[MaterialParamKeys::EMISSION_COLOR] = glm::vec3(0.0f);
+  materialAsset->metadata.parameters[MaterialParamKeys::EMISSION_INTENSITY] = 0.0f;
+  materialAsset->metadata.parameters[MaterialParamKeys::AO] = 1.0f;
+  materialAsset->metadata.parameters[MaterialParamKeys::NORMAL_SCALE] = 1.0f;
 
   materialAsset->metadata.alphaMode = AlphaMode::OPAQUE;
   materialAsset->metadata.doubleSided = false;
@@ -389,5 +428,4 @@ std::string MaterialLoader::ResolveTexturePath(const std::string &texturePath,
   std::string modelDir = modelPath.substr(0, modelPath.find_last_of("/\\") + 1);
   return modelDir + texturePath;
 }
-
 }  // namespace mite

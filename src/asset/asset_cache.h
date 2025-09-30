@@ -3,6 +3,7 @@
 
 #include "headers/headers.h"
 #include "basic_type/asset_type.h"
+#include "basic_type/material_type.h"
 
 namespace mite {
 /**
