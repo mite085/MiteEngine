@@ -25,27 +25,25 @@ std::shared_ptr<MaterialInstance> GBufferMaterialTemplate::CreateInstance(
 {
   auto instance = std::make_shared<MaterialInstance>(m_Shader);
 
-  // ÉèÖÃ²ÄÖÊÃû³Æ
+  // è®¾ç½®æè´¨åç§°
   if (!sourceData.name.empty()) {
     instance->SetName(sourceData.name);
   }
-  // ÉèÖÃÎÆÀí£¨ÎÆÀíÈÔÈ»ĞèÒªµ¥¶À°ó¶¨£¬ÒòÎªËüÃÇÊÇ²ÉÑùÆ÷£©
+  // è®¾ç½®çº¹ç†ï¼ˆçº¹ç†ä»ç„¶éœ€è¦å•ç‹¬ç»‘å®šï¼Œå› ä¸ºå®ƒä»¬æ˜¯é‡‡æ ·å™¨ï¼‰
   SetupTextures(instance, sourceData);
 
-  // ÉèÖÃ²¢¸üĞÂUBO£¨ËùÓĞ²ÄÖÊ²ÎÊı¶¼Í¨¹ıUBO´«µİ£©
+  // è®¾ç½®å¹¶æ›´æ–°UBOï¼ˆæ‰€æœ‰æè´¨å‚æ•°éƒ½é€šè¿‡UBOä¼ é€’ï¼‰
   SetupMaterialUBO(instance);
   UpdateMaterialUBO(sourceData);
 
-  // ×¢Òâ£º²»ÔÙµ÷ÓÃApplySourceDataToInstance£¬ÒòÎªËùÓĞ²ÎÊı¶¼Í¨¹ıUBO´«µİ
-  // ÎÆÀí±êÊ¶µÈÒ²Í¨¹ıUBO´«µİ£¬²»ĞèÒªµ¥¶ÀµÄuniform
   return instance;
 }
 void GBufferMaterialTemplate::ApplyDefaultParams(MaterialInstance &instance) const
 {
-  // ¶ÔÓÚÍêÈ«»ùÓÚUBOµÄÉè¼Æ£¬ApplyDefaultParamsÖ÷ÒªÓÃÓÚ´´½¨Ä¬ÈÏÊµÀı
-  // Êµ¼Ê²ÎÊıÍ¨¹ıUBO´«µİ£¬ÕâÀïÖ»ĞèÒªÉèÖÃÎÆÀí±êÊ¶µÈ±ØÒª×´Ì¬
+  // å¯¹äºå®Œå…¨åŸºäºUBOçš„è®¾è®¡ï¼ŒApplyDefaultParamsä¸»è¦ç”¨äºåˆ›å»ºé»˜è®¤å®ä¾‹
+  // å®é™…å‚æ•°é€šè¿‡UBOä¼ é€’ï¼Œè¿™é‡Œåªéœ€è¦è®¾ç½®çº¹ç†æ ‡è¯†ç­‰å¿…è¦çŠ¶æ€
 
-  // ´´½¨Ä¬ÈÏµÄSourceDataÀ´³õÊ¼»¯UBO
+  // åˆ›å»ºé»˜è®¤çš„SourceDataæ¥åˆå§‹åŒ–UBO
   MaterialSourceData defaultData;
   defaultData.name = "DefaultMaterial";
   defaultData.parameters[MaterialParamKeys::BASE_COLOR] = GetDefaultBaseColor();
@@ -56,7 +54,7 @@ void GBufferMaterialTemplate::ApplyDefaultParams(MaterialInstance &instance) con
   defaultData.parameters[MaterialParamKeys::EMISSION_INTENSITY] = GetDefaultEmissionIntensity();
   defaultData.parameters[MaterialParamKeys::NORMAL_SCALE] = GetDefaultNormalScale();
 
-  // ¸üĞÂUBOÊı¾İ
+  // æ›´æ–°UBOæ•°æ®
   UpdateMaterialUBO(defaultData);
 }
 void GBufferMaterialTemplate::SetupMaterialUBO(std::shared_ptr<MaterialInstance> instance) const
@@ -67,7 +65,7 @@ void GBufferMaterialTemplate::SetupMaterialUBO(std::shared_ptr<MaterialInstance>
     InitializeUBO();
   }
 
-  // °ó¶¨UBOµ½²ÄÖÊÊµÀı
+  // ç»‘å®šUBOåˆ°æè´¨å®ä¾‹
   instance->BindUBO(UBO_BLOCK_NAME, m_MaterialUBO, m_BindingPoint);
 }
 void GBufferMaterialTemplate::UpdateMaterialUBO(const MaterialSourceData &sourceData) const
@@ -93,14 +91,14 @@ void GBufferMaterialTemplate::InitializeUBO() const
   m_MaterialUBO = std::make_shared<ShaderUBO>(sizeof(GBufferMaterialUBO), GL_DYNAMIC_DRAW);
   m_MaterialUBO->Initialize();
 
-  // ³õÊ¼»¯Ä¬ÈÏUBOÊı¾İ
+  // åˆå§‹åŒ–é»˜è®¤UBOæ•°æ®
   GBufferMaterialUBO defaultData{};
   FillUBOData(defaultData, MaterialSourceData{});
   m_MaterialUBO->UpdateData(&defaultData, sizeof(GBufferMaterialUBO));
 
   LOG_DEBUG("GBufferMaterialTemplate UBO initialized with binding point: {}", m_BindingPoint);
 }
-// ---- ²ÎÊı»ñÈ¡¹¤¾ß·½·¨ ----
+// ---- å‚æ•°è·å–å·¥å…·æ–¹æ³• ----
 glm::vec4 GBufferMaterialTemplate::GetBaseColor(const MaterialSourceData &sourceData) const
 {
   return GetParameter<glm::vec4>(sourceData, MaterialParamKeys::BASE_COLOR, GetDefaultBaseColor());
@@ -152,11 +150,11 @@ float GBufferMaterialTemplate::GetAlphaMode(const MaterialSourceData &sourceData
       return 0.0f;
   }
 }
-// ---- ÎÆÀí´¦Àí¹¤¾ß·½·¨ ----
+// ---- çº¹ç†å¤„ç†å·¥å…·æ–¹æ³• ----
 void GBufferMaterialTemplate::SetupTextures(std::shared_ptr<MaterialInstance> instance,
                                             const MaterialSourceData &sourceData) const
 {
-  // ÉèÖÃËùÓĞÎÆÀí²ÛÎ»
+  // è®¾ç½®æ‰€æœ‰çº¹ç†æ§½ä½
   SetupTextureSlot(instance, MaterialParamKeys::BASE_COLOR_TEXTURE, sourceData);
   SetupTextureSlot(instance, MaterialParamKeys::NORMAL_TEXTURE, sourceData);
   SetupTextureSlot(instance, MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE, sourceData);
@@ -177,30 +175,30 @@ void GBufferMaterialTemplate::SetupTextureSlot(std::shared_ptr<MaterialInstance>
 void GBufferMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
                                           const MaterialSourceData &sourceData) const
 {
-  // Çå¿ÕUBOÊı¾İ
+  // æ¸…ç©ºUBOæ•°æ®
   memset(&uboData, 0, sizeof(GBufferMaterialUBO));
 
-  // ---- »ù´¡PBR²ÎÊı ----
+  // ---- åŸºç¡€PBRå‚æ•° ----
   uboData.baseColor = GetBaseColor(sourceData);
   uboData.metallicRoughnessAO = glm::vec4(
       GetMetallic(sourceData), GetRoughness(sourceData), GetAO(sourceData), 0.0f);
 
-  // ×Ô·¢¹â
+  // è‡ªå‘å…‰
   glm::vec3 emissionColor = GetEmissionColor(sourceData);
   float emissionIntensity = GetEmissionIntensity(sourceData);
   uboData.emission = glm::vec4(emissionColor, emissionIntensity);
 
-  // ·¨ÏßËõ·Å
+  // æ³•çº¿ç¼©æ”¾
   uboData.normalScale = glm::vec4(GetNormalScale(sourceData), 0.0f, 0.0f, 0.0f);
 
-  // ---- ÎÆÀí±êÊ¶ ----
+  // ---- çº¹ç†æ ‡è¯† ----
   uboData.textureFlags = glm::vec4(
       HasTextureSlot(sourceData, MaterialParamKeys::BASE_COLOR_TEXTURE) ? 1.0f : 0.0f,
       HasTextureSlot(sourceData, MaterialParamKeys::NORMAL_TEXTURE) ? 1.0f : 0.0f,
       HasTextureSlot(sourceData, MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE) ? 1.0f : 0.0f,
       HasTextureSlot(sourceData, MaterialParamKeys::EMISSIVE_TEXTURE) ? 1.0f : 0.0f);
 
-  // ---- ÎÆÀí²ÎÊı£¨scaleºÍoffset£© ----
+  // ---- çº¹ç†å‚æ•°ï¼ˆscaleå’Œoffsetï¼‰ ----
   auto setupTexParams = [&](const std::string &slotName, glm::vec4 &params) {
     if (HasTextureSlot(sourceData, slotName)) {
       const auto *slot = GetTextureSlot(sourceData, slotName);
@@ -209,7 +207,7 @@ void GBufferMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
         return;
       }
     }
-    params = glm::vec4(1.0f, 1.0f, 0.0f, 0.0f);  // Ä¬ÈÏ²ÎÊı
+    params = glm::vec4(1.0f, 1.0f, 0.0f, 0.0f);  // é»˜è®¤å‚æ•°
   };
 
   setupTexParams(MaterialParamKeys::BASE_COLOR_TEXTURE, uboData.baseColorTexParams);
@@ -218,7 +216,7 @@ void GBufferMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
   setupTexParams(MaterialParamKeys::EMISSIVE_TEXTURE, uboData.emissiveTexParams);
   setupTexParams(MaterialParamKeys::OCCLUSION_TEXTURE, uboData.occlusionTexParams);
 
-  // ---- äÖÈ¾ÊôĞÔ ----
+  // ---- æ¸²æŸ“å±æ€§ ----
   uboData.renderProperties = glm::vec4(GetAlphaCutoff(sourceData),
                                        GetDoubleSided(sourceData) ? 1.0f : 0.0f,
                                        GetAlphaMode(sourceData),

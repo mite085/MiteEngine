@@ -44,58 +44,58 @@ bool MaterialTemplate::HasTextureSlot(const MaterialSourceData &sourceData,
 {
   return sourceData.textureSlots.find(slotName) != sourceData.textureSlots.end();
 }
-void MaterialTemplate::ApplySourceDataToInstance(MaterialInstance &instance,
-                                                 const MaterialSourceData &sourceData)
-{
-  // 应用标量参数
-  for (const auto &[key, variant] : sourceData.parameters) {
-    switch (variant.GetType()) {
-      case UniformVariant::Type::Float:
-        instance.SetFloat(key, variant.Get<float>());
-        break;
-      case UniformVariant::Type::Int:
-        instance.SetInt(key, variant.Get<int>());
-        break;
-      case UniformVariant::Type::Vector2:
-        instance.SetVector2(key, variant.Get<glm::vec2>());
-        break;
-      case UniformVariant::Type::Vector3:
-        instance.SetVector3(key, variant.Get<glm::vec3>());
-        break;
-      case UniformVariant::Type::Vector4:
-        instance.SetVector4(key, variant.Get<glm::vec4>());
-        break;
-      case UniformVariant::Type::Matrix3:
-        instance.SetMatrix3(key, variant.Get<glm::mat3>());
-        break;
-      case UniformVariant::Type::Matrix4:
-        instance.SetMatrix4(key, variant.Get<glm::mat4>());
-        break;
-      case UniformVariant::Type::IntArray: {
-        auto [ptr, count] = variant.GetArray<int>();
-        instance.SetIntArray(key, ptr, count);
-        break;
-      }
-      case UniformVariant::Type::FloatArray: {
-        auto [ptr, count] = variant.GetArray<float>();
-        instance.SetFloatArray(key, ptr, count);
-        break;
-      }
-      case UniformVariant::Type::Vector3Array: {
-        auto [ptr, count] = variant.GetArray<glm::vec3>();
-        instance.SetVector3Array(key, ptr, count);
-        break;
-      }
-      default:
-        // 跳过不支持的参数类型（如Texture）
-        break;
-    }
-  }
-  // 应用纹理参数
-  for (const auto &[slotName, textureSlot] : sourceData.textureSlots) {
-    instance.SetTexture(slotName, textureSlot);
-  }
-}
+//void MaterialTemplate::ApplySourceDataToInstance(MaterialInstance &instance,
+//                                                 const MaterialSourceData &sourceData)
+//{
+//  // 应用标量参数
+//  for (const auto &[key, variant] : sourceData.parameters) {
+//    switch (variant.GetType()) {
+//      case UniformVariant::Type::Float:
+//        instance.SetFloat(key, variant.Get<float>());
+//        break;
+//      case UniformVariant::Type::Int:
+//        instance.SetInt(key, variant.Get<int>());
+//        break;
+//      case UniformVariant::Type::Vector2:
+//        instance.SetVector2(key, variant.Get<glm::vec2>());
+//        break;
+//      case UniformVariant::Type::Vector3:
+//        instance.SetVector3(key, variant.Get<glm::vec3>());
+//        break;
+//      case UniformVariant::Type::Vector4:
+//        instance.SetVector4(key, variant.Get<glm::vec4>());
+//        break;
+//      case UniformVariant::Type::Matrix3:
+//        instance.SetMatrix3(key, variant.Get<glm::mat3>());
+//        break;
+//      case UniformVariant::Type::Matrix4:
+//        instance.SetMatrix4(key, variant.Get<glm::mat4>());
+//        break;
+//      case UniformVariant::Type::IntArray: {
+//        auto [ptr, count] = variant.GetArray<int>();
+//        instance.SetIntArray(key, ptr, count);
+//        break;
+//      }
+//      case UniformVariant::Type::FloatArray: {
+//        auto [ptr, count] = variant.GetArray<float>();
+//        instance.SetFloatArray(key, ptr, count);
+//        break;
+//      }
+//      case UniformVariant::Type::Vector3Array: {
+//        auto [ptr, count] = variant.GetArray<glm::vec3>();
+//        instance.SetVector3Array(key, ptr, count);
+//        break;
+//      }
+//      default:
+//        // 跳过不支持的参数类型（如Texture）
+//        break;
+//    }
+//  }
+//  // 应用纹理参数
+//  for (const auto &[slotName, textureSlot] : sourceData.textureSlots) {
+//    instance.SetTexture(slotName, textureSlot);
+//  }
+//}
 
 AlphaMode MaterialTemplate::GetAlphaMode(const MaterialSourceData &sourceData)
 {

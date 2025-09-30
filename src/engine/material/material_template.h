@@ -3,6 +3,7 @@
 
 #include "basic_data/material_instance.h"
 #include "basic_type/asset_type.h"
+#include "basic_type/material_type.h"
 
 namespace mite {
 /**
@@ -104,13 +105,14 @@ class MaterialTemplate {
    */
   static bool HasTextureSlot(const MaterialSourceData &sourceData, const std::string &slotName);
   /**
-   * @brief 应用源数据中的所有参数到材质实例
+   * @brief 应用源数据中的所有参数到材质实例（目前均使用UBO传递参数，该函数弃用）
    * @param instance 目标材质实例
    * @param sourceData 源数据
    * @note 派生类可以在CreateInstance中调用此方法应用所有参数
    */
-  static void ApplySourceDataToInstance(MaterialInstance &instance,
-                                        const MaterialSourceData &sourceData);
+  //static void ApplySourceDataToInstance(MaterialInstance &instance,
+  //                                      const MaterialSourceData &sourceData);
+
   /**
    * @brief 获取渲染属性（供派生类使用）
    */
