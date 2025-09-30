@@ -2,7 +2,6 @@
 #define MITE_DATA_MESH
 
 #include "basic_type/handle_type.h"
-#include "headers/headers.h"
 
 namespace mite {
 /**

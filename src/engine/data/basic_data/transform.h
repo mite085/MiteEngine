@@ -224,11 +224,11 @@ class Transform {
   mutable bool m_RotationDirty = true;  // 旋转脏标记
 
   // 变换属性
-  glm::vec3 m_Position = glm::vec3(0.0f);
+  mutable glm::vec3 m_Position = glm::vec3(0.0f);
   mutable glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);  // 四元数，仅用于变换计算
   mutable glm::vec3 m_RotationEuler = glm::vec3(0.0f);  // 欧拉角（度），仅用于对外接口
-  glm::vec3 m_Scale = glm::vec3(1.0f);
-  EulerOrder m_RotationOrder = EulerOrder::XYZ;
+  mutable glm::vec3 m_Scale = glm::vec3(1.0f);
+  mutable EulerOrder m_RotationOrder = EulerOrder::XYZ;
 
   // 矩阵缓存
   mutable glm::mat4 m_LocalMatrix = glm::mat4(1.0f);

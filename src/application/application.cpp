@@ -71,10 +71,7 @@ void MiteApplication::LoadDefaultScene()
   // 主相机的相机组件与投影参数设定
   CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
       mainCameraEntity);
-  mainCameraComponent.SetPerspective(60.0f,  // FOV: 60度（便于计算）
-                                     1.0f,   // 近平面: 1m
-                                     20.0f   // 远平面: 20m（足够包含场景）
-  );
+
   // 主相机的变换组件
   TransformComponent &mainCameraTransform =
       m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
@@ -102,8 +99,8 @@ void MiteApplication::LoadDefaultScene()
   m_UISystem->RegisterPanel(viewportPanel);
 
   // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
-  ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
-      FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
+  ModelAssetID plane_model_asset_id = m_AssetManager->LoadModel(
+      FileSystem::GetAssetPath("models/plane.obj").string(), true, true);
   Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle, m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
@@ -115,7 +112,7 @@ void MiteApplication::LoadDefaultScene()
     // 3. 创建材质实例
     std::shared_ptr<MaterialInstance> plane_material =
         MaterialFactory::Get().CreateInstanceWithOverrides<PureColorMaterialTemplate>(
-            {{"u_Color", glm::vec3(1.0, 0.1, 0.1)}});
+            {{MaterialParamKeys::BASE_COLOR, glm::vec3(1.0, 0.1, 0.1)}});
 
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
