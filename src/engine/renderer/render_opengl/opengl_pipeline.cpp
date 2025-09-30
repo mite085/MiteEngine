@@ -1,8 +1,8 @@
 #include "opengl_pipeline.h"
 #include "render_stages/forward_stage.h"
+#include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
-
 OpenGLPipeline::OpenGLPipeline() : RenderPipeline()
 {
   m_Logger->info("OpenGL Pipeline created");
@@ -15,6 +15,9 @@ OpenGLPipeline::~OpenGLPipeline()
 
 void OpenGLPipeline::Initialize()
 {
+  // 在引擎初始化时，预分配UBO和SSBO绑定点资源
+  BindingPointManager::Get().PreallocateCommonResources();
+
   // 创建默认FrameBuffer
   CreateDefaultFrameBuffer();
 
@@ -62,7 +65,7 @@ void OpenGLPipeline::BeginFrame()
   auto size = m_MainFrameBuffer->GetSize();
   RenderCommand::Get().SetViewport(0, 0, size.x, size.y);
 
-  //m_Logger->debug("Pipeline BeginFrame completed");
+  // m_Logger->debug("Pipeline BeginFrame completed");
 }
 
 void OpenGLPipeline::EndFrame()
@@ -88,7 +91,7 @@ void OpenGLPipeline::EndFrame()
   // 交换双缓冲
   SwapFrameBuffers();
 
-  //m_Logger->debug("Pipeline EndFrame completed");
+  // m_Logger->debug("Pipeline EndFrame completed");
 }
 
 void OpenGLPipeline::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
@@ -117,12 +120,27 @@ void OpenGLPipeline::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
     }
   }
 
-  //m_Logger->debug("Pipeline RenderScene completed");
+  // m_Logger->debug("Pipeline RenderScene completed");
 }
 
 void OpenGLPipeline::SetClearColor(const glm::vec4 &color)
 {
   m_ClearColor = color;
+}
+
+void OpenGLPipeline::Resize(const uint32_t width, const uint32_t height)
+{
+  // 调整主FrameBuffer的尺寸
+  try {
+    m_MainFrameBuffer->Resize(width, height);
+    m_ShouldResize = true;
+    // LOG_DEBUG("Resized MainFrameBuffer to {}x{}", width, width);
+  }
+  catch (const std::exception &e) {
+    LOG_ERROR("Failed to resize MainFrameBuffer: {}", e.what());
+  }
+
+  // 注意：DisplayFrameBuffer不需要手动调整，SwapBuffer()会处理双缓冲的尺寸同步
 }
 
 std::shared_ptr<FrameBuffer> OpenGLPipeline::GetMainFrameBuffer() const
@@ -156,9 +174,18 @@ void OpenGLPipeline::CreateDefaultFrameBuffer()
 
 void OpenGLPipeline::SwapFrameBuffers()
 {
-  // 完全接管原OpenGLRenderer的实现
+  // 直接交换指针
   std::swap(m_MainFrameBuffer, m_DisplayFrameBuffer);
-  //m_Logger->debug("Pipeline swapped buffers");
-}
 
+  // 处理尺寸同步事件
+  if (m_ShouldResize) {
+    // 此时已经进入下一帧，displayBuffer为上一帧准备好的mainBuffer，
+    // 之前准备过程中已经将当前display的size调整过了，仅需调整下一帧的main即可
+    m_MainFrameBuffer->Resize(m_DisplayFrameBuffer->GetSize().x,
+                              m_DisplayFrameBuffer->GetSize().y);
+    m_ShouldResize = false;
+  }
+
+  // m_Logger->debug("Pipeline swapped buffers");
+}
 }  // namespace mite

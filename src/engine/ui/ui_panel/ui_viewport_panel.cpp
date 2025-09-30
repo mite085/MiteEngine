@@ -5,7 +5,7 @@ namespace mite {
 ViewportPanel::ViewportPanel(const std::string &name,
                              CameraComponent &camera,
                              RenderPipeline &renderer)
-    : UIPanel(name), m_CameraComponent(camera), m_Renderer(renderer)
+    : UIPanel(name), m_CameraComponent(camera), m_Pipeline(renderer)
 {
   // 初始化面板属性
   InitializePanelProps();
@@ -18,7 +18,7 @@ ViewportPanel::ViewportPanel(const std::string &name,
   m_ImageProps.uv1 = glm::vec2(1.0f, 0.0f);
 
   // 获取初始尺寸
-  auto displayBuffer = m_Renderer.GetDisplayFrameBuffer();
+  auto displayBuffer = m_Pipeline.GetDisplayFrameBuffer();
   if (displayBuffer) {
     m_CurrentSize = displayBuffer->GetSize();
   }
@@ -29,11 +29,6 @@ ViewportPanel::ViewportPanel(const std::string &name,
 }
 void ViewportPanel::Update(float deltaTime)
 {
-  // 处理延迟的尺寸调整请求
-  if (m_SizeDirty && m_RequestedSize.x > 0 && m_RequestedSize.y > 0) {
-    ResizeMainFrameBuffer(m_RequestedSize);
-    m_SizeDirty = false;
-  }
 }
 void ViewportPanel::Render()
 {
@@ -49,11 +44,10 @@ void ViewportPanel::Render()
     glm::uvec2 newSize(static_cast<uint32_t>(contentSize.x), static_cast<uint32_t>(contentSize.y));
 
     // 处理尺寸变化
-    if (newSize != m_CurrentSize) {
-      HandleSizeChange(newSize);
-    }
+    HandleSizeChange(newSize);
+    
     // 获取当前显示缓冲
-    auto displayBuffer = m_Renderer.GetDisplayFrameBuffer();
+    auto displayBuffer = m_Pipeline.GetDisplayFrameBuffer();
     if (displayBuffer && displayBuffer->GetColorAttachmentID() != 0) {
       // 更新ImageProps
       UpdateImagePropsFromDisplayBuffer();
@@ -95,13 +89,17 @@ void ViewportPanel::InitializePanelProps()
 }
 void ViewportPanel::UpdateImagePropsFromDisplayBuffer()
 {
-  auto displayBuffer = m_Renderer.GetDisplayFrameBuffer();
+  auto displayBuffer = m_Pipeline.GetDisplayFrameBuffer();
   if (displayBuffer) {
     m_ImageProps.textureId = static_cast<uintptr_t>(displayBuffer->GetColorAttachmentID());
   }
 }
 void ViewportPanel::HandleSizeChange(const glm::uvec2 &newSize)
 {
+  if (newSize == m_CurrentSize) {
+    return;
+  }
+
   // 更新当前尺寸
   m_CurrentSize = newSize;
 
@@ -111,26 +109,8 @@ void ViewportPanel::HandleSizeChange(const glm::uvec2 &newSize)
     m_CameraComponent.SetAspectRatio(aspectRatio);
   }
 
-  // 请求调整MainFrameBuffer尺寸（在Update中执行）
-  m_RequestedSize = newSize;
-  m_SizeDirty = true;
+  m_Pipeline.Resize(m_CurrentSize.x, m_CurrentSize.y);
 
   // LOG_DEBUG("ViewportPanel size changed to {}x{}", newSize.x, newSize.y);
-}
-void ViewportPanel::ResizeMainFrameBuffer(const glm::uvec2 &newSize)
-{
-  // 获取主FrameBuffer并调整尺寸
-  auto mainBuffer = m_Renderer.GetMainFrameBuffer();
-  if (mainBuffer) {
-    try {
-      mainBuffer->Resize(newSize.x, newSize.y);
-      // LOG_DEBUG("Resized MainFrameBuffer to {}x{}", newSize.x, newSize.y);
-    }
-    catch (const std::exception &e) {
-      LOG_ERROR("Failed to resize MainFrameBuffer: {}", e.what());
-    }
-  }
-
-  // 注意：DisplayFrameBuffer不需要手动调整，Renderer的BeginFrame()会处理双缓冲的尺寸同步
 }
 }  // namespace mite

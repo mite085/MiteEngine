@@ -29,15 +29,15 @@ class ViewportPanel : public UIPanel {
   void InitializePanelProps();
   void UpdateImagePropsFromDisplayBuffer();
   void HandleSizeChange(const glm::uvec2 &newSize);
-  void ResizeMainFrameBuffer(const glm::uvec2 &newSize);
+
   // ==================== 依赖注入 ====================
   CameraComponent &m_CameraComponent;  // 用于设置宽高比
-  RenderPipeline &m_Renderer;          // 用于获取FrameBuffer和执行Resize
+  RenderPipeline &m_Pipeline;          // 用于获取FrameBuffer和执行Resize
+
   // ==================== 状态管理 ====================
   ImageProps m_ImageProps;     // 图像渲染属性
   glm::uvec2 m_CurrentSize;    // 当前面板尺寸
   glm::uvec2 m_RequestedSize;  // 请求调整的尺寸
-  bool m_SizeDirty = false;    // 尺寸脏标记
 };
 }  // namespace mite
 

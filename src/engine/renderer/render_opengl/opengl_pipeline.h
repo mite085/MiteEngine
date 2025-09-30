@@ -22,19 +22,20 @@ class OpenGLPipeline : public RenderPipeline {
   void Initialize() override;
   void Shutdown() override;
 
-  // ---- 帧控制（接管原OpenGLRenderer）----
+  // ---- 帧控制 ----
   void BeginFrame() override;
   void EndFrame() override;
 
-  // ---- 场景渲染（接管原OpenGLRenderer）----
+  // ---- 场景渲染 ----
   void RenderScene(std::shared_ptr<RenderQueue> renderQueue,
                    const glm::mat4 viewMatrix,
                    const glm::mat4 projectionMatrix) override;
 
-  // ---- 状态设置（接管原OpenGLRenderer）----
+  // ---- 状态设置 ----
   void SetClearColor(const glm::vec4 &color) override;
+  void Resize(const uint32_t width, const uint32_t height) override;
 
-  // ---- UI接口（接管原OpenGLRenderer）----
+  // ---- UI接口 ----
   std::shared_ptr<FrameBuffer> GetMainFrameBuffer() const override;
   std::shared_ptr<FrameBuffer> GetDisplayFrameBuffer() const override;
 
@@ -47,7 +48,7 @@ class OpenGLPipeline : public RenderPipeline {
   std::shared_ptr<FrameBuffer> m_MainFrameBuffer;
   std::shared_ptr<FrameBuffer> m_DisplayFrameBuffer;
   bool m_IsRenderingScene = false;
-
+  bool m_ShouldResize = false;
   // ---- 新增Pipeline特有成员 ----
   std::unique_ptr<RenderContext> m_Context;
 };
