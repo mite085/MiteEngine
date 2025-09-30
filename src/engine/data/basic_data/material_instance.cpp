@@ -83,6 +83,87 @@ void MaterialInstance::SetTexture(const std::string &name, TextureGPUSlot textur
 //   }
 // }
 
+// ===================== UBO绑定方法 =====================
+void MaterialInstance::BindUBO(const std::string &uniformBlockName,
+                               std::shared_ptr<ShaderUBO> ubo,
+                               uint32_t bindingPoint)
+{
+  if (!ubo) {
+    LOG_ERROR("Cannot bind null UBO to material instance");
+    return;
+  }
+  if (!ubo->IsInitialized()) {
+    LOG_ERROR("Cannot bind uninitialized UBO to material instance");
+    return;
+  }
+  // 设置着色器绑定
+  ubo->SetupShaderBinding(m_Shader, uniformBlockName, bindingPoint);
+
+  // 存储绑定信息
+  m_UBOBindings[uniformBlockName] = {ubo, bindingPoint};
+
+  LOG_DEBUG("UBO bound to material instance - Block: '{}', Binding Point: {}",
+            uniformBlockName,
+            bindingPoint);
+}
+void MaterialInstance::UnbindUBO(const std::string &uniformBlockName)
+{
+  auto it = m_UBOBindings.find(uniformBlockName);
+  if (it != m_UBOBindings.end()) {
+    m_UBOBindings.erase(it);
+    LOG_DEBUG("UBO unbound from material instance - Block: '{}'", uniformBlockName);
+  }
+  else {
+    LOG_WARN("Attempted to unbind UBO that was not bound: '{}'", uniformBlockName);
+  }
+}
+bool MaterialInstance::HasUBO(const std::string &uniformBlockName) const
+{
+  return m_UBOBindings.find(uniformBlockName) != m_UBOBindings.end();
+}
+// ===================== SSBO绑定方法（新增）=====================
+void MaterialInstance::BindSSBO(const std::string &storageBlockName,
+                                std::shared_ptr<ShaderSSBO> ssbo,
+                                uint32_t bindingPoint)
+{
+  if (!ssbo) {
+    LOG_ERROR("Cannot bind null SSBO to material instance");
+    return;
+  }
+  if (!ssbo->IsInitialized()) {
+    LOG_ERROR("Cannot bind uninitialized SSBO to material instance");
+    return;
+  }
+  if (ssbo->IsMapped()) {
+    LOG_ERROR("Cannot bind mapped SSBO to material instance");
+    return;
+  }
+  // 设置着色器绑定
+  ssbo->SetupShaderBinding(m_Shader, storageBlockName, bindingPoint);
+
+  // 存储绑定信息
+  m_SSBOBindings[storageBlockName] = {ssbo, bindingPoint};
+
+  LOG_DEBUG("SSBO bound to material instance - Block: '{}', Binding Point: {}",
+            storageBlockName,
+            bindingPoint);
+}
+void MaterialInstance::UnbindSSBO(const std::string &storageBlockName)
+{
+  auto it = m_SSBOBindings.find(storageBlockName);
+  if (it != m_SSBOBindings.end()) {
+    m_SSBOBindings.erase(it);
+    LOG_DEBUG("SSBO unbound from material instance - Block: '{}'", storageBlockName);
+  }
+  else {
+    LOG_WARN("Attempted to unbind SSBO that was not bound: '{}'", storageBlockName);
+  }
+}
+bool MaterialInstance::HasSSBO(const std::string &storageBlockName) const
+{
+  return m_SSBOBindings.find(storageBlockName) != m_SSBOBindings.end();
+}
+
 // ===================== 核心Apply方法 =====================
 void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader) const
 {
@@ -93,6 +174,30 @@ void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *over
   }
 
   targetShader->Bind();
+
+  // ---- 绑定UBO（在绑定Shader后立即执行）----
+  for (const auto &[blockName, uboBinding] : m_UBOBindings) {
+    if (uboBinding.ubo && uboBinding.ubo->IsInitialized()) {
+      uboBinding.ubo->Bind(uboBinding.bindingPoint);
+    }
+    else {
+      LOG_WARN("Skipping uninitialized UBO binding: '{}'", blockName);
+    }
+  }
+
+  // ---- 绑定SSBO（在UBO绑定后执行）----
+  for (const auto &[blockName, ssboBinding] : m_SSBOBindings) {
+    if (ssboBinding.ssbo && ssboBinding.ssbo->IsInitialized()) {
+      if (ssboBinding.ssbo->IsMapped()) {
+        LOG_WARN("Skipping mapped SSBO binding: '{}'", blockName);
+        continue;
+      }
+      ssboBinding.ssbo->Bind(ssboBinding.bindingPoint);
+    }
+    else {
+      LOG_WARN("Skipping uninitialized SSBO binding: '{}'", blockName);
+    }
+  }
 
   // ---- 上传Uniform值（不包含纹理，纹理单独处理） ----
   for (const auto &[name, value] : m_Uniforms) {
