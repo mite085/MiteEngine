@@ -8,6 +8,8 @@ set(BASIC_TYPE_SRCS
     basic_type/asset_id.h                       # 类型安全的资产UUID
     basic_type/asset_type.h                     # 资产基本数据类型
     basic_type/handle_type.h                    # GPU相关的句柄类型
+    basic_type/material_type.h                  # 材质相关类型定义
+    basic_type/framebuffer_type.h               # 帧缓冲相关的类型定义
     basic_type/visible_type.h                   # 可见性掩码定义
     basic_type/bounding_volumes_types.h         # 包围盒类型定义
     basic_type/bounding_volumes_types.cpp
@@ -20,39 +22,41 @@ set(BASIC_TYPE_SRCS
 source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 
 set(BASIC_DATA_SRCS
-    basic_data/camera.h
+    basic_data/camera.h         # 相机
     basic_data/camera.cpp
-    basic_data/framebuffer.h
+    basic_data/framebuffer.h    # 帧缓冲
     basic_data/framebuffer.cpp
-    basic_data/mesh.h
+    basic_data/mesh.h           # 网格体
     basic_data/mesh.cpp
-    basic_data/model.h
+    basic_data/model.h          # 模型
     basic_data/model.cpp
-    basic_data/texture.h
+    basic_data/texture.h        # 纹理（目前由Asset完整管理纹理实例，纹理本身处于弃用状态）
     basic_data/texture.cpp
-    basic_data/transform.h
+    basic_data/transform.h      # 变换
     basic_data/transform.cpp
 
-    basic_data/bounding_volume.h             # AABB/OBB/Sphere等包围盒实现
+    basic_data/bounding_volume.h    # AABB/OBB/Sphere等包围盒实现
     basic_data/bounding_volume.cpp
-    basic_data/ray.h                          # 射线类型定义和基础方法
+    basic_data/ray.h                # 射线类型定义和基础方法
     basic_data/ray.cpp
-    basic_data/frustum.h                      # 视锥体类型定义和基础方法  
+    basic_data/frustum.h            # 视锥体类型定义和基础方法  
     basic_data/frustum.cpp
-    basic_data/material_instance.h            # 材质实例
+    basic_data/material_instance.h  # 材质实例
     basic_data/material_instance.cpp
 )
 source_group("basic_data" FILES ${BASIC_DATA_SRCS})
 
 set(BASIC_SHADER_SRCS
-    basic_shader/shader.h
+    basic_shader/shader.h           # 着色器（目前仅有OpenGL，后续扩展需要重新规划抽象）
     basic_shader/shader.cpp
-    basic_shader/shader_cache.h
+    basic_shader/shader_cache.h     # 着色器缓存
     basic_shader/shader_cache.cpp
-    basic_shader/shader_ubo.h
+    basic_shader/shader_ubo.h       # Uniform Buffer，固定size的数据结构体
     basic_shader/shader_ubo.cpp
-    basic_shader/shader_ssbo.h
+    basic_shader/shader_ssbo.h      # Shader Storge Buffer，可变size的数据结构体
     basic_shader/shader_ssbo.cpp
+    basic_shader/shader_binding_point_manager.h     # UBO/SSBO绑定点管理器
+    basic_shader/shader_binding_point_manager.cpp
 )
 source_group("basic_shader" FILES ${BASIC_SHADER_SRCS})
 

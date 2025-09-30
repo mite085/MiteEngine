@@ -5,19 +5,19 @@ set(ENGINE_RENDERER_LIB_NAME MiteEngine_Engine_Renderer)
 
 # 创建源代码组(筛选器)
 set(RENDERER_CORE_SRCS
-    render_core/render_command.h
+    render_core/render_command.h    # 渲染命令系统，负责渲染操作整合命令
     render_core/render_command.cpp
-    render_core/render_context.h
+    render_core/render_context.h    # 渲染上下文，负责统一数据传递和资源共享
     render_core/render_context.cpp
-    render_core/render_device.h
+    render_core/render_device.h     # 渲染设备，负责具体渲染操作封装
     render_core/render_device.cpp
-    render_core/render_pipeline.h
+    render_core/render_pipeline.h   # 渲染管线，负责stage管理
     render_core/render_pipeline.cpp
 )
 source_group("render core" FILES ${RENDERER_CORE_SRCS})
 
 set(RENDERER_OPENGL_SRCS
-    render_opengl/opengl_command.h
+    render_opengl/opengl_command.h   # opengl无需独立实现上下文，其他均需要独立实现
     render_opengl/opengl_command.cpp
     render_opengl/opengl_device.h
     render_opengl/opengl_device.cpp
@@ -27,15 +27,17 @@ set(RENDERER_OPENGL_SRCS
 source_group("render opengl" FILES ${RENDERER_OPENGL_SRCS})
 
 set(RENDERER_STAGES_SRCS
-    render_stages/render_stage.h
+    render_stages/render_stage.h        # 渲染阶段基类，目前规划顺序为shadow map->gbuffer->deffered lighting->forward
     render_stages/render_stage.cpp
 
-    render_stages/deferred_lighting_stage.h
+    render_stages/deferred_lighting_stage.h     # 延迟光照计算阶段
     render_stages/deferred_lighting_stage.cpp
-    render_stages/forward_stage.h
+    render_stages/forward_stage.h               # 前向渲染阶段
     render_stages/forward_stage.cpp
-    render_stages/gbuffer_stage.h
+    render_stages/gbuffer_stage.h               # 几何处理阶段
     render_stages/gbuffer_stage.cpp
+    render_stages/shadow_map_stage.h            # 阴影贴图阶段
+    render_stages/shadow_map_stage.cpp
 )
 source_group("render stage" FILES ${RENDERER_STAGES_SRCS})
 

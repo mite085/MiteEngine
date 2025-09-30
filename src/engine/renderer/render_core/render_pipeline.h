@@ -37,6 +37,7 @@ class RenderPipeline {
 
   // ---- 状态设置 ----
   virtual void SetClearColor(const glm::vec4 &color) = 0;
+  virtual void Resize(const uint32_t width, const uint32_t height) = 0;
 
   // ---- UI接口 ----
   virtual std::shared_ptr<FrameBuffer> GetMainFrameBuffer() const = 0;

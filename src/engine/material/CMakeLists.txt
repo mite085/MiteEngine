@@ -5,17 +5,19 @@ set(ENGINE_MATERIAL_LIB_NAME MiteEngine_Engine_Material)
 
 # 创建源代码组(筛选器)
 set(MATERIAL_SRCS
-    material_factory.h
+    material_factory.h              # 材质工厂类，负责模板的注册和实例的创建（材质实例资产化，由Asset管理）
     material_factory.cpp
-    material_template.h
+    material_template.h             # 材质模板类，同模板的材质实例共用同一个Shader对象
     material_template.cpp
+    gbuffer_material_template.h     # 支持GBuffer的材质基类，GBuffer会将BaseColor、Metallic等PBR参数加载进Buffer，所以必须支持这些参数
+    gbuffer_material_template.cpp
 )
 source_group("material system" FILES ${MATERIAL_SRCS})
 
 set(MATERIAL_TEMPLATES_SRCS
-    material_templates/material_template_gltf_pbr.h
+    material_templates/material_template_gltf_pbr.h     # GLTF的pbr实现
     material_templates/material_template_gltf_pbr.cpp
-    material_templates/material_template_pure_color.h
+    material_templates/material_template_pure_color.h   # 测试用纯色材质，不包含光照反射。
     material_templates/material_template_pure_color.cpp
 )
 source_group("material templates" FILES ${MATERIAL_TEMPLATES_SRCS})
