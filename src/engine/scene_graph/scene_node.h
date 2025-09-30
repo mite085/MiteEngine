@@ -2,10 +2,10 @@
 #define MITE_SCENE_NODE_H
 
 #include "basic_data/bounding_volume.h"
+#include "basic_data/transform.h"
 #include "scene_core/entity.h"
 
 namespace mite {
-
 /**
  * @class SceneNode
  * @brief 场景节点类，管理场景中实体的层级关系和空间信息
@@ -86,7 +86,7 @@ class SceneNode {
    * @brief 获取世界变换矩阵
    * @return 世界变换矩阵
    */
-  const glm::mat4 &GetWorldTransform() const;
+  const Transform &GetWorldTransform() const;
   /**
    * @brief 获取变换的脏状态
    */
@@ -175,8 +175,8 @@ class SceneNode {
   std::vector<SceneNode *> m_Children;  // 子节点列表
 
   // 世界空间缓存
-  glm::mat4 m_WorldTransform = glm::mat4(1.0f);  // 世界变换矩阵
-  BoundingVolume m_WorldBounds;                  // 世界空间包围盒
+  Transform m_WorldTransform;    // 世界变换矩阵
+  BoundingVolume m_WorldBounds;  // 世界空间包围盒
 
   // 可见性状态
   bool m_WorldVisible = true;              // 世界可见性状态（计算得出）
@@ -187,7 +187,6 @@ class SceneNode {
   bool m_TransformDirty = true;  // 变换需要更新
   bool m_BoundsDirty = true;     // 包围盒需要更新
 };
-
 }  // namespace mite
 
 #endif  // MITE_SCENE_NODE_H

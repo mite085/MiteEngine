@@ -1,8 +1,9 @@
 #ifndef MITE_RENDERABLE_ENTITY
 #define MITE_RENDERABLE_ENTITY
 
-#include "basic_data/mesh.h"
 #include "basic_data/material_instance.h"
+#include "basic_data/mesh.h"
+#include "basic_data/transform.h"
 #include "scene_core/entity.h"
 
 namespace mite {
@@ -11,9 +12,9 @@ namespace mite {
  * 注：仅包含渲染所需的最小字段，未来可扩展（如LOD、骨骼动画等）
  */
 struct RenderableItem {
-  Entity entity;             // 对应的ECS实体ID
-  glm::mat4 worldTransform;  // 世界空间变换矩阵（从Transform组件计算）
-  Mesh mesh;                 // 网格GPU句柄（从Mesh组件获取）
+  Entity entity;                               // 对应的ECS实体ID
+  glm::mat4 worldTransform;                    // 世界空间变换矩阵（从SceneNode获取）
+  Mesh mesh;                                   // 网格GPU句柄（从Mesh组件获取）
   std::shared_ptr<MaterialInstance> material;  // 材质实例
 
   // 渲染排序相关字段

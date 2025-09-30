@@ -147,7 +147,7 @@ std::string SceneNode::GetPath() const
 }
 
 // ==================== 变换相关 ====================
-const glm::mat4 &SceneNode::GetWorldTransform() const
+const Transform &SceneNode::GetWorldTransform() const
 {
   return m_WorldTransform;
 }
@@ -217,15 +217,15 @@ void SceneNode::UpdateWorldTransform(const SceneRegistry &registry)
     glm::mat4 localMatrix = transformComp.GetLocalMatrix();
     // 计算世界变换
     if (m_Parent && !m_Parent->IsRoot()) {
-      m_WorldTransform = m_Parent->GetWorldTransform() * localMatrix;
+      m_WorldTransform.SetLocalMatrix(m_Parent->GetWorldTransform().GetLocalMatrix() * localMatrix);
     }
     else {
-      m_WorldTransform = localMatrix;
+      m_WorldTransform.SetLocalMatrix(localMatrix);
     }
   }
   else {
     // 没有TransformComponent，使用单位矩阵
-    m_WorldTransform = glm::mat4(1.0f);
+    m_WorldTransform.SetLocalMatrix(glm::mat4(1.0f));
   }
   m_TransformDirty = false;
 }
@@ -237,7 +237,7 @@ void SceneNode::UpdateWorldBounds(const SceneRegistry &registry)
     const BoundingVolume &localBounds = boundsComp.GetVolume();
     // 变换到世界空间
     if (localBounds.IsValid()) {
-      m_WorldBounds = localBounds.Transform(m_WorldTransform);
+      m_WorldBounds = localBounds.Transform(m_WorldTransform.GetLocalMatrix());
     }
     else {
       // 无效的局部包围盒

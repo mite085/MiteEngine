@@ -55,12 +55,13 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     // 提取渲染所需组件数据
     auto mesh = ExtractMeshComponent(registry, entity);
     auto material = ExtractMaterialComponent(registry, entity);
-    glm::mat4 transform = sceneNode->GetWorldTransform();
+    Transform transform = sceneNode->GetWorldTransform();
 
     // 构建RenderableItem
     RenderableItem item;
     item.entity = entity;
-    item.worldTransform = transform;
+    item.worldTransform =
+        transform.GetLocalMatrix();  // WorldTransform的LocalMatrix即为WorldMatrix
     item.mesh = mesh;
     item.material = material;
 
@@ -94,8 +95,7 @@ bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, Entity entity)
   return hasMesh && hasMaterial && hasTransform;
 }
 
-Mesh RenderableItemBuilder::ExtractMeshComponent(SceneRegistry &registry,
-                                                                  Entity entity)
+Mesh RenderableItemBuilder::ExtractMeshComponent(SceneRegistry &registry, Entity entity)
 {
   if (registry.HasComponent<MeshComponent>(entity)) {
     auto &meshComp = registry.GetComponent<MeshComponent>(entity);
