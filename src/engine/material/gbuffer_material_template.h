@@ -8,17 +8,17 @@
 
 namespace mite {
 /**
- * @brief GBuffer²ÄÖÊ²ÎÊıUBO½á¹¹Ìå
- * @note °´ÕÕstd140²¼¾Ö¹æÔò¶ÔÆë£¬°üº¬ËùÓĞ²ÄÖÊ²ÎÊı
+ * @brief GBufferæè´¨å‚æ•°UBOç»“æ„ä½“
+ * @note æŒ‰ç…§std140å¸ƒå±€è§„åˆ™å¯¹é½ï¼ŒåŒ…å«æ‰€æœ‰æè´¨å‚æ•°
  */
 struct alignas(16) GBufferMaterialUBO {
-  // ---- »ù´¡PBR²ÎÊı ----
-  glm::vec4 baseColor;            // RGB + Alpha (w·ÖÁ¿)
+  // ---- åŸºç¡€PBRå‚æ•° ----
+  glm::vec4 baseColor;            // RGB + Alpha (wåˆ†é‡)
   glm::vec4 metallicRoughnessAO;  // x: metallic, y: roughness, z: AO, w: unused
-  glm::vec4 emission;             // RGB + Intensity (w·ÖÁ¿)
+  glm::vec4 emission;             // RGB + Intensity (wåˆ†é‡)
   glm::vec4 normalScale;          // x: normal scale, yzw: unused
 
-  // ---- ÎÆÀí±êÊ¶ºÍ²ÎÊı ----
+  // ---- çº¹ç†æ ‡è¯†å’Œå‚æ•° ----
   glm::vec4 textureFlags;  // x: hasBaseColorTex, y: hasNormalTex, z: hasMRTex, w: hasEmissiveTex
   glm::vec4 baseColorTexParams;  // xy: scale, zw: offset
   glm::vec4 normalTexParams;     // xy: scale, zw: offset
@@ -26,15 +26,15 @@ struct alignas(16) GBufferMaterialUBO {
   glm::vec4 emissiveTexParams;   // xy: scale, zw: offset
   glm::vec4 occlusionTexParams;  // xy: scale, zw: offset
 
-  // ---- äÖÈ¾ÊôĞÔ ----
+  // ---- æ¸²æŸ“å±æ€§ ----
   glm::vec4 renderProperties;  // x: alphaCutoff, y: doubleSided, z: alphaMode, w: unused
 
-  // Ìî³äµ½256×Ö½Ú¶ÔÆë
+  // å¡«å……åˆ°256å­—èŠ‚å¯¹é½
   glm::vec4 padding[3];
 };
 /**
- * @brief ÍêÈ«»ùÓÚUBOµÄGBuffer²ÄÖÊÄ£°å
- * @note ËùÓĞ²ÄÖÊ²ÎÊı¶¼Í¨¹ıUBO´«µİ£¬²»ÔÙÊ¹ÓÃµ¥¶ÀµÄuniform
+ * @brief å®Œå…¨åŸºäºUBOçš„GBufferæè´¨æ¨¡æ¿
+ * @note æ‰€æœ‰æè´¨å‚æ•°éƒ½é€šè¿‡UBOä¼ é€’ï¼Œä¸å†ä½¿ç”¨å•ç‹¬çš„uniform
  */
 class GBufferMaterialTemplate : public MaterialTemplate {
  public:
@@ -42,23 +42,23 @@ class GBufferMaterialTemplate : public MaterialTemplate {
 
   explicit GBufferMaterialTemplate(std::shared_ptr<OpenGLShader> shader);
   virtual ~GBufferMaterialTemplate();
-  // ---- ºËĞÄ½Ó¿ÚÖØĞ´ ----
+  // ---- æ ¸å¿ƒæ¥å£é‡å†™ ----
   std::shared_ptr<MaterialInstance> CreateInstance(
       const MaterialSourceData &sourceData) const override;
 
   void ApplyDefaultParams(MaterialInstance &instance) const override;
-  // ---- UBO¹ÜÀí ----
+  // ---- UBOç®¡ç† ----
   void SetupMaterialUBO(std::shared_ptr<MaterialInstance> instance) const;
   void UpdateMaterialUBO(const MaterialSourceData &sourceData) const;
 
-  // ---- °ó¶¨µãĞÅÏ¢ ----
+  // ---- ç»‘å®šç‚¹ä¿¡æ¯ ----
   uint32_t GetBindingPoint() const
   {
     return m_BindingPoint;
   }
 
  protected:
-  // ---- ²ÎÊı»ñÈ¡¹¤¾ß·½·¨ ----
+  // ---- å‚æ•°è·å–å·¥å…·æ–¹æ³• ----
   glm::vec4 GetBaseColor(const MaterialSourceData &sourceData) const;
   float GetMetallic(const MaterialSourceData &sourceData) const;
   float GetRoughness(const MaterialSourceData &sourceData) const;
@@ -69,60 +69,60 @@ class GBufferMaterialTemplate : public MaterialTemplate {
   float GetAlphaCutoff(const MaterialSourceData &sourceData) const;
   bool GetDoubleSided(const MaterialSourceData &sourceData) const;
   float GetAlphaMode(const MaterialSourceData &sourceData) const;
-  // ---- ÎÆÀí´¦Àí¹¤¾ß·½·¨ ----
+  // ---- çº¹ç†å¤„ç†å·¥å…·æ–¹æ³• ----
   void SetupTextures(std::shared_ptr<MaterialInstance> instance,
                      const MaterialSourceData &sourceData) const;
 
   void SetupTextureSlot(std::shared_ptr<MaterialInstance> instance,
                         const std::string &slotName,
                         const MaterialSourceData &sourceData) const;
-  // ---- Ä¬ÈÏÖµÉèÖÃ£¨ÅÉÉúÀà¿ÉÖØĞ´£© ----
+  // ---- é»˜è®¤å€¼è®¾ç½®ï¼ˆæ´¾ç”Ÿç±»å¯é‡å†™ï¼‰ ----
   virtual glm::vec4 GetDefaultBaseColor() const
   {
     return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
   }
   virtual float GetDefaultMetallic() const
   {
-    return 0.0f;  // ·Ç½ğÊô
+    return 0.0f;  // éé‡‘å±
   }
   virtual float GetDefaultRoughness() const
   {
-    return 1.0f;  // ÍêÈ«´Ö²Ú£¬±ÜÃâ¾µÃæ·´Éä
+    return 1.0f;  // å®Œå…¨ç²—ç³™ï¼Œé¿å…é•œé¢åå°„
   }
   virtual float GetDefaultAO() const
   {
-    return 1.0f;  // ÎŞ»·¾³¹âÕÚ±Î
+    return 1.0f;  // æ— ç¯å¢ƒå…‰é®è”½
   }
   virtual glm::vec3 GetDefaultEmissionColor() const
   {
-    return glm::vec3(0.0f); // ÎŞ×Ô·¢¹â
+    return glm::vec3(0.0f); // æ— è‡ªå‘å…‰
   }
   virtual float GetDefaultEmissionIntensity() const
   {
-    return 0.0f;  // ÎŞ×Ô·¢¹âÇ¿¶È
+    return 0.0f;  // æ— è‡ªå‘å…‰å¼ºåº¦
   }
   virtual float GetDefaultNormalScale() const
   {
-    return 1.0f;  // Ä¬ÈÏ·¨ÏßËõ·Å
+    return 1.0f;  // é»˜è®¤æ³•çº¿ç¼©æ”¾
   }
   virtual float GetDefaultAlphaCutoff() const
   {
-    return 0.5f;  // Alpha²âÊÔãĞÖµ
+    return 0.5f;  // Alphaæµ‹è¯•é˜ˆå€¼
   }
   virtual bool GetDefaultDoubleSided() const
   {
-    return false;  // ¹Ø±ÕË«ÃæäÖÈ¾
+    return false;  // å…³é—­åŒé¢æ¸²æŸ“
   }
   virtual float GetDefaultAlphaMode() const
   {
     return 0.0f;
   }  // 0 = OPAQUE
-  // ---- UBOÊı¾İÌî³ä ----
+  // ---- UBOæ•°æ®å¡«å…… ----
   virtual void FillUBOData(GBufferMaterialUBO &uboData,
                            const MaterialSourceData &sourceData) const;
 
  private:
-  // UBOÊµÀıºÍ°ó¶¨µã
+  // UBOå®ä¾‹å’Œç»‘å®šç‚¹
   mutable std::shared_ptr<ShaderUBO> m_MaterialUBO;
   mutable std::mutex m_UBOMutex;
   uint32_t m_BindingPoint;

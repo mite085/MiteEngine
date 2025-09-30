@@ -1,9 +1,7 @@
 #ifndef MITE_FRAMEBUFFER_H
 #define MITE_FRAMEBUFFER_H
 
-#include "headers/headers.h"
-#include "basic_type/handle_type.h"
-#include <glad.h>
+#include "basic_type/framebuffer_type.h"
 
 namespace mite {
 /**
