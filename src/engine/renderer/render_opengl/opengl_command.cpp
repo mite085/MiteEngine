@@ -22,7 +22,6 @@ void OpenGLRenderCommand::Init()
                          ApplyOpenGLState(m_CurrentGLState);
                          // 设置默认的正面朝向
                          glFrontFace(GL_CCW);
-                         CheckGLError();
                        },
                        "InitRenderState"});
 
@@ -44,11 +43,11 @@ void OpenGLRenderCommand::Clear(uint32_t clearFlags,
 
   // 提交清除命令
   m_CommandQueue.push({CommandType::Clear,
-                       [] { CheckGLError(); },  // 实际清除操作在Flush时执行
+                       [] {},  // 实际清除操作在Flush时执行
                        "Clear"});
 }
 
-void OpenGLRenderCommand::BindFrameBuffer(const FrameBuffer::Ptr &framebuffer)
+void OpenGLRenderCommand::BindFrameBuffer(const std::shared_ptr<FrameBuffer> &framebuffer)
 {
   if (!framebuffer) {
     m_Logger->warn("Attempt to bind null framebuffer");
@@ -57,12 +56,8 @@ void OpenGLRenderCommand::BindFrameBuffer(const FrameBuffer::Ptr &framebuffer)
 
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  m_CommandQueue.push({CommandType::BindFrameBuffer,
-                       [framebuffer] {
-                         framebuffer->Bind();
-                         CheckGLError();
-                       },
-                       "BindFrameBuffer"});
+  m_CommandQueue.push(
+      {CommandType::BindFrameBuffer, [framebuffer] { framebuffer->Bind(); }, "BindFrameBuffer"});
 }
 
 void OpenGLRenderCommand::UnbindFrameBuffer()
@@ -70,11 +65,96 @@ void OpenGLRenderCommand::UnbindFrameBuffer()
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
   m_CommandQueue.push({CommandType::UnbindFrameBuffer,
-                       [] {
-                         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                         CheckGLError();
-                       },
+                       [] { glBindFramebuffer(GL_FRAMEBUFFER, 0); },
                        "UnbindFrameBuffer"});
+}
+
+void OpenGLRenderCommand::SetViewport(int x, int y, int width, int height)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+
+  m_CommandQueue.push(
+      {CommandType::SetViewport, [=]() { glViewport(x, y, width, height); }, "SetViewport"});
+}
+
+void OpenGLRenderCommand::SetRenderState(const RenderState &state)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  // 将基础状态转换为OpenGL特定状态
+  OpenGLRenderState glState;
+  glState.depthTest = state.depthTest;
+  glState.blend = state.blend;
+  glState.cullFace = state.cullFace;
+
+  // 使用OpenGL默认值填充平台特定字段
+  glState.depthFunc = GL_LESS;
+  glState.blendSrc = GL_SRC_ALPHA;
+  glState.blendDst = GL_ONE_MINUS_SRC_ALPHA;
+  glState.cullFaceMode = GL_BACK;
+  m_CurrentGLState = glState;
+  m_CommandQueue.push({CommandType::SetRenderState,
+                       [this, glState] { ApplyOpenGLState(glState); },
+                       "SetRenderState"});
+}
+
+void OpenGLRenderCommand::BindShader(
+    std::shared_ptr<OpenGLShader> shader,
+    std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup)
+{
+  if (!shader) {
+    m_Logger->warn("Attempt to bind null shader");
+    return;
+  }
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::BindShader,
+                       [this, shader, uniformSetup] {
+                         // 绑定着色器
+                         shader->Bind();
+
+                         // 执行Uniform设置回调
+                         if (uniformSetup) {
+                           uniformSetup(shader);
+                         }
+                       },
+                       "BindShader"});
+}
+void OpenGLRenderCommand::UnbindShader(std::shared_ptr<OpenGLShader> shader)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::UnbindShader,
+                       [shader] {
+                         if (shader)
+                           shader->Unbind();
+                       },
+                       "UnbindShader"});
+}
+void OpenGLRenderCommand::BindTexture(TextureGPUHandle textureHandle,
+                                      uint32_t slot,
+                                      uint32_t samplerType)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push(
+      {CommandType::BindTextures,
+       [this, textureHandle, slot, samplerType] { InternalBindTexture(textureHandle, slot); },
+       "BindTexture: slot=" + std::to_string(slot)});
+}
+void OpenGLRenderCommand::BindMesh(const Mesh &mesh)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push(
+      {CommandType::BindMesh, [this, mesh] { m_Device->BindMesh(mesh); }, "BindMesh"});
+}
+void OpenGLRenderCommand::DrawMesh(uint32_t indexCount,
+                                   uint32_t indexOffset,
+                                   uint32_t primitiveType,
+                                   uint32_t indexType)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::DrawMesh,
+                       [this, indexCount, indexOffset, primitiveType, indexType] {
+                         m_Device->DrawIndexed(indexCount, indexOffset, primitiveType, indexType);
+                       },
+                       "DrawMesh: count=" + std::to_string(indexCount)});
 }
 
 void OpenGLRenderCommand::Submit(RenderableItem item,
@@ -106,49 +186,50 @@ void OpenGLRenderCommand::Submit(RenderableItem item,
                          // 3. 绑定网格VAO
                          m_Device->BindMesh(item.mesh);
 
-                         // 4. 绘制网格:
+                         // 4. 绘制网格
                          m_Device->DrawIndexed(item.mesh.GetIndexCount(),
                                                item.mesh.GetIndexOffset(),
                                                GL_TRIANGLES,
                                                GL_UNSIGNED_INT);
-                         CheckGLError();
                        },
                        "DrawIndexed mesh from model: " + item.mesh.GetModelHandle().path});
 }
 
-void OpenGLRenderCommand::SetViewport(int x, int y, int width, int height)
+void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
+                                          glm::mat4 viewMatrix,
+                                          glm::mat4 projectionMatrix,
+                                          std::shared_ptr<OpenGLShader> gbufferShader)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push(
+      {CommandType::DrawIndexed,
+       [this, item, viewMatrix, projectionMatrix, gbufferShader] {
+         if (!item.material) {
+           m_Logger->error("Invalid Material Instance in SubmitToGBuffer");
+           return;
+         }
 
-  m_CommandQueue.push({CommandType::SetViewport,
-                       [=]() {
-                         glViewport(x, y, width, height);
-                         CheckGLError();
-                       },
-                       "SetViewport"});
-}
+         // 1. 绑定G-Buffer着色器（覆盖材质自带着色器）
+         BindShader(gbufferShader, [&](std::shared_ptr<OpenGLShader> shader) {
+           shader->SetMat4("u_Model", item.worldTransform);
+           shader->SetMat4("u_View", viewMatrix);
+           shader->SetMat4("u_Projection", projectionMatrix);
+         });
 
-void OpenGLRenderCommand::SetRenderState(const RenderState &state)
-{
-  std::lock_guard<std::mutex> lock(m_QueueMutex);
-  // 将基础状态转换为OpenGL特定状态
-  OpenGLRenderState glState;
-  glState.depthTest = state.depthTest;
-  glState.blend = state.blend;
-  glState.cullFace = state.cullFace;
+         // 2. 应用材质参数到G-Buffer着色器
+         auto materialInstance = std::static_pointer_cast<MaterialInstance>(item.material);
+         materialInstance->Apply(
+             [this](TextureGPUHandle handle, uint32_t slot) { InternalBindTexture(handle, slot); },
+             0,
+             gbufferShader.get());
 
-  // 使用OpenGL默认值填充平台特定字段
-  glState.depthFunc = GL_LESS;
-  glState.blendSrc = GL_SRC_ALPHA;
-  glState.blendDst = GL_ONE_MINUS_SRC_ALPHA;
-  glState.cullFaceMode = GL_BACK;
-  m_CurrentGLState = glState;
-  m_CommandQueue.push({CommandType::SetRenderState,
-                       [this, glState] {
-                         ApplyOpenGLState(glState);
-                         CheckGLError();
-                       },
-                       "SetRenderState"});
+         // 3. 绑定网格VAO
+         BindMesh(item.mesh);
+
+         // 4. 绘制网格
+         DrawMesh(item.mesh.GetIndexCount(), item.mesh.GetIndexOffset());
+       },
+       "Submit GBuffer: " + item.mesh.GetModelHandle().path});
 }
 
 void OpenGLRenderCommand::Flush()
@@ -165,11 +246,14 @@ void OpenGLRenderCommand::Flush()
           glClearDepth(m_DepthClearValue);
           glClearStencil(m_StencilClearValue);
           glClear(m_ClearFlags);
+          CheckGLError();
           break;
 
-        default:
+        default: {
           cmd.execute();
+          CheckGLError();
           break;
+        }
       }
     }
     catch (const std::exception &e) {
@@ -194,10 +278,7 @@ void OpenGLRenderCommand::SetRenderState(const OpenGLRenderState &state)
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CurrentGLState = state;
   m_CommandQueue.push({CommandType::SetRenderState,
-                       [this, state] {
-                         ApplyOpenGLState(state);
-                         CheckGLError();
-                       },
+                       [this, state] { ApplyOpenGLState(state); },
                        "SetRenderState(GL)"});
 }
 
@@ -257,6 +338,11 @@ void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
     glDisable(GL_STENCIL_TEST);
   }
 }
+void OpenGLRenderCommand::InternalBindTexture(TextureGPUHandle handle, uint32_t slot)
+{
+  m_Device->BindTexture(handle, slot);
+}
+
 void OpenGLRenderCommand::CheckGLError()
 {
   GLenum err = glGetError();
