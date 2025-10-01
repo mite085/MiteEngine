@@ -1,0 +1,85 @@
+shader/
+shader/common/
+common.glsl      # 通用常量和结构体定义
+math.glsl        # 数学工具函数
+uniforms.glsl    # 全局Uniform缓冲区定义
+
+shader/gbuffer/
+gbuffer.vert.glsl    # GBuffer顶点着色器（第一步，生成GBuffer纹理）
+gbuffer.frag.glsl    # GBuffer片段着色器
+
+shader/shadowmap/
+directional.vert.glsl    # 方向光阴影顶点（第二步，阴影贴图生成）
+directional.frag.glsl    # 方向光阴影片段
+point.vert.glsl          # 点光源阴影顶点
+point.frag.glsl          # 点光源阴影片段
+spot.vert.glsl           # 聚光灯阴影顶点
+spot.frag.glsl           # 聚光灯阴影片段
+area.vert.glsl           # 面光源阴影顶点
+area.frag.glsl           # 面光源阴影片段
+
+shader/lighting/
+deferred_lighting.vert.glsl     # 延迟光照全屏四边形顶点（第三步，调用BRDF完成最终颜色计算）
+deferred_lighting.frag.glsl     # 延迟光照全屏四边形片段
+light_calculation.glsl          # 光照计算辅助函数
+
+shader/brdf
+npr.brdf.glsl        # 风格化材质BRDF（第三步附庸）
+pbr.brdf.glsl        # 支持GLTF参数的PBR材质BRDF
+brdf_common.glsl     # BRDF通用接口定义
+
+shader/forward
+forward.vert.glsl    # 前向渲染顶点（第四步，执行透明物体等特殊渲染）
+forward.frag.glsl    # 前向渲染片段
+
+shader/postprocess/
+tonemapping.frag.glsl    # 色调映射
+fxaa.frag.glsl           # 抗锯齿
+outline.frag.glsl        # 轮廓线后处理
+bloom.frag.glsl          # 泛光效果
+
+
+
+
+GBuffer列表：
+GBuffer0 - WorldPosition + Depth // RGBA32F (需要高精度存储位置)
+.r = worldPos.x    // 世界坐标X
+.g = worldPos.y    // 世界坐标Y  
+.b = worldPos.z    // 世界坐标Z
+.a = linearDepth   // 线性深度 [0.0-1.0]
+
+GBuffer1 - BaseColor + MaterialType // RGBA16F
+.r = baseColor.r
+.g = baseColor.g  
+.b = baseColor.b
+.a = materialType  // 材质类型标识符
+
+GBuffer2 - MetallicRoughness + AO // RGBA16F
+.r = metallic      // 金属度 [0.0-1.0]
+.g = roughness     // 粗糙度 [0.0-1.0] 
+.b = occlusion     // 环境光遮蔽 [0.0-1.0]
+.a = reserved      // 保留位
+
+GBuffer3 - Normal + NormalScale // RGBA16F  
+.r = normal.x      // 世界空间法线X [-1.0-1.0]
+.g = normal.y      // 世界空间法线Y [-1.0-1.0]
+.b = normal.z      // 世界空间法线Z [-1.0-1.0]
+.a = normalScale   // 法线贴图强度 [0.0-1.0]
+
+GBuffer4 - Emission + Alpha // RGBA16F
+.r = emission.r    // 自发光颜色R
+.g = emission.g    // 自发光颜色G
+.b = emission.b    // 自发光颜色B
+.a = alpha         // 透明度 [0.0-1.0]（用于后续前向渲染判断）
+
+GBuffer5 - NPRParameters（PBR模式下写入默认值） // RGBA16F
+.r = rampThreshold    // 主要光照分界点--色阶阈值 [0.0-1.0]
+.g = rampSmoothness   // 光照过渡平滑度--色阶平滑度 [0.0-0.2]
+.b = specularSize     // 高光大小/强度--高光尺寸 [0.0-1.0]
+.a = outlineWidth     // 描边粗细--描边宽度 [0.0-0.1]
+
+GBuffer6 - NPRColors（PBR模式下写入默认值） // RGBA16F  
+.r = shadowTint.r     // 阴影色调R--阴影区域颜色
+.g = shadowTint.g     // 阴影色调G  
+.b = shadowTint.b     // 阴影色调B
+.a = rimPower         // 边缘光衰减--边缘光强度 [0.0-5.0]

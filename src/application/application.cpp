@@ -111,8 +111,8 @@ void MiteApplication::LoadDefaultScene()
 
     // 3. 创建材质实例
     std::shared_ptr<MaterialInstance> plane_material =
-        MaterialFactory::Get().CreateInstanceWithOverrides<PureColorMaterialTemplate>(
-            {{MaterialParamKeys::BASE_COLOR, glm::vec3(1.0, 0.1, 0.1)}});
+        MaterialFactory::Get().CreateInstance<PureColorMaterialTemplate>();
+
 
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
