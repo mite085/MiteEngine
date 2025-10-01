@@ -1,6 +1,7 @@
 #ifndef MITE_FRAMEBUFFER_TYPE
 #define MITE_FRAMEBUFFER_TYPE
 
+#include "handle_type.h"
 #include "headers/headers.h"
 
 namespace mite {
@@ -15,18 +16,17 @@ enum class FrameBufferAttachmentType {
 };
 
 // 帧缓冲附件规格结构体
-// 若为Depth，无需定义内部格式和数据类型，FrameBuffer::Invalidate()
-// 检测到Type为depth，自动忽略格式，按照GL_DEPTH_COMPONENT24
+// Depth和Stencil应当手动明确Format，此处不做约束
 struct FrameBufferAttachmentSpec {
   FrameBufferAttachmentType type = FrameBufferAttachmentType::Color;
-  GLenum internalFormat = GL_RGBA8;  // 内部格式
-  bool generateMipmaps = false;      // 是否生成mipmaps
+  TextureFormat internalFormat = TextureFormat::RGB8;  // 内部格式
+  bool generateMipmaps = false;                        // 是否生成mipmaps
 };
 
 // 帧缓冲规格结构体
 struct FrameBufferSpec {
-  uint32_t width = 1280;                               // 默认宽度
-  uint32_t height = 720;                               // 默认高度
+  uint32_t width = 1;                                  // 默认宽度1，强制要求手动指定
+  uint32_t height = 1;                                 // 默认高度1，强制要求手动指定
   std::vector<FrameBufferAttachmentSpec> attachments;  // 附件列表
   uint32_t samples = 1;  // 多重采样数(默认为1，即不启用)
 };

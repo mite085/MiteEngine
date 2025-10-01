@@ -13,7 +13,7 @@ enum class TextureDataType {
   UNSIGNED_INT_24_8 = GL_UNSIGNED_INT_24_8,  // 深度模板打包格式
 };
 // 纹理内部格式（扩展常用格式）
-enum class TextureFormat {
+enum class TextureFormat : unsigned int {
   Unknown = 0,
 
   // 8位无符号归一化格式
@@ -24,17 +24,23 @@ enum class TextureFormat {
 
   // 深度/模板格式
   DEPTH_COMPONENT16 = GL_DEPTH_COMPONENT16,  // 16位深度
+  DEPTH_COMPONENT24 = GL_DEPTH_COMPONENT24,  // 24位深度
+  DEPTH_COMPONENT32 = GL_DEPTH_COMPONENT32,  // 32位深度
+  STENCIL_INDEX1 = GL_STENCIL_INDEX1,        // 1位模板
+  STENCIL_INDEX4 = GL_STENCIL_INDEX4,        // 4位模板
+  STENCIL_INDEX8 = GL_STENCIL_INDEX8,        // 8位模板
+  STENCIL_INDEX16 = GL_STENCIL_INDEX16,      // 16位模板
   DEPTH24_STENCIL8 = GL_DEPTH24_STENCIL8,    // 24位深度+8位模板
 
   // sRGB格式（伽马校正）
   SRGB8 = GL_SRGB8,                // sRGB色彩空间
   SRGB8_ALPHA8 = GL_SRGB8_ALPHA8,  // sRGB+Alpha
 
-  // HDR支持，留待后续扩展
-  // RGB16F,   // HDR RGB (half float)
-  // RGBA16F,  // HDR RGBA (half float)
-  // RGB32F,   // HDR RGB
-  // RGBA32F,  // HDR RGBA
+  // 高精度纹理（GBuffer专用）
+  RGB16F = GL_RGB16F,    // HDR RGB (half float)
+  RGBA16F = GL_RGBA16F,  // HDR RGBA (half float)
+  RGB32F = GL_RGB32F,    // HDR RGB
+  RGBA32F = GL_RGBA32F,  // HDR RGBA
 };
 // 纹理目标类型
 enum class TextureTarget {
@@ -59,12 +65,21 @@ enum class TextureFilterMode {
   NearestMipmapLinear = GL_NEAREST_MIPMAP_LINEAR,    // 最近邻Mipmap+线性层间
   LinearMipmapLinear = GL_LINEAR_MIPMAP_LINEAR,      // 三线性过滤（最高质量）
 };
-// 纹理GPU句柄
-struct TextureGPUHandle {
-  uintptr_t apiHandle = 0;  // 底层驱动句柄（OpenGL的GLuint）
+
+// 纹理创建信息（GBuffer、ShadowMap等运行时纹理专用）
+struct TextureCreateInfo {
+  uint32_t width = 0;                                   // 纹理宽度
+  uint32_t height = 0;                                  // 纹理高度
+  TextureFormat format = TextureFormat::RGBA8;          // 数据格式（RGB8/RGBA8等）
+  TextureTarget target = TextureTarget::TEXTURE_2D;     // 纹理目标类型
+  TextureWrapMode wrapModeS = TextureWrapMode::Repeat;  // 分离S/T方向包装模式
+  TextureWrapMode wrapModeT = TextureWrapMode::Repeat;
+  TextureFilterMode minFilter = TextureFilterMode::Linear;  // 分离缩小/放大过滤
+  TextureFilterMode magFilter = TextureFilterMode::Linear;
+  bool generateMipmaps = false;  // 是否生成Mipmap（运行时纹理默认不生成mipmap）
 };
 
-// 纹理数据来源（Renderer模块专用的过渡型数据格式）
+// 纹理数据来源（TextureAsset外部载入纹理专用）
 struct TextureSourceData {
   // 核心数据
   std::vector<uint8_t> pixelData;               // 原始像素数据（只读指针）
@@ -82,18 +97,22 @@ struct TextureSourceData {
   TextureFilterMode magFilter = TextureFilterMode::Linear;
 
   // Mipmap设置
-  bool generateMipmaps = true;     // 是否生成Mipmap
+  bool generateMipmaps = true;     // 是否生成Mipmap（默认生成）
   uint32_t existingMipLevels = 1;  // 源数据已有的mip层级数
 };
 
-// 纹理实例 - 纯粹的运行时渲染对象
+// 纹理GPU句柄
+struct TextureGPUHandle {
+  uintptr_t apiHandle = 0;  // 底层驱动句柄（OpenGL的GLuint）
+};
+
+// 纹理实例（TextureAsset外部载入纹理专用）
 struct TextureInstance {
   TextureGPUHandle gpuHandle;                        // GPU资源句柄
   TextureTarget target = TextureTarget::TEXTURE_2D;  // 纹理目标类型
   TextureFormat format = TextureFormat::RGBA8;       // 内部格式
   uint32_t width = 0;                                // 实际纹理宽度
   uint32_t height = 0;                               // 实际纹理高度
-  uint32_t mipLevels = 1;                            // Mipmap层级数
 
   // 采样状态
   TextureWrapMode wrapModeS = TextureWrapMode::Repeat;
@@ -197,8 +216,6 @@ struct ShaderGPUHandle {
   uintptr_t geometryShader = 0;  // 几何着色器
   uintptr_t computeShader = 0;   // 计算着色器
 };
-
-
 };  // namespace mite
 
 #endif
