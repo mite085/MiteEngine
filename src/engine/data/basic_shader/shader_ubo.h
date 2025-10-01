@@ -6,24 +6,24 @@
 namespace mite {
 
 /**
- * @brief Uniform»º³åÇø¶ÔÏó·â×°Àà
- * @note Ö°Ôğ£º
- * 1. ¹ÜÀíOpenGL UBOµÄ´´½¨¡¢¸üĞÂºÍÏú»Ù
- * 2. Ìá¹©ÀàĞÍ°²È«µÄUBOÊı¾İ¹ÜÀí
- * 3. Ö§³Ö¶¯Ì¬ºÍ¾²Ì¬UBOÊı¾İ¸üĞÂ
- * 4. ×Ô¶¯´¦Àí°ó¶¨µã¹ÜÀí
+ * @brief Uniformç¼“å†²åŒºå¯¹è±¡å°è£…ç±»
+ * @note èŒè´£ï¼š
+ * 1. ç®¡ç†OpenGL UBOçš„åˆ›å»ºã€æ›´æ–°å’Œé”€æ¯
+ * 2. æä¾›ç±»å‹å®‰å…¨çš„UBOæ•°æ®ç®¡ç†
+ * 3. æ”¯æŒåŠ¨æ€å’Œé™æ€UBOæ•°æ®æ›´æ–°
+ * 4. è‡ªåŠ¨å¤„ç†ç»‘å®šç‚¹ç®¡ç†
  */
 class ShaderUBO {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param size UBO´óĞ¡£¨×Ö½Ú£©
-   * @param usage »º³åÇøÊ¹ÓÃÄ£Ê½£¨GL_STATIC_DRAW, GL_DYNAMIC_DRAWµÈ£©
+   * @brief æ„é€ å‡½æ•°
+   * @param size UBOå¤§å°ï¼ˆå­—èŠ‚ï¼‰
+   * @param usage ç¼“å†²åŒºä½¿ç”¨æ¨¡å¼ï¼ˆGL_STATIC_DRAW, GL_DYNAMIC_DRAWç­‰ï¼‰
    */
   explicit ShaderUBO(size_t size, GLenum usage = GL_DYNAMIC_DRAW);
   ~ShaderUBO();
 
-  // ---- ÉúÃüÖÜÆÚ¹ÜÀí ----
+  // ---- ç”Ÿå‘½å‘¨æœŸç®¡ç† ----
   void Initialize();
   void Destroy();
   bool IsInitialized() const
@@ -31,41 +31,29 @@ class ShaderUBO {
     return m_IsInitialized;
   }
 
-  // ---- Êı¾İ²Ù×÷ ----
+  // ---- æ•°æ®æ“ä½œ ----
   /**
-   * @brief ¸üĞÂÕû¸öUBOÊı¾İ
-   * @param data Êı¾İÖ¸Õë
-   * @param size Êı¾İ´óĞ¡£¨±ØĞë<=´´½¨Ê±µÄ´óĞ¡£©
-   * @param offset Êı¾İÆ«ÒÆÁ¿
-   * @return ÊÇ·ñ³É¹¦
+   * @brief æ›´æ–°æ•´ä¸ªUBOæ•°æ®
+   * @param data æ•°æ®æŒ‡é’ˆ
+   * @param size æ•°æ®å¤§å°ï¼ˆå¿…é¡»<=åˆ›å»ºæ—¶çš„å¤§å°ï¼‰
+   * @param offset æ•°æ®åç§»é‡
+   * @return æ˜¯å¦æˆåŠŸ
    */
   bool UpdateData(const void *data, size_t size, size_t offset = 0);
 
+  // ---- ç»‘å®šç®¡ç† ----
   /**
-   * @brief ¸üĞÂUBOÊı¾İ£¨Ä£°å°æ±¾£©
-   * @tparam T Êı¾İÀàĞÍ
-   * @param data Êı¾İÒıÓÃ
-   * @param offset Êı¾İÆ«ÒÆÁ¿
-   * @return ÊÇ·ñ³É¹¦
-   */
-  template<typename T> bool UpdateData(const T &data, size_t offset = 0)
-  {
-    return UpdateData(&data, sizeof(T), offset);
-  }
-
-  // ---- °ó¶¨¹ÜÀí ----
-  /**
-   * @brief °ó¶¨UBOµ½Ö¸¶¨°ó¶¨µã
-   * @param bindingPoint °ó¶¨µãË÷Òı
+   * @brief ç»‘å®šUBOåˆ°æŒ‡å®šç»‘å®šç‚¹
+   * @param bindingPoint ç»‘å®šç‚¹ç´¢å¼•
    */
   void Bind(uint32_t bindingPoint) const;
 
   /**
-   * @brief ½â°óUBO
+   * @brief è§£ç»‘UBO
    */
   void Unbind(uint32_t bindingPoint) const;
 
-  // ---- ÊôĞÔ·ÃÎÊ ----
+  // ---- å±æ€§è®¿é—® ----
   uint32_t GetUBOId() const
   {
     return m_UBOId;
@@ -79,29 +67,29 @@ class ShaderUBO {
     return m_Usage;
   }
 
-  // ---- ¹¤¾ß·½·¨ ----
+  // ---- å·¥å…·æ–¹æ³• ----
   /**
-   * @brief Îª×ÅÉ«Æ÷ÉèÖÃUBO°ó¶¨µã
-   * @param shader Ä¿±ê×ÅÉ«Æ÷
-   * @param uniformBlockName Uniform¿éÃû³Æ
-   * @param bindingPoint °ó¶¨µã
+   * @brief ä¸ºç€è‰²å™¨è®¾ç½®UBOç»‘å®šç‚¹
+   * @param shader ç›®æ ‡ç€è‰²å™¨
+   * @param uniformBlockName Uniformå—åç§°
+   * @param bindingPoint ç»‘å®šç‚¹
    */
   void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
                           const std::string &uniformBlockName,
                           uint32_t bindingPoint) const;
 
  private:
-  uint32_t m_UBOId = 0;              // OpenGL UBO¾ä±ú
-  size_t m_Size = 0;                 // UBO´óĞ¡£¨×Ö½Ú£©
-  GLenum m_Usage = GL_DYNAMIC_DRAW;  // »º³åÇøÊ¹ÓÃÄ£Ê½
-  bool m_IsInitialized = false;      // ³õÊ¼»¯×´Ì¬
+  uint32_t m_UBOId = 0;              // OpenGL UBOå¥æŸ„
+  size_t m_Size = 0;                 // UBOå¤§å°ï¼ˆå­—èŠ‚ï¼‰
+  GLenum m_Usage = GL_DYNAMIC_DRAW;  // ç¼“å†²åŒºä½¿ç”¨æ¨¡å¼
+  bool m_IsInitialized = false;      // åˆå§‹åŒ–çŠ¶æ€
 
-  // ---- ÄÚ²¿·½·¨ ----
+  // ---- å†…éƒ¨æ–¹æ³• ----
   void CreateUBO();
   bool ValidateDataSize(size_t size, size_t offset) const;
 };
 
-// ---- ÀàĞÍ¶¨Òå ----
+// ---- ç±»å‹å®šä¹‰ ----
 using ShaderUBOPtr = std::shared_ptr<ShaderUBO>;
 
 }  // namespace mite

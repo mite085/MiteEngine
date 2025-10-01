@@ -4,13 +4,13 @@ namespace mite {
 
 ShaderUBO::ShaderUBO(size_t size, GLenum usage) : m_Size(size), m_Usage(usage)
 {
-  // ÑéÖ¤´óĞ¡ºÏÀíĞÔ
+  // éªŒè¯å¤§å°åˆç†æ€§
   if (size == 0) {
     LOG_ERROR("ShaderUBO: Invalid size 0");
     throw std::invalid_argument("UBO size cannot be 0");
   }
 
-  // ÑéÖ¤Ê¹ÓÃÄ£Ê½
+  // éªŒè¯ä½¿ç”¨æ¨¡å¼
   if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW && usage != GL_STREAM_DRAW) {
     LOG_WARN("ShaderUBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
     m_Usage = GL_DYNAMIC_DRAW;
@@ -50,7 +50,7 @@ void ShaderUBO::Destroy()
 
 void ShaderUBO::CreateUBO()
 {
-  // Éú³ÉUBO
+  // ç”ŸæˆUBO
   glGenBuffers(1, &m_UBOId);
 
   if (m_UBOId == 0) {
@@ -58,12 +58,12 @@ void ShaderUBO::CreateUBO()
     throw std::runtime_error("UBO generation failed");
   }
 
-  // °ó¶¨²¢·ÖÅäÄÚ´æ
+  // ç»‘å®šå¹¶åˆ†é…å†…å­˜
   glBindBuffer(GL_UNIFORM_BUFFER, m_UBOId);
   glBufferData(GL_UNIFORM_BUFFER, m_Size, nullptr, m_Usage);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-  // ¼ì²éOpenGL´íÎó
+  // æ£€æŸ¥OpenGLé”™è¯¯
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
     LOG_ERROR("Failed to create UBO: OpenGL error 0x{:X}", error);
@@ -91,12 +91,12 @@ bool ShaderUBO::UpdateData(const void *data, size_t size, size_t offset)
     return false;
   }
 
-  // ¸üĞÂUBOÊı¾İ
+  // æ›´æ–°UBOæ•°æ®
   glBindBuffer(GL_UNIFORM_BUFFER, m_UBOId);
   glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-  // ¼ì²é´íÎó
+  // æ£€æŸ¥é”™è¯¯
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
     LOG_ERROR("Failed to update UBO data: OpenGL error 0x{:X}", error);
@@ -136,7 +136,7 @@ void ShaderUBO::Bind(uint32_t bindingPoint) const
     LOG_ERROR("Failed to bind UBO to point {}: OpenGL error 0x{:X}", bindingPoint, error);
   }
   else {
-    LOG_TRACE("UBO bound to binding point: {}", bindingPoint);
+    //LOG_TRACE("UBO bound to binding point: {}", bindingPoint);
   }
 }
 
@@ -159,7 +159,7 @@ void ShaderUBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
     return;
   }
 
-  // ÉèÖÃ×ÅÉ«Æ÷µÄUniform¿é°ó¶¨µã
+  // è®¾ç½®ç€è‰²å™¨çš„Uniformå—ç»‘å®šç‚¹
   shader->SetUniformBlockBinding(uniformBlockName, bindingPoint);
 
   LOG_DEBUG("Shader UBO binding setup - Block: '{}', Point: {}", uniformBlockName, bindingPoint);
