@@ -8,10 +8,24 @@ MaterialTemplate::MaterialTemplate(std::shared_ptr<OpenGLShader> shader) : m_Sha
 
 std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance()
 {
-  auto instance = std::make_unique<MaterialInstance>(m_Shader);
+  auto instance = std::make_shared<MaterialInstance>(m_Shader);
+
+  // 根据MaterialType和计数拼接默认创建的材质实例的名称
+  std::string materialTypeName = GetMaterialType();
+  std::string numStr = std::to_string(m_DefaultInstanceCounter);
+
+  // 补零到4位
+  if (numStr.length() < 4) {
+    materialTypeName.append(4 - numStr.length(), '0');
+  }
+  materialTypeName += numStr;
+
+  // 设定名称，更新计数
+  instance->SetName(materialTypeName);
+  m_DefaultInstanceCounter++;
 
   // 直接使用默认参数
-  ApplyDefaultParams(*instance);
+  ApplyDefaultParams(instance);
   return instance;
 }
 

@@ -39,7 +39,7 @@ class MaterialTemplate {
    * @param instance 目标材质实例
    * @note 用于初始化或重置实例参数到模板默认值
    */
-  virtual void ApplyDefaultParams(MaterialInstance &instance) const = 0;
+  virtual void ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const = 0;
 
   /**
    * @brief 获取材质类型标识（用于运行时类型检查）
@@ -123,6 +123,7 @@ class MaterialTemplate {
  protected:
   std::shared_ptr<OpenGLShader> m_Shader;   // 着色器对象
   std::string m_Name = "Unnamed_Material";  // 材质名称（用于调试和UI显示）
+  uint32_t m_DefaultInstanceCounter = 0;
 };
 };  // namespace mite
 

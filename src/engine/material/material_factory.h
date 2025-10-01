@@ -75,7 +75,7 @@ class MaterialFactory {
   template<typename T>
   std::shared_ptr<MaterialInstance> CreateInstance(const std::string &instanceName = "")
   {
-    return CreateInstance(MaterialTemplate::GetMaterialTypeStatic<T>(instanceName));
+    return CreateInstance(MaterialTemplate::GetMaterialTypeStatic<T>(), instanceName);
   }
 
   /**

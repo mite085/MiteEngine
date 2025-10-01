@@ -46,7 +46,7 @@ class GBufferMaterialTemplate : public MaterialTemplate {
   std::shared_ptr<MaterialInstance> CreateInstance(
       const MaterialSourceData &sourceData) const override;
 
-  void ApplyDefaultParams(MaterialInstance &instance) const override;
+  void ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const override;
   // ---- UBO管理 ----
   void SetupMaterialUBO(std::shared_ptr<MaterialInstance> instance) const;
   void UpdateMaterialUBO(const MaterialSourceData &sourceData) const;

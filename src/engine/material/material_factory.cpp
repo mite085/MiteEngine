@@ -11,7 +11,9 @@ void MaterialFactory::Initialize()
   m_Logger->info("Create logger for material system");
 
   // 订阅MaterialLoad事件，创建材质
-  m_EventSubscription.SubscribeAsync<MaterialLoadedEvent>(BIND_DISPATCH_FN(OnMaterialLoaded));
+  // Immediate立即模式：
+  // 材质创建可能存在UBO创建与绑定等操作，需要在OpenGL上下文所在的主线程执行
+  m_EventSubscription.SubscribeImmediate<MaterialLoadedEvent>(BIND_DISPATCH_FN(OnMaterialLoaded));
 
   // 注册材质
   m_Logger->info("Registering material templates");

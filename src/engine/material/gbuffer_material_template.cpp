@@ -20,6 +20,7 @@ GBufferMaterialTemplate::~GBufferMaterialTemplate()
     LOG_DEBUG("GBufferMaterialTemplate released binding point: {}", m_BindingPoint);
   }
 }
+
 std::shared_ptr<MaterialInstance> GBufferMaterialTemplate::CreateInstance(
     const MaterialSourceData &sourceData) const
 {
@@ -38,7 +39,7 @@ std::shared_ptr<MaterialInstance> GBufferMaterialTemplate::CreateInstance(
 
   return instance;
 }
-void GBufferMaterialTemplate::ApplyDefaultParams(MaterialInstance &instance) const
+void GBufferMaterialTemplate::ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const
 {
   // 对于完全基于UBO的设计，ApplyDefaultParams主要用于创建默认实例
   // 实际参数通过UBO传递，这里只需要设置纹理标识等必要状态
@@ -55,6 +56,7 @@ void GBufferMaterialTemplate::ApplyDefaultParams(MaterialInstance &instance) con
   defaultData.parameters[MaterialParamKeys::NORMAL_SCALE] = GetDefaultNormalScale();
 
   // 更新UBO数据
+  SetupMaterialUBO(instance);
   UpdateMaterialUBO(defaultData);
 }
 void GBufferMaterialTemplate::SetupMaterialUBO(std::shared_ptr<MaterialInstance> instance) const
@@ -65,8 +67,8 @@ void GBufferMaterialTemplate::SetupMaterialUBO(std::shared_ptr<MaterialInstance>
     InitializeUBO();
   }
 
-  // 绑定UBO到材质实例
-  instance->BindUBO(UBO_BLOCK_NAME, m_MaterialUBO, m_BindingPoint);
+  // 设定UBO到材质实例
+  instance->SetupUBO(UBO_BLOCK_NAME, m_MaterialUBO, m_BindingPoint);
 }
 void GBufferMaterialTemplate::UpdateMaterialUBO(const MaterialSourceData &sourceData) const
 {
