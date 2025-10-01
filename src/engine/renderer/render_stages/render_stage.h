@@ -38,26 +38,11 @@ class RenderStage {
     m_Enabled = enabled;
   }
 
-  // ---- 执行统计 ----
-  uint64_t GetExecutionCount() const
-  {
-    return m_ExecutionCount;
-  }
-  double GetLastExecutionTime() const
-  {
-    return m_LastExecutionTime;
-  }
-
  protected:
   // ---- 保护成员 ----
   std::string m_Name;
   bool m_Enabled = true;
   Logger m_Logger;
-
-  // ---- 性能统计 ----
-  uint64_t m_ExecutionCount = 0;
-  double m_LastExecutionTime = 0.0;
-  std::chrono::high_resolution_clock::time_point m_ExecutionStartTime;
 };
 
 }  // namespace mite

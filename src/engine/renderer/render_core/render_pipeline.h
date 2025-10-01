@@ -2,7 +2,7 @@
 #define MITE_RENDER_PIPELINE
 
 #include "basic_data/camera.h"
-#include "basic_data/framebuffer.h"
+#include "basic_shader/framebuffer.h"
 #include "render_context.h"
 #include "render_queue.h"
 #include "render_stages/render_stage.h"

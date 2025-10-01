@@ -48,10 +48,6 @@ void ForwardStage::Execute(RenderContext &context)
     return;
   }
 
-  // 开始性能计时
-  m_ExecutionStartTime = std::chrono::high_resolution_clock::now();
-  m_ExecutionCount++;
-
   // 获取渲染队列
   auto renderQueue = context.GetRenderQueue();
   if (!renderQueue) {
@@ -64,22 +60,6 @@ void ForwardStage::Execute(RenderContext &context)
   RenderAlphaTestQueue(context);
   RenderTransparentQueue(context);
   RenderCustomQueue(context);
-
-  // 结束性能计时
-  auto endTime = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime -
-                                                                        m_ExecutionStartTime);
-  m_LastExecutionTime = duration.count() / 1000.0;  // 转换为毫秒
-
-  //// 记录性能统计
-  //m_Logger->debug(
-  //    "ForwardStage executed - Opaque: {}, AlphaTest: {}, Transparent: {}, Custom: {}, Time: "
-  //    "{:.3f}ms",
-  //    m_LastFrameOpaqueCount,
-  //    m_LastFrameAlphaTestCount,
-  //    m_LastFrameTransparentCount,
-  //    m_LastFrameCustomCount,
-  //    m_LastExecutionTime);
 }
 
 void ForwardStage::Shutdown()

@@ -1,6 +1,7 @@
 #include "opengl_pipeline.h"
-#include "render_stages/forward_stage.h"
 #include "basic_shader/shader_binding_point_manager.h"
+#include "render_stages/forward_stage.h"
+#include "render_stages/gbuffer_stage.h"
 
 namespace mite {
 OpenGLPipeline::OpenGLPipeline() : RenderPipeline()
@@ -27,7 +28,8 @@ void OpenGLPipeline::Initialize()
   // 创建渲染上下文
   m_Context = std::make_unique<RenderContext>();
 
-  // 添加默认阶段
+  // 按照管线顺序添加Stage
+  AddStage(std::make_unique<GBufferStage>());
   AddStage(std::make_unique<ForwardStage>());
 
   // 初始化所有阶段
@@ -61,8 +63,8 @@ void OpenGLPipeline::BeginFrame()
   // 清屏命令
   RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, m_ClearColor);
 
-  // 设置视口
-  auto size = m_MainFrameBuffer->GetSize();
+  // 为OpenGLContext和RenderContext设置视口
+  glm::uvec2 size = m_MainFrameBuffer->GetSize();
   RenderCommand::Get().SetViewport(0, 0, size.x, size.y);
 
   // m_Logger->debug("Pipeline BeginFrame completed");
@@ -157,8 +159,9 @@ void OpenGLPipeline::CreateDefaultFrameBuffer()
 {
   // 创建FrameBuffer规格
   FrameBufferSpec spec;
-  spec.attachments = {{FrameBufferAttachmentType::Color, GL_RGBA8},  // 颜色附件
-                      {FrameBufferAttachmentType::Depth}};           // 深度附件
+  spec.attachments = {
+      {FrameBufferAttachmentType::Color, TextureFormat::RGBA8},               // 颜色附件
+      {FrameBufferAttachmentType::Depth, TextureFormat::DEPTH_COMPONENT24}};  // 深度附件
 
   // 创建两个相同的FrameBuffer用于双缓冲
   m_MainFrameBuffer = std::make_shared<FrameBuffer>(spec);

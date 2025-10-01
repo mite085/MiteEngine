@@ -47,10 +47,9 @@ class OpenGLPipeline : public RenderPipeline {
   // ---- 成员变量 ----
   std::shared_ptr<FrameBuffer> m_MainFrameBuffer;
   std::shared_ptr<FrameBuffer> m_DisplayFrameBuffer;
+  std::unique_ptr<RenderContext> m_Context;
   bool m_IsRenderingScene = false;
   bool m_ShouldResize = false;
-  // ---- 新增Pipeline特有成员 ----
-  std::unique_ptr<RenderContext> m_Context;
 };
 
 }  // namespace mite
