@@ -19,6 +19,7 @@ class OpenGLDevice : public RenderDevice {
 
   // ---- 纹理操作 ----
   TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) override;
+  TextureGPUHandle CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo) override;
   void DestroyTexture(TextureGPUHandle handle) override;
   void BindTexture(TextureGPUHandle handle, uint32_t slot) const override;
 
@@ -49,13 +50,15 @@ class OpenGLDevice : public RenderDevice {
                    GLenum indexType = GL_UNSIGNED_INT) const override;
 
   // ---- FrameBuffer 操作 ----
-  FrameBuffer::Ptr CreateFrameBuffer(const FrameBufferSpec &spec) override;
-  void DestroyFrameBuffer(FrameBuffer::Ptr framebuffer) override;
+  std::shared_ptr<FrameBuffer> CreateFrameBuffer(const FrameBufferSpec &spec) override;
+  void DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer) override;
 
  private:
   // ---- 事件响应函数 ----
   void OnModelLoaded(ModelLoadEvent &e) override;
   void OnTextureLoaded(TextureLoadEvent &e) override;
+  void OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e) override;
+  void OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEvent &e) override;
 
   // ---- 辅助方法 ----
   void SetVertexAttributes(const VertexLayout &layout);

@@ -1,12 +1,12 @@
 #ifndef MITE_RENDER_DEVICE
 #define MITE_RENDER_DEVICE
 
-#include "basic_data/framebuffer.h"
+#include "basic_shader/framebuffer.h"
 #include "basic_data/mesh.h"
 #include "basic_data/model.h"
-#include "basic_data/texture.h"
-#include "basic_type/asset_type.h"
+#include "basic_data/runtime_texture.h"
 #include "basic_event/asset_event.h"
+#include "basic_type/asset_type.h"
 
 namespace mite {
 /**
@@ -38,6 +38,7 @@ class RenderDevice {
 
   // ---- 纹理操作 ----
   virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
+  virtual TextureGPUHandle CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
   virtual void BindTexture(TextureGPUHandle handle, uint32_t slot) const = 0;
 
@@ -62,7 +63,7 @@ class RenderDevice {
    * @param worldTransform 局部空间到世界空间的旋转矩阵
    * @param lodBias LOD层级偏差值
    * @return LOD层级
-   * 
+   *
    * 针对超大Model（如地形）可以逐Mesh划分LOD，降低渲染压力
    */
   virtual uint32_t SelectMeshLODLevel(Mesh mesh,
@@ -91,14 +92,15 @@ class RenderDevice {
                            GLenum indexType = GL_UNSIGNED_INT) const = 0;
 
   // ---- FrameBuffer 操作 ----
-  virtual FrameBuffer::Ptr CreateFrameBuffer(const FrameBufferSpec &spec) = 0;
-  virtual void DestroyFrameBuffer(FrameBuffer::Ptr framebuffer) = 0;
+  virtual std::shared_ptr<FrameBuffer> CreateFrameBuffer(const FrameBufferSpec &spec) = 0;
+  virtual void DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer) = 0;
 
  protected:
-
   // ---- 事件处理 ----
   virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
   virtual void OnTextureLoaded(TextureLoadEvent &e) = 0;
+  virtual void OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e) = 0;
+  virtual void OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEvent &e) = 0;
 
   SubscriptionGroup m_EventSubscriptions;  // 事件订阅
 };

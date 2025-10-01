@@ -104,6 +104,84 @@ TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> 
   return TextureGPUHandle{static_cast<uintptr_t>(textureId)};
 }
 
+TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo)
+{
+  if (!createInfo) {
+    LOG_ERROR("Invalid texture create info provided");
+    return TextureGPUHandle{0};
+  }
+
+  // 参数验证
+  if (createInfo->width == 0 || createInfo->height == 0) {
+    LOG_ERROR("Invalid texture dimensions: {}x{}", createInfo->width, createInfo->height);
+    return TextureGPUHandle{0};
+  }
+
+  // 生成纹理ID
+  GLuint textureId = 0;
+  glGenTextures(1, &textureId);
+  if (textureId == 0) {
+    LOG_ERROR("Failed to generate OpenGL texture for runtime texture");
+    return TextureGPUHandle{0};
+  }
+
+  // 绑定纹理
+  glBindTexture(static_cast<GLenum>(createInfo->target), textureId);
+
+  // 设置纹理参数
+  glTexParameteri(static_cast<GLenum>(createInfo->target),
+                  GL_TEXTURE_WRAP_S,
+                  static_cast<GLint>(createInfo->wrapModeS));
+  glTexParameteri(static_cast<GLenum>(createInfo->target),
+                  GL_TEXTURE_WRAP_T,
+                  static_cast<GLint>(createInfo->wrapModeT));
+  glTexParameteri(static_cast<GLenum>(createInfo->target),
+                  GL_TEXTURE_MIN_FILTER,
+                  static_cast<GLint>(createInfo->minFilter));
+  glTexParameteri(static_cast<GLenum>(createInfo->target),
+                  GL_TEXTURE_MAG_FILTER,
+                  static_cast<GLint>(createInfo->magFilter));
+
+  // 获取OpenGL格式
+  GLenum internalFormat, format, type;
+  if (!GetGLTextureFormats(createInfo->format, internalFormat, format, type)) {
+    LOG_ERROR("Unsupported texture format for runtime texture: {}",
+              static_cast<int>(createInfo->format));
+    glDeleteTextures(1, &textureId);
+    return TextureGPUHandle{0};
+  }
+
+  // 分配纹理存储（不上传数据，因为这是渲染目标）
+  glTexImage2D(static_cast<GLenum>(createInfo->target),
+               0,
+               internalFormat,
+               createInfo->width,
+               createInfo->height,
+               0,
+               format,
+               type,
+               nullptr);  // 注意：这里传递nullptr，只分配不初始化
+
+  // 生成Mipmaps（如果需要）
+  if (createInfo->generateMipmaps) {
+    glGenerateMipmap(static_cast<GLenum>(createInfo->target));
+  }
+
+  // 解除绑定
+  glBindTexture(static_cast<GLenum>(createInfo->target), 0);
+
+  // 记录活动纹理
+  m_ActiveTextures.insert(textureId);
+
+  m_Logger->debug("Created runtime texture: ID={}, size={}x{}, format={}",
+                  textureId,
+                  createInfo->width,
+                  createInfo->height,
+                  static_cast<int>(createInfo->format));
+
+  return TextureGPUHandle{static_cast<uintptr_t>(textureId)};
+}
+
 void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
 {
   if (!handle.apiHandle)
@@ -423,7 +501,7 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
 
 // ------------------------ FrameBuffer 操作 ------------------------
 
-FrameBuffer::Ptr OpenGLDevice::CreateFrameBuffer(const FrameBufferSpec &spec)
+std::shared_ptr<FrameBuffer> OpenGLDevice::CreateFrameBuffer(const FrameBufferSpec &spec)
 {
   // 创建FrameBuffer对象
   auto framebuffer = std::make_shared<FrameBuffer>(spec);
@@ -435,7 +513,7 @@ FrameBuffer::Ptr OpenGLDevice::CreateFrameBuffer(const FrameBufferSpec &spec)
   return framebuffer;
 }
 
-void OpenGLDevice::DestroyFrameBuffer(FrameBuffer::Ptr framebuffer)
+void OpenGLDevice::DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer)
 {
   if (!framebuffer)
     return;
@@ -457,7 +535,7 @@ void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
   // 2. 更新ModelAsset（值传递，避免modelHandle脱离作用域）
   e.GetModelAsset()->handle = modelHandle;
 
-  // 标记事件已消费，阻断传播
+  // 3. 标记事件已消费，阻断传播
   e.SetResult(EventResult::Consumed);
 }
 
@@ -468,6 +546,26 @@ void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
 
   // 2. 更新TextureAsset
   e.GetTextureAsset()->instance.gpuHandle = textureHandle;
+
+  // 3. 标记事件已消费，阻断传播
+  e.SetResult(EventResult::Consumed);
+}
+
+void OpenGLDevice::OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e)
+{
+  //  1. 创建GPU资源
+  TextureGPUHandle textureHandle = CreateRuntimeTexture(e.GetTextureCreateInfo());
+
+  // 2. 调用回调函数传回Handle
+  e.GetCallback()(textureHandle);
+
+  // 3. 标记事件已消费，阻断传播
+  e.SetResult(EventResult::Consumed);
+}
+
+void OpenGLDevice::OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEvent &e)
+{
+  DestroyTexture(e.GetTextureGPUHandle());
 
   // 标记事件已消费，阻断传播
   e.SetResult(EventResult::Consumed);

@@ -72,7 +72,7 @@ class MaterialLoadedEvent : public Event {
 };
 
 /**
- * 纹理创建事件
+ * 外部纹理加载事件
  * 职责：委托RendererDevice创建GPU资源
  */
 class TextureLoadEvent : public Event {
@@ -99,6 +99,58 @@ class TextureLoadEvent : public Event {
  private:
   std::shared_ptr<TextureSourceData> m_Source;
   std::shared_ptr<TextureAsset> m_Asset;
+};
+
+/**
+ * 运行时纹理创建事件
+ * 职责：委托RendererDevice创建GPU资源
+ */
+class RuntimeTextureCreateEvent : public Event {
+ public:
+  RuntimeTextureCreateEvent(std::shared_ptr<TextureCreateInfo> createInfo,
+                            std::function<void(TextureGPUHandle)> callback)
+      : m_CreateInfo(createInfo), m_Callback(callback)
+  {
+  }
+  std::shared_ptr<TextureCreateInfo> GetTextureCreateInfo()
+  {
+    return m_CreateInfo;
+  }
+  std::function<void(TextureGPUHandle)> GetCallback()
+  {
+    return m_Callback;
+  }
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new RuntimeTextureCreateEvent(m_CreateInfo, m_Callback);
+  }
+
+ private:
+  // 回调函数，负责在Device端将Handle传回事件的发送者
+  std::function<void(TextureGPUHandle)> m_Callback;
+  std::shared_ptr<TextureCreateInfo> m_CreateInfo;
+};
+
+/**
+ * 运行时纹理销毁申请事件
+ *职责：委托RendererDevice销毁GPU资源
+ */
+class RuntimeTextureDestroyRequestEvent : public Event {
+ public:
+  RuntimeTextureDestroyRequestEvent(TextureGPUHandle handle) : m_Handle(handle) {}
+  TextureGPUHandle GetTextureGPUHandle()
+  {
+    return m_Handle;
+  }
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  Event *Clone() const override
+  {
+    return new RuntimeTextureDestroyRequestEvent(m_Handle);
+  }
+
+ private:
+  TextureGPUHandle m_Handle;
 };
 }  // namespace mite
 
