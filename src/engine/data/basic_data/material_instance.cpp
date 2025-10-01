@@ -84,7 +84,7 @@ void MaterialInstance::SetTexture(const std::string &name, TextureGPUSlot textur
 // }
 
 // ===================== UBO绑定方法 =====================
-void MaterialInstance::BindUBO(const std::string &uniformBlockName,
+void MaterialInstance::SetupUBO(const std::string &uniformBlockName,
                                std::shared_ptr<ShaderUBO> ubo,
                                uint32_t bindingPoint)
 {
@@ -106,7 +106,7 @@ void MaterialInstance::BindUBO(const std::string &uniformBlockName,
             uniformBlockName,
             bindingPoint);
 }
-void MaterialInstance::UnbindUBO(const std::string &uniformBlockName)
+void MaterialInstance::UninstallUBO(const std::string &uniformBlockName)
 {
   auto it = m_UBOBindings.find(uniformBlockName);
   if (it != m_UBOBindings.end()) {
@@ -122,7 +122,7 @@ bool MaterialInstance::HasUBO(const std::string &uniformBlockName) const
   return m_UBOBindings.find(uniformBlockName) != m_UBOBindings.end();
 }
 // ===================== SSBO绑定方法（新增）=====================
-void MaterialInstance::BindSSBO(const std::string &storageBlockName,
+void MaterialInstance::SetupSSBO(const std::string &storageBlockName,
                                 std::shared_ptr<ShaderSSBO> ssbo,
                                 uint32_t bindingPoint)
 {
@@ -148,7 +148,7 @@ void MaterialInstance::BindSSBO(const std::string &storageBlockName,
             storageBlockName,
             bindingPoint);
 }
-void MaterialInstance::UnbindSSBO(const std::string &storageBlockName)
+void MaterialInstance::UninstallSSBO(const std::string &storageBlockName)
 {
   auto it = m_SSBOBindings.find(storageBlockName);
   if (it != m_SSBOBindings.end()) {
@@ -164,42 +164,24 @@ bool MaterialInstance::HasSSBO(const std::string &storageBlockName) const
   return m_SSBOBindings.find(storageBlockName) != m_SSBOBindings.end();
 }
 
-// ===================== 核心Apply方法 =====================
-void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader) const
+// ===================== 重构的原子绑定操作 =====================
+void MaterialInstance::BindShaderOnly(OpenGLShader *overrideShader) const
 {
   OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
   if (!targetShader) {
-    LOG_ERROR("MaterialInstance has no valid shader to apply!");
+    LOG_ERROR("MaterialInstance has no valid shader to bind!");
     return;
   }
-
   targetShader->Bind();
-
-  // ---- 绑定UBO（在绑定Shader后立即执行）----
-  for (const auto &[blockName, uboBinding] : m_UBOBindings) {
-    if (uboBinding.ubo && uboBinding.ubo->IsInitialized()) {
-      uboBinding.ubo->Bind(uboBinding.bindingPoint);
-    }
-    else {
-      LOG_WARN("Skipping uninitialized UBO binding: '{}'", blockName);
-    }
+}
+void MaterialInstance::UploadUniformsOnly(OpenGLShader *overrideShader) const
+{
+  OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
+  if (!targetShader) {
+    LOG_ERROR("MaterialInstance has no valid shader for uniform upload!");
+    return;
   }
-
-  // ---- 绑定SSBO（在UBO绑定后执行）----
-  for (const auto &[blockName, ssboBinding] : m_SSBOBindings) {
-    if (ssboBinding.ssbo && ssboBinding.ssbo->IsInitialized()) {
-      if (ssboBinding.ssbo->IsMapped()) {
-        LOG_WARN("Skipping mapped SSBO binding: '{}'", blockName);
-        continue;
-      }
-      ssboBinding.ssbo->Bind(ssboBinding.bindingPoint);
-    }
-    else {
-      LOG_WARN("Skipping uninitialized SSBO binding: '{}'", blockName);
-    }
-  }
-
-  // ---- 上传Uniform值（不包含纹理，纹理单独处理） ----
+  // 上传uniform值，不包含纹理
   for (const auto &[name, value] : m_Uniforms) {
     switch (value.GetType()) {
       case UniformVariant::Type::Float:
@@ -243,29 +225,57 @@ void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *over
         break;
     }
   }
-
+}
+size_t MaterialInstance::BindTexturesOnly(TextureBindFunc textureBindFunc,
+                                          size_t startSlot,
+                                          OpenGLShader *overrideShader) const
+{
+  OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
+  if (!targetShader) {
+    LOG_ERROR("MaterialInstance has no valid shader for texture binding!");
+    return 0;
+  }
   // ---- 绑定纹理（纹理单独处理部分） ----
-  uint32_t textureSlot = 0;  // 注意：每个材质实例的Apply都是从 GL_TEXTURE0 + slot = 0 开始计数的，若需要多材质渲染，需要不同材质实例共享textureSlot
+  size_t currentSlot = startSlot;
+  // 注意：每个材质实例的Apply都是从 GL_TEXTURE0 + slot = 0
+  // 开始计数的，若需要多材质渲染，需要不同材质实例共享textureSlot
   for (const auto &[name, texture] : m_Textures) {
     // 使用传入的纹理绑定函数进行纹理绑定
-    textureBindFunc(texture.gpuHandle, textureSlot);
-    targetShader->SetInt(name, static_cast<int>(textureSlot));
+    textureBindFunc(texture.gpuHandle, currentSlot);
+    targetShader->SetInt(name, static_cast<int>(currentSlot));
 
     // TODO: 需要将Solt的offset和scale传入Shader
-    textureSlot++;
+    currentSlot++;
   }
 
-  //// ---- 绑定纹理数组 ----
-  // for (const auto &[name, textures] : m_TextureArrays) {
-  //   std::vector<int> slots;
-  //   for (const auto &texture : textures) {
-  //     // 使用传入的纹理绑定函数进行纹理绑定
-  //     textureBindFunc(texture, textureSlot);
-  //     slots.push_back(static_cast<int>(textureSlot));
-  //     textureSlot++;
-  //   }
-  //   targetShader->SetIntArray(name, slots.data(), static_cast<int>(slots.size()));
-  // }
+  return m_Textures.size();  // 返回使用的纹理槽位数量
+}
+void MaterialInstance::BindBuffersOnly() const
+{
+  // ---- 绑定UBO（在绑定Shader后立即执行）----
+  for (const auto &[blockName, uboBinding] : m_UBOBindings) {
+    if (uboBinding.ubo && uboBinding.ubo->IsInitialized()) {
+      uboBinding.ubo->Bind(uboBinding.bindingPoint);
+    }
+  }
+
+  // ---- 绑定SSBO（在UBO绑定后执行）----
+  for (const auto &[blockName, ssboBinding] : m_SSBOBindings) {
+    if (ssboBinding.ssbo && ssboBinding.ssbo->IsInitialized() && !ssboBinding.ssbo->IsMapped()) {
+      ssboBinding.ssbo->Bind(ssboBinding.bindingPoint);
+    }
+  }
+}
+
+// ===================== 核心Apply方法 =====================
+void MaterialInstance::Apply(TextureBindFunc textureBindFunc,
+                             size_t startSlot,
+                             OpenGLShader *overrideShader) const
+{
+  BindShaderOnly(overrideShader);
+  BindBuffersOnly();
+  UploadUniformsOnly(overrideShader);
+  BindTexturesOnly(textureBindFunc, startSlot, overrideShader);
 }
 
 std::shared_ptr<OpenGLShader> MaterialInstance::GetShader() const
