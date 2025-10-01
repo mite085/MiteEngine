@@ -21,9 +21,6 @@ void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
   m_ViewMatrix = viewMatrix;
   m_ProjectionMatrix = projectionMatrix;
 
-  // 从视图矩阵提取相机位置
-  m_CameraPosition = glm::vec3(glm::inverse(viewMatrix)[3]);
-
   //m_Logger->debug("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
   //                m_RenderQueue ? "valid" : "null",
   //                m_CameraPosition.x,
@@ -31,34 +28,11 @@ void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
   //                m_CameraPosition.z);
 }
 
-void RenderContext::SetCameraData(const glm::mat4 &viewMatrix,
-                                  const glm::mat4 &projectionMatrix,
-                                  const glm::vec3 &cameraPosition)
-{
-  m_ViewMatrix = viewMatrix;
-  m_ProjectionMatrix = projectionMatrix;
-  m_CameraPosition = cameraPosition;
-
-  m_Logger->debug("Set camera data - Position: ({}, {}, {})",
-                  m_CameraPosition.x,
-                  m_CameraPosition.y,
-                  m_CameraPosition.z);
-}
-
 void RenderContext::SetFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer)
 {
   m_CurrentFrameBuffer = framebuffer;
-  if (framebuffer) {
-    m_ViewportSize = framebuffer->GetSize();
-  }
 
   //m_Logger->debug("Set framebuffer - Size: {}x{}", m_ViewportSize.x, m_ViewportSize.y);
-}
-
-void RenderContext::SetViewport(const glm::ivec2 &size)
-{
-  m_ViewportSize = size;
-  m_Logger->debug("Set viewport size: {}x{}", size.x, size.y);
 }
 
 void RenderContext::ClearTemporaryResources()

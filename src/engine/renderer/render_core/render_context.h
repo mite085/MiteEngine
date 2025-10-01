@@ -2,11 +2,10 @@
 #define MITE_RENDER_CONTEXT
 
 #include "basic_data/camera.h"
-#include "basic_data/framebuffer.h"
+#include "basic_shader/framebuffer.h"
 #include "render_queue.h"
 
 namespace mite {
-
 /**
  * @brief 渲染上下文（统一数据传递和资源共享）
  *
@@ -26,13 +25,8 @@ class RenderContext {
                     const glm::mat4 &viewMatrix,
                     const glm::mat4 &projectionMatrix);
 
-  void SetCameraData(const glm::mat4 &viewMatrix,
-                     const glm::mat4 &projectionMatrix,
-                     const glm::vec3 &cameraPosition = glm::vec3(0.0f));
-
   // ---- 渲染目标设置 ----
   void SetFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer);
-  void SetViewport(const glm::ivec2 &size);
 
   // ---- 数据访问接口 ----
 
@@ -49,27 +43,16 @@ class RenderContext {
   {
     return m_ProjectionMatrix;
   }
-  const glm::vec3 &GetCameraPosition() const
-  {
-    return m_CameraPosition;
-  }
-
   // 渲染目标
   std::shared_ptr<FrameBuffer> GetFrameBuffer() const
   {
     return m_CurrentFrameBuffer;
   }
-  glm::ivec2 GetViewportSize() const
-  {
-    return m_ViewportSize;
-  }
 
   // ---- 临时资源管理 ----
   template<typename T>
   void SetTemporaryResource(const std::string &name, std::shared_ptr<T> resource);
-
   template<typename T> std::shared_ptr<T> GetTemporaryResource(const std::string &name) const;
-
   void ClearTemporaryResources();
 
   // ---- 上下文状态 ----
@@ -81,11 +64,9 @@ class RenderContext {
   std::shared_ptr<RenderQueue> m_RenderQueue;
   glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
   glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
-  glm::vec3 m_CameraPosition = glm::vec3(0.0f);
 
   // ---- 渲染目标 ----
   std::shared_ptr<FrameBuffer> m_CurrentFrameBuffer;
-  glm::ivec2 m_ViewportSize = {1280, 720};
 
   // ---- 临时资源存储 ----
   std::unordered_map<std::string, std::shared_ptr<void>> m_TemporaryResources;
@@ -128,7 +109,6 @@ std::shared_ptr<T> RenderContext::GetTemporaryResource(const std::string &name) 
     return nullptr;
   }
 }
-
 }  // namespace mite
 
 #endif
