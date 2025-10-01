@@ -1,59 +1,52 @@
 #ifndef MITE_MATERIAL_PURE_COLOR
 #define MITE_MATERIAL_PURE_COLOR
 
-#include "material_template.h"
+#include "gbuffer_material_template.h"
 
 namespace mite {
 /**
  * @brief 纯色材质模板（仅用于测试）
- * @note 职责：
- * 1. 仅接受一个Color("u_Color")参数并将其显示出来的简单着色模型
- * 2. 关联最简单的着色器程序
+ * @note 基于GBufferMaterialTemplate，仅使用BaseColor参数
  */
-class PureColorMaterialTemplate : public MaterialTemplate {
+class PureColorMaterialTemplate : public GBufferMaterialTemplate {
  public:
   /**
-   * @brief 构造函数（需传入已编译的PBR Shader）
-   * @param shader 关联的PBR着色器程序
-   * @param defaultAlbedo 默认漫反射颜色（sRGB空间）
+   * @brief 构造函数
+   * @param shader 关联的着色器程序
+   * @param color 默认颜色
    */
   explicit PureColorMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
-                                     const glm::vec3 &color = glm::vec3(0.8f));
-
+                                     const glm::vec3 &color = glm::vec3(0.8f, 0.0f, 0.0f));
   // ---- 类型声明 ----
   static std::string StaticType()
   {
-    return "PureColorMaterialTemplate";
+    return "PureColorMaterial";
   }
+
   std::string GetMaterialType() const override
   {
     return StaticType();
   }
-
-  // ---- 核心接口 ----
-  std::shared_ptr<MaterialInstance> CreateInstance(
-      const MaterialSourceData &sourceData) const override;
-  void ApplyDefaultParams(MaterialInstance &instance) const override;
-
   // ---- 默认参数设置 ----
   void SetColor(const glm::vec3 &color)
   {
     m_Color = color;
   }
 
+  const glm::vec3 &GetColor() const
+  {
+    return m_Color;
+  }
+
  protected:
-  // ---- 默认参数 ----
-  glm::vec3 m_Color;  // 默认基础颜色
+  // ---- 重写默认值设置 ----
+  glm::vec4 GetDefaultBaseColor() const override
+  {
+    return glm::vec4(m_Color, 1.0f);
+  }
 
-  // ---- 内部辅助方法 ----
-  /**
-   * @brief 应用参数到材质实例
-   * @param instance 材质实例
-   * @param sourceData 源数据
-   */
-  void ApplyParameters(MaterialInstance &instance, const MaterialSourceData &sourceData) const;
-
-
+ private:
+  glm::vec3 m_Color;  // 纯色材质的颜色
 };
 };  // namespace mite
 

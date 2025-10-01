@@ -1,19 +1,15 @@
 #ifndef MITE_MATERIAL_TEMPLATE_GLTF_PBR
 #define MITE_MATERIAL_TEMPLATE_GLTF_PBR
 
-#include "material_template.h"
+#include "gbuffer_material_template.h"
 
 namespace mite {
 
 /**
  * @brief GLTF PBR材质模板（基于GLTF标准的物理渲染）
- * @note 职责：
- * 1. 支持GLTF PBR标准的所有参数（baseColorFactor, metallicFactor, roughnessFactor等）
- * 2. 支持GLTF标准纹理槽位（baseColorTexture, normalTexture等）
- * 3. 支持透明度模式（OPAQUE, MASK, BLEND）
- * 4. 支持双面渲染
+ * @note 继承GBufferMaterialTemplate，使用UBO方案
  */
-class GLTFPBRMaterialTemplate : public MaterialTemplate {
+class GLTFPBRMaterialTemplate : public GBufferMaterialTemplate {
  public:
   /**
    * @brief 构造函数
@@ -31,16 +27,9 @@ class GLTFPBRMaterialTemplate : public MaterialTemplate {
     return StaticType();
   }
 
-  // ---- 核心接口 ----
+  // ---- 核心接口重写 ----
   std::shared_ptr<MaterialInstance> CreateInstance(
       const MaterialSourceData &sourceData) const override;
-  void ApplyDefaultParams(MaterialInstance &instance) const override;
-
-  // ---- 着色器访问 ----
-  std::shared_ptr<OpenGLShader> GetShader() const
-  {
-    return m_Shader;
-  }
 
   // ---- 默认参数设置 ----
   void SetDefaultBaseColor(const glm::vec4 &color)
@@ -71,10 +60,65 @@ class GLTFPBRMaterialTemplate : public MaterialTemplate {
   {
     m_DefaultDoubleSided = doubleSided;
   }
+  void SetDefaultNormalScale(float normalScale)
+  {
+    m_DefaultNormalScale = normalScale;
+  }
 
  protected:
-  // ---- 默认参数 ----
-  
+  // ---- 默认参数重写 ----
+  glm::vec4 GetDefaultBaseColor() const override
+  {
+    return m_DefaultBaseColor;
+  }
+  float GetDefaultMetallic() const override
+  {
+    return m_DefaultMetallic;
+  }
+  float GetDefaultRoughness() const override
+  {
+    return m_DefaultRoughness;
+  }
+  glm::vec3 GetDefaultEmissionColor() const override
+  {
+    return m_DefaultEmissive;
+  }
+  float GetDefaultEmissionIntensity() const override
+  {
+    return 1.0f; // GLTF中强度整合在EmissionColor里
+  }  
+  float GetDefaultNormalScale() const override
+  {
+    return m_DefaultNormalScale;
+  }
+  float GetDefaultAlphaCutoff() const override
+  {
+    return m_DefaultAlphaCutoff;
+  }
+  bool GetDefaultDoubleSided() const override
+  {
+    return m_DefaultDoubleSided;
+  }
+  float GetDefaultAlphaMode() const override
+  {
+    switch (m_DefaultAlphaMode) {
+      case AlphaMode::OPAQUE:
+        return 0.0f;
+      case AlphaMode::MASK:
+        return 1.0f;
+      case AlphaMode::BLEND:
+        return 2.0f;
+      default:
+        return 0.0f;
+    }
+  }
+
+  // ---- UBO数据填充重写 ----
+  void FillUBOData(GBufferMaterialUBO &uboData,
+                   const MaterialSourceData &sourceData) const override;
+
+ private:
+  // ---- GLTF特定默认参数 ----
   glm::vec4 m_DefaultBaseColor = glm::vec4(1.0f);  // RGBA
   float m_DefaultMetallic = 0.0f;
   float m_DefaultRoughness = 1.0f;
@@ -82,42 +126,27 @@ class GLTFPBRMaterialTemplate : public MaterialTemplate {
   AlphaMode m_DefaultAlphaMode = AlphaMode::OPAQUE;
   float m_DefaultAlphaCutoff = 0.5f;
   bool m_DefaultDoubleSided = false;
+  float m_DefaultNormalScale = 1.0f;
 
   // ---- 内部辅助方法 ----
 
   /**
-   * @brief 应用GLTF PBR参数到材质实例
+   * @brief 应用GLTF特定的纹理槽位
    * @param instance 材质实例
    * @param sourceData 源数据
    */
-  void ApplyPBRParameters(MaterialInstance &instance, const MaterialSourceData &sourceData) const;
-
-  /**
-   * @brief 应用纹理槽位到材质实例
-   * @param instance 材质实例
-   * @param sourceData 源数据
-   */
-  void ApplyTextureSlots(MaterialInstance &instance, const MaterialSourceData &sourceData) const;
-
-  /**
-   * @brief 应用渲染属性到材质实例
-   * @param instance 材质实例
-   * @param sourceData 源数据
-   */
-  void ApplyRenderProperties(MaterialInstance &instance,
+  void ApplyGLTFTextureSlots(std::shared_ptr<MaterialInstance> instance,
                              const MaterialSourceData &sourceData) const;
 
   /**
-   * @brief 设置透明度相关参数
+   * @brief 设置透明度相关参数（通过UBO传递）
    * @param instance 材质实例
-   * @param alphaMode 透明度模式
-   * @param alphaCutoff Alpha测试阈值
+   * @param sourceData 源数据
    */
-  void SetupAlphaBlending(MaterialInstance &instance,
-                          AlphaMode alphaMode,
-                          float alphaCutoff) const;
+  void SetupAlphaBlending(std::shared_ptr<MaterialInstance> instance,
+                          const MaterialSourceData &sourceData) const;
 };
 
 }  // namespace mite
 
-#endif
+#endif  // MITE_MATERIAL_TEMPLATE_GLTF_PBR

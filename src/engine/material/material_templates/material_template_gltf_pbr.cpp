@@ -1,130 +1,82 @@
 #include "material_template_gltf_pbr.h"
 
 namespace mite {
+
 GLTFPBRMaterialTemplate::GLTFPBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader)
-    : MaterialTemplate(shader)
+    : GBufferMaterialTemplate(std::move(shader))
 {
 }
 
 std::shared_ptr<MaterialInstance> GLTFPBRMaterialTemplate::CreateInstance(
     const MaterialSourceData &sourceData) const
 {
-  auto instance = std::make_shared<MaterialInstance>(m_Shader);
+  // 使用基类的CreateInstance，负责会设置UBO和基础纹理
+  auto instance = GBufferMaterialTemplate::CreateInstance(sourceData);
 
-  // 设置实例名称
-  instance->SetName(sourceData.name);
+  // 应用GLTF特定的纹理槽位（如果有特殊处理）
+  ApplyGLTFTextureSlots(instance, sourceData);
 
-  // 应用源数据中的所有参数
-  ApplyPBRParameters(*instance, sourceData);
-  ApplyTextureSlots(*instance, sourceData);
-  ApplyRenderProperties(*instance, sourceData);
+  // 设置透明度相关参数（通过UBO传递，这里只是确保数据正确）
+  SetupAlphaBlending(instance, sourceData);
 
   return instance;
 }
 
-void GLTFPBRMaterialTemplate::ApplyDefaultParams(MaterialInstance &instance) const
+void GLTFPBRMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
+                                          const MaterialSourceData &sourceData) const
 {
-  // 设置默认PBR参数
-  instance.SetVector4("u_BaseColorFactor", m_DefaultBaseColor);
-  instance.SetFloat("u_MetallicFactor", m_DefaultMetallic);
-  instance.SetFloat("u_RoughnessFactor", m_DefaultRoughness);
-  instance.SetVector3("u_EmissiveFactor", m_DefaultEmissive);
+  // 先调用基类的填充方法
+  GBufferMaterialTemplate::FillUBOData(uboData, sourceData);
 
-  // 设置默认渲染属性
-  SetupAlphaBlending(instance, m_DefaultAlphaMode, m_DefaultAlphaCutoff);
-  instance.SetInt("u_DoubleSided", m_DefaultDoubleSided ? 1 : 0);
+  // GLTF特定的数据调整（如果有需要）
+  // 这里可以添加GLTF特定的UBO数据调整逻辑
 }
 
-void GLTFPBRMaterialTemplate::ApplyPBRParameters(MaterialInstance &instance,
-                                                 const MaterialSourceData &sourceData) const
-{
-  // 使用基类工具方法获取参数（带默认值）
-  glm::vec4 baseColor = GetParameter(sourceData, "baseColorFactor", m_DefaultBaseColor);
-  float metallic = GetParameter(sourceData, "metallicFactor", m_DefaultMetallic);
-  float roughness = GetParameter(sourceData, "roughnessFactor", m_DefaultRoughness);
-  glm::vec3 emissive = GetParameter(sourceData, "emissiveFactor", m_DefaultEmissive);
-
-  // 设置PBR参数到着色器
-  instance.SetVector4("u_BaseColorFactor", baseColor);
-  instance.SetFloat("u_MetallicFactor", metallic);
-  instance.SetFloat("u_RoughnessFactor", roughness);
-  instance.SetVector3("u_EmissiveFactor", emissive);
-
-  // 设置纹理存在标志（告诉着色器哪些纹理可用）
-  instance.SetInt("u_HasBaseColorTexture", HasTextureSlot(sourceData, "baseColorTexture") ? 1 : 0);
-  instance.SetInt("u_HasMetallicRoughnessTexture",
-                  HasTextureSlot(sourceData, "metallicRoughnessTexture") ? 1 : 0);
-  instance.SetInt("u_HasNormalTexture", HasTextureSlot(sourceData, "normalTexture") ? 1 : 0);
-  instance.SetInt("u_HasEmissiveTexture", HasTextureSlot(sourceData, "emissiveTexture") ? 1 : 0);
-  instance.SetInt("u_HasOcclusionTexture", HasTextureSlot(sourceData, "occlusionTexture") ? 1 : 0);
-}
-
-void GLTFPBRMaterialTemplate::ApplyTextureSlots(MaterialInstance &instance,
-                                                const MaterialSourceData &sourceData) const
-{
-  // 应用基础颜色纹理
-  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData, "baseColorTexture")) {
-    instance.SetTexture("u_BaseColorTexture", *slot);
-  }
-
-  // 应用金属粗糙度纹理（R:粗糙度, G:金属度）
-  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData, "metallicRoughnessTexture")) {
-    instance.SetTexture("u_MetallicRoughnessTexture", *slot);
-  }
-
-  // 应用法线纹理
-  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData, "normalTexture")) {
-    instance.SetTexture("u_NormalTexture", *slot);
-  }
-
-  // 应用自发光纹理
-  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData, "emissiveTexture")) {
-    instance.SetTexture("u_EmissiveTexture", *slot);
-  }
-
-  // 应用环境光遮蔽纹理
-  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData, "occlusionTexture")) {
-    instance.SetTexture("u_OcclusionTexture", *slot);
-  }
-}
-
-void GLTFPBRMaterialTemplate::ApplyRenderProperties(MaterialInstance &instance,
+void GLTFPBRMaterialTemplate::ApplyGLTFTextureSlots(std::shared_ptr<MaterialInstance> instance,
                                                     const MaterialSourceData &sourceData) const
 {
-  // 获取渲染属性（使用源数据中的值，如果没有则使用默认值）
-  AlphaMode alphaMode = sourceData.alphaMode;
-  float alphaCutoff = sourceData.alphaCutoff;
-  bool doubleSided = sourceData.doubleSided;
+  // 基础颜色纹理 - 使用统一命名
+  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData,
+                                                  MaterialParamKeys::BASE_COLOR_TEXTURE))
+  {
+    instance->SetTexture(MaterialParamKeys::BASE_COLOR_TEXTURE, *slot);
+  }
 
-  // 设置透明度
-  SetupAlphaBlending(instance, alphaMode, alphaCutoff);
+  // 金属粗糙度纹理 - 使用统一命名
+  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData,
+                                                  MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE))
+  {
+    instance->SetTexture(MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE, *slot);
+  }
 
-  // 设置双面渲染
-  instance.SetInt("u_DoubleSided", doubleSided ? 1 : 0);
-}
+  // 法线纹理 - 使用统一命名
+  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData, MaterialParamKeys::NORMAL_TEXTURE)) {
+    instance->SetTexture(MaterialParamKeys::NORMAL_TEXTURE, *slot);
+  }
 
-void GLTFPBRMaterialTemplate::SetupAlphaBlending(MaterialInstance &instance,
-                                                 AlphaMode alphaMode,
-                                                 float alphaCutoff) const
-{
-  // 设置透明度模式
-  instance.SetInt("u_AlphaMode", static_cast<int>(alphaMode));
-  instance.SetFloat("u_AlphaCutoff", alphaCutoff);
+  // 自发光纹理 - 使用统一命名
+  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData, MaterialParamKeys::EMISSIVE_TEXTURE))
+  {
+    instance->SetTexture(MaterialParamKeys::EMISSIVE_TEXTURE, *slot);
+  }
 
-  // 根据透明度模式设置混合参数
-  switch (alphaMode) {
-    case AlphaMode::OPAQUE:
-      instance.SetInt("u_EnableAlphaTest", 0);
-      instance.SetInt("u_EnableAlphaBlend", 0);
-      break;
-    case AlphaMode::MASK:
-      instance.SetInt("u_EnableAlphaTest", 1);
-      instance.SetInt("u_EnableAlphaBlend", 0);
-      break;
-    case AlphaMode::BLEND:
-      instance.SetInt("u_EnableAlphaTest", 0);
-      instance.SetInt("u_EnableAlphaBlend", 1);
-      break;
+  // 环境光遮蔽纹理 - 使用统一命名
+  if (const TextureGPUSlot *slot = GetTextureSlot(sourceData,
+                                                  MaterialParamKeys::OCCLUSION_TEXTURE))
+  {
+    instance->SetTexture(MaterialParamKeys::OCCLUSION_TEXTURE, *slot);
   }
 }
+
+void GLTFPBRMaterialTemplate::SetupAlphaBlending(std::shared_ptr<MaterialInstance> instance,
+                                                 const MaterialSourceData &sourceData) const
+{
+  // 透明度相关参数已经通过UBO传递，这里不需要额外设置
+  // 这个方法保留是为了可能的GLTF特定透明度处理
+
+  // 如果需要设置额外的透明度uniform（不在UBO中的）
+  // instance->SetInt("u_EnableAlphaTest", sourceData.alphaMode == AlphaMode::MASK ? 1 : 0);
+  // instance->SetInt("u_EnableAlphaBlend", sourceData.alphaMode == AlphaMode::BLEND ? 1 : 0);
+}
+
 }  // namespace mite
