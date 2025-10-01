@@ -15,8 +15,6 @@ namespace mite {
  */
 class FrameBuffer {
  public:
-  using Ptr = std::shared_ptr<FrameBuffer>;
-
   /**
    * @brief 构造函数
    * @param spec 帧缓冲规格
@@ -63,12 +61,6 @@ class FrameBuffer {
   uint32_t GetColorAttachmentID(uint32_t index = 0) const;
 
   /**
-   * @brief 获取深度附件纹理ID
-   * @return 纹理ID，如果没有深度附件则返回0
-   */
-  uint32_t GetDepthAttachmentID() const;
-
-  /**
    * @brief 获取帧缓冲规格
    * @return 帧缓冲规格引用
    */
@@ -99,10 +91,9 @@ class FrameBuffer {
   FrameBufferSpec m_Spec;     // 帧缓冲规格
 
   // 附件纹理ID映射表
-  // key: 附件索引(对于颜色附件)或附件类型(对于深度/模板附件)
+  // key: 附件索引
   // value: 纹理ID
-  std::unordered_map<uint32_t, uint32_t> m_ColorAttachments;
-  uint32_t m_DepthAttachment = 0;  // 深度附件纹理ID
+  std::unordered_map<uint32_t, uint32_t> m_Attachments;
 };
 
 }  // namespace mite

@@ -24,17 +24,15 @@ source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
 set(BASIC_DATA_SRCS
     basic_data/camera.h         # 相机
     basic_data/camera.cpp
-    basic_data/framebuffer.h    # 帧缓冲
-    basic_data/framebuffer.cpp
+
     basic_data/mesh.h           # 网格体
     basic_data/mesh.cpp
     basic_data/model.h          # 模型
     basic_data/model.cpp
-    basic_data/texture.h        # 纹理（目前由Asset完整管理纹理实例，纹理本身处于弃用状态）
-    basic_data/texture.cpp
+    basic_data/runtime_texture.h        # 纹理（运行时纹理类，专门用于程序运行时动态创建的纹理）
+    basic_data/runtime_texture.cpp      # （外部纹理资产化，由Asset负责管理，共用一个TextureGPUHandle）
     basic_data/transform.h      # 变换
     basic_data/transform.cpp
-
     basic_data/bounding_volume.h    # AABB/OBB/Sphere等包围盒实现
     basic_data/bounding_volume.cpp
     basic_data/ray.h                # 射线类型定义和基础方法
@@ -47,6 +45,10 @@ set(BASIC_DATA_SRCS
 source_group("basic_data" FILES ${BASIC_DATA_SRCS})
 
 set(BASIC_SHADER_SRCS
+    basic_shader/framebuffer.h      # 帧缓冲
+    basic_shader/framebuffer.cpp
+    basic_shader/gbuffer.h          # 几何缓冲
+    basic_shader/gbuffer.cpp
     basic_shader/shader.h           # 着色器（目前仅有OpenGL，后续扩展需要重新规划抽象）
     basic_shader/shader.cpp
     basic_shader/shader_cache.h     # 着色器缓存
