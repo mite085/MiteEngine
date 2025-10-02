@@ -2,12 +2,9 @@
 #include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
-constexpr const char *Camera::UBO_BLOCK_NAME;
+
 Camera::Camera()
 {
-  // 分配UBO绑定点
-  m_BindingPoint = BindingPointManager::Get().GetCameraUBOBinding();
-
   SetPerspective(45.0f, 0.1f, 100.0f);
   SetAspectRatio(16.0f / 9.0f);
 }
@@ -91,37 +88,6 @@ void Camera::MarkProjectionClean()
 {
   m_ProjectionDirty = false;
 }
-
-void Camera::SetupUBO(std::shared_ptr<OpenGLShader> shader,
-                      const glm::mat4 &viewMatrix)
-{
-  std::lock_guard<std::mutex> lock(m_UBOMutex);
-
-  // 创建并初始化UBO
-  m_CameraUBO = std::make_shared<ShaderUBO>(sizeof(CameraUBO), GL_DYNAMIC_DRAW);
-  m_CameraUBO->Initialize();
-
-  // 加载UBO数据
-  CameraUBO uboData = FillUBOData(viewMatrix);
-
-  // 设置着色器绑定
-  m_CameraUBO->SetupShaderBinding(shader, UBO_BLOCK_NAME, m_BindingPoint);
-
-  // 更新UBO
-  m_CameraUBO->UpdateData(&uboData, sizeof(GBufferMaterialUBO));
-}
-
-void Camera::UpdateCameraUBO(const glm::mat4 &viewMatrix) const
-{
-  std::lock_guard<std::mutex> lock(m_UBOMutex);
-
-  // 加载UBO数据
-  CameraUBO uboData = FillUBOData(viewMatrix);
-
-  // 更新UBO
-  m_CameraUBO->UpdateData(&uboData, sizeof(GBufferMaterialUBO));
-}
-
 CameraUBO Camera::FillUBOData(const glm::mat4 &viewMatrix) const
 {
   CameraUBO uboData;
