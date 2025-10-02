@@ -21,7 +21,7 @@ class OpenGLDevice : public RenderDevice {
   TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) override;
   TextureGPUHandle CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo) override;
   void DestroyTexture(TextureGPUHandle handle) override;
-  void BindTexture(TextureGPUHandle handle, uint32_t slot) const override;
+  void BindTexture(TextureGPUHandle handle, size_t slot) const override;
 
   // ---- 模型操作 ----
   ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) override;

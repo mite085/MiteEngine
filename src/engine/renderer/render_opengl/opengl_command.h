@@ -78,7 +78,7 @@ class OpenGLRenderCommand : public RenderCommand {
 
   // 辅助方法
   void ApplyOpenGLState(const OpenGLRenderState &state);
-  void InternalBindTexture(TextureGPUHandle handle, uint32_t slot);  // 纹理绑定函数
+  void InternalBindTexture(TextureGPUHandle handle, size_t slot);  // 纹理绑定函数
   static void CheckGLError();
 };
 }  // namespace mite

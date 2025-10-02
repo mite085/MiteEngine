@@ -40,7 +40,7 @@ class RenderDevice {
   virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
   virtual TextureGPUHandle CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
-  virtual void BindTexture(TextureGPUHandle handle, uint32_t slot) const = 0;
+  virtual void BindTexture(TextureGPUHandle handle, size_t slot) const = 0;
 
   // ---- 模型/网格操作 ----
   virtual ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) = 0;

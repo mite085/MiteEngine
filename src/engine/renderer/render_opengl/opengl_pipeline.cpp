@@ -142,7 +142,8 @@ void OpenGLPipeline::Resize(const uint32_t width, const uint32_t height)
     LOG_ERROR("Failed to resize MainFrameBuffer: {}", e.what());
   }
 
-  // 注意：DisplayFrameBuffer不需要手动调整，SwapBuffer()会处理双缓冲的尺寸同步
+  // 注意1：DisplayFrameBuffer不需要手动调整，SwapBuffer()会处理双缓冲的尺寸同步
+  // 注意2：Context以及Stage不应当维护尺寸，仅应当由Pipeline控制。
 }
 
 std::shared_ptr<FrameBuffer> OpenGLPipeline::GetMainFrameBuffer() const

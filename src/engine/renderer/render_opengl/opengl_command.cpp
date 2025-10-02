@@ -163,8 +163,8 @@ void OpenGLRenderCommand::Submit(RenderableItem item,
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  std::function<void(TextureGPUHandle, uint32_t)> bindTextureFunc =
-      [=](TextureGPUHandle handle, uint32_t slot) { m_Device->BindTexture(handle, slot); };
+  std::function<void(TextureGPUHandle, size_t)> bindTextureFunc =
+      [=](TextureGPUHandle handle, size_t slot) { m_Device->BindTexture(handle, slot); };
 
   m_CommandQueue.push({CommandType::DrawIndexed,
                        [=]() {
@@ -219,7 +219,7 @@ void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
          // 2. 应用材质参数到G-Buffer着色器
          auto materialInstance = std::static_pointer_cast<MaterialInstance>(item.material);
          materialInstance->Apply(
-             [this](TextureGPUHandle handle, uint32_t slot) { InternalBindTexture(handle, slot); },
+             [this](TextureGPUHandle handle, size_t slot) { InternalBindTexture(handle, slot); },
              0,
              gbufferShader.get());
 
@@ -338,7 +338,7 @@ void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
     glDisable(GL_STENCIL_TEST);
   }
 }
-void OpenGLRenderCommand::InternalBindTexture(TextureGPUHandle handle, uint32_t slot)
+void OpenGLRenderCommand::InternalBindTexture(TextureGPUHandle handle, size_t slot)
 {
   m_Device->BindTexture(handle, slot);
 }
