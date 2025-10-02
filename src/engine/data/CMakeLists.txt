@@ -19,7 +19,7 @@ set(BASIC_TYPE_SRCS
     basic_type/material_param_variant.h         # 材质专用的variant类型
     basic_type/material_param_variant.cpp
 )
-source_group("basic_type" FILES ${BASIC_TYPE_SRCS})
+source_group("basic type" FILES ${BASIC_TYPE_SRCS})
 
 set(BASIC_DATA_SRCS
     basic_data/camera.h         # 相机
@@ -39,16 +39,24 @@ set(BASIC_DATA_SRCS
     basic_data/ray.cpp
     basic_data/frustum.h            # 视锥体类型定义和基础方法  
     basic_data/frustum.cpp
-    basic_data/material_instance.h  # 材质实例
-    basic_data/material_instance.cpp
+
 )
-source_group("basic_data" FILES ${BASIC_DATA_SRCS})
+source_group("basic data" FILES ${BASIC_DATA_SRCS})
+
+set(BASIC_INSTANCE_SRCS
+    basic_instance/material_instance.h  # 材质实例
+    basic_instance/material_instance.cpp
+    basic_instance/camera_instance.h  # 相机实例
+    basic_instance/camera_instance.cpp
+)
+source_group("basic instance" FILES ${BASIC_INSTANCE_SRCS})
 
 set(BASIC_SHADER_SRCS
     basic_shader/framebuffer.h      # 帧缓冲
     basic_shader/framebuffer.cpp
     basic_shader/gbuffer.h          # 几何缓冲
     basic_shader/gbuffer.cpp
+    basic_shader/uniform_buffer.h   # UBO
     basic_shader/shader.h           # 着色器（目前仅有OpenGL，后续扩展需要重新规划抽象）
     basic_shader/shader.cpp
     basic_shader/shader_cache.h     # 着色器缓存
@@ -60,18 +68,19 @@ set(BASIC_SHADER_SRCS
     basic_shader/shader_binding_point_manager.h     # UBO/SSBO绑定点管理器
     basic_shader/shader_binding_point_manager.cpp
 )
-source_group("basic_shader" FILES ${BASIC_SHADER_SRCS})
+source_group("basic shader" FILES ${BASIC_SHADER_SRCS})
 
 set(BASIC_EVENT_SRCS
     basic_event/asset_event.h
 )
-source_group("basic_event" FILES ${BASIC_EVENT_SRCS})
+source_group("basic event" FILES ${BASIC_EVENT_SRCS})
 
 # 创建静态库
 add_library(${ENGINE_DATA_LIB_NAME}  
     STATIC  
     ${BASIC_TYPE_SRCS}
     ${BASIC_DATA_SRCS}
+    ${BASIC_INSTANCE_SRCS}
     ${BASIC_EVENT_SRCS}
     ${BASIC_SHADER_SRCS}
 )
