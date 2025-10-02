@@ -2,7 +2,7 @@
 #define MITE_MATERIAL_TYPE
 
 #include "asset_id.h"
-#include "basic_data/material_instance.h"
+#include "basic_instance/material_instance.h"
 #include "handle_type.h"
 #include "material_param_variant.h"
 

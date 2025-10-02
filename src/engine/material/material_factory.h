@@ -2,7 +2,6 @@
 #define MITE_MATERIAL_FACTORY
 
 #include "basic_event/asset_event.h"
-#include "basic_data/material_instance.h"
 #include "material_template.h"
 
 namespace mite {

@@ -1,7 +1,6 @@
 #ifndef MITE_RENDERABLE_ITEM_BUILDER_H
 #define MITE_RENDERABLE_ITEM_BUILDER_H
 
-#include "basic_data/material_instance.h"
 #include "renderable_item.h"
 #include "scene_core/entity.h"
 #include "scene_core/scene_registry.h"

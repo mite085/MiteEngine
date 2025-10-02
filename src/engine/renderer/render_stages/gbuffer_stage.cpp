@@ -1,5 +1,5 @@
 #include "gbuffer_stage.h"
-#include "basic_data/material_instance.h"
+#include "basic_instance/material_instance.h"
 #include "basic_shader/shader_cache.h"
 #include "render_core/render_command.h"
 

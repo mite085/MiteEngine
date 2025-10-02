@@ -2,6 +2,7 @@
 #define MITE_SHADER_UBO_H
 
 #include "shader.h"
+#include "uniform_buffer.h"
 
 namespace mite {
 

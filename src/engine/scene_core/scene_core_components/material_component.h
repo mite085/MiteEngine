@@ -2,7 +2,7 @@
 #define MITE_SCENE_MATERIAL_COMPONENT
 
 #include "scene_core/component_system.h"
-#include "basic_data/material_instance.h"
+#include "basic_instance/material_instance.h"
 
 namespace mite {
 /**

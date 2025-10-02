@@ -1,7 +1,7 @@
 #ifndef MITE_MATERIAL_TEMPLATE
 #define MITE_MATERIAL_TEMPLATE
 
-#include "basic_data/material_instance.h"
+#include "basic_instance/material_instance.h"
 #include "basic_type/asset_type.h"
 #include "basic_type/material_type.h"
 
