@@ -1,6 +1,7 @@
 #ifndef MITE_DATA_CAMERA
 #define MITE_DATA_CAMERA
 
+#include "basic_shader/shader_ubo.h"
 #include "headers/headers.h"
 
 namespace mite {
@@ -52,6 +53,7 @@ enum class CameraClearFlags {
  */
 class Camera {
  public:
+  static constexpr const char *UBO_BLOCK_NAME = "CameraUBO";
   Camera();
 
   // ==================== 投影参数设置 ====================
@@ -65,11 +67,11 @@ class Camera {
 
   // ==================== 参数访问 ====================
   CameraProjectionType GetProjectionType() const;  // 获取投影类型
-  float GetNear() const;                     // 近平面
-  float GetFar() const;                      // 远平面
-  float GetFOV() const;                      // 视场角（deg，透视相机专属）
-  float GetAspectRatio() const;              // 宽高比
-  float GetOrthoSize() const;                // 正交尺寸
+  float GetNear() const;                           // 近平面
+  float GetFar() const;                            // 远平面
+  float GetFOV() const;                            // 视场角（deg，透视相机专属）
+  float GetAspectRatio() const;                    // 宽高比
+  float GetOrthoSize() const;                      // 正交尺寸
 
   // ==================== 投影控制方法 ====================
   void Zoom(float amount);
@@ -78,9 +80,20 @@ class Camera {
   bool IsProjectionDirty() const;
   void MarkProjectionClean();
 
+  // ==================== UBO数据填充 ====================
+  /**
+   * @brief 新增/更新/填充UBO
+   * @param shader 着色器对象（在Shader中定义）
+   * @param viewMatrix 视图矩阵（从Transfrom中获取）
+   */
+  void SetupUBO(std::shared_ptr<OpenGLShader> shader,
+                const glm::mat4 &viewMatrix = glm::mat4(1.0));
+  void UpdateCameraUBO(const glm::mat4 &viewMatrix) const;
+  
  private:
   // 辅助方法
   void UpdateProjection() const;  // 更新投影矩阵，清理脏标记
+  CameraUBO FillUBOData(const glm::mat4 &viewMatrix) const;  // 填充UBO Data
 
   // 投影类型，默认透视
   CameraProjectionType m_ProjectionType = CameraProjectionType::PERSPECTIVE;
@@ -101,6 +114,11 @@ class Camera {
 
   // 脏标记：在Set()时Mark，在Get()时执行Update()并消除Mark
   mutable bool m_ProjectionDirty = true;
+
+  // UBO实例和绑定点
+  mutable std::shared_ptr<ShaderUBO> m_CameraUBO;
+  mutable std::mutex m_UBOMutex;
+  uint32_t m_BindingPoint;
 };
 };  // namespace mite
 
