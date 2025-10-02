@@ -1,7 +1,7 @@
 #ifndef MITE_SCENE_CAMERA_COMPONENT
 #define MITE_SCENE_CAMERA_COMPONENT
 
-#include "basic_data/camera.h"
+#include "basic_instance/camera_instance.h"
 #include "scene_core/component_system.h"
 
 namespace mite {
@@ -34,7 +34,7 @@ enum class CameraUsage {
  * - 必须与TransformComponent共存
  * - SceneView通过此组件获取渲染用摄像机
  */
-class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family::Render> {
+class CameraComponent : public SnapshotComponentTraits<CameraInstance, Component::Family::Render> {
  public:
   CameraComponent(CameraProjectionType type = CameraProjectionType::PERSPECTIVE);
 
@@ -61,10 +61,10 @@ class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family
   std::vector<std::type_index> GetDependencies() const override;
 
  private:
-  Camera GetSnapshotData() const override;
-  void SetSnapshotData(const Camera &data) override;
+  CameraInstance GetSnapshotData() const override;
+  void SetSnapshotData(const CameraInstance &data) override;
 
-  Camera m_Camera;
+  CameraInstance m_CameraInstance;
   CameraUsage m_Usage = CameraUsage::FreeView;
 };
 

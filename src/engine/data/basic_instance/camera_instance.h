@@ -1,11 +1,10 @@
 #ifndef MITE_CAMERA_INSTANCE_H
 #define MITE_CAMERA_INSTANCE_H
 
-#include "basic_shader/shader_ubo.h"
 #include "basic_data/camera.h"
+#include "basic_shader/shader_ubo.h"
 
 namespace mite {
-
 /**
  * @brief 相机实例类，负责管理相机UBO的生命周期
  * @note 设计理念：
@@ -60,7 +59,10 @@ class CameraInstance {
   {
     return m_Camera;
   }
-
+  void SetCamera(std::shared_ptr<Camera> camera)
+  {
+    m_Camera = camera;
+  }
   /**
    * @brief 获取相机投影矩阵
    */
@@ -114,7 +116,6 @@ class CameraInstance {
   CameraInstance(const CameraInstance &) = delete;
   CameraInstance &operator=(const CameraInstance &) = delete;
 };
-
 }  // namespace mite
 
 #endif  // MITE_CAMERA_INSTANCE_H
