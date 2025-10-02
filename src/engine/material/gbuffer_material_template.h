@@ -8,31 +8,6 @@
 
 namespace mite {
 /**
- * @brief GBuffer材质参数UBO结构体
- * @note 按照std140布局规则对齐，包含所有材质参数
- */
-struct alignas(16) GBufferMaterialUBO {
-  // ---- 基础PBR参数 ----
-  glm::vec4 baseColor;            // RGB + Alpha (w分量)
-  glm::vec4 metallicRoughnessAO;  // x: metallic, y: roughness, z: AO, w: unused
-  glm::vec4 emission;             // RGB + Intensity (w分量)
-  glm::vec4 normalScale;          // x: normal scale, yzw: unused
-
-  // ---- 纹理标识和参数 ----
-  glm::vec4 textureFlags;  // x: hasBaseColorTex, y: hasNormalTex, z: hasMRTex, w: hasEmissiveTex
-  glm::vec4 baseColorTexParams;  // xy: scale, zw: offset
-  glm::vec4 normalTexParams;     // xy: scale, zw: offset
-  glm::vec4 mrTexParams;         // xy: scale, zw: offset
-  glm::vec4 emissiveTexParams;   // xy: scale, zw: offset
-  glm::vec4 occlusionTexParams;  // xy: scale, zw: offset
-
-  // ---- 渲染属性 ----
-  glm::vec4 renderProperties;  // x: alphaCutoff, y: doubleSided, z: alphaMode, w: unused
-
-  // 填充到256字节对齐
-  glm::vec4 padding[3];
-};
-/**
  * @brief 完全基于UBO的GBuffer材质模板
  * @note 所有材质参数都通过UBO传递，不再使用单独的uniform
  */
@@ -42,23 +17,36 @@ class GBufferMaterialTemplate : public MaterialTemplate {
 
   explicit GBufferMaterialTemplate(std::shared_ptr<OpenGLShader> shader);
   virtual ~GBufferMaterialTemplate();
-  // ---- 核心接口重写 ----
+
+  // ==================== 核心接口重写 ====================
   std::shared_ptr<MaterialInstance> CreateInstance(
       const MaterialSourceData &sourceData) const override;
 
   void ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const override;
-  // ---- UBO管理 ----
-  void SetupMaterialUBO(std::shared_ptr<MaterialInstance> instance) const;
-  void UpdateMaterialUBO(const MaterialSourceData &sourceData) const;
 
-  // ---- 绑定点信息 ----
+  // ==================== UBO管理 ====================
+  /**
+   * @brief 为材质实例创建并设置独立的UBO
+   * @param instance 材质实例
+   * @param sourceData 材质源数据
+   */
+  void SetupInstanceUBO(std::shared_ptr<MaterialInstance> instance,
+                        const MaterialSourceData &sourceData) const;
+  /**
+   * @brief 创建并初始化实例专用的UBO
+   * @param sourceData 材质源数据
+   * @return 初始化好的UBO对象
+   */
+  std::shared_ptr<ShaderUBO> CreateInstanceUBO(const MaterialSourceData &sourceData) const;
+  /**
+   * @brief 获取绑定点
+   */
   uint32_t GetBindingPoint() const
   {
     return m_BindingPoint;
   }
-
  protected:
-  // ---- 参数获取工具方法 ----
+  // ==================== 参数获取工具方法（PBR） ====================
   glm::vec4 GetBaseColor(const MaterialSourceData &sourceData) const;
   float GetMetallic(const MaterialSourceData &sourceData) const;
   float GetRoughness(const MaterialSourceData &sourceData) const;
@@ -69,14 +57,16 @@ class GBufferMaterialTemplate : public MaterialTemplate {
   float GetAlphaCutoff(const MaterialSourceData &sourceData) const;
   bool GetDoubleSided(const MaterialSourceData &sourceData) const;
   float GetAlphaMode(const MaterialSourceData &sourceData) const;
-  // ---- 纹理处理工具方法 ----
+
+  // ==================== 纹理处理工具方法 ====================
   void SetupTextures(std::shared_ptr<MaterialInstance> instance,
                      const MaterialSourceData &sourceData) const;
 
   void SetupTextureSlot(std::shared_ptr<MaterialInstance> instance,
                         const std::string &slotName,
                         const MaterialSourceData &sourceData) const;
-  // ---- 默认值设置（派生类可重写） ----
+
+  // ==================== 默认值设置（派生类可重写） ====================
   virtual glm::vec4 GetDefaultBaseColor() const
   {
     return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
@@ -95,7 +85,7 @@ class GBufferMaterialTemplate : public MaterialTemplate {
   }
   virtual glm::vec3 GetDefaultEmissionColor() const
   {
-    return glm::vec3(0.0f); // 无自发光
+    return glm::vec3(0.0f);  // 无自发光
   }
   virtual float GetDefaultEmissionIntensity() const
   {
@@ -115,18 +105,16 @@ class GBufferMaterialTemplate : public MaterialTemplate {
   }
   virtual float GetDefaultAlphaMode() const
   {
-    return 0.0f;
-  }  // 0 = OPAQUE
-  // ---- UBO数据填充 ----
+    return 0.0f;   // 0 = OPAQUE不透明，参考handle_type.h中 enum class AlphaMode
+  }
+
+  // ==================== UBO相关 ====================
   virtual void FillUBOData(GBufferMaterialUBO &uboData,
                            const MaterialSourceData &sourceData) const;
 
  private:
-  // UBO实例和绑定点
-  mutable std::shared_ptr<ShaderUBO> m_MaterialUBO;
-  mutable std::mutex m_UBOMutex;
+  // UBO绑定点
   uint32_t m_BindingPoint;
-  void InitializeUBO() const;
 };
 }  // namespace mite
 

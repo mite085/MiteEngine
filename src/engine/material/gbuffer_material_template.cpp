@@ -33,9 +33,11 @@ std::shared_ptr<MaterialInstance> GBufferMaterialTemplate::CreateInstance(
   // 设置纹理（纹理仍然需要单独绑定，因为它们是采样器）
   SetupTextures(instance, sourceData);
 
-  // 设置并更新UBO（所有材质参数都通过UBO传递）
-  SetupMaterialUBO(instance);
-  UpdateMaterialUBO(sourceData);
+  // 为每个实例创建独立的UBO，确保数据隔离
+  SetupInstanceUBO(instance, sourceData);
+
+  LOG_DEBUG("Created material instance '{}' with independent UBO",
+            sourceData.name.empty() ? "unnamed" : sourceData.name);
 
   return instance;
 }
@@ -55,51 +57,43 @@ void GBufferMaterialTemplate::ApplyDefaultParams(std::shared_ptr<MaterialInstanc
   defaultData.parameters[MaterialParamKeys::EMISSION_INTENSITY] = GetDefaultEmissionIntensity();
   defaultData.parameters[MaterialParamKeys::NORMAL_SCALE] = GetDefaultNormalScale();
 
-  // 更新UBO数据
-  SetupMaterialUBO(instance);
-  UpdateMaterialUBO(defaultData);
+  // 为实例创建独立的默认UBO
+  SetupInstanceUBO(instance, defaultData);
 }
-void GBufferMaterialTemplate::SetupMaterialUBO(std::shared_ptr<MaterialInstance> instance) const
+void GBufferMaterialTemplate::SetupInstanceUBO(std::shared_ptr<MaterialInstance> instance,
+                                               const MaterialSourceData &sourceData) const
 {
-  std::lock_guard<std::mutex> lock(m_UBOMutex);
+  // 为每个材质实例创建独立的UBO对象
+  auto instanceUBO = CreateInstanceUBO(sourceData);
 
-  if (!m_MaterialUBO) {
-    InitializeUBO();
-  }
+  // 将UBO绑定到材质实例，使用模板管理的绑定点
+  // 注意：同一模板的不同实例共享绑定点，但拥有不同的UBO对象
+  instance->SetupUBO(UBO_BLOCK_NAME, instanceUBO, m_BindingPoint);
 
-  // 设定UBO到材质实例
-  instance->SetupUBO(UBO_BLOCK_NAME, m_MaterialUBO, m_BindingPoint);
+  LOG_DEBUG("Setup independent UBO for material instance '{}' at binding point {}",
+            instance->GetName(),
+            m_BindingPoint);
 }
-void GBufferMaterialTemplate::UpdateMaterialUBO(const MaterialSourceData &sourceData) const
+std::shared_ptr<ShaderUBO> GBufferMaterialTemplate::CreateInstanceUBO(
+    const MaterialSourceData &sourceData) const
 {
-  std::lock_guard<std::mutex> lock(m_UBOMutex);
+  // 创建新的UBO对象
+  auto ubo = std::make_shared<ShaderUBO>(sizeof(GBufferMaterialUBO), GL_DYNAMIC_DRAW);
+  ubo->Initialize();
 
-  if (!m_MaterialUBO) {
-    InitializeUBO();
-  }
-
+  // 填充UBO数据
   GBufferMaterialUBO uboData;
   FillUBOData(uboData, sourceData);
 
-  m_MaterialUBO->UpdateData(&uboData, sizeof(GBufferMaterialUBO));
+  // 更新UBO数据
+  ubo->UpdateData(&uboData, sizeof(GBufferMaterialUBO));
+
+  LOG_DEBUG("Created independent UBO for material with {} parameters",
+            sourceData.parameters.size());
+
+  return ubo;
 }
-void GBufferMaterialTemplate::InitializeUBO() const
-{
-  if (m_BindingPoint == UINT32_MAX) {
-    LOG_ERROR("Cannot initialize UBO without valid binding point");
-    return;
-  }
 
-  m_MaterialUBO = std::make_shared<ShaderUBO>(sizeof(GBufferMaterialUBO), GL_DYNAMIC_DRAW);
-  m_MaterialUBO->Initialize();
-
-  // 初始化默认UBO数据
-  GBufferMaterialUBO defaultData{};
-  FillUBOData(defaultData, MaterialSourceData{});
-  m_MaterialUBO->UpdateData(&defaultData, sizeof(GBufferMaterialUBO));
-
-  LOG_DEBUG("GBufferMaterialTemplate UBO initialized with binding point: {}", m_BindingPoint);
-}
 // ---- 参数获取工具方法 ----
 glm::vec4 GBufferMaterialTemplate::GetBaseColor(const MaterialSourceData &sourceData) const
 {
@@ -185,7 +179,7 @@ void GBufferMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
   uboData.metallicRoughnessAO = glm::vec4(
       GetMetallic(sourceData), GetRoughness(sourceData), GetAO(sourceData), 0.0f);
 
-  // 自发光
+  // 自发光合并Color和Intensity
   glm::vec3 emissionColor = GetEmissionColor(sourceData);
   float emissionIntensity = GetEmissionIntensity(sourceData);
   uboData.emission = glm::vec4(emissionColor, emissionIntensity);
@@ -193,14 +187,21 @@ void GBufferMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
   // 法线缩放
   uboData.normalScale = glm::vec4(GetNormalScale(sourceData), 0.0f, 0.0f, 0.0f);
 
-  // ---- 纹理标识 ----
-  uboData.textureFlags = glm::vec4(
+  // 纹理标识
+  uboData.textureCNMROFlags = glm::vec4(
       HasTextureSlot(sourceData, MaterialParamKeys::BASE_COLOR_TEXTURE) ? 1.0f : 0.0f,
       HasTextureSlot(sourceData, MaterialParamKeys::NORMAL_TEXTURE) ? 1.0f : 0.0f,
       HasTextureSlot(sourceData, MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE) ? 1.0f : 0.0f,
-      HasTextureSlot(sourceData, MaterialParamKeys::EMISSIVE_TEXTURE) ? 1.0f : 0.0f);
+      HasTextureSlot(sourceData, MaterialParamKeys::OCCLUSION_TEXTURE) ? 1.0f : 0.0f);
 
-  // ---- 纹理参数（scale和offset） ----
+   uboData.textureEmissionFlag = glm::vec4(
+      HasTextureSlot(sourceData, MaterialParamKeys::EMISSIVE_TEXTURE) ? 1.0f : 0.0f,
+      0.0f,
+      0.0f,
+      0.0f);
+
+
+  // 纹理参数（scale和offset）
   auto setupTexParams = [&](const std::string &slotName, glm::vec4 &params) {
     if (HasTextureSlot(sourceData, slotName)) {
       const auto *slot = GetTextureSlot(sourceData, slotName);
@@ -218,7 +219,7 @@ void GBufferMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
   setupTexParams(MaterialParamKeys::EMISSIVE_TEXTURE, uboData.emissiveTexParams);
   setupTexParams(MaterialParamKeys::OCCLUSION_TEXTURE, uboData.occlusionTexParams);
 
-  // ---- 渲染属性 ----
+  // 渲染属性
   uboData.renderProperties = glm::vec4(GetAlphaCutoff(sourceData),
                                        GetDoubleSided(sourceData) ? 1.0f : 0.0f,
                                        GetAlphaMode(sourceData),
