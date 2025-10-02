@@ -121,6 +121,15 @@ bool MaterialInstance::HasUBO(const std::string &uniformBlockName) const
 {
   return m_UBOBindings.find(uniformBlockName) != m_UBOBindings.end();
 }
+std::shared_ptr<ShaderUBO> MaterialInstance::GetUBO(const std::string &uniformBlockName) const
+{
+  auto it = m_UBOBindings.find(uniformBlockName);
+  if (it != m_UBOBindings.end()) {
+    return it->second.ubo;
+  }
+  return nullptr;
+}
+
 // ===================== SSBO绑定方法（新增）=====================
 void MaterialInstance::SetupSSBO(const std::string &storageBlockName,
                                 std::shared_ptr<ShaderSSBO> ssbo,
@@ -267,7 +276,6 @@ void MaterialInstance::BindBuffersOnly() const
   }
 }
 
-// ===================== 核心Apply方法 =====================
 void MaterialInstance::Apply(TextureBindFunc textureBindFunc,
                              size_t startSlot,
                              OpenGLShader *overrideShader) const
@@ -277,6 +285,8 @@ void MaterialInstance::Apply(TextureBindFunc textureBindFunc,
   UploadUniformsOnly(overrideShader);
   BindTexturesOnly(textureBindFunc, startSlot, overrideShader);
 }
+
+
 
 std::shared_ptr<OpenGLShader> MaterialInstance::GetShader() const
 {

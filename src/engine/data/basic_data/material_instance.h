@@ -47,20 +47,22 @@ class MaterialInstance {
 
   // --------------------- UBO设置 ---------------------
   /**
-   * @brief 新增/删除/查询UBO
+   * @brief 新增/删除/查询/获取UBO
    * @param uniformBlockName Uniform块名称（在Shader中定义）
    * @param ubo UBO对象
    * @param bindingPoint 绑定点索引
+   * @return UBO共享指针，如果不存在返回nullptr
    */
   void SetupUBO(const std::string &uniformBlockName,
                 std::shared_ptr<ShaderUBO> ubo,
                 uint32_t bindingPoint);
   void UninstallUBO(const std::string &uniformBlockName);
   bool HasUBO(const std::string &uniformBlockName) const;
+  std::shared_ptr<ShaderUBO> GetUBO(const std::string &uniformBlockName) const;
 
   // --------------------- SSBO设置 ---------------------
   /**
-   * @brief 新增/删除/查询SSBO
+   * @brief 新增/删除/查询/SSBO
    * @param storageBlockName 存储块名称（在Shader中定义）
    * @param ssbo SSBO对象
    * @param bindingPoint 绑定点索引
@@ -101,6 +103,7 @@ class MaterialInstance {
   void Apply(TextureBindFunc textureBindFunc,
              size_t startSlot = 0,
              OpenGLShader *overrideShader = nullptr) const;
+
 
   // --------------------- 属性访问 ---------------------
   std::shared_ptr<OpenGLShader> GetShader() const;
