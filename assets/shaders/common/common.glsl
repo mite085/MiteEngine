@@ -15,6 +15,16 @@ const uint ALPHA_MODE_BLEND = 2u;
 const uint PROJECTION_PERSPECTIVE = 1u;
 const uint PROJECTION_ORTHOGRAPHIC = 0u;
 
+// 光源类型枚举
+const uint LIGHT_TYPE_POINT = 0u;
+const uint LIGHT_TYPE_SPOT = 1u;
+const uint LIGHT_TYPE_DIRECTIONAL = 2u;
+const uint LIGHT_TYPE_AREA_RECT = 3u;
+const uint LIGHT_TYPE_AREA_ELLIPSE = 4u;
+// 面光源形状枚举（矩形和椭圆）
+const uint AREA_LIGHT_SHAPE_RECTANGLE = 0u;
+const uint AREA_LIGHT_SHAPE_ELLIPSE = 1u;
+
 // GBuffer索引定义 - 与C++端GBuffer::GBufferIndex对应
 const int GBUFFER_WORLDPOS_DEPTH = 0;
 const int GBUFFER_BASECOLOR_MATTYPE = 1;

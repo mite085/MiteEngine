@@ -1,8 +1,9 @@
 shader/
 shader/common/
-common.glsl      # 通用常量和结构体定义
-math.glsl        # 数学工具函数
-uniforms.glsl    # 全局Uniform缓冲区定义
+common.glsl         # 通用常量和结构体定义
+math.glsl           # 数学工具函数
+uniforms.glsl       # 全局Uniform缓冲区定义
+lighting_ssbo.glsl  # 光照Storge缓冲区定义
 
 shader/gbuffer/
 gbuffer.vert.glsl    # GBuffer顶点着色器（第一步，生成GBuffer纹理）
