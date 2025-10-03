@@ -10,7 +10,6 @@ namespace mite {
  * 1. 避免重复编译相同路径的Shader
  * 2. 自动管理Shader资源的生命周期（引用计数）
  * 3. 线程安全的缓存操作
- * 
  */
 class ShaderCache {
  public:
@@ -47,7 +46,7 @@ class ShaderCache {
                                const std::string &fragmentPath,
                                const std::string &geometryPath) const;
 
-  std::mutex m_Mutex;
+  mutable std::mutex m_Mutex;
   std::unordered_map<std::string, std::weak_ptr<OpenGLShader>> m_Cache;
 };
 

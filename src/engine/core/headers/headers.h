@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <execution>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <limits>
@@ -18,6 +19,7 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <regex>
 #include <set>
 #include <shared_mutex>
 #include <stack>

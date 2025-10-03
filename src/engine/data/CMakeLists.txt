@@ -52,18 +52,20 @@ set(BASIC_INSTANCE_SRCS
 source_group("basic instance" FILES ${BASIC_INSTANCE_SRCS})
 
 set(BASIC_SHADER_SRCS
-    basic_shader/framebuffer.h      # 帧缓冲
+    basic_shader/framebuffer.h              # 帧缓冲
     basic_shader/framebuffer.cpp
-    basic_shader/gbuffer.h          # 几何缓冲
+    basic_shader/gbuffer.h                  # 几何缓冲
     basic_shader/gbuffer.cpp
-    basic_shader/uniform_buffer.h   # UBO
-    basic_shader/shader.h           # 着色器（目前仅有OpenGL，后续扩展需要重新规划抽象）
+    basic_shader/uniform_buffer.h           # UBO
+    basic_shader/shader.h                   # 着色器（目前仅有OpenGL，后续扩展需要重新规划抽象）
     basic_shader/shader.cpp
-    basic_shader/shader_cache.h     # 着色器缓存
+    basic_shader/shader_preprocessor.h      # 着色器预处理器，负责预处理#include等指令
+    basic_shader/shader_preprocessor.cpp
+    basic_shader/shader_cache.h             # 着色器缓存
     basic_shader/shader_cache.cpp
-    basic_shader/shader_ubo.h       # Uniform Buffer，固定size的数据结构体
+    basic_shader/shader_ubo.h               # Uniform Buffer，固定size的数据结构体
     basic_shader/shader_ubo.cpp
-    basic_shader/shader_ssbo.h      # Shader Storge Buffer，可变size的数据结构体
+    basic_shader/shader_ssbo.h              # Shader Storge Buffer，可变size的数据结构体
     basic_shader/shader_ssbo.cpp
     basic_shader/shader_binding_point_manager.h     # UBO/SSBO绑定点管理器
     basic_shader/shader_binding_point_manager.cpp

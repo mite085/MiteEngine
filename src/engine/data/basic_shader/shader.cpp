@@ -1,6 +1,10 @@
 #include "shader.h"
+#include "shader_preprocessor.h"
 
 namespace mite {
+// 静态预处理器实例
+static ShaderPreprocessor s_Preprocessor;
+
 OpenGLShader::OpenGLShader() {}
 
 OpenGLShader::~OpenGLShader()
@@ -9,46 +13,35 @@ OpenGLShader::~OpenGLShader()
 }
 
 void OpenGLShader::LoadFromFile(const char *vertexPath,
-                          const char *fragmentPath,
-                          const char *geometryPath)
+                                const char *fragmentPath,
+                                const char *geometryPath)
 {
-  // 1. 从文件读取着色器源码
+  // 1. 预处理着色器源码
   std::string vertexCode, fragmentCode, geometryCode;
-  std::ifstream vShaderFile, fShaderFile, gShaderFile;
-
-  // 确保ifstream对象能抛出异常
-  vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-  fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-  gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
   try {
-    // 打开文件并读取到字符串流
-    
-    vShaderFile.open(vertexPath);
-    fShaderFile.open(fragmentPath);
-    std::stringstream vShaderStream, fShaderStream;
+    // 预处理顶点着色器
+    s_Preprocessor.ClearIncludeHistory();
+    vertexCode = s_Preprocessor.PreprocessFromAsset(vertexPath);
 
-    vShaderStream << vShaderFile.rdbuf();
-    fShaderStream << fShaderFile.rdbuf();
-
-    vShaderFile.close();
-    fShaderFile.close();
-
-    vertexCode = vShaderStream.str();
-    fragmentCode = fShaderStream.str();
+    // 预处理片段着色器
+    s_Preprocessor.ClearIncludeHistory();
+    fragmentCode = s_Preprocessor.PreprocessFromAsset(fragmentPath);
 
     // 可选几何着色器
     if (geometryPath != nullptr) {
-      gShaderFile.open(geometryPath);
-      std::stringstream gShaderStream;
-      gShaderStream << gShaderFile.rdbuf();
-      gShaderFile.close();
-      geometryCode = gShaderStream.str();
+      s_Preprocessor.ClearIncludeHistory();
+      geometryCode = s_Preprocessor.PreprocessFromAsset(geometryPath);
     }
+
+    LOG_DEBUG("Shader preprocessing completed: vertex={}, fragment={}, geometry={}",
+              vertexPath,
+              fragmentPath,
+              geometryPath ? geometryPath : "none");
   }
-  catch (std::ifstream::failure &e) {
-    LOG_CRITICAL("ERROR::SHADER::FILE_READ_FAILED {}", e.what());
-    throw std::runtime_error("Shader file load failed");
+  catch (std::exception &e) {
+    LOG_CRITICAL("ERROR::SHADER::PREPROCESS_FAILED {}: {}", vertexPath, e.what());
+    throw std::runtime_error("Shader preprocessing failed: " + std::string(e.what()));
   }
 
   // 2. 调用源码加载接口
@@ -56,8 +49,8 @@ void OpenGLShader::LoadFromFile(const char *vertexPath,
 }
 
 void OpenGLShader::LoadFromSource(const std::string &vertexSrc,
-                            const std::string &fragmentSrc,
-                            const std::string &geometrySrc)
+                                  const std::string &fragmentSrc,
+                                  const std::string &geometrySrc)
 {
   // 1. 编译着色器
   m_Handle.vertexShader = CompileShader(vertexSrc, GL_VERTEX_SHADER);
@@ -90,6 +83,8 @@ void OpenGLShader::LoadFromSource(const std::string &vertexSrc,
   if (m_Handle.geometryShader != 0) {
     glDeleteShader(static_cast<GLuint>(m_Handle.geometryShader));
   }
+
+  LOG_DEBUG("Shader program linked successfully (ID: {})", m_Handle.programId);
 }
 
 void OpenGLShader::Destroy()

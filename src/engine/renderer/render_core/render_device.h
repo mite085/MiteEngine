@@ -61,7 +61,7 @@ class RenderDevice {
    * @param mesh 网格体对象
    * @param cameraPosition 相机距离
    * @param worldTransform 局部空间到世界空间的旋转矩阵
-   * @param lodBias LOD层级偏差值
+   * @param lodBias LOD层级偏差值(偏差值越高，越倾向于高精度。默认1不偏差)
    * @return LOD层级
    *
    * 针对超大Model（如地形）可以逐Mesh划分LOD，降低渲染压力
@@ -71,7 +71,7 @@ class RenderDevice {
                                       const glm::mat4 &worldTransform,
                                       const glm::mat4 &viewProjectionMatrix,
                                       float screenWidth,
-                                      float lodBias) const = 0;
+                                      float lodBias = 1) const = 0;
   /**
    * @brief DrawMeshLOD 根据LOD绘制Mesh
    * @param mesh
