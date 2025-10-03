@@ -34,7 +34,7 @@ enum class CameraUsage {
  * - 必须与TransformComponent共存
  * - SceneView通过此组件获取渲染用摄像机
  */
-class CameraComponent : public SnapshotComponentTraits<CameraInstance, Component::Family::Render> {
+class CameraComponent : public SnapshotComponentTraits<std::shared_ptr<Camera>, Component::Family::Render> {
  public:
   CameraComponent(CameraProjectionType type = CameraProjectionType::PERSPECTIVE);
 
@@ -61,10 +61,10 @@ class CameraComponent : public SnapshotComponentTraits<CameraInstance, Component
   std::vector<std::type_index> GetDependencies() const override;
 
  private:
-  CameraInstance GetSnapshotData() const override;
-  void SetSnapshotData(const CameraInstance &data) override;
+  std::shared_ptr<Camera> GetSnapshotData() const override;
+  void SetSnapshotData(const std::shared_ptr<Camera> &data) override;
 
-  CameraInstance m_CameraInstance;
+  CameraInstance m_CameraInstance; // 摄像机实例，管理std::shared_ptr<Camera>和CameraUBO
   CameraUsage m_Usage = CameraUsage::FreeView;
 };
 

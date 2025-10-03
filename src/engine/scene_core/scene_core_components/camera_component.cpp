@@ -71,14 +71,14 @@ std::vector<std::type_index> CameraComponent::GetDependencies() const
   return {typeid(TransformComponent)};
 }
 
-CameraInstance CameraComponent::GetSnapshotData() const
+std::shared_ptr<Camera> CameraComponent::GetSnapshotData() const
 {
-  return CameraInstance(m_CameraInstance.GetCamera());
+  return m_CameraInstance.GetCamera();
 }
 
-void CameraComponent::SetSnapshotData(const CameraInstance &data)
+void CameraComponent::SetSnapshotData(const std::shared_ptr<Camera> &data)
 {
-  m_CameraInstance.SetCamera(data.GetCamera());
+  m_CameraInstance.SetCamera(data);
   // 发布更新事件
   EventBus::Publish<CameraChangedEvent>(CameraChangedEvent(GetEntity(), *this));
 }
