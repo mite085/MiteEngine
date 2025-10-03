@@ -88,9 +88,9 @@ void Camera::MarkProjectionClean()
 {
   m_ProjectionDirty = false;
 }
-CameraUBO Camera::FillUBOData(const glm::mat4 &viewMatrix) const
+CameraUniformBuffer Camera::FillUBOData(const glm::mat4 &viewMatrix) const
 {
-  CameraUBO uboData;
+  CameraUniformBuffer uboData;
 
   // 矩阵部分
   uboData.view = viewMatrix;

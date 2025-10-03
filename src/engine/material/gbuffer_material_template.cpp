@@ -78,15 +78,15 @@ std::shared_ptr<ShaderUBO> GBufferMaterialTemplate::CreateInstanceUBO(
     const MaterialSourceData &sourceData) const
 {
   // 创建新的UBO对象
-  auto ubo = std::make_shared<ShaderUBO>(sizeof(GBufferMaterialUBO), GL_DYNAMIC_DRAW);
+  auto ubo = std::make_shared<ShaderUBO>(sizeof(MaterialUniformBuffer), GL_DYNAMIC_DRAW);
   ubo->Initialize();
 
   // 填充UBO数据
-  GBufferMaterialUBO uboData;
+  MaterialUniformBuffer uboData;
   FillUBOData(uboData, sourceData);
 
   // 更新UBO数据
-  ubo->UpdateData(&uboData, sizeof(GBufferMaterialUBO));
+  ubo->UpdateData(&uboData, sizeof(MaterialUniformBuffer));
 
   LOG_DEBUG("Created independent UBO for material with {} parameters",
             sourceData.parameters.size());
@@ -168,11 +168,11 @@ void GBufferMaterialTemplate::SetupTextureSlot(std::shared_ptr<MaterialInstance>
     }
   }
 }
-void GBufferMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
+void GBufferMaterialTemplate::FillUBOData(MaterialUniformBuffer &uboData,
                                           const MaterialSourceData &sourceData) const
 {
   // 清空UBO数据
-  memset(&uboData, 0, sizeof(GBufferMaterialUBO));
+  memset(&uboData, 0, sizeof(MaterialUniformBuffer));
 
   // ---- 基础PBR参数 ----
   uboData.baseColor = GetBaseColor(sourceData);

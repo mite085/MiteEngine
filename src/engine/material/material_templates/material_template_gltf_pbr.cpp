@@ -22,7 +22,7 @@ std::shared_ptr<MaterialInstance> GLTFPBRMaterialTemplate::CreateInstance(
   return instance;
 }
 
-void GLTFPBRMaterialTemplate::FillUBOData(GBufferMaterialUBO &uboData,
+void GLTFPBRMaterialTemplate::FillUBOData(MaterialUniformBuffer &uboData,
                                           const MaterialSourceData &sourceData) const
 {
   // 先调用基类的填充方法

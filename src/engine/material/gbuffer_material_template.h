@@ -109,7 +109,7 @@ class GBufferMaterialTemplate : public MaterialTemplate {
   }
 
   // ==================== UBO相关 ====================
-  virtual void FillUBOData(GBufferMaterialUBO &uboData,
+  virtual void FillUBOData(MaterialUniformBuffer &uboData,
                            const MaterialSourceData &sourceData) const;
 
  private:

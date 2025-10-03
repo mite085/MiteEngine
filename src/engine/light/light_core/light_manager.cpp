@@ -16,7 +16,7 @@ bool LightManager::Initialize()
 
   try {
     // 创建LightSSBO实例
-    m_LightSSBO = std::make_shared<LightSSBO>(m_MaxLights);
+    m_LightSSBO = std::make_shared<LightShaderStorgeBuffer>(m_MaxLights);
     m_LightSSBO->Initialize();
 
     LOG_INFO("LightManager initialized successfully with {} max lights", m_MaxLights);

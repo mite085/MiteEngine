@@ -57,7 +57,7 @@ bool CameraInstance::InitializeUBO(std::shared_ptr<OpenGLShader> shader)
 
   try {
     // 创建UBO对象
-    m_CameraUBO = std::make_shared<ShaderUBO>(sizeof(CameraUBO), GL_DYNAMIC_DRAW);
+    m_CameraUBO = std::make_shared<ShaderUBO>(sizeof(CameraUniformBuffer), GL_DYNAMIC_DRAW);
     m_CameraUBO->Initialize();
 
     // 设置着色器绑定
@@ -91,10 +91,10 @@ bool CameraInstance::UpdateUBO(const glm::mat4 &viewMatrix)
 
   try {
     // 获取最新的UBO数据
-    CameraUBO uboData = m_Camera->FillUBOData(viewMatrix);
+    CameraUniformBuffer uboData = m_Camera->FillUBOData(viewMatrix);
 
     // 更新UBO数据
-    bool success = m_CameraUBO->UpdateData(&uboData, sizeof(CameraUBO));
+    bool success = m_CameraUBO->UpdateData(&uboData, sizeof(CameraUniformBuffer));
 
     if (success) {
       LOG_TRACE("CameraInstance '{}' UBO updated successfully", m_Name);

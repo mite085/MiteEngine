@@ -114,7 +114,7 @@ class GLTFPBRMaterialTemplate : public GBufferMaterialTemplate {
   }
 
   // ---- UBO数据填充重写 ----
-  void FillUBOData(GBufferMaterialUBO &uboData,
+  void FillUBOData(MaterialUniformBuffer &uboData,
                    const MaterialSourceData &sourceData) const override;
 
  private:

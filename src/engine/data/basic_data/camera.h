@@ -82,7 +82,7 @@ class Camera {
   /**
    * @brief 填充UBO Data
    */
-  CameraUBO FillUBOData(const glm::mat4 &viewMatrix) const;
+  CameraUniformBuffer FillUBOData(const glm::mat4 &viewMatrix) const;
     
  private:
   // 辅助方法

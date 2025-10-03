@@ -6,173 +6,156 @@
 #include "light_type.h"
 
 namespace mite {
-
 /**
- * @brief ¹âÔ´Êı¾İSSBO¹ÜÀíÆ÷
- * @note Ö°Ôğ£º
- * 1. ¹ÜÀíËùÓĞ¹âÔ´Êı¾İµÄGPU´æ´¢
- * 2. Ìá¹©¹âÔ´Êı¾İµÄÅúÁ¿¸üĞÂºÍÍ¬²½
- * 3. Ö§³ÖÑÓ³ÙäÖÈ¾ÖĞµÄ´óÁ¿¹âÔ´´¦Àí
- * 4. ×Ô¶¯´¦Àí¹âÔ´Êı¾İµÄ²¼¾ÖºÍ¸üĞÂ
+ * @brief å…‰æºæ•°æ®SSBOç®¡ç†å™¨
+ * @note èŒè´£ï¼š
+ * 1. ç®¡ç†æ‰€æœ‰å…‰æºæ•°æ®çš„GPUå­˜å‚¨
+ * 2. æä¾›å…‰æºæ•°æ®çš„æ‰¹é‡æ›´æ–°å’ŒåŒæ­¥
+ * 3. æ”¯æŒå»¶è¿Ÿæ¸²æŸ“ä¸­çš„å¤§é‡å…‰æºå¤„ç†
+ * 4. è‡ªåŠ¨å¤„ç†å…‰æºæ•°æ®çš„å¸ƒå±€å’Œæ›´æ–°
  *
- * ×¢Òâ£ºÏîÄ¿³õÆÚÒÔ»ù±¾¹¦ÄÜÎªÖ÷£¬±ÜÃâ¹ı¶ÈÉè¼Æ
+ * æ³¨æ„ï¼šé¡¹ç›®åˆæœŸä»¥åŸºæœ¬åŠŸèƒ½ä¸ºä¸»ï¼Œé¿å…è¿‡åº¦è®¾è®¡
  */
-class LightSSBO {
+class LightShaderStorgeBuffer {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param maxLights Ö§³ÖµÄ×î´ó¹âÔ´ÊıÁ¿£¬Ä¬ÈÏ1024¸ö
+   * @brief æ„é€ å‡½æ•°
+   * @param maxLights æ”¯æŒçš„æœ€å¤§å…‰æºæ•°é‡ï¼Œé»˜è®¤1024ä¸ª
    */
-  explicit LightSSBO(size_t maxLights = 1024);
-  ~LightSSBO() = default;
+  explicit LightShaderStorgeBuffer(size_t maxLights = 1024);
+  ~LightShaderStorgeBuffer() = default;
 
-  // ---- ÉúÃüÖÜÆÚ¹ÜÀí ----
+  // ---- ç”Ÿå‘½å‘¨æœŸç®¡ç† ----
   /**
-   * @brief ³õÊ¼»¯SSBO£¬·ÖÅäGPUÄÚ´æ
+   * @brief åˆå§‹åŒ–SSBOï¼Œåˆ†é…GPUå†…å­˜
    */
   void Initialize();
-
   /**
-   * @brief Ïú»ÙSSBO£¬ÊÍ·ÅGPU×ÊÔ´
+   * @brief é”€æ¯SSBOï¼Œé‡Šæ”¾GPUèµ„æº
    */
   void Destroy();
-
   /**
-   * @brief ¼ì²éSSBOÊÇ·ñÒÑ³õÊ¼»¯
-   * @return ³õÊ¼»¯×´Ì¬
+   * @brief æ£€æŸ¥SSBOæ˜¯å¦å·²åˆå§‹åŒ–
+   * @return åˆå§‹åŒ–çŠ¶æ€
    */
   bool IsInitialized() const;
 
-  // ---- Êı¾İ¹ÜÀí ----
+  // ---- æ•°æ®ç®¡ç† ----
   /**
-   * @brief ÅúÁ¿¸üĞÂËùÓĞ¹âÔ´Êı¾İµ½SSBO
-   * @param lights ¹âÔ´Êı¾İÁĞ±í
-   * @return ¸üĞÂÊÇ·ñ³É¹¦
-   * @note ÕâÊÇ×î³£ÓÃµÄ¸üĞÂ·½Ê½£¬ĞÔÄÜ×î¼Ñ
+   * @brief æ‰¹é‡æ›´æ–°æ‰€æœ‰å…‰æºæ•°æ®åˆ°SSBO
+   * @param lights å…‰æºæ•°æ®åˆ—è¡¨
+   * @return æ›´æ–°æ˜¯å¦æˆåŠŸ
+   * @note è¿™æ˜¯æœ€å¸¸ç”¨çš„æ›´æ–°æ–¹å¼ï¼Œæ€§èƒ½æœ€ä½³
    */
   bool UpdateLights(const std::vector<GPULightData> &lights);
-
   /**
-   * @brief ¸üĞÂµ¥¸ö¹âÔ´Êı¾İ
-   * @param light µ¥¸ö¹âÔ´µÄGPUÊı¾İ
-   * @param index ¹âÔ´ÔÚSSBOÖĞµÄË÷ÒıÎ»ÖÃ
-   * @return ¸üĞÂÊÇ·ñ³É¹¦
-   * @note ÊÊÓÃÓÚ¶¯Ì¬¸üĞÂµ¥¸ö¹âÔ´µÄ³¡¾°
+   * @brief æ›´æ–°å•ä¸ªå…‰æºæ•°æ®
+   * @param light å•ä¸ªå…‰æºçš„GPUæ•°æ®
+   * @param index å…‰æºåœ¨SSBOä¸­çš„ç´¢å¼•ä½ç½®
+   * @return æ›´æ–°æ˜¯å¦æˆåŠŸ
+   * @note é€‚ç”¨äºåŠ¨æ€æ›´æ–°å•ä¸ªå…‰æºçš„åœºæ™¯
    */
   bool UpdateLight(const GPULightData &light, size_t index);
-
   /**
-   * @brief Çå³ıËùÓĞ¹âÔ´Êı¾İ
-   * @return Çå³ıÊÇ·ñ³É¹¦
-   * @note ½«¹âÔ´ÊıÁ¿ÉèÎª0£¬µ«²»ÊÍ·ÅSSBOÄÚ´æ
+   * @brief æ¸…é™¤æ‰€æœ‰å…‰æºæ•°æ®
+   * @return æ¸…é™¤æ˜¯å¦æˆåŠŸ
+   * @note å°†å…‰æºæ•°é‡è®¾ä¸º0ï¼Œä½†ä¸é‡Šæ”¾SSBOå†…å­˜
    */
   bool ClearLights();
 
-  // ---- °ó¶¨¹ÜÀí ----
+  // ---- ç»‘å®šç®¡ç† ----
   /**
-   * @brief °ó¶¨SSBOµ½Ö¸¶¨°ó¶¨µã
-   * @param bindingPoint OpenGL°ó¶¨µãË÷Òı
+   * @brief ç»‘å®šSSBOåˆ°æŒ‡å®šç»‘å®šç‚¹
    */
-  void Bind(uint32_t bindingPoint) const;
-
+  void Bind() const;
   /**
-   * @brief Îª×ÅÉ«Æ÷ÉèÖÃ¹âÔ´SSBO°ó¶¨µã
-   * @param shader Ä¿±ê×ÅÉ«Æ÷¶ÔÏó
-   * @param bindingPoint °ó¶¨µãË÷Òı
+   * @brief ä¸ºç€è‰²å™¨è®¾ç½®å…‰æºSSBOç»‘å®šç‚¹
+   * @param shader ç›®æ ‡ç€è‰²å™¨å¯¹è±¡
+   * @param bindingPoint ç»‘å®šç‚¹ç´¢å¼•
    */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader, uint32_t bindingPoint) const;
+  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
 
-  // ---- Í³¼ÆĞÅÏ¢ ----
+  // ---- ç»Ÿè®¡ä¿¡æ¯ ----
   /**
-   * @brief »ñÈ¡Ö§³ÖµÄ×î´ó¹âÔ´ÊıÁ¿
-   * @return ×î´ó¹âÔ´Êı
+   * @brief è·å–æ”¯æŒçš„æœ€å¤§å…‰æºæ•°é‡
+   * @return æœ€å¤§å…‰æºæ•°
    */
   size_t GetMaxLights() const;
 
   /**
-   * @brief »ñÈ¡µ±Ç°ÓĞĞ§¹âÔ´ÊıÁ¿
-   * @return µ±Ç°¹âÔ´Êı
+   * @brief è·å–å½“å‰æœ‰æ•ˆå…‰æºæ•°é‡
+   * @return å½“å‰å…‰æºæ•°
    */
   size_t GetCurrentLightCount() const;
 
   /**
-   * @brief »ñÈ¡SSBO×Ü´óĞ¡£¨×Ö½Ú£©
-   * @return SSBO´óĞ¡
+   * @brief è·å–SSBOæ€»å¤§å°ï¼ˆå­—èŠ‚ï¼‰
+   * @return SSBOå¤§å°
    */
   size_t GetSSBOSize() const;
 
-  // ---- ÅäÖÃ ----
+  // ---- é…ç½® ----
   /**
-   * @brief ÉèÖÃ×î´ó¹âÔ´ÊıÁ¿£¨±ØĞëÔÚ³õÊ¼»¯Ç°µ÷ÓÃ£©
-   * @param maxLights ĞÂµÄ×î´ó¹âÔ´Êı
+   * @brief è®¾ç½®æœ€å¤§å…‰æºæ•°é‡ï¼ˆå¿…é¡»åœ¨åˆå§‹åŒ–å‰è°ƒç”¨ï¼‰
+   * @param maxLights æ–°çš„æœ€å¤§å…‰æºæ•°
    */
   void SetMaxLights(size_t maxLights);
 
   /**
-   * @brief ÉèÖÃÄ¬ÈÏ°ó¶¨µã
-   * @param bindingPoint °ó¶¨µãË÷Òı
-   */
-  void SetBindingPoint(uint32_t bindingPoint);
-
-  /**
-   * @brief »ñÈ¡µ±Ç°°ó¶¨µã
-   * @return °ó¶¨µãË÷Òı
+   * @brief è·å–å½“å‰ç»‘å®šç‚¹
+   * @return ç»‘å®šç‚¹ç´¢å¼•
    */
   uint32_t GetBindingPoint() const;
 
  private:
-  // ---- ÄÚ²¿Êı¾İ½á¹¹ ----
+  // ---- å†…éƒ¨æ•°æ®ç»“æ„ ----
   /**
-   * @brief SSBOÖĞµÄÊı¾İÄÚ´æ²¼¾Ö
-   * @note ²ÉÓÃ¼òµ¥µÄÍ·²¿+Êı×é²¼¾Ö£¬±ÜÃâ¸´ÔÓ½á¹¹
+   * @brief SSBOä¸­çš„æ•°æ®å†…å­˜å¸ƒå±€
+   * @note é‡‡ç”¨ç®€å•çš„å¤´éƒ¨+æ•°ç»„å¸ƒå±€ï¼Œé¿å…å¤æ‚ç»“æ„
    */
   struct LightSSBOLayout {
-    LightSSBOHeader header;     // Í·²¿ĞÅÏ¢£º¹âÔ´ÊıÁ¿
-    GPULightData lights[1024];  // ¹âÔ´Êı¾İÊı×é£º¹Ì¶¨´óĞ¡
+    LightSSBOHeader header;     // å¤´éƒ¨ä¿¡æ¯ï¼šå…‰æºæ•°é‡
+    GPULightData lights[1024];  // å…‰æºæ•°æ®æ•°ç»„ï¼šå›ºå®šå¤§å°
   };
 
-  // ---- ³ÉÔ±±äÁ¿ ----
-  std::unique_ptr<ShaderSSBO> m_SSBO;  // µ×²ãSSBO¶ÔÏó£¬¹ÜÀíOpenGL×ÊÔ´
-  size_t m_MaxLights;                  // ×î´ó¹âÔ´ÊıÁ¿£¬¾ö¶¨SSBO´óĞ¡
-  size_t m_CurrentLightCount;          // µ±Ç°ÓĞĞ§¹âÔ´ÊıÁ¿
-  size_t m_SSBOSize;                   // SSBO×Ü´óĞ¡£¨×Ö½Ú£©
-  uint32_t m_BindingPoint = 0;         // Ä¬ÈÏ°ó¶¨µã£¬Í¨³£Îª0
-  bool m_IsInitialized = false;        // ³õÊ¼»¯×´Ì¬±êÖ¾
+  // ---- æˆå‘˜å˜é‡ ----
+  std::unique_ptr<ShaderSSBO> m_SSBO;    // åº•å±‚SSBOå¯¹è±¡ï¼Œç®¡ç†OpenGLèµ„æº
+  size_t m_MaxLights;                    // æœ€å¤§å…‰æºæ•°é‡ï¼Œå†³å®šSSBOå¤§å°
+  size_t m_CurrentLightCount;            // å½“å‰æœ‰æ•ˆå…‰æºæ•°é‡
+  size_t m_SSBOSize;                     // SSBOæ€»å¤§å°ï¼ˆå­—èŠ‚ï¼‰
+  uint32_t m_BindingPoint = UINT32_MAX;  // ç»‘å®šç‚¹ï¼Œåˆå§‹åŒ–ä¸ºæ— æ•ˆå€¼
+  bool m_IsInitialized = false;          // åˆå§‹åŒ–çŠ¶æ€æ ‡å¿—
 
-  // ---- ÄÚ²¿¹¤¾ß·½·¨ ----
+  // ---- å†…éƒ¨å·¥å…·æ–¹æ³• ----
   /**
-   * @brief ¼ÆËãSSBOËùĞèµÄ×ÜÄÚ´æ´óĞ¡
-   * @return SSBO´óĞ¡£¨×Ö½Ú£©
-   * @note ¼ÆËã¹«Ê½£ºÍ·²¿´óĞ¡ + ×î´ó¹âÔ´Êı * µ¥¸ö¹âÔ´´óĞ¡
+   * @brief è®¡ç®—SSBOæ‰€éœ€çš„æ€»å†…å­˜å¤§å°
+   * @return SSBOå¤§å°ï¼ˆå­—èŠ‚ï¼‰
+   * @note è®¡ç®—å…¬å¼ï¼šå¤´éƒ¨å¤§å° + æœ€å¤§å…‰æºæ•° * å•ä¸ªå…‰æºå¤§å°
    */
   size_t CalculateSSBOSize() const;
-
   /**
-   * @brief ÑéÖ¤¹âÔ´Ë÷ÒıÊÇ·ñÔÚÓĞĞ§·¶Î§ÄÚ
-   * @param index ÒªÑéÖ¤µÄ¹âÔ´Ë÷Òı
-   * @return Ë÷ÒıÊÇ·ñÓĞĞ§
+   * @brief éªŒè¯å…‰æºç´¢å¼•æ˜¯å¦åœ¨æœ‰æ•ˆèŒƒå›´å†…
+   * @param index è¦éªŒè¯çš„å…‰æºç´¢å¼•
+   * @return ç´¢å¼•æ˜¯å¦æœ‰æ•ˆ
    */
   bool ValidateLightIndex(size_t index) const;
-
   /**
-   * @brief ×¼±¸¹âÔ´Êı¾İÓÃÓÚSSBO´«Êä
-   * @param lights Ô­Ê¼¹âÔ´Êı¾İÁĞ±í
-   * @param header Êä³öµÄÍ·²¿ĞÅÏ¢£¨°üº¬Êµ¼Ê¹âÔ´ÊıÁ¿£©
-   * @return ´¦ÀíºóµÄ¹âÔ´Êı¾İ£¬È·±£²»³¬¹ı×î´óÊıÁ¿ÏŞÖÆ
+   * @brief å‡†å¤‡å…‰æºæ•°æ®ç”¨äºSSBOä¼ è¾“
+   * @param lights åŸå§‹å…‰æºæ•°æ®åˆ—è¡¨
+   * @param header è¾“å‡ºçš„å¤´éƒ¨ä¿¡æ¯ï¼ˆåŒ…å«å®é™…å…‰æºæ•°é‡ï¼‰
+   * @return å¤„ç†åçš„å…‰æºæ•°æ®ï¼Œç¡®ä¿ä¸è¶…è¿‡æœ€å¤§æ•°é‡é™åˆ¶
    */
   std::vector<GPULightData> PrepareLightDataForSSBO(const std::vector<GPULightData> &lights,
                                                     LightSSBOHeader &header) const;
-
   /**
-   * @brief ´´½¨¿ÕµÄSSBOÊı¾İ£¨ÓÃÓÚ³õÊ¼»¯£©
-   * @return ¿ÕµÄ¹âÔ´Êı¾İÁĞ±í
+   * @brief åˆ›å»ºç©ºçš„SSBOæ•°æ®ï¼ˆç”¨äºåˆå§‹åŒ–ï¼‰
+   * @return ç©ºçš„å…‰æºæ•°æ®åˆ—è¡¨
    */
   std::vector<GPULightData> CreateEmptyLightData() const;
 };
 
-// ---- ÀàĞÍ¶¨Òå ----
-using LightSSBOPtr = std::shared_ptr<LightSSBO>;
-
+// ---- ç±»å‹å®šä¹‰ ----
+using LightSSBOPtr = std::shared_ptr<LightShaderStorgeBuffer>;
 }  // namespace mite
 
 #endif  // MITE_LIGHT_SSBO_H

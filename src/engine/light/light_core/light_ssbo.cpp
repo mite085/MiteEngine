@@ -1,13 +1,14 @@
 #include "light_ssbo.h"
+#include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
-LightSSBO::LightSSBO(size_t maxLights) : m_MaxLights(maxLights), m_CurrentLightCount(0)
+LightShaderStorgeBuffer::LightShaderStorgeBuffer(size_t maxLights) : m_MaxLights(maxLights), m_CurrentLightCount(0)
 {
   m_SSBOSize = CalculateSSBOSize();
   LOG_INFO("LightSSBO created: maxLights={}, SSBOSize={} bytes", m_MaxLights, m_SSBOSize);
 }
 
-void LightSSBO::Initialize()
+void LightShaderStorgeBuffer::Initialize()
 {
   if (m_IsInitialized) {
     LOG_WARN("LightSSBO already initialized");
@@ -15,11 +16,17 @@ void LightSSBO::Initialize()
   }
 
   try {
-    // ´´½¨µ×²ãSSBO
+    // ä»ç»‘å®šç‚¹ç®¡ç†å™¨åˆ†é…ç»‘å®šç‚¹
+    m_BindingPoint = BindingPointManager::Get().GetLightSSBOBinding();
+    if (m_BindingPoint == UINT32_MAX) {
+      throw std::runtime_error("Failed to allocate binding point for LightSSBO");
+    }
+
+    // åˆ›å»ºåº•å±‚SSBO
     m_SSBO = std::make_unique<ShaderSSBO>(m_SSBOSize, GL_DYNAMIC_DRAW);
     m_SSBO->Initialize();
 
-    // ³õÊ¼»¯Îª¿Õ¹âÔ´Êı¾İ
+    // åˆå§‹åŒ–ä¸ºç©ºå…‰æºæ•°æ®
     ClearLights();
 
     m_IsInitialized = true;
@@ -31,12 +38,19 @@ void LightSSBO::Initialize()
   }
 }
 
-void LightSSBO::Destroy()
+void LightShaderStorgeBuffer::Destroy()
 {
   if (!m_IsInitialized) {
     return;
   }
 
+  // é‡Šæ”¾ç»‘å®šç‚¹
+  if (m_BindingPoint != UINT32_MAX) {
+    BindingPointManager::Get().ReleaseBindingPoint(m_BindingPoint);
+    m_BindingPoint = UINT32_MAX;
+  }
+
+  // é”€æ¯SSBO
   if (m_SSBO) {
     m_SSBO->Destroy();
     m_SSBO.reset();
@@ -47,43 +61,43 @@ void LightSSBO::Destroy()
   LOG_INFO("LightSSBO destroyed");
 }
 
-bool LightSSBO::IsInitialized() const
+bool LightShaderStorgeBuffer::IsInitialized() const
 {
   return m_IsInitialized;
 }
 
-bool LightSSBO::UpdateLights(const std::vector<GPULightData> &lights)
+bool LightShaderStorgeBuffer::UpdateLights(const std::vector<GPULightData> &lights)
 {
   if (!m_IsInitialized || !m_SSBO) {
     LOG_ERROR("LightSSBO not initialized");
     return false;
   }
 
-  // ×¼±¸Í·²¿ĞÅÏ¢ºÍ¹âÔ´Êı¾İ
+  // å‡†å¤‡å¤´éƒ¨ä¿¡æ¯å’Œå…‰æºæ•°æ®
   LightSSBOHeader header;
   auto preparedLights = PrepareLightDataForSSBO(lights, header);
   m_CurrentLightCount = preparedLights.size();
 
-  // ¼ÆËãÊı¾İÆ«ÒÆÁ¿
+  // è®¡ç®—æ•°æ®åç§»é‡
   size_t headerSize = sizeof(LightSSBOHeader);
   size_t lightsSize = sizeof(GPULightData) * preparedLights.size();
   size_t totalSize = headerSize + lightsSize;
 
-  // ÑéÖ¤Êı¾İ´óĞ¡
+  // éªŒè¯æ•°æ®å¤§å°
   if (totalSize > m_SSBOSize) {
     LOG_ERROR("Light data exceeds SSBO size: {} > {}", totalSize, m_SSBOSize);
     return false;
   }
 
-  // ¸üĞÂSSBOÊı¾İ
+  // æ›´æ–°SSBOæ•°æ®
   bool success = true;
 
-  // ÏÈ¸üĞÂÍ·²¿ĞÅÏ¢
+  // å…ˆæ›´æ–°å¤´éƒ¨ä¿¡æ¯
   if (success) {
     success = m_SSBO->UpdateData(&header, headerSize, 0);
   }
 
-  // ÔÙ¸üĞÂ¹âÔ´Êı¾İ
+  // å†æ›´æ–°å…‰æºæ•°æ®
   if (success && !preparedLights.empty()) {
     success = m_SSBO->UpdateData(preparedLights.data(), lightsSize, headerSize);
   }
@@ -98,7 +112,7 @@ bool LightSSBO::UpdateLights(const std::vector<GPULightData> &lights)
   return success;
 }
 
-bool LightSSBO::UpdateLight(const GPULightData &light, size_t index)
+bool LightShaderStorgeBuffer::UpdateLight(const GPULightData &light, size_t index)
 {
   if (!m_IsInitialized || !m_SSBO) {
     LOG_ERROR("LightSSBO not initialized");
@@ -110,7 +124,7 @@ bool LightSSBO::UpdateLight(const GPULightData &light, size_t index)
     return false;
   }
 
-  // ¼ÆËãÊı¾İÆ«ÒÆ£¨Í·²¿´óĞ¡ + Ë÷ÒıÆ«ÒÆ£©
+  // è®¡ç®—æ•°æ®åç§»ï¼ˆå¤´éƒ¨å¤§å° + ç´¢å¼•åç§»ï¼‰
   size_t headerSize = sizeof(LightSSBOHeader);
   size_t offset = headerSize + (sizeof(GPULightData) * index);
 
@@ -119,7 +133,7 @@ bool LightSSBO::UpdateLight(const GPULightData &light, size_t index)
   if (success) {
     LOG_TRACE("Updated light at index {}", index);
 
-    // Èç¹û¸üĞÂÁËĞÂµÄÓĞĞ§¹âÔ´£¬¿ÉÄÜĞèÒª¸üĞÂÍ·²¿
+    // å¦‚æœæ›´æ–°äº†æ–°çš„æœ‰æ•ˆå…‰æºï¼Œå¯èƒ½éœ€è¦æ›´æ–°å¤´éƒ¨
     if (index >= m_CurrentLightCount) {
       m_CurrentLightCount = index + 1;
       LightSSBOHeader header(static_cast<int>(m_CurrentLightCount));
@@ -133,13 +147,13 @@ bool LightSSBO::UpdateLight(const GPULightData &light, size_t index)
   return success;
 }
 
-bool LightSSBO::ClearLights()
+bool LightShaderStorgeBuffer::ClearLights()
 {
   if (!m_IsInitialized || !m_SSBO) {
     return false;
   }
 
-  // ´´½¨¿ÕµÄÍ·²¿ĞÅÏ¢
+  // åˆ›å»ºç©ºçš„å¤´éƒ¨ä¿¡æ¯
   LightSSBOHeader header(0);
   bool success = m_SSBO->UpdateData(&header, sizeof(LightSSBOHeader), 0);
 
@@ -154,33 +168,32 @@ bool LightSSBO::ClearLights()
   return success;
 }
 
-void LightSSBO::Bind(uint32_t bindingPoint) const
+void LightShaderStorgeBuffer::Bind() const
 {
   if (m_IsInitialized && m_SSBO) {
-    m_SSBO->Bind(bindingPoint);
+    m_SSBO->Bind(m_BindingPoint);
   }
 }
 
-void LightSSBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-                                   uint32_t bindingPoint) const
+void LightShaderStorgeBuffer::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const
 {
   if (m_IsInitialized && m_SSBO && shader) {
-    m_SSBO->SetupShaderBinding(shader, "LightsSSBO", bindingPoint);
+    m_SSBO->SetupShaderBinding(shader, "LightsSSBO", m_BindingPoint);
   }
 }
-size_t LightSSBO::GetMaxLights() const
+size_t LightShaderStorgeBuffer::GetMaxLights() const
 {
   return m_MaxLights;
 }
-size_t LightSSBO::GetCurrentLightCount() const
+size_t LightShaderStorgeBuffer::GetCurrentLightCount() const
 {
   return m_CurrentLightCount;
 }
-size_t LightSSBO::GetSSBOSize() const
+size_t LightShaderStorgeBuffer::GetSSBOSize() const
 {
   return m_SSBOSize;
 }
-void LightSSBO::SetMaxLights(size_t maxLights)
+void LightShaderStorgeBuffer::SetMaxLights(size_t maxLights)
 {
   if (m_IsInitialized) {
     LOG_WARN("Cannot change max lights after initialization");
@@ -191,49 +204,49 @@ void LightSSBO::SetMaxLights(size_t maxLights)
   m_SSBOSize = CalculateSSBOSize();
   LOG_INFO("LightSSBO max lights set to: {}", m_MaxLights);
 }
-void LightSSBO::SetBindingPoint(uint32_t bindingPoint)
+void LightShaderStorgeBuffer::SetBindingPoint(uint32_t bindingPoint)
 {
   m_BindingPoint = bindingPoint;
 }
-uint32_t LightSSBO::GetBindingPoint() const
+uint32_t LightShaderStorgeBuffer::GetBindingPoint() const
 {
   return m_BindingPoint;
 }
-size_t LightSSBO::CalculateSSBOSize() const
+size_t LightShaderStorgeBuffer::CalculateSSBOSize() const
 {
-  // ¼ÆËã×Ü´óĞ¡£ºÍ·²¿ + ×î´ó¹âÔ´Êı¾İ
+  // è®¡ç®—æ€»å¤§å°ï¼šå¤´éƒ¨ + æœ€å¤§å…‰æºæ•°æ®
   size_t headerSize = sizeof(LightSSBOHeader);
   size_t lightsSize = sizeof(GPULightData) * m_MaxLights;
 
   return headerSize + lightsSize;
 }
 
-bool LightSSBO::ValidateLightIndex(size_t index) const
+bool LightShaderStorgeBuffer::ValidateLightIndex(size_t index) const
 {
   return index < m_MaxLights;
 }
 
-std::vector<GPULightData> LightSSBO::PrepareLightDataForSSBO(
+std::vector<GPULightData> LightShaderStorgeBuffer::PrepareLightDataForSSBO(
     const std::vector<GPULightData> &lights, LightSSBOHeader &header) const
 {
   std::vector<GPULightData> preparedLights;
 
-  // ½Ø¶Ïµ½×î´óÊıÁ¿
+  // æˆªæ–­åˆ°æœ€å¤§æ•°é‡
   size_t count = std::min(lights.size(), m_MaxLights);
   preparedLights.reserve(count);
 
-  // ¸´ÖÆÓĞĞ§¹âÔ´Êı¾İ
+  // å¤åˆ¶æœ‰æ•ˆå…‰æºæ•°æ®
   for (size_t i = 0; i < count; ++i) {
     preparedLights.push_back(lights[i]);
   }
 
-  // ÉèÖÃÍ·²¿ĞÅÏ¢
+  // è®¾ç½®å¤´éƒ¨ä¿¡æ¯
   header.lightCount = static_cast<int>(count);
 
   return preparedLights;
 }
 
-std::vector<GPULightData> LightSSBO::CreateEmptyLightData() const
+std::vector<GPULightData> LightShaderStorgeBuffer::CreateEmptyLightData() const
 {
   return std::vector<GPULightData>();
 }
