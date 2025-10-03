@@ -222,26 +222,45 @@ VertexLayout ModelLoader::GenerateVertexLayout(const aiMesh *aiMesh)
   VertexLayout layout;
   uint32_t offset = 0;
 
-  layout.attributes.push_back(VertexAttribute::Position);
-  offset += sizeof(glm::vec3);
+  // 按照 VertexAttribute 枚举顺序处理每个属性
+  for (uint32_t i = 0; i < static_cast<uint32_t>(VertexAttribute::Count); ++i) {
+    VertexAttribute attr = static_cast<VertexAttribute>(i);
 
-  if (aiMesh->HasNormals()) {
-    layout.attributes.push_back(VertexAttribute::Normal);
-    offset += sizeof(glm::vec3);
+    switch (attr) {
+      case VertexAttribute::Position:
+        // Position 是必需的
+        layout.attributes.push_back(VertexAttribute::Position);
+        offset += sizeof(glm::vec3);
+        break;
+      case VertexAttribute::Normal:
+        if (aiMesh->HasNormals()) {
+          layout.attributes.push_back(VertexAttribute::Normal);
+          offset += sizeof(glm::vec3);
+        }
+        break;
+      case VertexAttribute::TexCoord:
+        if (aiMesh->mTextureCoords[0]) {
+          layout.attributes.push_back(VertexAttribute::TexCoord);
+          offset += sizeof(glm::vec2);
+        }
+        break;
+      case VertexAttribute::Tangent:
+        if (aiMesh->HasTangentsAndBitangents()) {
+          layout.attributes.push_back(VertexAttribute::Tangent);
+          offset += sizeof(glm::vec3);
+        }
+        break;
+      case VertexAttribute::Bitangent:
+        if (aiMesh->HasTangentsAndBitangents()) {
+          layout.attributes.push_back(VertexAttribute::Bitangent);
+          offset += sizeof(glm::vec3);
+        }
+        break;
+      default:
+        // 忽略未知属性
+        break;
+    }
   }
-
-  if (aiMesh->mTextureCoords[0]) {
-    layout.attributes.push_back(VertexAttribute::TexCoord);
-    offset += sizeof(glm::vec2);
-  }
-
-  if (aiMesh->HasTangentsAndBitangents()) {
-    layout.attributes.push_back(VertexAttribute::Tangent);
-    offset += sizeof(glm::vec3);
-    layout.attributes.push_back(VertexAttribute::Bitangent);
-    offset += sizeof(glm::vec3);
-  }
-
   layout.stride = offset;
   return layout;
 }

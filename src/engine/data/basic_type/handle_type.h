@@ -144,13 +144,14 @@ struct TextureGPUSlot {
 
 // ------------------------ 网格相关 ------------------------
 
-// 顶点属性标志（描述顶点结构）
-enum class VertexAttribute {
-  Position,
-  Normal,
-  TexCoord,
-  Tangent,
-  Bitangent,
+// 顶点属性标志（描述顶点结构，注意顺序）
+enum class VertexAttribute : uint32_t {
+  Position = 0,   // 固定 location 0
+  Normal = 1,     // 固定 location 1
+  TexCoord = 2,   // 固定 location 2
+  Tangent = 3,    // 固定 location 3
+  Bitangent = 4,  // 固定 location 4
+  Count           // 计数位
 };
 
 // 顶点格式描述（替代硬编码的Vertex结构体）

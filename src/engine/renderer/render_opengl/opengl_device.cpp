@@ -430,14 +430,9 @@ uint32_t OpenGLDevice::SelectMeshLODLevel(Mesh mesh,
 
 void OpenGLDevice::DrawMeshLOD(Mesh mesh, uint32_t lodLevel) const
 {
-  ModelGPUHandle modelHandle = mesh.GetModelHandle();
-
   // 直接从Mesh对象获取指定LOD级别的MeshSection
   const MeshSection *targetSection = &mesh.GetSection(lodLevel);
 
-  // 绑定模型
-  GLuint vao = static_cast<GLuint>(modelHandle.vertexArray);
-  glBindVertexArray(vao);
   // 绘制指定LOD级别的网格
   DrawIndexed(
       targetSection->indexCount, targetSection->indexOffset, GL_TRIANGLES, GL_UNSIGNED_INT);
@@ -588,12 +583,50 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
     return;
   }
 
-  // 设置每个顶点属性
-  uint32_t offset = 0;
-  for (uint32_t i = 0; i < layout.attributes.size(); ++i) {
-    const auto &attr = layout.attributes[i];
+  // 预计算每个属性的偏移量
+  std::unordered_map<VertexAttribute, uint32_t> attributeOffsets;
+  uint32_t currentOffset = 0;
 
-    // 启用顶点属性数组
+  // 按照layout中声明的顺序计算偏移量
+  for (const auto &attr : layout.attributes) {
+    attributeOffsets[attr] = currentOffset;
+
+    switch (attr) {
+      case VertexAttribute::Position:
+      case VertexAttribute::Normal:
+      case VertexAttribute::Tangent:
+      case VertexAttribute::Bitangent:
+        currentOffset += sizeof(glm::vec3);
+        break;
+      case VertexAttribute::TexCoord:
+        currentOffset += sizeof(glm::vec2);
+        break;
+      default:
+        m_Logger->warn("Unknown vertex attribute type in offset calculation: {}",
+                       static_cast<int>(attr));
+        break;
+    }
+  }
+
+  // 验证计算的总偏移量与声明的stride一致
+  if (currentOffset != stride) {
+    m_Logger->error("Calculated offset {} doesn't match layout stride {}", currentOffset, stride);
+  }
+
+  // 按照枚举顺序设置顶点属性（使用固定location）
+  for (uint32_t i = 0; i < static_cast<uint32_t>(VertexAttribute::Count); ++i) {
+    VertexAttribute attr = static_cast<VertexAttribute>(i);
+
+    // 检查该属性是否存在于当前layout中
+    auto offsetIt = attributeOffsets.find(attr);
+    if (offsetIt == attributeOffsets.end()) {
+      // 该属性不存在，禁用对应的顶点属性数组
+      glDisableVertexAttribArray(i);
+      continue;
+    }
+
+    // 获取偏移量
+    const uint32_t offset = offsetIt->second;
     glEnableVertexAttribArray(i);
 
     // 根据属性类型设置指针
@@ -606,41 +639,27 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
                               stride,                    // 步长
                               (void *)(uintptr_t)offset  // 偏移量
         );
-        offset += sizeof(glm::vec3);
         break;
-
       case VertexAttribute::Normal:
         glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
-        offset += sizeof(glm::vec3);
         break;
-
       case VertexAttribute::TexCoord:
         glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
-        offset += sizeof(glm::vec2);
         break;
-
       case VertexAttribute::Tangent:
         glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
-        offset += sizeof(glm::vec3);
         break;
-
       case VertexAttribute::Bitangent:
         glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
-        offset += sizeof(glm::vec3);
         break;
-
       default:
         m_Logger->warn("Unknown vertex attribute type: {}", static_cast<int>(attr));
+        glDisableVertexAttribArray(i);
         break;
     }
 
-    // 对于Instanced渲染，可以在此设置divisor
+    // 对于Instanced实例化渲染，可以在此设置divisor
     // glVertexAttribDivisor(i, 0);
-  }
-
-  // 验证偏移量与声明的stride一致
-  if (offset != stride) {
-    m_Logger->error("Vertex attribute offset {} doesn't match layout stride {}", offset, stride);
   }
 }
 
