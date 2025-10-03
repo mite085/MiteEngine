@@ -1,8 +1,8 @@
 ﻿#ifndef MITE_LIGHT_TYPES_H
 #define MITE_LIGHT_TYPES_H
 
-#include "headers/headers.h"
 #include "basic_data/transform.h"
+#include "headers/headers.h"
 
 namespace mite {
 // ----------------- 光源类型和基础参数 -------------------
@@ -83,38 +83,37 @@ struct LightProperties {
  * @note 将Property转换为GPU可接受的Data
  */
 struct alignas(16) GPULightData {
-  // 基础属性 - 16字节对齐
+  // 基础属性 - 16字节对齐 (每组vec3+float为16字节)
   glm::vec3 color;
   float intensity;
-  glm::vec3 position;   // 世界坐标（从变换组件获取WorldPosition）
+  glm::vec3 position;  // 世界坐标（从变换组件获取WorldPosition）
+  float type;          // LightType转换为float
   glm::vec3 direction;  // 方向（从变换组件获取WorldFront，面光源以WorldUp法线为方向）
-  float type;           // LightType转换为float
-  float padding1;       // 填充以确保16字节对齐
+  float padding1;  // 填充以确保16字节对齐
 
   // 类型特定属性 - 使用union节省空间
   union {
     // 点光源和聚光灯共享属性
     struct {
-      float range;       // 范围/半径
-      float innerAngle;  // 内角（聚光灯，度）
-      float outerAngle;  // 外角（聚光灯，度）
-      float blend;       // 边缘柔化（聚光灯）
-      float falloff;     // 衰减系数（点光源）
+      float range;        // 范围/半径
+      float innerAngle;   // 内角（聚光灯，度）
+      float outerAngle;   // 外角（聚光灯，度）
+      float blend;        // 边缘柔化（聚光灯）
+      float falloff;      // 衰减系数（点光源）
       float padding2[3];  // 填充以确保union大小为16字节倍数
     } pointSpot;
 
     // 方向光
     struct {
-      float irradiance;  // 辐照度
+      float irradiance;   // 辐照度
       float padding3[3];  // 填充以确保union大小为16字节倍数
     } directional;
 
     // 面光源
     struct {
-      float power;     // 功率（W）
       glm::vec2 size;  // 尺寸
+      float power;     // 功率（W）
       float shape;     // AreaLightShape转换为float
-      float padding4;  // 填充以确保union大小为16字节倍数
     } area;
   } specific;
 
@@ -210,7 +209,6 @@ struct alignas(16) GPULightData {
     specific.directional.padding3[0] = 0.0f;
     specific.directional.padding3[1] = 0.0f;
     specific.directional.padding3[2] = 0.0f;
-    specific.area.padding4 = 0.0f;
   }
 };
 /**
@@ -218,7 +216,7 @@ struct alignas(16) GPULightData {
  * @note 只需要光源数量，最大数量在CPU端管理即可
  */
 struct alignas(16) LightSSBOHeader {
-  int lightCount;  // 有效光源数量
+  int lightCount;    // 有效光源数量
   float padding[3];  // 填充以确保16字节对齐
 
   LightSSBOHeader(int count = 0) : lightCount(count), padding{0.0f, 0.0f, 0.0f} {}

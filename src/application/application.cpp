@@ -99,13 +99,13 @@ void MiteApplication::LoadDefaultScene()
   m_UISystem->RegisterPanel(viewportPanel);
 
   // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
-  ModelAssetID plane_model_asset_id = m_AssetManager->LoadModel(
-      FileSystem::GetAssetPath("models/plane.obj").string(), true, true);
+  ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
+      FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
   Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle, m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件
-    Entity plane_submesh = m_SceneCore->CreateEntity("plane_submesh");
+    Entity plane_submesh = m_SceneCore->CreateEntity("axis");
     MeshComponent &plane_mesh_component = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
         plane_submesh, plane_model.GetSubMesh(i));
 

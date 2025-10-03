@@ -728,6 +728,7 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
                                        GLenum &type)
 {
   switch (textureFormat) {
+    // 8位无符号归一化格式
     case TextureFormat::R8:
       internalFormat = GL_R8;
       format = GL_RED;
@@ -748,6 +749,7 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
       format = GL_RGBA;
       type = GL_UNSIGNED_BYTE;
       break;
+    // sRGB格式（伽马校正）
     case TextureFormat::SRGB8:
       internalFormat = GL_SRGB8;
       format = GL_RGB;
@@ -758,9 +760,40 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
       format = GL_RGBA;
       type = GL_UNSIGNED_BYTE;
       break;
+    // 深度/模板格式
     case TextureFormat::DEPTH_COMPONENT16:
       internalFormat = GL_DEPTH_COMPONENT16;
       format = GL_DEPTH_COMPONENT;
+      type = GL_UNSIGNED_SHORT;
+      break;
+    case TextureFormat::DEPTH_COMPONENT24:
+      internalFormat = GL_DEPTH_COMPONENT24;
+      format = GL_DEPTH_COMPONENT;
+      type = GL_UNSIGNED_INT;
+      break;
+    case TextureFormat::DEPTH_COMPONENT32:
+      internalFormat = GL_DEPTH_COMPONENT32;
+      format = GL_DEPTH_COMPONENT;
+      type = GL_UNSIGNED_INT;
+      break;
+    case TextureFormat::STENCIL_INDEX1:
+      internalFormat = GL_STENCIL_INDEX1;
+      format = GL_STENCIL_INDEX;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::STENCIL_INDEX4:
+      internalFormat = GL_STENCIL_INDEX4;
+      format = GL_STENCIL_INDEX;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::STENCIL_INDEX8:
+      internalFormat = GL_STENCIL_INDEX8;
+      format = GL_STENCIL_INDEX;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::STENCIL_INDEX16:
+      internalFormat = GL_STENCIL_INDEX16;
+      format = GL_STENCIL_INDEX;
       type = GL_UNSIGNED_SHORT;
       break;
     case TextureFormat::DEPTH24_STENCIL8:
@@ -768,11 +801,31 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
       format = GL_DEPTH_STENCIL;
       type = GL_UNSIGNED_INT_24_8;
       break;
+    // 高精度浮点格式（HDR/GBuffer专用）
+    case TextureFormat::RGB16F:
+      internalFormat = GL_RGB16F;
+      format = GL_RGB;
+      type = GL_HALF_FLOAT;
+      break;
+    case TextureFormat::RGBA16F:
+      internalFormat = GL_RGBA16F;
+      format = GL_RGBA;
+      type = GL_HALF_FLOAT;
+      break;
+    case TextureFormat::RGB32F:
+      internalFormat = GL_RGB32F;
+      format = GL_RGB;
+      type = GL_FLOAT;
+      break;
+    case TextureFormat::RGBA32F:
+      internalFormat = GL_RGBA32F;
+      format = GL_RGBA;
+      type = GL_FLOAT;
+      break;
     default:
-      return false;
+      return false;  // 未知格式
   }
   return true;
 }
-
 void OpenGLDevice::CheckGLError() {}
 };  // namespace mite

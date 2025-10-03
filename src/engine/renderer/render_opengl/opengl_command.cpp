@@ -179,8 +179,6 @@ void OpenGLRenderCommand::Submit(RenderableItem item,
                          auto shader = item.material->GetShader();
                          if (shader) {
                            shader->SetMat4("u_Model", item.worldTransform);
-                           shader->SetMat4("u_View", viewMatrix);
-                           shader->SetMat4("u_Projection", projectionMatrix);
                          }
 
                          // 3. 绑定网格VAO
@@ -212,8 +210,6 @@ void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
          // 1. 绑定G-Buffer着色器（覆盖材质自带着色器）
          BindShader(gbufferShader, [&](std::shared_ptr<OpenGLShader> shader) {
            shader->SetMat4("u_Model", item.worldTransform);
-           shader->SetMat4("u_View", viewMatrix);
-           shader->SetMat4("u_Projection", projectionMatrix);
          });
 
          // 2. 应用材质参数到G-Buffer着色器

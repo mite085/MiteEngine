@@ -30,7 +30,7 @@ void GBufferStage::Initialize()
   // 加载G-Buffer着色器（预留接口）
   m_GBufferShader = ShaderCache::Get().GetOpenGLShader(
       FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.vert.glsl").string(),
-      FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.vert.glsl").string());
+      FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.frag.glsl").string());
 
   if (!m_GBufferShader) {
     m_Logger->warn("No G-Buffer shader set, will need to be provided externally");
