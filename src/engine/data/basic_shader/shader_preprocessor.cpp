@@ -1,6 +1,7 @@
 #include "shader_preprocessor.h"
 
 namespace mite {
+
 std::string ShaderPreprocessor::Preprocess(const std::string &source,
                                            const std::string &baseAssetPath)
 {
@@ -38,8 +39,11 @@ std::string ShaderPreprocessor::PreprocessFromAsset(const std::string &assetPath
 
   LOG_DEBUG("Preprocessing shader: {}", assetPath);
 
-  // 预处理
-  return Preprocess(source, assetPath);
+  // 预处理头文件防护
+  std::string processedSource = ProcessHeaderGuards(source, assetPath);
+
+  // 预处理包含指令
+  return Preprocess(processedSource, assetPath);
 }
 std::string ShaderPreprocessor::ProcessInclude(const std::string &line,
                                                const std::string &currentAssetPath,
@@ -69,8 +73,149 @@ std::string ShaderPreprocessor::ProcessInclude(const std::string &line,
 
   LOG_DEBUG("Processing include: {} -> {} (depth: {})", currentAssetPath, normalizedPath, depth);
 
+  // 预处理头文件防护
+  std::string processedSource = ProcessHeaderGuards(includedSource, normalizedPath);
+
   // 递归处理嵌套包含
-  return Preprocess(includedSource, normalizedPath);
+  return Preprocess(processedSource, normalizedPath);
+}
+
+std::string ShaderPreprocessor::ProcessHeaderGuards(const std::string &source,
+                                                    const std::string &assetPath)
+{
+  std::stringstream result;
+  std::stringstream input(source);
+  std::string line;
+
+  bool inGuardBlock = false;
+  bool guardDefined = false;
+  std::string currentGuardName;
+  int guardDepth = 0;
+
+  while (std::getline(input, line)) {
+    std::string trimmedLine = line;
+    trimmedLine.erase(0, trimmedLine.find_first_not_of(" \t"));  // 去除前导空白
+
+    // 检查是否是头文件防护开始
+    if (!inGuardBlock && IsGuardStart(trimmedLine, currentGuardName)) {
+      inGuardBlock = true;
+      guardDepth = 1;
+
+      // 检查防护是否已经定义
+      if (m_definedGuards.find(currentGuardName) != m_definedGuards.end()) {
+        // 防护已定义，跳过整个块
+        result << "// Guard skipped: " << currentGuardName << " (already defined)\n";
+        continue;
+      }
+      else {
+        // 防护未定义，保留#ifndef行
+        result << line << "\n";
+      }
+      continue;
+    }
+
+    // 在防护块中
+    if (inGuardBlock) {
+      // 检查是否是防护定义
+      if (!guardDefined && IsGuardDefine(trimmedLine, currentGuardName)) {
+        guardDefined = true;
+        m_definedGuards.insert(currentGuardName);
+        result << line << "\n";
+        continue;
+      }
+
+      // 检查是否是防护结束
+      if (IsGuardEnd(trimmedLine)) {
+        guardDepth--;
+        if (guardDepth == 0) {
+          inGuardBlock = false;
+          guardDefined = false;
+          result << line << "\n";
+          continue;
+        }
+      }
+
+      // 检查嵌套的#ifndef
+      std::string nestedGuardName;
+      if (IsGuardStart(trimmedLine, nestedGuardName)) {
+        guardDepth++;
+      }
+
+      // 检查嵌套的#endif
+      if (IsGuardEnd(trimmedLine)) {
+        // 已经在上面处理过了
+      }
+
+      // 如果防护已定义，跳过内容
+      if (m_definedGuards.find(currentGuardName) != m_definedGuards.end()) {
+        // 跳过内容，但保留嵌套的防护指令
+        if (trimmedLine.find("#ifndef") == 0 || trimmedLine.find("#endif") == 0) {
+          result << line << "\n";
+        }
+        else {
+          result << "// " << line << " (skipped due to guard)\n";
+        }
+      }
+      else {
+        // 保留内容
+        result << line << "\n";
+      }
+    }
+    else {
+      // 不在防护块中，直接输出
+      result << line << "\n";
+    }
+  }
+
+  return result.str();
+}
+
+bool ShaderPreprocessor::IsGuardStart(const std::string &line, std::string &guardName) const
+{
+  std::regex guardRegex(R"(^#ifndef\s+(\w+)$)");
+  std::smatch match;
+
+  if (std::regex_match(line, match, guardRegex) && match.size() > 1) {
+    guardName = match[1].str();
+    return true;
+  }
+  return false;
+}
+
+bool ShaderPreprocessor::IsGuardDefine(const std::string &line, const std::string &guardName) const
+{
+  std::regex defineRegex(R"(^#define\s+(\w+)$)");
+  std::smatch match;
+
+  if (std::regex_match(line, match, defineRegex) && match.size() > 1) {
+    return match[1].str() == guardName;
+  }
+  return false;
+}
+
+bool ShaderPreprocessor::IsGuardEnd(const std::string &line) const
+{
+  return line.find("#endif") == 0;
+}
+
+std::string ShaderPreprocessor::GenerateGuardName(const std::string &assetPath) const
+{
+  // 将路径转换为有效的C标识符
+  std::string guardName = assetPath;
+  std::replace(guardName.begin(), guardName.end(), '/', '_');
+  std::replace(guardName.begin(), guardName.end(), '.', '_');
+  std::replace(guardName.begin(), guardName.end(), ' ', '_');
+
+  // 移除非法字符
+  guardName.erase(std::remove_if(guardName.begin(),
+                                 guardName.end(),
+                                 [](char c) { return !std::isalnum(c) && c != '_'; }),
+                  guardName.end());
+
+  // 转换为大写
+  std::transform(guardName.begin(), guardName.end(), guardName.begin(), ::toupper);
+
+  return guardName + "_GLSL";
 }
 std::string ShaderPreprocessor::ResolveIncludeAssetPath(const std::string &includeLine,
                                                         const std::string &currentAssetPath)
