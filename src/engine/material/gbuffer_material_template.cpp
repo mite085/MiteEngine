@@ -1,10 +1,8 @@
 #include "gbuffer_material_template.h"
 namespace mite {
-constexpr const char *GBufferMaterialTemplate::UBO_BLOCK_NAME;
 GBufferMaterialTemplate::GBufferMaterialTemplate(std::shared_ptr<OpenGLShader> shader)
     : MaterialTemplate(std::move(shader)),
-      m_BindingPoint(BindingPointManager::Get().AllocateBindingPoint(
-          BindingPointManager::ResourceType::MaterialUBO, "GBufferMaterial"))
+      m_BindingPoint(BindingPointManager::Get().GetMaterialUBOBinding())
 {
   if (m_BindingPoint == UINT32_MAX) {
     LOG_ERROR("Failed to allocate binding point for GBufferMaterialTemplate");
@@ -68,7 +66,7 @@ void GBufferMaterialTemplate::SetupInstanceUBO(std::shared_ptr<MaterialInstance>
 
   // 将UBO绑定到材质实例，使用模板管理的绑定点
   // 注意：同一模板的不同实例共享绑定点，但拥有不同的UBO对象
-  instance->SetupUBO(UBO_BLOCK_NAME, instanceUBO, m_BindingPoint);
+  instance->SetupUBO(ShaderBufferResourceNames::MATERIAL_UBO, instanceUBO, m_BindingPoint);
 
   LOG_DEBUG("Setup independent UBO for material instance '{}' at binding point {}",
             instance->GetName(),

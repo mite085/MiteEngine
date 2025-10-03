@@ -16,20 +16,14 @@ std::shared_ptr<MaterialInstance> GLTFPBRMaterialTemplate::CreateInstance(
   // 应用GLTF特定的纹理槽位（如果有特殊处理）
   ApplyGLTFTextureSlots(instance, sourceData);
 
-  // 设置透明度相关参数（通过UBO传递，这里只是确保数据正确）
-  SetupAlphaBlending(instance, sourceData);
-
   return instance;
 }
 
 void GLTFPBRMaterialTemplate::FillUBOData(MaterialUniformBuffer &uboData,
                                           const MaterialSourceData &sourceData) const
 {
-  // 先调用基类的填充方法
+  // 直接调用基类的填充方法（基类就是按照GLTFPBR模板创建的）
   GBufferMaterialTemplate::FillUBOData(uboData, sourceData);
-
-  // GLTF特定的数据调整（如果有需要）
-  // 这里可以添加GLTF特定的UBO数据调整逻辑
 }
 
 void GLTFPBRMaterialTemplate::ApplyGLTFTextureSlots(std::shared_ptr<MaterialInstance> instance,
@@ -66,17 +60,6 @@ void GLTFPBRMaterialTemplate::ApplyGLTFTextureSlots(std::shared_ptr<MaterialInst
   {
     instance->SetTexture(MaterialParamKeys::OCCLUSION_TEXTURE, *slot);
   }
-}
-
-void GLTFPBRMaterialTemplate::SetupAlphaBlending(std::shared_ptr<MaterialInstance> instance,
-                                                 const MaterialSourceData &sourceData) const
-{
-  // 透明度相关参数已经通过UBO传递，这里不需要额外设置
-  // 这个方法保留是为了可能的GLTF特定透明度处理
-
-  // 如果需要设置额外的透明度uniform（不在UBO中的）
-  // instance->SetInt("u_EnableAlphaTest", sourceData.alphaMode == AlphaMode::MASK ? 1 : 0);
-  // instance->SetInt("u_EnableAlphaBlend", sourceData.alphaMode == AlphaMode::BLEND ? 1 : 0);
 }
 
 }  // namespace mite

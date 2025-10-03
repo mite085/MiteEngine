@@ -31,7 +31,7 @@ class GLTFPBRMaterialTemplate : public GBufferMaterialTemplate {
   std::shared_ptr<MaterialInstance> CreateInstance(
       const MaterialSourceData &sourceData) const override;
 
-  // ---- 默认参数设置 ----
+  // ---- 参数设置 ----
   void SetDefaultBaseColor(const glm::vec4 &color)
   {
     m_DefaultBaseColor = color;
@@ -137,14 +137,6 @@ class GLTFPBRMaterialTemplate : public GBufferMaterialTemplate {
    */
   void ApplyGLTFTextureSlots(std::shared_ptr<MaterialInstance> instance,
                              const MaterialSourceData &sourceData) const;
-
-  /**
-   * @brief 设置透明度相关参数（通过UBO传递）
-   * @param instance 材质实例
-   * @param sourceData 源数据
-   */
-  void SetupAlphaBlending(std::shared_ptr<MaterialInstance> instance,
-                          const MaterialSourceData &sourceData) const;
 };
 
 }  // namespace mite

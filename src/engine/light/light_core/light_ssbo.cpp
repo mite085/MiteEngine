@@ -178,7 +178,7 @@ void LightShaderStorgeBuffer::Bind() const
 void LightShaderStorgeBuffer::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const
 {
   if (m_IsInitialized && m_SSBO && shader) {
-    m_SSBO->SetupShaderBinding(shader, "LightsSSBO", m_BindingPoint);
+    m_SSBO->SetupShaderBinding(shader, ShaderBufferResourceNames::LIGHT_SSBO, m_BindingPoint);
   }
 }
 size_t LightShaderStorgeBuffer::GetMaxLights() const
@@ -203,10 +203,6 @@ void LightShaderStorgeBuffer::SetMaxLights(size_t maxLights)
   m_MaxLights = maxLights;
   m_SSBOSize = CalculateSSBOSize();
   LOG_INFO("LightSSBO max lights set to: {}", m_MaxLights);
-}
-void LightShaderStorgeBuffer::SetBindingPoint(uint32_t bindingPoint)
-{
-  m_BindingPoint = bindingPoint;
 }
 uint32_t LightShaderStorgeBuffer::GetBindingPoint() const
 {

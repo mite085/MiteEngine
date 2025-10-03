@@ -14,7 +14,6 @@ namespace mite {
  */
 class CameraInstance {
  public:
-  static constexpr const char *UBO_BLOCK_NAME = "CameraUBO";
   /**
    * @brief 构造函数
    * @param camera 关联的相机对象

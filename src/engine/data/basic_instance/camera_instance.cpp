@@ -2,7 +2,6 @@
 #include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
-constexpr const char *CameraInstance::UBO_BLOCK_NAME;
 CameraInstance::CameraInstance(std::shared_ptr<Camera> camera, const std::string &name)
     : m_Camera(std::move(camera)), m_Name(name)
 {
@@ -61,7 +60,7 @@ bool CameraInstance::InitializeUBO(std::shared_ptr<OpenGLShader> shader)
     m_CameraUBO->Initialize();
 
     // 设置着色器绑定
-    m_CameraUBO->SetupShaderBinding(shader, UBO_BLOCK_NAME, m_BindingPoint);
+    m_CameraUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::CAMERA_UBO, m_BindingPoint);
 
     m_UBOInitialized = true;
 

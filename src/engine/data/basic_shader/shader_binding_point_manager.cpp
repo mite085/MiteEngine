@@ -11,8 +11,8 @@ BindingPointManager &BindingPointManager::Get()
 BindingPointManager::BindingPointManager()
 {
   // 初始化各类型的下一个绑定点
-  for (size_t i = 0; i < static_cast<size_t>(ResourceType::Count); ++i) {
-    ResourceType type = static_cast<ResourceType>(i);
+  for (size_t i = 0; i < static_cast<size_t>(ShaderBufferResourceType::Count); ++i) {
+    ShaderBufferResourceType type = static_cast<ShaderBufferResourceType>(i);
     m_NextBindingPoints[i] = GetRangeStart(type);
   }
 
@@ -20,10 +20,37 @@ BindingPointManager::BindingPointManager()
   ValidateRanges();
 
   LOG_INFO("BindingPointManager initialized with {} total binding points",
-           BindingRanges::TOTAL_BINDING_POINTS);
+           ShaderBufferBindingRanges::TOTAL_BINDING_POINTS);
 }
 
-uint32_t BindingPointManager::AllocateBindingPoint(ResourceType type, const std::string &name)
+void BindingPointManager::PreallocateCommonResources()
+{
+  // 预分配常用资源
+  m_CameraUBOBinding = AllocateBindingPoint(ShaderBufferResourceType::CameraUBO,
+                                            ShaderBufferResourceNames::CAMERA_UBO);
+  m_MaterialUBOBinding = AllocateBindingPoint(ShaderBufferResourceType::MaterialUBO,
+                                              ShaderBufferResourceNames::MATERIAL_UBO);
+  m_LightSSBOBinding = AllocateBindingPoint(ShaderBufferResourceType::LightSSBO,
+                                            ShaderBufferResourceNames::LIGHT_SSBO);
+  m_ShadowMapBinding = AllocateBindingPoint(ShaderBufferResourceType::ShadowMap,
+                                            ShaderBufferResourceNames::SHADOW_MAP);
+  LOG_INFO("Preallocated common resources:");
+  LOG_INFO("  CameraUBO: binding={}, name={}",
+           m_CameraUBOBinding,
+           ShaderBufferResourceNames::CAMERA_UBO);
+  LOG_INFO("  MaterialUBO: binding={}, name={}",
+           m_MaterialUBOBinding,
+           ShaderBufferResourceNames::MATERIAL_UBO);
+  LOG_INFO("  LightSSBO: binding={}, name={}",
+           m_LightSSBOBinding,
+           ShaderBufferResourceNames::LIGHT_SSBO);
+  LOG_INFO("  ShadowMap: binding={}, name={}",
+           m_ShadowMapBinding,
+           ShaderBufferResourceNames::SHADOW_MAP);
+}
+
+uint32_t BindingPointManager::AllocateBindingPoint(ShaderBufferResourceType type,
+                                                   const std::string &name)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -94,23 +121,6 @@ void BindingPointManager::ReleaseBindingPoint(uint32_t bindingPoint)
   LOG_DEBUG("Released binding point: {}", bindingPoint);
 }
 
-void BindingPointManager::PreallocateCommonResources()
-{
-  // 预分配相机UBO
-  m_CameraUBOBinding = AllocateBindingPoint(ResourceType::CameraUBO, "CameraUBO");
-
-  // 预分配光源SSBO
-  m_LightSSBOBinding = AllocateBindingPoint(ResourceType::LightSSBO, "LightSSBO");
-
-  // 预分配阴影贴图
-  m_ShadowMapBinding = AllocateBindingPoint(ResourceType::ShadowMap, "ShadowMap");
-
-  LOG_INFO("Preallocated common resources: CameraUBO={}, LightSSBO={}, ShadowMap={}",
-           m_CameraUBOBinding,
-           m_LightSSBOBinding,
-           m_ShadowMapBinding);
-}
-
 std::string BindingPointManager::GetResourceName(uint32_t bindingPoint) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
@@ -122,7 +132,7 @@ std::string BindingPointManager::GetResourceName(uint32_t bindingPoint) const
   return "";
 }
 
-BindingPointManager::ResourceType BindingPointManager::GetResourceType(uint32_t bindingPoint) const
+ShaderBufferResourceType BindingPointManager::GetResourceType(uint32_t bindingPoint) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -130,7 +140,7 @@ BindingPointManager::ResourceType BindingPointManager::GetResourceType(uint32_t 
   if (it != m_ResourceTypes.end()) {
     return it->second;
   }
-  return ResourceType::Count;  // 无效类型
+  return ShaderBufferResourceType::Count;  // 无效类型
 }
 
 bool BindingPointManager::IsBindingPointAllocated(uint32_t bindingPoint) const
@@ -154,8 +164,8 @@ void BindingPointManager::Reset()
   m_ResourceTypes.clear();
 
   // 重置各类型的下一个绑定点
-  for (size_t i = 0; i < static_cast<size_t>(ResourceType::Count); ++i) {
-    ResourceType type = static_cast<ResourceType>(i);
+  for (size_t i = 0; i < static_cast<size_t>(ShaderBufferResourceType::Count); ++i) {
+    ShaderBufferResourceType type = static_cast<ShaderBufferResourceType>(i);
     m_NextBindingPoints[i] = GetRangeStart(type);
   }
 
@@ -164,52 +174,52 @@ void BindingPointManager::Reset()
 
 // ---- 内部方法 ----
 
-uint32_t BindingPointManager::GetRangeStart(ResourceType type) const
+uint32_t BindingPointManager::GetRangeStart(ShaderBufferResourceType type) const
 {
   switch (type) {
-    case ResourceType::CameraUBO:
-    case ResourceType::MaterialUBO:
-    case ResourceType::SceneUBO:
-    case ResourceType::CustomUBO:
-      return BindingRanges::UBO_START;
+    case ShaderBufferResourceType::CameraUBO:
+    case ShaderBufferResourceType::MaterialUBO:
+    case ShaderBufferResourceType::SceneUBO:
+    case ShaderBufferResourceType::CustomUBO:
+      return ShaderBufferBindingRanges::UBO_START;
 
-    case ResourceType::LightSSBO:
-    case ResourceType::InstanceSSBO:
-    case ResourceType::BoneSSBO:
-    case ResourceType::ComputeSSBO:
-    case ResourceType::CustomSSBO:
-      return BindingRanges::SSBO_START;
+    case ShaderBufferResourceType::LightSSBO:
+    case ShaderBufferResourceType::InstanceSSBO:
+    case ShaderBufferResourceType::BoneSSBO:
+    case ShaderBufferResourceType::ComputeSSBO:
+    case ShaderBufferResourceType::CustomSSBO:
+      return ShaderBufferBindingRanges::SSBO_START;
 
-    case ResourceType::ShadowMap:
-    case ResourceType::EnvironmentMap:
-    case ResourceType::BRDFLUT:
-      return BindingRanges::TEXTURE_START;
+    case ShaderBufferResourceType::ShadowMap:
+    case ShaderBufferResourceType::EnvironmentMap:
+    case ShaderBufferResourceType::BRDFLUT:
+      return ShaderBufferBindingRanges::TEXTURE_START;
 
     default:
       return 0;
   }
 }
 
-uint32_t BindingPointManager::GetRangeCount(ResourceType type) const
+uint32_t BindingPointManager::GetRangeCount(ShaderBufferResourceType type) const
 {
   switch (type) {
-    case ResourceType::CameraUBO:
-    case ResourceType::MaterialUBO:
-    case ResourceType::SceneUBO:
-    case ResourceType::CustomUBO:
-      return BindingRanges::UBO_COUNT;
+    case ShaderBufferResourceType::CameraUBO:
+    case ShaderBufferResourceType::MaterialUBO:
+    case ShaderBufferResourceType::SceneUBO:
+    case ShaderBufferResourceType::CustomUBO:
+      return ShaderBufferBindingRanges::UBO_COUNT;
 
-    case ResourceType::LightSSBO:
-    case ResourceType::InstanceSSBO:
-    case ResourceType::BoneSSBO:
-    case ResourceType::ComputeSSBO:
-    case ResourceType::CustomSSBO:
-      return BindingRanges::SSBO_COUNT;
+    case ShaderBufferResourceType::LightSSBO:
+    case ShaderBufferResourceType::InstanceSSBO:
+    case ShaderBufferResourceType::BoneSSBO:
+    case ShaderBufferResourceType::ComputeSSBO:
+    case ShaderBufferResourceType::CustomSSBO:
+      return ShaderBufferBindingRanges::SSBO_COUNT;
 
-    case ResourceType::ShadowMap:
-    case ResourceType::EnvironmentMap:
-    case ResourceType::BRDFLUT:
-      return BindingRanges::TEXTURE_COUNT;
+    case ShaderBufferResourceType::ShadowMap:
+    case ShaderBufferResourceType::EnvironmentMap:
+    case ShaderBufferResourceType::BRDFLUT:
+      return ShaderBufferBindingRanges::TEXTURE_COUNT;
 
     default:
       return 0;
@@ -218,29 +228,31 @@ uint32_t BindingPointManager::GetRangeCount(ResourceType type) const
 
 bool BindingPointManager::IsValidBindingPoint(uint32_t point) const
 {
-  return point < BindingRanges::TOTAL_BINDING_POINTS;
+  return point < ShaderBufferBindingRanges::TOTAL_BINDING_POINTS;
 }
 
 void BindingPointManager::ValidateRanges() const
 {
   // 检查范围不重叠
-  static_assert(BindingRanges::UBO_START + BindingRanges::UBO_COUNT <= BindingRanges::SSBO_START,
+  static_assert(ShaderBufferBindingRanges::UBO_START + ShaderBufferBindingRanges::UBO_COUNT <=
+                    ShaderBufferBindingRanges::SSBO_START,
                 "UBO range overlaps with SSBO range");
-  static_assert(BindingRanges::SSBO_START + BindingRanges::SSBO_COUNT <=
-                    BindingRanges::TEXTURE_START,
+  static_assert(ShaderBufferBindingRanges::SSBO_START + ShaderBufferBindingRanges::SSBO_COUNT <=
+                    ShaderBufferBindingRanges::TEXTURE_START,
                 "SSBO range overlaps with Texture range");
-  static_assert(BindingRanges::TEXTURE_START + BindingRanges::TEXTURE_COUNT <=
-                    BindingRanges::TOTAL_BINDING_POINTS,
+  static_assert(ShaderBufferBindingRanges::TEXTURE_START +
+                        ShaderBufferBindingRanges::TEXTURE_COUNT <=
+                    ShaderBufferBindingRanges::TOTAL_BINDING_POINTS,
                 "Texture range exceeds total binding points");
 
   // 检查常用资源有足够的空间
-  if (BindingRanges::UBO_COUNT < 3) {
+  if (ShaderBufferBindingRanges::UBO_COUNT < 3) {
     LOG_WARN("UBO range may be too small for common resources");
   }
-  if (BindingRanges::SSBO_COUNT < 4) {
+  if (ShaderBufferBindingRanges::SSBO_COUNT < 4) {
     LOG_WARN("SSBO range may be too small for common resources");
   }
-  if (BindingRanges::TEXTURE_COUNT < 32) {
+  if (ShaderBufferBindingRanges::TEXTURE_COUNT < 32) {
     LOG_WARN("Texture range may be too small for complex scenes");
   }
 }

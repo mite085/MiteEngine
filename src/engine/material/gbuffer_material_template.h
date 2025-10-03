@@ -13,7 +13,6 @@ namespace mite {
  */
 class GBufferMaterialTemplate : public MaterialTemplate {
  public:
-  static constexpr const char *UBO_BLOCK_NAME = "MaterialUBO";
 
   explicit GBufferMaterialTemplate(std::shared_ptr<OpenGLShader> shader);
   virtual ~GBufferMaterialTemplate();
