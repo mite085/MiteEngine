@@ -1,21 +1,29 @@
 // 数学工具函数
-// 线性深度转换
-float LinearizeDepth(float depth, float near, float far) {
+#ifndef MATH_GLSL
+#define MATH_GLSL
+
+// 将法线从[0,1]范围转换到[-1,1]范围
+vec3 unpackNormal(vec3 packedNormal)
+{
+    return normalize(packedNormal * 2.0 - 1.0);
+}
+
+// 将法线从[-1,1]范围转换到[0,1]范围
+vec3 packNormal(vec3 normal)
+{
+    return normal * 0.5 + 0.5;
+}
+
+// 线性深度计算
+float linearizeDepth(float depth, float near, float far)
+{
     return (2.0 * near) / (far + near - depth * (far - near));
 }
-// 法线编码解码
-vec3 EncodeNormal(vec3 normal) {
-    return normalize(normal) * 0.5 + 0.5;
+
+// 计算TBN矩阵
+mat3 calculateTBNMatrix(vec3 normal, vec3 tangent, vec3 bitangent)
+{
+    return mat3(tangent, bitangent, normal);
 }
-vec3 DecodeNormal(vec3 encoded) {
-    return normalize(encoded * 2.0 - 1.0);
-}
-// 色调映射辅助函数
-vec3 ACESFilm(vec3 x) {
-    float a = 2.51;
-    float b = 0.03;
-    float c = 2.43;
-    float d = 0.59;
-    float e = 0.14;
-    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
-}
+
+#endif
