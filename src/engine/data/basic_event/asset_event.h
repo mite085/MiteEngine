@@ -4,14 +4,12 @@
 #include "basic_type/asset_type.h"
 #include "basic_type/handle_type.h"
 #include "basic_type/material_type.h"
-#include "headers/headers.h"
 #include "subscription_group.h"
 
 namespace mite {
 /**
  * 模型创建事件
  * 职责：委托RendererDevice创建GPU资源
- *
  */
 class ModelLoadEvent : public Event {
  public:

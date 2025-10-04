@@ -73,7 +73,7 @@ class ShaderUBO {
    * @brief 为着色器设置UBO绑定点
    * @param shader 目标着色器
    * @param uniformBlockName Uniform块名称
-   * @param bindingPoint 绑定点
+   * @param bindingPoint 绑定点（注意，仅适用于未通过BindingPointManager设定固定绑定点的UBO）
    */
   void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
                           const std::string &uniformBlockName,

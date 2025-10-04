@@ -103,7 +103,7 @@ bool ShaderUBO::UpdateData(const void *data, size_t size, size_t offset)
     return false;
   }
 
-  LOG_TRACE("UBO data updated - ID: {}, Offset: {}, Size: {} bytes", m_UBOId, offset, size);
+  //LOG_TRACE("UBO data updated - ID: {}, Offset: {}, Size: {} bytes", m_UBOId, offset, size);
   return true;
 }
 
@@ -128,15 +128,11 @@ void ShaderUBO::Bind(uint32_t bindingPoint) const
     LOG_ERROR("Cannot bind UBO: not initialized");
     return;
   }
-
   glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, m_UBOId);
-
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
-    LOG_ERROR("Failed to bind UBO to point {}: OpenGL error 0x{:X}", bindingPoint, error);
-  }
-  else {
-    //LOG_TRACE("UBO bound to binding point: {}", bindingPoint);
+    LOG_ERROR(
+        "Failed to bind UBO {} to point {}: OpenGL error 0x{:X}", m_UBOId, bindingPoint, error);
   }
 }
 

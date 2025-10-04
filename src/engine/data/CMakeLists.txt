@@ -74,6 +74,7 @@ source_group("basic shader" FILES ${BASIC_SHADER_SRCS})
 
 set(BASIC_EVENT_SRCS
     basic_event/asset_event.h
+    basic_event/render_event.h
 )
 source_group("basic event" FILES ${BASIC_EVENT_SRCS})
 

@@ -4,8 +4,8 @@
 
 #include "common.glsl"
 
-// 相机UBO - 与C++端CameraUBO结构体对应
-layout(std140, binding = 0) uniform CameraBuffer {
+// 相机UBO - 与C++端CameraUBO结构体对应，绑定点和命名与ShaderBufferResourceType、ShaderBufferResourceNames一致
+layout(std140, binding = 0) uniform CameraUBO {
     mat4 view;              // 视图矩阵
     mat4 projection;        // 投影矩阵  
     mat4 viewProjection;    // 视图投影矩阵
@@ -22,8 +22,8 @@ layout(std140, binding = 0) uniform CameraBuffer {
     float padding;          // 填充
 } u_Camera;
 
-// 材质UBO - 与C++端GBufferMaterialUBO结构体对应
-layout(std140, binding = 1) uniform MaterialBuffer {
+// 材质UBO - 与C++端GBufferMaterialUBO结构体对应，绑定点和命名与ShaderBufferResourceType、ShaderBufferResourceNames一致
+layout(std140, binding = 1) uniform MaterialUBO {
     // 基础PBR参数
     vec4 baseColor;             // RGB + Alpha
     vec4 metallicRoughnessAO;   // x:金属度, y:粗糙度, z:AO, w:未使用
