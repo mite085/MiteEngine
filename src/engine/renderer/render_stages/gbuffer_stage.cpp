@@ -2,6 +2,7 @@
 #include "basic_instance/material_instance.h"
 #include "basic_shader/shader_cache.h"
 #include "render_core/render_command.h"
+#include "basic_event/render_event.h"
 
 namespace mite {
 GBufferStage::GBufferStage() : RenderStage("GBufferStage")
@@ -55,7 +56,8 @@ void GBufferStage::Execute(RenderContext &context)
   }
 
   // 获取上下文记录的帧缓冲尺寸
-  glm::uvec2 viewportSize = context.GetFrameBuffer()->GetSize();
+  glm::uvec2 viewportSize = context.GetViewportSize();
+
   // 若GBuffer不可用 / 与帧缓冲尺寸不匹配，则使用新的尺寸重新create
   if (!m_GBuffer->isValid() || m_GBuffer->getFramebuffer()->GetSize() != viewportSize) {
     m_GBuffer->create(viewportSize.x, viewportSize.y);
@@ -64,13 +66,13 @@ void GBufferStage::Execute(RenderContext &context)
   // 绑定G-Buffer为渲染目标
   RenderCommand::Get().BindFrameBuffer(m_GBuffer->getFramebuffer());
 
-  // 设置视口
-  RenderCommand::Get().SetViewport(0, 0, viewportSize.x, viewportSize.y);
-
   // 清除G-Buffer
   RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                              glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),  // 透明黑色清除
                              1.0f);
+
+  // stage开始之前初始化并绑定相机UBO
+  RenderCommand::Get().BindCameraUBO(context.GetCameraInstance());
 
   // 设置G-Buffer渲染状态
   SetupGBufferRenderState();
@@ -84,6 +86,8 @@ void GBufferStage::Execute(RenderContext &context)
 
   // 将G-Buffer存储到上下文供后续阶段使用
   context.SetTemporaryResource("GBuffer", m_GBuffer);
+
+  EventBus::Publish<RenderFinishedEvent>(RenderFinishedEvent(m_GBuffer->getFramebuffer()));
 }
 
 void GBufferStage::Shutdown()
@@ -124,8 +128,7 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
     // 使用G-Buffer专用着色器提交
     auto gbufferShader = GetGBufferShaderForMaterial(item);
     if (gbufferShader) {
-      RenderCommand::Get().SubmitToGBuffer(
-          item, context.GetViewMatrix(), context.GetProjectionMatrix(), gbufferShader);
+      RenderCommand::Get().SubmitToGBuffer(item, gbufferShader);
       renderedCount++;
     }
     else {
@@ -166,8 +169,7 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
     // 使用G-Buffer专用着色器提交
     auto gbufferShader = GetGBufferShaderForMaterial(item);
     if (gbufferShader) {
-      RenderCommand::Get().SubmitToGBuffer(
-          item, context.GetViewMatrix(), context.GetProjectionMatrix(), gbufferShader);
+      RenderCommand::Get().SubmitToGBuffer(item, gbufferShader);
       renderedCount++;
     }
     else {
