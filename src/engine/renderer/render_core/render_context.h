@@ -1,8 +1,9 @@
 #ifndef MITE_RENDER_CONTEXT
 #define MITE_RENDER_CONTEXT
 
-#include "basic_data/camera.h"
-#include "basic_shader/framebuffer.h"
+#include "basic_instance/camera_instance.h"
+#include "basic_data/runtime_texture.h"
+#include "basic_shader/gbuffer.h"
 #include "render_queue.h"
 
 namespace mite {
@@ -13,7 +14,7 @@ namespace mite {
  * 1. 封装渲染所需的所有数据（场景、相机、FrameBuffer等）
  * 2. 提供阶段间的数据共享机制
  * 3. 管理临时渲染资源
- * 4. 提供设备访问接口
+ * 4. 提供分层纹理管理（GBuffer、ShadowMap、RenderTarget）
  */
 class RenderContext {
  public:
@@ -21,12 +22,50 @@ class RenderContext {
   ~RenderContext();
 
   // ---- 场景数据设置 ----
-  void SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
-                    const glm::mat4 &viewMatrix,
-                    const glm::mat4 &projectionMatrix);
+  void SetSceneData(std::shared_ptr<RenderQueue> renderQueue, CameraInstance &cameraInstance);
 
-  // ---- 渲染目标设置 ----
-  void SetFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer);
+  // ---- 窗口尺寸管理 ----
+  void SetViewportSize(uint32_t width, uint32_t height)
+  {
+    m_ViewportSize = {width, height};
+  }
+  const glm::uvec2 &GetViewportSize() const
+  {
+    return m_ViewportSize;
+  }
+  uint32_t GetViewportWidth() const
+  {
+    return m_ViewportSize.x;
+  }
+  uint32_t GetViewportHeight() const
+  {
+    return m_ViewportSize.y;
+  }
+  float GetViewportAspectRatio() const
+  {
+    return m_ViewportSize.y > 0 ? static_cast<float>(m_ViewportSize.x) / m_ViewportSize.y : 1.0f;
+  }
+
+  // ---- 分层纹理管理 ----
+
+  // GBuffer纹理管理（固定数量）
+  void SetGBufferTexture(GBuffer::GBufferIndex index, RuntimeTexturePtr texture);
+  RuntimeTexturePtr GetGBufferTexture(GBuffer::GBufferIndex index) const;
+
+  // ShadowMap纹理管理（动态数量）
+  void SetShadowMapTexture(uint32_t lightId, uint32_t shadowIndex, RuntimeTexturePtr texture);
+  RuntimeTexturePtr GetShadowMapTexture(uint32_t lightId, uint32_t shadowIndex) const;
+
+  // RenderTarget纹理管理（自定义命名）
+  void SetRenderTarget(const std::string &name, RuntimeTexturePtr texture);
+  RuntimeTexturePtr GetRenderTarget(const std::string &name) const;
+
+  // GPU句柄直接访问（后备方案）
+  RuntimeTexturePtr GetTextureByHandle(TextureGPUHandle handle) const;
+  void SetTextureByHandle(TextureGPUHandle handle, RuntimeTexturePtr texture);
+
+  // 清空所有纹理（每帧开始时调用）
+  void ClearTextures();
 
   // ---- 数据访问接口 ----
 
@@ -35,18 +74,12 @@ class RenderContext {
   {
     return m_RenderQueue;
   }
-  const glm::mat4 &GetViewMatrix() const
+  CameraInstance& GetCameraInstance() const
   {
-    return m_ViewMatrix;
-  }
-  const glm::mat4 &GetProjectionMatrix() const
-  {
-    return m_ProjectionMatrix;
-  }
-  // 渲染目标
-  std::shared_ptr<FrameBuffer> GetFrameBuffer() const
-  {
-    return m_CurrentFrameBuffer;
+    if (m_CameraInstance.has_value()) {
+      return m_CameraInstance.value().get();
+    }
+    throw std::runtime_error("Reference not set");
   }
 
   // ---- 临时资源管理 ----
@@ -58,15 +91,21 @@ class RenderContext {
   // ---- 上下文状态 ----
   bool IsValid() const;
   void Validate() const;
+  void DebugTextureInfo() const;
 
  private:
   // ---- 场景数据 ----
   std::shared_ptr<RenderQueue> m_RenderQueue;
-  glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
-  glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
+  std::optional<std::reference_wrapper<CameraInstance>> m_CameraInstance;  // 支持空引用的相机实例引用
 
-  // ---- 渲染目标 ----
-  std::shared_ptr<FrameBuffer> m_CurrentFrameBuffer;
+  // ---- 窗口尺寸 ----
+  glm::uvec2 m_ViewportSize = {1280, 720};  // 默认尺寸
+
+  // ---- 分层纹理存储 ----
+  std::array<RuntimeTexturePtr, GBuffer::COUNT> m_GBufferTextures;
+  std::unordered_map<uintptr_t, RuntimeTexturePtr> m_ShadowMapTextures;
+  std::unordered_map<std::string, RuntimeTexturePtr> m_RenderTargets;
+  std::unordered_map<uintptr_t, RuntimeTexturePtr> m_HandleTextures;  // GPU句柄映射（后备方案）
 
   // ---- 临时资源存储 ----
   std::unordered_map<std::string, std::shared_ptr<void>> m_TemporaryResources;

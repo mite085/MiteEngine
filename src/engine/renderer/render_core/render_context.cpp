@@ -4,22 +4,24 @@ namespace mite {
 
 RenderContext::RenderContext() : m_Logger(LoggerSystem::CreateModuleLogger("Mite Render Context"))
 {
+  // 初始化GBuffer纹理数组
+  m_GBufferTextures.fill(nullptr);
+
   m_Logger->info("Render Context created");
 }
 
 RenderContext::~RenderContext()
 {
   ClearTemporaryResources();
+  ClearTextures();
   m_Logger->info("Render Context destroyed");
 }
 
 void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
-                                 const glm::mat4 &viewMatrix,
-                                 const glm::mat4 &projectionMatrix)
+                                 CameraInstance &cameraInstance)
 {
   m_RenderQueue = renderQueue;
-  m_ViewMatrix = viewMatrix;
-  m_ProjectionMatrix = projectionMatrix;
+  m_CameraInstance = std::ref(cameraInstance);
 
   //m_Logger->debug("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
   //                m_RenderQueue ? "valid" : "null",
@@ -28,11 +30,93 @@ void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
   //                m_CameraPosition.z);
 }
 
-void RenderContext::SetFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer)
+// ---- 分层纹理管理实现 ----
+void RenderContext::SetGBufferTexture(GBuffer::GBufferIndex index, RuntimeTexturePtr texture)
 {
-  m_CurrentFrameBuffer = framebuffer;
-
-  //m_Logger->debug("Set framebuffer - Size: {}x{}", m_ViewportSize.x, m_ViewportSize.y);
+  if (index >= 0 && index < GBuffer::COUNT) {
+    m_GBufferTextures[index] = texture;
+    // 同时存入GPU句柄映射
+    if (texture && texture->isValid()) {
+      m_HandleTextures[texture->getHandle().apiHandle] = texture;
+    }
+    m_Logger->debug("Set GBuffer texture [{}]", static_cast<int>(index));
+  }
+  else {
+    m_Logger->warn("Invalid GBuffer index: {}", static_cast<int>(index));
+  }
+}
+RuntimeTexturePtr RenderContext::GetGBufferTexture(GBuffer::GBufferIndex index) const
+{
+  if (index >= 0 && index < GBuffer::COUNT) {
+    return m_GBufferTextures[index];
+  }
+  m_Logger->warn("Invalid GBuffer index: {}", static_cast<int>(index));
+  return nullptr;
+}
+void RenderContext::SetShadowMapTexture(uint32_t lightId,
+                                        uint32_t shadowIndex,
+                                        RuntimeTexturePtr texture)
+{
+  uint64_t key = (static_cast<uint64_t>(lightId) << 32) | shadowIndex;
+  m_ShadowMapTextures[key] = texture;
+  if (texture && texture->isValid()) {
+    m_HandleTextures[texture->getHandle().apiHandle] = texture;
+  }
+  m_Logger->debug("Set ShadowMap texture [light:{}, index:{}]", lightId, shadowIndex);
+}
+RuntimeTexturePtr RenderContext::GetShadowMapTexture(uint32_t lightId, uint32_t shadowIndex) const
+{
+  uint64_t key = (static_cast<uint64_t>(lightId) << 32) | shadowIndex;
+  auto it = m_ShadowMapTextures.find(key);
+  if (it != m_ShadowMapTextures.end()) {
+    return it->second;
+  }
+  m_Logger->debug("ShadowMap texture not found [light:{}, index:{}]", lightId, shadowIndex);
+  return nullptr;
+}
+void RenderContext::SetRenderTarget(const std::string &name, RuntimeTexturePtr texture)
+{
+  if (name.empty()) {
+    m_Logger->warn("Attempted to set RenderTarget with empty name");
+    return;
+  }
+  m_RenderTargets[name] = texture;
+  if (texture && texture->isValid()) {
+    m_HandleTextures[texture->getHandle().apiHandle] = texture;
+  }
+  m_Logger->debug("Set RenderTarget: {}", name);
+}
+RuntimeTexturePtr RenderContext::GetRenderTarget(const std::string &name) const
+{
+  auto it = m_RenderTargets.find(name);
+  if (it != m_RenderTargets.end()) {
+    return it->second;
+  }
+  m_Logger->debug("RenderTarget not found: {}", name);
+  return nullptr;
+}
+RuntimeTexturePtr RenderContext::GetTextureByHandle(TextureGPUHandle handle) const
+{
+  auto it = m_HandleTextures.find(handle.apiHandle);
+  if (it != m_HandleTextures.end()) {
+    return it->second;
+  }
+  m_Logger->debug("Texture not found by handle: {}", handle.apiHandle);
+  return nullptr;
+}
+void RenderContext::SetTextureByHandle(TextureGPUHandle handle, RuntimeTexturePtr texture)
+{
+  m_HandleTextures[handle.apiHandle] = texture;
+  m_Logger->debug("Set texture by handle: {}", handle.apiHandle);
+}
+void RenderContext::ClearTextures()
+{
+  // 清空所有纹理映射（注意：这里清空的是映射，不是纹理本身）
+  m_GBufferTextures.fill(nullptr);
+  m_ShadowMapTextures.clear();
+  m_RenderTargets.clear();
+  m_HandleTextures.clear();
+  m_Logger->debug("Cleared all texture mappings");
 }
 
 void RenderContext::ClearTemporaryResources()
@@ -47,7 +131,7 @@ void RenderContext::ClearTemporaryResources()
 
 bool RenderContext::IsValid() const
 {
-  return m_RenderQueue != nullptr && m_CurrentFrameBuffer != nullptr;
+  return m_RenderQueue != nullptr;
 }
 
 void RenderContext::Validate() const
@@ -55,11 +139,22 @@ void RenderContext::Validate() const
   if (!m_RenderQueue) {
     throw std::runtime_error("RenderContext validation failed: No render queue");
   }
-  if (!m_CurrentFrameBuffer) {
-    throw std::runtime_error("RenderContext validation failed: No framebuffer");
-  }
-
   m_Logger->debug("RenderContext validation passed");
+}
+
+void RenderContext::DebugTextureInfo() const
+{
+  size_t gbufferCount = std::count_if(m_GBufferTextures.begin(),
+                                      m_GBufferTextures.end(),
+                                      [](auto &ptr) { return ptr != nullptr; });
+
+  m_Logger->info(
+      "Texture Info - GBuffer: {}/{}, ShadowMap: {}, RenderTargets: {}, Total by handle: {}",
+      gbufferCount,
+      m_GBufferTextures.size(),
+      m_ShadowMapTextures.size(),
+      m_RenderTargets.size(),
+      m_HandleTextures.size());
 }
 
 }  // namespace mite
