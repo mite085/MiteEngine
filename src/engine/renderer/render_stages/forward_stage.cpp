@@ -1,7 +1,6 @@
 #include "forward_stage.h"
 
 namespace mite {
-
 ForwardStage::ForwardStage() : RenderStage("ForwardStage")
 {
   // 不透明物体状态
@@ -37,6 +36,20 @@ ForwardStage::~ForwardStage()
 
 void ForwardStage::Initialize()
 {
+  // 创建FrameBuffer规格
+  FrameBufferSpec spec;
+  spec.attachments = {
+      {RuntimeTexture::RuntimeTextureType::RenderTarget, TextureFormat::RGBA8},  // 颜色附件
+      {RuntimeTexture::RuntimeTextureType::Depth, TextureFormat::DEPTH_COMPONENT24}};  // 深度附件
+
+  // 创建FrameBuffer用于存储数据
+  m_ForwardFrameBuffer = std::make_shared<FrameBuffer>(spec);
+
+  if (!m_ForwardFrameBuffer->IsComplete()) {
+    m_Logger->error("Failed to create complete framebuffers for forward rendering");
+    throw std::runtime_error("Framebuffers are incomplete");
+  }
+
   m_Logger->info("ForwardStage initialization completed");
 }
 
@@ -55,11 +68,28 @@ void ForwardStage::Execute(RenderContext &context)
     return;
   }
 
+  // 获取上下文记录的帧缓冲尺寸
+  glm::uvec2 viewportSize = context.GetViewportSize();
+
+  // 若与帧缓冲尺寸不匹配，则执行Resize（直接执行即可，无需提交给Commit队列）
+  if (m_ForwardFrameBuffer->GetSize() != viewportSize) {
+    m_ForwardFrameBuffer->Resize(viewportSize.x, viewportSize.y);
+  }
+
+  // 绑定前向渲染的FrameBuffer
+  RenderCommand::Get().BindFrameBuffer(m_ForwardFrameBuffer);
+
+  // stage开始渲染之前绑定相机UBO
+  RenderCommand::Get().BindCameraUBO(context.GetCameraInstance());
+
   // 按顺序渲染各个队列
   RenderOpaqueQueue(context);
   RenderAlphaTestQueue(context);
   RenderTransparentQueue(context);
   RenderCustomQueue(context);
+
+  // 解绑FrameBuffer，恢复默认
+  RenderCommand::Get().UnbindFrameBuffer();
 }
 
 void ForwardStage::Shutdown()
@@ -84,13 +114,13 @@ void ForwardStage::RenderOpaqueQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().Submit(item, context.GetViewMatrix(), context.GetProjectionMatrix());
+      RenderCommand::Get().Submit(item);
       renderedCount++;
     }
   }
 
   m_LastFrameOpaqueCount = renderedCount;
-  //m_Logger->trace("Rendered {} opaque objects", renderedCount);
+  // m_Logger->trace("Rendered {} opaque objects", renderedCount);
 }
 
 void ForwardStage::RenderAlphaTestQueue(RenderContext &context)
@@ -110,7 +140,7 @@ void ForwardStage::RenderAlphaTestQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().Submit(item, context.GetViewMatrix(), context.GetProjectionMatrix());
+      RenderCommand::Get().Submit(item);
       renderedCount++;
     }
   }
@@ -136,7 +166,7 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().Submit(item, context.GetViewMatrix(), context.GetProjectionMatrix());
+      RenderCommand::Get().Submit(item);
       renderedCount++;
     }
   }
@@ -162,7 +192,7 @@ void ForwardStage::RenderCustomQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().Submit(item, context.GetViewMatrix(), context.GetProjectionMatrix());
+      RenderCommand::Get().Submit(item);
       renderedCount++;
     }
   }
@@ -216,5 +246,4 @@ void ForwardStage::SetupRenderStateForQueue(RenderQueue::QueueType queueType)
       break;
   }
 }
-
 }  // namespace mite

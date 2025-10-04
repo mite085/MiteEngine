@@ -25,7 +25,6 @@ class ForwardStage : public RenderStage {
 
  private:
   // ---- 私有方法（接管原OpenGLRenderer的渲染逻辑）----
-
   /**
    * @brief 渲染不透明物体队列
    */
@@ -55,6 +54,9 @@ class ForwardStage : public RenderStage {
    * @brief 设置渲染状态（根据队列类型）
    */
   void SetupRenderStateForQueue(RenderQueue::QueueType queueType);
+
+  // ---- 成员变量 ----
+  std::shared_ptr<FrameBuffer> m_ForwardFrameBuffer;
 
   // ---- 渲染状态配置 ----
   RenderState m_OpaqueState;
