@@ -2,23 +2,15 @@
 #define MITE_FRAMEBUFFER_TYPE
 
 #include "handle_type.h"
-#include "headers/headers.h"
+#include "basic_data/runtime_texture.h"
 
 namespace mite {
 // ------------------------ 帧缓冲相关 ------------------------
 
-// 帧缓冲附件类型枚举
-enum class FrameBufferAttachmentType {
-  Color = 0,    // 颜色附件
-  Depth,        // 深度附件
-  Stencil,      // 模板附件
-  DepthStencil  // 深度模板组合附件
-};
-
-// 帧缓冲附件规格结构体
+// 帧缓冲附件规格结构体（直接使用RuntimeTextureType来明确指定附件的具体用途）
 // Depth和Stencil应当手动明确Format，此处不做约束
 struct FrameBufferAttachmentSpec {
-  FrameBufferAttachmentType type = FrameBufferAttachmentType::Color;
+  RuntimeTexture::RuntimeTextureType type = RuntimeTexture::RuntimeTextureType::RenderTarget;
   TextureFormat internalFormat = TextureFormat::RGB8;  // 内部格式
   bool generateMipmaps = false;                        // 是否生成mipmaps
 };
