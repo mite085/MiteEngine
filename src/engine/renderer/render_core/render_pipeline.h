@@ -1,7 +1,7 @@
 #ifndef MITE_RENDER_PIPELINE
 #define MITE_RENDER_PIPELINE
 
-#include "basic_data/camera.h"
+#include "basic_instance/camera_instance.h"
 #include "basic_shader/framebuffer.h"
 #include "render_context.h"
 #include "render_queue.h"
@@ -32,16 +32,10 @@ class RenderPipeline {
 
   // ---- 场景渲染 ----
   virtual void RenderScene(std::shared_ptr<RenderQueue> renderQueue,
-                           const glm::mat4 viewMatrix,
-                           const glm::mat4 projectionMatrix) = 0;
+                           CameraInstance& cameraInstance) = 0;
 
   // ---- 状态设置 ----
   virtual void SetClearColor(const glm::vec4 &color) = 0;
-  virtual void Resize(const uint32_t width, const uint32_t height) = 0;
-
-  // ---- UI接口 ----
-  virtual std::shared_ptr<FrameBuffer> GetMainFrameBuffer() const = 0;
-  virtual std::shared_ptr<FrameBuffer> GetDisplayFrameBuffer() const = 0;
 
   // ---- 阶段管理 ----
   void AddStage(std::unique_ptr<RenderStage> stage);
