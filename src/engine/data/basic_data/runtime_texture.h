@@ -15,7 +15,8 @@ class RuntimeTexture {
     GBufferMap,    // G-Buffer纹理
     ShadowMap,     // 阴影贴图
     RenderTarget,  // 普通渲染目标
-    DepthStencil   // 深度模板缓冲
+    Depth,         // 深度缓冲
+    Stencil,       // 模板缓冲
   };
 
  public:

@@ -47,8 +47,8 @@ bool RuntimeTexture::initialize(RuntimeTextureType type,
       createInfo->wrapModeS = TextureWrapMode::ClampToBorder;
       createInfo->wrapModeT = TextureWrapMode::ClampToBorder;
       break;
-
-    case RuntimeTextureType::DepthStencil:
+    case RuntimeTextureType::Stencil:
+    case RuntimeTextureType::Depth:
       // 深度模板缓冲：最近邻过滤、边缘拉伸
       createInfo->minFilter = TextureFilterMode::Nearest;
       createInfo->magFilter = TextureFilterMode::Nearest;
