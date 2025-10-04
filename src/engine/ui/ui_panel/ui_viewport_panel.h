@@ -1,6 +1,7 @@
 #ifndef MITE_VIEWPORT_PANEL_H
 #define MITE_VIEWPORT_PANEL_H
 
+#include "basic_event/render_event.h"
 #include "render_core/render_pipeline.h"
 #include "ui_core/ui_render_props.h"
 #include "ui_panel.h"
@@ -18,7 +19,7 @@ namespace mite {
  */
 class ViewportPanel : public UIPanel {
  public:
-  explicit ViewportPanel(const std::string &name, CameraComponent &camera, RenderPipeline &renderer);
+  explicit ViewportPanel(const std::string &name, CameraComponent &camera);
   virtual ~ViewportPanel() = default;
   // UIPanel接口
   virtual void Update(float deltaTime) override;
@@ -30,14 +31,17 @@ class ViewportPanel : public UIPanel {
   void UpdateImagePropsFromDisplayBuffer();
   void HandleSizeChange(const glm::uvec2 &newSize);
 
+  void OnRenderFinished(RenderFinishedEvent &event);
+
   // ==================== 依赖注入 ====================
   CameraComponent &m_CameraComponent;  // 用于设置宽高比
-  RenderPipeline &m_Pipeline;          // 用于获取FrameBuffer和执行Resize
+  std::shared_ptr<FrameBuffer> m_FBO = nullptr;
 
   // ==================== 状态管理 ====================
   ImageProps m_ImageProps;     // 图像渲染属性
   glm::uvec2 m_CurrentSize;    // 当前面板尺寸
   glm::uvec2 m_RequestedSize;  // 请求调整的尺寸
+  SubscriptionGroup m_EventSubscriptions;
 };
 }  // namespace mite
 
