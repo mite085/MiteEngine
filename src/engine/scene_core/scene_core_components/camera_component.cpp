@@ -2,8 +2,10 @@
 #include "transform_component.h"
 
 namespace mite {
-CameraComponent::CameraComponent(CameraProjectionType type) : m_CameraInstance(std::make_shared<Camera>())
+CameraComponent::CameraComponent(CameraProjectionType type)
+    : m_CameraInstance(std::make_shared<Camera>())
 {
+  m_CameraInstance.InitializeUBO();
   m_CameraInstance.GetCamera()->SetProjectionType(type);
 }
 
@@ -43,6 +45,16 @@ glm::mat4 CameraComponent::GetProjectionMatrix() const
 {
   // Get时处理Transform内部的Dirty，所以无需在组件ProcessDirty
   return m_CameraInstance.GetCamera()->GetProjectionMatrix();
+}
+
+void CameraComponent::UpdateUBOViewMatrix(const glm::mat4 &viewMatrix)
+{
+  m_CameraInstance.UpdateUBO(viewMatrix);
+}
+
+CameraInstance &CameraComponent::GetCameraInstance() 
+{
+  return m_CameraInstance;
 }
 
 void CameraComponent::SetViewportSize(uint32_t width, uint32_t height)
@@ -137,5 +149,4 @@ void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
     LOG_ERROR("Invalid camera entity when setting new main camera");
   }
 }
-
 };  // namespace mite

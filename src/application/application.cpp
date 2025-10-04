@@ -1,8 +1,8 @@
 #include "application.h"
+#include "material_templates/material_template_pure_color.h"
+#include "render_opengl/opengl_pipeline.h"
 #include "scene_core_components/component_headers.h"
 #include "ui_panel/ui_viewport_panel.h"
-#include "render_opengl/opengl_pipeline.h"
-#include "material_templates/material_template_pure_color.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -93,15 +93,17 @@ void MiteApplication::LoadDefaultScene()
 
   m_SceneCore->SetMainCamera(mainCameraEntity);
 
-  // 0. 创建ViewportPanel并设置FrameBuffer
-  auto viewportPanel = std::make_shared<ViewportPanel>("viewport", mainCameraComponent, *m_Renderer.get());
+  // 0. 创建ViewportPanel并设置FrameBuffer（TODO：此处传入Camera应当也是错误的，但似乎没有好办法让ViewPort获取正确宽高比）
+  auto viewportPanel = std::make_shared<ViewportPanel>("viewport", mainCameraComponent);
+
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
 
   // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
       FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
-  Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle, m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
+  Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle,
+                    m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 2. 创建网格实体，挂载组件
@@ -112,7 +114,6 @@ void MiteApplication::LoadDefaultScene()
     // 3. 创建材质实例
     std::shared_ptr<MaterialInstance> plane_material =
         MaterialFactory::Get().CreateInstance<PureColorMaterialTemplate>();
-
 
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
@@ -361,19 +362,30 @@ void MiteApplication::Render()
       m_SceneCore->GetRegistry().GetComponent<TransformComponent>(mainCamera).CreateViewMatrix();
   glm::mat4 cameraProjection =
       m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetProjectionMatrix();
-  uint32_t mainCameraVisibilityMask = m_SceneCore->GetRegistry().GetComponent<VisibilityComponent>(mainCamera).GetVisibilityMask();
+  uint32_t mainCameraVisibilityMask =
+      m_SceneCore->GetRegistry().GetComponent<VisibilityComponent>(mainCamera).GetVisibilityMask();
 
   Frustum mainCameraFrustum(cameraProjection * cameraView);
 
   // 2. SceneGraph执行视锥体裁剪查询，获取可见节点列表
-  std::vector<SceneNode *> visibleNodes = m_SceneGraph->FrustumCull( mainCameraFrustum, mainCameraVisibilityMask);
+  std::vector<SceneNode *> visibleNodes = m_SceneGraph->FrustumCull(mainCameraFrustum,
+                                                                    mainCameraVisibilityMask);
 
-  // 3. SceneView根据可见节点列表构建RendererQueue
+  // 3. SceneView根据可见节点列表构建RendererQueue（多视口渲染需要存在多个SceneView）
   m_SceneView->Update(m_SceneCore->GetRegistry(), visibleNodes);
   std::shared_ptr<RenderQueue> renderQueue = m_SceneView->GetRenderQueue();
 
+  // 4. 相机UBO更新与获取（TODO: 相机实例应当由SceneView管理，多视口渲染时需要创建多个SceneView。待修改）
+  m_SceneCore->GetRegistry()
+      .GetComponent<CameraComponent>(mainCamera)
+      .UpdateUBOViewMatrix(cameraView);
+
+
+  CameraInstance &mainCameraInstance =
+      m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetCameraInstance();
+
   // 4. 渲染器渲染场景
-  m_Renderer->RenderScene(renderQueue, cameraView, cameraProjection);  // 渲染场景
+  m_Renderer->RenderScene(renderQueue, mainCameraInstance);  // 渲染场景
 
   // TODO：渲染调试信息
   // if (m_ShowDebug) {
