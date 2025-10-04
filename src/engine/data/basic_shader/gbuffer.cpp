@@ -32,17 +32,7 @@ bool GBuffer::create(uint32_t width, uint32_t height)
 
   LOG_INFO("Initializing GBuffer with size {}x{}", width, height);
 
-  // 创建所有G-Buffer纹理
-  for (int i = 0; i < COUNT; ++i) {
-    GBufferIndex index = static_cast<GBufferIndex>(i);
-    if (!createTexture(index)) {
-      LOG_ERROR("Failed to create GBuffer texture at index {}", i);
-      cleanup();
-      return false;
-    }
-  }
-
-  // 创建帧缓冲（在纹理创建之后执行）
+  // 直接创建帧缓冲，FrameBuffer会自动创建所有运行时纹理
   FrameBufferSpec spec = createFrameBufferSpec();
   m_framebuffer = std::make_shared<FrameBuffer>(spec);
 
@@ -72,14 +62,6 @@ void GBuffer::cleanup()
     m_framebuffer.reset();
   }
 
-  // 清理所有纹理
-  for (auto &texture : m_textures) {
-    if (texture) {
-      texture->cleanup();
-      texture.reset();
-    }
-  }
-
   // 重置状态
   m_width = 0;
   m_height = 0;
@@ -94,44 +76,77 @@ bool GBuffer::validate() const
     LOG_ERROR("GBuffer validation failed: framebuffer is null");
     return false;
   }
-
-  // 检查帧缓冲完整性
   if (!m_framebuffer->IsComplete()) {
     LOG_ERROR("GBuffer validation failed: framebuffer is incomplete");
     return false;
   }
-
-  // 检查所有纹理是否有效
+  // 验证所有纹理附件是否有效
   for (int i = 0; i < COUNT; ++i) {
-    if (!m_textures[i] || !m_textures[i]->isValid()) {
+    auto texture = getTexture(static_cast<GBufferIndex>(i));
+    if (!texture || !texture->isValid()) {
       LOG_ERROR("GBuffer validation failed: texture at index {} is invalid", i);
       return false;
     }
-
     // 检查纹理尺寸是否匹配
-    if (m_textures[i]->getWidth() != m_width || m_textures[i]->getHeight() != m_height) {
+    if (texture->getWidth() != m_width || texture->getHeight() != m_height) {
       LOG_ERROR("GBuffer validation failed: texture size mismatch at index {}", i);
       return false;
     }
   }
-
   LOG_DEBUG("GBuffer validation passed");
   return true;
 }
 
-RuntimeTexture *GBuffer::getTexture(GBufferIndex index) const
+bool GBuffer::resize(uint32_t newWidth, uint32_t newHeight)
 {
-  if (index < 0 || index >= COUNT) {
-    LOG_ERROR("Invalid texture index: {}", static_cast<int>(index));
+  if (newWidth <= 0 || newHeight <= 0) {
+    LOG_ERROR("Invalid resize dimensions: {}x{}", newWidth, newHeight);
+    return false;
+  }
+  if (newWidth == m_width && newHeight == m_height) {
+    return true;
+  }
+  LOG_INFO("Resizing GBuffer from {}x{} to {}x{}", m_width, m_height, newWidth, newHeight);
+  // 直接调用FrameBuffer的Resize方法，自动重新创建所有纹理
+  if (m_framebuffer) {
+    m_framebuffer->Resize(newWidth, newHeight);
+    m_width = newWidth;
+    m_height = newHeight;
+
+    if (!validate()) {
+      LOG_ERROR("GBuffer validation failed after resize");
+      return false;
+    }
+
+    return true;
+  }
+  return false;
+}
+RuntimeTexturePtr GBuffer::getTexture(GBufferIndex index) const
+{
+  if (!m_framebuffer || index < 0 || index >= COUNT) {
+    LOG_ERROR("Invalid texture index or framebuffer: {}", static_cast<int>(index));
     return nullptr;
   }
+  // 直接从FrameBuffer获取对应的颜色附件
+  return m_framebuffer->GetColorAttachment(static_cast<uint32_t>(index));
+}
 
-  if (!m_textures[index]) {
-    LOG_ERROR("Texture at index {} is null", static_cast<int>(index));
-    return nullptr;
-  }
-
-  return m_textures[index].get();
+std::shared_ptr<FrameBuffer> GBuffer::getFramebuffer() const
+{
+  return m_framebuffer;
+}
+int GBuffer::getWidth() const
+{
+  return m_width;
+}
+int GBuffer::getHeight() const
+{
+  return m_height;
+}
+bool GBuffer::isValid() const
+{
+  return m_isValid;
 }
 
 void GBuffer::bind() const
@@ -158,44 +173,18 @@ FrameBufferSpec GBuffer::createFrameBufferSpec() const
   spec.height = m_height;
   spec.samples = 1;  // G-Buffer通常不使用多重采样
 
-  // 添加颜色附件规格
-
-  for (auto &texture : m_textures) {
+  // 为每个G-Buffer纹理创建附件规格
+  for (int i = 0; i < COUNT; ++i) {
     FrameBufferAttachmentSpec attachment;
-    attachment.type = FrameBufferAttachmentType::Color;
-    attachment.internalFormat = texture->getFormat();  // 根据RuntimeTexture确定Format
-    attachment.generateMipmaps = false;                // G-Buffer不需要mipmap
+    attachment.type = RuntimeTexture::RuntimeTextureType::GBufferMap;
+    attachment.internalFormat = getTextureFormat(static_cast<GBufferIndex>(i));
+    attachment.generateMipmaps = false;  // G-Buffer不需要mipmap
     spec.attachments.push_back(attachment);
   }
 
   return spec;
 }
 
-bool GBuffer::createTexture(GBufferIndex index)
-{
-  if (index < 0 || index >= COUNT) {
-    LOG_ERROR("Invalid texture index for creation: {}", static_cast<int>(index));
-    return false;
-  }
-
-  // 创建运行时纹理
-  auto texture = std::make_unique<RuntimeTexture>();
-  RuntimeTexture::RuntimeTextureType type = getRuntimeTextureType(index);
-  TextureFormat format = getTextureFormat(index);
-
-  if (!texture->initialize(type, m_width, m_height, format)) {
-    LOG_ERROR("Failed to initialize GBuffer texture at index {}", static_cast<int>(index));
-    return false;
-  }
-
-  m_textures[index] = std::move(texture);
-  LOG_DEBUG("Created GBuffer texture at index {}: type={}, format={}",
-            static_cast<int>(index),
-            static_cast<int>(type),
-            static_cast<int>(format));
-
-  return true;
-}
 
 TextureFormat GBuffer::getTextureFormat(GBufferIndex index) const
 {
@@ -214,19 +203,4 @@ TextureFormat GBuffer::getTextureFormat(GBufferIndex index) const
   }
 }
 
-RuntimeTexture::RuntimeTextureType GBuffer::getRuntimeTextureType(GBufferIndex index) const
-{
-  switch (index) {
-    case GBUFFER_WORLDPOS_DEPTH:
-    case GBUFFER_BASECOLOR_MATTYPE:
-    case GBUFFER_METALLICROUGHNESS_AO:
-    case GBUFFER_NORMAL_SCALE:
-    case GBUFFEE_EMISSION_ALPHA:
-    case GBUFFER_NPR_PARAM:
-      return RuntimeTexture::RuntimeTextureType::GBufferMap;
-    default:
-      LOG_WARN("Unknown texture index: {}, using GBuffer as default", static_cast<int>(index));
-      return RuntimeTexture::RuntimeTextureType::GBufferMap;
-  }
-}
 }  // namespace mite

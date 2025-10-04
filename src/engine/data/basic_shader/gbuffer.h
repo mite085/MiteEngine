@@ -44,12 +44,17 @@ class GBuffer {
    * @return 初始化是否成功
    */
   bool create(uint32_t width, uint32_t height);
-
   /**
    * 清理G-Buffer资源
    */
   void cleanup();
-
+  /**
+   * 调整G-Buffer大小
+   * @param newWidth 新宽度
+   * @param newHeight 新高度
+   * @return 调整是否成功
+   */
+  bool resize(uint32_t newWidth, uint32_t newHeight);
   /**
    * 验证G-Buffer完整性
    * @return G-Buffer是否完整可用
@@ -57,23 +62,11 @@ class GBuffer {
   bool validate() const;
 
   // 访问器
-  RuntimeTexture *getTexture(GBufferIndex index) const;
-  std::shared_ptr<FrameBuffer> getFramebuffer() const
-  {
-    return m_framebuffer;
-  }
-  int getWidth() const
-  {
-    return m_width;
-  }
-  int getHeight() const
-  {
-    return m_height;
-  }
-  bool isValid() const
-  {
-    return m_isValid;
-  }
+  RuntimeTexturePtr getTexture(GBufferIndex index) const;
+  std::shared_ptr<FrameBuffer> getFramebuffer() const;
+  int getWidth() const;
+  int getHeight() const;
+  bool isValid() const;
 
   /**
    * 绑定G-Buffer为当前渲染目标
@@ -93,28 +86,14 @@ class GBuffer {
   FrameBufferSpec createFrameBufferSpec() const;
 
   /**
-   * 创建单个G-Buffer纹理
-   * @param index 纹理索引
-   * @return 创建是否成功
-   */
-  bool createTexture(GBufferIndex index);
-
-  /**
    * 获取指定索引的纹理格式
    * @param index 纹理索引
    * @return 纹理格式
    */
   TextureFormat getTextureFormat(GBufferIndex index) const;
 
-  /**
-   * 获取指定索引的运行时纹理类型
-   * @param index 纹理索引
-   * @return 运行时纹理类型
-   */
-  RuntimeTexture::RuntimeTextureType getRuntimeTextureType(GBufferIndex index) const;
 
  private:
-  std::array<std::unique_ptr<RuntimeTexture>, COUNT> m_textures;  // G-Buffer纹理数组
   std::shared_ptr<FrameBuffer> m_framebuffer;                     // G-Buffer帧缓冲
   uint32_t m_width = 0;                                           // G-Buffer宽度
   uint32_t m_height = 0;                                          // G-Buffer高度
