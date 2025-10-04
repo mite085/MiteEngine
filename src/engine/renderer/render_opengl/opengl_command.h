@@ -45,6 +45,7 @@ class OpenGLRenderCommand : public RenderCommand {
   void SetRenderState(const RenderState &state) override;
 
   // ---------------- 原子操作命令 ----------------
+  void BindCameraUBO(CameraInstance &instance) override;
   void BindShader(
       std::shared_ptr<OpenGLShader> shader,
       std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup = nullptr) override;
@@ -59,10 +60,8 @@ class OpenGLRenderCommand : public RenderCommand {
                 uint32_t indexType = 0x1405) override;
 
   // ---------------- 整合操作命令 ----------------
-  void Submit(RenderableItem item, glm::mat4 viewMatrix, glm::mat4 projectionMatrix) override;
+  void Submit(RenderableItem item) override;
   void SubmitToGBuffer(RenderableItem item,
-                       glm::mat4 viewMatrix,
-                       glm::mat4 projectionMatrix,
                        std::shared_ptr<OpenGLShader> gbufferShader) override;
 
   // ---------------- 执行控制 ----------------

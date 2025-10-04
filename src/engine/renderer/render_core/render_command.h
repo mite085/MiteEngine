@@ -1,6 +1,7 @@
 #ifndef MITE_RENDERER_COMMAND
 #define MITE_RENDERER_COMMAND
 
+#include "basic_instance/camera_instance.h"
 #include "basic_shader/framebuffer.h"
 #include "render_device.h"
 #include "renderable_item.h"
@@ -45,6 +46,7 @@ class RenderCommand {
     SetRenderState,     // 设置渲染状态
 
     // 原子操作命令
+    BindCameraUBO,          // 绑定相机UBO
     BindShader,            // 绑定着色器程序
     UnbindShader,          // 解绑着色器程序
     UploadShaderUniforms,  // 上传着色器Uniforms
@@ -77,6 +79,12 @@ class RenderCommand {
   virtual void SetRenderState(const RenderState &state) = 0;
 
   // ---------------- 原子操作命令 ----------------
+  /**
+   * @brief 初始化绑定相机UBO，每个Stage开始阶段调用一次即可
+   * @param instance 相机实例引用
+   * @param shader 当前stage使用的shader
+   */
+  virtual void BindCameraUBO(CameraInstance &instance) = 0;
   /**
    * @brief 绑定/解绑着色器程序
    * @param shader 着色器程序指针
@@ -124,17 +132,13 @@ class RenderCommand {
    * @brief 前向渲染的便捷提交方法（使用新的原子命令重构）
    * @deprecated 建议在新代码中使用原子命令
    */
-  virtual void Submit(RenderableItem item, glm::mat4 viewMatrix, glm::mat4 projectionMatrix) = 0;
+  virtual void Submit(RenderableItem item) = 0;
   /**
    * @brief G-Buffer渲染的专用提交方法
    * @param item 可渲染项
-   * @param viewMatrix 视图矩阵
-   * @param projectionMatrix 投影矩阵
    * @param gbufferShader 专用的G-Buffer着色器（覆盖材质自带的着色器）
    */
   virtual void SubmitToGBuffer(RenderableItem item,
-                               glm::mat4 viewMatrix,
-                               glm::mat4 projectionMatrix,
                                std::shared_ptr<OpenGLShader> gbufferShader) = 0;
 
   // ---------------- 执行控制 ----------------

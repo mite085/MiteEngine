@@ -1,4 +1,5 @@
 #include "opengl_command.h"
+#include "basic_shader/shader_binding_point_manager.h"
 #include "opengl_device.h"
 
 namespace mite {
@@ -97,6 +98,16 @@ void OpenGLRenderCommand::SetRenderState(const RenderState &state)
                        "SetRenderState"});
 }
 
+void OpenGLRenderCommand::BindCameraUBO(CameraInstance &instance)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::BindCameraUBO,
+                       [&]() {
+                         instance.BindUBO();
+                       },
+                       "Bind Camera UBO"});
+}
+
 void OpenGLRenderCommand::BindShader(
     std::shared_ptr<OpenGLShader> shader,
     std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup)
@@ -157,9 +168,7 @@ void OpenGLRenderCommand::DrawMesh(uint32_t indexCount,
                        "DrawMesh: count=" + std::to_string(indexCount)});
 }
 
-void OpenGLRenderCommand::Submit(RenderableItem item,
-                                 glm::mat4 viewMatrix,
-                                 glm::mat4 projectionMatrix)
+void OpenGLRenderCommand::Submit(RenderableItem item)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
@@ -194,23 +203,22 @@ void OpenGLRenderCommand::Submit(RenderableItem item,
 }
 
 void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
-                                          glm::mat4 viewMatrix,
-                                          glm::mat4 projectionMatrix,
                                           std::shared_ptr<OpenGLShader> gbufferShader)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push(
       {CommandType::DrawIndexed,
-       [this, item, viewMatrix, projectionMatrix, gbufferShader] {
+       [this, item, gbufferShader] {
          if (!item.material) {
            m_Logger->error("Invalid Material Instance in SubmitToGBuffer");
            return;
          }
 
-         // 1. 绑定G-Buffer着色器（覆盖材质自带着色器）
-         BindShader(gbufferShader, [&](std::shared_ptr<OpenGLShader> shader) {
-           shader->SetMat4("u_Model", item.worldTransform);
-         });
+         // 1. 绑定GBuffer着色器，设置模型矩阵（从世界变换获取）
+         if (gbufferShader) {
+           gbufferShader->Bind();
+           gbufferShader->SetMat4("u_Model", item.worldTransform);
+         }
 
          // 2. 应用材质参数到G-Buffer着色器
          auto materialInstance = std::static_pointer_cast<MaterialInstance>(item.material);
@@ -220,10 +228,11 @@ void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
              gbufferShader.get());
 
          // 3. 绑定网格VAO
-         BindMesh(item.mesh);
+         m_Device->BindMesh(item.mesh);
 
          // 4. 绘制网格
-         DrawMesh(item.mesh.GetIndexCount(), item.mesh.GetIndexOffset());
+         m_Device->DrawIndexed(
+             item.mesh.GetIndexCount(), item.mesh.GetIndexOffset(), GL_TRIANGLES, GL_UNSIGNED_INT);
        },
        "Submit GBuffer: " + item.mesh.GetModelHandle().path});
 }
