@@ -32,7 +32,7 @@ CameraInstance::~CameraInstance()
   }
 }
 
-bool CameraInstance::InitializeUBO(std::shared_ptr<OpenGLShader> shader)
+bool CameraInstance::InitializeUBO()
 {
   if (m_UBOInitialized) {
     LOG_WARN("CameraInstance UBO already initialized for '{}'", m_Name);
@@ -44,10 +44,10 @@ bool CameraInstance::InitializeUBO(std::shared_ptr<OpenGLShader> shader)
     return false;
   }
 
-  if (!shader) {
-    LOG_ERROR("Cannot initialize UBO: null shader provided");
-    return false;
-  }
+  //if (!shader) {
+  //  LOG_ERROR("Cannot initialize UBO: null shader provided");
+  //  return false;
+  //}
 
   if (m_BindingPoint == UINT32_MAX) {
     LOG_ERROR("Cannot initialize UBO: invalid binding point");
@@ -59,8 +59,8 @@ bool CameraInstance::InitializeUBO(std::shared_ptr<OpenGLShader> shader)
     m_CameraUBO = std::make_shared<ShaderUBO>(sizeof(CameraUniformBuffer), GL_DYNAMIC_DRAW);
     m_CameraUBO->Initialize();
 
-    // 设置着色器绑定
-    m_CameraUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::CAMERA_UBO, m_BindingPoint);
+    // 无需设置着色器绑定，直接使用固定的绑定点。（构造函数已分配）
+    // m_CameraUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::CAMERA_UBO, m_BindingPoint);
 
     m_UBOInitialized = true;
 
@@ -96,7 +96,7 @@ bool CameraInstance::UpdateUBO(const glm::mat4 &viewMatrix)
     bool success = m_CameraUBO->UpdateData(&uboData, sizeof(CameraUniformBuffer));
 
     if (success) {
-      LOG_TRACE("CameraInstance '{}' UBO updated successfully", m_Name);
+      //LOG_TRACE("CameraInstance '{}' UBO updated successfully", m_Name);
     }
     else {
       LOG_ERROR("Failed to update CameraInstance '{}' UBO data", m_Name);
@@ -125,7 +125,7 @@ void CameraInstance::BindUBO() const
   // 绑定UBO到指定的绑定点
   m_CameraUBO->Bind(m_BindingPoint);
 
-  LOG_TRACE("CameraInstance '{}' UBO bound to point: {}", m_Name, m_BindingPoint);
+  //LOG_TRACE("CameraInstance '{}' UBO bound to point: {}", m_Name, m_BindingPoint);
 }
 
 }  // namespace mite

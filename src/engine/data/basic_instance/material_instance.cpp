@@ -96,7 +96,7 @@ void MaterialInstance::SetupUBO(const std::string &uniformBlockName,
     LOG_ERROR("Cannot bind uninitialized UBO to material instance");
     return;
   }
-  // 设置着色器绑定
+  // 设定绑定点
   ubo->SetupShaderBinding(m_Shader, uniformBlockName, bindingPoint);
 
   // 存储绑定信息

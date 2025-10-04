@@ -28,7 +28,7 @@ class CameraInstance {
    * @param shader 需要绑定UBO的着色器程序
    * @return 是否初始化成功
    */
-  bool InitializeUBO(std::shared_ptr<OpenGLShader> shader);
+  bool InitializeUBO();
 
   /**
    * @brief 更新相机UBO数据
