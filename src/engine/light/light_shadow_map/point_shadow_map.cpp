@@ -168,3 +168,4 @@ bool PointShadowMap::HasLightMoved(const glm::vec3 &newPosition) const
 
   return moved;
 }
+}  // namespace mite
