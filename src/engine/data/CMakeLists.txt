@@ -13,11 +13,12 @@ set(BASIC_TYPE_SRCS
     basic_type/visible_type.h                   # 可见性掩码定义
     basic_type/bounding_volumes_types.h         # 包围盒类型定义
     basic_type/bounding_volumes_types.cpp
-    basic_type/bounding_volumes_intersects.h    # 包围盒相交测试
-    basic_type/bounding_volumes_intersects.cpp
+
     basic_type/snapshot.h                       # 快照抽象类
     basic_type/material_param_variant.h         # 材质专用的variant类型
     basic_type/material_param_variant.cpp
+    basic_type/texture_type.h                    # 纹理相关类型定义
+    basic_type/light_type.h                      # 光源相关类型定义
 )
 source_group("basic type" FILES ${BASIC_TYPE_SRCS})
 
@@ -35,6 +36,8 @@ set(BASIC_DATA_SRCS
     basic_data/transform.cpp
     basic_data/bounding_volume.h    # AABB/OBB/Sphere等包围盒实现
     basic_data/bounding_volume.cpp
+    basic_data/bounding_volumes_intersects.h    # 包围盒相交测试
+    basic_data/bounding_volumes_intersects.cpp
     basic_data/ray.h                # 射线类型定义和基础方法
     basic_data/ray.cpp
     basic_data/frustum.h            # 视锥体类型定义和基础方法  

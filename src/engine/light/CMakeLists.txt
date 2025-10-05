@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 3.10)
 set(ENGINE_LIGHT_LIB_NAME MiteEngine_Engine_Light)
 
 set(LIGHT_CORE_SRCS
-    light_core/light_type.h             # 光源类型定义
     light_core/light.h                  # 光源基类，所有光源实现均应继承
     light_core/light.cpp
     light_core/light_ssbo.h             # 光源数据SSBO管理器
