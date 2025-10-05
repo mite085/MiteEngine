@@ -6,23 +6,23 @@
 namespace mite {
 // ---- 资源类型枚举 ----
 enum class ShaderBufferResourceType {
-  // UBO类型
-  CameraUBO = 0,  // 相机参数
+  // UBO类型 (绑定点范围: 0-15,参考BindingPointManager的BindingRanges设计)
+  CameraUBO,  // 相机参数
   MaterialUBO,    // 材质参数
   SceneUBO,       // 场景全局参数（占位符，未启用）
-  // SSBO类型
+
+  // SSBO类型 (绑定点范围: 16-31)
   LightSSBO,     // 光源数据
   InstanceSSBO,  // 实例数据（占位符，未启用）
   BoneSSBO,      // 骨骼动画数据（占位符，未启用）
-  // 纹理类型
+
+  // 纹理类型 (绑定点范围: 32-95)
   ShadowMap,       // 阴影贴图
   EnvironmentMap,  // 环境贴图
   BRDFLUT,         // BRDF查找表（占位符，未启用）
-  // 特殊用途
-  ComputeSSBO,  // 计算着色器存储（占位符，未启用）
-  CustomUBO,    // 自定义UBO（占位符，未启用）
-  CustomSSBO,   // 自定义SSBO（占位符，未启用）
-  Count         // 类型总数
+
+  // 类型总数(最大96)
+  Count         
 };
 // ---- 常用资源名称定义 ----
 struct ShaderBufferResourceNames {

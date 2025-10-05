@@ -1,8 +1,7 @@
 #ifndef MITE_BOUNDING_VOLUMES_H
 #define MITE_BOUNDING_VOLUMES_H
 
-#include "basic_type/bounding_volumes_types.h"
-#include "basic_type/bounding_volumes_intersects.h"
+#include "basic_data/bounding_volumes_intersects.h"
 
 namespace mite {
 /**

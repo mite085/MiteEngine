@@ -180,14 +180,11 @@ uint32_t BindingPointManager::GetRangeStart(ShaderBufferResourceType type) const
     case ShaderBufferResourceType::CameraUBO:
     case ShaderBufferResourceType::MaterialUBO:
     case ShaderBufferResourceType::SceneUBO:
-    case ShaderBufferResourceType::CustomUBO:
       return ShaderBufferBindingRanges::UBO_START;
 
     case ShaderBufferResourceType::LightSSBO:
     case ShaderBufferResourceType::InstanceSSBO:
     case ShaderBufferResourceType::BoneSSBO:
-    case ShaderBufferResourceType::ComputeSSBO:
-    case ShaderBufferResourceType::CustomSSBO:
       return ShaderBufferBindingRanges::SSBO_START;
 
     case ShaderBufferResourceType::ShadowMap:
@@ -206,14 +203,11 @@ uint32_t BindingPointManager::GetRangeCount(ShaderBufferResourceType type) const
     case ShaderBufferResourceType::CameraUBO:
     case ShaderBufferResourceType::MaterialUBO:
     case ShaderBufferResourceType::SceneUBO:
-    case ShaderBufferResourceType::CustomUBO:
       return ShaderBufferBindingRanges::UBO_COUNT;
 
     case ShaderBufferResourceType::LightSSBO:
     case ShaderBufferResourceType::InstanceSSBO:
     case ShaderBufferResourceType::BoneSSBO:
-    case ShaderBufferResourceType::ComputeSSBO:
-    case ShaderBufferResourceType::CustomSSBO:
       return ShaderBufferBindingRanges::SSBO_COUNT;
 
     case ShaderBufferResourceType::ShadowMap:

@@ -10,16 +10,6 @@ namespace mite {
  */
 class RuntimeTexture {
  public:
-  // 运行时纹理类型枚举
-  enum class RuntimeTextureType {
-    GBufferMap,    // G-Buffer纹理
-    ShadowMap,     // 阴影贴图
-    RenderTarget,  // 普通渲染目标
-    Depth,         // 深度缓冲
-    Stencil,       // 模板缓冲
-  };
-
- public:
   RuntimeTexture() = default;
   ~RuntimeTexture();
 
@@ -32,12 +22,10 @@ class RuntimeTexture {
    * @return 初始化是否成功
    */
   bool initialize(RuntimeTextureType type, int width, int height, TextureFormat format);
-
   /**
    * 清理纹理资源
    */
   void cleanup();
-
   /**
    * 调整纹理尺寸（用于窗口大小变化等场景）
    * @param newWidth 新宽度
