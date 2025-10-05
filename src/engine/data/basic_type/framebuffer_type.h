@@ -10,7 +10,7 @@ namespace mite {
 // 帧缓冲附件规格结构体（直接使用RuntimeTextureType来明确指定附件的具体用途）
 // Depth和Stencil应当手动明确Format，此处不做约束
 struct FrameBufferAttachmentSpec {
-  RuntimeTexture::RuntimeTextureType type = RuntimeTexture::RuntimeTextureType::RenderTarget;
+  RuntimeTextureType type = RuntimeTextureType::RenderTarget;
   TextureFormat internalFormat = TextureFormat::RGB8;  // 内部格式
   bool generateMipmaps = false;                        // 是否生成mipmaps
 };

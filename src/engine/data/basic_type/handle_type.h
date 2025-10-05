@@ -2,69 +2,11 @@
 #define MITE_HANDLE_TYPE
 
 #include "headers/headers.h"
+#include "texture_type.h"
 
 namespace mite {
 // ------------------------ 纹理相关 ------------------------
-// 纹理数据类型（像素数据的组件类型）
-enum class TextureDataType {
-  UNSIGNED_BYTE = GL_UNSIGNED_BYTE,          // 8位无符号字节（最常用）
-  FLOAT = GL_FLOAT,                          // 32位浮点（HDR）
-  UNSIGNED_SHORT = GL_UNSIGNED_SHORT,        // 16位无符号短整型
-  UNSIGNED_INT_24_8 = GL_UNSIGNED_INT_24_8,  // 深度模板打包格式
-};
-// 纹理内部格式（扩展常用格式）
-enum class TextureFormat : unsigned int {
-  Unknown = 0,
 
-  // 8位无符号归一化格式
-  R8 = GL_R8,        // 8位红色通道：遮罩、粗糙度、金属度等
-  RG8 = GL_RG8,      // 8位红绿双通道：RG法线贴图
-  RGB8 = GL_RGB8,    // 8位RGB：基础颜色（无Alpha）
-  RGBA8 = GL_RGBA8,  // 8位RGBA：基础颜色（带Alpha）（最常用）
-
-  // 深度/模板格式
-  DEPTH_COMPONENT16 = GL_DEPTH_COMPONENT16,  // 16位深度
-  DEPTH_COMPONENT24 = GL_DEPTH_COMPONENT24,  // 24位深度
-  DEPTH_COMPONENT32 = GL_DEPTH_COMPONENT32,  // 32位深度
-  STENCIL_INDEX1 = GL_STENCIL_INDEX1,        // 1位模板
-  STENCIL_INDEX4 = GL_STENCIL_INDEX4,        // 4位模板
-  STENCIL_INDEX8 = GL_STENCIL_INDEX8,        // 8位模板
-  STENCIL_INDEX16 = GL_STENCIL_INDEX16,      // 16位模板
-  DEPTH24_STENCIL8 = GL_DEPTH24_STENCIL8,    // 24位深度+8位模板
-
-  // sRGB格式（伽马校正）
-  SRGB8 = GL_SRGB8,                // sRGB色彩空间
-  SRGB8_ALPHA8 = GL_SRGB8_ALPHA8,  // sRGB+Alpha
-
-  // 高精度纹理（GBuffer专用）
-  RGB16F = GL_RGB16F,    // HDR RGB (half float)
-  RGBA16F = GL_RGBA16F,  // HDR RGBA (half float)
-  RGB32F = GL_RGB32F,    // HDR RGB
-  RGBA32F = GL_RGBA32F,  // HDR RGBA
-};
-// 纹理目标类型
-enum class TextureTarget {
-  TEXTURE_2D = GL_TEXTURE_2D,              // 2D纹理（最常用）
-  TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,  // 立方体贴图
-  TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,  // 2D纹理数组
-  TEXTURE_3D = GL_TEXTURE_3D,              // 3D纹理/体积纹理
-};
-// 纹理包装模式（对应OpenGL的wrap参数）
-enum class TextureWrapMode {
-  Repeat = GL_REPEAT,                   // 默认重复纹理
-  ClampToEdge = GL_CLAMP_TO_EDGE,       // 边缘拉伸（防止接缝）
-  MirroredRepeat = GL_MIRRORED_REPEAT,  // 镜像重复
-  ClampToBorder = GL_CLAMP_TO_BORDER,   // 边框颜色（需要设置边框色）
-};
-// 纹理过滤模式
-enum class TextureFilterMode {
-  Nearest = GL_NEAREST,                              // 最近邻采样（像素化风格）
-  Linear = GL_LINEAR,                                // 线性过滤（平滑）
-  NearestMipmapNearest = GL_NEAREST_MIPMAP_NEAREST,  // 最近邻Mipmap
-  LinearMipmapNearest = GL_LINEAR_MIPMAP_NEAREST,    // 线性Mipmap+最近邻层间
-  NearestMipmapLinear = GL_NEAREST_MIPMAP_LINEAR,    // 最近邻Mipmap+线性层间
-  LinearMipmapLinear = GL_LINEAR_MIPMAP_LINEAR,      // 三线性过滤（最高质量）
-};
 
 // 纹理创建信息（GBuffer、ShadowMap等运行时纹理专用）
 struct TextureCreateInfo {

@@ -48,29 +48,7 @@ void FrameBuffer::Invalidate()
     bool isColorAttachment = false;
     // 根据RuntimeTextureType确定OpenGL附件点和存储位置
     switch (attachmentSpec.type) {
-      case RuntimeTexture::RuntimeTextureType::RenderTarget:
-      case RuntimeTexture::RuntimeTextureType::GBufferMap:
-      case RuntimeTexture::RuntimeTextureType::ShadowMap:
-        // 这些类型都作为颜色附件处理
-        attachmentPoint = GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(colorAttachments.size());
-        m_ColorAttachments[static_cast<uint32_t>(i)] = runtimeTexture;
-        isColorAttachment = true;
-        
-        // 设置颜色附件的纹理参数
-        if (!multisample) {
-          GLenum minFilter = attachmentSpec.generateMipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
-          glTextureParameteri(handleID, GL_TEXTURE_MIN_FILTER, minFilter);
-          glTextureParameteri(handleID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-          glTextureParameteri(handleID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-          glTextureParameteri(handleID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-          
-          if (attachmentSpec.generateMipmaps && !multisample) {
-            glGenerateTextureMipmap(handleID);
-          }
-        }
-        colorAttachments.push_back(attachmentPoint);
-        break;
-      case RuntimeTexture::RuntimeTextureType::Depth:
+      case RuntimeTextureType::Depth:
         attachmentPoint = GL_DEPTH_ATTACHMENT;
         m_DepthAttachment = runtimeTexture;
 
@@ -82,7 +60,7 @@ void FrameBuffer::Invalidate()
           glTextureParameteri(handleID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }
         break;
-      case RuntimeTexture::RuntimeTextureType::Stencil:
+      case RuntimeTextureType::Stencil:
         attachmentPoint = GL_STENCIL_ATTACHMENT;
         m_StencilAttachment = runtimeTexture;
 
@@ -95,9 +73,25 @@ void FrameBuffer::Invalidate()
         }
         break;
       default:
-        LOG_WARN("Unsupported runtime texture type for framebuffer attachment: {}",
-                 static_cast<int>(attachmentSpec.type));
-        continue;
+        // 其余类型都作为颜色附件处理
+        attachmentPoint = GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(colorAttachments.size());
+        m_ColorAttachments[static_cast<uint32_t>(i)] = runtimeTexture;
+        isColorAttachment = true;
+
+        // 设置颜色附件的纹理参数
+        if (!multisample) {
+          GLenum minFilter = attachmentSpec.generateMipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+          glTextureParameteri(handleID, GL_TEXTURE_MIN_FILTER, minFilter);
+          glTextureParameteri(handleID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          glTextureParameteri(handleID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+          glTextureParameteri(handleID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+          if (attachmentSpec.generateMipmaps && !multisample) {
+            glGenerateTextureMipmap(handleID);
+          }
+        }
+        colorAttachments.push_back(attachmentPoint);
+        break;
     }
     // 附加纹理到帧缓冲
     glFramebufferTexture2D(GL_FRAMEBUFFER,

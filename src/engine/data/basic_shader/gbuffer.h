@@ -16,22 +16,12 @@ namespace mite {
  */
 class GBuffer {
  public:
-  /**
-   * G-Buffer纹理索引枚举(format通过getTextureFormat(index)定义)
-   * 其中：
-   * NPRParameters：rampThreshold色阶阈值、rampSmoothness色阶平滑度、specularSize高光尺寸、outlineWidth描边宽度
-   * NPRColors：shadowTint.rgb阴影色调、rimPower边缘光衰减
-   */
-  enum GBufferIndex {
-    GBUFFER_WORLDPOS_DEPTH = 0,    // World position(xyz)+Depth(w，线性深度)(RGBA32F)
-    GBUFFER_BASECOLOR_MATTYPE,     // BaseColor(rgb)+MaterialType(a，标志位)(RGBA16F)
-    GBUFFER_METALLICROUGHNESS_AO,  // MetallicRoughness(xy)+AO(z，w保留)(RGBA16F)
-    GBUFFER_NORMAL_SCALE,          // Normal(xyz) + NormalScale(w)(RGBA16F)
-    GBUFFEE_EMISSION_ALPHA,        // Emission(rgb) + Alpha(a)(RGBA16F)
-    GBUFFER_NPR_PARAM,             // NPRParameters(RGBA16F)
-    GBUFFER_NPR_COLOR,             // NPRColors(RGBA16F)
-    COUNT  // G-Buffer纹理总数（Enum尾部，自动生成占位符，不包含任何信息）
-  };
+  // GBuffer纹理数量(与RuntimeTextureType中GBuffer定义保持一致)
+  static constexpr size_t TEXTURE_COUNT = 7;
+  // 纹理类型到附件索引的映射
+  static const std::map<RuntimeTextureType, uint32_t> TextureTypeToIndex;
+  // 获取所有GBuffer纹理类型
+  static const std::vector<RuntimeTextureType> &GetTextureTypes();
 
  public:
   GBuffer();
@@ -43,7 +33,7 @@ class GBuffer {
    * @param height G-Buffer高度
    * @return 初始化是否成功
    */
-  bool create(uint32_t width, uint32_t height);
+  bool create();
   /**
    * 清理G-Buffer资源
    */
@@ -62,7 +52,7 @@ class GBuffer {
   bool validate() const;
 
   // 访问器
-  RuntimeTexturePtr getTexture(GBufferIndex index) const;
+  RuntimeTexturePtr getTexture(RuntimeTextureType index) const;
   std::shared_ptr<FrameBuffer> getFramebuffer() const;
   int getWidth() const;
   int getHeight() const;
@@ -90,14 +80,13 @@ class GBuffer {
    * @param index 纹理索引
    * @return 纹理格式
    */
-  TextureFormat getTextureFormat(GBufferIndex index) const;
-
+  TextureFormat getTextureFormat(RuntimeTextureType index) const;
 
  private:
-  std::shared_ptr<FrameBuffer> m_framebuffer;                     // G-Buffer帧缓冲
-  uint32_t m_width = 0;                                           // G-Buffer宽度
-  uint32_t m_height = 0;                                          // G-Buffer高度
-  bool m_isValid = false;                                         // G-Buffer是否有效
+  std::shared_ptr<FrameBuffer> m_framebuffer;  // G-Buffer帧缓冲
+  uint32_t m_width = 1;                        // G-Buffer宽度
+  uint32_t m_height = 1;                       // G-Buffer高度
+  bool m_isValid = false;                      // G-Buffer是否有效
 };
 
 // 智能指针别名
