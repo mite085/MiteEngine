@@ -27,6 +27,7 @@ void GBufferStage::Initialize()
 
   // 创建G-Buffer
   m_GBuffer = std::make_shared<GBuffer>();
+  m_GBuffer->create();
 
   // 加载G-Buffer着色器（预留接口）
   m_GBufferShader = ShaderCache::Get().GetOpenGLShader(
@@ -44,7 +45,7 @@ void GBufferStage::Initialize()
 void GBufferStage::Execute(RenderContext &context)
 {
   // 检查初始化和GBuffer状态
-  if (!m_Initialized || !m_GBuffer) {
+  if (!m_Initialized || !m_GBuffer || !m_GBuffer->isValid()) {
     m_Logger->warn("GBufferStage executed but not properly initialized");
     return;
   }
@@ -59,9 +60,12 @@ void GBufferStage::Execute(RenderContext &context)
   glm::uvec2 viewportSize = context.GetViewportSize();
 
   // 若GBuffer不可用 / 与帧缓冲尺寸不匹配，则使用新的尺寸重新create
-  if (!m_GBuffer->isValid() || m_GBuffer->getFramebuffer()->GetSize() != viewportSize) {
-    m_GBuffer->create(viewportSize.x, viewportSize.y);
+  if (m_GBuffer->getFramebuffer()->GetSize() != viewportSize) {
+    m_GBuffer->resize(viewportSize.x, viewportSize.y);
   }
+
+  // 将G-Buffer存储到上下文供后续阶段使用
+  context.SetTemporaryResource("GBuffer", m_GBuffer);
 
   // 绑定G-Buffer为渲染目标
   RenderCommand::Get().BindFrameBuffer(m_GBuffer->getFramebuffer());
@@ -84,12 +88,12 @@ void GBufferStage::Execute(RenderContext &context)
   // 解绑G-Buffer
   RenderCommand::Get().UnbindFrameBuffer();
 
-  // 将G-Buffer存储到上下文供后续阶段使用
-  context.SetTemporaryResource("GBuffer", m_GBuffer);
+  // 发布绘制完成事件
+  for (const auto &type : GBuffer::GetTextureTypes()) {
+    RenderCommand::Get().PublishEventRuntimeTextureFinished(m_GBuffer->getTexture(type));
+  }
 
-  EventBus::Publish<RenderFinishedEvent>(RenderFinishedEvent(m_GBuffer->getFramebuffer()));
 }
-
 void GBufferStage::Shutdown()
 {
   if (m_GBuffer) {
@@ -137,8 +141,8 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
     }
   }
 
-  m_Logger->trace(
-      "Rendered {} opaque objects to G-Buffer, skipped {}", renderedCount, skippedCount);
+  //m_Logger->trace(
+  //    "Rendered {} opaque objects to G-Buffer, skipped {}", renderedCount, skippedCount);
 }
 
 void GBufferStage::RenderAlphaTestQueue(RenderContext &context)

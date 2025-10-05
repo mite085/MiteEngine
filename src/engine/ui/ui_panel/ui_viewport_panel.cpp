@@ -6,7 +6,8 @@ namespace mite {
 ViewportPanel::ViewportPanel(const std::string &name, CameraComponent &camera)
     : UIPanel(name), m_CameraComponent(camera), m_CurrentSize(glm::uvec2(1280, 720))
 {
-  m_EventSubscriptions.SubscribeImmediate<RenderFinishedEvent>(BIND_DISPATCH_FN(OnRenderFinished));
+  m_EventSubscriptions.SubscribeImmediate<RuntimeTextureFinishedEvent>(
+      BIND_DISPATCH_FN(OnRenderFinished));
 
   // 初始化面板属性
   InitializePanelProps();
@@ -38,8 +39,9 @@ void ViewportPanel::Render()
     HandleSizeChange(newSize);
 
     // 获取当前显示缓冲
-    if (m_FBO && m_FBO->GetColorAttachment() != 0) {
-      UpdateImagePropsFromDisplayBuffer();  // 更新ImageProps
+    if (m_DisplayTexture) {
+      // 更新ImageProps句柄
+      m_ImageProps.textureId = m_DisplayTexture->getHandle().apiHandle; 
 
       // 设置图像尺寸为面板内容尺寸
       m_ImageProps.size = newSize;
@@ -76,12 +78,6 @@ void ViewportPanel::InitializePanelProps()
   props.minSize = glm::vec2(0, 0);        // 最小尺寸
   props.maxSize = glm::vec2(3840, 2160);  // 最大4K分辨率
 }
-void ViewportPanel::UpdateImagePropsFromDisplayBuffer()
-{
-  if (m_FBO) {
-    m_ImageProps.textureId = m_FBO->GetColorAttachment()->getHandle().apiHandle;
-  }
-}
 void ViewportPanel::HandleSizeChange(const glm::uvec2 &newSize)
 {
   if (newSize == m_CurrentSize) {
@@ -101,18 +97,22 @@ void ViewportPanel::HandleSizeChange(const glm::uvec2 &newSize)
 
   // LOG_DEBUG("ViewportPanel size changed to {}x{}", newSize.x, newSize.y);
 }
-void ViewportPanel::OnRenderFinished(RenderFinishedEvent &event)
+void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
 {
-  // 若事件携带了新的FBO，则更新
-  if (event.GetFBO() && event.GetFBO() != m_FBO) {
-    m_FBO = event.GetFBO();
-
-    // 事件已完成，阻断传播
-    event.Handled();
+  // 首先匹配纹理类型
+  if (event.GetTextureType() != m_DisplayTextureType)
     return;
+
+  // 然后匹配纹理标识符（若m_Identify为空则不执行匹配）
+  if (!m_DisplayTextureIdentify.empty() && m_DisplayTextureIdentify != event.GetIdentify())
+    return;
+
+  // 若事件携带了新的FBO，则更新
+  if (event.GetTexture() && event.GetTexture() != m_DisplayTexture) {
+    m_DisplayTexture = event.GetTexture();
   }
 
-  // 失败也阻断传播
-  event.SetResult(EventResult::FailedAndStop);
+  // 已处理，继续传播
+  event.SetResult(EventResult::Handled);
 }
 }  // namespace mite

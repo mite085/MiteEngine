@@ -28,14 +28,17 @@ class ViewportPanel : public UIPanel {
  private:
   // ==================== 私有方法 ====================
   void InitializePanelProps();
-  void UpdateImagePropsFromDisplayBuffer();
   void HandleSizeChange(const glm::uvec2 &newSize);
 
-  void OnRenderFinished(RenderFinishedEvent &event);
+  void OnRenderFinished(RuntimeTextureFinishedEvent &event);
 
   // ==================== 依赖注入 ====================
   CameraComponent &m_CameraComponent;  // 用于设置宽高比
-  std::shared_ptr<FrameBuffer> m_FBO = nullptr;
+
+  // ==================== 纹理显示 ====================
+  RuntimeTexturePtr m_DisplayTexture = nullptr;
+  RuntimeTextureType m_DisplayTextureType = RuntimeTextureType::GBuffer_WorldPosDepth;
+  std::string m_DisplayTextureIdentify = "";
 
   // ==================== 状态管理 ====================
   ImageProps m_ImageProps;     // 图像渲染属性

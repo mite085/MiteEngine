@@ -39,8 +39,8 @@ void ForwardStage::Initialize()
   // 创建FrameBuffer规格
   FrameBufferSpec spec;
   spec.attachments = {
-      {RuntimeTexture::RuntimeTextureType::RenderTarget, TextureFormat::RGBA8},  // 颜色附件
-      {RuntimeTexture::RuntimeTextureType::Depth, TextureFormat::DEPTH_COMPONENT24}};  // 深度附件
+      {RuntimeTextureType::RenderTarget, TextureFormat::RGBA8},  // 颜色附件
+      {RuntimeTextureType::Depth, TextureFormat::DEPTH_COMPONENT24}};  // 深度附件
 
   // 创建FrameBuffer用于存储数据
   m_ForwardFrameBuffer = std::make_shared<FrameBuffer>(spec);
