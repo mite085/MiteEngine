@@ -49,8 +49,8 @@ class RenderContext {
   // ---- 分层纹理管理 ----
 
   // GBuffer纹理管理（固定数量）
-  void SetGBufferTexture(GBuffer::GBufferIndex index, RuntimeTexturePtr texture);
-  RuntimeTexturePtr GetGBufferTexture(GBuffer::GBufferIndex index) const;
+  void SetGBufferTexture(RuntimeTexturePtr texture);
+  RuntimeTexturePtr GetGBufferTexture(RuntimeTextureType type) const;
 
   // ShadowMap纹理管理（动态数量）
   void SetShadowMapTexture(uint32_t lightId, uint32_t shadowIndex, RuntimeTexturePtr texture);
@@ -59,10 +59,6 @@ class RenderContext {
   // RenderTarget纹理管理（自定义命名）
   void SetRenderTarget(const std::string &name, RuntimeTexturePtr texture);
   RuntimeTexturePtr GetRenderTarget(const std::string &name) const;
-
-  // GPU句柄直接访问（后备方案）
-  RuntimeTexturePtr GetTextureByHandle(TextureGPUHandle handle) const;
-  void SetTextureByHandle(TextureGPUHandle handle, RuntimeTexturePtr texture);
 
   // 清空所有纹理（每帧开始时调用）
   void ClearTextures();
@@ -102,10 +98,9 @@ class RenderContext {
   glm::uvec2 m_ViewportSize = {1280, 720};  // 默认尺寸
 
   // ---- 分层纹理存储 ----
-  std::array<RuntimeTexturePtr, GBuffer::COUNT> m_GBufferTextures;
+  std::array<RuntimeTexturePtr, GBuffer::TEXTURE_COUNT> m_GBufferTextures;
   std::unordered_map<uintptr_t, RuntimeTexturePtr> m_ShadowMapTextures;
   std::unordered_map<std::string, RuntimeTexturePtr> m_RenderTargets;
-  std::unordered_map<uintptr_t, RuntimeTexturePtr> m_HandleTextures;  // GPU句柄映射（后备方案）
 
   // ---- 临时资源存储 ----
   std::unordered_map<std::string, std::shared_ptr<void>> m_TemporaryResources;
@@ -126,7 +121,7 @@ void RenderContext::SetTemporaryResource(const std::string &name, std::shared_pt
   std::shared_ptr<void> voidResource = std::static_pointer_cast<void>(resource);
   m_TemporaryResources[name] = voidResource;
 
-  m_Logger->debug("Set temporary resource: {}", name);
+  //m_Logger->debug("Set temporary resource: {}", name);
 }
 
 template<typename T>

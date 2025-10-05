@@ -1,7 +1,6 @@
 #include "render_context.h"
 
 namespace mite {
-
 RenderContext::RenderContext() : m_Logger(LoggerSystem::CreateModuleLogger("Mite Render Context"))
 {
   // 初始化GBuffer纹理数组
@@ -23,31 +22,33 @@ void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
   m_RenderQueue = renderQueue;
   m_CameraInstance = std::ref(cameraInstance);
 
-  //m_Logger->debug("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
-  //                m_RenderQueue ? "valid" : "null",
-  //                m_CameraPosition.x,
-  //                m_CameraPosition.y,
-  //                m_CameraPosition.z);
+  // m_Logger->debug("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
+  //                 m_RenderQueue ? "valid" : "null",
+  //                 m_CameraPosition.x,
+  //                 m_CameraPosition.y,
+  //                 m_CameraPosition.z);
 }
 
 // ---- 分层纹理管理实现 ----
-void RenderContext::SetGBufferTexture(GBuffer::GBufferIndex index, RuntimeTexturePtr texture)
+void RenderContext::SetGBufferTexture(RuntimeTexturePtr texture)
 {
-  if (index >= 0 && index < GBuffer::COUNT) {
-    m_GBufferTextures[index] = texture;
-    // 同时存入GPU句柄映射
-    if (texture && texture->isValid()) {
-      m_HandleTextures[texture->getHandle().apiHandle] = texture;
+  if (texture && texture->isValid()) {
+    uint32_t index = GBuffer::TextureTypeToIndex.at(texture->getType());
+
+    // 存入GBuffer纹理管理中
+    if (index >= 0 && index < GBuffer::TEXTURE_COUNT) {
+      m_GBufferTextures[index] = texture;
+      m_Logger->debug("Set GBuffer texture [{}]", static_cast<int>(index));
     }
-    m_Logger->debug("Set GBuffer texture [{}]", static_cast<int>(index));
-  }
-  else {
-    m_Logger->warn("Invalid GBuffer index: {}", static_cast<int>(index));
+    else {
+      m_Logger->warn("Invalid GBuffer index: {}", static_cast<int>(index));
+    }
   }
 }
-RuntimeTexturePtr RenderContext::GetGBufferTexture(GBuffer::GBufferIndex index) const
+RuntimeTexturePtr RenderContext::GetGBufferTexture(RuntimeTextureType type) const
 {
-  if (index >= 0 && index < GBuffer::COUNT) {
+  uint32_t index = GBuffer::TextureTypeToIndex.at(type);
+  if (index >= 0 && index < GBuffer::TEXTURE_COUNT) {
     return m_GBufferTextures[index];
   }
   m_Logger->warn("Invalid GBuffer index: {}", static_cast<int>(index));
@@ -59,9 +60,6 @@ void RenderContext::SetShadowMapTexture(uint32_t lightId,
 {
   uint64_t key = (static_cast<uint64_t>(lightId) << 32) | shadowIndex;
   m_ShadowMapTextures[key] = texture;
-  if (texture && texture->isValid()) {
-    m_HandleTextures[texture->getHandle().apiHandle] = texture;
-  }
   m_Logger->debug("Set ShadowMap texture [light:{}, index:{}]", lightId, shadowIndex);
 }
 RuntimeTexturePtr RenderContext::GetShadowMapTexture(uint32_t lightId, uint32_t shadowIndex) const
@@ -81,9 +79,6 @@ void RenderContext::SetRenderTarget(const std::string &name, RuntimeTexturePtr t
     return;
   }
   m_RenderTargets[name] = texture;
-  if (texture && texture->isValid()) {
-    m_HandleTextures[texture->getHandle().apiHandle] = texture;
-  }
   m_Logger->debug("Set RenderTarget: {}", name);
 }
 RuntimeTexturePtr RenderContext::GetRenderTarget(const std::string &name) const
@@ -95,27 +90,12 @@ RuntimeTexturePtr RenderContext::GetRenderTarget(const std::string &name) const
   m_Logger->debug("RenderTarget not found: {}", name);
   return nullptr;
 }
-RuntimeTexturePtr RenderContext::GetTextureByHandle(TextureGPUHandle handle) const
-{
-  auto it = m_HandleTextures.find(handle.apiHandle);
-  if (it != m_HandleTextures.end()) {
-    return it->second;
-  }
-  m_Logger->debug("Texture not found by handle: {}", handle.apiHandle);
-  return nullptr;
-}
-void RenderContext::SetTextureByHandle(TextureGPUHandle handle, RuntimeTexturePtr texture)
-{
-  m_HandleTextures[handle.apiHandle] = texture;
-  m_Logger->debug("Set texture by handle: {}", handle.apiHandle);
-}
 void RenderContext::ClearTextures()
 {
   // 清空所有纹理映射（注意：这里清空的是映射，不是纹理本身）
   m_GBufferTextures.fill(nullptr);
   m_ShadowMapTextures.clear();
   m_RenderTargets.clear();
-  m_HandleTextures.clear();
   m_Logger->debug("Cleared all texture mappings");
 }
 
@@ -153,8 +133,6 @@ void RenderContext::DebugTextureInfo() const
       gbufferCount,
       m_GBufferTextures.size(),
       m_ShadowMapTextures.size(),
-      m_RenderTargets.size(),
-      m_HandleTextures.size());
+      m_RenderTargets.size());
 }
-
 }  // namespace mite
