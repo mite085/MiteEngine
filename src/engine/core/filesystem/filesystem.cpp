@@ -29,10 +29,11 @@ fs::path FileSystem::GetAssetPath(const std::string &relativePath)
 {
   if (!s_Initialized) {
     throw std::runtime_error("FileSystem not initialized. Call FileSystem::Init() first.");
-  }
+  } 
   fs::path assetsRoot = GetAssetsRoot();
   fs::path fullPath = assetsRoot / relativePath;
   if (!Exists(fullPath)) {
+    LOG_ERROR("Invalid Asset Path: {}", fullPath.string());
     throw std::runtime_error("Asset not found: " + relativePath + "\nFull path: " +
                              fullPath.string() + "\nAssets root: " + assetsRoot.string());
   }

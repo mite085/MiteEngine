@@ -78,23 +78,20 @@ void OpenGLRenderCommand::SetViewport(int x, int y, int width, int height)
       {CommandType::SetViewport, [=]() { glViewport(x, y, width, height); }, "SetViewport"});
 }
 
-void OpenGLRenderCommand::SetRenderState(const RenderState &state)
+void OpenGLRenderCommand::SetRenderState(const std::shared_ptr<RenderState> &state)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  // 将基础状态转换为OpenGL特定状态
-  OpenGLRenderState glState;
-  glState.depthTest = state.depthTest;
-  glState.blend = state.blend;
-  glState.cullFace = state.cullFace;
 
-  // 使用OpenGL默认值填充平台特定字段
-  glState.depthFunc = GL_LESS;
-  glState.blendSrc = GL_SRC_ALPHA;
-  glState.blendDst = GL_ONE_MINUS_SRC_ALPHA;
-  glState.cullFaceMode = GL_BACK;
-  m_CurrentGLState = glState;
+  // 尝试转换为OpenGLRenderState
+  auto glStatePtr = std::static_pointer_cast<OpenGLRenderState>(state);
+  if (!glStatePtr) {
+    LOG_ERROR("SetRenderState failed: cannot convert RenderState to OpenGLRenderState");
+    return;
+  }
+  // 直接使用转换后的OpenGL状态
+  m_CurrentGLState = *glStatePtr;
   m_CommandQueue.push({CommandType::SetRenderState,
-                       [this, glState] { ApplyOpenGLState(glState); },
+                       [this, glState = *glStatePtr] { ApplyOpenGLState(glState); },
                        "SetRenderState"});
 }
 

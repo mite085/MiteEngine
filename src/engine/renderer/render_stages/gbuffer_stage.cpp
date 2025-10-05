@@ -3,6 +3,7 @@
 #include "basic_shader/shader_cache.h"
 #include "render_core/render_command.h"
 #include "basic_event/render_event.h"
+#include "render_opengl/opengl_command.h"
 
 namespace mite {
 GBufferStage::GBufferStage() : RenderStage("GBufferStage")
@@ -87,6 +88,11 @@ void GBufferStage::Execute(RenderContext &context)
 
   // 解绑G-Buffer
   RenderCommand::Get().UnbindFrameBuffer();
+
+  // 存储渲染结果到上下文（并非渲染命令，这些纹理是提前创建好的，可以提前交给上下文管理）
+  for (const auto &type : GBuffer::GetTextureTypes()) {
+    context.SetGBufferTexture(m_GBuffer->getTexture(type));
+  }
 
   // 发布绘制完成事件
   for (const auto &type : GBuffer::GetTextureTypes()) {
@@ -187,17 +193,26 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
 void GBufferStage::SetupGBufferRenderState()
 {
   // G-Buffer阶段需要深度测试和写入，但不需要混合
-  m_OpaqueState.depthTest = true;
-  m_OpaqueState.depthWrite = true;
-  m_OpaqueState.blend = false;
-  m_OpaqueState.cullFace = true;
-  m_OpaqueState.colorWriteR = true;
-  m_OpaqueState.colorWriteG = true;
-  m_OpaqueState.colorWriteB = true;
-  m_OpaqueState.colorWriteA = true;
+  m_OpaqueState = std::make_shared<OpenGLRenderState>();
+  m_OpaqueState->depthTest = true;
+  m_OpaqueState->depthWrite = true;
+  m_OpaqueState->blend = false;
+  m_OpaqueState->cullFace = true;
+  m_OpaqueState->colorWriteR = true;
+  m_OpaqueState->colorWriteG = true;
+  m_OpaqueState->colorWriteB = true;
+  m_OpaqueState->colorWriteA = true;
 
   // Alpha测试使用相同状态
-  m_AlphaTestState = m_OpaqueState;
+  m_AlphaTestState = std::make_shared<OpenGLRenderState>();
+  m_AlphaTestState->depthTest = true;
+  m_AlphaTestState->depthWrite = true;
+  m_AlphaTestState->blend = false;
+  m_AlphaTestState->cullFace = true;
+  m_AlphaTestState->colorWriteR = true;
+  m_AlphaTestState->colorWriteG = true;
+  m_AlphaTestState->colorWriteB = true;
+  m_AlphaTestState->colorWriteA = true;
 }
 
 bool GBufferStage::ValidateGBufferRenderableItem(const RenderableItem &item) const

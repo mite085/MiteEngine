@@ -5,7 +5,8 @@
 
 namespace mite {
 // OpenGL特定的渲染状态扩展（大部分情况下使用默认值即可）
-struct OpenGLRenderState : public RenderState {
+class OpenGLRenderState : public RenderState {
+ public:
   GLenum depthFunc = GL_LESS;
   GLenum blendSrc = GL_SRC_ALPHA;
   GLenum blendDst = GL_ONE_MINUS_SRC_ALPHA;
@@ -42,7 +43,7 @@ class OpenGLRenderCommand : public RenderCommand {
   void BindFrameBuffer(const std::shared_ptr<FrameBuffer> &framebuffer) override;
   void UnbindFrameBuffer() override;
   void SetViewport(int x, int y, int width, int height) override;
-  void SetRenderState(const RenderState &state) override;
+  void SetRenderState(const std::shared_ptr<RenderState> &state) override;
 
   // ---------------- 原子操作命令 ----------------
   void BindCameraUBO(CameraInstance &instance) override;

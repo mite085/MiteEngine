@@ -1,6 +1,7 @@
 #include "opengl_pipeline.h"
 #include "basic_shader/shader_binding_point_manager.h"
 #include "render_stages/forward_stage.h"
+#include "render_stages/deferred_lighting_stage.h"
 #include "render_stages/gbuffer_stage.h"
 
 namespace mite {
@@ -30,6 +31,7 @@ void OpenGLPipeline::Initialize()
 
   // 按照管线顺序添加Stage
   AddStage(std::make_unique<GBufferStage>());
+  AddStage(std::make_unique<DeferredLightingStage>());
   AddStage(std::make_unique<ForwardStage>());
 
   // 初始化所有阶段

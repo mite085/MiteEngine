@@ -9,7 +9,8 @@
 
 namespace mite {
 // 渲染状态结构体
-struct RenderState {
+class RenderState {
+ public:
   // 基本属性
   bool depthTest = true;     // 深度测试
   bool depthWrite = true;    // 深度写出
@@ -77,7 +78,7 @@ class RenderCommand {
   // 视口设置
   virtual void SetViewport(int x, int y, int width, int height) = 0;
   // 渲染状态设置
-  virtual void SetRenderState(const RenderState &state) = 0;
+  virtual void SetRenderState(const std::shared_ptr<RenderState> &state) = 0;
 
   // ---------------- 原子操作命令 ----------------
   /**

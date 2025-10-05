@@ -74,8 +74,8 @@ class GBufferStage : public RenderStage {
   std::shared_ptr<OpenGLShader> m_GBufferShader;  // 默认G-Buffer着色器
 
   // 渲染状态配置
-  RenderState m_OpaqueState;
-  RenderState m_AlphaTestState;
+  std::shared_ptr<RenderState> m_OpaqueState;
+  std::shared_ptr<RenderState> m_AlphaTestState;
 
   // 配置参数
   bool m_Initialized = false;

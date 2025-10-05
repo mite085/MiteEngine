@@ -59,10 +59,10 @@ class ForwardStage : public RenderStage {
   std::shared_ptr<FrameBuffer> m_ForwardFrameBuffer;
 
   // ---- 渲染状态配置 ----
-  RenderState m_OpaqueState;
-  RenderState m_AlphaTestState;
-  RenderState m_TransparentState;
-  RenderState m_CustomState;
+  std::shared_ptr<RenderState> m_OpaqueState;
+  std::shared_ptr<RenderState> m_AlphaTestState;
+  std::shared_ptr<RenderState> m_TransparentState;
+  std::shared_ptr<RenderState> m_CustomState;
 
   // ---- 性能统计 ----
   size_t m_LastFrameOpaqueCount = 0;

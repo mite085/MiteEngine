@@ -1,31 +1,40 @@
 #include "forward_stage.h"
+#include "render_opengl/opengl_command.h"
 
 namespace mite {
 ForwardStage::ForwardStage() : RenderStage("ForwardStage")
 {
   // 不透明物体状态
-  m_OpaqueState.depthTest = true;
-  m_OpaqueState.depthWrite = true;
-  m_OpaqueState.blend = false;
-  m_OpaqueState.cullFace = true;
-  m_OpaqueState.wireframe = false;
+  m_OpaqueState = std::make_shared<OpenGLRenderState>();
+  m_OpaqueState->depthTest = true;
+  m_OpaqueState->depthWrite = true;
+  m_OpaqueState->blend = false;
+  m_OpaqueState->cullFace = true;
+  m_OpaqueState->wireframe = false;
 
   // Alpha测试物体状态
-  m_AlphaTestState.depthTest = true;
-  m_AlphaTestState.depthWrite = true;
-  m_AlphaTestState.blend = false;
-  m_AlphaTestState.cullFace = true;
-  m_AlphaTestState.wireframe = false;
+  m_AlphaTestState = std::make_shared<OpenGLRenderState>();
+  m_AlphaTestState->depthTest = true;
+  m_AlphaTestState->depthWrite = true;
+  m_AlphaTestState->blend = false;
+  m_AlphaTestState->cullFace = true;
+  m_AlphaTestState->wireframe = false;
 
   // 透明物体状态
-  m_TransparentState.depthTest = true;
-  m_TransparentState.depthWrite = false;  // 透明物体不写入深度
-  m_TransparentState.blend = true;        // 启用混合
-  m_TransparentState.cullFace = true;
-  m_TransparentState.wireframe = false;
+  m_TransparentState = std::make_shared<OpenGLRenderState>();
+  m_TransparentState->depthTest = true;
+  m_TransparentState->depthWrite = false;  // 透明物体不写入深度
+  m_TransparentState->blend = true;        // 启用混合
+  m_TransparentState->cullFace = true;
+  m_TransparentState->wireframe = false;
 
   // 自定义物体状态（默认与不透明相同）
-  m_CustomState = m_OpaqueState;
+  m_CustomState = std::make_shared<OpenGLRenderState>();
+  m_CustomState->depthTest = true;
+  m_CustomState->depthWrite = true;
+  m_CustomState->blend = false;
+  m_CustomState->cullFace = true;
+  m_CustomState->wireframe = false;
   m_Logger->info("ForwardStage initialized with complete render state configurations");
 }
 
