@@ -61,35 +61,44 @@ void GBufferMaterialTemplate::ApplyDefaultParams(std::shared_ptr<MaterialInstanc
 void GBufferMaterialTemplate::SetupInstanceUBO(std::shared_ptr<MaterialInstance> instance,
                                                const MaterialSourceData &sourceData) const
 {
+  // 初始化UBO数据
+  MaterialUniformBuffer instanceUBOData = CreateUBOData(sourceData);
   // 为每个材质实例创建独立的UBO对象
-  auto instanceUBO = CreateInstanceUBO(sourceData);
+  std::shared_ptr<ShaderUBO> instanceUBO = CreateInstanceUBO(instanceUBOData);
 
   // 将UBO绑定到材质实例，使用模板管理的绑定点
-  // 注意：同一模板的不同实例共享绑定点，但拥有不同的UBO对象
-  instance->SetupUBO(ShaderBufferResourceNames::MATERIAL_UBO, instanceUBO, m_BindingPoint);
+  // 注意：同一模板的不同实例共享绑定点，但拥有不同的UBO对象，维护不同的UBOData
+  instance->SetupUBO(
+      ShaderBufferResourceNames::MATERIAL_UBO, instanceUBO, instanceUBOData, m_BindingPoint);
 
   LOG_DEBUG("Setup independent UBO for material instance '{}' at binding point {}",
             instance->GetName(),
             m_BindingPoint);
 }
 std::shared_ptr<ShaderUBO> GBufferMaterialTemplate::CreateInstanceUBO(
-    const MaterialSourceData &sourceData) const
+    const MaterialUniformBuffer uniformdata) const
 {
-  // 创建新的UBO对象
-  auto ubo = std::make_shared<ShaderUBO>(sizeof(MaterialUniformBuffer), GL_DYNAMIC_DRAW);
+  // 创建新的UBO对象 (动态材质，需要每帧更新)
+  std::shared_ptr<ShaderUBO> ubo = std::make_shared<ShaderUBO>(sizeof(MaterialUniformBuffer),
+                                                               GL_DYNAMIC_DRAW);
   ubo->Initialize();
 
+  // 首次更新UBO数据
+  ubo->UpdateData(&uniformdata, sizeof(MaterialUniformBuffer));
+
+  return ubo;
+}
+
+MaterialUniformBuffer GBufferMaterialTemplate::CreateUBOData(
+    const MaterialSourceData &sourceData) const
+{
   // 填充UBO数据
   MaterialUniformBuffer uboData;
   FillUBOData(uboData, sourceData);
+  return uboData;
 
-  // 更新UBO数据
-  ubo->UpdateData(&uboData, sizeof(MaterialUniformBuffer));
-
-  LOG_DEBUG("Created independent UBO for material with {} parameters",
+  LOG_DEBUG("Created independent UBO Data for material with {} parameters",
             sourceData.parameters.size());
-
-  return ubo;
 }
 
 // ---- 参数获取工具方法 ----
@@ -192,12 +201,11 @@ void GBufferMaterialTemplate::FillUBOData(MaterialUniformBuffer &uboData,
       HasTextureSlot(sourceData, MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE) ? 1.0f : 0.0f,
       HasTextureSlot(sourceData, MaterialParamKeys::OCCLUSION_TEXTURE) ? 1.0f : 0.0f);
 
-   uboData.textureEmissionFlag = glm::vec4(
+  uboData.textureEmissionFlag = glm::vec4(
       HasTextureSlot(sourceData, MaterialParamKeys::EMISSIVE_TEXTURE) ? 1.0f : 0.0f,
       0.0f,
       0.0f,
       0.0f);
-
 
   // 纹理参数（scale和offset）
   auto setupTexParams = [&](const std::string &slotName, glm::vec4 &params) {
@@ -223,5 +231,4 @@ void GBufferMaterialTemplate::FillUBOData(MaterialUniformBuffer &uboData,
                                        GetAlphaMode(sourceData),
                                        0.0f);
 }
-
 }  // namespace mite

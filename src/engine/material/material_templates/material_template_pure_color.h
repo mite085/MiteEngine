@@ -40,6 +40,10 @@ class PureColorMaterialTemplate : public GBufferMaterialTemplate {
 
  protected:
   // ---- 重写默认值设置 ----
+  glm::vec4 GetDefaultBaseColor() const override
+  {
+    return glm::vec4(m_Color, 1.0f);
+  }
   glm::vec3 GetDefaultEmissionColor() const override
   {
     return glm::vec3(m_Color);

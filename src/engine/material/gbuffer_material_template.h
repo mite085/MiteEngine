@@ -36,7 +36,13 @@ class GBufferMaterialTemplate : public MaterialTemplate {
    * @param sourceData 材质源数据
    * @return 初始化好的UBO对象
    */
-  std::shared_ptr<ShaderUBO> CreateInstanceUBO(const MaterialSourceData &sourceData) const;
+  std::shared_ptr<ShaderUBO> CreateInstanceUBO(const MaterialUniformBuffer uniformdata) const;
+  /**
+   * @brief 根据材质源数据生成UBO数据
+   * @param sourceData 材质源数据
+   * @return 填充好的UBO数据结构
+   */
+  MaterialUniformBuffer CreateUBOData(const MaterialSourceData &sourceData) const;
   /**
    * @brief 获取绑定点
    */
