@@ -47,7 +47,7 @@ class MaterialInstance {
 
   // --------------------- UBO设置 ---------------------
   /**
-   * @brief 新增/删除/查询/获取UBO
+   * @brief 设定/更新/获取UBO
    * @param uniformBlockName Uniform块名称（在Shader中定义）
    * @param ubo UBO对象
    * @param bindingPoint 绑定点索引
@@ -55,23 +55,10 @@ class MaterialInstance {
    */
   void SetupUBO(const std::string &uniformBlockName,
                 std::shared_ptr<ShaderUBO> ubo,
+                MaterialUniformBuffer uboData,
                 uint32_t bindingPoint);
-  void UninstallUBO(const std::string &uniformBlockName);
-  bool HasUBO(const std::string &uniformBlockName) const;
-  std::shared_ptr<ShaderUBO> GetUBO(const std::string &uniformBlockName) const;
-
-  // --------------------- SSBO设置 ---------------------
-  /**
-   * @brief 新增/删除/查询/SSBO
-   * @param storageBlockName 存储块名称（在Shader中定义）
-   * @param ssbo SSBO对象
-   * @param bindingPoint 绑定点索引
-   */
-  void SetupSSBO(const std::string &storageBlockName,
-                 std::shared_ptr<ShaderSSBO> ssbo,
-                 uint32_t bindingPoint);
-  void UninstallSSBO(const std::string &storageBlockName);
-  bool HasSSBO(const std::string &storageBlockName) const;
+  void UpdateUBO();
+  std::shared_ptr<ShaderUBO> GetUBO() const;
 
   // --------------------- 绑定相关 ---------------------
   /**
@@ -84,7 +71,8 @@ class MaterialInstance {
    */
   void UploadUniformsOnly(OpenGLShader *overrideShader = nullptr) const;
   /**
-   * @brief 仅绑定纹理（假设着色器已绑定）（原则上不存在OverrideShader，纹理采样器是特定材质专用的）
+   * @brief
+   * 仅绑定纹理（假设着色器已绑定）（原则上不存在OverrideShader，纹理采样器是特定材质专用的）
    * @param textureBindFunc 纹理绑定函数
    * @param startSlot 起始纹理槽位
    * @return 使用的纹理槽位数量
@@ -93,7 +81,7 @@ class MaterialInstance {
                           size_t startSlot = 0,
                           OpenGLShader *overrideShader = nullptr) const;
   /**
-   * @brief 仅绑定UBO/SSBO（不存在OverrideShader，UBO/SSBO已经在Shader中注册好的BindingPoint）
+   * @brief 仅绑定UBO（不存在OverrideShader，UBO已经在Shader中注册好的BindingPoint）
    */
   void BindBuffersOnly() const;
   /**
@@ -103,7 +91,6 @@ class MaterialInstance {
   void Apply(TextureBindFunc textureBindFunc,
              size_t startSlot = 0,
              OpenGLShader *overrideShader = nullptr) const;
-
 
   // --------------------- 属性访问 ---------------------
   std::shared_ptr<OpenGLShader> GetShader() const;
@@ -137,16 +124,11 @@ class MaterialInstance {
 
   // UBO绑定存储
   struct UBOBinding {
+    std::string uniformBlockName;
     std::shared_ptr<ShaderUBO> ubo;
+    MaterialUniformBuffer uboData;  // 组件应当通过此数据访问与更新材质属性
     uint32_t bindingPoint;
-  };
-  std::unordered_map<std::string, UBOBinding> m_UBOBindings;  // UBO绑定
-  // SSBO绑定存储
-  struct SSBOBinding {
-    std::shared_ptr<ShaderSSBO> ssbo;
-    uint32_t bindingPoint;
-  };
-  std::unordered_map<std::string, SSBOBinding> m_SSBOBindings;  // SSBO绑定
+  } m_UBOBinding;
 };
 };  // namespace mite
 
