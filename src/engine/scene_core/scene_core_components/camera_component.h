@@ -53,7 +53,7 @@ class CameraComponent : public SnapshotComponentTraits<std::shared_ptr<Camera>, 
   glm::mat4 GetProjectionMatrix() const;
 
   // ==================== UBO获取 ====================
-  void UpdateUBOViewMatrix(const glm::mat4 &viewMatrix);
+  void UpdateUBOViewMatrix(const Transform &cameraTrasnform);
   CameraInstance& GetCameraInstance();
 
   // ==================== 视口适配 ====================

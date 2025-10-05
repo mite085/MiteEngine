@@ -76,7 +76,7 @@ bool CameraInstance::InitializeUBO()
   }
 }
 
-bool CameraInstance::UpdateUBO(const glm::mat4 &viewMatrix)
+bool CameraInstance::UpdateUBO(const Transform cameraTransform)
 {
   if (!m_UBOInitialized || !m_CameraUBO) {
     LOG_ERROR("Cannot update UBO: CameraInstance '{}' UBO not initialized", m_Name);
@@ -90,10 +90,13 @@ bool CameraInstance::UpdateUBO(const glm::mat4 &viewMatrix)
 
   try {
     // 获取最新的UBO数据
-    CameraUniformBuffer uboData = m_Camera->FillUBOData(viewMatrix);
+    CameraUniformBuffer uboData = m_Camera->FillUBOData(cameraTransform.GetViewMatrix());
 
     // 更新UBO数据
     bool success = m_CameraUBO->UpdateData(&uboData, sizeof(CameraUniformBuffer));
+
+    // 更新缓存
+    m_CameraTransform = cameraTransform;
 
     if (success) {
       //LOG_TRACE("CameraInstance '{}' UBO updated successfully", m_Name);

@@ -357,9 +357,10 @@ void MiteApplication::Render()
 
   // 1. 获取主相机，构建视锥体
   Entity mainCamera = m_SceneCore->GetMainCamera();
-
-  glm::mat4 cameraView =
-      m_SceneCore->GetRegistry().GetComponent<TransformComponent>(mainCamera).CreateViewMatrix();
+  const Transform &cameraTransform =
+      m_SceneCore->GetRegistry().GetComponent<TransformComponent>(mainCamera).GetTransform();
+  glm::mat4 cameraView = cameraTransform.GetViewMatrix();
+      
   glm::mat4 cameraProjection =
       m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetProjectionMatrix();
   uint32_t mainCameraVisibilityMask =
@@ -378,7 +379,7 @@ void MiteApplication::Render()
   // 4. 相机UBO更新与获取（TODO: 相机实例应当由SceneView管理，多视口渲染时需要创建多个SceneView。待修改）
   m_SceneCore->GetRegistry()
       .GetComponent<CameraComponent>(mainCamera)
-      .UpdateUBOViewMatrix(cameraView);
+      .UpdateUBOViewMatrix(cameraTransform);
 
 
   CameraInstance &mainCameraInstance =

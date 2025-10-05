@@ -70,6 +70,7 @@ class TransformComponent
    * @note 相机变换矩阵的逆就是View矩阵
    */
   glm::mat4 CreateViewMatrix() const;
+  const Transform& GetTransform() const;
 
   // ===================== 方向向量（相机专用，世界空间） =========================
   glm::vec3 GetForward() const;

@@ -47,9 +47,9 @@ glm::mat4 CameraComponent::GetProjectionMatrix() const
   return m_CameraInstance.GetCamera()->GetProjectionMatrix();
 }
 
-void CameraComponent::UpdateUBOViewMatrix(const glm::mat4 &viewMatrix)
+void CameraComponent::UpdateUBOViewMatrix(const Transform &cameraTransform)
 {
-  m_CameraInstance.UpdateUBO(viewMatrix);
+  m_CameraInstance.UpdateUBO(cameraTransform);
 }
 
 CameraInstance &CameraComponent::GetCameraInstance() 

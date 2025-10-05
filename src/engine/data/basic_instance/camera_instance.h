@@ -2,6 +2,7 @@
 #define MITE_CAMERA_INSTANCE_H
 
 #include "basic_data/camera.h"
+#include "basic_data/transform.h"
 #include "basic_shader/shader_ubo.h"
 
 namespace mite {
@@ -35,7 +36,7 @@ class CameraInstance {
    * @param viewMatrix 视图矩阵
    * @return 是否更新成功
    */
-  bool UpdateUBO(const glm::mat4 &viewMatrix);
+  bool UpdateUBO(const Transform cameraTransform);
 
   /**
    * @brief 绑定相机UBO到当前渲染状态
@@ -85,7 +86,10 @@ class CameraInstance {
   {
     return m_CameraUBO;
   }
-
+  const Transform &GetCameraTransform() const
+  {
+	return m_CameraTransform;
+  }
   // ==================== 实例属性管理 ====================
   std::string GetName() const
   {
@@ -106,6 +110,7 @@ class CameraInstance {
 
  private:
   std::shared_ptr<Camera> m_Camera;        // 关联的相机对象
+  Transform m_CameraTransform;             // 相机世界空间变换（缓存）
   std::shared_ptr<ShaderUBO> m_CameraUBO;  // 相机UBO实例
   uint32_t m_BindingPoint;                 // UBO绑定点
   std::string m_Name;                      // 实例名称

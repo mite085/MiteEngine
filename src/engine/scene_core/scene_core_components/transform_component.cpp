@@ -111,7 +111,10 @@ glm::mat4 TransformComponent::CreateViewMatrix() const
 {
   return m_Transform.GetViewMatrix();
 }
-
+const Transform &TransformComponent::GetTransform() const
+{
+  return m_Transform;
+}
 
 // 方向向量 ==============================================
 
