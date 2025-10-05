@@ -22,6 +22,8 @@ class GBuffer {
   static const std::map<RuntimeTextureType, uint32_t> TextureTypeToIndex;
   // 获取所有GBuffer纹理类型
   static const std::vector<RuntimeTextureType> &GetTextureTypes();
+  // 获取GBuffer纹理类型的字符串名称(用于着色器绑定Gbuffer)
+  static const char *GetTextureTypeName(RuntimeTextureType type);
 
  public:
   GBuffer();

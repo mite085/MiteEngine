@@ -22,7 +22,27 @@ const std::vector<RuntimeTextureType> &GBuffer::GetTextureTypes()
       RuntimeTextureType::GBuffer_NPRColor};
   return types;
 }
-
+const char *GBuffer::GetTextureTypeName(RuntimeTextureType type)
+{
+  switch (type) {
+    case RuntimeTextureType::GBuffer_WorldPosDepth:
+      return "u_GBufferWorldPosDepth";
+    case RuntimeTextureType::GBuffer_BaseColorMatType:
+      return "u_GBufferBaseColorMatType";
+    case RuntimeTextureType::GBuffer_MetallicRoughnessAO:
+      return "u_GBufferMetallicRoughnessAO";
+    case RuntimeTextureType::GBuffer_NormalScale:
+      return "u_GBufferNormalScale";
+    case RuntimeTextureType::GBuffer_EmissionAlpha:
+      return "u_GBufferEmissionAlpha";
+    case RuntimeTextureType::GBuffer_NPRParam:
+      return "u_GBufferNPRParameters";
+    case RuntimeTextureType::GBuffer_NPRColor:
+      return "u_GBufferNPRColors";
+    default:
+      return "Unknown_GBuffer_Type";
+  }
+}
 GBuffer::GBuffer()
 {
   LOG_TRACE("GBuffer constructor called");
