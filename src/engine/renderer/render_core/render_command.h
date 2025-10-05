@@ -3,6 +3,7 @@
 
 #include "basic_instance/camera_instance.h"
 #include "basic_shader/framebuffer.h"
+#include "basic_event/render_event.h"
 #include "render_device.h"
 #include "renderable_item.h"
 
@@ -140,6 +141,15 @@ class RenderCommand {
    */
   virtual void SubmitToGBuffer(RenderableItem item,
                                std::shared_ptr<OpenGLShader> gbufferShader) = 0;
+
+  // ---------------- 完成事件发布 ----------------
+  /**
+   * @brief 每当一个运行时纹理完成绘制时发布事件，可以通过订阅该事件获取运行时纹理用于显示
+   * @param texture 运行时纹理指针
+   * @param identify 可选的标识符，用于区分纹理（如GBuffer无需区分，但ShadowMap需要按照光源名称区分）
+   */
+  virtual void PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,
+                                                  std::string identify = "") = 0;
 
   // ---------------- 执行控制 ----------------
   virtual void Flush() = 0;       // 执行所有命令

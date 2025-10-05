@@ -64,6 +64,10 @@ class OpenGLRenderCommand : public RenderCommand {
   void SubmitToGBuffer(RenderableItem item,
                        std::shared_ptr<OpenGLShader> gbufferShader) override;
 
+  // ---------------- 完成事件发布 ----------------
+  void PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,
+                                          std::string identify) override;
+
   // ---------------- 执行控制 ----------------
   void Flush() override;
   void ClearQueue() override;
@@ -77,7 +81,6 @@ class OpenGLRenderCommand : public RenderCommand {
 
   // 辅助方法
   void ApplyOpenGLState(const OpenGLRenderState &state);
-  void InternalBindTexture(TextureGPUHandle handle, size_t slot);  // 纹理绑定函数
   static void CheckGLError();
 };
 }  // namespace mite

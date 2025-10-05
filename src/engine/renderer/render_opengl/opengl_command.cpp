@@ -146,7 +146,7 @@ void OpenGLRenderCommand::BindTexture(TextureGPUHandle textureHandle,
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push(
       {CommandType::BindTextures,
-       [this, textureHandle, slot, samplerType] { InternalBindTexture(textureHandle, slot); },
+       [this, textureHandle, slot, samplerType] { m_Device->BindTexture(textureHandle, slot); },
        "BindTexture: slot=" + std::to_string(slot)});
 }
 void OpenGLRenderCommand::BindMesh(const Mesh &mesh)
@@ -205,10 +205,13 @@ void OpenGLRenderCommand::Submit(RenderableItem item)
 void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
                                           std::shared_ptr<OpenGLShader> gbufferShader)
 {
+  std::function<void(TextureGPUHandle, size_t)> bindTextureFunc =
+      [=](TextureGPUHandle handle, size_t slot) { m_Device->BindTexture(handle, slot); };
+
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push(
       {CommandType::DrawIndexed,
-       [this, item, gbufferShader] {
+       [=] {
          if (!item.material) {
            m_Logger->error("Invalid Material Instance in SubmitToGBuffer");
            return;
@@ -221,10 +224,7 @@ void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
          }
 
          // 2. 应用材质参数到G-Buffer着色器
-         auto materialInstance = std::static_pointer_cast<MaterialInstance>(item.material);
-         materialInstance->Apply(
-             [this](TextureGPUHandle handle, size_t slot) { InternalBindTexture(handle, slot); },
-             0,
+         item.material->Apply(bindTextureFunc, 0,
              gbufferShader.get());
 
          // 3. 绑定网格VAO
@@ -235,6 +235,18 @@ void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
              item.mesh.GetIndexCount(), item.mesh.GetIndexOffset(), GL_TRIANGLES, GL_UNSIGNED_INT);
        },
        "Submit GBuffer: " + item.mesh.GetModelHandle().path});
+}
+
+void OpenGLRenderCommand::PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,
+                                                             std::string identify)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::UnbindShader,
+                       [texture, identify] {
+                         EventBus::Publish<RuntimeTextureFinishedEvent>(
+                             RuntimeTextureFinishedEvent(texture, identify));
+                       },
+                       "UnbindShader"});
 }
 
 void OpenGLRenderCommand::Flush()
@@ -342,10 +354,6 @@ void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
   else {
     glDisable(GL_STENCIL_TEST);
   }
-}
-void OpenGLRenderCommand::InternalBindTexture(TextureGPUHandle handle, size_t slot)
-{
-  m_Device->BindTexture(handle, slot);
 }
 
 void OpenGLRenderCommand::CheckGLError()

@@ -15,7 +15,7 @@ class ViewPortResizeEvent : public Event {
   {
     return m_Size;
   }
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
   Event *Clone() const override
   {
     return new ViewPortResizeEvent(m_Size);
@@ -24,25 +24,39 @@ class ViewPortResizeEvent : public Event {
  private:
   glm::uvec2 m_Size;
 };
+
+
 /**
- * 渲染完成事件，每帧结束触发，ViewPortPanel订阅此事件，以获取FBO
- * （是否应当由事件的形式触发？存疑）
+ * 渲染完成事件，每帧结束触发，可通过订阅该事件获取FBO
  */
-class RenderFinishedEvent : public Event {
+class RuntimeTextureFinishedEvent : public Event {
  public:
-  explicit RenderFinishedEvent(std::shared_ptr<FrameBuffer> fbo) : m_FBO(fbo) {}
-  std::shared_ptr<FrameBuffer> GetFBO() const
+  explicit RuntimeTextureFinishedEvent(RuntimeTexturePtr texture, std::string identify)
+      : m_Texture(texture), m_Identify(identify)
   {
-    return m_FBO;
   }
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+  RuntimeTexturePtr GetTexture() {
+    return m_Texture;
+  }
+  RuntimeTextureType GetTextureType()
+  {
+    if (m_Texture)
+      return m_Texture->getType();
+    else
+      return RuntimeTextureType::None;
+  }
+  std::string GetIdentify() {
+    return m_Identify;
+  }
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
   Event *Clone() const override
   {
-    return new RenderFinishedEvent(m_FBO);
+    return new RuntimeTextureFinishedEvent(m_Texture, m_Identify);
   }
 
  private:
-  std::shared_ptr<FrameBuffer> m_FBO;
+  RuntimeTexturePtr m_Texture;
+  std::string m_Identify;
 };
 }  // namespace mite
 
