@@ -29,6 +29,7 @@ class MaterialComponent : public SnapshotComponentTraits<std::shared_ptr<Materia
   explicit MaterialComponent(std::shared_ptr<MaterialInstance> handle);
 
   ~MaterialComponent() override = default;
+  void Update(float deltaTime, SceneRegistry &registry) override;
 
   //===================== 材质基础操作 ===================
   /**
@@ -71,6 +72,7 @@ class MaterialComponent : public SnapshotComponentTraits<std::shared_ptr<Materia
 class MaterialComponentSystem : public SnapshotComponentSystem<MaterialComponent> {
   DECLARE_COMPONENT_SYSTEM(MaterialComponentSystem)
  public:
+  void Update(float deltaTime, SceneRegistry &registry) override;
   std::vector<std::type_index> GetSystemDependencies() const override;
 };
 

@@ -38,6 +38,11 @@ class Component {
 
   virtual ~Component() = default;
 
+
+  /**
+   * @brief 更新方法，每帧调用。(不要求子类实现)
+   */
+  virtual void Update(float deltaTime, SceneRegistry &reg) {}
   // ================== 组件标识相关 ======================
   /**
    * @brief 获取组件类型家族
@@ -269,7 +274,7 @@ class DirtyComponent : public Component {
   /**
    * @brief 更新方法，每帧调用。
    */
-  void Update(float deltaTime, SceneRegistry &reg);
+  void Update(float deltaTime, SceneRegistry &reg) override;
   /**
    * @brief 针对dirty对象进行处理
    */

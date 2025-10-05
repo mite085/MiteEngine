@@ -30,14 +30,7 @@ void ComponentSystemManager::UpdateDirtyComponentSystems(float deltaTime)
 {
   // 按顺序更新脏标记组件系统
   for (auto &system : m_Systems) {
-    // 尝试转换为DirtyComponentSystem基类
-    auto *dirtySystem = dynamic_cast<DirtyComponentSystemBase *>(system.get());
-    if (dirtySystem) {
-      auto entry = m_SystemMap.find(system->GetSystemType());
-      if (entry != m_SystemMap.end()) {
-        dirtySystem->Update(deltaTime, m_Registry);
-      }
-    }
+    system->Update(deltaTime, m_Registry);
   }
 }
 

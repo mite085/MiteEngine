@@ -6,6 +6,12 @@ MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> handle) :
 {
 }
 
+void MaterialComponent::Update(float deltaTime, SceneRegistry &registry)
+{
+  // TODO: 此处应当为Dirty式更新。等后续制作材质属性页时处理，每次编辑m_MaterialInstance->m_UBOBinding.uboData时执行。
+  m_MaterialInstance->UpdateUBO();
+}
+
 // =================== 材质基础操作 =====================
 std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterialInstanceHandel() const
 {
@@ -84,6 +90,12 @@ void MaterialComponent::SetSnapshotData(const std::shared_ptr<MaterialInstance> 
   m_MaterialInstance = data;
   // 发布更新事件
   EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
+}
+
+void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry) {
+  for (auto &component: m_AllComponents) {
+	component.second->Update(deltaTime, registry);
+  }
 }
 
 // ================= Material组件系统实现 =================

@@ -39,6 +39,11 @@ class IComponentSystem {
   virtual void Shutdown() = 0;
 
   /**
+   * @brief 系统更新（每帧执行，不强制子类实现）
+   */
+  virtual void Update(float deltaTime, SceneRegistry &registry) {}
+
+  /**
    * @brief 获取该系统管理的组件类型列表
    */
   virtual std::vector<std::type_index> GetComponentTypes() const = 0;
@@ -225,7 +230,7 @@ class SnapshotComponentSystem : public ComponentSystem<T>{
 class DirtyComponentSystemBase : public IComponentSystem {
  public:
   virtual ~DirtyComponentSystemBase() = default;
-  virtual void Update(float deltaTime, SceneRegistry &registry) = 0;
+  virtual void Update(float deltaTime, SceneRegistry &registry) = 0; // 系统更新（每帧执行，需要强制子类实现，处理脏标记）
   virtual size_t GetDirtyComponentCount() const = 0;
 };
 
