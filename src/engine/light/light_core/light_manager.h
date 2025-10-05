@@ -144,16 +144,14 @@ class LightManager {
 
   /**
    * @brief 绑定光源SSBO到指定绑定点
-   * @param bindingPoint OpenGL绑定点索引
    */
-  void BindLightSSBO(uint32_t bindingPoint) const;
+  void BindLightSSBO() const;
 
   /**
    * @brief 设置着色器的光源SSBO绑定点
    * @param shader 目标着色器
-   * @param bindingPoint 绑定点索引
    */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader, uint32_t bindingPoint) const;
+  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
 
   // ---- 配置管理 ----
 

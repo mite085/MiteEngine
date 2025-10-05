@@ -217,18 +217,17 @@ LightSSBOPtr LightManager::GetLightSSBO() const
   return m_LightSSBO;
 }
 
-void LightManager::BindLightSSBO(uint32_t bindingPoint) const
+void LightManager::BindLightSSBO() const
 {
   if (m_LightSSBO) {
-    m_LightSSBO->Bind(bindingPoint);
+    m_LightSSBO->Bind();
   }
 }
 
-void LightManager::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-                                      uint32_t bindingPoint) const
+void LightManager::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const
 {
   if (m_LightSSBO && shader) {
-    m_LightSSBO->SetupShaderBinding(shader, bindingPoint);
+    m_LightSSBO->SetupShaderBinding(shader);
   }
 }
 

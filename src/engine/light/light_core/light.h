@@ -1,7 +1,7 @@
 #ifndef MITE_LIGHT_H
 #define MITE_LIGHT_H
 
-#include "light_type.h"
+#include "basic_type/light_type.h"
 #include "shadow_map.h"
 
 namespace mite {

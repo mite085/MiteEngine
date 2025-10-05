@@ -3,7 +3,7 @@
 
 #include "basic_shader/shader.h"
 #include "basic_shader/shader_ssbo.h"
-#include "light_type.h"
+#include "basic_type/light_type.h"
 
 namespace mite {
 /**
