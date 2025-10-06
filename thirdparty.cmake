@@ -11,24 +11,36 @@ set(SPDLOG_BUILD_TESTS OFF)
 
 # 启用文件夹功能（Visual Studio专用？）
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # 定义第三方库的筛选器名称
 set(THIRDPARTY_FOLDER "ThirdParty")
 set(MATERIALX_FOLDER "MaterialX")
+
 # 添加第三方目录
 add_subdirectory(thirdparty/glfw)
-include_directories(thirdparty/glm)
-include_directories(thirdparty/glad)
 add_subdirectory(thirdparty/spdlog)
-include_directories(thirdparty/stduuid)
-include_directories(thirdparty/stduuid/include)
-include_directories(thirdparty/cereal/include)
-include_directories(thirdparty/stbimg)
 add_subdirectory(thirdparty/assimp)
 add_subdirectory(thirdparty/meshoptimizer)
 add_subdirectory(thirdparty/materialx)
 add_subdirectory(thirdparty/googletest)
+
+include_directories(thirdparty/glm)
+include_directories(thirdparty/glad)
+include_directories(thirdparty/stduuid)
+include_directories(thirdparty/stduuid/include)
+include_directories(thirdparty/cereal/include)
+include_directories(thirdparty/stbimg)
 include_directories(thirdparty/json/single_include)
 include_directories(thirdparty/threadpool/include)
+
+# shaderc需要依赖spirv_tools等其他第三方库
+# spirv_tools又需要手动将spirv_headers放到指定目录
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_headers/"
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_tools/external/spirv-headers"
+)
+add_subdirectory(thirdparty/spirv_tools)
+add_subdirectory(thirdparty/glslang)
+add_subdirectory(thirdparty/shaderc)
 
 # imgui和imguizmo无cmakelist，为避免污染依赖库，此处手动添加
 include(imgui.cmake)
