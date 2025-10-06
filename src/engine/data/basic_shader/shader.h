@@ -2,6 +2,7 @@
 #define MITE_DATA_SHADER
 
 #include "basic_type/handle_type.h"
+#include <shaderc/shaderc.hpp>
 
 namespace mite {
 /**
@@ -32,24 +33,9 @@ class OpenGLShader {
    */
   void LoadFromSource(const std::string &vertexSrc,
                       const std::string &fragmentSrc,
-                      const std::string &geometrySrc);
+                      const std::string &geometrySrc = "");
 
   void Destroy();  // 显式释放GPU资源
-
-  // ---- Uniform Value设置 ----
-  void SetBool(const std::string &name, bool value);
-  void SetInt(const std::string &name, int value);
-  void SetFloat(const std::string &name, float value);
-  void SetVec2(const std::string &name, const glm::vec2 &value);
-  void SetVec3(const std::string &name, const glm::vec3 &value);
-  void SetVec4(const std::string &name, const glm::vec4 &value);
-  void SetMat3(const std::string &name, const glm::mat3 &mat);
-  void SetMat4(const std::string &name, const glm::mat4 &mat);
-
-  // ---- Uniform Array设置 ----
-  void SetIntArray(const std::string &name, const int *values, size_t count);
-  void SetFloatArray(const std::string &name, const float *values, size_t count);
-  void SetVector3Array(const std::string &name, const glm::vec3 *values, size_t count);
 
   // ---- Uniform Buffer/ Storage Buffer设置 ----
   /**
@@ -58,27 +44,28 @@ class OpenGLShader {
    * @param bindingPoint 绑定点索引
    */
   void SetUniformBlockBinding(const std::string &uniformBlockName, uint32_t bindingPoint);
-
   /**
    * @brief 设置着色器存储缓冲区对象绑定点
    * @param storageBlockName 存储块名称
    * @param bindingPoint 绑定点索引
    */
   void SetShaderStorageBlockBinding(const std::string &storageBlockName, uint32_t bindingPoint);
-
   /**
    * @brief 获取Uniform块索引
    * @param uniformBlockName Uniform块名称
    * @return 块索引，如果不存在返回GL_INVALID_INDEX
    */
   uint32_t GetUniformBlockIndex(const std::string &uniformBlockName) const;
-
   /**
    * @brief 获取着色器存储块索引
    * @param storageBlockName 存储块名称
    * @return 块索引，如果不存在返回GL_INVALID_INDEX
    */
   uint32_t GetShaderStorageBlockIndex(const std::string &storageBlockName) const;
+
+  // ---- 纹理绑定设置 ----
+  void SetTextureBinding(const std::string &samplerName, uint32_t bindingPoint);
+  int GetUniformLocation(const std::string &name) const;
 
   // ---- 状态控制 ----
   void Bind() const;    // 绑定当前Shader为激活状态
@@ -89,16 +76,33 @@ class OpenGLShader {
   {
     return m_Handle;
   }
+  uint32_t GetProgramId() const
+  {
+    return static_cast<uint32_t>(m_Handle.programId);
+  }
+
+  // ---- 编译选项设置 ----
+  void SetVulkanTarget(bool enable);
 
  private:
-  // ---- 私有方法 ----
+  // ---- Shaderc编译方法 ----
   /**
-   * @brief 编译单个着色器阶段
+   * @brief 编译GLSL到SPIRV（仅用于shaderc的调用）
    * @param source 着色器源码
    * @param type 着色器类型（GL_VERTEX_SHADER等）
    * @return 编译成功的着色器ID
    */
-  uint32_t CompileShader(const std::string &source, uint32_t type);
+
+  std::vector<uint32_t> CompileGLSLToSPIRV(const std::string &source,
+                                           const std::string &filename,
+                                           shaderc_shader_kind kind);
+  std::vector<uint32_t> CompileFileToSPIRV(const std::string &filename, shaderc_shader_kind kind);
+
+  // ---- SPIR-V到OpenGL转换 ----
+  uint32_t CompileSPIRVToGLShader(const std::vector<uint32_t> &spirv, uint32_t type);
+  void LoadFromSPIRV(const std::vector<uint32_t> &vertexSpirv,
+                     const std::vector<uint32_t> &fragmentSpirv,
+                     const std::vector<uint32_t> &geometrySpirv = {});
 
   /**
    * @brief 检查着色器/程序的编译链接错误
@@ -108,18 +112,38 @@ class OpenGLShader {
    */
   void CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram);
 
-  /**
-   * @brief
-   * @param name
-   * @return
-   */
-  int GetUniformLocation(const std::string &name);
-
   // ---- 成员变量 ----
   ShaderGPUHandle m_Handle;                                               // OpenGL程序GPU句柄
+  shaderc::Compiler m_Compiler;                                           // ShaderC编译器
+  shaderc::CompileOptions m_CompileOptions;                               // ShaderC编译选项
   mutable std::unordered_map<std::string, int> m_UniformLocationCache;    // Uniform位置缓存
   mutable std::unordered_map<std::string, uint32_t> m_UniformBlockCache;  // Uniform区块缓存
   mutable std::unordered_map<std::string, uint32_t> m_StorageBlockCache;  // Storage区块缓存
+};
+
+//
+/**
+ * @brief 自定义 include 解析器
+ * @note 负责读取并解析shader中的include，支持递归和相对路径
+ */
+class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface {
+ public:
+  shaderc_include_result *GetInclude(const char *requested_source,
+                                     shaderc_include_type type,
+                                     const char *requesting_source,
+                                     size_t include_depth) override;
+
+  void ReleaseInclude(shaderc_include_result *data) override;
+
+ private:
+  std::string NormalizeAssetPath(const std::string &path) const;
+
+  struct PersistentIncludeData {
+    std::string content;
+    std::string source_name;
+  };
+
+  std::unordered_set<std::string> m_includeHistory;  // 防止循环包含
 };
 }  // namespace mite
 

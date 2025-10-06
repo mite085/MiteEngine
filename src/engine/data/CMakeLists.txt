@@ -62,8 +62,6 @@ set(BASIC_SHADER_SRCS
     basic_shader/uniform_buffer.h           # UBO
     basic_shader/shader.h                   # 着色器（目前仅有OpenGL，后续扩展需要重新规划抽象）
     basic_shader/shader.cpp
-    basic_shader/shader_preprocessor.h      # 着色器预处理器，负责预处理#include等指令
-    basic_shader/shader_preprocessor.cpp
     basic_shader/shader_cache.h             # 着色器缓存
     basic_shader/shader_cache.cpp
     basic_shader/shader_ubo.h               # Uniform Buffer，固定size的数据结构体
@@ -99,6 +97,7 @@ target_include_directories(${ENGINE_DATA_LIB_NAME}
 target_link_libraries(${ENGINE_DATA_LIB_NAME}
     PRIVATE 
     glfw
+    shaderc
     spdlog::spdlog
     MiteEngine_Engine_Core
     MiteEngine_Engine_Event
