@@ -130,7 +130,7 @@ vec2 sampleMetallicRoughness(vec2 texCoord)
         vec2 transformedCoord = applyTextureTransform(texCoord, u_Material.mrTexParams);
         vec4 mrSample = texture(u_MetallicRoughnessTexture, transformedCoord);
         
-        // GLTF标准：金属度在B通道，粗糙度在G通道
+        // GLTF标准--金属度在B通道，粗糙度在G通道
         metallicRoughness.r = mrSample.b; // 金属度
         metallicRoughness.g = mrSample.g; // 粗糙度
     }

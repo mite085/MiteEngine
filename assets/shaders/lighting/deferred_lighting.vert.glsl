@@ -22,12 +22,12 @@ void main()
     // 计算视图射线（用于在片段着色器中重建世界位置）
     // 根据投影类型计算不同的视图射线
     if (u_Camera.projectionType == PROJECTION_PERSPECTIVE) {
-        // 透视投影：从NDC坐标计算视图射线
+        // 透视投影--从NDC坐标计算视图射线
         vec4 clipPos = vec4(a_Position.xy, 0.0, 1.0);
         vec4 viewPos = inverse(u_Camera.projection) * clipPos;
         vs_out.viewRay = viewPos.xyz;
     } else {
-        // 正交投影：直接使用顶点位置
+        // 正交投影--直接使用顶点位置
         vs_out.viewRay = vec3(a_Position.xy, 0.0);
     }
     

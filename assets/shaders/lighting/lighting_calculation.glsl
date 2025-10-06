@@ -76,7 +76,7 @@ float CalculateDirectionalLightAttenuation()
 float CalculateAreaLightAttenuation(vec3 lightPosition, vec3 lightNormal, vec3 surfacePosition, 
                                    float power, vec2 size, float shape)
 {
-    // 简化处理：使用点光源近似
+    // 简化处理--使用点光源近似
     float distance = length(lightPosition - surfacePosition);
     float baseAttenuation = 1.0 / (distance * distance);
     
@@ -184,5 +184,4 @@ bool IsLightVisible(uint lightIndex, vec3 surfacePosition, vec3 surfaceNormal)
     
     return NdotL > 0.0;
 }
-
 #endif

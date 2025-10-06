@@ -56,7 +56,7 @@ void main()
     // =========================================================================
     float alpha = baseColor.a;
     
-    // Alpha裁剪模式：根据阈值丢弃片段
+    // Alpha裁剪模式--根据阈值丢弃片段
     if (u_Material.renderProperties.z == ALPHA_MODE_MASK) {
         if (alpha < u_Material.renderProperties.x) {
             discard;
@@ -64,7 +64,7 @@ void main()
         alpha = 1.0; // 裁剪模式下，通过测试的片段视为不透明
     }
     
-    // Alpha混合模式：后续在前向渲染中处理
+    // Alpha混合模式--后续在前向渲染中处理
     // 对于延迟渲染，混合物体通常需要特殊处理
     
     // =========================================================================
@@ -94,7 +94,7 @@ void main()
     
     // 确保法线朝向相机（双面渲染处理）
     if (u_Material.renderProperties.y > 0.5) {
-        // 双面渲染：根据视线方向调整法线
+        // 双面渲染--根据视线方向调整法线
         vec3 viewDir = normalize(u_Camera.cameraPosition - fs_in.worldPos);
         if (dot(normal, viewDir) < 0.0) {
             normal = -normal;
@@ -109,7 +109,7 @@ void main()
     vec2 metallicRoughness = u_Material.metallicRoughnessAO.xy;
     if (u_Material.textureCNMROFlags.z > 0.5) {
         vec4 mrSample = texture(u_MetallicRoughnessTexture, mrTexCoord);
-        // GLTF标准：金属度在B通道，粗糙度在G通道
+        // GLTF标准--金属度在B通道，粗糙度在G通道
         metallicRoughness.r = mrSample.b; // 金属度
         metallicRoughness.g = mrSample.g; // 粗糙度
     }

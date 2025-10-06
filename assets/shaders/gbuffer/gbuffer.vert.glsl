@@ -29,7 +29,7 @@ void main()
     vs_out.worldPos = worldPosition.xyz;
     
     // 构建模型矩阵的3x3部分用于法线变换（去除缩放和位移）
-    // 注意：对于非均匀缩放，需要使用法线矩阵来正确变换法线
+    // 注意--对于非均匀缩放，需要使用法线矩阵来正确变换法线
     mat3 normalMatrix = mat3(transpose(inverse(u_Model)));
     
     // 变换法线到世界空间
