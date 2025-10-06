@@ -260,12 +260,12 @@ void OpenGLRenderCommand::Flush()
           glClearDepth(m_DepthClearValue);
           glClearStencil(m_StencilClearValue);
           glClear(m_ClearFlags);
-          CheckGLError();
+          CheckGLError("Clear");
           break;
 
         default: {
           cmd.execute();
-          CheckGLError();
+          CheckGLError(cmd.debugName);
           break;
         }
       }
@@ -353,7 +353,7 @@ void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
   }
 }
 
-void OpenGLRenderCommand::CheckGLError()
+void OpenGLRenderCommand::CheckGLError(std::string debugName)
 {
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
@@ -378,7 +378,7 @@ void OpenGLRenderCommand::CheckGLError()
         errorStr = "Unknown Error";
     }
 
-    LOG_ERROR("OpenGL Error: {} ({})", err, errorStr);
+    LOG_ERROR("OpenGL Error in {}: {} ({})", debugName, err, errorStr);
   }
 }
 }  // namespace mite

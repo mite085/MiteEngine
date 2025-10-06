@@ -82,7 +82,7 @@ class OpenGLRenderCommand : public RenderCommand {
 
   // 辅助方法
   void ApplyOpenGLState(const OpenGLRenderState &state);
-  static void CheckGLError();
+  static void CheckGLError(std::string debugName = "");
 };
 }  // namespace mite
 
