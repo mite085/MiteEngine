@@ -93,13 +93,41 @@ class BindingPointManager {
   {
     return m_MaterialUBOBinding;
   }
+  uint32_t GetModelUBOBinding() const
+  {
+    return m_ModelUBOBinding;
+  }
   uint32_t GetLightSSBOBinding() const
   {
     return m_LightSSBOBinding;
   }
+  uint32_t GetBaseColorTextureBinding() const
+  {
+    return m_BaseColorTextureBinding;
+  }
+  uint32_t GetNormalTextureBinding() const
+  {
+    return m_NormalTextureBinding;
+  }
+  uint32_t GetMetallicRoughnessTextureBinding() const
+  {
+    return m_MetallicRoughnessTextureBinding;
+  }
+  uint32_t GetEmissiveTextureBinding() const
+  {
+    return m_EmissiveTextureBinding;
+  }
+  uint32_t GetOcclusionTextureBinding() const
+  {
+    return m_OcclusionTextureBinding;
+  }
   uint32_t GetShadowMapBinding() const
   {
     return m_ShadowMapBinding;
+  }
+  uint32_t GetEnvironmentMapBinding() const
+  {
+    return m_EnvironmentMapBinding;
   }
 
   /**
@@ -132,8 +160,18 @@ class BindingPointManager {
   // 常用资源的固定绑定点（预分配，默认不可用）
   uint32_t m_CameraUBOBinding = UINT32_MAX;
   uint32_t m_MaterialUBOBinding = UINT32_MAX;
+  uint32_t m_ModelUBOBinding = UINT32_MAX;
+
   uint32_t m_LightSSBOBinding = UINT32_MAX;
+
+  uint32_t m_BaseColorTextureBinding = UINT32_MAX;
+  uint32_t m_NormalTextureBinding = UINT32_MAX;
+  uint32_t m_MetallicRoughnessTextureBinding = UINT32_MAX;
+  uint32_t m_EmissiveTextureBinding = UINT32_MAX;
+  uint32_t m_OcclusionTextureBinding = UINT32_MAX;
+
   uint32_t m_ShadowMapBinding = UINT32_MAX;
+  uint32_t m_EnvironmentMapBinding = UINT32_MAX;
 
   // 各类型的下一个可用绑定点
   std::array<std::atomic<uint32_t>, static_cast<size_t>(ShaderBufferResourceType::Count)>

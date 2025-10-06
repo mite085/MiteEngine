@@ -72,12 +72,5 @@ layout(binding = 36) uniform sampler2D u_OcclusionTexture;
 // 阴影和环境纹理 (绑定点 40-44)
 layout(binding = 40) uniform sampler2D u_ShadowMap;
 layout(binding = 41) uniform samplerCube u_EnvironmentMap;
-layout(binding = 42) uniform sampler2D u_BRDFLUT;
-layout(binding = 43) uniform samplerCube u_IrradianceMap;
-layout(binding = 44) uniform samplerCube u_PrefilterMap;
-// 后期处理纹理 (绑定点 48-50)
-layout(binding = 48) uniform sampler2D u_ColorGradingLUT;
-layout(binding = 49) uniform sampler2D u_BloomTexture;
-layout(binding = 50) uniform sampler2D u_SSAOTexture;
 
 #endif

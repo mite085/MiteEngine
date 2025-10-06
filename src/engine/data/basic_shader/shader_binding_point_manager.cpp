@@ -25,28 +25,51 @@ BindingPointManager::BindingPointManager()
 
 void BindingPointManager::PreallocateCommonResources()
 {
-  // 预分配常用资源
+  // 预分配常用UBO资源
   m_CameraUBOBinding = AllocateBindingPoint(ShaderBufferResourceType::CameraUBO,
                                             ShaderBufferResourceNames::CAMERA_UBO);
   m_MaterialUBOBinding = AllocateBindingPoint(ShaderBufferResourceType::MaterialUBO,
                                               ShaderBufferResourceNames::MATERIAL_UBO);
+  m_ModelUBOBinding = AllocateBindingPoint(ShaderBufferResourceType::ModelUBO,
+                                           ShaderBufferResourceNames::MODEL_UBO);
+
+  // 预分配常用SSBO资源
   m_LightSSBOBinding = AllocateBindingPoint(ShaderBufferResourceType::LightSSBO,
                                             ShaderBufferResourceNames::LIGHT_SSBO);
+
+  // 预分配常用纹理资源
+  m_BaseColorTextureBinding = AllocateBindingPoint(ShaderBufferResourceType::BaseColorTexture,
+                                                   ShaderBufferResourceNames::BASE_COLOR_TEXTURE);
+  m_NormalTextureBinding = AllocateBindingPoint(ShaderBufferResourceType::NormalTexture,
+                                                ShaderBufferResourceNames::NORMAL_TEXTURE);
+  m_MetallicRoughnessTextureBinding = AllocateBindingPoint(
+      ShaderBufferResourceType::MetallicRoughnessTexture,
+      ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
+  m_EmissiveTextureBinding = AllocateBindingPoint(ShaderBufferResourceType::EmissiveTexture,
+                                                  ShaderBufferResourceNames::EMISSIVE_TEXTURE);
+  m_OcclusionTextureBinding = AllocateBindingPoint(ShaderBufferResourceType::OcclusionTexture,
+                                                   ShaderBufferResourceNames::OCCLUSION_TEXTURE);
+
   m_ShadowMapBinding = AllocateBindingPoint(ShaderBufferResourceType::ShadowMap,
                                             ShaderBufferResourceNames::SHADOW_MAP);
+  m_EnvironmentMapBinding = AllocateBindingPoint(ShaderBufferResourceType::EnvironmentMap,
+                                                 ShaderBufferResourceNames::ENVIRONMENT_MAP);
+
   LOG_INFO("Preallocated common resources:");
-  LOG_INFO("  CameraUBO: binding={}, name={}",
+  LOG_INFO("  UBOs: Camera={}, Material={}, Model={}",
            m_CameraUBOBinding,
-           ShaderBufferResourceNames::CAMERA_UBO);
-  LOG_INFO("  MaterialUBO: binding={}, name={}",
            m_MaterialUBOBinding,
-           ShaderBufferResourceNames::MATERIAL_UBO);
-  LOG_INFO("  LightSSBO: binding={}, name={}",
-           m_LightSSBOBinding,
-           ShaderBufferResourceNames::LIGHT_SSBO);
-  LOG_INFO("  ShadowMap: binding={}, name={}",
+           m_ModelUBOBinding);
+  LOG_INFO("  SSBOs: Lights={}", m_LightSSBOBinding);
+  LOG_INFO("  Textures: BaseColor={}, Normal={}, MR={}, Emissive={}, Occlusion={}",
+           m_BaseColorTextureBinding,
+           m_NormalTextureBinding,
+           m_MetallicRoughnessTextureBinding,
+           m_EmissiveTextureBinding,
+           m_OcclusionTextureBinding);
+  LOG_INFO("  Environment: Shadow={}, EnvMap={}",
            m_ShadowMapBinding,
-           ShaderBufferResourceNames::SHADOW_MAP);
+           m_EnvironmentMapBinding);
 }
 
 uint32_t BindingPointManager::AllocateBindingPoint(ShaderBufferResourceType type,

@@ -10,15 +10,15 @@ enum class ShaderBufferResourceType {
   CameraUBO = 0,  // 相机参数 - 绑定点 0
   MaterialUBO,    // 材质参数 - 绑定点 1
   ModelUBO,       // 模型矩阵 - 绑定点 2
-  SceneUBO,       // 场景全局参数 - 绑定点 3
+  SceneUBO,       // 场景全局参数 - 绑定点 3（暂未启用）
 
   // SSBO类型 (绑定点范围: 16-31)
   LightSSBO = 16,  // 光源数据 - 绑定点 16
-  InstanceSSBO,    // 实例数据 - 绑定点 17
-  BoneSSBO,        // 骨骼动画数据 - 绑定点 18
+  InstanceSSBO,    // 实例数据 - 绑定点 17（暂未启用）
+  BoneSSBO,        // 骨骼动画数据 - 绑定点 18（暂未启用）
 
   // 纹理类型 (绑定点范围: 32-95)
-  // 
+  //
   // PBR材质纹理 (32-39)
   BaseColorTexture = 32,     // 基础色纹理 - 绑定点 32
   NormalTexture,             // 法线纹理 - 绑定点 33
@@ -28,15 +28,18 @@ enum class ShaderBufferResourceType {
   // 阴影和环境纹理 (40-47)
   ShadowMap = 40,  // 阴影贴图 - 绑定点 40
   EnvironmentMap,  // 环境贴图 - 绑定点 41
-  BRDFLUT,         // BRDF查找表 - 绑定点 42
-  IrradianceMap,   // 辐照度图 - 绑定点 43
-  PrefilterMap,    // 预滤波环境图 - 绑定点 44
+  BRDFLUT,         // BRDF查找表 - 绑定点 42（暂未启用）
+  IrradianceMap,   // 辐照度图 - 绑定点 43（暂未启用）
+  PrefilterMap,    // 预滤波环境图 - 绑定点 44（暂未启用）
   // 后期处理纹理 (48-55)
-  ColorGradingLUT = 48,  // 色彩分级LUT - 绑定点 48
-  BloomTexture,          // 泛光纹理 - 绑定点 49
-  SSAOTexture,           // SSAO纹理 - 绑定点 50
+  ColorGradingLUT = 48,  // 色彩分级LUT - 绑定点 48（暂未启用）
+  BloomTexture,          // 泛光纹理 - 绑定点 49（暂未启用）
+  SSAOTexture,           // SSAO纹理 - 绑定点 50（暂未启用）
   // 自定义纹理 (56-95)
-  CustomTexture0 = 56,  // 自定义纹理0 - 绑定点 56
+  CustomTexture0 = 56,  // 自定义纹理0 - 绑定点 56（暂未启用）
+
+  // 尾部计数用无效类型
+  Count = 96,
 };
 
 // ---- 常用资源名称定义 ----
@@ -92,7 +95,6 @@ struct TextureBindingPoints {
   static constexpr uint32_t SSAO_TEXTURE = 50;
 };
 
-
 /**
  * @brief 相机参数UBO结构体
  * @note 按照std140布局规则对齐，包含所有材质参数
@@ -105,17 +107,17 @@ struct alignas(16) CameraUniformBuffer {
 
   // ---- 相机参数部分 (2 * 12 + 2 * 4 + 192 = 224字节) ----
   glm::vec3 position;  // 12字节 - 相机世界坐标（vec3占用12字节，但整个块是16字节）
-  float nearPlane;     // 4字节  - 近平面距离  （后面的标量可以占用剩余的4字节）
-  glm::vec3 forward;   // 12字节 - 相机前向向量（但下个vec3必须从新的16字节开始）
-  float farPlane;      // 4字节  - 远平面距离  （如果没有跟随float/int，则vec3应当占16字节）
+  float nearPlane;  // 4字节  - 近平面距离  （后面的标量可以占用剩余的4字节）
+  glm::vec3 forward;  // 12字节 - 相机前向向量（但下个vec3必须从新的16字节开始）
+  float farPlane;  // 4字节  - 远平面距离  （如果没有跟随float/int，则vec3应当占16字节）
 
   // ---- 投影参数部分 (3 * 4 + 224 = 236字节) ----
-  float fov;			// 4字节 - 垂直FOV（弧度）
-  float orthoSize;		// 4字节 - 正交投影尺寸
-  int projectionType;	// 4字节 - 投影类型标志 (1 = 透视, 0 = 正交)
+  float fov;           // 4字节 - 垂直FOV（弧度）
+  float orthoSize;     // 4字节 - 正交投影尺寸
+  int projectionType;  // 4字节 - 投影类型标志 (1 = 透视, 0 = 正交)
 
   // 4字节填充
-  float padding;  
+  float padding;
 
   // 总大小: 236 + 4 = 240字节 (16字节对齐)
 };
@@ -156,7 +158,6 @@ struct alignas(16) ModelUniformBuffer {
   glm::mat4 model;
   glm::mat4 normalMatrix;  // 用于法线变换的矩阵
 };
-
 };  // namespace mite
 
 #endif
