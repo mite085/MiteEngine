@@ -6,38 +6,91 @@
 namespace mite {
 // ---- 资源类型枚举 ----
 enum class ShaderBufferResourceType {
-  // UBO类型 (绑定点范围: 0-15,参考BindingPointManager的BindingRanges设计)
-  CameraUBO,  // 相机参数
-  MaterialUBO,    // 材质参数
-  SceneUBO,       // 场景全局参数（占位符，未启用）
+  // UBO类型 (绑定点范围: 0-15)
+  CameraUBO = 0,  // 相机参数 - 绑定点 0
+  MaterialUBO,    // 材质参数 - 绑定点 1
+  ModelUBO,       // 模型矩阵 - 绑定点 2
+  SceneUBO,       // 场景全局参数 - 绑定点 3
 
   // SSBO类型 (绑定点范围: 16-31)
-  LightSSBO,     // 光源数据
-  InstanceSSBO,  // 实例数据（占位符，未启用）
-  BoneSSBO,      // 骨骼动画数据（占位符，未启用）
+  LightSSBO = 16,  // 光源数据 - 绑定点 16
+  InstanceSSBO,    // 实例数据 - 绑定点 17
+  BoneSSBO,        // 骨骼动画数据 - 绑定点 18
 
   // 纹理类型 (绑定点范围: 32-95)
-  ShadowMap,       // 阴影贴图
-  EnvironmentMap,  // 环境贴图
-  BRDFLUT,         // BRDF查找表（占位符，未启用）
-
-  // 类型总数(最大96)
-  Count         
+  // 
+  // PBR材质纹理 (32-39)
+  BaseColorTexture = 32,     // 基础色纹理 - 绑定点 32
+  NormalTexture,             // 法线纹理 - 绑定点 33
+  MetallicRoughnessTexture,  // 金属粗糙度纹理 - 绑定点 34
+  EmissiveTexture,           // 自发光纹理 - 绑定点 35
+  OcclusionTexture,          // 环境光遮蔽纹理 - 绑定点 36
+  // 阴影和环境纹理 (40-47)
+  ShadowMap = 40,  // 阴影贴图 - 绑定点 40
+  EnvironmentMap,  // 环境贴图 - 绑定点 41
+  BRDFLUT,         // BRDF查找表 - 绑定点 42
+  IrradianceMap,   // 辐照度图 - 绑定点 43
+  PrefilterMap,    // 预滤波环境图 - 绑定点 44
+  // 后期处理纹理 (48-55)
+  ColorGradingLUT = 48,  // 色彩分级LUT - 绑定点 48
+  BloomTexture,          // 泛光纹理 - 绑定点 49
+  SSAOTexture,           // SSAO纹理 - 绑定点 50
+  // 自定义纹理 (56-95)
+  CustomTexture0 = 56,  // 自定义纹理0 - 绑定点 56
 };
+
 // ---- 常用资源名称定义 ----
 struct ShaderBufferResourceNames {
+  // UBO名称
   static constexpr const char *CAMERA_UBO = "CameraUBO";
   static constexpr const char *MATERIAL_UBO = "MaterialUBO";
+  static constexpr const char *MODEL_UBO = "ModelUBO";
   static constexpr const char *SCENE_UBO = "SceneUBO";
+
+  // SSBO名称
   static constexpr const char *LIGHT_SSBO = "LightsSSBO";
   static constexpr const char *INSTANCE_SSBO = "InstanceSSBO";
   static constexpr const char *BONE_SSBO = "BoneSSBO";
-  static constexpr const char *SHADOW_MAP = "ShadowMap";
-  static constexpr const char *ENVIRONMENT_MAP = "EnvironmentMap";
-  static constexpr const char *BRDF_LUT = "BRDFLUT";
+
+  // 纹理名称
+  static constexpr const char *BASE_COLOR_TEXTURE = "u_BaseColorTexture";
+  static constexpr const char *NORMAL_TEXTURE = "u_NormalTexture";
+  static constexpr const char *METALLIC_ROUGHNESS_TEXTURE = "u_MetallicRoughnessTexture";
+  static constexpr const char *EMISSIVE_TEXTURE = "u_EmissiveTexture";
+  static constexpr const char *OCCLUSION_TEXTURE = "u_OcclusionTexture";
+
+  static constexpr const char *SHADOW_MAP = "u_ShadowMap";
+  static constexpr const char *ENVIRONMENT_MAP = "u_EnvironmentMap";
+  static constexpr const char *BRDF_LUT = "u_BRDFLUT";
+  static constexpr const char *IRRADIANCE_MAP = "u_IrradianceMap";
+  static constexpr const char *PREFILTER_MAP = "u_PrefilterMap";
+
+  static constexpr const char *COLOR_GRADING_LUT = "u_ColorGradingLUT";
+  static constexpr const char *BLOOM_TEXTURE = "u_BloomTexture";
+  static constexpr const char *SSAO_TEXTURE = "u_SSAOTexture";
 };
 
+// ---- 纹理绑定点辅助结构 ----
+struct TextureBindingPoints {
+  // PBR材质纹理
+  static constexpr uint32_t BASE_COLOR = 32;
+  static constexpr uint32_t NORMAL = 33;
+  static constexpr uint32_t METALLIC_ROUGHNESS = 34;
+  static constexpr uint32_t EMISSIVE = 35;
+  static constexpr uint32_t OCCLUSION = 36;
 
+  // 阴影和环境
+  static constexpr uint32_t SHADOW_MAP = 40;
+  static constexpr uint32_t ENVIRONMENT_MAP = 41;
+  static constexpr uint32_t BRDF_LUT = 42;
+  static constexpr uint32_t IRRADIANCE_MAP = 43;
+  static constexpr uint32_t PREFILTER_MAP = 44;
+
+  // 后期处理
+  static constexpr uint32_t COLOR_GRADING_LUT = 48;
+  static constexpr uint32_t BLOOM_TEXTURE = 49;
+  static constexpr uint32_t SSAO_TEXTURE = 50;
+};
 
 
 /**
@@ -95,6 +148,15 @@ struct alignas(16) MaterialUniformBuffer {
 
   // 总大小: 224 字节 (16字节对齐)
 };
+
+/**
+ * @brief 模型矩阵UBO结构体
+ */
+struct alignas(16) ModelUniformBuffer {
+  glm::mat4 model;
+  glm::mat4 normalMatrix;  // 用于法线变换的矩阵
+};
+
 };  // namespace mite
 
 #endif
