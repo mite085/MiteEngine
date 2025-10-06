@@ -34,6 +34,7 @@ target_include_directories(${ENGINE_WINDOW_LIB_NAME}
 target_link_libraries(${ENGINE_WINDOW_LIB_NAME}
     PRIVATE 
     glfw
+    shaderc
     spdlog::spdlog
     ImGuizmo
     MiteEngine_Engine_Core

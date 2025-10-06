@@ -20,6 +20,7 @@ target_link_libraries(${PROJECT_NAME}
     # 第三方库依赖
     OpenGL::GL
     glfw
+    shaderc
     spdlog::spdlog
     Imgui
     ImGuizmo

@@ -51,6 +51,7 @@ target_include_directories(${ENGINE_COMMAND_LIB_NAME}
 target_link_libraries(${ENGINE_COMMAND_LIB_NAME}
     PRIVATE 
     glfw
+    shaderc
     spdlog::spdlog
     
     # 强依赖

@@ -46,3 +46,15 @@
 [submodule "thirdparty/imnode"]
 	path = thirdparty/imnode
 	url = https://github.com/Nelarius/imnodes.git
+[submodule "thirdparty/shaderc"]
+	path = thirdparty/shaderc
+	url = https://github.com/google/shaderc.git
+[submodule "thirdparty/spirv_tools"]
+	path = thirdparty/spirv_tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "thirdparty/spirv_headers"]
+	path = thirdparty/spirv_headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git
+[submodule "thirdparty/glslang"]
+	path = thirdparty/glslang
+	url = https://github.com/KhronosGroup/glslang.git

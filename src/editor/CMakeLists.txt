@@ -29,6 +29,7 @@ target_link_libraries(${EDITOR_LIB_NAME}
     # 第三方库依赖
     OpenGL::GL
     glfw
+    shaderc
     spdlog::spdlog
 
     # 资产模块依赖

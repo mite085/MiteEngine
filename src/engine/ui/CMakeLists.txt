@@ -94,6 +94,7 @@ target_include_directories(${ENGINE_UI_LIB_NAME}
 target_link_libraries(${ENGINE_UI_LIB_NAME}
     PRIVATE 
     glfw
+    shaderc
     spdlog::spdlog
     Imgui
     ImGuizmo

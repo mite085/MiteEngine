@@ -39,6 +39,7 @@ target_include_directories(${ENGINE_SCENE_VIEW_LIB_NAME}
 target_link_libraries(${ENGINE_SCENE_VIEW_LIB_NAME}
     PRIVATE 
     glfw
+    shaderc
     spdlog::spdlog
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
