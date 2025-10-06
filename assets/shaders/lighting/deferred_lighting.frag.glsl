@@ -13,9 +13,10 @@ layout(location = 0) out vec4 o_FinalColor;
 // 包含必要的头文件
 #include "../common/common.glsl"
 #include "../common/uniforms.glsl"
-#include "../common/lights_ssbo.glsl"
 #include "../common/math.glsl"
-#include "../lighting/light_calculation.glsl"
+#include "../common/light_ssbo.glsl"
+#include "../lighting/lighting_calculation.glsl"
+#include "../brdf/brdf_common.glsl"
 #include "../brdf/pbr.brdf.glsl"
 
 // GBuffer纹理采样器
@@ -46,7 +47,7 @@ uniform int u_DebugLightIndex = 0;              // 调试光源索引
  */
 vec3 reconstructWorldPosition(vec2 texCoord, vec3 viewRay)
 {
-    // 方法1：直接从GBuffer0读取存储的世界位置（更准确）
+    // 方法1--直接从GBuffer0读取存储的世界位置（更准确）
     vec4 worldPosDepth = texture(u_GBufferWorldPosDepth, texCoord);
     
     // 如果GBuffer中存储了有效的世界位置，直接使用
@@ -54,7 +55,7 @@ vec3 reconstructWorldPosition(vec2 texCoord, vec3 viewRay)
         return worldPosDepth.xyz;
     }
     
-    // 方法2：通过深度和视图射线重建（备用方法）
+    // 方法2--通过深度和视图射线重建（备用方法）
     float depth = texture(u_GBufferWorldPosDepth, texCoord).a;
     
     if (u_Camera.projectionType == PROJECTION_PERSPECTIVE) {

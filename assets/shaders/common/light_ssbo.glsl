@@ -1,3 +1,7 @@
+#ifndef MAX_LIGHTS
+#define MAX_LIGHTS 1024  // 最大光源数量
+#endif
+
 // 光源SSBO定义 - 与C++端LightSSBO数据结构对应
 #ifndef LIGHTS_SSBO_GLSL
 #define LIGHTS_SSBO_GLSL

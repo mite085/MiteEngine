@@ -30,7 +30,7 @@ vec3 calculateF0(vec3 baseColor, float metallic)
 bool validateBRDFInput(BRDFInput input)
 {
     // 检查基础参数范围
-    if (any(lessThan(input.baseColor, vec3(0.0))) return false;
+    if (any(lessThan(input.baseColor, vec3(0.0)))) return false;
     if (input.metallic < 0.0 || input.metallic > 1.0) return false;
     if (input.roughness < 0.0 || input.roughness > 1.0) return false;
     if (input.occlusion < 0.0 || input.occlusion > 1.0) return false;
@@ -116,7 +116,7 @@ BRDFResult calculateEnergyConservedBRDF(BRDFInput brdfInput, BRDFLightInput ligh
     vec3 diffuseBRDF = calculateDiffuseBRDF(brdfInput, intermediate);
     vec3 specularBRDF = calculateSpecularBRDF(brdfInput, intermediate);
     
-    // 能量守恒：镜面反射和漫反射不能同时达到最大值
+    // 能量守恒--镜面反射和漫反射不能同时达到最大值
     // 金属材质没有漫反射，电介质材质镜面反射较弱
     vec3 kS = intermediate.F;                    // 镜面反射比例
     vec3 kD = vec3(1.0) - kS;                   // 漫反射比例
