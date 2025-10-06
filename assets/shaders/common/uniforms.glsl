@@ -1,10 +1,15 @@
 // 全局Uniform缓冲区定义
+// 绑定点和命名与C++端src/data/basic_shader/unfirom_buffer.h中，
+// ShaderBufferResourceType、ShaderBufferResourceNames一致
 #ifndef UNIFORMS_GLSL
 #define UNIFORMS_GLSL
 
 #include "common.glsl"
 
-// 相机UBO - 与C++端CameraUBO结构体对应，绑定点和命名与ShaderBufferResourceType、ShaderBufferResourceNames一致
+// =============================================================================
+// Uniform Buffer Objects (UBOs)
+// =============================================================================
+// 相机UBO - 绑定点 0
 layout(std140, binding = 0) uniform CameraUBO {
     mat4 view;              // 视图矩阵
     mat4 projection;        // 投影矩阵  
@@ -22,7 +27,7 @@ layout(std140, binding = 0) uniform CameraUBO {
     float padding;          // 填充
 } u_Camera;
 
-// 材质UBO - 与C++端GBufferMaterialUBO结构体对应，绑定点和命名与ShaderBufferResourceType、ShaderBufferResourceNames一致
+// 材质UBO - 绑定点 1
 layout(std140, binding = 1) uniform MaterialUBO {
     // 基础PBR参数
     vec4 baseColor;             // RGB + Alpha
@@ -48,5 +53,31 @@ layout(std140, binding = 1) uniform MaterialUBO {
     // 渲染属性
     vec4 renderProperties;      // x:透明度阈值, y:双面渲染, z:Alpha模式, w:未使用
 } u_Material;
+
+// 模型UBO - 绑定点 2
+layout(std140, binding = 2) uniform ModelUBO {
+    mat4 model;
+    mat4 normalMatrix;
+} u_Model;
+
+// =============================================================================
+// Texture Samplers
+// =============================================================================
+// PBR材质纹理 (绑定点 32-36)
+layout(binding = 32) uniform sampler2D u_BaseColorTexture;
+layout(binding = 33) uniform sampler2D u_NormalTexture;
+layout(binding = 34) uniform sampler2D u_MetallicRoughnessTexture;
+layout(binding = 35) uniform sampler2D u_EmissiveTexture;
+layout(binding = 36) uniform sampler2D u_OcclusionTexture;
+// 阴影和环境纹理 (绑定点 40-44)
+layout(binding = 40) uniform sampler2D u_ShadowMap;
+layout(binding = 41) uniform samplerCube u_EnvironmentMap;
+layout(binding = 42) uniform sampler2D u_BRDFLUT;
+layout(binding = 43) uniform samplerCube u_IrradianceMap;
+layout(binding = 44) uniform samplerCube u_PrefilterMap;
+// 后期处理纹理 (绑定点 48-50)
+layout(binding = 48) uniform sampler2D u_ColorGradingLUT;
+layout(binding = 49) uniform sampler2D u_BloomTexture;
+layout(binding = 50) uniform sampler2D u_SSAOTexture;
 
 #endif
