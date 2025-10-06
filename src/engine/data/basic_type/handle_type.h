@@ -151,13 +151,9 @@ struct ModelGPUHandle {
 // ------------------------ 着色器相关 ------------------------
 
 // 着色器GPU句柄
+// 注意：Shaderc 编译为 SPIR-V，不需要保留单独的着色器对象句柄
 struct ShaderGPUHandle {
   uintptr_t programId = 0;  // OpenGL程序对象ID
-
-  uintptr_t vertexShader = 0;    // 顶点着色器
-  uintptr_t fragmentShader = 0;  // 片段着色器
-  uintptr_t geometryShader = 0;  // 几何着色器
-  uintptr_t computeShader = 0;   // 计算着色器
 };
 };  // namespace mite
 
