@@ -1,34 +1,72 @@
 #include "shader_ssbo.h"
+#include "shader_binding_point_manager.h"
 
 namespace mite {
-
-ShaderSSBO::ShaderSSBO(size_t size, GLenum usage) : m_Size(size), m_Usage(usage)
+ShaderSSBO::ShaderSSBO(size_t size,
+                       ShaderBufferResourceType type,
+                       const std::string &name,
+                       GLenum usage)
+    : m_Size(size), m_Usage(usage), m_Name(name), m_AutoAllocated(true)
 {
-  // ÑéÖ¤´óĞ¡ºÏÀíĞÔ
+
   if (size == 0) {
     LOG_ERROR("ShaderSSBO: Invalid size 0");
     throw std::invalid_argument("SSBO size cannot be 0");
   }
-
-  // ÑéÖ¤Ê¹ÓÃÄ£Ê½
+  // éªŒè¯ä½¿ç”¨æ¨¡å¼
   if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW && usage != GL_STREAM_DRAW &&
       usage != GL_DYNAMIC_COPY && usage != GL_DYNAMIC_READ)
   {
     LOG_WARN("ShaderSSBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
     m_Usage = GL_DYNAMIC_DRAW;
   }
+  // è‡ªåŠ¨åˆ†é…ç»‘å®šç‚¹
+  AllocateBindingPoint(type, name);
 
-  LOG_DEBUG("ShaderSSBO created - Size: {} bytes, Usage: 0x{:X}", size, usage);
+  LOG_DEBUG("ShaderSSBO created - Size: {} bytes, Binding: {}, Name: '{}'",
+            size,
+            m_BindingPoint,
+            m_Name);
 }
+ShaderSSBO::ShaderSSBO(size_t size, uint32_t bindingPoint, const std::string &name, GLenum usage)
+    : m_Size(size),
+      m_Usage(usage),
+      m_BindingPoint(bindingPoint),
+      m_Name(name),
+      m_AutoAllocated(false)
+{
 
+  if (size == 0) {
+    LOG_ERROR("ShaderSSBO: Invalid size 0");
+    throw std::invalid_argument("SSBO size cannot be 0");
+  }
+  // éªŒè¯ä½¿ç”¨æ¨¡å¼
+  if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW && usage != GL_STREAM_DRAW &&
+      usage != GL_DYNAMIC_COPY && usage != GL_DYNAMIC_READ)
+  {
+    LOG_WARN("ShaderSSBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
+    m_Usage = GL_DYNAMIC_DRAW;
+  }
+  LOG_DEBUG("ShaderSSBO created with fixed binding - Size: {} bytes, Binding: {}, Name: '{}'",
+            size,
+            m_BindingPoint,
+            m_Name);
+}
 ShaderSSBO::~ShaderSSBO()
 {
-  // È·±£ÔÚÏú»ÙÇ°½âÓ³Éä
+  // ç¡®ä¿åœ¨é”€æ¯å‰è§£æ˜ å°„
   if (m_IsMapped) {
     LOG_WARN("ShaderSSBO destroyed while still mapped, forcing unmap");
     UnmapBuffer();
   }
   Destroy();
+
+  // å¦‚æœæ˜¯è‡ªåŠ¨åˆ†é…çš„ç»‘å®šç‚¹ï¼Œéœ€è¦é‡Šæ”¾
+  if (m_AutoAllocated && m_BindingPoint != UINT32_MAX) {
+    auto &bindingMgr = BindingPointManager::Get();
+    bindingMgr.ReleaseBindingPoint(m_BindingPoint);
+    LOG_DEBUG("ShaderSSBO released binding point: {}", m_BindingPoint);
+  }
 }
 
 void ShaderSSBO::Initialize()
@@ -37,17 +75,22 @@ void ShaderSSBO::Initialize()
     LOG_WARN("ShaderSSBO already initialized");
     return;
   }
-
+  if (m_BindingPoint == UINT32_MAX) {
+    LOG_ERROR("Cannot initialize SSBO: no binding point allocated");
+    throw std::runtime_error("SSBO has no binding point");
+  }
   CreateSSBO();
   m_IsInitialized = true;
-
-  LOG_INFO("ShaderSSBO initialized successfully - ID: {}, Size: {} bytes", m_SSBOId, m_Size);
+  LOG_INFO("ShaderSSBO initialized - ID: {}, Binding: {}, Name: '{}'",
+           m_SSBOId,
+           m_BindingPoint,
+           m_Name);
 }
 
 void ShaderSSBO::Destroy()
 {
   if (m_IsInitialized && m_SSBOId != 0) {
-    // È·±£ÔÚÏú»ÙÇ°½âÓ³Éä
+    // ç¡®ä¿åœ¨é”€æ¯å‰è§£æ˜ å°„
     if (m_IsMapped) {
       LOG_WARN("ShaderSSBO destroyed while still mapped, forcing unmap");
       UnmapBuffer();
@@ -63,7 +106,7 @@ void ShaderSSBO::Destroy()
 
 void ShaderSSBO::CreateSSBO()
 {
-  // Éú³ÉSSBO
+  // ç”ŸæˆSSBO
   glGenBuffers(1, &m_SSBOId);
 
   if (m_SSBOId == 0) {
@@ -71,12 +114,12 @@ void ShaderSSBO::CreateSSBO()
     throw std::runtime_error("SSBO generation failed");
   }
 
-  // °ó¶¨²¢·ÖÅäÄÚ´æ
+  // ç»‘å®šå¹¶åˆ†é…å†…å­˜
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBOId);
   glBufferData(GL_SHADER_STORAGE_BUFFER, m_Size, nullptr, m_Usage);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-  // ¼ì²éOpenGL´íÎó
+  // æ£€æŸ¥OpenGLé”™è¯¯
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
     LOG_ERROR("Failed to create SSBO: OpenGL error 0x{:X}", error);
@@ -109,12 +152,12 @@ bool ShaderSSBO::UpdateData(const void *data, size_t size, size_t offset)
     return false;
   }
 
-  // ¸üĞÂSSBOÊı¾İ
+  // æ›´æ–°SSBOæ•°æ®
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBOId);
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-  // ¼ì²é´íÎó
+  // æ£€æŸ¥é”™è¯¯
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
     LOG_ERROR("Failed to update SSBO data: OpenGL error 0x{:X}", error);
@@ -146,12 +189,12 @@ bool ShaderSSBO::ReadData(void *data, size_t size, size_t offset) const
     return false;
   }
 
-  // ´ÓSSBO¶ÁÈ¡Êı¾İ
+  // ä»SSBOè¯»å–æ•°æ®
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBOId);
   glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-  // ¼ì²é´íÎó
+  // æ£€æŸ¥é”™è¯¯
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
     LOG_ERROR("Failed to read SSBO data: OpenGL error 0x{:X}", error);
@@ -174,13 +217,13 @@ void *ShaderSSBO::MapBuffer(GLenum access)
     return nullptr;
   }
 
-  // ÑéÖ¤·ÃÎÊÄ£Ê½
+  // éªŒè¯è®¿é—®æ¨¡å¼
   if (access != GL_READ_ONLY && access != GL_WRITE_ONLY && access != GL_READ_WRITE) {
     LOG_ERROR("Invalid buffer mapping access mode: 0x{:X}", access);
     return nullptr;
   }
 
-  // Ó³Éä»º³åÇø
+  // æ˜ å°„ç¼“å†²åŒº
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBOId);
   void *mappedPtr = glMapBuffer(GL_SHADER_STORAGE_BUFFER, access);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -211,7 +254,7 @@ bool ShaderSSBO::UnmapBuffer()
     return false;
   }
 
-  // ½âÓ³Éä»º³åÇø
+  // è§£æ˜ å°„ç¼“å†²åŒº
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBOId);
   GLboolean result = glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -227,57 +270,60 @@ bool ShaderSSBO::UnmapBuffer()
   return true;
 }
 
-void ShaderSSBO::Bind(uint32_t bindingPoint) const
+void ShaderSSBO::Bind() const
 {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot bind SSBO: not initialized");
     return;
   }
-
   if (m_IsMapped) {
     LOG_ERROR("Cannot bind SSBO: buffer is currently mapped");
     return;
   }
-
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, m_SSBOId);
-
+  if (m_BindingPoint == UINT32_MAX) {
+    LOG_ERROR("Cannot bind SSBO: no binding point allocated");
+    return;
+  }
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_BindingPoint, m_SSBOId);
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
-    LOG_ERROR("Failed to bind SSBO to point {}: OpenGL error 0x{:X}", bindingPoint, error);
+    LOG_ERROR("Failed to bind SSBO to point {}: OpenGL error 0x{:X}", m_BindingPoint, error);
   }
   else {
-    LOG_TRACE("SSBO bound to binding point: {}", bindingPoint);
+    LOG_TRACE("SSBO bound to binding point: {}", m_BindingPoint);
   }
 }
 
-void ShaderSSBO::Unbind(uint32_t bindingPoint) const
+void ShaderSSBO::Unbind() const
 {
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, 0);
+  if (m_BindingPoint != UINT32_MAX) {
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_BindingPoint, 0);
+  }
 }
 
 void ShaderSSBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-                                    const std::string &storageBlockName,
-                                    uint32_t bindingPoint) const
+                                    const std::string &storageBlockName) const
 {
   if (!shader) {
     LOG_ERROR("Cannot setup shader binding: null shader");
     return;
   }
-
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot setup shader binding: SSBO not initialized");
     return;
   }
-
   if (m_IsMapped) {
     LOG_ERROR("Cannot setup shader binding: SSBO is currently mapped");
     return;
   }
-
-  // ÉèÖÃ×ÅÉ«Æ÷µÄ´æ´¢¿é°ó¶¨µã
-  shader->SetShaderStorageBlockBinding(storageBlockName, bindingPoint);
-
-  LOG_DEBUG("Shader SSBO binding setup - Block: '{}', Point: {}", storageBlockName, bindingPoint);
+  if (m_BindingPoint == UINT32_MAX) {
+    LOG_ERROR("Cannot setup shader binding: SSBO has no binding point");
+    return;
+  }
+  // è®¾ç½®ç€è‰²å™¨çš„å­˜å‚¨å—ç»‘å®šç‚¹
+  shader->SetShaderStorageBlockBinding(storageBlockName, m_BindingPoint);
+  LOG_DEBUG(
+      "Shader SSBO binding setup - Block: '{}', Point: {}", storageBlockName, m_BindingPoint);
 }
 
 bool ShaderSSBO::ClearData(uint32_t clearValue, size_t offset, size_t size)
@@ -292,7 +338,7 @@ bool ShaderSSBO::ClearData(uint32_t clearValue, size_t offset, size_t size)
     return false;
   }
 
-  // Èç¹ûsizeÎª0£¬ÔòÇå³ıÕû¸ö»º³åÇø
+  // å¦‚æœsizeä¸º0ï¼Œåˆ™æ¸…é™¤æ•´ä¸ªç¼“å†²åŒº
   if (size == 0) {
     size = m_Size - offset;
   }
@@ -301,13 +347,13 @@ bool ShaderSSBO::ClearData(uint32_t clearValue, size_t offset, size_t size)
     return false;
   }
 
-  // Ê¹ÓÃÓ³Éä·½Ê½Çå³ıÊı¾İ£¨¸ü¸ßĞ§£©
+  // ä½¿ç”¨æ˜ å°„æ–¹å¼æ¸…é™¤æ•°æ®ï¼ˆæ›´é«˜æ•ˆï¼‰
   void *mappedPtr = MapBuffer(GL_WRITE_ONLY);
   if (!mappedPtr) {
     return false;
   }
 
-  // Çå³ıÖ¸¶¨ÇøÓò
+  // æ¸…é™¤æŒ‡å®šåŒºåŸŸ
   uint32_t *dataPtr = static_cast<uint32_t *>(mappedPtr);
   size_t elementCount = size / sizeof(uint32_t);
 
@@ -315,7 +361,7 @@ bool ShaderSSBO::ClearData(uint32_t clearValue, size_t offset, size_t size)
     dataPtr[(offset / sizeof(uint32_t)) + i] = clearValue;
   }
 
-  // ½âÓ³Éä
+  // è§£æ˜ å°„
   if (!UnmapBuffer()) {
     LOG_ERROR("Failed to unmap SSBO after clear operation");
     return false;
@@ -354,5 +400,13 @@ bool ShaderSSBO::ValidateAccess() const
 
   return true;
 }
+void ShaderSSBO::AllocateBindingPoint(ShaderBufferResourceType type, const std::string &name)
+{
+  auto &bindingMgr = BindingPointManager::Get();
+  m_BindingPoint = bindingMgr.AllocateBindingPoint(type, name);
 
+  if (m_BindingPoint == UINT32_MAX) {
+    throw std::runtime_error("Failed to allocate binding point for SSBO: " + name);
+  }
+}
 }  // namespace mite

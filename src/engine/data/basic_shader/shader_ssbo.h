@@ -2,34 +2,45 @@
 #define MITE_SHADER_SSBO_H
 
 #include "shader.h"
+#include "uniform_buffer.h"
 
 namespace mite {
 /**
- * @brief ×ÅÉ«Æ÷´æ´¢»º³åÇø¶ÔÏó·â×°Àà
- * @note Ö°Ôğ£º
- * 1. ¹ÜÀíOpenGL SSBOµÄ´´½¨¡¢¸üĞÂºÍÏú»Ù
- * 2. Ö§³ÖGPU¼ÆËãºÍ´óÁ¿Êı¾İ´æ´¢
- * 3. Ìá¹©¶ÁĞ´Ó³ÉäÖ§³Ö
- * 4. Ö§³ÖÔ­×Ó²Ù×÷ºÍÍ¼Ïñ¼ÓÔØ´æ´¢
+ * @brief ç€è‰²å™¨å­˜å‚¨ç¼“å†²åŒºå¯¹è±¡å°è£…ç±»
+ * @note èŒè´£ï¼š
+ * 1. ç®¡ç†OpenGL SSBOçš„åˆ›å»ºã€æ›´æ–°å’Œé”€æ¯
+ * 2. æ”¯æŒGPUè®¡ç®—å’Œå¤§é‡æ•°æ®å­˜å‚¨
+ * 3. æä¾›è¯»å†™æ˜ å°„æ”¯æŒ
+ * 4. æ”¯æŒåŸå­æ“ä½œå’Œå›¾åƒåŠ è½½å­˜å‚¨
  *
- * @note SSBOÓÅÊÆ£º
- * - ÈİÁ¿¸ü´ó£¨Í¨³£¼¸°ÙMBµ½¼¸GB£©
- * - Ö§³Ö¶ÁĞ´²Ù×÷
- * - Ö§³ÖÔ­×Ó²Ù×÷
- * - Ö§³Ö¿É±ä³¤¶ÈÊı×é
- * - ¼ÆËã×ÅÉ«Æ÷ÓÑºÃ
+ * @note SSBOä¼˜åŠ¿ï¼š
+ * - å®¹é‡æ›´å¤§ï¼ˆé€šå¸¸å‡ ç™¾MBåˆ°å‡ GBï¼‰
+ * - æ”¯æŒè¯»å†™æ“ä½œ
+ * - æ”¯æŒåŸå­æ“ä½œ
+ * - æ”¯æŒå¯å˜é•¿åº¦æ•°ç»„
+ * - è®¡ç®—ç€è‰²å™¨å‹å¥½
  */
 class ShaderSSBO {
  public:
   /**
-   * @brief ¹¹Ôìº¯Êı
-   * @param size SSBO´óĞ¡£¨×Ö½Ú£©
-   * @param usage »º³åÇøÊ¹ÓÃÄ£Ê½
+   * @brief æ„é€ å‡½æ•° - è‡ªåŠ¨åˆ†é…ç»‘å®šç‚¹
+   * @param size SSBOå¤§å°ï¼ˆå­—èŠ‚ï¼‰
+   * @param usage ç¼“å†²åŒºä½¿ç”¨æ¨¡å¼
    */
-  explicit ShaderSSBO(size_t size, GLenum usage = GL_DYNAMIC_DRAW);
+  explicit ShaderSSBO(size_t size,
+                      ShaderBufferResourceType type,
+                      const std::string &name = "",
+                      GLenum usage = GL_DYNAMIC_DRAW);
+  /**
+   * @brief æ„é€ å‡½æ•° - ä½¿ç”¨é¢„åˆ†é…çš„ç»‘å®šç‚¹
+   */
+  explicit ShaderSSBO(size_t size,
+                      uint32_t bindingPoint,
+                      const std::string &name = "",
+                      GLenum usage = GL_DYNAMIC_DRAW);
   ~ShaderSSBO();
 
-  // ---- ÉúÃüÖÜÆÚ¹ÜÀí ----
+  // ---- ç”Ÿå‘½å‘¨æœŸç®¡ç† ----
   void Initialize();
   void Destroy();
   bool IsInitialized() const
@@ -37,65 +48,60 @@ class ShaderSSBO {
     return m_IsInitialized;
   }
 
-  // ---- Êı¾İ²Ù×÷ ----
+  // ---- æ•°æ®æ“ä½œ ----
   /**
-   * @brief ¸üĞÂSSBOÊı¾İ
-   * @param data Êı¾İÖ¸Õë
-   * @param size Êı¾İ´óĞ¡
-   * @param offset Êı¾İÆ«ÒÆÁ¿
-   * @return ÊÇ·ñ³É¹¦
+   * @brief æ›´æ–°SSBOæ•°æ®
+   * @param data æ•°æ®æŒ‡é’ˆ
+   * @param size æ•°æ®å¤§å°
+   * @param offset æ•°æ®åç§»é‡
+   * @return æ˜¯å¦æˆåŠŸ
    */
   bool UpdateData(const void *data, size_t size, size_t offset = 0);
-
   /**
-   * @brief ¸üĞÂSSBOÊı¾İ£¨Ä£°å°æ±¾£©
-   * @tparam T Êı¾İÀàĞÍ
-   * @param data Êı¾İÒıÓÃ
-   * @param offset Êı¾İÆ«ÒÆÁ¿
-   * @return ÊÇ·ñ³É¹¦
-   */
-  template<typename T> bool UpdateData(const T &data, size_t offset = 0)
-  {
-    return UpdateData(&data, sizeof(T), offset);
-  }
-
-  /**
-   * @brief ´ÓSSBO¶ÁÈ¡Êı¾İµ½CPU
-   * @param data Ä¿±ê»º³åÇø
-   * @param size ¶ÁÈ¡´óĞ¡
-   * @param offset SSBOÆ«ÒÆÁ¿
-   * @return ÊÇ·ñ³É¹¦
+   * @brief ä»SSBOè¯»å–æ•°æ®åˆ°CPU
+   * @param data ç›®æ ‡ç¼“å†²åŒº
+   * @param size è¯»å–å¤§å°
+   * @param offset SSBOåç§»é‡
+   * @return æ˜¯å¦æˆåŠŸ
    */
   bool ReadData(void *data, size_t size, size_t offset = 0) const;
 
-  // ---- ÄÚ´æÓ³ÉäÖ§³Ö ----
+  // ---- å†…å­˜æ˜ å°„æ”¯æŒ ----
   /**
-   * @brief Ó³ÉäSSBOµ½CPUÄÚ´æ
-   * @param access ·ÃÎÊÄ£Ê½£¨GL_READ_ONLY, GL_WRITE_ONLY, GL_READ_WRITE£©
-   * @return Ó³ÉäµÄÄÚ´æÖ¸Õë£¬Ê§°Ü·µ»Ønullptr
+   * @brief æ˜ å°„SSBOåˆ°CPUå†…å­˜
+   * @param access è®¿é—®æ¨¡å¼ï¼ˆGL_READ_ONLY, GL_WRITE_ONLY, GL_READ_WRITEï¼‰
+   * @return æ˜ å°„çš„å†…å­˜æŒ‡é’ˆï¼Œå¤±è´¥è¿”å›nullptr
    */
   void *MapBuffer(GLenum access = GL_READ_WRITE);
-
   /**
-   * @brief ½âÓ³ÉäSSBO
-   * @return ÊÇ·ñ³É¹¦
+   * @brief è§£æ˜ å°„SSBO
+   * @return æ˜¯å¦æˆåŠŸ
    */
   bool UnmapBuffer();
 
-  // ---- °ó¶¨¹ÜÀí ----
-  /**
-   * @brief °ó¶¨SSBOµ½Ö¸¶¨°ó¶¨µã
-   * @param bindingPoint °ó¶¨µãË÷Òı
-   */
-  void Bind(uint32_t bindingPoint) const;
+  // ---- ç»‘å®šç®¡ç† ----
+  void Bind() const;
+  void Unbind() const;
 
+  // ---- å·¥å…·æ–¹æ³• ----
   /**
-   * @brief ½â°óSSBO
-   * @param bindingPoint °ó¶¨µãË÷Òı
+   * @brief ä¸ºç€è‰²å™¨è®¾ç½®SSBOç»‘å®šç‚¹
+   * @param shader ç›®æ ‡ç€è‰²å™¨
+   * @param storageBlockName å­˜å‚¨å—åç§°
+   * @param bindingPoint ç»‘å®šç‚¹
    */
-  void Unbind(uint32_t bindingPoint) const;
+  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+                          const std::string &storageBlockName) const;
+  /**
+   * @brief æ¸…é™¤SSBOæ•°æ®ï¼ˆå¡«å……0ï¼‰
+   * @param clearValue æ¸…é™¤å€¼
+   * @param offset åç§»é‡
+   * @param size æ¸…é™¤å¤§å°
+   * @return æ˜¯å¦æˆåŠŸ
+   */
+  bool ClearData(uint32_t clearValue = 0, size_t offset = 0, size_t size = 0);
 
-  // ---- ÊôĞÔ·ÃÎÊ ----
+  // ---- å±æ€§è®¿é—® ----
   uint32_t GetSSBOId() const
   {
     return m_SSBOId;
@@ -112,39 +118,31 @@ class ShaderSSBO {
   {
     return m_IsMapped;
   }
-
-  // ---- ¹¤¾ß·½·¨ ----
-  /**
-   * @brief Îª×ÅÉ«Æ÷ÉèÖÃSSBO°ó¶¨µã
-   * @param shader Ä¿±ê×ÅÉ«Æ÷
-   * @param storageBlockName ´æ´¢¿éÃû³Æ
-   * @param bindingPoint °ó¶¨µã
-   */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-                          const std::string &storageBlockName,
-                          uint32_t bindingPoint) const;
-  /**
-   * @brief Çå³ıSSBOÊı¾İ£¨Ìî³ä0£©
-   * @param clearValue Çå³ıÖµ
-   * @param offset Æ«ÒÆÁ¿
-   * @param size Çå³ı´óĞ¡
-   * @return ÊÇ·ñ³É¹¦
-   */
-  bool ClearData(uint32_t clearValue = 0, size_t offset = 0, size_t size = 0);
+  uint32_t GetBindingPoint() const
+  {
+    return m_BindingPoint;
+  }
+  const std::string &GetName() const
+  {
+    return m_Name;
+  }
 
  private:
-  uint32_t m_SSBOId = 0;             // OpenGL SSBO¾ä±ú
-  size_t m_Size = 0;                 // SSBO´óĞ¡£¨×Ö½Ú£©
-  GLenum m_Usage = GL_DYNAMIC_DRAW;  // »º³åÇøÊ¹ÓÃÄ£Ê½
-  bool m_IsInitialized = false;      // ³õÊ¼»¯×´Ì¬
-  bool m_IsMapped = false;           // ÄÚ´æÓ³Éä×´Ì¬
-  // ---- ÄÚ²¿·½·¨ ----
+  uint32_t m_SSBOId = 0;                 // OpenGL SSBOå¥æŸ„
+  size_t m_Size = 0;                     // SSBOå¤§å°ï¼ˆå­—èŠ‚ï¼‰
+  GLenum m_Usage = GL_DYNAMIC_DRAW;      // ç¼“å†²åŒºä½¿ç”¨æ¨¡å¼
+  uint32_t m_BindingPoint = UINT32_MAX;  // ç»‘å®šç‚¹
+  std::string m_Name;                    // SSBOåç§°ï¼ˆç”¨äºè°ƒè¯•ï¼‰
+  bool m_IsInitialized = false;          // åˆå§‹åŒ–çŠ¶æ€
+  bool m_IsMapped = false;               // å†…å­˜æ˜ å°„çŠ¶æ€
+  bool m_AutoAllocated = false;          // ç»‘å®šç‚¹æ˜¯å¦è‡ªåŠ¨åˆ†é…
+  // ---- å†…éƒ¨æ–¹æ³• ----
   void CreateSSBO();
   bool ValidateDataSize(size_t size, size_t offset) const;
   bool ValidateAccess() const;
+  void AllocateBindingPoint(ShaderBufferResourceType type, const std::string &name);
 };
-// ---- ÀàĞÍ¶¨Òå ----
+// ---- ç±»å‹å®šä¹‰ ----
 using ShaderSSBOPtr = std::shared_ptr<ShaderSSBO>;
-
 }  // namespace mite
 #endif  // MITE_SHADER_SSBO_H
