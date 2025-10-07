@@ -73,6 +73,33 @@ struct ShaderBufferResourceNames {
   static constexpr const char *SSAO_TEXTURE = "u_SSAOTexture";
 };
 
+// ------------------------ 材质参数标准定义 ------------------------
+// 材质标准参数键名（与着色器Uniform名称对应，用于Asset模块MaterialMetadata通用参数检索）
+namespace MaterialParamKeys {
+// 基础PBR参数
+static constexpr const char *BASE_COLOR = "u_BaseColor";                  // vec4 (RGBA)
+static constexpr const char *METALLIC = "u_Metallic";                     // float
+static constexpr const char *ROUGHNESS = "u_Roughness";                   // float
+static constexpr const char *AO = "u_AO";                                 // float
+static constexpr const char *EMISSION_COLOR = "u_EmissionColor";          // vec3
+static constexpr const char *EMISSION_INTENSITY = "u_EmissionIntensity";  // float
+static constexpr const char *NORMAL_SCALE = "u_NormalScale";              // float
+
+// 纹理标识
+static constexpr const char *HAS_BASE_COLOR_TEX = "u_HasBaseColorTexture";  // float
+static constexpr const char *HAS_NORMAL_TEX = "u_HasNormalTexture";         // float
+static constexpr const char *HAS_MR_TEX = "u_HasMetallicRoughnessTexture";  // float
+static constexpr const char *HAS_EMISSIVE_TEX = "u_HasEmissiveTexture";     // float
+static constexpr const char *HAS_OCCLUSION_TEX = "u_HasOcclusionTexture";   // float
+
+// 纹理槽位名称（与着色器纹理采样器名称对应）
+static constexpr const char *BASE_COLOR_TEXTURE = ShaderBufferResourceNames::BASE_COLOR_TEXTURE;
+static constexpr const char *NORMAL_TEXTURE = ShaderBufferResourceNames::NORMAL_TEXTURE;
+static constexpr const char *METALLIC_ROUGHNESS_TEXTURE = ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE;
+static constexpr const char *EMISSIVE_TEXTURE = ShaderBufferResourceNames::EMISSIVE_TEXTURE;
+static constexpr const char *OCCLUSION_TEXTURE = ShaderBufferResourceNames::OCCLUSION_TEXTURE;
+}  // namespace MaterialParamKeys
+
 // ---- 纹理绑定点辅助结构 ----
 struct TextureBindingPoints {
   // PBR材质纹理
@@ -126,17 +153,20 @@ struct alignas(16) CameraUniformBuffer {
  * @note 按照std140布局规则对齐，包含所有材质参数
  */
 struct alignas(16) MaterialUniformBuffer {
-  // ---- 基础PBR参数 (4 * 16 = 64 字节) ----
+  // ---- 材质类型标识（1 * 16 = 16 字节） ----
+  glm::vec4 materialInfo;  // x: MaterialType, yzw: 保留
+
+  // ---- 基础PBR参数 (4 * 16 + 16 = 80 字节) ----
   glm::vec4 baseColor;            // RGB + Alpha (w分量)
   glm::vec4 metallicRoughnessAO;  // x: metallic, y: roughness, z: AO, w: unused
   glm::vec4 emission;             // RGB + Intensity (w分量)
   glm::vec4 normalScale;          // x: normal scale, yzw: unused
 
-  // ---- NPR参数 (2 * 16 + 64 = 96 字节) ----
+  // ---- NPR参数 (2 * 16 + 80 = 112 字节) ----
   glm::vec4 nprParameters;  // xyzw：rampThreshold, rampSmoothness, specularSize, outlineWidth
   glm::vec4 nprColors;      // xyz: shadowTint, w: rimPower
 
-  // ---- 纹理标识和参数 (7 * 16 + 96 = 208 字节) ----
+  // ---- 纹理标识和参数 (7 * 16 + 96 = 224 字节) ----
   glm::vec4 textureCNMROFlags;    // xyzw has: BaseColorTex, NormalTex, MRTex, OcclusionTex
   glm::vec4 textureEmissionFlag;  // x: hasEmissiveTex, yzw: reserved
   glm::vec4 baseColorTexParams;   // xy: scale, zw: offset
@@ -145,10 +175,10 @@ struct alignas(16) MaterialUniformBuffer {
   glm::vec4 emissiveTexParams;    // xy: scale, zw: offset
   glm::vec4 occlusionTexParams;   // xy: scale, zw: offset
 
-  // ---- 渲染属性 (1 * 16 + 192 = 224 字节) ----
+  // ---- 渲染属性 (1 * 16 + 224 = 240 字节) ----
   glm::vec4 renderProperties;  // x: alphaCutoff, y: doubleSided, z: alphaMode, w: unused
 
-  // 总大小: 224 字节 (16字节对齐)
+  // 总大小: 240 字节 (16字节对齐)
 };
 
 /**

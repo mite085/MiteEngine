@@ -7,36 +7,17 @@
 #include "material_param_variant.h"
 
 namespace mite {
-// ------------------------ 材质参数标准定义 ------------------------
-
-// GBuffer材质标准参数键名（与着色器Uniform名称对应）
-namespace MaterialParamKeys {
-// 基础PBR参数
-static constexpr const char *BASE_COLOR = "u_BaseColor";                  // vec4 (RGBA)
-static constexpr const char *METALLIC = "u_Metallic";                     // float
-static constexpr const char *ROUGHNESS = "u_Roughness";                   // float
-static constexpr const char *AO = "u_AO";                                 // float
-static constexpr const char *EMISSION_COLOR = "u_EmissionColor";          // vec3
-static constexpr const char *EMISSION_INTENSITY = "u_EmissionIntensity";  // float
-static constexpr const char *NORMAL_SCALE = "u_NormalScale";              // float
-
-// 纹理标识
-static constexpr const char *HAS_BASE_COLOR_TEX = "u_HasBaseColorTexture";  // float
-static constexpr const char *HAS_NORMAL_TEX = "u_HasNormalTexture";         // float
-static constexpr const char *HAS_MR_TEX = "u_HasMetallicRoughnessTexture";  // float
-static constexpr const char *HAS_EMISSIVE_TEX = "u_HasEmissiveTexture";     // float
-static constexpr const char *HAS_OCCLUSION_TEX = "u_HasOcclusionTexture";   // float
-
-// 纹理槽位名称（与着色器纹理采样器名称对应）
-static constexpr const char *BASE_COLOR_TEXTURE = "u_BaseColorTexture";
-static constexpr const char *NORMAL_TEXTURE = "u_NormalTexture";
-static constexpr const char *METALLIC_ROUGHNESS_TEXTURE = "u_MetallicRoughnessTexture";
-static constexpr const char *EMISSIVE_TEXTURE = "u_EmissiveTexture";
-static constexpr const char *OCCLUSION_TEXTURE = "u_OcclusionTexture";
-}  // namespace MaterialParamKeys
-
 // ------------------------ 材质相关 ------------------------
+/**
+ * @brief 材质类型枚举
+ */
+enum class MaterialType : uint32_t {
+  PBR = 0,       // 基于物理的渲染材质
+  LAMBERT = 1,   // Lambert漫反射材质
+  EMISSION = 2,  // 自发光材质
 
+  CUSTOM = 255  // 自定义材质
+};
 // 材质纹理槽位定义（GLTF PBR标准）
 struct MaterialTextureSlot {
   TextureAssetID textureAssetId;       // 纹理资产ID
@@ -50,8 +31,8 @@ struct MaterialTextureSlot {
 // 材质数据来源（MaterialSystem专用的过渡型数据格式）
 struct MaterialSourceData {
   // 核心标识信息
-  std::string name;          // 材质名称
-  std::string templateName;  // 对应的MaterialTemplate名称（用于索引模板）
+  std::string name;   // 材质名称
+  MaterialType type;  // 对应Type
 
   // 通用参数存储
   std::unordered_map<std::string, UniformVariant> parameters;
@@ -70,8 +51,8 @@ struct MaterialMetadata {
   std::string sourcePath;  // 源文件路径
 
   // 基础信息
-  std::string name;          // 材质名称
-  std::string templateName;  // 对应的MaterialTemplate名称（用于索引材质）
+  std::string name;   // 材质名称
+  MaterialType type;  // 对应Type
 
   // 通用参数存储（支持GLTF PBR和未来MaterialX）
   std::unordered_map<std::string, UniformVariant> parameters;
@@ -108,7 +89,7 @@ struct MaterialMetadata {
     MaterialSourceData sourceData;
 
     // 复制核心标识信息
-    sourceData.templateName = templateName;
+    sourceData.type = type;
     sourceData.name = name;
 
     // 复制参数
@@ -146,16 +127,9 @@ struct MaterialAsset {
 
   // Cache所必须的设定
   using AssetIDType = MaterialAssetID;
-  MaterialAssetID GetID() const
-  {
-    return id;
-  }
-  void SetID(const MaterialAssetID &newId)
-  {
-    id = newId;
-  }
+  MaterialAssetID GetID() const { return id; }
+  void SetID(const MaterialAssetID &newId) { id = newId; }
 };
-
 };  // namespace mite
 
 #endif
