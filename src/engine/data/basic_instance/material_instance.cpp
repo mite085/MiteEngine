@@ -11,115 +11,210 @@ MaterialInstance::MaterialInstance(std::shared_ptr<OpenGLShader> shader)
 
 MaterialInstance::~MaterialInstance() {}
 
-// ===================== 参数设置方法 =====================
-void MaterialInstance::SetFloat(const std::string &name, float value)
+// ===================== UBO管理 =====================
+void MaterialInstance::InitializeUBO()
 {
-  m_Uniforms[name] = value;
-}
-
-void MaterialInstance::SetInt(const std::string &name, int value)
-{
-  m_Uniforms[name] = value;
-}
-
-void MaterialInstance::SetVector2(const std::string &name, const glm::vec2 &value)
-{
-  m_Uniforms[name] = value;
-}
-
-void MaterialInstance::SetVector3(const std::string &name, const glm::vec3 &value)
-{
-  m_Uniforms[name] = value;
-}
-
-void MaterialInstance::SetVector4(const std::string &name, const glm::vec4 &value)
-{
-  m_Uniforms[name] = value;
-}
-
-void MaterialInstance::SetMatrix3(const std::string &name, const glm::mat3 &value)
-{
-  m_Uniforms[name] = value;
-}
-
-void MaterialInstance::SetMatrix4(const std::string &name, const glm::mat4 &value)
-{
-  m_Uniforms[name] = value;
-}
-
-// ===================== 参数数组设置方法 =====================
-
-void MaterialInstance::SetIntArray(const std::string &name, const int *values, size_t count)
-{
-  m_Uniforms[name] = std::vector<int>(values, values + count);
-}
-
-void MaterialInstance::SetFloatArray(const std::string &name, const float *values, size_t count)
-{
-  m_Uniforms[name] = std::vector<float>(values, values + count);
-}
-
-void MaterialInstance::SetVector3Array(const std::string &name,
-                                       const glm::vec3 *values,
-                                       size_t count)
-{
-  m_Uniforms[name] = std::vector<glm::vec3>(values, values + count);
-}
-
-// ===================== 纹理设置方法 =====================
-void MaterialInstance::SetTexture(const std::string &name, TextureGPUSlot texture)
-{
-  m_Textures[name] = texture;
-}
-
-// void MaterialInstance::SetTextureArray(const std::string &name,
-//                                        const std::vector<TextureGPUHandle> &textures)
-//{
-//   if (!textures.empty()) {
-//     m_TextureArrays[name] = textures;
-//   }
-//   else {
-//     LOG_WARN("Empty texture array assigned to slot: {}", name);
-//   }
-// }
-
-// ===================== UBO绑定方法 =====================
-void MaterialInstance::SetupUBO(const std::string &uniformBlockName,
-                                std::shared_ptr<ShaderUBO> ubo,
-                                MaterialUniformBuffer uboData,
-                               uint32_t bindingPoint)
-{
-  if (!ubo) {
-    LOG_ERROR("Cannot bind null UBO to material instance");
+  if (m_UBO) {
+    LOG_WARN("Material UBO already initialized");
     return;
   }
-  if (!ubo->IsInitialized()) {
-    LOG_ERROR("Cannot bind uninitialized UBO to material instance");
-    return;
-  }
-  // 设定绑定点
-  ubo->SetupShaderBinding(m_Shader, uniformBlockName, bindingPoint);
+  // 创建并初始化UBO
+  m_UBO = std::make_shared<ShaderUBO>(sizeof(MaterialUniformBuffer),
+                                      ShaderBufferResourceType::MaterialUBO,
+                                      "MaterialUBO_" + m_Name);
 
-  // 存储绑定信息
-  m_UBOBinding = {uniformBlockName, ubo, uboData, bindingPoint};
+  m_UBO->Initialize();
 
-  LOG_DEBUG("UBO bound to material instance - Block: '{}', Binding Point: {}",
-            uniformBlockName,
-            bindingPoint);
+  // 设置着色器绑定
+  m_UBO->SetupShaderBinding(m_Shader, ShaderBufferResourceNames::MATERIAL_UBO);
+
+  // 上传初始数据
+  UpdateUBO();
+
+  LOG_INFO("Material UBO initialized for '{}'", m_Name);
 }
+
 void MaterialInstance::UpdateUBO()
 {
-  if (m_UBOBinding.ubo && m_UBOBinding.ubo->IsInitialized())
-    m_UBOBinding.ubo->UpdateData(&m_UBOBinding.uboData, sizeof(MaterialUniformBuffer));
+  if (!m_UBO || !m_UBO->IsInitialized()) {
+    LOG_ERROR("Cannot update UBO: not initialized");
+    return;
+  }
+
+  m_UBO->UpdateData(&m_MaterialData, sizeof(MaterialUniformBuffer));
 }
 
-
-std::shared_ptr<ShaderUBO> MaterialInstance::GetUBO() const
+// ===================== MaterialUniformBuffer 设置接口 =====================
+void MaterialInstance::SetMaterialInfo(MaterialType type)
 {
-  return m_UBOBinding.ubo;
+  m_MaterialData.materialInfo.x = static_cast<float>(static_cast<int>(type));
+  m_MaterialData.materialInfo.y = 0.0f;
+  m_MaterialData.materialInfo.z = 0.0f;
+  m_MaterialData.materialInfo.w = 0.0f;
 }
+// ---- 基础PBR参数 ----
+void MaterialInstance::SetBaseColor(const glm::vec4 &color)
+{
+  m_MaterialData.baseColor = color;
+}
+void MaterialInstance::SetMetallic(float metallic)
+{
+  m_MaterialData.metallicRoughnessAO.x = metallic;
+}
+void MaterialInstance::SetRoughness(float roughness)
+{
+  m_MaterialData.metallicRoughnessAO.y = roughness;
+}
+void MaterialInstance::SetAO(float ao)
+{
+  m_MaterialData.metallicRoughnessAO.z = ao;
+}
+void MaterialInstance::SetEmission(const glm::vec4 &emission)
+{
+  m_MaterialData.emission = emission;
+}
+void MaterialInstance::SetNormalScale(float scale)
+{
+  m_MaterialData.normalScale.x = scale;
+}
+// ---- NPR参数 ----
+void MaterialInstance::SetNPRParameters(const glm::vec4 &params)
+{
+  m_MaterialData.nprParameters = params;
+}
+void MaterialInstance::SetNPRColors(const glm::vec4 &colors)
+{
+  m_MaterialData.nprColors = colors;
+}
+void MaterialInstance::SetRampThreshold(float threshold)
+{
+  m_MaterialData.nprParameters.x = threshold;
+}
+void MaterialInstance::SetRampSmoothness(float smoothness)
+{
+  m_MaterialData.nprParameters.y = smoothness;
+}
+void MaterialInstance::SetSpecularSize(float size)
+{
+  m_MaterialData.nprParameters.z = size;
+}
+void MaterialInstance::SetOutlineWidth(float width)
+{
+  m_MaterialData.nprParameters.w = width;
+}
+void MaterialInstance::SetShadowTint(const glm::vec3 &tint)
+{
+  m_MaterialData.nprColors.x = tint.x;
+  m_MaterialData.nprColors.y = tint.y;
+  m_MaterialData.nprColors.z = tint.z;
+}
+void MaterialInstance::SetRimPower(float power)
+{
+  m_MaterialData.nprColors.w = power;
+}
+// ---- 纹理标志设置 ----
+void MaterialInstance::SetBaseColorTextureEnabled(bool enabled)
+{
+  m_MaterialData.textureCNMROFlags.x = enabled ? 1.0f : 0.0f;
+}
+void MaterialInstance::SetNormalTextureEnabled(bool enabled)
+{
+  m_MaterialData.textureCNMROFlags.y = enabled ? 1.0f : 0.0f;
+}
+void MaterialInstance::SetMetallicRoughnessTextureEnabled(bool enabled)
+{
+  m_MaterialData.textureCNMROFlags.z = enabled ? 1.0f : 0.0f;
+}
+void MaterialInstance::SetOcclusionTextureEnabled(bool enabled)
+{
+  m_MaterialData.textureCNMROFlags.w = enabled ? 1.0f : 0.0f;
+}
+void MaterialInstance::SetEmissiveTextureEnabled(bool enabled)
+{
+  m_MaterialData.textureEmissionFlag.x = enabled ? 1.0f : 0.0f;
+}
+// ---- 纹理参数设置 ----
+void MaterialInstance::SetBaseColorTexParams(const glm::vec4 &params)
+{
+  m_MaterialData.baseColorTexParams = params;
+}
+void MaterialInstance::SetNormalTexParams(const glm::vec4 &params)
+{
+  m_MaterialData.normalTexParams = params;
+}
+void MaterialInstance::SetMRTexParams(const glm::vec4 &params)
+{
+  m_MaterialData.mrTexParams = params;
+}
+void MaterialInstance::SetEmissiveTexParams(const glm::vec4 &params)
+{
+  m_MaterialData.emissiveTexParams = params;
+}
+void MaterialInstance::SetOcclusionTexParams(const glm::vec4 &params)
+{
+  m_MaterialData.occlusionTexParams = params;
+}
+// ---- 渲染属性设置 ----
+void MaterialInstance::SetAlphaCutoff(float cutoff)
+{
+  m_MaterialData.renderProperties.x = cutoff;
+}
+void MaterialInstance::SetDoubleSided(bool doubleSided)
+{
+  m_MaterialData.renderProperties.y = doubleSided ? 1.0f : 0.0f;
+}
+void MaterialInstance::SetAlphaMode(int mode)
+{
+  m_MaterialData.renderProperties.z = static_cast<float>(mode);
+}
+// ===================== 纹理绑定 =====================
+void MaterialInstance::SetupTextureBinding(TextureGPUSlot texture,
+                                           uint32_t bindingPoint,
+                                           const std::string &samplerName)
+{
+  // 移除已存在的相同绑定点纹理
+  m_Textures.erase(std::remove_if(m_Textures.begin(),
+                                  m_Textures.end(),
+                                  [bindingPoint](const TextureSlot &slot) {
+                                    return slot.bindingPoint == bindingPoint;
+                                  }),
+                   m_Textures.end());
 
-// ===================== 重构的原子绑定操作 =====================
+  // 添加新纹理
+  m_Textures.push_back({texture, bindingPoint, samplerName});
+}
+void MaterialInstance::SetBaseColorTexture(TextureGPUSlot texture)
+{
+  SetupTextureBinding(
+      texture, TextureBindingPoints::BASE_COLOR, ShaderBufferResourceNames::BASE_COLOR_TEXTURE);
+  SetBaseColorTextureEnabled(true);
+}
+void MaterialInstance::SetNormalTexture(TextureGPUSlot texture)
+{
+  SetupTextureBinding(
+      texture, TextureBindingPoints::NORMAL, ShaderBufferResourceNames::NORMAL_TEXTURE);
+  SetNormalTextureEnabled(true);
+}
+void MaterialInstance::SetMetallicRoughnessTexture(TextureGPUSlot texture)
+{
+  SetupTextureBinding(texture,
+                      TextureBindingPoints::METALLIC_ROUGHNESS,
+                      ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
+  SetMetallicRoughnessTextureEnabled(true);
+}
+void MaterialInstance::SetEmissiveTexture(TextureGPUSlot texture)
+{
+  SetupTextureBinding(
+      texture, TextureBindingPoints::EMISSIVE, ShaderBufferResourceNames::EMISSIVE_TEXTURE);
+  SetEmissiveTextureEnabled(true);
+}
+void MaterialInstance::SetOcclusionTexture(TextureGPUSlot texture)
+{
+  SetupTextureBinding(
+      texture, TextureBindingPoints::OCCLUSION, ShaderBufferResourceNames::OCCLUSION_TEXTURE);
+  SetOcclusionTextureEnabled(true);
+}
+// ===================== 绑定相关 =====================
 void MaterialInstance::BindShaderOnly(OpenGLShader *overrideShader) const
 {
   OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
@@ -129,60 +224,7 @@ void MaterialInstance::BindShaderOnly(OpenGLShader *overrideShader) const
   }
   targetShader->Bind();
 }
-void MaterialInstance::UploadUniformsOnly(OpenGLShader *overrideShader) const
-{
-  OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
-  if (!targetShader) {
-    LOG_ERROR("MaterialInstance has no valid shader for uniform upload!");
-    return;
-  }
-  // 上传uniform值，不包含纹理
-  for (const auto &[name, value] : m_Uniforms) {
-    switch (value.GetType()) {
-      case UniformVariant::Type::Float:
-        targetShader->SetFloat(name, value.Get<float>());
-        break;
-      case UniformVariant::Type::Int:
-        targetShader->SetInt(name, value.Get<int>());
-        break;
-      case UniformVariant::Type::Vector2:
-        targetShader->SetVec2(name, value.Get<glm::vec2>());
-        break;
-      case UniformVariant::Type::Vector3:
-        targetShader->SetVec3(name, value.Get<glm::vec3>());
-        break;
-      case UniformVariant::Type::Vector4:
-        targetShader->SetVec4(name, value.Get<glm::vec4>());
-        break;
-      case UniformVariant::Type::Matrix3:
-        targetShader->SetMat3(name, value.Get<glm::mat3>());
-        break;
-      case UniformVariant::Type::Matrix4:
-        targetShader->SetMat4(name, value.Get<glm::mat4>());
-        break;
-      case UniformVariant::Type::IntArray: {
-        auto [ptr, count] = value.GetArray<int>();
-        targetShader->SetIntArray(name, ptr, count);
-        break;
-      }
-      case UniformVariant::Type::FloatArray: {
-        auto [ptr, count] = value.GetArray<float>();
-        targetShader->SetFloatArray(name, ptr, count);
-        break;
-      }
-      case UniformVariant::Type::Vector3Array: {
-        auto [ptr, count] = value.GetArray<glm::vec3>();
-        targetShader->SetVector3Array(name, ptr, count);
-        break;
-      }
-      default:
-        LOG_ERROR("Invalid OpenGL uniform item: {};", name);
-        break;
-    }
-  }
-}
 size_t MaterialInstance::BindTexturesOnly(TextureBindFunc textureBindFunc,
-                                          size_t startSlot,
                                           OpenGLShader *overrideShader) const
 {
   OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
@@ -190,38 +232,35 @@ size_t MaterialInstance::BindTexturesOnly(TextureBindFunc textureBindFunc,
     LOG_ERROR("MaterialInstance has no valid shader for texture binding!");
     return 0;
   }
-  // ---- 绑定纹理（纹理单独处理部分） ----
-  size_t currentSlot = startSlot;
-  // 注意：每个材质实例的Apply都是从 GL_TEXTURE0 + slot = 0
-  // 开始计数的，若需要多材质渲染，需要不同材质实例共享textureSlot
-  for (const auto &[name, texture] : m_Textures) {
+  // 绑定纹理到预定义的绑定点
+  for (const auto &textureSlot : m_Textures) {
     // 使用传入的纹理绑定函数进行纹理绑定
-    textureBindFunc(texture.gpuHandle, currentSlot);
-    targetShader->SetInt(name, static_cast<int>(currentSlot));
+    textureBindFunc(textureSlot.texture.gpuHandle, textureSlot.bindingPoint);
+
+    // 设置着色器采样器绑定点
+    targetShader->SetTextureBinding(textureSlot.samplerName, textureSlot.bindingPoint);
 
     // TODO: 需要将Solt的offset和scale传入Shader
-    currentSlot++;
+    // textureSlot.texture.offset;
+    // textureSlot.texture.scale;
   }
-
-  return m_Textures.size();  // 返回使用的纹理槽位数量
+  return m_Textures.size();
 }
+
 void MaterialInstance::BindBuffersOnly() const
 {
-  // ---- 绑定UBO（在绑定Shader后立即执行）----
-  m_UBOBinding.ubo->Bind(m_UBOBinding.bindingPoint);
+  if (m_UBO && m_UBO->IsInitialized()) {
+    // 绑定UBO（在绑定Shader后立即执行）
+    m_UBO->Bind();
+  }
 }
 
-void MaterialInstance::Apply(TextureBindFunc textureBindFunc,
-                             size_t startSlot,
-                             OpenGLShader *overrideShader) const
+void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader) const
 {
   BindShaderOnly(overrideShader);
   BindBuffersOnly();
-  UploadUniformsOnly(overrideShader);
-  BindTexturesOnly(textureBindFunc, startSlot, overrideShader);
+  BindTexturesOnly(textureBindFunc, overrideShader);
 }
-
-
 
 std::shared_ptr<OpenGLShader> MaterialInstance::GetShader() const
 {
