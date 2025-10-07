@@ -1,7 +1,6 @@
 #include "shader_binding_point_manager.h"
 
 namespace mite {
-
 BindingPointManager &BindingPointManager::Get()
 {
   static BindingPointManager instance;
@@ -67,9 +66,7 @@ void BindingPointManager::PreallocateCommonResources()
            m_MetallicRoughnessTextureBinding,
            m_EmissiveTextureBinding,
            m_OcclusionTextureBinding);
-  LOG_INFO("  Environment: Shadow={}, EnvMap={}",
-           m_ShadowMapBinding,
-           m_EnvironmentMapBinding);
+  LOG_INFO("  Environment: Shadow={}, EnvMap={}", m_ShadowMapBinding, m_EnvironmentMapBinding);
 }
 
 uint32_t BindingPointManager::AllocateBindingPoint(ShaderBufferResourceType type,
@@ -111,7 +108,6 @@ uint32_t BindingPointManager::AllocateBindingPoint(ShaderBufferResourceType type
     if (currentPoint >= rangeEnd) {
       currentPoint = rangeStart;
     }
-
   } while (currentPoint != startPoint);  // 循环回到起点时停止
 
   // 没有可用绑定点
@@ -192,53 +188,90 @@ void BindingPointManager::Reset()
     m_NextBindingPoints[i] = GetRangeStart(type);
   }
 
+  // 重置预分配的资源
+  m_CameraUBOBinding = UINT32_MAX;
+  m_MaterialUBOBinding = UINT32_MAX;
+  m_ModelUBOBinding = UINT32_MAX;
+  m_LightSSBOBinding = UINT32_MAX;
+  m_BaseColorTextureBinding = UINT32_MAX;
+  m_NormalTextureBinding = UINT32_MAX;
+  m_MetallicRoughnessTextureBinding = UINT32_MAX;
+  m_EmissiveTextureBinding = UINT32_MAX;
+  m_OcclusionTextureBinding = UINT32_MAX;
+  m_ShadowMapBinding = UINT32_MAX;
+  m_EnvironmentMapBinding = UINT32_MAX;
+
   LOG_INFO("BindingPointManager reset");
 }
 
 // ---- 内部方法 ----
-
 uint32_t BindingPointManager::GetRangeStart(ShaderBufferResourceType type) const
 {
   switch (type) {
+    // UBO类型 (0-15)
     case ShaderBufferResourceType::CameraUBO:
     case ShaderBufferResourceType::MaterialUBO:
+    case ShaderBufferResourceType::ModelUBO:
     case ShaderBufferResourceType::SceneUBO:
       return ShaderBufferBindingRanges::UBO_START;
-
+    // SSBO类型 (16-31)
     case ShaderBufferResourceType::LightSSBO:
     case ShaderBufferResourceType::InstanceSSBO:
     case ShaderBufferResourceType::BoneSSBO:
       return ShaderBufferBindingRanges::SSBO_START;
-
+    // 纹理类型 (32-95)
+    case ShaderBufferResourceType::BaseColorTexture:
+    case ShaderBufferResourceType::NormalTexture:
+    case ShaderBufferResourceType::MetallicRoughnessTexture:
+    case ShaderBufferResourceType::EmissiveTexture:
+    case ShaderBufferResourceType::OcclusionTexture:
     case ShaderBufferResourceType::ShadowMap:
     case ShaderBufferResourceType::EnvironmentMap:
     case ShaderBufferResourceType::BRDFLUT:
+    case ShaderBufferResourceType::IrradianceMap:
+    case ShaderBufferResourceType::PrefilterMap:
+    case ShaderBufferResourceType::ColorGradingLUT:
+    case ShaderBufferResourceType::BloomTexture:
+    case ShaderBufferResourceType::SSAOTexture:
+    case ShaderBufferResourceType::CustomTexture0:
       return ShaderBufferBindingRanges::TEXTURE_START;
-
     default:
+      LOG_ERROR("Unknown resource type: {}", static_cast<int>(type));
       return 0;
   }
 }
-
 uint32_t BindingPointManager::GetRangeCount(ShaderBufferResourceType type) const
 {
   switch (type) {
+    // UBO类型 (16个绑定点)
     case ShaderBufferResourceType::CameraUBO:
     case ShaderBufferResourceType::MaterialUBO:
+    case ShaderBufferResourceType::ModelUBO:
     case ShaderBufferResourceType::SceneUBO:
       return ShaderBufferBindingRanges::UBO_COUNT;
-
+    // SSBO类型 (16个绑定点)
     case ShaderBufferResourceType::LightSSBO:
     case ShaderBufferResourceType::InstanceSSBO:
     case ShaderBufferResourceType::BoneSSBO:
       return ShaderBufferBindingRanges::SSBO_COUNT;
-
+    // 纹理类型 (64个绑定点)
+    case ShaderBufferResourceType::BaseColorTexture:
+    case ShaderBufferResourceType::NormalTexture:
+    case ShaderBufferResourceType::MetallicRoughnessTexture:
+    case ShaderBufferResourceType::EmissiveTexture:
+    case ShaderBufferResourceType::OcclusionTexture:
     case ShaderBufferResourceType::ShadowMap:
     case ShaderBufferResourceType::EnvironmentMap:
     case ShaderBufferResourceType::BRDFLUT:
+    case ShaderBufferResourceType::IrradianceMap:
+    case ShaderBufferResourceType::PrefilterMap:
+    case ShaderBufferResourceType::ColorGradingLUT:
+    case ShaderBufferResourceType::BloomTexture:
+    case ShaderBufferResourceType::SSAOTexture:
+    case ShaderBufferResourceType::CustomTexture0:
       return ShaderBufferBindingRanges::TEXTURE_COUNT;
-
     default:
+      LOG_ERROR("Unknown resource type: {}", static_cast<int>(type));
       return 0;
   }
 }
@@ -272,6 +305,15 @@ void BindingPointManager::ValidateRanges() const
   if (ShaderBufferBindingRanges::TEXTURE_COUNT < 32) {
     LOG_WARN("Texture range may be too small for complex scenes");
   }
-}
 
+  // 验证预定义的纹理绑定点在正确范围内
+  static_assert(static_cast<uint32_t>(ShaderBufferResourceType::BaseColorTexture) >=
+                    ShaderBufferBindingRanges::TEXTURE_START,
+                "BaseColorTexture binding point out of range");
+  static_assert(static_cast<uint32_t>(ShaderBufferResourceType::CustomTexture0) <
+                    ShaderBufferBindingRanges::TEXTURE_START +
+                        ShaderBufferBindingRanges::TEXTURE_COUNT,
+                "CustomTexture0 binding point out of range");
+  LOG_DEBUG("Binding point ranges validated successfully");
+}
 }  // namespace mite
