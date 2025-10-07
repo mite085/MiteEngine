@@ -79,15 +79,7 @@ float Camera::GetOrthoSize() const
   return m_OrthoSize;
 }
 
-// === 状态检查 ===
-bool Camera::IsProjectionDirty() const
-{
-  return m_ProjectionDirty;
-}
-void Camera::MarkProjectionClean()
-{
-  m_ProjectionDirty = false;
-}
+
 CameraUniformBuffer Camera::FillUBOData(const glm::mat4 &viewMatrix) const
 {
   CameraUniformBuffer uboData;

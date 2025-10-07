@@ -5,36 +5,20 @@ namespace mite {
 CameraInstance::CameraInstance(std::shared_ptr<Camera> camera, const std::string &name)
     : m_Camera(std::move(camera)), m_Name(name)
 {
-  // 分配UBO绑定点
-  m_BindingPoint = BindingPointManager::Get().GetCameraUBOBinding();
-
   if (!m_Camera) {
     LOG_ERROR("CameraInstance created with null camera!");
     return;
   }
-
-  if (m_BindingPoint == UINT32_MAX) {
-    LOG_ERROR("Failed to allocate binding point for CameraInstance");
-  }
   else {
-    LOG_DEBUG("CameraInstance '{}' allocated binding point: {}",
-              m_Name.empty() ? "unnamed" : m_Name,
-              m_BindingPoint);
+    LOG_DEBUG("CameraInstance '{}' allocated", m_Name.empty() ? "unnamed" : m_Name);
   }
 }
 
-CameraInstance::~CameraInstance()
-{
-  if (m_BindingPoint != UINT32_MAX) {
-    // 注意：绑定点释放由BindingPointManager统一管理
-    // 这里只需要清理UBO资源
-    LOG_DEBUG("CameraInstance '{}' destroyed", m_Name);
-  }
-}
+CameraInstance::~CameraInstance() {}
 
 bool CameraInstance::InitializeUBO()
 {
-  if (m_UBOInitialized) {
+  if (m_CameraUBO->IsInitialized()) {
     LOG_WARN("CameraInstance UBO already initialized for '{}'", m_Name);
     return true;
   }
@@ -44,29 +28,14 @@ bool CameraInstance::InitializeUBO()
     return false;
   }
 
-  //if (!shader) {
-  //  LOG_ERROR("Cannot initialize UBO: null shader provided");
-  //  return false;
-  //}
-
-  if (m_BindingPoint == UINT32_MAX) {
-    LOG_ERROR("Cannot initialize UBO: invalid binding point");
-    return false;
-  }
-
   try {
     // 创建UBO对象
-    m_CameraUBO = std::make_shared<ShaderUBO>(sizeof(CameraUniformBuffer), GL_DYNAMIC_DRAW);
+    m_CameraUBO = std::make_shared<ShaderUBO>(
+        sizeof(CameraUniformBuffer), ShaderBufferResourceType::CameraUBO, m_Name, GL_DYNAMIC_DRAW);
     m_CameraUBO->Initialize();
 
-    // 无需设置着色器绑定，直接使用固定的绑定点。（构造函数已分配）
-    // m_CameraUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::CAMERA_UBO, m_BindingPoint);
-
-    m_UBOInitialized = true;
-
-    LOG_DEBUG("CameraInstance '{}' UBO initialized successfully with binding point: {}",
-              m_Name,
-              m_BindingPoint);
+    LOG_DEBUG("CameraInstance '{}' UBO initialized successfully",
+              m_Name);
     return true;
   }
   catch (const std::exception &e) {
@@ -78,7 +47,7 @@ bool CameraInstance::InitializeUBO()
 
 bool CameraInstance::UpdateUBO(const Transform cameraTransform)
 {
-  if (!m_UBOInitialized || !m_CameraUBO) {
+  if (!m_CameraUBO || !m_CameraUBO->IsInitialized()) {
     LOG_ERROR("Cannot update UBO: CameraInstance '{}' UBO not initialized", m_Name);
     return false;
   }
@@ -99,7 +68,7 @@ bool CameraInstance::UpdateUBO(const Transform cameraTransform)
     m_CameraTransform = cameraTransform;
 
     if (success) {
-      //LOG_TRACE("CameraInstance '{}' UBO updated successfully", m_Name);
+      // LOG_TRACE("CameraInstance '{}' UBO updated successfully", m_Name);
     }
     else {
       LOG_ERROR("Failed to update CameraInstance '{}' UBO data", m_Name);
@@ -115,20 +84,14 @@ bool CameraInstance::UpdateUBO(const Transform cameraTransform)
 
 void CameraInstance::BindUBO() const
 {
-  if (!m_UBOInitialized || !m_CameraUBO) {
+  if (!m_CameraUBO || !m_CameraUBO->IsInitialized()) {
     LOG_ERROR("Cannot bind UBO: CameraInstance '{}' UBO not initialized", m_Name);
     return;
   }
 
-  if (m_BindingPoint == UINT32_MAX) {
-    LOG_ERROR("Cannot bind UBO: CameraInstance '{}' has invalid binding point", m_Name);
-    return;
-  }
+  // 绑定UBO
+  m_CameraUBO->Bind();
 
-  // 绑定UBO到指定的绑定点
-  m_CameraUBO->Bind(m_BindingPoint);
-
-  //LOG_TRACE("CameraInstance '{}' UBO bound to point: {}", m_Name, m_BindingPoint);
+  // LOG_TRACE("CameraInstance '{}' UBO", m_Name);
 }
-
 }  // namespace mite

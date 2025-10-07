@@ -75,10 +75,6 @@ class Camera {
   // ==================== 投影控制方法 ====================
   void Zoom(float amount);
 
-  // ==================== 状态检查 ====================
-  bool IsProjectionDirty() const;
-  void MarkProjectionClean();
-
   /**
    * @brief 填充UBO Data
    */

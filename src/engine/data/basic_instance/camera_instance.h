@@ -43,14 +43,6 @@ class CameraInstance {
    */
   void BindUBO() const;
 
-  /**
-   * @brief 检查UBO是否已初始化
-   */
-  bool IsUBOInitialized() const
-  {
-    return m_UBOInitialized;
-  }
-
   // ==================== 相机访问接口 ====================
   /**
    * @brief 获取关联的相机对象
@@ -69,14 +61,6 @@ class CameraInstance {
   const glm::mat4 &GetProjectionMatrix() const
   {
     return m_Camera->GetProjectionMatrix();
-  }
-
-  /**
-   * @brief 获取相机绑定点
-   */
-  uint32_t GetBindingPoint() const
-  {
-    return m_BindingPoint;
   }
 
   /**
@@ -100,21 +84,11 @@ class CameraInstance {
     m_Name = name;
   }
 
-  /**
-   * @brief 检查相机参数是否发生变化（脏标记）
-   */
-  bool IsCameraDirty() const
-  {
-    return m_Camera->IsProjectionDirty();
-  }
-
  private:
   std::shared_ptr<Camera> m_Camera;        // 关联的相机对象
   Transform m_CameraTransform;             // 相机世界空间变换（缓存）
   std::shared_ptr<ShaderUBO> m_CameraUBO;  // 相机UBO实例
-  uint32_t m_BindingPoint;                 // UBO绑定点
   std::string m_Name;                      // 实例名称
-  bool m_UBOInitialized = false;           // UBO初始化状态
 
   // 禁用拷贝构造和赋值
   CameraInstance(const CameraInstance &) = delete;
