@@ -20,13 +20,37 @@ std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance()
   }
   materialTypeName += numStr;
 
-  // 设定名称，更新计数
+  // 设定名称，更新计数（TODO: 应当存在统一的管理器负责命名管理）
   instance->SetName(materialTypeName);
   m_DefaultInstanceCounter++;
 
   // 直接使用默认参数
   ApplyDefaultParams(instance);
   return instance;
+}
+
+std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance(
+    const MaterialSourceData &sourceData) const
+{
+
+  auto instance = std::make_shared<MaterialInstance>(m_Shader);
+  // 设置材质名称
+  if (!sourceData.name.empty()) {
+    instance->SetName(sourceData.name);
+  }
+  // 初始化材质实例
+  InitializeMaterialInstance(instance, sourceData);
+  LOG_DEBUG("Created material instance '{}' of type '{}'", instance->GetName(), GetMaterialType());
+  return instance;
+}
+
+void MaterialTemplate::ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const
+{
+  // 创建默认源数据并初始化实例
+  MaterialSourceData defaultData = CreateDefaultSourceData();
+  InitializeMaterialInstance(instance, defaultData);
+
+  LOG_DEBUG("Applied default parameters to material instance '{}'", instance->GetName());
 }
 
 void MaterialTemplate::SetName(const std::string &name)
@@ -58,58 +82,6 @@ bool MaterialTemplate::HasTextureSlot(const MaterialSourceData &sourceData,
 {
   return sourceData.textureSlots.find(slotName) != sourceData.textureSlots.end();
 }
-//void MaterialTemplate::ApplySourceDataToInstance(MaterialInstance &instance,
-//                                                 const MaterialSourceData &sourceData)
-//{
-//  // 应用标量参数
-//  for (const auto &[key, variant] : sourceData.parameters) {
-//    switch (variant.GetType()) {
-//      case UniformVariant::Type::Float:
-//        instance.SetFloat(key, variant.Get<float>());
-//        break;
-//      case UniformVariant::Type::Int:
-//        instance.SetInt(key, variant.Get<int>());
-//        break;
-//      case UniformVariant::Type::Vector2:
-//        instance.SetVector2(key, variant.Get<glm::vec2>());
-//        break;
-//      case UniformVariant::Type::Vector3:
-//        instance.SetVector3(key, variant.Get<glm::vec3>());
-//        break;
-//      case UniformVariant::Type::Vector4:
-//        instance.SetVector4(key, variant.Get<glm::vec4>());
-//        break;
-//      case UniformVariant::Type::Matrix3:
-//        instance.SetMatrix3(key, variant.Get<glm::mat3>());
-//        break;
-//      case UniformVariant::Type::Matrix4:
-//        instance.SetMatrix4(key, variant.Get<glm::mat4>());
-//        break;
-//      case UniformVariant::Type::IntArray: {
-//        auto [ptr, count] = variant.GetArray<int>();
-//        instance.SetIntArray(key, ptr, count);
-//        break;
-//      }
-//      case UniformVariant::Type::FloatArray: {
-//        auto [ptr, count] = variant.GetArray<float>();
-//        instance.SetFloatArray(key, ptr, count);
-//        break;
-//      }
-//      case UniformVariant::Type::Vector3Array: {
-//        auto [ptr, count] = variant.GetArray<glm::vec3>();
-//        instance.SetVector3Array(key, ptr, count);
-//        break;
-//      }
-//      default:
-//        // 跳过不支持的参数类型（如Texture）
-//        break;
-//    }
-//  }
-//  // 应用纹理参数
-//  for (const auto &[slotName, textureSlot] : sourceData.textureSlots) {
-//    instance.SetTexture(slotName, textureSlot);
-//  }
-//}
 
 AlphaMode MaterialTemplate::GetAlphaMode(const MaterialSourceData &sourceData)
 {
@@ -122,5 +94,147 @@ float MaterialTemplate::GetAlphaCutoff(const MaterialSourceData &sourceData)
 bool MaterialTemplate::IsDoubleSided(const MaterialSourceData &sourceData)
 {
   return sourceData.doubleSided;
+}
+void MaterialTemplate::FillMaterialDataFromSource(MaterialUniformBuffer &materialData,
+                                                  const MaterialSourceData &sourceData)
+{
+  // 清空数据
+  memset(&materialData, 0, sizeof(MaterialUniformBuffer));
+
+  // ---- 材质类型 ----
+  materialData.materialInfo = glm::vec4(
+      static_cast<float>(static_cast<int>(sourceData.type)), 0.0f, 0.0f, 0.0f);
+
+  // ---- 基础PBR参数 ----
+  materialData.baseColor = GetParameter<glm::vec4>(
+      sourceData, MaterialParamKeys::BASE_COLOR, glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
+
+  materialData.metallicRoughnessAO = glm::vec4(
+      GetParameter<float>(sourceData, MaterialParamKeys::METALLIC, 0.0f),
+      GetParameter<float>(sourceData, MaterialParamKeys::ROUGHNESS, 1.0f),
+      GetParameter<float>(sourceData, MaterialParamKeys::AO, 1.0f),
+      0.0f);
+
+  // ---- 自发光合并Color和Intensity ---- 
+  glm::vec3 emissionColor = GetParameter<glm::vec3>(
+      sourceData, MaterialParamKeys::EMISSION_COLOR, glm::vec3(0.0f));
+  float emissionIntensity = GetParameter<float>(
+      sourceData, MaterialParamKeys::EMISSION_INTENSITY, 0.0f);
+  materialData.emission = glm::vec4(emissionColor, emissionIntensity);
+
+  // ---- 法线缩放 ---- 
+  materialData.normalScale = glm::vec4(
+      GetParameter<float>(sourceData, MaterialParamKeys::NORMAL_SCALE, 1.0f), 0.0f, 0.0f, 0.0f);
+
+  // ---- 纹理标识 ----
+  materialData.textureCNMROFlags = glm::vec4(
+      HasTextureSlot(sourceData, MaterialParamKeys::BASE_COLOR_TEXTURE) ? 1.0f : 0.0f,
+      HasTextureSlot(sourceData, MaterialParamKeys::NORMAL_TEXTURE) ? 1.0f : 0.0f,
+      HasTextureSlot(sourceData, MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE) ? 1.0f : 0.0f,
+      HasTextureSlot(sourceData, MaterialParamKeys::OCCLUSION_TEXTURE) ? 1.0f : 0.0f);
+  materialData.textureEmissionFlag = glm::vec4(
+      HasTextureSlot(sourceData, MaterialParamKeys::EMISSIVE_TEXTURE) ? 1.0f : 0.0f,
+      0.0f,
+      0.0f,
+      0.0f);
+
+  // ---- 纹理参数 ----
+  auto setupTexParams = [&](const std::string &slotName, glm::vec4 &params) {
+    if (HasTextureSlot(sourceData, slotName)) {
+      const auto *slot = GetTextureSlot(sourceData, slotName);
+      if (slot) {
+        params = glm::vec4(slot->scale, slot->offset);
+        return;
+      }
+    }
+    params = glm::vec4(1.0f, 1.0f, 0.0f, 0.0f);  // 默认参数
+  };
+  setupTexParams(MaterialParamKeys::BASE_COLOR_TEXTURE, materialData.baseColorTexParams);
+  setupTexParams(MaterialParamKeys::NORMAL_TEXTURE, materialData.normalTexParams);
+  setupTexParams(MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE, materialData.mrTexParams);
+  setupTexParams(MaterialParamKeys::EMISSIVE_TEXTURE, materialData.emissiveTexParams);
+  setupTexParams(MaterialParamKeys::OCCLUSION_TEXTURE, materialData.occlusionTexParams);
+
+  // ---- 渲染属性 ----
+  materialData.renderProperties = glm::vec4(
+      sourceData.alphaCutoff,
+      sourceData.doubleSided ? 1.0f : 0.0f,
+      static_cast<float>(static_cast<int>(sourceData.alphaMode)),
+      0.0f);
+}
+void MaterialTemplate::SetupMaterialTextures(std::shared_ptr<MaterialInstance> instance,
+                                             const MaterialSourceData &sourceData)
+{
+  // 设置所有标准纹理槽位
+  auto setupTexture = [&](const std::string &slotName) {
+    if (HasTextureSlot(sourceData, slotName)) {
+      const auto *slot = GetTextureSlot(sourceData, slotName);
+      if (slot) {
+        // 根据槽位名称设置对应的纹理
+        if (slotName == MaterialParamKeys::BASE_COLOR_TEXTURE) {
+          instance->SetBaseColorTexture(*slot);
+        }
+        else if (slotName == MaterialParamKeys::NORMAL_TEXTURE) {
+          instance->SetNormalTexture(*slot);
+        }
+        else if (slotName == MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE) {
+          instance->SetMetallicRoughnessTexture(*slot);
+        }
+        else if (slotName == MaterialParamKeys::EMISSIVE_TEXTURE) {
+          instance->SetEmissiveTexture(*slot);
+        }
+        else if (slotName == MaterialParamKeys::OCCLUSION_TEXTURE) {
+          instance->SetOcclusionTexture(*slot);
+        }
+        else {
+          LOG_WARN("Unknown texture slot: {}", slotName);
+        }
+      }
+    }
+  };
+  setupTexture(MaterialParamKeys::BASE_COLOR_TEXTURE);
+  setupTexture(MaterialParamKeys::NORMAL_TEXTURE);
+  setupTexture(MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE);
+  setupTexture(MaterialParamKeys::EMISSIVE_TEXTURE);
+  setupTexture(MaterialParamKeys::OCCLUSION_TEXTURE);
+}
+void MaterialTemplate::InitializeMaterialInstance(std::shared_ptr<MaterialInstance> instance,
+                                                  const MaterialSourceData &sourceData) 
+{
+  // 初始化实例的UBO
+  instance->InitializeUBO();
+  // 从源数据填充材质数据
+  MaterialUniformBuffer materialData;
+  FillMaterialDataFromSource(materialData, sourceData);
+
+  // 获取材质数据引用并更新
+  MaterialUniformBuffer &instanceData = instance->GetMaterialData();
+  instanceData = materialData;
+
+  // 更新UBO
+  instance->UpdateUBO();
+
+  // 应用材质特定的纹理设置
+  SetupMaterialTextures(instance, sourceData);
+}
+MaterialSourceData MaterialTemplate::CreateDefaultSourceData() const
+{
+  MaterialSourceData defaultData;
+  defaultData.name = "Default_" + GetMaterialType();
+
+  // 设置默认参数
+  defaultData.parameters[MaterialParamKeys::BASE_COLOR] = GetDefaultBaseColor();
+  defaultData.parameters[MaterialParamKeys::METALLIC] = GetDefaultMetallic();
+  defaultData.parameters[MaterialParamKeys::ROUGHNESS] = GetDefaultRoughness();
+  defaultData.parameters[MaterialParamKeys::AO] = GetDefaultAO();
+  defaultData.parameters[MaterialParamKeys::EMISSION_COLOR] = GetDefaultEmissionColor();
+  defaultData.parameters[MaterialParamKeys::EMISSION_INTENSITY] = GetDefaultEmissionIntensity();
+  defaultData.parameters[MaterialParamKeys::NORMAL_SCALE] = GetDefaultNormalScale();
+
+  // 设置默认渲染属性
+  defaultData.alphaMode = static_cast<AlphaMode>(GetDefaultAlphaMode());
+  defaultData.alphaCutoff = GetDefaultAlphaCutoff();
+  defaultData.doubleSided = GetDefaultDoubleSided();
+  return defaultData;
 }
 };  // namespace mite

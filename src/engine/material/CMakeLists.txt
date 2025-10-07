@@ -9,8 +9,6 @@ set(MATERIAL_SRCS
     material_factory.cpp
     material_template.h             # 材质模板类，同模板的材质实例共用同一个Shader对象
     material_template.cpp
-    gbuffer_material_template.h     # 支持GBuffer的材质基类，GBuffer会将BaseColor、Metallic等PBR参数加载进Buffer，所以必须支持这些参数
-    gbuffer_material_template.cpp
 )
 source_group("material system" FILES ${MATERIAL_SRCS})
 

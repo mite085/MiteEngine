@@ -32,21 +32,18 @@ class MaterialTemplate {
    * @note 实例会直接从sourceData解析参数，不调用ApplyDefaultParams
    */
   virtual std::shared_ptr<MaterialInstance> CreateInstance(
-      const MaterialSourceData &sourceData) const = 0;
-
+      const MaterialSourceData &sourceData) const;
   /**
    * @brief 应用默认参数到材质实例
    * @param instance 目标材质实例
    * @note 用于初始化或重置实例参数到模板默认值
    */
-  virtual void ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const = 0;
-
+  virtual void ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const;
   /**
    * @brief 获取材质类型标识（用于运行时类型检查）
    * @return 字符串类型标识（如"GLTFPBRMaterial"、"PureColorMaterial"）
    */
   virtual std::string GetMaterialType() const = 0;
-
   /**
    * @brief 获取材质类型标识--静态模板方法
    * @return 字符串类型标识
@@ -60,6 +57,7 @@ class MaterialTemplate {
   // ---- 通用属性 ----
   void SetName(const std::string &name);
   const std::string &GetName() const;
+  std::shared_ptr<OpenGLShader> GetShader() const { return m_Shader; }
 
  protected:
   // ---- 通用数据获取工具方法（供派生类使用） ----
@@ -104,14 +102,6 @@ class MaterialTemplate {
    * @return 是否包含该纹理槽位
    */
   static bool HasTextureSlot(const MaterialSourceData &sourceData, const std::string &slotName);
-  /**
-   * @brief 应用源数据中的所有参数到材质实例（目前均使用UBO传递参数，该函数弃用）
-   * @param instance 目标材质实例
-   * @param sourceData 源数据
-   * @note 派生类可以在CreateInstance中调用此方法应用所有参数
-   */
-  //static void ApplySourceDataToInstance(MaterialInstance &instance,
-  //                                      const MaterialSourceData &sourceData);
 
   /**
    * @brief 获取渲染属性（供派生类使用）
@@ -119,6 +109,38 @@ class MaterialTemplate {
   static AlphaMode GetAlphaMode(const MaterialSourceData &sourceData);
   static float GetAlphaCutoff(const MaterialSourceData &sourceData);
   static bool IsDoubleSided(const MaterialSourceData &sourceData);
+  /**
+   * @brief 材质数据填充方法（供派生类使用）
+   */
+  static void FillMaterialDataFromSource(MaterialUniformBuffer &materialData,
+                                         const MaterialSourceData &sourceData);
+  /**
+   * @brief 使用默认值初始化材质实例
+   */
+  static void InitializeMaterialInstance(std::shared_ptr<MaterialInstance> instance,
+                                  const MaterialSourceData &sourceData);
+  /**
+   * @brief 纹理设置方法
+   */
+  static void SetupMaterialTextures(std::shared_ptr<MaterialInstance> instance,
+                                    const MaterialSourceData &sourceData);
+
+  // ---- 默认值创建 ----
+  /**
+   * @brief 创建默认值
+   */
+  MaterialSourceData CreateDefaultSourceData() const;
+
+  virtual glm::vec4 GetDefaultBaseColor() const { return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f); }
+  virtual float GetDefaultMetallic() const { return 0.0f; }
+  virtual float GetDefaultRoughness() const { return 1.0f; }
+  virtual float GetDefaultAO() const { return 1.0f; }
+  virtual glm::vec3 GetDefaultEmissionColor() const { return glm::vec3(0.0f); }
+  virtual float GetDefaultEmissionIntensity() const { return 0.0f; }
+  virtual float GetDefaultNormalScale() const { return 1.0f; }
+  virtual float GetDefaultAlphaCutoff() const { return 0.5f; }
+  virtual bool GetDefaultDoubleSided() const { return false; }
+  virtual int GetDefaultAlphaMode() const { return 0; }  // ALPHA_MODE_OPAQUE
 
  protected:
   std::shared_ptr<OpenGLShader> m_Shader;   // 着色器对象
