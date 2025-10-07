@@ -16,8 +16,7 @@ layout(location = 0) out vec4 o_FinalColor;
 #include "../common/math.glsl"
 #include "../common/light_ssbo.glsl"
 #include "../lighting/lighting_calculation.glsl"
-#include "../brdf/brdf_common.glsl"
-#include "../brdf/pbr.brdf.glsl"
+#include "../brdf/brdf_dispatcher.glsl"
 
 // GBuffer纹理采样器
 uniform sampler2D u_GBufferWorldPosDepth;       // GBuffer0
@@ -184,8 +183,8 @@ vec3 calculateLightContribution(uint lightIndex, BRDFInput brdfInput)
         return vec3(0.0);
     }
     
-    // 计算PBR光照
-    BRDFResult result = calculateDirectBRDF(brdfInput, lightInput);
+    // 使用BRDF分发器计算光照
+    BRDFResult result = dispatchBRDF(brdfInput, lightInput);
     
     // 返回总光照贡献
     return result.diffuse + result.specular;
@@ -201,8 +200,8 @@ vec3 calculateAmbientContribution(BRDFInput brdfInput)
     // 准备环境光照输入
     BRDFAmbientInput ambientInput = prepareAmbientInput(brdfInput);
     
-    // 计算环境光照
-    BRDFResult result = calculateAmbientBRDF(brdfInput, ambientInput);
+    // 使用BRDF分发器计算环境光照
+    BRDFResult result = dispatchAmbientBRDF(brdfInput, ambientInput);
     
     // 返回环境光照贡献
     return result.diffuse + result.specular;
