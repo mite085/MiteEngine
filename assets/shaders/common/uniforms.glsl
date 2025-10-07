@@ -29,6 +29,9 @@ layout(std140, binding = 0) uniform CameraUBO {
 
 // 材质UBO - 绑定点 1
 layout(std140, binding = 1) uniform MaterialUBO {
+    // 材质类型标识
+    vec4 materialInfo;          // x: MaterialType, yzw: 保留
+
     // 基础PBR参数
     vec4 baseColor;             // RGB + Alpha
     vec4 metallicRoughnessAO;   // x:金属度, y:粗糙度, z:AO, w:未使用
@@ -46,9 +49,9 @@ layout(std140, binding = 1) uniform MaterialUBO {
     // 纹理参数
     vec4 baseColorTexParams;    // xy:缩放, zw:偏移
     vec4 normalTexParams;       // xy:缩放, zw:偏移  
-    vec4 mrTexParams;          // xy:缩放, zw:偏移
-    vec4 emissiveTexParams;    // xy:缩放, zw:偏移
-    vec4 occlusionTexParams;   // xy:缩放, zw:偏移
+    vec4 mrTexParams;           // xy:缩放, zw:偏移
+    vec4 emissiveTexParams;     // xy:缩放, zw:偏移
+    vec4 occlusionTexParams;    // xy:缩放, zw:偏移
     
     // 渲染属性
     vec4 renderProperties;      // x:透明度阈值, y:双面渲染, z:Alpha模式, w:未使用

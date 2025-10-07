@@ -112,7 +112,7 @@ MaterialAssetID MaterialLoader::ProcessGLTFMaterial(MaterialCache &materialCache
   // 设置基础元数据
   materialAsset->metadata.sourcePath = modelPath;
   materialAsset->metadata.name = materialName;
-  materialAsset->metadata.templateName = GLTFPBRMaterialTemplate::StaticType();  // 对应的材质模板
+  materialAsset->metadata.type = MaterialType::PBR;  // 对应的材质模板
 
   // 提取GLTF PBR参数
   ExtractPBRParameters(aiMat, materialAsset->metadata);

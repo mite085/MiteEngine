@@ -140,11 +140,7 @@ void main()
     // =========================================================================
     // 材质类型判断
     // =========================================================================
-    uint materialType = MATERIAL_TYPE_PBR;
-    // 如果有NPR参数被设置，则标记为NPR材质
-    if (u_Material.nprParameters.x > 0.0 || u_Material.nprColors.w > 0.0) {
-        materialType = MATERIAL_TYPE_NPR;
-    }
+    uint materialType = u_Material.materialInfo.x;
     
     // =========================================================================
     // 输出到GBuffer
