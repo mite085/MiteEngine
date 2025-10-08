@@ -4,7 +4,6 @@
 #include "basic_shader/shader.h"
 #include "basic_shader/shader_ssbo.h"
 #include "basic_shader/shader_ubo.h"
-#include "basic_type/material_type.h"
 #include "basic_type/material_param_variant.h"
 
 namespace mite {
@@ -26,68 +25,123 @@ using TextureBindFunc = std::function<void(TextureGPUHandle, size_t)>;
  */
 class MaterialInstance {
  public:
-  explicit MaterialInstance(std::shared_ptr<OpenGLShader> shader);
-  ~MaterialInstance();
+  explicit MaterialInstance() = default;
+  ~MaterialInstance() = default;
+
   // ===================== UBO管理 =====================
   /**
-   * @brief 初始化材质UBO（自动分配绑定点）
+   * @brief 初始化模型UBO（创建时执行一次即可）
+   * @return 是否初始化成功
    */
   void InitializeUBO();
   /**
-   * @brief 更新UBO数据到GPU
+   * @brief 设置着色器绑定（着色器初始化之后，执行一次即可）
+   * @param shader 着色器对象
+   */
+  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
+  /**
+   * @brief 更新模型UBO数据（组件负责每帧Update）
    */
   void UpdateUBO();
-  std::shared_ptr<ShaderUBO> GetUBO() const
-  {
-    return m_UBO;
-  }
+  /**
+   * @brief 仅绑定着色器程序（DrawCall之前绑定）
+   * @param overrideShader 可选覆盖着色器
+   */
+  void BindShaderOnly(std::shared_ptr<OpenGLShader> shader) const;
+  /**
+   * @brief
+   * 仅绑定纹理（假设着色器已绑定）（DrawCall之前绑定）
+   * @param textureBindFunc 纹理绑定函数
+   * @return 使用的纹理槽位数量
+   */
+  size_t BindTexturesOnly(TextureBindFunc textureBindFunc,
+                          std::shared_ptr<OpenGLShader> shader) const;
+  /**
+   * @brief 仅绑定UBO（不存在OverrideShader，UBO已经在Shader中注册好的BindingPoint）
+   */
+  void BindBuffersOnly() const;
+  /**
+   * @brief 前向渲染专用的Apply方法，按照顺序执行绑定操作（DrawCall之前绑定）
+   * @param textureBindFunc 纹理绑定函数
+   */
+  void Apply(TextureBindFunc textureBindFunc, std::shared_ptr<OpenGLShader> shader) const;
 
   // ===================== MaterialUniformBuffer 设置接口 =====================
-  // 
-  // 获取材质数据引用（直接修改，修改后需要手动调用UpdateUBO）
-  MaterialUniformBuffer &GetMaterialData()
-  {
-	return m_MaterialData;
-  }
+  // ---- 材质数据引用 ----
+  MaterialUniformBuffer &GetMaterialData() { return m_MaterialData; }
+  const MaterialUniformBuffer &GetMaterialData() const { return m_MaterialData; }
+
+  // ---- 材质类型标识 ----
+  void SetMaterialInfo(MaterialType type);
+  MaterialType GetMaterialType() const;
 
   // ---- 基础PBR参数 ----
-  void SetMaterialInfo(MaterialType type);
   void SetBaseColor(const glm::vec4 &color);
+  glm::vec4 GetBaseColor() const { return m_MaterialData.baseColor; }
   void SetMetallic(float metallic);
+  float GetMetallic() const { return m_MaterialData.metallicRoughnessAO.x; }
   void SetRoughness(float roughness);
+  float GetRoughness() const { return m_MaterialData.metallicRoughnessAO.y; }
   void SetAO(float ao);
+  float GetAO() const { return m_MaterialData.metallicRoughnessAO.z; }
   void SetEmission(const glm::vec4 &emission);  // RGB + Intensity(w)
+  glm::vec4 GetEmission() const { return m_MaterialData.emission; }
   void SetNormalScale(float scale);
+  float GetNormalScale() const { return m_MaterialData.normalScale.x; }
 
   // ---- NPR参数 (未启用) ----
   void SetNPRParameters(
       const glm::vec4 &params);  // rampThreshold, rampSmoothness, specularSize, outlineWidth
+  glm::vec4 GetNPRParameters() const { return m_MaterialData.nprParameters; }
   void SetNPRColors(const glm::vec4 &colors);  // shadowTint(xyz), rimPower(w)
-  void SetRampThreshold(float threshold);      // 单独的NPR参数设置
+  glm::vec4 GetNPRColors() const { return m_MaterialData.nprColors; }
+  void SetRampThreshold(float threshold);  // 单独的NPR参数设置
+  float GetRampThreshold() const { return m_MaterialData.nprParameters.x; }
   void SetRampSmoothness(float smoothness);
+  float GetRampSmoothness() const { return m_MaterialData.nprParameters.y; }
   void SetSpecularSize(float size);
+  float GetSpecularSize() const { return m_MaterialData.nprParameters.z; }
   void SetOutlineWidth(float width);
+  float GetOutlineWidth() const { return m_MaterialData.nprParameters.w; }
   void SetShadowTint(const glm::vec3 &tint);
+  glm::vec3 GetShadowTint() const;
   void SetRimPower(float power);
+  float GetRimPower() const { return m_MaterialData.nprColors.w; }
 
   // ---- 纹理标志设置 ----
   void SetBaseColorTextureEnabled(bool enabled);
+  bool IsBaseColorTextureEnabled() const { return m_MaterialData.textureCNMROFlags.x > 0.0f; }
   void SetNormalTextureEnabled(bool enabled);
+  bool IsNormalTextureEnabled() const { return m_MaterialData.textureCNMROFlags.y > 0.0f; }
   void SetMetallicRoughnessTextureEnabled(bool enabled);
+  bool IsMetallicRoughnessTextureEnabled() const
+  {
+    return m_MaterialData.textureCNMROFlags.z > 0.0f;
+  }
   void SetOcclusionTextureEnabled(bool enabled);
+  bool IsOcclusionTextureEnabled() const { return m_MaterialData.textureCNMROFlags.w > 0.0f; }
   void SetEmissiveTextureEnabled(bool enabled);
+  bool IsEmissiveTextureEnabled() const { return m_MaterialData.textureEmissionFlag.x > 0.0f; }
 
   // ---- 纹理参数设置 ----
   void SetBaseColorTexParams(const glm::vec4 &params);  // xy: scale, zw: offset
+  glm::vec4 GetBaseColorTexParams() const { return m_MaterialData.baseColorTexParams; }
   void SetNormalTexParams(const glm::vec4 &params);
+  glm::vec4 GetNormalTexParams() const { return m_MaterialData.normalTexParams; }
   void SetMRTexParams(const glm::vec4 &params);
+  glm::vec4 GetMRTexParams() const { return m_MaterialData.mrTexParams; }
   void SetEmissiveTexParams(const glm::vec4 &params);
+  glm::vec4 GetEmissiveTexParams() const { return m_MaterialData.emissiveTexParams; }
   void SetOcclusionTexParams(const glm::vec4 &params);
+  glm::vec4 GetOcclusionTexParams() const { return m_MaterialData.occlusionTexParams; }
 
   // ---- 渲染属性设置 ----
   void SetAlphaCutoff(float cutoff);
+  float GetAlphaCutoff() const { return m_MaterialData.renderProperties.x; }
   void SetDoubleSided(bool doubleSided);
+  bool IsDoubleSided() const { return m_MaterialData.renderProperties.y > 0.0f; }
   void SetAlphaMode(int mode);  // ALPHA_MODE_OPAQUE, ALPHA_MODE_MASK, ALPHA_MODE_BLEND
+  int GetAlphaMode() const { return static_cast<int>(m_MaterialData.renderProperties.z); }
 
   // ===================== 纹理绑定 =====================
   /**
@@ -100,50 +154,20 @@ class MaterialInstance {
   void SetOcclusionTexture(TextureGPUSlot texture);
 
   // --------------------- 绑定相关 ---------------------
-  /**
-   * @brief 仅绑定着色器程序（不设置Uniforms）
-   * @param overrideShader 可选覆盖着色器
-   */
-  void BindShaderOnly(OpenGLShader *overrideShader = nullptr) const;
-  /**
-   * @brief
-   * 仅绑定纹理（假设着色器已绑定）（原则上不存在OverrideShader，纹理采样器是特定材质专用的）
-   * @param textureBindFunc 纹理绑定函数
-   * @return 使用的纹理槽位数量
-   */
-  size_t BindTexturesOnly(TextureBindFunc textureBindFunc,
-                          OpenGLShader *overrideShader = nullptr) const;
-  /**
-   * @brief 仅绑定UBO（不存在OverrideShader，UBO已经在Shader中注册好的BindingPoint）
-   */
-  void BindBuffersOnly() const;
-  /**
-   * @brief 前向渲染专用的Apply方法，按照顺序执行绑定操作。延迟渲染不应当使用该方法
-   * @param textureBindFunc 纹理绑定函数
-   */
-  void Apply(TextureBindFunc textureBindFunc,
-             OpenGLShader *overrideShader = nullptr) const;
+
 
   // --------------------- 属性访问 ---------------------
-  std::shared_ptr<OpenGLShader> GetShader() const;
   std::string GetName() const;
   void SetName(const std::string &name);
 
   // --------------------- 辅助方法 ---------------------
-  bool HasTextures() const
-  {
-    return !m_Textures.empty();
-  }
-  size_t GetTextureCount() const
-  {
-    return m_Textures.size();
-  }
+  bool HasTextures() const { return !m_Textures.empty(); }
+  size_t GetTextureCount() const { return m_Textures.size(); }
 
  private:
   std::string m_Name = "";
-  std::shared_ptr<OpenGLShader> m_Shader;  // 关联的Shader程序
-  std::shared_ptr<ShaderUBO> m_UBO;        // 关联的UBO对象
-  MaterialUniformBuffer m_MaterialData;    // 材质参数数据
+  std::shared_ptr<ShaderUBO> m_UBO;      // 关联的UBO对象
+  MaterialUniformBuffer m_MaterialData;  // 材质参数数据
 
   // 纹理存储（使用预定义的绑定点）
   // 注意：仅外部纹理，ShadowMap和Gbuffer等内部纹理不使用此接口

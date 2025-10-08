@@ -1,16 +1,6 @@
 #include "material_instance.h"
 
 namespace mite {
-MaterialInstance::MaterialInstance(std::shared_ptr<OpenGLShader> shader)
-    : m_Shader(std::move(shader))
-{
-  if (!m_Shader) {
-    LOG_ERROR("MaterialInstance created with null shader!");
-  }
-}
-
-MaterialInstance::~MaterialInstance() {}
-
 // ===================== UBO管理 =====================
 void MaterialInstance::InitializeUBO()
 {
@@ -22,16 +12,15 @@ void MaterialInstance::InitializeUBO()
   m_UBO = std::make_shared<ShaderUBO>(sizeof(MaterialUniformBuffer),
                                       ShaderBufferResourceType::MaterialUBO,
                                       "MaterialUBO_" + m_Name);
-
   m_UBO->Initialize();
 
-  // 设置着色器绑定
-  m_UBO->SetupShaderBinding(m_Shader, ShaderBufferResourceNames::MATERIAL_UBO);
-
-  // 上传初始数据
-  UpdateUBO();
-
   LOG_INFO("Material UBO initialized for '{}'", m_Name);
+}
+
+void MaterialInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
+{
+  // 设置着色器绑定
+  m_UBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MATERIAL_UBO);
 }
 
 void MaterialInstance::UpdateUBO()
@@ -51,6 +40,10 @@ void MaterialInstance::SetMaterialInfo(MaterialType type)
   m_MaterialData.materialInfo.y = 0.0f;
   m_MaterialData.materialInfo.z = 0.0f;
   m_MaterialData.materialInfo.w = 0.0f;
+}
+MaterialType MaterialInstance::GetMaterialType() const
+{
+  return static_cast<MaterialType>(static_cast<int>(m_MaterialData.materialInfo.x));
 }
 // ---- 基础PBR参数 ----
 void MaterialInstance::SetBaseColor(const glm::vec4 &color)
@@ -107,6 +100,11 @@ void MaterialInstance::SetShadowTint(const glm::vec3 &tint)
   m_MaterialData.nprColors.x = tint.x;
   m_MaterialData.nprColors.y = tint.y;
   m_MaterialData.nprColors.z = tint.z;
+}
+glm::vec3 MaterialInstance::GetShadowTint() const
+{
+  return glm::vec3(
+      m_MaterialData.nprColors.x, m_MaterialData.nprColors.y, m_MaterialData.nprColors.z);
 }
 void MaterialInstance::SetRimPower(float power)
 {
@@ -215,9 +213,8 @@ void MaterialInstance::SetOcclusionTexture(TextureGPUSlot texture)
   SetOcclusionTextureEnabled(true);
 }
 // ===================== 绑定相关 =====================
-void MaterialInstance::BindShaderOnly(OpenGLShader *overrideShader) const
+void MaterialInstance::BindShaderOnly(std::shared_ptr<OpenGLShader> targetShader) const
 {
-  OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
   if (!targetShader) {
     LOG_ERROR("MaterialInstance has no valid shader to bind!");
     return;
@@ -225,9 +222,8 @@ void MaterialInstance::BindShaderOnly(OpenGLShader *overrideShader) const
   targetShader->Bind();
 }
 size_t MaterialInstance::BindTexturesOnly(TextureBindFunc textureBindFunc,
-                                          OpenGLShader *overrideShader) const
+                                          std::shared_ptr<OpenGLShader> targetShader) const
 {
-  OpenGLShader *targetShader = overrideShader ? overrideShader : m_Shader.get();
   if (!targetShader) {
     LOG_ERROR("MaterialInstance has no valid shader for texture binding!");
     return 0;
@@ -255,22 +251,14 @@ void MaterialInstance::BindBuffersOnly() const
   }
 }
 
-void MaterialInstance::Apply(TextureBindFunc textureBindFunc, OpenGLShader *overrideShader) const
+void MaterialInstance::Apply(TextureBindFunc textureBindFunc,
+                             std::shared_ptr<OpenGLShader> targetShader) const
 {
-  BindShaderOnly(overrideShader);
+  BindShaderOnly(targetShader);
   BindBuffersOnly();
-  BindTexturesOnly(textureBindFunc, overrideShader);
+  BindTexturesOnly(textureBindFunc, targetShader);
 }
 
-std::shared_ptr<OpenGLShader> MaterialInstance::GetShader() const
-{
-  if (m_Shader)
-    return m_Shader;
-  else {
-    LOG_ERROR("Invaid Shader");
-    return nullptr;
-  }
-}
 std::string MaterialInstance::GetName() const
 {
   return m_Name;
