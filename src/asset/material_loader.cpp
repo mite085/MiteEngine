@@ -378,7 +378,7 @@ MaterialAssetID MaterialLoader::CreatePureColorMaterial(MaterialCache &materialC
                                                         const std::string &name,
                                                         const glm::vec3 &color)
 {
-  std::string materialKey = PureColorMaterialTemplate::StaticType() + "_" + name;
+  std::string materialKey = EmissionMaterialTemplate::StaticType() + "_" + name;
   MaterialAssetID materialID{UUIDGenerator::Generate(materialKey.c_str())};
 
   // 检查缓存中是否已存在
@@ -391,7 +391,7 @@ MaterialAssetID MaterialLoader::CreatePureColorMaterial(MaterialCache &materialC
 
   materialAsset->id = materialID;
   materialAsset->metadata.name = name;
-  materialAsset->metadata.templateName = PureColorMaterialTemplate::StaticType();
+  materialAsset->metadata.templateName = EmissionMaterialTemplate::StaticType();
 
   // 设置纯色材质参数到通用参数存储
   materialAsset->metadata.parameters[MaterialParamKeys::BASE_COLOR] = glm::vec4(color, 1.0f);

@@ -89,8 +89,6 @@ uint32_t BindingPointManager::AllocateBindingPoint(ShaderBufferResourceType type
       // 分配绑定点
       m_AllocatedPoints.set(currentPoint);
       m_ResourceTypes[currentPoint] = type;
-      m_ResourceNames[currentPoint] = name.empty() ? "Unnamed_" + std::to_string(currentPoint) :
-                                                     name;
 
       // 更新下一个可用点
       m_NextBindingPoints[typeIndex] = (currentPoint + 1) % rangeEnd;
@@ -134,21 +132,9 @@ void BindingPointManager::ReleaseBindingPoint(uint32_t bindingPoint)
 
   // 释放绑定点
   m_AllocatedPoints.reset(bindingPoint);
-  m_ResourceNames.erase(bindingPoint);
   m_ResourceTypes.erase(bindingPoint);
 
   LOG_DEBUG("Released binding point: {}", bindingPoint);
-}
-
-std::string BindingPointManager::GetResourceName(uint32_t bindingPoint) const
-{
-  std::lock_guard<std::mutex> lock(m_Mutex);
-
-  auto it = m_ResourceNames.find(bindingPoint);
-  if (it != m_ResourceNames.end()) {
-    return it->second;
-  }
-  return "";
 }
 
 ShaderBufferResourceType BindingPointManager::GetResourceType(uint32_t bindingPoint) const
@@ -179,7 +165,6 @@ void BindingPointManager::Reset()
   std::lock_guard<std::mutex> lock(m_Mutex);
 
   m_AllocatedPoints.reset();
-  m_ResourceNames.clear();
   m_ResourceTypes.clear();
 
   // 重置各类型的下一个绑定点

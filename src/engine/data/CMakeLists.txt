@@ -47,10 +47,12 @@ set(BASIC_DATA_SRCS
 source_group("basic data" FILES ${BASIC_DATA_SRCS})
 
 set(BASIC_INSTANCE_SRCS
-    basic_instance/material_instance.h  # 材质实例
-    basic_instance/material_instance.cpp
     basic_instance/camera_instance.h  # 相机实例
     basic_instance/camera_instance.cpp
+    basic_instance/material_instance.h  # 材质实例
+    basic_instance/material_instance.cpp
+    basic_instance/mesh_instance.h  # 网格体实例
+    basic_instance/mesh_instance.cpp
 )
 source_group("basic instance" FILES ${BASIC_INSTANCE_SRCS})
 

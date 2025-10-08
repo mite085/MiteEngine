@@ -11,17 +11,6 @@ namespace mite {
  */
 class BindingPointManager {
  public:
-  // ---- 资源定义结构 ----
-  struct ShaderBufferResourceDefinition {
-    ShaderBufferResourceType type;
-    std::string name;
-    uint32_t bindingPoint;
-
-    ShaderBufferResourceDefinition(ShaderBufferResourceType t, const std::string &n, uint32_t bp)
-        : type(t), name(n), bindingPoint(bp)
-    {
-    }
-  };
   // ---- 绑定点范围定义 ----
   struct ShaderBufferBindingRanges {
     // UBO范围: 0-15 (16个绑定点)
@@ -61,12 +50,6 @@ class BindingPointManager {
 
   // ---- 查询接口 ----
   /**
-   * @brief 获取资源名称（用于调试）
-   * @param bindingPoint 绑定点
-   * @return 资源名称，如果未分配返回空字符串
-   */
-  std::string GetResourceName(uint32_t bindingPoint) const;
-  /**
    * @brief 获取资源类型
    * @param bindingPoint 绑定点
    * @return 资源类型
@@ -85,50 +68,17 @@ class BindingPointManager {
   size_t GetAllocatedCount() const;
 
   // ---- 便捷方法：获取常用资源的固定绑定点 ----
-  uint32_t GetCameraUBOBinding() const
-  {
-    return m_CameraUBOBinding;
-  }
-  uint32_t GetMaterialUBOBinding() const
-  {
-    return m_MaterialUBOBinding;
-  }
-  uint32_t GetModelUBOBinding() const
-  {
-    return m_ModelUBOBinding;
-  }
-  uint32_t GetLightSSBOBinding() const
-  {
-    return m_LightSSBOBinding;
-  }
-  uint32_t GetBaseColorTextureBinding() const
-  {
-    return m_BaseColorTextureBinding;
-  }
-  uint32_t GetNormalTextureBinding() const
-  {
-    return m_NormalTextureBinding;
-  }
-  uint32_t GetMetallicRoughnessTextureBinding() const
-  {
-    return m_MetallicRoughnessTextureBinding;
-  }
-  uint32_t GetEmissiveTextureBinding() const
-  {
-    return m_EmissiveTextureBinding;
-  }
-  uint32_t GetOcclusionTextureBinding() const
-  {
-    return m_OcclusionTextureBinding;
-  }
-  uint32_t GetShadowMapBinding() const
-  {
-    return m_ShadowMapBinding;
-  }
-  uint32_t GetEnvironmentMapBinding() const
-  {
-    return m_EnvironmentMapBinding;
-  }
+  uint32_t GetCameraUBOBinding() const { return m_CameraUBOBinding; }
+  uint32_t GetMaterialUBOBinding() const { return m_MaterialUBOBinding; }
+  uint32_t GetModelUBOBinding() const { return m_ModelUBOBinding; }
+  uint32_t GetLightSSBOBinding() const { return m_LightSSBOBinding; }
+  uint32_t GetBaseColorTextureBinding() const { return m_BaseColorTextureBinding; }
+  uint32_t GetNormalTextureBinding() const { return m_NormalTextureBinding; }
+  uint32_t GetMetallicRoughnessTextureBinding() const { return m_MetallicRoughnessTextureBinding; }
+  uint32_t GetEmissiveTextureBinding() const { return m_EmissiveTextureBinding; }
+  uint32_t GetOcclusionTextureBinding() const { return m_OcclusionTextureBinding; }
+  uint32_t GetShadowMapBinding() const { return m_ShadowMapBinding; }
+  uint32_t GetEnvironmentMapBinding() const { return m_EnvironmentMapBinding; }
 
   /**
    * @brief 重置所有绑定点（仅用于测试）
@@ -154,7 +104,6 @@ class BindingPointManager {
 
   // 绑定点分配状态 / 资源信息记录
   std::bitset<ShaderBufferBindingRanges::TOTAL_BINDING_POINTS> m_AllocatedPoints;
-  std::unordered_map<uint32_t, std::string> m_ResourceNames;
   std::unordered_map<uint32_t, ShaderBufferResourceType> m_ResourceTypes;
 
   // 常用资源的固定绑定点（预分配，默认不可用）
