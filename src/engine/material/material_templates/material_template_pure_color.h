@@ -5,28 +5,27 @@
 
 namespace mite {
 /**
- * @brief 纯色材质模板（仅用于测试）
+ * @brief 自发光材质模板
  * @note 直接继承自MaterialTemplate，使用统一的UBO系统
  */
-class PureColorMaterialTemplate : public MaterialTemplate {
+class EmissionMaterialTemplate : public MaterialTemplate {
  public:
-  explicit PureColorMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
-                                     const glm::vec3 &color = glm::vec3(0.8f, 0.0f, 0.0f));
+  explicit EmissionMaterialTemplate(const glm::vec3 &emissionColor = glm::vec3(0.8f, 0.0f, 0.0f));
   // ---- 核心接口实现 ----
-  std::string GetMaterialType() const override { return "PureColorMaterial"; }
-  static std::string StaticType() { return "PureColorMaterial"; }
+  MaterialType GetMaterialType() const override { return MaterialType::EMISSION; }
+  static MaterialType StaticType() { return MaterialType::EMISSION; }
+  std::string GetMaterialTypeName() const override { return "Emission Material"; }
 
   // ---- 颜色设置 ----
-  void SetColor(const glm::vec3 &color) { m_Color = color; }
-  const glm::vec3 &GetColor() const { return m_Color; }
+  void SetEmissionColor(const glm::vec3 &color) { m_EmissionColor = color; }
+  const glm::vec3 &GetEmissionColor() const { return m_EmissionColor; }
 
  protected:
   // ---- 默认值重写 ----
-  glm::vec4 GetDefaultBaseColor() const override { return glm::vec4(m_Color, 1.0f); }
-  glm::vec3 GetDefaultEmissionColor() const override { return m_Color; }
-  float GetDefaultEmissionIntensity() const override { return 1.0f; }  // 纯色材质使用自发光
+  glm::vec3 GetDefaultEmissionColor() const override { return m_EmissionColor; }
+  float GetDefaultEmissionIntensity() const override { return 1.0f; }
  private:
-  glm::vec3 m_Color;
+  glm::vec3 m_EmissionColor;
 
 };
 };  // namespace mite

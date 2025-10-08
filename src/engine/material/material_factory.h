@@ -49,7 +49,7 @@ class MaterialFactory {
    * @brief 检查材质模板是否存在
    * @param name 材质模板名称
    */
-  bool HasTemplate(const std::string &materialType) const;
+  bool HasTemplate(const MaterialType &materialType) const;
 
   // ---- 实例管理 ----
   /**
@@ -61,7 +61,7 @@ class MaterialFactory {
    * 作用：
    * 当在运行时动态决定材质类型时（如从配置文件读取）使用，更便捷且可扩展性更强
    */
-  std::shared_ptr<MaterialInstance> CreateInstance(const std::string &templateName,
+  std::shared_ptr<MaterialInstance> CreateInstance(const MaterialType &type,
                                                    const std::string &instanceName = "");
 
   /**
@@ -76,16 +76,6 @@ class MaterialFactory {
   {
     return CreateInstance(MaterialTemplate::GetMaterialTypeStatic<T>(), instanceName);
   }
-
-  /**
-   * @brief 创建带有初始参数的材质实例（便捷接口）
-   * @param templateName    模板名称
-   * @param overrides       参数覆盖键值对（如{{"u_Color", glm::vec3(1,0,0)}}）
-   */
-  std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
-      const std::string &templateName,
-      const std::unordered_map<std::string, UniformVariant> &overrides,
-      const std::string &instanceName = "");
 
   /**
    * @brief 创建带有初始参数的材质实例--模板方法
@@ -140,7 +130,7 @@ class MaterialFactory {
   SubscriptionGroup m_EventSubscription;
 
   // ---- 成员变量 ----
-  std::unordered_map<std::string, std::unique_ptr<MaterialTemplate>> m_Templates;  // 模板存储
+  std::unordered_map<MaterialType, std::unique_ptr<MaterialTemplate>> m_Templates;  // 模板存储
   std::unique_ptr<MaterialTemplate> m_FallbackMaterial;  // 错误回退材质
 };
 };  // namespace mite
