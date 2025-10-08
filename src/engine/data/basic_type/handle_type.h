@@ -5,9 +5,17 @@
 #include "texture_type.h"
 
 namespace mite {
+// ------------------------ 材质相关 ------------------------
+// 材质类型枚举
+enum class MaterialType : uint32_t {
+  PBR = 0,       // 基于物理的渲染材质
+  LAMBERT = 1,   // Lambert漫反射材质
+  EMISSION = 2,  // 自发光材质
+
+  CUSTOM = 255  // 自定义材质
+};
+
 // ------------------------ 纹理相关 ------------------------
-
-
 // 纹理创建信息（GBuffer、ShadowMap等运行时纹理专用）
 struct TextureCreateInfo {
   uint32_t width = 0;                                   // 纹理宽度

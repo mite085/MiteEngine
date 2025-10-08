@@ -8,16 +8,7 @@
 
 namespace mite {
 // ------------------------ 材质相关 ------------------------
-/**
- * @brief 材质类型枚举
- */
-enum class MaterialType : uint32_t {
-  PBR = 0,       // 基于物理的渲染材质
-  LAMBERT = 1,   // Lambert漫反射材质
-  EMISSION = 2,  // 自发光材质
 
-  CUSTOM = 255  // 自定义材质
-};
 // 材质纹理槽位定义（GLTF PBR标准）
 struct MaterialTextureSlot {
   TextureAssetID textureAssetId;       // 纹理资产ID

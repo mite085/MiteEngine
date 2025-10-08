@@ -53,13 +53,6 @@ bool RuntimeTexture::initialize(RuntimeTextureType type,
 
     case RuntimeTextureType::Stencil:
     case RuntimeTextureType::Depth:
-      // 深度模板缓冲：最近邻过滤、边缘拉伸
-      createInfo->minFilter = TextureFilterMode::Nearest;
-      createInfo->magFilter = TextureFilterMode::Nearest;
-      createInfo->wrapModeS = TextureWrapMode::ClampToEdge;
-      createInfo->wrapModeT = TextureWrapMode::ClampToEdge;
-      break;
-
     case RuntimeTextureType::GBuffer_WorldPosDepth:
     case RuntimeTextureType::GBuffer_BaseColorMatType:
     case RuntimeTextureType::GBuffer_MetallicRoughnessAO:
@@ -67,15 +60,21 @@ bool RuntimeTexture::initialize(RuntimeTextureType type,
     case RuntimeTextureType::GBuffer_EmissionAlpha:
     case RuntimeTextureType::GBuffer_NPRParam:
     case RuntimeTextureType::GBuffer_NPRColor:
+      // G-Buffer纹理/深度模板缓冲：最近邻过滤、边缘拉伸
+      // 注意，G-Buffer不能使用线性过滤，否则会引入采样误差
+      createInfo->minFilter = TextureFilterMode::Nearest;
+      createInfo->magFilter = TextureFilterMode::Nearest;
+      createInfo->wrapModeS = TextureWrapMode::ClampToEdge;
+      createInfo->wrapModeT = TextureWrapMode::ClampToEdge;
+      break;
 
     case RuntimeTextureType::Lighting_Diffuse:
     case RuntimeTextureType::Lighting_Specular:
     case RuntimeTextureType::Lighting_Combined:
     case RuntimeTextureType::Lighting_Ambient:
-
     case RuntimeTextureType::RenderTarget:
     default:
-      // G-Buffer纹理/光照着色结果/普通渲染目标/默认情况：线性过滤、边缘拉伸（防止接缝）
+      // 光照着色结果/普通渲染目标/默认情况：线性过滤、边缘拉伸（防止接缝）
       createInfo->minFilter = TextureFilterMode::Linear;
       createInfo->magFilter = TextureFilterMode::Linear;
       createInfo->wrapModeS = TextureWrapMode::ClampToEdge;

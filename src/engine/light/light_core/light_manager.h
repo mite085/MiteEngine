@@ -169,14 +169,7 @@ class LightManager {
   size_t GetMaxLights() const;
 
  private:
-  // ---- 成员变量 ----
-  std::vector<LightPtr> m_Lights;  // 所有光源列表
-  LightSSBOPtr m_LightSSBO;        // 光源SSBO管理器
-  size_t m_MaxLights;              // 最大光源数量
-  bool m_IsInitialized = false;    // 初始化状态标志
-
   // ---- 内部方法 ----
-
   /**
    * @brief 准备GPU光源数据
    * @param worldTransforms 光源世界变换映射表
@@ -191,6 +184,12 @@ class LightManager {
    * @return 是否可以添加
    */
   bool CanAddLight(LightPtr light) const;
+
+  // ---- 成员变量 ----
+  std::vector<LightPtr> m_Lights;  // 所有光源列表
+  LightSSBOPtr m_LightSSBO;        // 光源统一的SSBO管理器
+  size_t m_MaxLights;              // 最大光源数量
+  bool m_IsInitialized = false;    // 初始化状态标志
 };
 
 }  // namespace mite
