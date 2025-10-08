@@ -16,14 +16,9 @@ void LightShaderStorgeBuffer::Initialize()
   }
 
   try {
-    // 从绑定点管理器分配绑定点
-    m_BindingPoint = BindingPointManager::Get().GetLightSSBOBinding();
-    if (m_BindingPoint == UINT32_MAX) {
-      throw std::runtime_error("Failed to allocate binding point for LightSSBO");
-    }
-
     // 创建底层SSBO
-    m_SSBO = std::make_unique<ShaderSSBO>(m_SSBOSize, GL_DYNAMIC_DRAW);
+    m_SSBO = std::make_unique<ShaderSSBO>(
+        m_SSBOSize, ShaderBufferResourceType::LightSSBO, "LightsSSBO", GL_DYNAMIC_DRAW);
     m_SSBO->Initialize();
 
     // 初始化为空光源数据
@@ -42,12 +37,6 @@ void LightShaderStorgeBuffer::Destroy()
 {
   if (!m_IsInitialized) {
     return;
-  }
-
-  // 释放绑定点
-  if (m_BindingPoint != UINT32_MAX) {
-    BindingPointManager::Get().ReleaseBindingPoint(m_BindingPoint);
-    m_BindingPoint = UINT32_MAX;
   }
 
   // 销毁SSBO
@@ -171,14 +160,14 @@ bool LightShaderStorgeBuffer::ClearLights()
 void LightShaderStorgeBuffer::Bind() const
 {
   if (m_IsInitialized && m_SSBO) {
-    m_SSBO->Bind(m_BindingPoint);
+    m_SSBO->Bind();
   }
 }
 
 void LightShaderStorgeBuffer::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const
 {
   if (m_IsInitialized && m_SSBO && shader) {
-    m_SSBO->SetupShaderBinding(shader, ShaderBufferResourceNames::LIGHT_SSBO, m_BindingPoint);
+    m_SSBO->SetupShaderBinding(shader, ShaderBufferResourceNames::LIGHT_SSBO);
   }
 }
 size_t LightShaderStorgeBuffer::GetMaxLights() const
@@ -203,10 +192,6 @@ void LightShaderStorgeBuffer::SetMaxLights(size_t maxLights)
   m_MaxLights = maxLights;
   m_SSBOSize = CalculateSSBOSize();
   LOG_INFO("LightSSBO max lights set to: {}", m_MaxLights);
-}
-uint32_t LightShaderStorgeBuffer::GetBindingPoint() const
-{
-  return m_BindingPoint;
 }
 size_t LightShaderStorgeBuffer::CalculateSSBOSize() const
 {

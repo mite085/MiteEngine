@@ -27,7 +27,7 @@ class LightShaderStorgeBuffer {
 
   // ---- 生命周期管理 ----
   /**
-   * @brief 初始化SSBO，分配GPU内存
+   * @brief 初始化SSBO，分配GPU内存（创建时执行一次即可）
    */
   void Initialize();
   /**
@@ -39,10 +39,16 @@ class LightShaderStorgeBuffer {
    * @return 初始化状态
    */
   bool IsInitialized() const;
+  /**
+   * @brief 为着色器设置光源SSBO绑定点（着色器初始化之后，执行一次即可）
+   * @param shader 目标着色器对象
+   * @param bindingPoint 绑定点索引
+   */
+  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
 
   // ---- 数据管理 ----
   /**
-   * @brief 批量更新所有光源数据到SSBO
+   * @brief 批量更新所有光源数据到SSBO（LightManager和组件系统负责脏标记更新（TODO: 未实现））
    * @param lights 光源数据列表
    * @return 更新是否成功
    * @note 这是最常用的更新方式，性能最佳
@@ -65,15 +71,10 @@ class LightShaderStorgeBuffer {
 
   // ---- 绑定管理 ----
   /**
-   * @brief 绑定SSBO到指定绑定点
+   * @brief 绑定SSBO到指定绑定点（DrawCall之前绑定）
    */
   void Bind() const;
-  /**
-   * @brief 为着色器设置光源SSBO绑定点
-   * @param shader 目标着色器对象
-   * @param bindingPoint 绑定点索引
-   */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
+
 
   // ---- 统计信息 ----
   /**
@@ -101,31 +102,7 @@ class LightShaderStorgeBuffer {
    */
   void SetMaxLights(size_t maxLights);
 
-  /**
-   * @brief 获取当前绑定点
-   * @return 绑定点索引
-   */
-  uint32_t GetBindingPoint() const;
-
  private:
-  // ---- 内部数据结构 ----
-  /**
-   * @brief SSBO中的数据内存布局
-   * @note 采用简单的头部+数组布局，避免复杂结构
-   */
-  struct LightSSBOLayout {
-    LightSSBOHeader header;     // 头部信息：光源数量
-    GPULightData lights[1024];  // 光源数据数组：固定大小
-  };
-
-  // ---- 成员变量 ----
-  std::unique_ptr<ShaderSSBO> m_SSBO;    // 底层SSBO对象，管理OpenGL资源
-  size_t m_MaxLights;                    // 最大光源数量，决定SSBO大小
-  size_t m_CurrentLightCount;            // 当前有效光源数量
-  size_t m_SSBOSize;                     // SSBO总大小（字节）
-  uint32_t m_BindingPoint = UINT32_MAX;  // 绑定点，初始化为无效值
-  bool m_IsInitialized = false;          // 初始化状态标志
-
   // ---- 内部工具方法 ----
   /**
    * @brief 计算SSBO所需的总内存大小
@@ -152,6 +129,23 @@ class LightShaderStorgeBuffer {
    * @return 空的光源数据列表
    */
   std::vector<GPULightData> CreateEmptyLightData() const;
+
+  // ---- 内部数据结构 ----
+  /**
+   * @brief SSBO中的数据内存布局
+   * @note 采用简单的头部+数组布局，避免复杂结构
+   */
+  struct LightSSBOLayout {
+    LightSSBOHeader header;     // 头部信息：光源数量
+    GPULightData lights[1024];  // 光源数据数组：固定大小
+  };
+
+  // ---- 成员变量 ----
+  std::unique_ptr<ShaderSSBO> m_SSBO;    // 底层SSBO对象，管理OpenGL资源
+  size_t m_MaxLights;                    // 最大光源数量，决定SSBO大小
+  size_t m_CurrentLightCount;            // 当前有效光源数量
+  size_t m_SSBOSize;                     // SSBO总大小（字节）
+  bool m_IsInitialized = false;          // 初始化状态标志
 };
 
 // ---- 类型定义 ----
