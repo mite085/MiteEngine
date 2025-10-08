@@ -16,27 +16,13 @@ namespace mite {
 class ShaderUBO {
  public:
   /**
-   * @brief 构造函数
-   * @param size UBO大小（字节）
-   * @param type 资源类型（用于自动分配绑定点）
-   * @param name 资源名称（用于调试）
-   * @param usage 缓冲区使用模式
-   */
-  explicit ShaderUBO(size_t size,
-                     ShaderBufferResourceType type,
-                     const std::string &name = "",
-                     GLenum usage = GL_DYNAMIC_DRAW);
-
-  /**
    * @brief 构造函数 - 使用预分配的绑定点
    * @param size UBO大小（字节）
-   * @param bindingPoint 预分配的绑定点
-   * @param name 资源名称
+   * @param bindingPoint 预分配的绑定点（使用BindingPointManager）
    * @param usage 缓冲区使用模式
    */
   explicit ShaderUBO(size_t size,
                      uint32_t bindingPoint,
-                     const std::string &name = "",
                      GLenum usage = GL_DYNAMIC_DRAW);
   ~ShaderUBO();
 
@@ -95,24 +81,17 @@ class ShaderUBO {
   {
     return m_BindingPoint;
   }
-  const std::string &GetName() const
-  {
-    return m_Name;
-  }
 
  private:
   uint32_t m_UBOId = 0;                  // OpenGL UBO句柄
   size_t m_Size = 0;                     // UBO大小（字节）
   GLenum m_Usage = GL_DYNAMIC_DRAW;      // 缓冲区使用模式
   uint32_t m_BindingPoint = UINT32_MAX;  // 绑定点（通过BindingPointManager分配）
-  std::string m_Name;                    // 资源名称（调试用）
   bool m_IsInitialized = false;          // 初始化状态
-  bool m_AutoAllocated = false;          // 标记是否自动分配了绑定点
 
   // ---- 内部方法 ----
   void CreateUBO();
   bool ValidateDataSize(size_t size, size_t offset) const;
-  void AllocateBindingPoint(ShaderBufferResourceType type, const std::string &name);
 };
 
 // ---- 类型定义 ----

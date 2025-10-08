@@ -2,13 +2,9 @@
 #include "shader_binding_point_manager.h"
 
 namespace mite {
-ShaderSSBO::ShaderSSBO(size_t size,
-                       ShaderBufferResourceType type,
-                       const std::string &name,
-                       GLenum usage)
-    : m_Size(size), m_Usage(usage), m_Name(name), m_AutoAllocated(true)
+ShaderSSBO::ShaderSSBO(size_t size, uint32_t bindingPoint, GLenum usage)
+    : m_Size(size), m_Usage(usage), m_BindingPoint(bindingPoint)
 {
-
   if (size == 0) {
     LOG_ERROR("ShaderSSBO: Invalid size 0");
     throw std::invalid_argument("SSBO size cannot be 0");
@@ -20,37 +16,8 @@ ShaderSSBO::ShaderSSBO(size_t size,
     LOG_WARN("ShaderSSBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
     m_Usage = GL_DYNAMIC_DRAW;
   }
-  // 自动分配绑定点
-  AllocateBindingPoint(type, name);
-
-  LOG_DEBUG("ShaderSSBO created - Size: {} bytes, Binding: {}, Name: '{}'",
-            size,
-            m_BindingPoint,
-            m_Name);
-}
-ShaderSSBO::ShaderSSBO(size_t size, uint32_t bindingPoint, const std::string &name, GLenum usage)
-    : m_Size(size),
-      m_Usage(usage),
-      m_BindingPoint(bindingPoint),
-      m_Name(name),
-      m_AutoAllocated(false)
-{
-
-  if (size == 0) {
-    LOG_ERROR("ShaderSSBO: Invalid size 0");
-    throw std::invalid_argument("SSBO size cannot be 0");
-  }
-  // 验证使用模式
-  if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW && usage != GL_STREAM_DRAW &&
-      usage != GL_DYNAMIC_COPY && usage != GL_DYNAMIC_READ)
-  {
-    LOG_WARN("ShaderSSBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
-    m_Usage = GL_DYNAMIC_DRAW;
-  }
-  LOG_DEBUG("ShaderSSBO created with fixed binding - Size: {} bytes, Binding: {}, Name: '{}'",
-            size,
-            m_BindingPoint,
-            m_Name);
+  LOG_DEBUG(
+      "ShaderSSBO created with fixed binding - Size: {} bytes, Binding: {}", size, m_BindingPoint);
 }
 ShaderSSBO::~ShaderSSBO()
 {
@@ -60,13 +27,6 @@ ShaderSSBO::~ShaderSSBO()
     UnmapBuffer();
   }
   Destroy();
-
-  // 如果是自动分配的绑定点，需要释放
-  if (m_AutoAllocated && m_BindingPoint != UINT32_MAX) {
-    auto &bindingMgr = BindingPointManager::Get();
-    bindingMgr.ReleaseBindingPoint(m_BindingPoint);
-    LOG_DEBUG("ShaderSSBO released binding point: {}", m_BindingPoint);
-  }
 }
 
 void ShaderSSBO::Initialize()
@@ -81,10 +41,7 @@ void ShaderSSBO::Initialize()
   }
   CreateSSBO();
   m_IsInitialized = true;
-  LOG_INFO("ShaderSSBO initialized - ID: {}, Binding: {}, Name: '{}'",
-           m_SSBOId,
-           m_BindingPoint,
-           m_Name);
+  LOG_INFO("ShaderSSBO initialized - ID: {}, Binding: {}", m_SSBOId, m_BindingPoint);
 }
 
 void ShaderSSBO::Destroy()
@@ -399,14 +356,5 @@ bool ShaderSSBO::ValidateAccess() const
   }
 
   return true;
-}
-void ShaderSSBO::AllocateBindingPoint(ShaderBufferResourceType type, const std::string &name)
-{
-  auto &bindingMgr = BindingPointManager::Get();
-  m_BindingPoint = bindingMgr.AllocateBindingPoint(type, name);
-
-  if (m_BindingPoint == UINT32_MAX) {
-    throw std::runtime_error("Failed to allocate binding point for SSBO: " + name);
-  }
 }
 }  // namespace mite

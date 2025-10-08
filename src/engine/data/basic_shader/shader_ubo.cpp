@@ -2,11 +2,11 @@
 #include "shader_binding_point_manager.h"
 
 namespace mite {
-ShaderUBO::ShaderUBO(size_t size,
-                     ShaderBufferResourceType type,
-                     const std::string &name,
-                     GLenum usage)
-    : m_Size(size), m_Usage(usage), m_Name(name), m_AutoAllocated(true)
+
+ShaderUBO::ShaderUBO(size_t size, uint32_t bindingPoint, GLenum usage)
+    : m_Size(size),
+      m_Usage(usage),
+      m_BindingPoint(bindingPoint)
 {
   // 验证大小合理性
   if (size == 0) {
@@ -18,43 +18,14 @@ ShaderUBO::ShaderUBO(size_t size,
     LOG_WARN("ShaderUBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
     m_Usage = GL_DYNAMIC_DRAW;
   }
-  // 自动分配绑定点
-  AllocateBindingPoint(type, name);
-
-  LOG_DEBUG(
-      "ShaderUBO created - Size: {} bytes, Binding: {}, Name: '{}'", size, m_BindingPoint, m_Name);
-}
-ShaderUBO::ShaderUBO(size_t size, uint32_t bindingPoint, const std::string &name, GLenum usage)
-    : m_Size(size),
-      m_Usage(usage),
-      m_BindingPoint(bindingPoint),  // 使用指定绑定点
-      m_Name(name),
-      m_AutoAllocated(false)
-{
-  if (size == 0) {
-    LOG_ERROR("ShaderUBO: Invalid size 0");
-    throw std::invalid_argument("UBO size cannot be 0");
-  }
-  if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW && usage != GL_STREAM_DRAW) {
-    LOG_WARN("ShaderUBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
-    m_Usage = GL_DYNAMIC_DRAW;
-  }
-  LOG_DEBUG("ShaderUBO created with fixed binding - Size: {} bytes, Binding: {}, Name: '{}'",
+  LOG_DEBUG("ShaderUBO created with fixed binding - Size: {} bytes, Binding: {}",
             size,
-            m_BindingPoint,
-            m_Name);
+            m_BindingPoint);
 }
 
 ShaderUBO::~ShaderUBO()
 {
   Destroy();
-
-  // 如果是自动分配的绑定点，需要释放
-  if (m_AutoAllocated && m_BindingPoint != UINT32_MAX) {
-    auto &bindingMgr = BindingPointManager::Get();
-    bindingMgr.ReleaseBindingPoint(m_BindingPoint);
-    LOG_DEBUG("ShaderUBO released binding point: {}", m_BindingPoint);
-  }
 }
 
 void ShaderUBO::Initialize()
@@ -72,8 +43,7 @@ void ShaderUBO::Initialize()
   // 创建UBO
   CreateUBO();
   m_IsInitialized = true;
-  LOG_INFO(
-      "ShaderUBO initialized - ID: {}, Binding: {}, Name: '{}'", m_UBOId, m_BindingPoint, m_Name);
+  LOG_INFO("ShaderUBO initialized - ID: {}, Binding: {}", m_UBOId, m_BindingPoint);
 }
 
 void ShaderUBO::Destroy()
@@ -213,13 +183,4 @@ void ShaderUBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
   LOG_DEBUG("Shader UBO binding setup - Block: '{}', Point: {}", uniformBlockName, m_BindingPoint);
 }
 
-void ShaderUBO::AllocateBindingPoint(ShaderBufferResourceType type, const std::string &name)
-{
-  auto &bindingMgr = BindingPointManager::Get();
-  m_BindingPoint = bindingMgr.AllocateBindingPoint(type, name);
-
-  if (m_BindingPoint == UINT32_MAX) {
-    throw std::runtime_error("Failed to allocate binding point for UBO: " + name);
-  }
-}
 }  // namespace mite

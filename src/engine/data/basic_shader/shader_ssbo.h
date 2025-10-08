@@ -23,20 +23,10 @@ namespace mite {
 class ShaderSSBO {
  public:
   /**
-   * @brief 构造函数 - 自动分配绑定点
-   * @param size SSBO大小（字节）
-   * @param usage 缓冲区使用模式
-   */
-  explicit ShaderSSBO(size_t size,
-                      ShaderBufferResourceType type,
-                      const std::string &name = "",
-                      GLenum usage = GL_DYNAMIC_DRAW);
-  /**
    * @brief 构造函数 - 使用预分配的绑定点
    */
   explicit ShaderSSBO(size_t size,
                       uint32_t bindingPoint,
-                      const std::string &name = "",
                       GLenum usage = GL_DYNAMIC_DRAW);
   ~ShaderSSBO();
 
@@ -131,16 +121,13 @@ class ShaderSSBO {
   uint32_t m_SSBOId = 0;                 // OpenGL SSBO句柄
   size_t m_Size = 0;                     // SSBO大小（字节）
   GLenum m_Usage = GL_DYNAMIC_DRAW;      // 缓冲区使用模式
-  uint32_t m_BindingPoint = UINT32_MAX;  // 绑定点
-  std::string m_Name;                    // SSBO名称（用于调试）
+  uint32_t m_BindingPoint = UINT32_MAX;  // 绑定点（通过BindingPointManager分配）
   bool m_IsInitialized = false;          // 初始化状态
   bool m_IsMapped = false;               // 内存映射状态
-  bool m_AutoAllocated = false;          // 绑定点是否自动分配
   // ---- 内部方法 ----
   void CreateSSBO();
   bool ValidateDataSize(size_t size, size_t offset) const;
   bool ValidateAccess() const;
-  void AllocateBindingPoint(ShaderBufferResourceType type, const std::string &name);
 };
 // ---- 类型定义 ----
 using ShaderSSBOPtr = std::shared_ptr<ShaderSSBO>;
