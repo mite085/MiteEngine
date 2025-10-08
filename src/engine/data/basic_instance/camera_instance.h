@@ -20,26 +20,28 @@ class CameraInstance {
    * @param camera 关联的相机对象
    * @param name 相机实例名称
    */
-  explicit CameraInstance(std::shared_ptr<Camera> camera, const std::string &name = "");
+  explicit CameraInstance(std::shared_ptr<Camera> camera);
   ~CameraInstance();
 
   // ==================== UBO管理接口 ====================
   /**
-   * @brief 初始化相机UBO
-   * @param shader 需要绑定UBO的着色器程序
+   * @brief 初始化相机UBO（创建时执行一次即可）
    * @return 是否初始化成功
    */
   bool InitializeUBO();
-
   /**
-   * @brief 更新相机UBO数据
+   * @brief 设置着色器绑定（着色器初始化之后，执行一次即可）
+   * @param shader 着色器对象
+   */
+  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
+  /**
+   * @brief 更新相机UBO数据（SceneView负责每帧Update）
    * @param viewMatrix 视图矩阵
    * @return 是否更新成功
    */
   bool UpdateUBO(const Transform cameraTransform);
-
   /**
-   * @brief 绑定相机UBO到当前渲染状态
+   * @brief 绑定相机UBO到当前渲染状态（DrawCall之前绑定）
    */
   void BindUBO() const;
 
@@ -74,21 +76,11 @@ class CameraInstance {
   {
 	return m_CameraTransform;
   }
-  // ==================== 实例属性管理 ====================
-  std::string GetName() const
-  {
-    return m_Name;
-  }
-  void SetName(const std::string &name)
-  {
-    m_Name = name;
-  }
 
  private:
   std::shared_ptr<Camera> m_Camera;        // 关联的相机对象
   Transform m_CameraTransform;             // 相机世界空间变换（缓存）
   std::shared_ptr<ShaderUBO> m_CameraUBO;  // 相机UBO实例
-  std::string m_Name;                      // 实例名称
 
   // 禁用拷贝构造和赋值
   CameraInstance(const CameraInstance &) = delete;
