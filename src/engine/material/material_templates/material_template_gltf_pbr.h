@@ -14,11 +14,12 @@ class GLTFPBRMaterialTemplate : public MaterialTemplate {
    * @brief 构造函数
    * @param shader 关联的PBR着色器程序
    */
-  explicit GLTFPBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader);
+  explicit GLTFPBRMaterialTemplate();
 
   // ---- 核心接口重写 ----
-  std::string GetMaterialType() const override { return "GLTFPBRMaterial"; }
-  static std::string StaticType() { return "GLTFPBRMaterial"; }
+  MaterialType GetMaterialType() const override { return MaterialType::PBR; }
+  static MaterialType StaticType() { return MaterialType::PBR; }
+  std::string GetMaterialTypeName() const override { return "GLTF PBR Material"; }
 
   // ---- GLTF特定参数设置 ----
   void SetDefaultBaseColor(const glm::vec4 &color) { m_DefaultBaseColor = color; }

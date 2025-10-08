@@ -15,7 +15,7 @@ namespace mite {
  */
 class MaterialTemplate {
  public:
-  MaterialTemplate(std::shared_ptr<OpenGLShader> shader);
+  MaterialTemplate();
   virtual ~MaterialTemplate() = default;
 
   // ---- 核心接口 ----
@@ -41,14 +41,15 @@ class MaterialTemplate {
   virtual void ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const;
   /**
    * @brief 获取材质类型标识（用于运行时类型检查）
-   * @return 字符串类型标识（如"GLTFPBRMaterial"、"PureColorMaterial"）
+   * @return 类型标识
    */
-  virtual std::string GetMaterialType() const = 0;
+  virtual MaterialType GetMaterialType() const = 0;
+  virtual std::string GetMaterialTypeName() const = 0;
   /**
    * @brief 获取材质类型标识--静态模板方法
    * @return 字符串类型标识
    */
-  template<typename T> static std::string GetMaterialTypeStatic()
+  template<typename T> static MaterialType GetMaterialTypeStatic()
   {
     static_assert(std::is_base_of<MaterialTemplate, T>::value, "Must inherit from Material");
     return T::StaticType();
@@ -57,7 +58,6 @@ class MaterialTemplate {
   // ---- 通用属性 ----
   void SetName(const std::string &name);
   const std::string &GetName() const;
-  std::shared_ptr<OpenGLShader> GetShader() const { return m_Shader; }
 
  protected:
   // ---- 通用数据获取工具方法（供派生类使用） ----
@@ -143,7 +143,6 @@ class MaterialTemplate {
   virtual int GetDefaultAlphaMode() const { return 0; }  // ALPHA_MODE_OPAQUE
 
  protected:
-  std::shared_ptr<OpenGLShader> m_Shader;   // 着色器对象
   std::string m_Name = "Unnamed_Material";  // 材质名称（用于调试和UI显示）
   uint32_t m_DefaultInstanceCounter = 0;
 };

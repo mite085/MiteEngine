@@ -2,8 +2,8 @@
 
 namespace mite {
 
-GLTFPBRMaterialTemplate::GLTFPBRMaterialTemplate(std::shared_ptr<OpenGLShader> shader)
-    : MaterialTemplate(std::move(shader))
+GLTFPBRMaterialTemplate::GLTFPBRMaterialTemplate()
+    : MaterialTemplate()
 {
   LOG_DEBUG("GLTFPBRMaterialTemplate created");
 }

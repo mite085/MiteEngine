@@ -1,17 +1,14 @@
 #include "material_template.h"
 
 namespace mite {
-MaterialTemplate::MaterialTemplate(std::shared_ptr<OpenGLShader> shader) : m_Shader(shader)
-{
-  assert(m_Shader != nullptr && "MaterialTemplate: Shader cannot be nullptr");
-}
+MaterialTemplate::MaterialTemplate(){}
 
 std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance()
 {
-  auto instance = std::make_shared<MaterialInstance>(m_Shader);
+  auto instance = std::make_shared<MaterialInstance>();
 
   // 根据MaterialType和计数拼接默认创建的材质实例的名称
-  std::string materialTypeName = GetMaterialType();
+  std::string materialTypeName = GetMaterialTypeName();
   std::string numStr = std::to_string(m_DefaultInstanceCounter);
 
   // 补零到4位
@@ -33,14 +30,14 @@ std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance(
     const MaterialSourceData &sourceData) const
 {
 
-  auto instance = std::make_shared<MaterialInstance>(m_Shader);
+  auto instance = std::make_shared<MaterialInstance>();
   // 设置材质名称
   if (!sourceData.name.empty()) {
     instance->SetName(sourceData.name);
   }
   // 初始化材质实例
   InitializeMaterialInstance(instance, sourceData);
-  LOG_DEBUG("Created material instance '{}' of type '{}'", instance->GetName(), GetMaterialType());
+  LOG_DEBUG("Created material instance '{}' of type '{}'", instance->GetName(), GetMaterialTypeName());
   return instance;
 }
 
@@ -211,16 +208,13 @@ void MaterialTemplate::InitializeMaterialInstance(std::shared_ptr<MaterialInstan
   MaterialUniformBuffer &instanceData = instance->GetMaterialData();
   instanceData = materialData;
 
-  // 更新UBO
-  instance->UpdateUBO();
-
   // 应用材质特定的纹理设置
   SetupMaterialTextures(instance, sourceData);
 }
 MaterialSourceData MaterialTemplate::CreateDefaultSourceData() const
 {
   MaterialSourceData defaultData;
-  defaultData.name = "Default_" + GetMaterialType();
+  defaultData.name = "Default_" + GetMaterialTypeName();
 
   // 设置默认参数
   defaultData.parameters[MaterialParamKeys::BASE_COLOR] = GetDefaultBaseColor();

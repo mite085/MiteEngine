@@ -1,13 +1,12 @@
 #include "material_template_pure_color.h"
 
 namespace mite {
-
-PureColorMaterialTemplate::PureColorMaterialTemplate(std::shared_ptr<OpenGLShader> shader,
-                                                     const glm::vec3 &color)
-    : MaterialTemplate(std::move(shader)), m_Color(color)
+EmissionMaterialTemplate::EmissionMaterialTemplate(const glm::vec3 &emissionColor)
+    : MaterialTemplate(), m_EmissionColor(emissionColor)
 {
-  LOG_DEBUG(
-      "PureColorMaterialTemplate created with color: ({}, {}, {})", color.r, color.g, color.b);
+  LOG_DEBUG("EmissionMaterialTemplate created with color: ({}, {}, {})",
+            emissionColor.r,
+            emissionColor.g,
+            emissionColor.b);
 }
-
 }  // namespace mite
