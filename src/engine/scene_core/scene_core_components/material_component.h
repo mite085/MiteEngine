@@ -44,18 +44,6 @@ class MaterialComponent : public SnapshotComponentTraits<std::shared_ptr<Materia
    */
   void SetMaterialInstanceHandel(std::shared_ptr<MaterialInstance> handle);
 
-  //===================== 着色器控制 =====================
-  /**
-   * @brief 获取关联的着色器
-   * @return 着色器指针
-   */
-  std::shared_ptr<OpenGLShader> GetShader() const;
-
-  //==================== 材质参数快捷设置 ====================
-  void SetFloatParam(const std::string &name, float value);
-  void SetColorParam(const std::string &name, const glm::vec3 &color);
-  void SetTextureParam(const std::string &name, TextureGPUSlot texture);
-
   //==================== 组件接口实现 ====================
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;

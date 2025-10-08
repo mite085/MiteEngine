@@ -91,17 +91,6 @@ void RenderQueue::SortQueue(QueueType queueType)
                     return a.material->GetName() < b.material->GetName();
                   });
         break;
-
-      case SortStrategy::ByShader:
-        // 按Shader排序（减少状态切换）
-        std::sort(
-            queue.items.begin(),
-            queue.items.end(),
-            [](const RenderableItem &a, const RenderableItem &b) {
-              return a.material->GetShader()->GetHandle().programId <
-                     b.material->GetShader()->GetHandle().programId;
-            });
-        break;
     }
   }
 }

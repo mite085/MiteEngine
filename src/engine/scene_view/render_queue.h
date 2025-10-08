@@ -30,7 +30,6 @@ class RenderQueue {
     FrontToBack,  // 从前到后（用于不透明物体）
     BackToFront,  // 从后到前（用于透明物体）
     ByMaterial,   // 按材质排序（减少状态切换）
-    ByShader      // 按Shader排序（减少状态切换）
   };
 
   /**

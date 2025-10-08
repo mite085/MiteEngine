@@ -24,37 +24,6 @@ void MaterialComponent::SetMaterialInstanceHandel(std::shared_ptr<MaterialInstan
     EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
 }
 
-// =================== 着色器控制 =======================
-std::shared_ptr<OpenGLShader> MaterialComponent::GetShader() const
-{
-  return m_MaterialInstance ? m_MaterialInstance->GetShader() : nullptr;
-}
-
-// ================== 材质参数控制 ======================
-
-void MaterialComponent::SetFloatParam(const std::string &name, float value)
-{
-  if (!m_MaterialInstance) {
-    LOG_WARN("Attempt to set param on null material");
-    return;
-  }
-  m_MaterialInstance->SetFloat(name, value);
-}
-
-void MaterialComponent::SetColorParam(const std::string &name, const glm::vec3 &color)
-{
-  if (!m_MaterialInstance)
-    return;
-  m_MaterialInstance->SetVector3(name, color);
-}
-
-void MaterialComponent::SetTextureParam(const std::string &name, TextureGPUSlot texture)
-{
-  if (!m_MaterialInstance)
-    return;
-  m_MaterialInstance->SetTexture(name, texture);
-}
-
 // ================== 组件接口实现 ======================
 std::vector<std::type_index> MaterialComponent::GetDependencies() const
 {

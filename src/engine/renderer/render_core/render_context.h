@@ -1,8 +1,8 @@
 #ifndef MITE_RENDER_CONTEXT
 #define MITE_RENDER_CONTEXT
 
-#include "basic_instance/camera_instance.h"
 #include "basic_data/runtime_texture.h"
+#include "basic_instance/camera_instance.h"
 #include "basic_shader/gbuffer.h"
 #include "render_queue.h"
 
@@ -15,6 +15,7 @@ namespace mite {
  * 2. 提供阶段间的数据共享机制
  * 3. 管理临时渲染资源
  * 4. 提供分层纹理管理（GBuffer、ShadowMap、RenderTarget）
+ * 5. 管理着色器阶段注册和UBO绑定自动设置
  */
 class RenderContext {
  public:
@@ -25,22 +26,10 @@ class RenderContext {
   void SetSceneData(std::shared_ptr<RenderQueue> renderQueue, CameraInstance &cameraInstance);
 
   // ---- 窗口尺寸管理 ----
-  void SetViewportSize(uint32_t width, uint32_t height)
-  {
-    m_ViewportSize = {width, height};
-  }
-  const glm::uvec2 &GetViewportSize() const
-  {
-    return m_ViewportSize;
-  }
-  uint32_t GetViewportWidth() const
-  {
-    return m_ViewportSize.x;
-  }
-  uint32_t GetViewportHeight() const
-  {
-    return m_ViewportSize.y;
-  }
+  void SetViewportSize(uint32_t width, uint32_t height) { m_ViewportSize = {width, height}; }
+  const glm::uvec2 &GetViewportSize() const { return m_ViewportSize; }
+  uint32_t GetViewportWidth() const { return m_ViewportSize.x; }
+  uint32_t GetViewportHeight() const { return m_ViewportSize.y; }
   float GetViewportAspectRatio() const
   {
     return m_ViewportSize.y > 0 ? static_cast<float>(m_ViewportSize.x) / m_ViewportSize.y : 1.0f;
@@ -66,11 +55,8 @@ class RenderContext {
   // ---- 数据访问接口 ----
 
   // 场景数据
-  std::shared_ptr<RenderQueue> GetRenderQueue() const
-  {
-    return m_RenderQueue;
-  }
-  CameraInstance& GetCameraInstance() const
+  std::shared_ptr<RenderQueue> GetRenderQueue() const { return m_RenderQueue; }
+  CameraInstance &GetCameraInstance() const
   {
     if (m_CameraInstance.has_value()) {
       return m_CameraInstance.value().get();
@@ -92,7 +78,8 @@ class RenderContext {
  private:
   // ---- 场景数据 ----
   std::shared_ptr<RenderQueue> m_RenderQueue;
-  std::optional<std::reference_wrapper<CameraInstance>> m_CameraInstance;  // 支持空引用的相机实例引用
+  std::optional<std::reference_wrapper<CameraInstance>>
+      m_CameraInstance;  // 支持空引用的相机实例引用
 
   // ---- 窗口尺寸 ----
   glm::uvec2 m_ViewportSize = {1280, 720};  // 默认尺寸
@@ -121,7 +108,7 @@ void RenderContext::SetTemporaryResource(const std::string &name, std::shared_pt
   std::shared_ptr<void> voidResource = std::static_pointer_cast<void>(resource);
   m_TemporaryResources[name] = voidResource;
 
-  //m_Logger->debug("Set temporary resource: {}", name);
+  // m_Logger->debug("Set temporary resource: {}", name);
 }
 
 template<typename T>
