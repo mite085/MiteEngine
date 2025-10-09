@@ -52,6 +52,8 @@ class MiteApplication {
   void CleanUpAssertManager();
   void InitializeMaterialSystem();
   void CleanUpMaterialSystem();
+  void InitializeLightSystem();
+  void CleanUpLightSystem();
   void InitializeSceneCore();
   void CleanUpSceneCore();
   void InitializeSceneGraph();

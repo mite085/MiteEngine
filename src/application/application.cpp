@@ -63,53 +63,29 @@ void MiteApplication::LoadDefaultScene()
 
   // 协调各模块，加载初始场景
 
-  // 0. 创建并绑定主相机（该步骤必须在m_SceneCore->InitializeComponentSystems();之后执行)
-  Camera mainCamera;
-
-  Entity mainCameraEntity = m_SceneCore->CreateEntity("main_camera");
-
-  // 主相机的相机组件与投影参数设定
-  CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
-      mainCameraEntity);
-
-  // 主相机的变换组件
-  TransformComponent &mainCameraTransform =
-      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
-  // 主相机的可见性组件
-  VisibilityComponent &mainCameraVisibility =
-      m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(mainCameraEntity);
-
-  // 设定方便观看模型的角度（相机没有Parent，暂时将Local坐标当成World坐标使用）
-  mainCameraTransform.SetLocalPosition(glm::vec3(10.0f, 6.0f, 0.0f));
-  mainCameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
-
-  // 添加快照测试
-  std::unique_ptr<ComponentSnapshot<Transform>> transformSnap =
-      mainCameraTransform.CreateSnapshot();
-  // 相机看向远处点，不再看向远点
-  mainCameraTransform.LookAt(glm::vec3(110.0f, 120.0f, 120.0f));
-  // 获取组件恢复快照
-  transformSnap->Apply();
-
-  m_SceneCore->SetMainCamera(mainCameraEntity);
-
-  // 0. 创建ViewportPanel并设置FrameBuffer（TODO：此处传入Camera应当也是错误的，但似乎没有好办法让ViewPort获取正确宽高比）
-  auto viewportPanel = std::make_shared<ViewportPanel>("viewport", mainCameraComponent);
+  // 创建ViewportPanel并设置FrameBuffer（TODO：此处传入Camera应当也是错误的，但似乎没有好办法让ViewPort获取正确宽高比）
+  CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().GetComponent<CameraComponent>(
+      m_SceneCore->GetMainCamera());
+  std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>(
+      "viewport", mainCameraComponent);
 
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
 
-  // 1. 加载模型（启用LOD，按照默认4层LOD参数生成）
+  // 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
       FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
   Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle,
                     m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
-    // 2. 创建网格实体，挂载组件
+    // 1. 创建网格实体
     Entity plane_submesh = m_SceneCore->CreateEntity("axis");
+
+    // 2. 创建网格组件，设定组件数据
     MeshComponent &plane_mesh_component = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
-        plane_submesh, plane_model.GetSubMesh(i));
+        plane_submesh);
+    plane_mesh_component.SetMesh(std::make_shared<Mesh>(plane_model.GetSubMesh(i)));
 
     // 3. 创建材质实例
     std::shared_ptr<MaterialInstance> plane_material =
@@ -117,7 +93,8 @@ void MiteApplication::LoadDefaultScene()
 
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
-        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(plane_submesh, plane_material);
+        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(plane_submesh);
+    plane_material_component.SetMaterialInstance(plane_material);
 
     // 5. 创建变换组件
     TransformComponent &plane_transform_component =
@@ -146,15 +123,13 @@ void MiteApplication::Initialize()
   InitializeInputSystem();
   InitializeAssertManager();
   InitializeWindowWithOpenGL();
-  InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行
   InitializeMaterialSystem();
+  InitializeLightSystem();
   InitializeSceneCore();
-  InitializeSceneGraph();  // 依赖SceneCore
-  InitializeSceneView();   // 依赖SceneCore和SceneGraph
-  InitializeUI();          // 必须在Window创建GL上下文后执行
-
-  // 初始化组件系统（必须在SceneGraph的组件注册到SceneCore之后执行）
-  m_SceneCore->InitializeComponentSystems();
+  InitializeSceneGraph();        // 依赖SceneCore
+  InitializeSceneView();         // 依赖SceneCore和SceneGraph
+  InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行 & 依赖SceneView
+  InitializeUI();                // 必须在Window创建GL上下文后执行
 
   // 加载默认场景
   LoadDefaultScene();
@@ -172,11 +147,12 @@ void MiteApplication::CleanUp()
 
   // 按照初始化的倒序，依次CleanUp
   CleanUpUI();
+  CleanUpRenderWithOpenGL();
   CleanUpSceneView();
   CleanUpSceneGraph();
   CleanUpSceneCore();
+  CleanUpLightSystem();
   CleanUpMaterialSystem();
-  CleanUpRenderWithOpenGL();
   CleanUpWindow();
   CleanUpAssertManager();
   CleanUpInputSystem();
@@ -222,8 +198,41 @@ void MiteApplication::InitializeSceneCore()
 {
   m_Logger->info("Initializing scene core");
 
-  // 初始化场景核心
+  // 初始化ECS场景核心
   m_SceneCore = std::make_unique<SceneCore>();
+  m_SceneCore->InitializeComponentSystems();
+
+  // 创建并绑定主相机（该步骤必须在m_SceneCore->InitializeComponentSystems();之后执行)
+  Camera mainCamera;
+  Entity mainCameraEntity = m_SceneCore->CreateEntity("main_camera");
+
+  // 主相机的相机组件与投影参数设定
+  CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
+      mainCameraEntity);
+
+  // 主相机的变换组件
+  TransformComponent &mainCameraTransform =
+      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
+  // 主相机的可见性组件
+  VisibilityComponent &mainCameraVisibility =
+      m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(mainCameraEntity);
+
+  // 设定主相机
+  m_SceneCore->SetMainCamera(mainCameraEntity);
+
+  // ------------- 以下为流程测试专用代码，可删除 -------------
+
+  // 设定方便观看模型的角度（流程测试专用代码，可删除）
+  mainCameraTransform.SetLocalPosition(glm::vec3(10.0f, 6.0f, 0.0f));
+  mainCameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+
+  // 添加快照测试（流程测试专用代码，可删除）
+  std::unique_ptr<ComponentSnapshot<Transform>> transformSnap =
+      mainCameraTransform.CreateSnapshot();
+  // 相机看向远处点，不再看向远点
+  mainCameraTransform.LookAt(glm::vec3(110.0f, 120.0f, 120.0f));
+  // 获取组件恢复快照
+  transformSnap->Apply();
 }
 
 void MiteApplication::InitializeSceneView()
@@ -232,6 +241,12 @@ void MiteApplication::InitializeSceneView()
 
   // 初始化场景视图
   m_SceneView = std::make_unique<SceneView>();
+
+  // 使用主相机创建相机实例（必须在SceneCore初始化并创建主相机之后执行）
+  Entity mainCamera = m_SceneCore->GetMainCamera();
+  CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().GetComponent<CameraComponent>(
+      mainCamera);
+  m_SceneView->SetCamera(mainCameraComponent.GetCamera());
 }
 
 void MiteApplication::InitializeMaterialSystem()
@@ -240,6 +255,14 @@ void MiteApplication::InitializeMaterialSystem()
 
   // 初始化材质系统
   MaterialFactory::Get().Initialize();
+}
+
+void MiteApplication::InitializeLightSystem()
+{
+  m_Logger->info("Initializing material system");
+
+  // 初始化材质系统
+  LightManager::Get().Initialize();
 }
 
 void MiteApplication::InitializeInputSystem()
@@ -286,6 +309,12 @@ void MiteApplication::CleanUpAssertManager() {}
 
 void MiteApplication::CleanUpMaterialSystem() {}
 
+void MiteApplication::CleanUpLightSystem()
+{
+  m_Logger->info("Cleaning up light system");
+  LightManager::Get().Destroy();
+}
+
 void MiteApplication::CleanUpSceneCore()
 {
   m_SceneCore->Clear();
@@ -297,8 +326,6 @@ void MiteApplication::InitializeSceneGraph()
 
   // 初始化场景图
   m_SceneGraph = std::make_unique<SceneGraph>();
-
-  // 在SceneCore内注册SceneGraphSystem
   m_SceneGraph->Initialize();
 }
 
@@ -360,7 +387,7 @@ void MiteApplication::Render()
   const Transform &cameraTransform =
       m_SceneCore->GetRegistry().GetComponent<TransformComponent>(mainCamera).GetTransform();
   glm::mat4 cameraView = cameraTransform.GetViewMatrix();
-      
+
   glm::mat4 cameraProjection =
       m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetProjectionMatrix();
   uint32_t mainCameraVisibilityMask =
@@ -376,17 +403,17 @@ void MiteApplication::Render()
   m_SceneView->Update(m_SceneCore->GetRegistry(), visibleNodes);
   std::shared_ptr<RenderQueue> renderQueue = m_SceneView->GetRenderQueue();
 
-  // 4. 相机UBO更新与获取（TODO: 相机实例应当由SceneView管理，多视口渲染时需要创建多个SceneView。待修改）
+  // 4. 相机UBO更新与获取（TODO:
+  // 相机实例应当由SceneView管理，多视口渲染时需要创建多个SceneView。待修改）
   m_SceneCore->GetRegistry()
       .GetComponent<CameraComponent>(mainCamera)
       .UpdateUBOViewMatrix(cameraTransform);
-
 
   CameraInstance &mainCameraInstance =
       m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetCameraInstance();
 
   // 4. 渲染器渲染场景
-  m_Renderer->RenderScene(renderQueue, mainCameraInstance);  // 渲染场景
+  m_Renderer->RenderScene(renderQueue, m_SceneView->GetCameraInstance());  // 渲染场景
 
   // TODO：渲染调试信息
   // if (m_ShowDebug) {
