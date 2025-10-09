@@ -1,5 +1,5 @@
 #include "gbuffer.h"
-
+#include "basic_shader/uniform_buffer.h"
 namespace mite {
 // 静态成员定义
 const std::map<RuntimeTextureType, uint32_t> GBuffer::TextureTypeToIndex = {
@@ -26,19 +26,19 @@ const char *GBuffer::GetTextureTypeName(RuntimeTextureType type)
 {
   switch (type) {
     case RuntimeTextureType::GBuffer_WorldPosDepth:
-      return "u_GBufferWorldPosDepth";
+      return ShaderBufferResourceNames::GBUFFER_WORLD_POS_DEPTH;
     case RuntimeTextureType::GBuffer_BaseColorMatType:
-      return "u_GBufferBaseColorMatType";
+      return ShaderBufferResourceNames::GBUFFER_BASE_COLOR_MAT_TYPE;
     case RuntimeTextureType::GBuffer_MetallicRoughnessAO:
-      return "u_GBufferMetallicRoughnessAO";
+      return ShaderBufferResourceNames::GBUFFER_METALLIC_ROUGHNESS_AO;
     case RuntimeTextureType::GBuffer_NormalScale:
-      return "u_GBufferNormalScale";
+      return ShaderBufferResourceNames::GBUFFER_NORMAL_SCALE;
     case RuntimeTextureType::GBuffer_EmissionAlpha:
-      return "u_GBufferEmissionAlpha";
+      return ShaderBufferResourceNames::GBUFFER_EMISSION_ALPHA;
     case RuntimeTextureType::GBuffer_NPRParam:
-      return "u_GBufferNPRParameters";
+      return ShaderBufferResourceNames::GBUFFER_NPR_PARAM;
     case RuntimeTextureType::GBuffer_NPRColor:
-      return "u_GBufferNPRColors";
+      return ShaderBufferResourceNames::GBUFFER_NPR_COLOR;
     default:
       return "Unknown_GBuffer_Type";
   }
@@ -235,7 +235,7 @@ TextureFormat GBuffer::getTextureFormat(RuntimeTextureType index) const
     case RuntimeTextureType::GBuffer_EmissionAlpha:
     case RuntimeTextureType::GBuffer_NPRParam:
     case RuntimeTextureType::GBuffer_NPRColor:
-      return TextureFormat::RGBA16F; // 其他普通精度即可
+      return TextureFormat::RGBA16F;  // 其他普通精度即可
 
     default:
       LOG_WARN("Unknown texture index: {}, using RGBA16F as default", static_cast<int>(index));
