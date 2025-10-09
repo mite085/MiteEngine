@@ -51,9 +51,12 @@ class OpenGLRenderCommand : public RenderCommand {
       std::shared_ptr<OpenGLShader> shader,
       std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup = nullptr) override;
   void UnbindShader(std::shared_ptr<OpenGLShader> shader) override;
-  void BindTexture(TextureGPUHandle textureHandle,
-                   uint32_t slot,
-                   uint32_t samplerType = 0) override;
+  void BindRuntimeTexture(RuntimeTextureType type,
+                          TextureGPUHandle textureHandle,
+                          TextureTarget target = TextureTarget::TEXTURE_2D) override;
+  void BindExternalTexture(ExternalTextureType type,
+                           TextureGPUHandle textureHandle,
+                           TextureTarget target = TextureTarget::TEXTURE_2D) override;
   void BindMesh(const Mesh &mesh) override;
   void DrawMesh(uint32_t indexCount,
                 uint32_t indexOffset = 0,
@@ -61,9 +64,7 @@ class OpenGLRenderCommand : public RenderCommand {
                 uint32_t indexType = 0x1405) override;
 
   // ---------------- 整合操作命令 ----------------
-  void Submit(RenderableItem item) override;
-  void SubmitToGBuffer(RenderableItem item,
-                       std::shared_ptr<OpenGLShader> gbufferShader) override;
+  void SubmitDrawCall(RenderableItem item, std::shared_ptr<OpenGLShader> shader) override;
 
   // ---------------- 完成事件发布 ----------------
   void PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,

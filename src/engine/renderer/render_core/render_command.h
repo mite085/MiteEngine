@@ -1,9 +1,9 @@
 #ifndef MITE_RENDERER_COMMAND
 #define MITE_RENDERER_COMMAND
 
+#include "basic_event/render_event.h"
 #include "basic_instance/camera_instance.h"
 #include "basic_shader/framebuffer.h"
-#include "basic_event/render_event.h"
 #include "render_device.h"
 #include "renderable_item.h"
 
@@ -48,7 +48,7 @@ class RenderCommand {
     SetRenderState,     // 设置渲染状态
 
     // 原子操作命令
-    BindCameraUBO,          // 绑定相机UBO
+    BindCameraUBO,         // 绑定相机UBO
     BindShader,            // 绑定着色器程序
     UnbindShader,          // 解绑着色器程序
     UploadShaderUniforms,  // 上传着色器Uniforms
@@ -104,14 +104,17 @@ class RenderCommand {
       std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup = nullptr) = 0;
   virtual void UnbindShader(std::shared_ptr<OpenGLShader> shader) = 0;
   /**
-   * @brief 绑定纹理到指定槽位
+   * @brief 绑定运行时/外部纹理到指定槽位
+   * @param type 纹理类型（用于确定BindingPoint）
    * @param textureHandle 纹理句柄
-   * @param slot 纹理槽位
-   * @param samplerType 采样器类型（2D/Cube等）
+   * @param target 采样器类型（2D/Cube等）
    */
-  virtual void BindTexture(TextureGPUHandle textureHandle,
-                           uint32_t slot,
-                           uint32_t samplerType = 0) = 0;
+  virtual void BindRuntimeTexture(RuntimeTextureType type,
+                                  TextureGPUHandle textureHandle,
+                                  TextureTarget target = TextureTarget::TEXTURE_2D) = 0;
+  virtual void BindExternalTexture(ExternalTextureType type,
+                                   TextureGPUHandle textureHandle,
+                                   TextureTarget target = TextureTarget::TEXTURE_2D) = 0;
   /**
    * @brief 绑定网格VAO
    * @param mesh 网格数据
@@ -131,23 +134,19 @@ class RenderCommand {
 
   // ---------------- 整合操作命令 ----------------
   /**
-   * @brief 前向渲染的便捷提交方法（使用新的原子命令重构）
-   * @deprecated 建议在新代码中使用原子命令
-   */
-  virtual void Submit(RenderableItem item) = 0;
-  /**
    * @brief G-Buffer渲染的专用提交方法
    * @param item 可渲染项
    * @param gbufferShader 专用的G-Buffer着色器（覆盖材质自带的着色器）
    */
-  virtual void SubmitToGBuffer(RenderableItem item,
-                               std::shared_ptr<OpenGLShader> gbufferShader) = 0;
+  virtual void SubmitDrawCall(RenderableItem item,
+                              std::shared_ptr<OpenGLShader> gbufferShader) = 0;
 
   // ---------------- 完成事件发布 ----------------
   /**
    * @brief 每当一个运行时纹理完成绘制时发布事件，可以通过订阅该事件获取运行时纹理用于显示
    * @param texture 运行时纹理指针
-   * @param identify 可选的标识符，用于区分纹理（如GBuffer无需区分，但ShadowMap需要按照光源名称区分）
+   * @param identify
+   * 可选的标识符，用于区分纹理（如GBuffer无需区分，但ShadowMap需要按照光源名称区分）
    */
   virtual void PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,
                                                   std::string identify = "") = 0;

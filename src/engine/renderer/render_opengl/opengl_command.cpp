@@ -98,11 +98,8 @@ void OpenGLRenderCommand::SetRenderState(const std::shared_ptr<RenderState> &sta
 void OpenGLRenderCommand::BindCameraUBO(CameraInstance &instance)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push({CommandType::BindCameraUBO,
-                       [&]() {
-                         instance.BindUBO();
-                       },
-                       "Bind Camera UBO"});
+  m_CommandQueue.push(
+      {CommandType::BindCameraUBO, [&]() { instance.BindUBO(); }, "Bind Camera UBO"});
 }
 
 void OpenGLRenderCommand::BindShader(
@@ -136,16 +133,29 @@ void OpenGLRenderCommand::UnbindShader(std::shared_ptr<OpenGLShader> shader)
                        },
                        "UnbindShader"});
 }
-void OpenGLRenderCommand::BindTexture(TextureGPUHandle textureHandle,
-                                      uint32_t slot,
-                                      uint32_t samplerType)
+void OpenGLRenderCommand::BindRuntimeTexture(RuntimeTextureType type,
+                                             TextureGPUHandle textureHandle,
+                                             TextureTarget target)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push(
-      {CommandType::BindTextures,
-       [this, textureHandle, slot, samplerType] { m_Device->BindTexture(textureHandle, slot); },
-       "BindTexture: slot=" + std::to_string(slot)});
+  m_CommandQueue.push({CommandType::BindTextures,
+                       [this, type, textureHandle, target] {
+                         m_Device->BindRuntimeTexture(type, textureHandle, target);
+                       },
+                       "BindRuntimeTexture"});
 }
+void OpenGLRenderCommand::BindExternalTexture(ExternalTextureType type,
+                                              TextureGPUHandle textureHandle,
+                                              TextureTarget target)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::BindTextures,
+                       [this, type, textureHandle, target] {
+                         m_Device->BindExternalTexture(type, textureHandle, target);
+                       },
+                       "BindExternalTexture"});
+}
+
 void OpenGLRenderCommand::BindMesh(const Mesh &mesh)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
@@ -165,73 +175,74 @@ void OpenGLRenderCommand::DrawMesh(uint32_t indexCount,
                        "DrawMesh: count=" + std::to_string(indexCount)});
 }
 
-void OpenGLRenderCommand::Submit(RenderableItem item)
-{
-  std::lock_guard<std::mutex> lock(m_QueueMutex);
+// void OpenGLRenderCommand::Submit(RenderableItem item)
+//{
+//   std::lock_guard<std::mutex> lock(m_QueueMutex);
+//
+//   std::function<void(TextureGPUHandle, size_t)> bindTextureFunc =
+//       [=](TextureGPUHandle handle, size_t slot) { m_Device->BindTexture(handle, slot); };
+//
+//   m_CommandQueue.push({CommandType::DrawIndexed,
+//                        [=]() {
+//                          // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
+//                          if (!item.material) {
+//                            LOG_ERROR("Invalid Material Instance");
+//                            return;
+//                          }
+//                          item.material->Apply(bindTextureFunc);
+//
+//                          // 2. 设置模型矩阵（从世界变换获取）
+//                          auto shader = item.material->GetShader();
+//                          if (shader) {
+//                            shader->SetMat4("u_Model", item.worldTransform);
+//                          }
+//
+//                          // 3. 绑定网格VAO
+//                          m_Device->BindMesh(item.mesh);
+//
+//                          // 4. 绘制网格
+//                          m_Device->DrawIndexed(item.mesh.GetIndexCount(),
+//                                                item.mesh.GetIndexOffset(),
+//                                                GL_TRIANGLES,
+//                                                GL_UNSIGNED_INT);
+//                        },
+//                        "DrawIndexed mesh from model: " + item.mesh.GetModelHandle().path});
+// }
 
+void OpenGLRenderCommand::SubmitDrawCall(RenderableItem item, std::shared_ptr<OpenGLShader> shader)
+{
   std::function<void(TextureGPUHandle, size_t)> bindTextureFunc =
       [=](TextureGPUHandle handle, size_t slot) { m_Device->BindTexture(handle, slot); };
 
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::DrawIndexed,
-                       [=]() {
-                         // 1. 应用材质（绑定着色器、上传uniforms、绑定纹理）
+                       [=] {
                          if (!item.material) {
-                           LOG_ERROR("Invalid Material Instance");
+                           m_Logger->error("Invalid Material Instance in Submit DrawCall");
                            return;
                          }
-                         item.material->Apply(bindTextureFunc);
 
-                         // 2. 设置模型矩阵（从世界变换获取）
-                         auto shader = item.material->GetShader();
+                         // 1. 绑定着色器，设置模型矩阵（从世界变换获取）
                          if (shader) {
+                           shader->Bind();
                            shader->SetMat4("u_Model", item.worldTransform);
                          }
 
-                         // 3. 绑定网格VAO
+                         // 2. 设定网格体ModelUBO
+
+                         // 3. 应用材质参数到着色器
+                         item.material->Apply(bindTextureFunc, shader);
+
+                         // 4. 绑定网格VAO
                          m_Device->BindMesh(item.mesh);
 
-                         // 4. 绘制网格
+                         // 5. 绘制网格
                          m_Device->DrawIndexed(item.mesh.GetIndexCount(),
                                                item.mesh.GetIndexOffset(),
                                                GL_TRIANGLES,
                                                GL_UNSIGNED_INT);
                        },
-                       "DrawIndexed mesh from model: " + item.mesh.GetModelHandle().path});
-}
-
-void OpenGLRenderCommand::SubmitToGBuffer(RenderableItem item,
-                                          std::shared_ptr<OpenGLShader> gbufferShader)
-{
-  std::function<void(TextureGPUHandle, size_t)> bindTextureFunc =
-      [=](TextureGPUHandle handle, size_t slot) { m_Device->BindTexture(handle, slot); };
-
-  std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push(
-      {CommandType::DrawIndexed,
-       [=] {
-         if (!item.material) {
-           m_Logger->error("Invalid Material Instance in SubmitToGBuffer");
-           return;
-         }
-
-         // 1. 绑定GBuffer着色器，设置模型矩阵（从世界变换获取）
-         if (gbufferShader) {
-           gbufferShader->Bind();
-           gbufferShader->SetMat4("u_Model", item.worldTransform);
-         }
-
-         // 2. 应用材质参数到G-Buffer着色器
-         item.material->Apply(bindTextureFunc, 0,
-             gbufferShader.get());
-
-         // 3. 绑定网格VAO
-         m_Device->BindMesh(item.mesh);
-
-         // 4. 绘制网格
-         m_Device->DrawIndexed(
-             item.mesh.GetIndexCount(), item.mesh.GetIndexOffset(), GL_TRIANGLES, GL_UNSIGNED_INT);
-       },
-       "Submit GBuffer: " + item.mesh.GetModelHandle().path});
+                       "Submit GBuffer: " + item.mesh.GetModelHandle().path});
 }
 
 void OpenGLRenderCommand::PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,
