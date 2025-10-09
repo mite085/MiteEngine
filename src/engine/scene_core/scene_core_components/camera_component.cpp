@@ -3,34 +3,33 @@
 
 namespace mite {
 CameraComponent::CameraComponent(CameraProjectionType type)
-    : m_CameraInstance(std::make_shared<Camera>())
+    : m_Camera(std::make_shared<Camera>())
 {
-  m_CameraInstance.InitializeUBO();
-  m_CameraInstance.GetCamera()->SetProjectionType(type);
+  m_Camera->SetProjectionType(type);
 }
 
 void CameraComponent::SetPerspective(float fov, float near, float far)
 {
-  float aspect = m_CameraInstance.GetCamera()->GetAspectRatio();
-  m_CameraInstance.GetCamera()->SetPerspective(fov, near, far);
+  float aspect = m_Camera->GetAspectRatio();
+  m_Camera->SetPerspective(fov, near, far);
 }
 void CameraComponent::SetOrthographic(float size, float near, float far)
 {
-  float aspect = m_CameraInstance.GetCamera()->GetAspectRatio();
-  m_CameraInstance.GetCamera()->SetOrthographic(size, near, far);
+  float aspect = m_Camera->GetAspectRatio();
+  m_Camera->SetOrthographic(size, near, far);
 }
 
 void CameraComponent::SetAspectRatio(float aspect)
 {
-  m_CameraInstance.GetCamera()->SetAspectRatio(aspect);
+  m_Camera->SetAspectRatio(aspect);
 }
 void CameraComponent::SetProjectionType(CameraProjectionType type)
 {
-  m_CameraInstance.GetCamera()->SetProjectionType(type);
+  m_Camera->SetProjectionType(type);
 }
 void CameraComponent::Zoom(float amount)
 {
-  m_CameraInstance.GetCamera()->Zoom(amount);
+  m_Camera->Zoom(amount);
 }
 CameraUsage CameraComponent::GetUsage() const
 {
@@ -44,17 +43,13 @@ void CameraComponent::SetUsage(CameraUsage usage)
 glm::mat4 CameraComponent::GetProjectionMatrix() const
 {
   // Get时处理Transform内部的Dirty，所以无需在组件ProcessDirty
-  return m_CameraInstance.GetCamera()->GetProjectionMatrix();
+  return m_Camera->GetProjectionMatrix();
 }
 
-void CameraComponent::UpdateUBOViewMatrix(const Transform &cameraTransform)
-{
-  m_CameraInstance.UpdateUBO(cameraTransform);
-}
 
-CameraInstance &CameraComponent::GetCameraInstance() 
+std::shared_ptr<Camera> &CameraComponent::GetCamera()
 {
-  return m_CameraInstance;
+  return m_Camera;
 }
 
 void CameraComponent::SetViewportSize(uint32_t width, uint32_t height)
@@ -62,7 +57,7 @@ void CameraComponent::SetViewportSize(uint32_t width, uint32_t height)
   if (height == 0)
     return;
   float aspect = static_cast<float>(width) / height;
-  m_CameraInstance.GetCamera()->SetAspectRatio(aspect);
+  m_Camera->SetAspectRatio(aspect);
 }
 
 bool CameraComponent::Serialize(std::ostream &output) const
@@ -85,12 +80,12 @@ std::vector<std::type_index> CameraComponent::GetDependencies() const
 
 std::shared_ptr<Camera> CameraComponent::GetSnapshotData() const
 {
-  return m_CameraInstance.GetCamera();
+  return m_Camera;
 }
 
 void CameraComponent::SetSnapshotData(const std::shared_ptr<Camera> &data)
 {
-  m_CameraInstance.SetCamera(data);
+  m_Camera = data;
   // 发布更新事件
   EventBus::Publish<CameraChangedEvent>(CameraChangedEvent(GetEntity(), *this));
 }

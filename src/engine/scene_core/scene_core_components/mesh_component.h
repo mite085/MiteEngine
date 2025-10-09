@@ -1,8 +1,8 @@
 #ifndef MITE_SCENE_MESH_COMPONENT
 #define MITE_SCENE_MESH_COMPONENT
 
-#include "scene_core/component_system.h"
 #include "basic_data/mesh.h"
+#include "scene_core/component_system.h"
 
 namespace mite {
 /**
@@ -19,15 +19,15 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持实例化渲染
  */
-class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Geometry> {
+class MeshComponent
+    : public SnapshotComponentTraits<std::shared_ptr<Mesh>, Component::Family::Geometry> {
  public:
-
   /**
    * @brief 带初始值的构造函数
    * @param mesh 网格数据
    * @param material 材质数据
    */
-  explicit MeshComponent(Mesh mesh);
+  explicit MeshComponent();
 
   ~MeshComponent() override = default;
 
@@ -36,13 +36,13 @@ class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Ge
    * @brief 获取网格数据
    * @return 共享指针指向的网格数据
    */
-  Mesh GetMesh() const;
+  std::shared_ptr<Mesh> GetMesh() const;
 
   /**
    * @brief 设置网格数据
    * @param mesh 新的网格数据
    */
-  void SetMesh(Mesh mesh);
+  void SetMesh(std::shared_ptr<Mesh> mesh);
 
   /**
    * @brief 检查是否有有效网格数据
@@ -52,11 +52,14 @@ class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Ge
 
   /**
    * @brief 获取Mesh的包围盒
-   * @return 
+   * @return
    */
   const std::pair<glm::vec3, glm::vec3> GetBoundingBox() const
   {
-    return m_Mesh.GetBoundingBox();
+    if (m_Mesh)
+      return m_Mesh->GetBoundingBox();
+    else
+      return {glm::vec3(0.0f), glm::vec3(0.0f)};
   }
 
   // ================== 渲染属性控制 ========================
@@ -104,10 +107,10 @@ class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Ge
   bool Deserialize(std::istream &input) override;
 
  private:
-  Mesh GetSnapshotData() const override;
-  void SetSnapshotData(const Mesh &data) override;
+  std::shared_ptr<Mesh> GetSnapshotData() const override;
+  void SetSnapshotData(const std::shared_ptr<Mesh> &data) override;
 
-  Mesh m_Mesh;  // 网格数据
+  std::shared_ptr<Mesh> m_Mesh;  // 网格数据
 
   // 以下Flag不支持快照恢复，若需要支持则将定义移至Mesh中
   bool m_IsVisible = true;       // 可见性标志
@@ -135,10 +138,7 @@ class MeshChangedEvent : public ComponentEvent<MeshComponent> {
   {
   }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
-  Event *Clone() const override
-  {
-    return new MeshChangedEvent(entity, component);
-  }
+  Event *Clone() const override { return new MeshChangedEvent(entity, component); }
 };
 };  // namespace mite
 

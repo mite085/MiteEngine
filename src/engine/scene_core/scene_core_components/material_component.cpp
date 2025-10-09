@@ -2,9 +2,7 @@
 #include "mesh_component.h"
 
 namespace mite {
-MaterialComponent::MaterialComponent(std::shared_ptr<MaterialInstance> handle) : m_MaterialInstance(handle)
-{
-}
+MaterialComponent::MaterialComponent(){}
 
 void MaterialComponent::Update(float deltaTime, SceneRegistry &registry)
 {
@@ -13,12 +11,12 @@ void MaterialComponent::Update(float deltaTime, SceneRegistry &registry)
 }
 
 // =================== 材质基础操作 =====================
-std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterialInstanceHandel() const
+std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterialInstance() const
 {
   return m_MaterialInstance;
 }
 
-void MaterialComponent::SetMaterialInstanceHandel(std::shared_ptr<MaterialInstance> handle)
+void MaterialComponent::SetMaterialInstance(std::shared_ptr<MaterialInstance> handle)
 {
     m_MaterialInstance = handle;
     EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));

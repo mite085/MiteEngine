@@ -26,7 +26,7 @@ class MaterialComponent : public SnapshotComponentTraits<std::shared_ptr<Materia
    * @brief 带初始值的构造函数
    * @param material 材质实例
    */
-  explicit MaterialComponent(std::shared_ptr<MaterialInstance> handle);
+  explicit MaterialComponent();
 
   ~MaterialComponent() override = default;
   void Update(float deltaTime, SceneRegistry &registry) override;
@@ -34,15 +34,14 @@ class MaterialComponent : public SnapshotComponentTraits<std::shared_ptr<Materia
   //===================== 材质基础操作 ===================
   /**
    * @brief 获取材质数据
-   * @return 材质句柄
+   * @return 材质实例
    */
-  std::shared_ptr<MaterialInstance> GetMaterialInstanceHandel() const;
+  std::shared_ptr<MaterialInstance> GetMaterialInstance() const;
 
   /**
-   * @brief 设置材质数据
-   * @param material 新的材质数据
+   * @brief 设置材质实例
    */
-  void SetMaterialInstanceHandel(std::shared_ptr<MaterialInstance> handle);
+  void SetMaterialInstance(std::shared_ptr<MaterialInstance> handle);
 
   //==================== 组件接口实现 ====================
   std::vector<std::type_index> GetDependencies() const override;

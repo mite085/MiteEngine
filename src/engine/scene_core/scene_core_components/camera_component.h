@@ -49,12 +49,9 @@ class CameraComponent : public SnapshotComponentTraits<std::shared_ptr<Camera>, 
   CameraUsage GetUsage() const;
   void SetUsage(CameraUsage usage);
 
-  // ==================== 矩阵获取 ====================
+  // ==================== 参数/对象获取 ====================
   glm::mat4 GetProjectionMatrix() const;
-
-  // ==================== UBO获取 ====================
-  void UpdateUBOViewMatrix(const Transform &cameraTrasnform);
-  CameraInstance& GetCameraInstance();
+  std::shared_ptr<Camera> &GetCamera();
 
   // ==================== 视口适配 ====================
   void SetViewportSize(uint32_t width, uint32_t height);
@@ -68,7 +65,7 @@ class CameraComponent : public SnapshotComponentTraits<std::shared_ptr<Camera>, 
   std::shared_ptr<Camera> GetSnapshotData() const override;
   void SetSnapshotData(const std::shared_ptr<Camera> &data) override;
 
-  CameraInstance m_CameraInstance; // 摄像机实例，管理std::shared_ptr<Camera>和CameraUBO
+  std::shared_ptr<Camera> m_Camera;  // 摄像机
   CameraUsage m_Usage = CameraUsage::FreeView;
 };
 
