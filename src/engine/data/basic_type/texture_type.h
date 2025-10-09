@@ -45,10 +45,15 @@ enum class TextureFormat : unsigned int {
 
 // 纹理目标类型
 enum class TextureTarget {
-  TEXTURE_2D = GL_TEXTURE_2D,              // 2D纹理（最常用）
-  TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,  // 立方体贴图
-  TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,  // 2D纹理数组
-  TEXTURE_3D = GL_TEXTURE_3D,              // 3D纹理/体积纹理
+  TEXTURE_2D = GL_TEXTURE_2D,                                      // 2D纹理（最常用）
+  TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,                          // 立方体贴图
+  TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,                          // 2D纹理数组
+  TEXTURE_3D = GL_TEXTURE_3D,                                      // 3D纹理/体积纹理
+  TEXTURE_2D_MULTISAMPLE = GL_TEXTURE_2D_MULTISAMPLE,              // 2D多重采样纹理
+  TEXTURE_CUBE_MAP_ARRAY = GL_TEXTURE_CUBE_MAP_ARRAY,              // 立方体贴图数组
+  TEXTURE_2D_MULTISAMPLE_ARRAY = GL_TEXTURE_2D_MULTISAMPLE_ARRAY,  // 多重采样纹理数组
+  TEXTURE_BUFFER = GL_TEXTURE_BUFFER,                              // 缓冲纹理
+  TEXTURE_RECTANGLE = GL_TEXTURE_RECTANGLE  // 矩形纹理（非2的幂次方）
 };
 
 // 纹理包装模式（对应OpenGL的wrap参数）
@@ -69,10 +74,9 @@ enum class TextureFilterMode {
   LinearMipmapLinear = GL_LINEAR_MIPMAP_LINEAR,      // 三线性过滤（最高质量）
 };
 
-//
 /**
  * 运行时纹理类型枚举
- * 其中：
+ * 其中NPR纹理定义：
  * GBuffer_NPRParam：rampThreshold色阶阈值、rampSmoothness色阶平滑度、specularSize高光尺寸、outlineWidth描边宽度
  * GBuffer_NPRColor：shadowTint.rgb阴影色调、rimPower边缘光衰减
  */
@@ -108,10 +112,42 @@ enum class RuntimeTextureType {
   Depth,         // 深度缓冲
   Stencil,       // 模板缓冲
 
-  // 特殊用途
-  Debug_View,  // 调试视图纹理
-  UI_Overlay,  // UI覆盖纹理
-  None,        // 不合法纹理
+  // 特殊用途(暂未启用)
+  // Debug_View,  // 调试视图纹理
+  // UI_Overlay,  // UI覆盖纹理
+  // None,        // 不合法纹理
+};
+
+/**
+ * 外部加载纹理类型枚举
+ * 用于从外部文件加载的纹理资源
+ */
+enum class ExternalTextureType {
+  // PBR材质纹理
+  BaseColor = 0,      // 基础色纹理
+  Normal,             // 法线纹理
+  MetallicRoughness,  // 金属粗糙度纹理
+  Emissive,           // 自发光纹理
+  Occlusion,          // 环境光遮蔽纹理
+
+  // 环境纹理
+  EnvironmentMap,  // 环境贴图
+  // BRDFLUT,         // BRDF查找表(暂未启用)
+  // IrradianceMap,   // 辐照度图(暂未启用)
+  // PrefilterMap,    // 预滤波环境图(暂未启用)
+
+  // 后期处理纹理(暂未启用)
+  // ColorGradingLUT,  // 色彩分级LUT
+  // BloomTexture,     // 泛光纹理
+  // SSAOTexture,      // SSAO纹理
+
+  // 自定义纹理(暂未启用)
+  // Custom0,  // 自定义纹理0
+  // Custom1,  // 自定义纹理1
+  // Custom2,  // 自定义纹理2
+  // Custom3,  // 自定义纹理3
+
+  Count  // 类型计数
 };
 };  // namespace mite
 
