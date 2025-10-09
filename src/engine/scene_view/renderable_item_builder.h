@@ -38,8 +38,10 @@ class RenderableItemBuilder {
    * @return 构建成功的RenderableItem列表
    * 
    * 开发前期，每帧对所有SceneNode构建RenderableItem
+   * RenderableItem构建成本仅有智能指针构建的开销，短期内不会成为较为严重的瓶颈
+   * 
    * 优点：
-   * 1. 实现简单，便于调试
+   * 1. 架构简单，便于调试
    * 2. 功能正确性优先于性能优化
    * 3. 便于后续添加更复杂的优化策略
    * 
@@ -49,7 +51,9 @@ class RenderableItemBuilder {
    * 3. 缓存机制
    * 4. 增量更新
    * 
-   * （RenderableItem构建成本仅有智能指针构建的开销，短期内不会成为较为严重的瓶颈）
+   * 注意：
+   * 由于MeshInstance涉及UBO的创建、绑定和更新，所以必须优先实现缓存机制，
+   * 以确保创建和绑定仅执行一次，但Update操作每帧更新
    */
   std::vector<RenderableItem> BuildFromSceneNodes(SceneRegistry& registry, const std::vector<SceneNode *> &sceneNodes);
 
@@ -60,6 +64,17 @@ class RenderableItemBuilder {
    * @return 构建成功的RenderableItem，如果构建失败返回空对象
    */
   RenderableItem BuildFromSceneNode(SceneRegistry &registry, SceneNode *sceneNode);
+
+  // ==================== 缓存管理接口 ====================
+  /**
+   * @brief 清空MeshInstance缓存
+   * @note 在场景切换或需要强制刷新时调用
+   */
+  void ClearMeshInstanceCache();
+  /**
+   * @brief 获取缓存统计信息
+   */
+  size_t GetMeshInstanceCacheSize() const { return m_MeshInstanceCache.size(); }
 
   // ==================== 工具接口 ====================
   /**
@@ -78,12 +93,20 @@ class RenderableItemBuilder {
 
  private:
   /**
+   * @brief 从实体提取网格组件并创建MeshInstance
+   * @param entity ECS实体
+   * @param worldTransform 世界变换
+   * @return MeshInstance共享指针
+   */
+  std::shared_ptr<MeshInstance> GetOrCreateMeshInstance(SceneRegistry &registry,
+                                                        Entity entity,
+                                                        const Transform &worldTransform); 
+  /**
    * @brief 从实体提取网格组件
    * @param entity ECS实体
    * @return 网格组件共享指针，如果不存在返回nullptr
    */
-  Mesh ExtractMeshComponent(SceneRegistry &registry, Entity entity);
-
+  std::shared_ptr<Mesh> ExtractMeshComponent(SceneRegistry &registry, Entity entity);
   /**
    * @brief 从实体提取材质组件
    * @param entity ECS实体
@@ -91,12 +114,19 @@ class RenderableItemBuilder {
    */
   std::shared_ptr<MaterialInstance> ExtractMaterialComponent(SceneRegistry &registry,
                                                              Entity entity);
+  /**
+   * @brief 创建新的MeshInstance
+   */
+  std::shared_ptr<MeshInstance> CreateMeshInstance(std::shared_ptr<Mesh> mesh,
+                                                   const Transform &worldTransform);
 
   // 禁用拷贝构造和赋值
   RenderableItemBuilder(const RenderableItemBuilder &) = delete;
   RenderableItemBuilder &operator=(const RenderableItemBuilder &) = delete;
 
-  
+  // MeshInstance缓存管理：Entity ID -> MeshInstance 映射
+  std::unordered_map<Entity, std::shared_ptr<MeshInstance>> m_MeshInstanceCache;
+    
   // 日志器
   Logger m_Logger;
 };

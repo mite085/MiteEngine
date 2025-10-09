@@ -1,9 +1,9 @@
 #ifndef MITE_RENDERABLE_ENTITY
 #define MITE_RENDERABLE_ENTITY
 
-#include "basic_instance/material_instance.h"
-#include "basic_data/mesh.h"
 #include "basic_data/transform.h"
+#include "basic_instance/material_instance.h"
+#include "basic_instance/mesh_instance.h"
 #include "scene_core/entity.h"
 
 namespace mite {
@@ -13,8 +13,8 @@ namespace mite {
  */
 struct RenderableItem {
   Entity entity;                               // 对应的ECS实体ID
-  glm::mat4 worldTransform;                    // 世界空间变换矩阵（从SceneNode获取）
-  Mesh mesh;                                   // 网格GPU句柄（从Mesh组件获取）
+  Transform worldTransform;                    // 世界空间变换矩阵（从SceneNode获取）
+  std::shared_ptr<MeshInstance> mesh;          // 网格实例
   std::shared_ptr<MaterialInstance> material;  // 材质实例
 
   // 渲染排序相关字段
@@ -25,15 +25,15 @@ struct RenderableItem {
    * @brief 默认构造函数
    */
   RenderableItem()
-      : entity(Entity()), worldTransform(glm::mat4(1.0f)), distanceToCamera(0.0f), renderLayer(0)
+      : entity(Entity()), worldTransform(Transform()), distanceToCamera(0.0f), renderLayer(0)
   {
   }
   /**
    * @brief 参数化构造函数
    */
   RenderableItem(Entity ent,
-                 const glm::mat4 &transform,
-                 Mesh mesh,
+                 const Transform &transform,
+                 std::shared_ptr<MeshInstance> mesh,
                  std::shared_ptr<MaterialInstance> material)
       : entity(ent),
         worldTransform(transform),
