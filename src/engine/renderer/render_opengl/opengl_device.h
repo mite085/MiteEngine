@@ -21,18 +21,23 @@ class OpenGLDevice : public RenderDevice {
   TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) override;
   TextureGPUHandle CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo) override;
   void DestroyTexture(TextureGPUHandle handle) override;
-  void BindTexture(TextureGPUHandle handle, size_t slot) const override;
+  void BindRuntimeTexture(RuntimeTextureType type,
+                          TextureGPUHandle textureHandle,
+                          TextureTarget target = TextureTarget::TEXTURE_2D) const override;
+  void BindExternalTexture(ExternalTextureType type,
+                           TextureGPUHandle textureHandle,
+                           TextureTarget target = TextureTarget::TEXTURE_2D) const override;
 
   // ---- 模型操作 ----
   ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) override;
-  // TODO: 
+  // TODO:
   // 应当在哪里调用DestroyModel，以实现Model的
   // 生命周期结束后，GPU资源的自动释放？
-  // 
+  //
   // 思路：
   // 构建std::shared_ptr<Model>时，添加删除器，
   // 引用计数归零时自动调用删除器触发DestroyModel
-  // 
+  //
   // 难点：
   // 需要整体梳理std::shared_ptr<Model>的生命周期
   void DestroyModel(ModelGPUHandle model) override;

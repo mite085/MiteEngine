@@ -1,4 +1,5 @@
 #include "opengl_device.h"
+#include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
 // ------------------------ 构造函数/析构函数 ------------------------
@@ -192,15 +193,32 @@ void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
   m_ActiveTextures.erase(textureID);
 }
 
-void OpenGLDevice::BindTexture(TextureGPUHandle haneld, size_t slot) const
+void OpenGLDevice::BindRuntimeTexture(RuntimeTextureType type,
+                                      TextureGPUHandle textureHandle,
+                                      TextureTarget target) const
 {
-  // 渲染时，才需要激活纹理单元。对于单个MaterialInstance，slot仅支持0-31。
-  // 通常情况下基础颜色纹理、金属粗糙度纹理、法线纹理、自发光纹理、环境光遮蔽纹理
-  // 这五个就足够绘制了，32个纹理槽足够用。
-  glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(slot));
-  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(haneld.apiHandle));
+  uint32_t textureUnit = BindingPointManager::Get().GetRuntimeTextureBinding(type);
+  if (textureUnit != UINT32_MAX) {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
+  }
+  else {
+    LOG_ERROR("Failed to bind runtime texture: binding point not allocated");
+  }
 }
-
+void OpenGLDevice::BindExternalTexture(ExternalTextureType type,
+                                       TextureGPUHandle textureHandle,
+                                       TextureTarget target) const
+{
+  uint32_t textureUnit = BindingPointManager::Get().GetExternalTextureBinding(type);
+  if (textureUnit != UINT32_MAX) {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
+  }
+  else {
+    LOG_ERROR("Failed to bind external texture: binding point not allocated");
+  }
+}
 // ------------------------ 模型操作 ------------------------
 ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
 {

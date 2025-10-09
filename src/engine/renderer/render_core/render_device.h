@@ -1,11 +1,11 @@
 #ifndef MITE_RENDER_DEVICE
 #define MITE_RENDER_DEVICE
 
-#include "basic_shader/framebuffer.h"
 #include "basic_data/mesh.h"
 #include "basic_data/model.h"
 #include "basic_data/runtime_texture.h"
 #include "basic_event/asset_event.h"
+#include "basic_shader/framebuffer.h"
 #include "basic_type/asset_type.h"
 
 namespace mite {
@@ -40,7 +40,12 @@ class RenderDevice {
   virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
   virtual TextureGPUHandle CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
-  virtual void BindTexture(TextureGPUHandle handle, size_t slot) const = 0;
+  virtual void BindRuntimeTexture(RuntimeTextureType type,
+                                  TextureGPUHandle textureHandle,
+                                  TextureTarget target = TextureTarget::TEXTURE_2D) const = 0;
+  virtual void BindExternalTexture(ExternalTextureType type,
+                                   TextureGPUHandle textureHandle,
+                                   TextureTarget target = TextureTarget::TEXTURE_2D) const = 0;
 
   // ---- 模型/网格操作 ----
   virtual ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) = 0;
