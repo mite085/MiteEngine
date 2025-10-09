@@ -1,4 +1,5 @@
 #include "material_instance.h"
+#include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
 // ===================== UBO管理 =====================
@@ -9,9 +10,8 @@ void MaterialInstance::InitializeUBO()
     return;
   }
   // 创建并初始化UBO
-  m_UBO = std::make_shared<ShaderUBO>(sizeof(MaterialUniformBuffer),
-                                      ShaderBufferResourceType::MaterialUBO,
-                                      "MaterialUBO_" + m_Name);
+  m_UBO = std::make_shared<ShaderUBO>(
+      sizeof(MaterialUniformBuffer), BindingPointManager::Get().GetMaterialUBOBinding(), GL_DYNAMIC_DRAW);
   m_UBO->Initialize();
 
   LOG_INFO("Material UBO initialized for '{}'", m_Name);
@@ -167,9 +167,12 @@ void MaterialInstance::SetAlphaMode(int mode)
 }
 // ===================== 纹理绑定 =====================
 void MaterialInstance::SetupTextureBinding(TextureGPUSlot texture,
-                                           uint32_t bindingPoint,
+                                           ExternalTextureType type,
                                            const std::string &samplerName)
 {
+  // 通过类型查询绑定点管理器获取绑定点
+  uint32_t bindingPoint = BindingPointManager::Get().GetExternalTextureBinding(type);
+
   // 移除已存在的相同绑定点纹理
   m_Textures.erase(std::remove_if(m_Textures.begin(),
                                   m_Textures.end(),
@@ -183,44 +186,35 @@ void MaterialInstance::SetupTextureBinding(TextureGPUSlot texture,
 }
 void MaterialInstance::SetBaseColorTexture(TextureGPUSlot texture)
 {
-  SetupTextureBinding(
-      texture, TextureBindingPoints::BASE_COLOR, ShaderBufferResourceNames::BASE_COLOR_TEXTURE);
+  SetupTextureBinding(texture, ExternalTextureType::BaseColor, ShaderBufferResourceNames::BASE_COLOR_TEXTURE);
   SetBaseColorTextureEnabled(true);
 }
 void MaterialInstance::SetNormalTexture(TextureGPUSlot texture)
 {
   SetupTextureBinding(
-      texture, TextureBindingPoints::NORMAL, ShaderBufferResourceNames::NORMAL_TEXTURE);
+      texture, ExternalTextureType::Normal, ShaderBufferResourceNames::NORMAL_TEXTURE);
   SetNormalTextureEnabled(true);
 }
 void MaterialInstance::SetMetallicRoughnessTexture(TextureGPUSlot texture)
 {
   SetupTextureBinding(texture,
-                      TextureBindingPoints::METALLIC_ROUGHNESS,
+                      ExternalTextureType::MetallicRoughness,
                       ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
   SetMetallicRoughnessTextureEnabled(true);
 }
 void MaterialInstance::SetEmissiveTexture(TextureGPUSlot texture)
 {
   SetupTextureBinding(
-      texture, TextureBindingPoints::EMISSIVE, ShaderBufferResourceNames::EMISSIVE_TEXTURE);
+      texture, ExternalTextureType::Emissive, ShaderBufferResourceNames::EMISSIVE_TEXTURE);
   SetEmissiveTextureEnabled(true);
 }
 void MaterialInstance::SetOcclusionTexture(TextureGPUSlot texture)
 {
   SetupTextureBinding(
-      texture, TextureBindingPoints::OCCLUSION, ShaderBufferResourceNames::OCCLUSION_TEXTURE);
+      texture, ExternalTextureType::Occlusion, ShaderBufferResourceNames::OCCLUSION_TEXTURE);
   SetOcclusionTextureEnabled(true);
 }
 // ===================== 绑定相关 =====================
-void MaterialInstance::BindShaderOnly(std::shared_ptr<OpenGLShader> targetShader) const
-{
-  if (!targetShader) {
-    LOG_ERROR("MaterialInstance has no valid shader to bind!");
-    return;
-  }
-  targetShader->Bind();
-}
 size_t MaterialInstance::BindTexturesOnly(TextureBindFunc textureBindFunc,
                                           std::shared_ptr<OpenGLShader> targetShader) const
 {
@@ -254,7 +248,6 @@ void MaterialInstance::BindBuffersOnly() const
 void MaterialInstance::Apply(TextureBindFunc textureBindFunc,
                              std::shared_ptr<OpenGLShader> targetShader) const
 {
-  BindShaderOnly(targetShader);
   BindBuffersOnly();
   BindTexturesOnly(textureBindFunc, targetShader);
 }

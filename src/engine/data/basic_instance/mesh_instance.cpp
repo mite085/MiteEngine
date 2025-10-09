@@ -31,7 +31,7 @@ bool MeshInstance::InitializeUBO()
   try {
     // 创建模型UBO对象
     m_ModelUBO = std::make_shared<ShaderUBO>(
-        sizeof(ModelUniformBuffer), ShaderBufferResourceType::ModelUBO, GL_DYNAMIC_DRAW);
+        sizeof(ModelUniformBuffer), BindingPointManager::Get().GetModelUBOBinding(), GL_DYNAMIC_DRAW);
     m_ModelUBO->Initialize();
 
     LOG_DEBUG("MeshInstance Model UBO initialized successfully");

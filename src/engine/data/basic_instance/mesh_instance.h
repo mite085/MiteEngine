@@ -34,6 +34,7 @@ class MeshInstance {
   /**
    * @brief 设置着色器绑定
    * @param shader 着色器对象
+   * @note Initialize之后发布事件，由管理Shader的RenderContext接手负责绑定即可
    */
   void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
   /**

@@ -31,7 +31,7 @@ bool CameraInstance::InitializeUBO()
   try {
     // 创建UBO对象
     m_CameraUBO = std::make_shared<ShaderUBO>(
-        sizeof(CameraUniformBuffer), ShaderBufferResourceType::CameraUBO, GL_DYNAMIC_DRAW);
+        sizeof(CameraUniformBuffer), BindingPointManager::Get().GetCameraUBOBinding(), GL_DYNAMIC_DRAW);
     m_CameraUBO->Initialize();
 
     LOG_DEBUG("CameraInstance UBO initialized successfully");

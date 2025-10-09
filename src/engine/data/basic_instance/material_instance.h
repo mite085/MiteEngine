@@ -37,17 +37,13 @@ class MaterialInstance {
   /**
    * @brief 设置着色器绑定（着色器初始化之后，执行一次即可）
    * @param shader 着色器对象
+   * @note Initialize之后发布事件，由管理Shader的RenderContext接手负责绑定即可
    */
   void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
   /**
    * @brief 更新模型UBO数据（组件负责每帧Update）
    */
   void UpdateUBO();
-  /**
-   * @brief 仅绑定着色器程序（DrawCall之前绑定）
-   * @param overrideShader 可选覆盖着色器
-   */
-  void BindShaderOnly(std::shared_ptr<OpenGLShader> shader) const;
   /**
    * @brief
    * 仅绑定纹理（假设着色器已绑定）（DrawCall之前绑定）
@@ -180,7 +176,7 @@ class MaterialInstance {
 
   // 内部方法
   void SetupTextureBinding(TextureGPUSlot texture,
-                           uint32_t bindingPoint,
+                           ExternalTextureType type,
                            const std::string &samplerName);
 };
 };  // namespace mite
