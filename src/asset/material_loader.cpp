@@ -46,36 +46,6 @@ std::vector<MaterialAssetID> MaterialLoader::LoadMaterialsFromGLTF(MaterialCache
     }
     else {
       LOG_WARN("Failed to process material at index: " + std::to_string(i));
-      // 创建默认材质作为回退
-      MaterialAssetID fallbackID = CreatePureColorMaterial(
-          materialCache, "Fallback_Material_" + std::to_string(i));
-      if (fallbackID.IsValid()) {
-        materialIDs.push_back(fallbackID);
-
-        auto fallbackMaterial = materialCache.Get(fallbackID);
-        if (fallbackMaterial) {
-          auto textureResolver = [](const TextureAssetID &) { return TextureInstance{}; };
-          MaterialSourceData sourceData = fallbackMaterial->metadata.generateSourceData(
-              textureResolver);
-          EventBus::Publish(MaterialLoadedEvent(sourceData, fallbackMaterial));
-        }
-      }
-    }
-  }
-  // 如果没有材质，创建默认材质
-  if (materialIDs.empty()) {
-    LOG_INFO("No materials found in scene, creating default material");
-    MaterialAssetID defaultID = CreatePureColorMaterial(materialCache, "Default_Material");
-    if (defaultID.IsValid()) {
-      materialIDs.push_back(defaultID);
-
-      auto defaultMaterial = materialCache.Get(defaultID);
-      if (defaultMaterial) {
-        auto textureResolver = [](const TextureAssetID &) { return TextureInstance{}; };
-        MaterialSourceData sourceData = defaultMaterial->metadata.generateSourceData(
-            textureResolver);
-        EventBus::Publish(MaterialLoadedEvent(sourceData, defaultMaterial));
-      }
     }
   }
   return materialIDs;
@@ -374,46 +344,6 @@ std::string MaterialLoader::GenerateMaterialName(aiMaterial *aiMat,
   return fileName + "_Material_" + std::to_string(index);
 }
 
-MaterialAssetID MaterialLoader::CreatePureColorMaterial(MaterialCache &materialCache,
-                                                        const std::string &name,
-                                                        const glm::vec3 &color)
-{
-  std::string materialKey = EmissionMaterialTemplate::StaticType() + "_" + name;
-  MaterialAssetID materialID{UUIDGenerator::Generate(materialKey.c_str())};
-
-  // 检查缓存中是否已存在
-  auto existingMaterial = materialCache.Get(materialID);
-  if (existingMaterial) {
-    return materialID;
-  }
-
-  auto materialAsset = std::make_shared<MaterialAsset>();
-
-  materialAsset->id = materialID;
-  materialAsset->metadata.name = name;
-  materialAsset->metadata.templateName = EmissionMaterialTemplate::StaticType();
-
-  // 设置纯色材质参数到通用参数存储
-  materialAsset->metadata.parameters[MaterialParamKeys::BASE_COLOR] = glm::vec4(color, 1.0f);
-  materialAsset->metadata.parameters[MaterialParamKeys::METALLIC] = 0.0f;
-  materialAsset->metadata.parameters[MaterialParamKeys::ROUGHNESS] = 1.0f;
-  materialAsset->metadata.parameters[MaterialParamKeys::EMISSION_COLOR] = glm::vec3(0.0f);
-  materialAsset->metadata.parameters[MaterialParamKeys::EMISSION_INTENSITY] = 0.0f;
-  materialAsset->metadata.parameters[MaterialParamKeys::AO] = 1.0f;
-  materialAsset->metadata.parameters[MaterialParamKeys::NORMAL_SCALE] = 1.0f;
-
-  materialAsset->metadata.alphaMode = AlphaMode::OPAQUE;
-  materialAsset->metadata.doubleSided = false;
-
-  // 存储到缓存
-  if (materialCache.Store(materialAsset)) {
-    return materialID;
-  }
-  else {
-    LOG_ERROR("Failed to store pure color material in cache: " + name);
-    return MaterialAssetID{};
-  }
-}
 
 std::string MaterialLoader::ResolveTexturePath(const std::string &texturePath,
                                                const std::string &modelPath)

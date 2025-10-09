@@ -31,17 +31,6 @@ class MaterialLoader {
                                                             const aiScene *scene,
                                                             const std::string &modelPath);
 
-  /**
-   * 创建内置测试材质到缓存
-   * @param materialCache 材质缓存引用
-   * @param name 材质名称
-   * @param color 基础颜色
-   * @return 材质AssetID
-   */
-  static MaterialAssetID CreatePureColorMaterial(MaterialCache &materialCache,
-                                                 const std::string &name = "PureColor",
-                                                 const glm::vec3 &color = glm::vec3(1.0f));
-
  private:
   /**
    * 处理单个Assimp材质到缓存
