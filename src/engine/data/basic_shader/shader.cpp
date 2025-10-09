@@ -174,7 +174,8 @@ void OpenGLShader::Destroy()
     glDeleteProgram(static_cast<GLuint>(m_Handle.programId));
     m_Handle.programId = 0;
   }
-  m_UniformLocationCache.clear();
+  m_StorageBlockCache.clear();
+  m_UniformBlockCache.clear();
 }
 
 void OpenGLShader::SetUniformBlockBinding(const std::string &uniformBlockName,
@@ -246,33 +247,6 @@ void OpenGLShader::CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram
       throw std::runtime_error("Shader compilation failed: " + std::string(infoLog));
     }
   }
-}
-
-// =============== 纹理绑定方法 ===============
-void OpenGLShader::SetTextureBinding(const std::string &samplerName, uint32_t bindingPoint)
-{
-  int location = GetUniformLocation(samplerName);
-  if (location != -1) {
-    glUniform1i(location, static_cast<GLint>(bindingPoint));
-    LOG_DEBUG("Texture sampler '{}' bound to point {}", samplerName, bindingPoint);
-  }
-  else {
-    LOG_WARN("Texture sampler '{}' not found in shader", samplerName);
-  }
-}
-int OpenGLShader::GetUniformLocation(const std::string &name) const
-{
-  // 检查缓存
-  if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end()) {
-    return m_UniformLocationCache[name];
-  }
-  // 查询OpenGL并缓存结果
-  int location = glGetUniformLocation(static_cast<GLuint>(m_Handle.programId), name.c_str());
-  if (location == -1) {
-    LOG_TRACE("Uniform '{}' not found in shader (program ID: {})", name, m_Handle.programId);
-  }
-  m_UniformLocationCache[name] = location;
-  return location;
 }
 
 void OpenGLShader::Bind() const

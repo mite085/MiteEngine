@@ -8,6 +8,7 @@ namespace mite {
 /**
  * @brief Shader程序封装类（管理顶点/片段/几何着色器的编译、链接和Uniform操作）
  * @note 线程安全性：Shader对象应在渲染线程创建和使用
+ * @note 遵循SPIRV风格，不需要手动设置采样器 uniform
  */
 class OpenGLShader {
  public:
@@ -63,10 +64,6 @@ class OpenGLShader {
    */
   uint32_t GetShaderStorageBlockIndex(const std::string &storageBlockName) const;
 
-  // ---- 纹理绑定设置 ----
-  void SetTextureBinding(const std::string &samplerName, uint32_t bindingPoint);
-  int GetUniformLocation(const std::string &name) const;
-
   // ---- 状态控制 ----
   void Bind() const;    // 绑定当前Shader为激活状态
   void Unbind() const;  // 解绑Shader
@@ -116,7 +113,6 @@ class OpenGLShader {
   ShaderGPUHandle m_Handle;                                               // OpenGL程序GPU句柄
   shaderc::Compiler m_Compiler;                                           // ShaderC编译器
   shaderc::CompileOptions m_CompileOptions;                               // ShaderC编译选项
-  mutable std::unordered_map<std::string, int> m_UniformLocationCache;    // Uniform位置缓存
   mutable std::unordered_map<std::string, uint32_t> m_UniformBlockCache;  // Uniform区块缓存
   mutable std::unordered_map<std::string, uint32_t> m_StorageBlockCache;  // Storage区块缓存
 };

@@ -1,5 +1,4 @@
 #include "shader_ubo.h"
-#include "shader_binding_point_manager.h"
 
 namespace mite {
 
