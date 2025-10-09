@@ -1,5 +1,6 @@
 #include "opengl_pipeline.h"
 #include "basic_shader/shader_binding_point_manager.h"
+#include "basic_shader/shader_cache.h"
 #include "render_stages/forward_stage.h"
 #include "render_stages/deferred_lighting_stage.h"
 #include "render_stages/gbuffer_stage.h"
@@ -29,8 +30,13 @@ void OpenGLPipeline::Initialize()
   // 创建渲染上下文
   m_Context = std::make_unique<RenderContext>();
 
-  // 按照管线顺序添加Stage
-  AddStage(std::make_unique<GBufferStage>());
+  // 添加G-Buffer Stage
+  auto gBufferShader = ShaderCache::Get().GetOpenGLShader(
+      FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.vert.glsl").string(),
+      FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.frag.glsl").string());
+  AddStage(std::make_unique<GBufferStage>(), gBufferShader);
+
+  // 添加G-Buffer Stage
   AddStage(std::make_unique<DeferredLightingStage>());
   AddStage(std::make_unique<ForwardStage>());
 
@@ -98,7 +104,7 @@ void OpenGLPipeline::EndFrame()
 }
 
 void OpenGLPipeline::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
-                                 CameraInstance &cameraInstance)
+                                 std::shared_ptr<CameraInstance> cameraInstance)
 {
   if (!renderQueue) {
     m_Logger->warn("RenderScene called with null renderQueue");

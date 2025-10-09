@@ -28,7 +28,7 @@ class OpenGLPipeline : public RenderPipeline {
 
   // ---- 场景渲染 ----
   void RenderScene(std::shared_ptr<RenderQueue> renderQueue,
-                   CameraInstance &cameraInstance) override;
+                   std::shared_ptr<CameraInstance> cameraInstance) override;
 
   // ---- 状态设置 ----
   void SetClearColor(const glm::vec4 &color) override;
@@ -44,7 +44,6 @@ class OpenGLPipeline : public RenderPipeline {
   void OnViewPortResize(ViewPortResizeEvent &event);  // 消费Viewport尺寸变化事件
 
   // ---- 成员变量 ----
-  std::unique_ptr<RenderContext> m_Context;
   bool m_IsRenderingScene = false;
   SubscriptionGroup m_EventSubscriptions;
 

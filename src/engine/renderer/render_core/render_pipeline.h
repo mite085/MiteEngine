@@ -8,7 +8,6 @@
 #include "render_stages/render_stage.h"
 
 namespace mite {
-
 /**
  * @brief 主渲染管线（接管原Renderer功能）
  *
@@ -32,22 +31,25 @@ class RenderPipeline {
 
   // ---- 场景渲染 ----
   virtual void RenderScene(std::shared_ptr<RenderQueue> renderQueue,
-                           CameraInstance& cameraInstance) = 0;
+                           std::shared_ptr<CameraInstance> cameraInstance) = 0;
 
   // ---- 状态设置 ----
   virtual void SetClearColor(const glm::vec4 &color) = 0;
 
   // ---- 阶段管理 ----
-  void AddStage(std::unique_ptr<RenderStage> stage);
+  void AddStage(std::unique_ptr<RenderStage> stage, std::shared_ptr<OpenGLShader> shader);
   void SetStageEnabled(const std::string &stageName, bool enabled);
   RenderStage *GetStage(const std::string &stageName) const;
 
+  // 外部访问上下文
+  RenderContext &GetContext() { return *m_Context; }
+
  protected:
+  std::unique_ptr<RenderContext> m_Context;
   std::vector<std::unique_ptr<RenderStage>> m_Stages;
   glm::vec4 m_ClearColor = {0.1f, 0.1f, 0.1f, 1.0f};
   Logger m_Logger;
 };
-
 }  // namespace mite
 
 #endif

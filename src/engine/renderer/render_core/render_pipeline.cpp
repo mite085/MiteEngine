@@ -8,13 +8,18 @@ RenderPipeline::RenderPipeline()
   m_Logger->info("Render Pipeline created");
 }
 
-void RenderPipeline::AddStage(std::unique_ptr<RenderStage> stage)
+void RenderPipeline::AddStage(std::unique_ptr<RenderStage> stage,
+                              std::shared_ptr<OpenGLShader> shader)
 {
   if (!stage) {
     m_Logger->warn("Attempted to add null stage to pipeline");
     return;
   }
 
+  // 在上下文使用Stage名称注册着色器
+  m_Context->RegisterStageShader(stage->GetName(), shader);
+
+  // Pipeline接管Stage所有权
   m_Stages.push_back(std::move(stage));
   m_Logger->debug("Added stage: {}", m_Stages.back()->GetName());
 }
