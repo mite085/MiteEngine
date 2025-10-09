@@ -1,6 +1,6 @@
 #ifndef MITE_SCENE_VIEW_H
 #define MITE_SCENE_VIEW_H
-#include "basic_data/camera.h"
+#include "basic_instance/camera_instance.h"
 #include "render_queue.h"
 #include "renderable_item_builder.h"
 #include "scene_node.h"
@@ -14,19 +14,16 @@ namespace mite {
  */
 class SceneView {
  public:
-  /**
-   * @brief 构造函数
-   * @param sceneGraph 场景图引用
-   * @param registry 场景注册表引用（用于构建器创建）
-   */
   SceneView();
-
-  /**
-   * @brief 析构函数
-   */
   ~SceneView();
-  // ----  ----
+
   // ==================== 核心接口 ====================
+  /**
+   * @brief 设定关联的摄像机实例（执行渲染之前设定一次即可）
+   */
+  void SetCamera(const std::shared_ptr<Camera> &camera);
+  // 获取当前关联的摄像机实例
+  std::shared_ptr<CameraInstance>GetCameraInstance() const { return m_CameraInstance; }
   /**
    * @brief 更新场景视图（每帧调用）
    * @note 每帧完全重建渲染队列
@@ -43,14 +40,7 @@ class SceneView {
    * @return 渲染队列的共享指针
    */
   std::shared_ptr<RenderQueue> GetRenderQueue() const;
-  // ----  ----
-  // ==================== 配置接口 ====================
-  /**
-   * @brief 设置自定义渲染过滤器（对visibleNodes执行进一步筛选）
-   * @param filterFunc 过滤函数（返回true表示包含该节点）
-   */
-  void SetCustomFilter(std::function<bool(SceneNode *)> filterFunc);
-  // ----  ----
+
   // ==================== 统计信息 ====================
   /**
    * @brief 获取可见节点数量
@@ -77,18 +67,11 @@ class SceneView {
    */
   void ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes);
 
-  /**
-   * @brief 应用自定义过滤器
-   * @param nodes 输入节点列表
-   * @return 过滤后的节点列表
-   */
-  std::vector<SceneNode *> ApplyCustomFilter(const std::vector<SceneNode *> &nodes);
 
-
+  // 成员变量
   std::unique_ptr<RenderableItemBuilder> m_Builder;  // 渲染Item构建器
   std::shared_ptr<RenderQueue> m_RenderQueue;        // 渲染队列
-
-  std::function<bool(SceneNode *)> m_CustomFilterFunc;  // 自定义过滤器
+  std::shared_ptr<CameraInstance> m_CameraInstance;  // 关联的摄像机实例
 
   // 统计信息
   size_t m_LastVisibleNodeCount;  // 上次可见节点数量
