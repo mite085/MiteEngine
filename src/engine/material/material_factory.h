@@ -63,34 +63,6 @@ class MaterialFactory {
    */
   std::shared_ptr<MaterialInstance> CreateInstance(const MaterialType &type,
                                                    const std::string &instanceName = "");
-
-  /**
-   * @brief 创建材质实例--模板方法
-   * @tparam T 材质模板类型
-   *
-   * 作用：
-   * 代码内部创建实例时使用，更加清晰，可避免字符串匹配错误
-   */
-  template<typename T>
-  std::shared_ptr<MaterialInstance> CreateInstance(const std::string &instanceName = "")
-  {
-    return CreateInstance(MaterialTemplate::GetMaterialTypeStatic<T>(), instanceName);
-  }
-
-  /**
-   * @brief 创建带有初始参数的材质实例--模板方法
-   * @tparam T          材质模板类型
-   * @param overrides   参数覆盖键值对（如{{"u_Color", glm::vec3(1,0,0)}}）
-   */
-  template<typename T>
-  std::shared_ptr<MaterialInstance> CreateInstanceWithOverrides(
-      const std::unordered_map<std::string, UniformVariant> &overrides,
-      const std::string &instanceName = "")
-  {
-    return CreateInstanceWithOverrides(
-        MaterialTemplate::GetMaterialTypeStatic<T>(), overrides, instanceName);
-  }
-
   /**
    * @brief 基于资产模块载入的材质源数据创建材质实例
    * @param sourceData 

@@ -34,12 +34,6 @@ class MaterialTemplate {
   virtual std::shared_ptr<MaterialInstance> CreateInstance(
       const MaterialSourceData &sourceData) const;
   /**
-   * @brief 应用默认参数到材质实例
-   * @param instance 目标材质实例
-   * @note 用于初始化或重置实例参数到模板默认值
-   */
-  virtual void ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const;
-  /**
    * @brief 获取材质类型标识（用于运行时类型检查）
    * @return 类型标识
    */

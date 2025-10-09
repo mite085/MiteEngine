@@ -1,4 +1,6 @@
 #include "material_template.h"
+#include "subscription_group.h"
+#include "basic_event/instance_event.h"
 
 namespace mite {
 MaterialTemplate::MaterialTemplate(){}
@@ -21,8 +23,12 @@ std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance()
   instance->SetName(materialTypeName);
   m_DefaultInstanceCounter++;
 
-  // 直接使用默认参数
-  ApplyDefaultParams(instance);
+  // 创建默认源数据并初始化实例
+  MaterialSourceData defaultData = CreateDefaultSourceData();
+  InitializeMaterialInstance(instance, defaultData);
+
+  LOG_DEBUG("Applied default parameters to material instance '{}'", instance->GetName());
+
   return instance;
 }
 
@@ -39,15 +45,6 @@ std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance(
   InitializeMaterialInstance(instance, sourceData);
   LOG_DEBUG("Created material instance '{}' of type '{}'", instance->GetName(), GetMaterialTypeName());
   return instance;
-}
-
-void MaterialTemplate::ApplyDefaultParams(std::shared_ptr<MaterialInstance> instance) const
-{
-  // 创建默认源数据并初始化实例
-  MaterialSourceData defaultData = CreateDefaultSourceData();
-  InitializeMaterialInstance(instance, defaultData);
-
-  LOG_DEBUG("Applied default parameters to material instance '{}'", instance->GetName());
 }
 
 void MaterialTemplate::SetName(const std::string &name)
@@ -200,6 +197,10 @@ void MaterialTemplate::InitializeMaterialInstance(std::shared_ptr<MaterialInstan
 {
   // 初始化实例的UBO
   instance->InitializeUBO();
+
+  // 发布事件委托RenderContext注册材质实例、绑定UBO到shader
+  EventBus::Publish<MaterialInstanceCreateEvent>(MaterialInstanceCreateEvent(instance));
+
   // 从源数据填充材质数据
   MaterialUniformBuffer materialData;
   FillMaterialDataFromSource(materialData, sourceData);
