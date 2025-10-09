@@ -17,8 +17,9 @@ void LightShaderStorgeBuffer::Initialize()
 
   try {
     // 创建底层SSBO
-    m_SSBO = std::make_unique<ShaderSSBO>(
-        m_SSBOSize, ShaderBufferResourceType::LightSSBO, "LightsSSBO", GL_DYNAMIC_DRAW);
+    m_SSBO = std::make_unique<ShaderSSBO>(m_SSBOSize,
+                                          BindingPointManager::Get().GetLightSSBOBinding(),
+                                          GL_DYNAMIC_DRAW);
     m_SSBO->Initialize();
 
     // 初始化为空光源数据

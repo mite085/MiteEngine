@@ -1,4 +1,6 @@
 #include "light_manager.h"
+#include "subscription_group.h"
+#include "basic_event/instance_event.h"
 
 namespace mite {
 
@@ -18,6 +20,8 @@ bool LightManager::Initialize()
     // 创建LightSSBO实例
     m_LightSSBO = std::make_shared<LightShaderStorgeBuffer>(m_MaxLights);
     m_LightSSBO->Initialize();
+
+    EventBus::Publish<LightSSBOCreateEvent>(LightSSBOCreateEvent(m_LightSSBO));
 
     LOG_INFO("LightManager initialized successfully with {} max lights", m_MaxLights);
     m_IsInitialized = true;

@@ -8,7 +8,7 @@
 namespace mite {
 
 /**
- * @brief 光源管理器
+ * @brief 光源管理器 (暂时使用单例模式，待后续整理调用层次)
  * @note 职责：
  * 1. 统一管理所有光源实例的生命周期
  * 2. 协调光源数据的GPU更新和同步
@@ -18,6 +18,11 @@ namespace mite {
  */
 class LightManager {
  public:
+  static LightManager &Get()
+  {
+    static LightManager manager;
+    return manager;
+  }
   /**
    * @brief 构造函数
    * @param maxLights 支持的最大光源数量，默认1024个
@@ -143,15 +148,15 @@ class LightManager {
   LightSSBOPtr GetLightSSBO() const;
 
   /**
-   * @brief 绑定光源SSBO到指定绑定点
-   */
-  void BindLightSSBO() const;
-
-  /**
    * @brief 设置着色器的光源SSBO绑定点
    * @param shader 目标着色器
    */
   void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
+
+  /**
+   * @brief 绑定光源SSBO到指定绑定点
+   */
+  void BindLightSSBO() const;
 
   // ---- 配置管理 ----
 
