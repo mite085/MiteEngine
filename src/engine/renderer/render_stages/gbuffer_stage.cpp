@@ -30,15 +30,6 @@ void GBufferStage::Initialize()
   m_GBuffer = std::make_shared<GBuffer>();
   m_GBuffer->create();
 
-  // 加载G-Buffer着色器（预留接口）
-  m_GBufferShader = ShaderCache::Get().GetOpenGLShader(
-      FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.vert.glsl").string(),
-      FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.frag.glsl").string());
-
-  if (!m_GBufferShader) {
-    m_Logger->warn("No G-Buffer shader set, will need to be provided externally");
-  }
-
   m_Initialized = true;
   m_Logger->info("GBufferStage initialization completed");
 }
@@ -57,16 +48,20 @@ void GBufferStage::Execute(RenderContext &context)
     return;
   }
 
+  // 检查着色器是否已注册到上下文
+  auto gbufferShader = GetGBufferShader(context);
+  if (!gbufferShader) {
+    m_Logger->error("GBufferStage: No shader registered for GBufferStage in context");
+    return;
+  }
+
   // 获取上下文记录的帧缓冲尺寸
   glm::uvec2 viewportSize = context.GetViewportSize();
 
-  // 若GBuffer不可用 / 与帧缓冲尺寸不匹配，则使用新的尺寸重新create
+  // 若帧缓冲尺寸不匹配，则使用新的尺寸重新create
   if (m_GBuffer->getFramebuffer()->GetSize() != viewportSize) {
     m_GBuffer->resize(viewportSize.x, viewportSize.y);
   }
-
-  // 将G-Buffer存储到上下文供后续阶段使用
-  context.SetTemporaryResource("GBuffer", m_GBuffer);
 
   // 绑定G-Buffer为渲染目标
   RenderCommand::Get().BindFrameBuffer(m_GBuffer->getFramebuffer());
@@ -77,7 +72,7 @@ void GBufferStage::Execute(RenderContext &context)
                              1.0f);
 
   // stage开始之前初始化并绑定相机UBO
-  RenderCommand::Get().BindCameraUBO(context.GetCameraInstance());
+  RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
   // 设置G-Buffer渲染状态
   SetupGBufferRenderState();
@@ -135,10 +130,10 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
       continue;
     }
 
-    // 使用G-Buffer专用着色器提交
-    auto gbufferShader = GetGBufferShaderForMaterial(item);
+    // 使用G-Buffer着色器提交
+    auto gbufferShader = GetGBufferShader(context);
     if (gbufferShader) {
-      RenderCommand::Get().SubmitToGBuffer(item, gbufferShader);
+      RenderCommand::Get().SubmitDrawCall(item, gbufferShader);
       renderedCount++;
     }
     else {
@@ -176,10 +171,10 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
       continue;
     }
 
-    // 使用G-Buffer专用着色器提交
-    auto gbufferShader = GetGBufferShaderForMaterial(item);
+    // 使用G-Buffer着色器提交
+    auto gbufferShader = GetGBufferShader(context);
     if (gbufferShader) {
-      RenderCommand::Get().SubmitToGBuffer(item, gbufferShader);
+      RenderCommand::Get().SubmitDrawCall(item, gbufferShader);
       renderedCount++;
     }
     else {
@@ -223,36 +218,30 @@ bool GBufferStage::ValidateGBufferRenderableItem(const RenderableItem &item) con
     return false;
   }
 
-  auto shader = item.material->GetShader();
-  if (!shader || shader->GetHandle().programId == 0) {
-    m_Logger->trace("GBufferStage: Renderable item has invalid shader");
-    return false;
-  }
-
+  // 验证网格有效性
   if (item.mesh.GetModelHandle().vertexArray == 0) {
     m_Logger->trace("GBufferStage: Renderable item has invalid mesh");
     return false;
   }
 
-  // TODO: 添加G-Buffer特定的验证逻辑
-  // 例如：检查材质是否支持G-Buffer渲染
+  // 添加G-Buffer特定的验证逻辑
+  // 例如：检查材质是否支持G-Buffer渲染（目前设定的材质均支持，所以忽略这一步）
 
   return true;
 }
 
-void GBufferStage::EncodeMaterialToGBuffer(const RenderableItem &item)
+std::shared_ptr<OpenGLShader> GBufferStage::GetGBufferShader(RenderContext &context) const
 {
-  // TODO: 实现材质参数到G-Buffer的编码逻辑
-  // 这将涉及将PBR/NPR参数映射到G-Buffer的特定通道
-  // 目前作为预留接口
-}
-
-std::shared_ptr<OpenGLShader> GBufferStage::GetGBufferShaderForMaterial(const RenderableItem &item)
-{
-  // TODO: 实现基于材质的G-Buffer着色器选择逻辑
-  // 目前返回默认的G-Buffer着色器
-  // 未来可以根据materialType选择不同的G-Buffer着色器变体
-
-  return m_GBufferShader;
+  // 从上下文获取GBufferStage的着色器
+  auto shader = context.GetStageShader(m_Name);
+  if (!shader) {
+    m_Logger->error("GBufferStage: No shader found in context for stage 'GBufferStage'");
+    return nullptr;
+  }
+  if (shader->GetProgramId() == 0) {
+    m_Logger->error("GBufferStage: Shader from context is not properly linked");
+    return nullptr;
+  }
+  return shader;
 }
 }  // namespace mite

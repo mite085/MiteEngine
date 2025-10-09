@@ -26,16 +26,7 @@ class GBufferStage : public RenderStage {
   void Shutdown() override;
 
   // ---- G-Buffer访问 ----
-  GBufferPtr GetGBuffer() const
-  {
-    return m_GBuffer;
-  }
-
-  // ---- 配置接口 ----
-  void SetGBufferShader(std::shared_ptr<OpenGLShader> shader)
-  {
-    m_GBufferShader = shader;
-  }
+  GBufferPtr GetGBuffer() const { return m_GBuffer; }
 
  private:
   // ---- 私有渲染方法 ----
@@ -43,35 +34,25 @@ class GBufferStage : public RenderStage {
    * @brief 渲染不透明物体到G-Buffer
    */
   void RenderOpaqueQueue(RenderContext &context);
-
   /**
    * @brief 渲染Alpha测试物体到G-Buffer
    */
   void RenderAlphaTestQueue(RenderContext &context);
-
   /**
    * @brief 设置G-Buffer渲染状态
    */
   void SetupGBufferRenderState();
-
   /**
    * @brief 验证渲染项是否适合G-Buffer渲染
    */
   bool ValidateGBufferRenderableItem(const RenderableItem &item) const;
-
   /**
-   * @brief 编码材质参数到G-Buffer
+   * @brief 从上下文获取G-Buffer着色器
    */
-  void EncodeMaterialToGBuffer(const RenderableItem &item);
-
-  /**
-   * @brief 获取G-Buffer着色器
-   */
-  std::shared_ptr<OpenGLShader> GetGBufferShaderForMaterial(const RenderableItem &item);
+  std::shared_ptr<OpenGLShader> GetGBufferShader(RenderContext &context) const;
 
   // ---- 成员变量 ----
-  GBufferPtr m_GBuffer;                           // G-Buffer数据容器
-  std::shared_ptr<OpenGLShader> m_GBufferShader;  // 默认G-Buffer着色器
+  GBufferPtr m_GBuffer;  // G-Buffer数据容器
 
   // 渲染状态配置
   std::shared_ptr<RenderState> m_OpaqueState;
