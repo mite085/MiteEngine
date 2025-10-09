@@ -9,296 +9,277 @@ BindingPointManager &BindingPointManager::Get()
 
 BindingPointManager::BindingPointManager()
 {
-  // 初始化各类型的下一个绑定点
-  for (size_t i = 0; i < static_cast<size_t>(ShaderBufferResourceType::Count); ++i) {
-    ShaderBufferResourceType type = static_cast<ShaderBufferResourceType>(i);
-    m_NextBindingPoints[i] = GetRangeStart(type);
+  // 初始化 UBO 下一个绑定点
+  for (size_t i = 0; i < static_cast<size_t>(UBOResourceType::Count); ++i) {
+    m_NextUBOPoints[i] = 0;  // UBO 绑定点从 0 开始
   }
-
-  // 验证范围设置
-  ValidateRanges();
-
-  LOG_INFO("BindingPointManager initialized with {} total binding points",
-           ShaderBufferBindingRanges::TOTAL_BINDING_POINTS);
+  // 初始化 SSBO 下一个绑定点
+  for (size_t i = 0; i < static_cast<size_t>(SSBOResourceType::Count); ++i) {
+    m_NextSSBOPoints[i] = 0;  // SSBO 绑定点从 0 开始
+  }
+  // 初始化纹理下一个绑定点
+  for (size_t i = 0; i < static_cast<size_t>(TextureResourceType::Count); ++i) {
+    m_NextTexturePoints[i] = 0;  // 纹理单元从 0 开始
+  }
+  LOG_INFO("BindingPointManager initialized with separate namespaces:");
+  LOG_INFO("  Texture Units: {}", BindingRanges::GetMaxTextureUnits());
+  LOG_INFO("  UBO Bindings: {}", BindingRanges::GetMaxUBOBindings());
+  LOG_INFO("  SSBO Bindings: {}", BindingRanges::GetMaxSSBOBindings());
 }
 
-void BindingPointManager::PreallocateCommonResources()
-{
-  // 预分配常用UBO资源
-  m_CameraUBOBinding = AllocateBindingPoint(ShaderBufferResourceType::CameraUBO,
-                                            ShaderBufferResourceNames::CAMERA_UBO);
-  m_MaterialUBOBinding = AllocateBindingPoint(ShaderBufferResourceType::MaterialUBO,
-                                              ShaderBufferResourceNames::MATERIAL_UBO);
-  m_ModelUBOBinding = AllocateBindingPoint(ShaderBufferResourceType::ModelUBO,
-                                           ShaderBufferResourceNames::MODEL_UBO);
-
-  // 预分配常用SSBO资源
-  m_LightSSBOBinding = AllocateBindingPoint(ShaderBufferResourceType::LightSSBO,
-                                            ShaderBufferResourceNames::LIGHT_SSBO);
-
-  // 预分配常用纹理资源
-  m_BaseColorTextureBinding = AllocateBindingPoint(ShaderBufferResourceType::BaseColorTexture,
-                                                   ShaderBufferResourceNames::BASE_COLOR_TEXTURE);
-  m_NormalTextureBinding = AllocateBindingPoint(ShaderBufferResourceType::NormalTexture,
-                                                ShaderBufferResourceNames::NORMAL_TEXTURE);
-  m_MetallicRoughnessTextureBinding = AllocateBindingPoint(
-      ShaderBufferResourceType::MetallicRoughnessTexture,
-      ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
-  m_EmissiveTextureBinding = AllocateBindingPoint(ShaderBufferResourceType::EmissiveTexture,
-                                                  ShaderBufferResourceNames::EMISSIVE_TEXTURE);
-  m_OcclusionTextureBinding = AllocateBindingPoint(ShaderBufferResourceType::OcclusionTexture,
-                                                   ShaderBufferResourceNames::OCCLUSION_TEXTURE);
-
-  m_ShadowMapBinding = AllocateBindingPoint(ShaderBufferResourceType::ShadowMap,
-                                            ShaderBufferResourceNames::SHADOW_MAP);
-  m_EnvironmentMapBinding = AllocateBindingPoint(ShaderBufferResourceType::EnvironmentMap,
-                                                 ShaderBufferResourceNames::ENVIRONMENT_MAP);
-
-  LOG_INFO("Preallocated common resources:");
-  LOG_INFO("  UBOs: Camera={}, Material={}, Model={}",
-           m_CameraUBOBinding,
-           m_MaterialUBOBinding,
-           m_ModelUBOBinding);
-  LOG_INFO("  SSBOs: Lights={}", m_LightSSBOBinding);
-  LOG_INFO("  Textures: BaseColor={}, Normal={}, MR={}, Emissive={}, Occlusion={}",
-           m_BaseColorTextureBinding,
-           m_NormalTextureBinding,
-           m_MetallicRoughnessTextureBinding,
-           m_EmissiveTextureBinding,
-           m_OcclusionTextureBinding);
-  LOG_INFO("  Environment: Shadow={}, EnvMap={}", m_ShadowMapBinding, m_EnvironmentMapBinding);
-}
-
-uint32_t BindingPointManager::AllocateBindingPoint(ShaderBufferResourceType type,
-                                                   const std::string &name)
+// ---- UBO 绑定点管理 ----
+uint32_t BindingPointManager::AllocateUBOBinding(UBOResourceType type, const std::string &name)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-
   size_t typeIndex = static_cast<size_t>(type);
-  uint32_t rangeStart = GetRangeStart(type);
-  uint32_t rangeCount = GetRangeCount(type);
-  uint32_t rangeEnd = rangeStart + rangeCount;
-
-  // 从该类型的下一个可用点开始查找
-  uint32_t startPoint = m_NextBindingPoints[typeIndex].load();
-  uint32_t currentPoint = startPoint;
-
-  do {
-    // 检查当前点是否可用
-    if (currentPoint < rangeEnd && !m_AllocatedPoints.test(currentPoint)) {
-      // 分配绑定点
-      m_AllocatedPoints.set(currentPoint);
-      m_ResourceTypes[currentPoint] = type;
-
-      // 更新下一个可用点
-      m_NextBindingPoints[typeIndex] = (currentPoint + 1) % rangeEnd;
-      if (m_NextBindingPoints[typeIndex] < rangeStart) {
-        m_NextBindingPoints[typeIndex] = rangeStart;
-      }
-
-      LOG_DEBUG(
-          "Allocated binding point {} for {}[{}]", currentPoint, name, static_cast<int>(type));
-      return currentPoint;
-    }
-
-    // 尝试下一个点
-    currentPoint++;
-    if (currentPoint >= rangeEnd) {
-      currentPoint = rangeStart;
-    }
-  } while (currentPoint != startPoint);  // 循环回到起点时停止
-
-  // 没有可用绑定点
-  LOG_ERROR("Failed to allocate binding point for type {}: no available points in range [{}-{})",
-            static_cast<int>(type),
-            rangeStart,
-            rangeEnd);
-  return UINT32_MAX;
+  return AllocateFromRange(
+      m_AllocatedUBOs, 0, BindingRanges::GetMaxUBOBindings(), m_NextUBOPoints[typeIndex], name);
 }
-
-void BindingPointManager::ReleaseBindingPoint(uint32_t bindingPoint)
+void BindingPointManager::ReleaseUBOBinding(uint32_t bindingPoint)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-
-  if (!IsValidBindingPoint(bindingPoint)) {
-    LOG_WARN("Attempted to release invalid binding point: {}", bindingPoint);
-    return;
+  if (bindingPoint < BindingRanges::GetMaxUBOBindings()) {
+    ReleaseFromRange(m_AllocatedUBOs, bindingPoint);
   }
-
-  if (!m_AllocatedPoints.test(bindingPoint)) {
-    LOG_WARN("Attempted to release unallocated binding point: {}", bindingPoint);
-    return;
+}
+bool BindingPointManager::IsUBOBindingAllocated(uint32_t bindingPoint) const
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  return bindingPoint < BindingRanges::GetMaxUBOBindings() && m_AllocatedUBOs.test(bindingPoint);
+}
+// ---- SSBO 绑定点管理 ----
+uint32_t BindingPointManager::AllocateSSBOBinding(SSBOResourceType type, const std::string &name)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  size_t typeIndex = static_cast<size_t>(type);
+  return AllocateFromRange(
+      m_AllocatedSSBOs, 0, BindingRanges::GetMaxSSBOBindings(), m_NextSSBOPoints[typeIndex], name);
+}
+void BindingPointManager::ReleaseSSBOBinding(uint32_t bindingPoint)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  if (bindingPoint < BindingRanges::GetMaxSSBOBindings()) {
+    ReleaseFromRange(m_AllocatedSSBOs, bindingPoint);
   }
-
-  // 释放绑定点
-  m_AllocatedPoints.reset(bindingPoint);
-  m_ResourceTypes.erase(bindingPoint);
-
-  LOG_DEBUG("Released binding point: {}", bindingPoint);
 }
-
-ShaderBufferResourceType BindingPointManager::GetResourceType(uint32_t bindingPoint) const
+bool BindingPointManager::IsSSBOBindingAllocated(uint32_t bindingPoint) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-
-  auto it = m_ResourceTypes.find(bindingPoint);
-  if (it != m_ResourceTypes.end()) {
-    return it->second;
+  return bindingPoint < BindingRanges::GetMaxSSBOBindings() && m_AllocatedSSBOs.test(bindingPoint);
+}
+// ---- 纹理绑定点管理 ----
+uint32_t BindingPointManager::AllocateTextureBinding(TextureResourceType category,
+                                                     const std::string &name)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  size_t typeIndex = static_cast<size_t>(category);
+  return AllocateFromRange(m_AllocatedTextures,
+                           0,
+                           BindingRanges::GetMaxTextureUnits(),
+                           m_NextTexturePoints[typeIndex],
+                           name);
+}
+void BindingPointManager::ReleaseTextureBinding(uint32_t textureUnit)
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  if (textureUnit < BindingRanges::GetMaxTextureUnits()) {
+    ReleaseFromRange(m_AllocatedTextures, textureUnit);
   }
-  return ShaderBufferResourceType::Count;  // 无效类型
 }
-
-bool BindingPointManager::IsBindingPointAllocated(uint32_t bindingPoint) const
+bool BindingPointManager::IsTextureBindingAllocated(uint32_t textureUnit) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-  return IsValidBindingPoint(bindingPoint) && m_AllocatedPoints.test(bindingPoint);
+  return textureUnit < BindingRanges::GetMaxTextureUnits() &&
+         m_AllocatedTextures.test(textureUnit);
 }
 
-size_t BindingPointManager::GetAllocatedCount() const
+// ---- 纹理类型映射接口 ----
+uint32_t BindingPointManager::GetRuntimeTextureBinding(RuntimeTextureType type) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
-  return m_AllocatedPoints.count();
+  auto it = m_RuntimeTextureBindings.find(type);
+  return it != m_RuntimeTextureBindings.end() ? it->second : UINT32_MAX;
+}
+uint32_t BindingPointManager::GetExternalTextureBinding(ExternalTextureType type) const
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  auto it = m_ExternalTextureBindings.find(type);
+  return it != m_ExternalTextureBindings.end() ? it->second : UINT32_MAX;
 }
 
 void BindingPointManager::Reset()
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
-  m_AllocatedPoints.reset();
-  m_ResourceTypes.clear();
+  // 重置所有分配状态
+  m_AllocatedUBOs.reset();
+  m_AllocatedSSBOs.reset();
+  m_AllocatedTextures.reset();
 
-  // 重置各类型的下一个绑定点
-  for (size_t i = 0; i < static_cast<size_t>(ShaderBufferResourceType::Count); ++i) {
-    ShaderBufferResourceType type = static_cast<ShaderBufferResourceType>(i);
-    m_NextBindingPoints[i] = GetRangeStart(type);
-  }
+  m_RuntimeTextureBindings.clear();
+  m_ExternalTextureBindings.clear();
 
-  // 重置预分配的资源
+  // 重置预分配资源
   m_CameraUBOBinding = UINT32_MAX;
   m_MaterialUBOBinding = UINT32_MAX;
   m_ModelUBOBinding = UINT32_MAX;
   m_LightSSBOBinding = UINT32_MAX;
-  m_BaseColorTextureBinding = UINT32_MAX;
-  m_NormalTextureBinding = UINT32_MAX;
-  m_MetallicRoughnessTextureBinding = UINT32_MAX;
-  m_EmissiveTextureBinding = UINT32_MAX;
-  m_OcclusionTextureBinding = UINT32_MAX;
-  m_ShadowMapBinding = UINT32_MAX;
-  m_EnvironmentMapBinding = UINT32_MAX;
+
+  // 重置下一个绑定点
+  for (auto &point : m_NextUBOPoints)
+    point = 0;
+  for (auto &point : m_NextSSBOPoints)
+    point = 0;
+  for (auto &point : m_NextTexturePoints)
+    point = 0;
 
   LOG_INFO("BindingPointManager reset");
 }
 
-// ---- 内部方法 ----
-uint32_t BindingPointManager::GetRangeStart(ShaderBufferResourceType type) const
+// ---- 内部分配方法 ----
+uint32_t BindingPointManager::AllocateFromRange(std::bitset<1024> &allocated,
+                                                uint32_t rangeStart,
+                                                uint32_t rangeCount,
+                                                std::atomic<uint32_t> &nextPoint,
+                                                const std::string &name)
 {
-  switch (type) {
-    // UBO类型 (0-15)
-    case ShaderBufferResourceType::CameraUBO:
-    case ShaderBufferResourceType::MaterialUBO:
-    case ShaderBufferResourceType::ModelUBO:
-    case ShaderBufferResourceType::SceneUBO:
-      return ShaderBufferBindingRanges::UBO_START;
-    // SSBO类型 (16-31)
-    case ShaderBufferResourceType::LightSSBO:
-    case ShaderBufferResourceType::InstanceSSBO:
-    case ShaderBufferResourceType::BoneSSBO:
-      return ShaderBufferBindingRanges::SSBO_START;
-    // 纹理类型 (32-95)
-    case ShaderBufferResourceType::BaseColorTexture:
-    case ShaderBufferResourceType::NormalTexture:
-    case ShaderBufferResourceType::MetallicRoughnessTexture:
-    case ShaderBufferResourceType::EmissiveTexture:
-    case ShaderBufferResourceType::OcclusionTexture:
-    case ShaderBufferResourceType::ShadowMap:
-    case ShaderBufferResourceType::EnvironmentMap:
-    case ShaderBufferResourceType::BRDFLUT:
-    case ShaderBufferResourceType::IrradianceMap:
-    case ShaderBufferResourceType::PrefilterMap:
-    case ShaderBufferResourceType::ColorGradingLUT:
-    case ShaderBufferResourceType::BloomTexture:
-    case ShaderBufferResourceType::SSAOTexture:
-    case ShaderBufferResourceType::CustomTexture0:
-      return ShaderBufferBindingRanges::TEXTURE_START;
-    default:
-      LOG_ERROR("Unknown resource type: {}", static_cast<int>(type));
-      return 0;
-  }
+  uint32_t start = nextPoint.load();
+  uint32_t current = start;
+  uint32_t rangeEnd = rangeStart + rangeCount;
+  do {
+    // 先执行查询，查询到空位则增加新的绑定点
+    if (current < rangeEnd && !allocated.test(current)) {
+      allocated.set(current);
+      nextPoint = (current + 1) % rangeEnd;
+      if (nextPoint < rangeStart)
+        nextPoint = rangeStart;
+
+      LOG_DEBUG("Allocated binding point {} for {}", current, name);
+      return current;
+    }
+
+    // 查询下一位
+    current = (current + 1) % rangeEnd;
+    if (current < rangeStart)
+      current = rangeStart; // 复位，退出循环
+  } while (current != start);
+  LOG_ERROR("Failed to allocate binding point for {}: no available points", name);
+  return UINT32_MAX;
 }
-uint32_t BindingPointManager::GetRangeCount(ShaderBufferResourceType type) const
+void BindingPointManager::ReleaseFromRange(std::bitset<1024> &allocated, uint32_t point)
 {
-  switch (type) {
-    // UBO类型 (16个绑定点)
-    case ShaderBufferResourceType::CameraUBO:
-    case ShaderBufferResourceType::MaterialUBO:
-    case ShaderBufferResourceType::ModelUBO:
-    case ShaderBufferResourceType::SceneUBO:
-      return ShaderBufferBindingRanges::UBO_COUNT;
-    // SSBO类型 (16个绑定点)
-    case ShaderBufferResourceType::LightSSBO:
-    case ShaderBufferResourceType::InstanceSSBO:
-    case ShaderBufferResourceType::BoneSSBO:
-      return ShaderBufferBindingRanges::SSBO_COUNT;
-    // 纹理类型 (64个绑定点)
-    case ShaderBufferResourceType::BaseColorTexture:
-    case ShaderBufferResourceType::NormalTexture:
-    case ShaderBufferResourceType::MetallicRoughnessTexture:
-    case ShaderBufferResourceType::EmissiveTexture:
-    case ShaderBufferResourceType::OcclusionTexture:
-    case ShaderBufferResourceType::ShadowMap:
-    case ShaderBufferResourceType::EnvironmentMap:
-    case ShaderBufferResourceType::BRDFLUT:
-    case ShaderBufferResourceType::IrradianceMap:
-    case ShaderBufferResourceType::PrefilterMap:
-    case ShaderBufferResourceType::ColorGradingLUT:
-    case ShaderBufferResourceType::BloomTexture:
-    case ShaderBufferResourceType::SSAOTexture:
-    case ShaderBufferResourceType::CustomTexture0:
-      return ShaderBufferBindingRanges::TEXTURE_COUNT;
-    default:
-      LOG_ERROR("Unknown resource type: {}", static_cast<int>(type));
-      return 0;
+  if (allocated.test(point)) {
+    allocated.reset(point);
+    LOG_DEBUG("Released binding point: {}", point);
   }
 }
 
-bool BindingPointManager::IsValidBindingPoint(uint32_t point) const
+void BindingPointManager::PreallocateCommonResources()
 {
-  return point < ShaderBufferBindingRanges::TOTAL_BINDING_POINTS;
+  // UBO 预分配
+  m_CameraUBOBinding = AllocateUBOBinding(UBOResourceType::CameraUBO,
+                                          ShaderBufferResourceNames::CAMERA_UBO);
+  m_MaterialUBOBinding = AllocateUBOBinding(UBOResourceType::MaterialUBO,
+                                            ShaderBufferResourceNames::MATERIAL_UBO);
+  m_ModelUBOBinding = AllocateUBOBinding(UBOResourceType::ModelUBO,
+                                         ShaderBufferResourceNames::MODEL_UBO);
+  // SSBO 预分配
+  m_LightSSBOBinding = AllocateSSBOBinding(SSBOResourceType::LightSSBO,
+                                           ShaderBufferResourceNames::LIGHT_SSBO);
+  // 预分配运行时纹理资源并建立映射
+  m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_WorldPosDepth] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture,
+      ShaderBufferResourceNames::GBUFFER_WORLD_POS_DEPTH);
+  m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_BaseColorMatType] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture,
+      ShaderBufferResourceNames::GBUFFER_BASE_COLOR_MAT_TYPE);
+  m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_MetallicRoughnessAO] =
+      AllocateTextureBinding(TextureResourceType::RuntimeTexture,
+                             ShaderBufferResourceNames::GBUFFER_METALLIC_ROUGHNESS_AO);
+  m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_NormalScale] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_NORMAL_SCALE);
+  m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_EmissionAlpha] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_EMISSION_ALPHA);
+  m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_NPRParam] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_NPR_PARAM);
+  m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_NPRColor] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_NPR_COLOR);
+  m_RuntimeTextureBindings[RuntimeTextureType::ShadowMap_Directional] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::SHADOW_MAP_DIRECTIONAL);
+  m_RuntimeTextureBindings[RuntimeTextureType::ShadowMap_Point] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::SHADOW_MAP_POINT);
+  m_RuntimeTextureBindings[RuntimeTextureType::ShadowMap_Spot] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::SHADOW_MAP_SPOT);
+  m_RuntimeTextureBindings[RuntimeTextureType::ShadowMap_Area] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::SHADOW_MAP_AREA);
+  m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Diffuse] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_DIFFUSE);
+  m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Specular] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_SPECULAR);
+  m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Combined] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_COMBINED);
+  m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Ambient] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_AMBIENT);
+  //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Bloom] = AllocateTextureBinding(
+  //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_BLOOM);
+  //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_ToneMapped] = AllocateTextureBinding(
+  //    TextureResourceType::RuntimeTexture,
+  //    ShaderBufferResourceNames::POSTPROCESS_TONE_MAPPED);
+  //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Final] = AllocateTextureBinding(
+  //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_FINAL);
+  m_RuntimeTextureBindings[RuntimeTextureType::RenderTarget] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::RENDER_TARGET);
+  m_RuntimeTextureBindings[RuntimeTextureType::Depth] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::DEPTH_TEXTURE);
+  m_RuntimeTextureBindings[RuntimeTextureType::Stencil] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::STENCIL_TEXTURE);
+  //m_RuntimeTextureBindings[RuntimeTextureType::Debug_View] = AllocateTextureBinding(
+  //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::DEBUG_VIEW);
+  //m_RuntimeTextureBindings[RuntimeTextureType::UI_Overlay] = AllocateTextureBinding(
+  //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::UI_OVERLAY);
+  // 预分配外部加载纹理资源并建立映射
+  m_ExternalTextureBindings[ExternalTextureType::BaseColor] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BASE_COLOR_TEXTURE);
+  m_ExternalTextureBindings[ExternalTextureType::Normal] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::NORMAL_TEXTURE);
+  m_ExternalTextureBindings[ExternalTextureType::MetallicRoughness] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture,
+      ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
+  m_ExternalTextureBindings[ExternalTextureType::Emissive] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::EMISSIVE_TEXTURE);
+  m_ExternalTextureBindings[ExternalTextureType::Occlusion] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::OCCLUSION_TEXTURE);
+  m_ExternalTextureBindings[ExternalTextureType::EnvironmentMap] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::ENVIRONMENT_MAP);
+  //m_ExternalTextureBindings[ExternalTextureType::BRDFLUT] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BRDF_LUT);
+  //m_ExternalTextureBindings[ExternalTextureType::IrradianceMap] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::IRRADIANCE_MAP);
+  //m_ExternalTextureBindings[ExternalTextureType::PrefilterMap] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::PREFILTER_MAP);
+  //m_ExternalTextureBindings[ExternalTextureType::ColorGradingLUT] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::COLOR_GRADING_LUT);
+  //m_ExternalTextureBindings[ExternalTextureType::BloomTexture] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BLOOM_TEXTURE);
+  //m_ExternalTextureBindings[ExternalTextureType::SSAOTexture] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::SSAO_TEXTURE);
+  //m_ExternalTextureBindings[ExternalTextureType::Custom0] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_0);
+  //m_ExternalTextureBindings[ExternalTextureType::Custom1] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_1);
+  //m_ExternalTextureBindings[ExternalTextureType::Custom2] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_2);
+  //m_ExternalTextureBindings[ExternalTextureType::Custom3] = AllocateTextureBinding(
+  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_3);
+  LOG_INFO("Preallocated common resources:");
+  LOG_INFO("  UBOs: Camera={}, Material={}, Model={}",
+           m_CameraUBOBinding,
+           m_MaterialUBOBinding,
+           m_ModelUBOBinding);
+  LOG_INFO("  SSBOs: Lights={}", m_LightSSBOBinding);
+  LOG_INFO("  Textures: Runtime={} types, External={} types",
+           m_RuntimeTextureBindings.size(),
+           m_ExternalTextureBindings.size());
 }
 
-void BindingPointManager::ValidateRanges() const
-{
-  // 检查范围不重叠
-  static_assert(ShaderBufferBindingRanges::UBO_START + ShaderBufferBindingRanges::UBO_COUNT <=
-                    ShaderBufferBindingRanges::SSBO_START,
-                "UBO range overlaps with SSBO range");
-  static_assert(ShaderBufferBindingRanges::SSBO_START + ShaderBufferBindingRanges::SSBO_COUNT <=
-                    ShaderBufferBindingRanges::TEXTURE_START,
-                "SSBO range overlaps with Texture range");
-  static_assert(ShaderBufferBindingRanges::TEXTURE_START +
-                        ShaderBufferBindingRanges::TEXTURE_COUNT <=
-                    ShaderBufferBindingRanges::TOTAL_BINDING_POINTS,
-                "Texture range exceeds total binding points");
-
-  // 检查常用资源有足够的空间
-  if (ShaderBufferBindingRanges::UBO_COUNT < 3) {
-    LOG_WARN("UBO range may be too small for common resources");
-  }
-  if (ShaderBufferBindingRanges::SSBO_COUNT < 4) {
-    LOG_WARN("SSBO range may be too small for common resources");
-  }
-  if (ShaderBufferBindingRanges::TEXTURE_COUNT < 32) {
-    LOG_WARN("Texture range may be too small for complex scenes");
-  }
-
-  // 验证预定义的纹理绑定点在正确范围内
-  static_assert(static_cast<uint32_t>(ShaderBufferResourceType::BaseColorTexture) >=
-                    ShaderBufferBindingRanges::TEXTURE_START,
-                "BaseColorTexture binding point out of range");
-  static_assert(static_cast<uint32_t>(ShaderBufferResourceType::CustomTexture0) <
-                    ShaderBufferBindingRanges::TEXTURE_START +
-                        ShaderBufferBindingRanges::TEXTURE_COUNT,
-                "CustomTexture0 binding point out of range");
-  LOG_DEBUG("Binding point ranges validated successfully");
-}
 }  // namespace mite
