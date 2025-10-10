@@ -35,10 +35,15 @@ void SceneView::SetCamera(const std::shared_ptr<Camera> &camera)
     m_Logger->warn("SceneView received null camera instance");
   }
 }
-void SceneView::Update(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes)
+void SceneView::Update(SceneRegistry &registry,Transform cameraTransform, std::vector<SceneNode *> visibleNodes)
 {
   // 计时，确定构建RenderQueue所消耗的时间
   Timer timer;
+
+  // 更新相机实例
+  m_CameraInstance->UpdateUBO(cameraTransform);
+
+  // 处理可见节点
   ProcessVisibility(registry, visibleNodes);
   m_LastUpdateTime = timer.ElapsedMillis();
 
@@ -47,10 +52,7 @@ void SceneView::Update(SceneRegistry &registry, std::vector<SceneNode *> visible
   //                m_lastVisibleNodeCount,
   //                m_lastRenderItemCount);
 }
-void SceneView::Rebuild(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes)
-{
-  Update(registry, visibleNodes);  // 当前实现与Update相同
-}
+
 std::shared_ptr<RenderQueue> SceneView::GetRenderQueue() const
 {
   return m_RenderQueue;
@@ -72,8 +74,9 @@ void SceneView::ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode
 {
   m_LastVisibleNodeCount = visibleNodes.size();
 
-  // 1. 构建渲染项
-  std::vector<RenderableItem> renderItems = m_Builder->BuildFromSceneNodes(registry, visibleNodes);
+  // 1. 构建渲染项（使用相机实例辅助选择LOD）
+  std::vector<RenderableItem> renderItems = m_Builder->BuildFromSceneNodes(
+      registry, m_CameraInstance, visibleNodes);
 
   // 2. 更新计数
   m_LastRenderItemCount = renderItems.size();

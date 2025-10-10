@@ -28,12 +28,9 @@ class SceneView {
    * @brief 更新场景视图（每帧调用）
    * @note 每帧完全重建渲染队列
    */
-  void Update(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes);
-
-  /**
-   * @brief 强制重建渲染队列（手动调用）
-   */
-  void Rebuild(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes);
+  void Update(SceneRegistry &registry,
+              Transform cameraTransform,
+              std::vector<SceneNode *> visibleNodes);
 
   /**
    * @brief 获取渲染队列
