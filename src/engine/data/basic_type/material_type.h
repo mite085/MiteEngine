@@ -11,12 +11,13 @@ namespace mite {
 
 // 材质纹理槽位定义（GLTF PBR标准）
 struct MaterialTextureSlot {
-  TextureAssetID textureAssetId;       // 纹理资产ID
-  glm::vec2 scale = glm::vec2(1.0f);   // 纹理缩放
-  glm::vec2 offset = glm::vec2(0.0f);  // 纹理偏移
+  TextureAssetID textureAssetId;                            // 纹理资产ID
+  TextureTarget textureTarget = TextureTarget::TEXTURE_2D;  // 纹理类型（默认2D纹理）
+  glm::vec2 scale = glm::vec2(1.0f);                        // 纹理缩放
+  glm::vec2 offset = glm::vec2(0.0f);                       // 纹理偏移
 
   MaterialTextureSlot() = default;
-  explicit MaterialTextureSlot(TextureAssetID id) : textureAssetId(id) {}
+  explicit MaterialTextureSlot(TextureAssetID id, TextureTarget target) : textureAssetId(id), textureTarget(target) {}
 };
 
 // 材质数据来源（MaterialSystem专用的过渡型数据格式）
@@ -94,7 +95,7 @@ struct MaterialMetadata {
 
         // 创建运行时纹理槽位
         sourceData.textureSlots[slotName] = TextureGPUSlot(
-            textureInstance.gpuHandle, textureSlot.scale, textureSlot.offset);
+            textureInstance.gpuHandle, textureInstance.target, textureSlot.scale, textureSlot.offset);
       }
     }
 

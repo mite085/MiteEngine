@@ -211,28 +211,28 @@ void MaterialLoader::ExtractAndCreateTextureReferences(TextureCache &textureCach
 {
   aiString texturePath;
 
-  // 基础颜色纹理
+  // 基础颜色纹理（默认2D纹理）
   if (aiMat->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, &texturePath) ==
       AI_SUCCESS)
   {
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      MaterialTextureSlot slot(texId);
+      MaterialTextureSlot slot(texId, TextureTarget::TEXTURE_2D);
       ExtractTextureTransform(
           aiMat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, slot.scale, slot.offset);
       metadata.textureSlots[MaterialParamKeys::BASE_COLOR_TEXTURE] = slot;
     }
   }
 
-  // 金属粗糙度纹理（也应当支持偏移，但很罕见）
+  // 金属粗糙度纹理（默认2D纹理）（也应当支持偏移，但很罕见）
   if (aiMat->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE,
                         &texturePath) == AI_SUCCESS)
   {
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      MaterialTextureSlot slot(texId);
+      MaterialTextureSlot slot(texId, TextureTarget::TEXTURE_2D);
       ExtractTextureTransform(aiMat,
                               AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE,
                               slot.scale,
@@ -241,34 +241,34 @@ void MaterialLoader::ExtractAndCreateTextureReferences(TextureCache &textureCach
     }
   }
 
-  // 法线纹理
+  // 法线纹理（默认2D纹理）
   if (aiMat->GetTexture(aiTextureType_NORMALS, 0, &texturePath) == AI_SUCCESS) {
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      MaterialTextureSlot slot(texId);
+      MaterialTextureSlot slot(texId, TextureTarget::TEXTURE_2D);
       ExtractTextureTransform(aiMat, aiTextureType_NORMALS, 0, slot.scale, slot.offset);
       metadata.textureSlots[MaterialParamKeys::NORMAL_TEXTURE] = slot;
     }
   }
 
-  // 自发光纹理
+  // 自发光纹理（默认2D纹理）
   if (aiMat->GetTexture(aiTextureType_EMISSIVE, 0, &texturePath) == AI_SUCCESS) {
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      MaterialTextureSlot slot(texId);
+      MaterialTextureSlot slot(texId, TextureTarget::TEXTURE_2D);
       ExtractTextureTransform(aiMat, aiTextureType_EMISSIVE, 0, slot.scale, slot.offset);
       metadata.textureSlots[MaterialParamKeys::EMISSIVE_TEXTURE] = slot;
     }
   }
 
-  // 环境光遮蔽纹理
+  // 环境光遮蔽纹理（默认2D纹理）
   if (aiMat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &texturePath) == AI_SUCCESS) {
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
-      MaterialTextureSlot slot(texId);
+      MaterialTextureSlot slot(texId, TextureTarget::TEXTURE_2D);
       ExtractTextureTransform(aiMat, aiTextureType_AMBIENT_OCCLUSION, 0, slot.scale, slot.offset);
       metadata.textureSlots[MaterialParamKeys::OCCLUSION_TEXTURE] = slot;
     }

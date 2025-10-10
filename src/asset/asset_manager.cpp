@@ -144,29 +144,6 @@ void AssetManager::ReleaseModel(ModelAssetID id)
 }
 
 // ===================== 材质管理 =====================
-MaterialAssetID AssetManager::GetOrCreateMaterial(const std::string &name, const glm::vec3 &color)
-{
-  std::lock_guard<std::mutex> lock(m_Mutex);
-
-  // 生成材质唯一标识
-  std::string materialKey = "builtin::" + name;
-  MaterialAssetID materialID{UUIDGenerator::Generate(materialKey.c_str())};
-
-  // 检查缓存中是否已存在
-  auto existingMaterial = m_MaterialCache.Get(materialID);
-  if (existingMaterial) {
-    return materialID;
-  }
-
-  // 创建新的纯色材质
-  auto materialAsset = MaterialLoader::CreatePureColorMaterial(m_MaterialCache, name, color);
-  if (materialAsset.IsValid()) {
-    LOG_DEBUG("[AssetManager] Created pure color material: " + name);
-    return materialAsset;
-  }
-
-  return MaterialAssetID{};
-}
 std::shared_ptr<MaterialAsset> AssetManager::GetMaterial(MaterialAssetID id) const
 {
   std::lock_guard<std::mutex> lock(m_Mutex);

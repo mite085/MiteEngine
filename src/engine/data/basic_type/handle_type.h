@@ -82,12 +82,13 @@ enum class AlphaMode {
 // 运行时纹理槽位纹理槽，包含纹理GPUHandle和缩放偏移，仅渲染前的材质Apply时需要
 struct TextureGPUSlot {
   TextureGPUHandle gpuHandle;
-  glm::vec2 scale = glm::vec2(1.0f);   // 纹理缩放
-  glm::vec2 offset = glm::vec2(0.0f);  // 纹理偏移
+  TextureTarget target = TextureTarget::TEXTURE_2D;  // 纹理目标类型（默认2D纹理）
+  glm::vec2 scale = glm::vec2(1.0f);                 // 纹理缩放
+  glm::vec2 offset = glm::vec2(0.0f);                // 纹理偏移
 
   TextureGPUSlot() = default;
-  TextureGPUSlot(TextureGPUHandle handle, const glm::vec2 &s, const glm::vec2 &o)
-      : gpuHandle(handle), scale(s), offset(o)
+  TextureGPUSlot(TextureGPUHandle handle, TextureTarget target, const glm::vec2 &s, const glm::vec2 &o)
+      : gpuHandle(handle),target(target), scale(s), offset(o)
   {
   }
 };

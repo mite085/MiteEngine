@@ -40,9 +40,7 @@ class AssetManager {
   std::shared_ptr<ModelAsset> GetModel(ModelAssetID id) const;
   void ReleaseModel(ModelAssetID id);
 
-  // ---- 材质管理接口（主要用于内部，也可外部使用） ----
-  MaterialAssetID GetOrCreateMaterial(const std::string &name,
-                                      const glm::vec3 &color = glm::vec3(1.0f));
+  // ---- 材质管理接口 ----
   std::shared_ptr<MaterialAsset> GetMaterial(MaterialAssetID id) const;
   void ReleaseMaterial(MaterialAssetID id);
 
