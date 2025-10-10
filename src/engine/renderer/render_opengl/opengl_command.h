@@ -47,6 +47,8 @@ class OpenGLRenderCommand : public RenderCommand {
 
   // ---------------- 原子操作命令 ----------------
   void BindCameraUBO(CameraInstance &instance) override;
+  void BindMaterialUBO(MaterialInstance &instance) override;
+  void BindLightSSBO(LightShaderStorgeBuffer &instance) override;
   void BindShader(
       std::shared_ptr<OpenGLShader> shader,
       std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup = nullptr) override;
@@ -57,14 +59,15 @@ class OpenGLRenderCommand : public RenderCommand {
   void BindExternalTexture(ExternalTextureType type,
                            TextureGPUHandle textureHandle,
                            TextureTarget target = TextureTarget::TEXTURE_2D) override;
-  void BindMesh(const Mesh &mesh) override;
+  void BindMesh(std::shared_ptr<Mesh> mesh) override;
   void DrawMesh(uint32_t indexCount,
                 uint32_t indexOffset = 0,
                 uint32_t primitiveType = 0x0004,
                 uint32_t indexType = 0x1405) override;
 
   // ---------------- 整合操作命令 ----------------
-  void SubmitDrawCall(RenderableItem item, std::shared_ptr<OpenGLShader> shader) override;
+  void SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance,
+                      std::shared_ptr<OpenGLShader> shader) override;
 
   // ---------------- 完成事件发布 ----------------
   void PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,

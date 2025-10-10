@@ -3,6 +3,8 @@
 
 #include "basic_event/render_event.h"
 #include "basic_instance/camera_instance.h"
+#include "basic_instance/material_instance.h"
+#include "basic_instance/light_ssbo.h"
 #include "basic_shader/framebuffer.h"
 #include "render_device.h"
 #include "renderable_item.h"
@@ -49,6 +51,8 @@ class RenderCommand {
 
     // 原子操作命令
     BindCameraUBO,         // 绑定相机UBO
+    BindMaterialUBO,       // 绑定材质UBO
+    BindLightSSBO,         // 绑定光源SSBO
     BindShader,            // 绑定着色器程序
     UnbindShader,          // 解绑着色器程序
     UploadShaderUniforms,  // 上传着色器Uniforms
@@ -82,11 +86,14 @@ class RenderCommand {
 
   // ---------------- 原子操作命令 ----------------
   /**
-   * @brief 初始化绑定相机UBO，每个Stage开始阶段调用一次即可
-   * @param instance 相机实例引用
+   * @brief 绑定相机UBO/材质UBO/光源SSBO
+   * @param instance 相机/材质实例/光源引用
    * @param shader 当前stage使用的shader
    */
   virtual void BindCameraUBO(CameraInstance &instance) = 0;
+  virtual void BindMaterialUBO(MaterialInstance &instance) = 0;
+  virtual void BindLightSSBO(LightShaderStorgeBuffer &instance) = 0;
+
   /**
    * @brief 绑定/解绑着色器程序
    * @param shader 着色器程序指针
@@ -119,7 +126,7 @@ class RenderCommand {
    * @brief 绑定网格VAO
    * @param mesh 网格数据
    */
-  virtual void BindMesh(const Mesh &mesh) = 0;
+  virtual void BindMesh(std::shared_ptr<Mesh> mesh) = 0;
   /**
    * @brief 绘制已绑定的网格
    * @param indexCount 索引数量
@@ -134,11 +141,11 @@ class RenderCommand {
 
   // ---------------- 整合操作命令 ----------------
   /**
-   * @brief G-Buffer渲染的专用提交方法
-   * @param item 可渲染项
-   * @param gbufferShader 专用的G-Buffer着色器（覆盖材质自带的着色器）
+   * @brief 整合了BindMesh、DrawMesh的网格绘制命令，添加了MeshLOD获取
+   * @param meshInstance 网格实例
+   * @param shader 着色器
    */
-  virtual void SubmitDrawCall(RenderableItem item,
+  virtual void SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance,
                               std::shared_ptr<OpenGLShader> gbufferShader) = 0;
 
   // ---------------- 完成事件发布 ----------------
