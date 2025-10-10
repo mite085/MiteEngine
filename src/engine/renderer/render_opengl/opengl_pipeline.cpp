@@ -21,9 +21,6 @@ OpenGLPipeline::~OpenGLPipeline()
 
 void OpenGLPipeline::Initialize()
 {
-  // 在引擎初始化时，预分配UBO和SSBO绑定点资源
-  BindingPointManager::Get().PreallocateCommonResources();
-
   // 初始化RenderCommand
   RenderCommand::Get().Init();
 
@@ -31,14 +28,22 @@ void OpenGLPipeline::Initialize()
   m_Context = std::make_unique<RenderContext>();
 
   // 添加G-Buffer Stage
-  auto gBufferShader = ShaderCache::Get().GetOpenGLShader(
+  std::shared_ptr<OpenGLShader> gBufferShader = ShaderCache::Get().GetOpenGLShader(
       FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.vert.glsl").string(),
       FileSystem::GetAssetPath("shaders/gbuffer/gbuffer.frag.glsl").string());
   AddStage(std::make_unique<GBufferStage>(), gBufferShader);
 
-  // 添加G-Buffer Stage
-  AddStage(std::make_unique<DeferredLightingStage>());
-  AddStage(std::make_unique<ForwardStage>());
+  // 添加Deferred Lighting Stage
+  std::shared_ptr<OpenGLShader> deferredLightingShader = ShaderCache::Get().GetOpenGLShader(
+      FileSystem::GetAssetPath("shaders/lighting/deferred_lighting.vert.glsl").string(),
+      FileSystem::GetAssetPath("shaders/lighting/deferred_lighting.frag.glsl").string());
+  AddStage(std::make_unique<DeferredLightingStage>(), deferredLightingShader);
+
+  // 添加Forward Render Stage
+  std::shared_ptr<OpenGLShader> forwardShader = ShaderCache::Get().GetOpenGLShader(
+      FileSystem::GetAssetPath("shaders/lighting/forward.vert.glsl").string(),
+      FileSystem::GetAssetPath("shaders/lighting/forward.frag.glsl").string());
+  AddStage(std::make_unique<ForwardStage>(), forwardShader);
 
   // 初始化所有阶段
   for (auto &stage : m_Stages) {
