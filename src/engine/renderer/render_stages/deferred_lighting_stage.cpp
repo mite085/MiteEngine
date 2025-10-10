@@ -1,6 +1,7 @@
 #include "deferred_lighting_stage.h"
 #include "basic_shader/gbuffer.h"
 #include "basic_shader/shader_cache.h"
+#include "basic_shader/shader_binding_point_manager.h"
 #include "render_opengl/opengl_command.h"
 
 namespace mite {
@@ -23,16 +24,6 @@ void DeferredLightingStage::Initialize()
     return;
   }
 
-  // 加载延迟光照着色器
-  m_LightingShader = ShaderCache::Get().GetOpenGLShader(
-      FileSystem::GetAssetPath("shaders/lighting/deferred_lighting.vert.glsl").string(),
-      FileSystem::GetAssetPath("shaders/lighting/deferred_lighting.frag.glsl").string());
-
-  if (!m_LightingShader) {
-    m_Logger->error("Failed to load deferred lighting shader");
-    return;
-  }
-
   // 创建全屏四边形
   CreateScreenQuad();
 
@@ -45,13 +36,25 @@ void DeferredLightingStage::Initialize()
 
 void DeferredLightingStage::Execute(RenderContext &context)
 {
-  if (!m_Initialized || !m_LightingShader) {
+  if (!m_Initialized) {
     m_Logger->warn("DeferredLightingStage executed but not properly initialized");
     return;
   }
 
   if (!context.IsValid()) {
     m_Logger->warn("DeferredLightingStage executed with invalid context");
+    return;
+  }
+
+  // 从上下文获取DeferredLightingStage的着色器
+  auto lightingShader = context.GetStageShader("DeferredLightingStage");
+  if (!lightingShader) {
+    m_Logger->error(
+        "DeferredLightingStage: No lightingShader found in context for stage 'DeferredLightingStage'");
+    return;
+  }
+  if (lightingShader->GetProgramId() == 0) {
+    m_Logger->error("DeferredLightingStage: lightingShader from context is not properly linked");
     return;
   }
 
@@ -73,27 +76,27 @@ void DeferredLightingStage::Execute(RenderContext &context)
   RenderCommand::Get().SetRenderState(m_LightingState);
 
   // 绑定着色器
-  RenderCommand::Get().BindShader(m_LightingShader);
+  RenderCommand::Get().BindShader(lightingShader);
 
   // 绑定G-Buffer纹理
-  BindGBufferTextures(context);
+  BindGBufferTextures(context, lightingShader);
 
   // 绑定光源SSBO数据
-  BindLightSSBOData(context);
+  BindLightSSBOData(context, lightingShader);
 
   // 绑定阴影数据
   if (m_EnableShadows) {
-    BindShadowData(context);
+    BindShadowData(context, lightingShader);
   }
 
   // 绑定相机和场景数据
-  BindCameraAndSceneData(context);
+  BindCameraAndSceneData(context, lightingShader);
 
   // 渲染全屏四边形
   RenderFullScreenQuad();
 
   // 解绑资源
-  RenderCommand::Get().UnbindShader(m_LightingShader);
+  RenderCommand::Get().UnbindShader(lightingShader);
   m_LightingFBO->Unbind();
 
   // 将光照输出纹理存储到上下文供后续阶段使用
@@ -194,9 +197,11 @@ void DeferredLightingStage::CreateScreenQuad()
      1.0f,  1.0f,  1.0f, 1.0f
   };
 
+  // 创建VAO和VBO
   glGenVertexArrays(1, &m_ScreenQuadVAO);
   glGenBuffers(1, &m_ScreenQuadVBO);
 
+  // 绑定顶点数据
   glBindVertexArray(m_ScreenQuadVAO);
   glBindBuffer(GL_ARRAY_BUFFER, m_ScreenQuadVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
@@ -212,16 +217,16 @@ void DeferredLightingStage::CreateScreenQuad()
   glBindVertexArray(0);
 }
 
-void DeferredLightingStage::BindGBufferTextures(RenderContext &context)
+void DeferredLightingStage::BindGBufferTextures(RenderContext &context,
+                                                std::shared_ptr<OpenGLShader> lightingShader)
 {
   // 绑定所有G-Buffer纹理到对应的纹理单元
   for (const auto &type : GBuffer::GetTextureTypes()) {
     auto texture = context.GetGBufferTexture(type);
     if (texture && texture->isValid()) {
-      // 根据纹理类型设置到对应的uniform
-      std::string uniformName = GBuffer::GetTextureTypeName(type);
-      m_LightingShader->SetInt(uniformName, static_cast<int>(type));
-      RenderCommand::Get().BindTexture(texture->getHandle(), static_cast<uint32_t>(type));
+      // 发布绑定命令
+      RenderCommand::Get().BindRuntimeTexture(
+          type, texture->getHandle(), TextureTarget::TEXTURE_2D);
 
       m_Logger->trace("Bound G-Buffer texture: {} to unit {}",
                       GBuffer::GetTextureTypeName(type),
@@ -233,37 +238,31 @@ void DeferredLightingStage::BindGBufferTextures(RenderContext &context)
   }
 }
 
-void DeferredLightingStage::BindLightSSBOData(RenderContext &context)
+void DeferredLightingStage::BindLightSSBOData(RenderContext &context,
+                                              std::shared_ptr<OpenGLShader> lightingShader)
 {
-  // 优先使用外部设置的LightManager
-  auto lightManager = m_LightManager;
-  if (!lightManager) {
-    // 尝试从上下文获取LightManager
-    lightManager = context.GetTemporaryResource<LightManager>("LightManager");
-  }
+  // 从上下文获取LightManager
+  auto lightManager = context.GetLightManager();
 
-  if (lightManager && lightManager->IsInitialized()) {
+  if (lightManager.IsInitialized()) {
+
     // 绑定光源SSBO到着色器
-    lightManager->SetupShaderBinding(m_LightingShader);
-    lightManager->BindLightSSBO();
+    RenderCommand::Get().BindLightSSBO(lightManager.GetLightSSBO());
 
     // 设置光源统计信息到uniform
-    size_t enabledLightCount = lightManager->GetEnabledLightCount();
-    m_LightingShader->SetInt("u_EnabledLightCount", static_cast<int>(enabledLightCount));
+    size_t enabledLightCount = lightManager.GetEnabledLightCount();
 
     m_Logger->trace("Bound light SSBO with {} enabled lights", enabledLightCount);
   }
   else {
-    // 没有LightManager时的后备方案
-    m_Logger->warn("No LightManager available, using default lighting");
-    m_LightingShader->SetInt("u_EnabledLightCount", 1);
+    m_Logger->warn("No LightManager available");
   }
 }
 
-void DeferredLightingStage::BindShadowData(RenderContext &context)
+void DeferredLightingStage::BindShadowData(RenderContext &context,
+                                           std::shared_ptr<OpenGLShader> lightingShader)
 {
   BindShadowMapTextures(context);
-  SetupShadowUniforms(m_LightingShader);
 }
 
 void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
@@ -275,49 +274,24 @@ void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
   for (uint32_t i = 0; i < MAX_SHADOW_MAPS && shadowTextureUnit < 32; ++i) {
     auto shadowTexture = context.GetShadowMapTexture(0, i);
     if (shadowTexture && shadowTexture->isValid()) {
-      RenderCommand::Get().BindTexture(shadowTexture->getHandle(), shadowTextureUnit);
-
-      std::string uniformName = "u_ShadowMaps[" + std::to_string(boundShadowCount) + "]";
-      m_LightingShader->SetInt(uniformName, shadowTextureUnit);
+      RenderCommand::Get().BindRuntimeTexture(
+          shadowTexture->getType(), shadowTexture->getHandle(), TextureTarget::TEXTURE_2D);
 
       boundShadowCount++;
       shadowTextureUnit++;
     }
   }
 
-  m_LightingShader->SetInt("u_ShadowMapCount", static_cast<int>(boundShadowCount));
-
   if (boundShadowCount > 0) {
     m_Logger->debug("Bound {} shadow maps", boundShadowCount);
   }
 }
 
-void DeferredLightingStage::SetupShadowUniforms(std::shared_ptr<OpenGLShader> shader)
-{
-  shader->SetFloat("u_ShadowBias", 0.005f);
-  shader->SetFloat("u_ShadowNormalBias", 0.02f);
-  shader->SetFloat("u_ShadowPCFRadius", 2.0f);
-  shader->SetInt("u_EnableCSM", 1);
-  shader->SetFloat("u_CascadeSplitLambda", 0.95f);
-}
-
-void DeferredLightingStage::BindCameraAndSceneData(RenderContext &context)
+void DeferredLightingStage::BindCameraAndSceneData(RenderContext &context,
+                                                   std::shared_ptr<OpenGLShader> lightingShader)
 {
   // 绑定相机UBO
-  RenderCommand::Get().BindCameraUBO(context.GetCameraInstance());
-
-  // 设置视口尺寸
-  auto viewportSize = context.GetViewportSize();
-  m_LightingShader->SetVec2("u_ViewportSize", glm::vec2(viewportSize.x, viewportSize.y));
-
-  // 设置相机位置
-  auto cameraPos = context.GetCameraInstance().GetCameraTransform().GetPosition();
-  m_LightingShader->SetVec3("u_CameraPosition", cameraPos);
-
-  // 设置时间
-  static float time = 0.0f;
-  time += 0.016f;
-  m_LightingShader->SetFloat("u_Time", time);
+  RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 }
 
 void DeferredLightingStage::RenderFullScreenQuad()
@@ -363,22 +337,6 @@ void DeferredLightingStage::ValidateLightingFramebuffer(const glm::uvec2 &viewpo
       m_Logger->error("Failed to resize lighting FBO");
       throw std::runtime_error("Lighting FBO resize failed");
     }
-  }
-}
-
-void DeferredLightingStage::SetLightingShader(std::shared_ptr<OpenGLShader> shader)
-{
-  m_LightingShader = shader;
-  if (shader) {
-    m_Logger->info("Lighting shader updated for DeferredLightingStage");
-  }
-}
-
-void DeferredLightingStage::SetLightManager(std::shared_ptr<LightManager> lightManager)
-{
-  m_LightManager = lightManager;
-  if (lightManager) {
-    m_Logger->info("LightManager set for DeferredLightingStage");
   }
 }
 

@@ -7,7 +7,6 @@
 #include "render_stage.h"
 
 namespace mite {
-
 /**
  * @brief 延迟光照阶段 - 基于G-Buffer和SSBO光源数据进行光照计算
  *
@@ -28,15 +27,8 @@ class DeferredLightingStage : public RenderStage {
   void Execute(RenderContext &context) override;
   void Shutdown() override;
 
-  // ---- 配置接口 ----
-  void SetLightingShader(std::shared_ptr<OpenGLShader> shader);
-  void SetLightManager(std::shared_ptr<LightManager> lightManager);
-
   // ---- FBO访问接口 ----
-  std::shared_ptr<FrameBuffer> GetLightingFramebuffer() const
-  {
-    return m_LightingFBO;
-  }
+  std::shared_ptr<FrameBuffer> GetLightingFramebuffer() const { return m_LightingFBO; }
   RuntimeTexturePtr GetLightingOutputTexture() const;
 
  private:
@@ -46,10 +38,11 @@ class DeferredLightingStage : public RenderStage {
   void CreateScreenQuad();
 
   // ---- 绑定方法 ----
-  void BindGBufferTextures(RenderContext &context);
-  void BindLightSSBOData(RenderContext &context);
-  void BindShadowData(RenderContext &context);
-  void BindCameraAndSceneData(RenderContext &context);
+  void BindGBufferTextures(RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader);
+  void BindLightSSBOData(RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader);
+  void BindShadowData(RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader);
+  void BindCameraAndSceneData(RenderContext &context,
+                              std::shared_ptr<OpenGLShader> lightingShader);
   void RenderFullScreenQuad();
 
   // ---- 验证方法 ----
@@ -58,11 +51,8 @@ class DeferredLightingStage : public RenderStage {
 
   // ---- 阴影纹理绑定 ----
   void BindShadowMapTextures(RenderContext &context);
-  void SetupShadowUniforms(std::shared_ptr<OpenGLShader> shader);
 
   // ---- 成员变量 ----
-  std::shared_ptr<OpenGLShader> m_LightingShader;
-  std::shared_ptr<LightManager> m_LightManager;
   std::shared_ptr<FrameBuffer> m_LightingFBO;  // 光照输出Framebuffer
 
   // 全屏四边形VAO
@@ -80,7 +70,6 @@ class DeferredLightingStage : public RenderStage {
   static constexpr uint32_t MAX_SHADOW_MAPS = 16;
   uint32_t m_NextShadowTextureUnit = 8;
 };
-
 }  // namespace mite
 
 #endif
