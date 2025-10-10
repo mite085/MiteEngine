@@ -18,7 +18,7 @@ CameraInstance::~CameraInstance() {}
 
 bool CameraInstance::InitializeUBO()
 {
-  if (m_CameraUBO->IsInitialized()) {
+  if (m_CameraUBO && m_CameraUBO->IsInitialized()) {
     LOG_WARN("CameraInstance UBO already initialized'");
     return true;
   }
