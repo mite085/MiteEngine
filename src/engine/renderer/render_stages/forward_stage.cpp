@@ -89,7 +89,7 @@ void ForwardStage::Execute(RenderContext &context)
   RenderCommand::Get().BindFrameBuffer(m_ForwardFrameBuffer);
 
   // stage开始渲染之前绑定相机UBO
-  RenderCommand::Get().BindCameraUBO(context.GetCameraInstance());
+  RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
   // 按顺序渲染各个队列
   RenderOpaqueQueue(context);
@@ -123,7 +123,7 @@ void ForwardStage::RenderOpaqueQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().Submit(item);
+      RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader(m_Name));
       renderedCount++;
     }
   }
@@ -149,7 +149,7 @@ void ForwardStage::RenderAlphaTestQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().Submit(item);
+      RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader(m_Name));
       renderedCount++;
     }
   }
@@ -175,7 +175,7 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().Submit(item);
+      RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader(m_Name));
       renderedCount++;
     }
   }
@@ -201,7 +201,7 @@ void ForwardStage::RenderCustomQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().Submit(item);
+      RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader(m_Name));
       renderedCount++;
     }
   }
@@ -218,14 +218,8 @@ bool ForwardStage::ValidateRenderableItem(const RenderableItem &item) const
     return false;
   }
 
-  auto shader = item.material->GetShader();
-  if (!shader || shader->GetHandle().programId == 0) {
-    m_Logger->warn("Renderable item has invalid shader");
-    return false;
-  }
-
   // 验证网格数据
-  if (item.mesh.GetModelHandle().vertexArray == 0) {
+  if (item.mesh->GetMesh()->GetModelHandle().vertexArray == 0) {
     m_Logger->warn("Renderable item has invalid mesh");
     return false;
   }

@@ -133,7 +133,7 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
     // 使用G-Buffer着色器提交
     auto gbufferShader = GetGBufferShader(context);
     if (gbufferShader) {
-      RenderCommand::Get().SubmitDrawCall(item, gbufferShader);
+      RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
       renderedCount++;
     }
     else {
@@ -174,7 +174,7 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
     // 使用G-Buffer着色器提交
     auto gbufferShader = GetGBufferShader(context);
     if (gbufferShader) {
-      RenderCommand::Get().SubmitDrawCall(item, gbufferShader);
+      RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
       renderedCount++;
     }
     else {
@@ -219,13 +219,13 @@ bool GBufferStage::ValidateGBufferRenderableItem(const RenderableItem &item) con
   }
 
   // 验证网格有效性
-  if (item.mesh.GetModelHandle().vertexArray == 0) {
+  if (item.mesh->GetMesh()->GetModelHandle().vertexArray == 0) {
     m_Logger->trace("GBufferStage: Renderable item has invalid mesh");
     return false;
   }
 
   // 添加G-Buffer特定的验证逻辑
-  // 例如：检查材质是否支持G-Buffer渲染（目前设定的材质均支持，所以忽略这一步）
+  // 例如：检查材质是否支持G-Buffer渲染（目前创建的材质均支持，所以忽略这一步）
 
   return true;
 }
