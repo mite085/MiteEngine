@@ -3,6 +3,7 @@
 #include "render_opengl/opengl_pipeline.h"
 #include "scene_core_components/component_headers.h"
 #include "ui_panel/ui_viewport_panel.h"
+#include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -87,9 +88,9 @@ void MiteApplication::LoadDefaultScene()
         plane_submesh);
     plane_mesh_component.SetMesh(std::make_shared<Mesh>(plane_model.GetSubMesh(i)));
 
-    // 3. 创建材质实例
-    std::shared_ptr<MaterialInstance> plane_material =
-        MaterialFactory::Get().CreateInstance<EmissionMaterialTemplate>();
+    // 3. 创建材质实例（自发光）
+    std::shared_ptr<MaterialInstance> plane_material = MaterialFactory::Get().CreateInstance(
+        MaterialType::EMISSION);
 
     // 4. 创建材质组件
     MaterialComponent &plane_material_component =
@@ -118,6 +119,8 @@ void MiteApplication::Initialize()
       BIND_DISPATCH_FN(OnWindowClose),
       EventPriority::Highest  // 最高优先级确保及时处理
   );
+
+
 
   // 按照依赖关系，先初始化底层模块，后初始化顶层模块
   InitializeInputSystem();
@@ -400,17 +403,8 @@ void MiteApplication::Render()
                                                                     mainCameraVisibilityMask);
 
   // 3. SceneView根据可见节点列表构建RendererQueue（多视口渲染需要存在多个SceneView）
-  m_SceneView->Update(m_SceneCore->GetRegistry(), visibleNodes);
+  m_SceneView->Update(m_SceneCore->GetRegistry(), cameraTransform, visibleNodes);
   std::shared_ptr<RenderQueue> renderQueue = m_SceneView->GetRenderQueue();
-
-  // 4. 相机UBO更新与获取（TODO:
-  // 相机实例应当由SceneView管理，多视口渲染时需要创建多个SceneView。待修改）
-  m_SceneCore->GetRegistry()
-      .GetComponent<CameraComponent>(mainCamera)
-      .UpdateUBOViewMatrix(cameraTransform);
-
-  CameraInstance &mainCameraInstance =
-      m_SceneCore->GetRegistry().GetComponent<CameraComponent>(mainCamera).GetCameraInstance();
 
   // 4. 渲染器渲染场景
   m_Renderer->RenderScene(renderQueue, m_SceneView->GetCameraInstance());  // 渲染场景
