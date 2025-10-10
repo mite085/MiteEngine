@@ -42,6 +42,7 @@ target_link_libraries(${APPLICATION_LIB_NAME}
     MiteEngine_Engine_Event
     MiteEngine_Engine_Input
     
+    MiteEngine_Engine_Light
     MiteEngine_Engine_Material
     MiteEngine_Engine_Renderer
     MiteEngine_Engine_Scene_Core

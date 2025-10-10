@@ -110,7 +110,8 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
     # 弱依赖：创建资产浏览器界面
     MiteEngine_Asset
 
-    # 弱依赖：创建材质修改界面
+    # 弱依赖：创建材质/光照修改界面
+    MiteEngine_Engine_Light
     MiteEngine_Engine_Material
 
     # 弱依赖：创建Component组件属性界面

@@ -53,6 +53,8 @@ set(BASIC_INSTANCE_SRCS
     basic_instance/material_instance.cpp
     basic_instance/mesh_instance.h  # 网格体实例
     basic_instance/mesh_instance.cpp
+    basic_instance/light_ssbo.h             # 光源数据SSBO管理器
+    basic_instance/light_ssbo.cpp
 )
 source_group("basic instance" FILES ${BASIC_INSTANCE_SRCS})
 
