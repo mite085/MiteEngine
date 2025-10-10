@@ -6,27 +6,69 @@ RenderContext::RenderContext() : m_Logger(LoggerSystem::CreateModuleLogger("Mite
   // 初始化GBuffer纹理数组
   m_GBufferTextures.fill(nullptr);
 
+  // 订阅Instance创建事件
+  m_EventSubscription.SubscribeImmediate<CameraInstanceCreateEvent>(
+      BIND_DISPATCH_FN(OnCameraInstanceCreated));
+  m_EventSubscription.SubscribeImmediate<MeshInstanceCreateEvent>(
+      BIND_DISPATCH_FN(OnMeshInstanceCreated));
+  m_EventSubscription.SubscribeImmediate<MaterialInstanceCreateEvent>(
+      BIND_DISPATCH_FN(OnMaterialInstanceCreated));
+  m_EventSubscription.SubscribeImmediate<LightSSBOCreateEvent>(
+      BIND_DISPATCH_FN(OnLightSSBOCreated));
+
   m_Logger->info("Render Context created");
 }
 
 RenderContext::~RenderContext()
 {
-  ClearTemporaryResources();
+  //ClearTemporaryResources();
   ClearTextures();
   m_Logger->info("Render Context destroyed");
 }
 
 void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
-                                 CameraInstance &cameraInstance)
+                                 std::shared_ptr<CameraInstance> cameraInstance)
 {
   m_RenderQueue = renderQueue;
-  m_CameraInstance = std::ref(cameraInstance);
+  m_MainCameraInstance = cameraInstance;
 
   // m_Logger->debug("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
   //                 m_RenderQueue ? "valid" : "null",
   //                 m_CameraPosition.x,
   //                 m_CameraPosition.y,
   //                 m_CameraPosition.z);
+}
+
+// ---- 着色器阶段管理实现 ----
+void RenderContext::RegisterStageShader(const std::string &stageName,
+                                        std::shared_ptr<OpenGLShader> shader)
+{
+  if (!shader) {
+    m_Logger->warn("Attempted to register null shader for stage: {}", stageName);
+    return;
+  }
+  if (shader->GetProgramId() == 0) {
+    m_Logger->warn("Shader for stage {} is not linked, UBO bindings may fail", stageName);
+  }
+  m_StageShaders[stageName] = shader;
+  m_Logger->debug("Registered shader for stage: {}", stageName);
+
+  // 为新着色器设置所有已注册实例的UBO绑定
+  SetupShaderBindingsForNewShader(stageName, shader);
+}
+std::shared_ptr<OpenGLShader> RenderContext::GetStageShader(const std::string &stageName) const
+{
+  auto it = m_StageShaders.find(stageName);
+  if (it != m_StageShaders.end()) {
+    return it->second;
+  }
+  m_Logger->debug("Stage shader not found: {}", stageName);
+  return nullptr;
+}
+const std::unordered_map<std::string, std::shared_ptr<OpenGLShader>> &RenderContext::
+    GetAllStageShaders() const
+{
+  return m_StageShaders;
 }
 
 // ---- 分层纹理管理实现 ----
@@ -99,15 +141,16 @@ void RenderContext::ClearTextures()
   m_Logger->debug("Cleared all texture mappings");
 }
 
-void RenderContext::ClearTemporaryResources()
-{
-  size_t count = m_TemporaryResources.size();
-  m_TemporaryResources.clear();
-
-  if (count > 0) {
-    m_Logger->debug("Cleared {} temporary resources", count);
-  }
-}
+// ---- 临时资源管理（现阶段尽量所有资源明确定义，待后续启用临时资源） ----
+//void RenderContext::ClearTemporaryResources()
+//{
+//  size_t count = m_TemporaryResources.size();
+//  m_TemporaryResources.clear();
+//
+//  if (count > 0) {
+//    m_Logger->debug("Cleared {} temporary resources", count);
+//  }
+//}
 
 bool RenderContext::IsValid() const
 {
@@ -134,5 +177,103 @@ void RenderContext::DebugTextureInfo() const
       m_GBufferTextures.size(),
       m_ShadowMapTextures.size(),
       m_RenderTargets.size());
+}
+// ---- 渲染实例事件消费 ----
+void RenderContext::OnCameraInstanceCreated(CameraInstanceCreateEvent &event)
+{
+  std::shared_ptr<CameraInstance> cameraInstance = event.GetInstance();
+
+  if (!cameraInstance) {
+    m_Logger->warn("Attempted to register null camera instance");
+    return;
+  }
+  m_CameraInstances.push_back(cameraInstance);
+  m_Logger->debug("Registered camera instance");
+
+  // 为新实例设置所有已注册着色器的UBO绑定
+  SetupShaderBindingsForNewInstance<CameraInstance>(cameraInstance);
+
+  // 阻断事件传播
+  event.SetResult(EventResult::HandledAndStop);
+  return;
+}
+void RenderContext::OnMeshInstanceCreated(MeshInstanceCreateEvent &event)
+{
+  std::shared_ptr<MeshInstance> meshInstance = event.GetInstance();
+
+  if (!meshInstance) {
+    m_Logger->warn("Attempted to register null mesh instance");
+    return;
+  }
+  m_MeshInstances.push_back(meshInstance);
+  m_Logger->debug("Registered mesh instance");
+
+  // 为新实例设置所有已注册着色器的UBO绑定
+  SetupShaderBindingsForNewInstance<MeshInstance>(meshInstance);
+
+  // 阻断事件传播
+  event.SetResult(EventResult::HandledAndStop);
+  return;
+}
+void RenderContext::OnMaterialInstanceCreated(MaterialInstanceCreateEvent &event)
+{
+  std::shared_ptr<MaterialInstance> materialInstance = event.GetInstance();
+
+  if (!materialInstance) {
+    m_Logger->warn("Attempted to register null material instance");
+    return;
+  }
+  m_MaterialInstances.push_back(materialInstance);
+  m_Logger->debug("Registered material instance");
+
+  // 为新实例设置所有已注册着色器的UBO绑定
+  SetupShaderBindingsForNewInstance<MaterialInstance>(materialInstance);
+
+  // 阻断事件传播
+  event.SetResult(EventResult::HandledAndStop);
+  return;
+}
+void RenderContext::OnLightSSBOCreated(LightSSBOCreateEvent &event)
+{
+  std::shared_ptr<LightShaderStorgeBuffer> lightSSBO = event.GetSSBO();
+
+  if (!lightSSBO) {
+    m_Logger->warn("Attempted to register null light ssbo");
+    return;
+  }
+  m_LightSSBO = lightSSBO;
+  m_Logger->debug("Registered material instance");
+
+  // 为新实例设置所有已注册着色器的UBO绑定
+  SetupShaderBindingsForNewInstance<LightShaderStorgeBuffer>(lightSSBO);
+
+  // 阻断事件传播
+  event.SetResult(EventResult::HandledAndStop);
+  return;
+}
+
+void RenderContext::SetupShaderBindingsForNewShader(const std::string &stageName,
+                                                    std::shared_ptr<OpenGLShader> shader)
+{
+  // 为所有相机实例设置绑定
+  for (auto &cameraInstance : m_CameraInstances) {
+    cameraInstance->SetupShaderBinding(shader);
+  }
+  // 为所有网格实例设置绑定
+  for (auto &meshInstance : m_MeshInstances) {
+    meshInstance->SetupShaderBinding(shader);
+  }
+  // 为所有材质实例设置绑定
+  for (auto &materialInstance : m_MaterialInstances) {
+    materialInstance->SetupShaderBinding(shader);
+  }
+  // 为光照SSBO设置绑定
+  m_LightSSBO->SetupShaderBinding(shader);
+
+  m_Logger->info("Setup shader bindings for stage: {} ({} cameras, {} meshes, {} materials)",
+                 stageName,
+                 m_CameraInstances.size(),
+                 m_MeshInstances.size(),
+                 m_MaterialInstances.size());
 }
 }  // namespace mite
