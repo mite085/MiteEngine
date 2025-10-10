@@ -8,7 +8,7 @@
 
 namespace mite {
 // 定义纹理绑定函数类型
-using TextureBindFunc = std::function<void(TextureGPUHandle, size_t)>;
+using ExternalTextureBindFunc = std::function<void(ExternalTextureType, TextureGPUHandle, TextureTarget)>;
 
 /**
  * @brief 材质实例（运行时绑定具体Shader和参数）
@@ -50,8 +50,7 @@ class MaterialInstance {
    * @param textureBindFunc 纹理绑定函数
    * @return 使用的纹理槽位数量
    */
-  size_t BindTexturesOnly(TextureBindFunc textureBindFunc,
-                          std::shared_ptr<OpenGLShader> shader) const;
+  size_t BindTexturesOnly(ExternalTextureBindFunc textureBindFunc) const;
   /**
    * @brief 仅绑定UBO（不存在OverrideShader，UBO已经在Shader中注册好的BindingPoint）
    */
@@ -60,7 +59,7 @@ class MaterialInstance {
    * @brief 前向渲染专用的Apply方法，按照顺序执行绑定操作（DrawCall之前绑定）
    * @param textureBindFunc 纹理绑定函数
    */
-  void Apply(TextureBindFunc textureBindFunc, std::shared_ptr<OpenGLShader> shader) const;
+  void Apply(ExternalTextureBindFunc textureBindFunc) const;
 
   // ===================== MaterialUniformBuffer 设置接口 =====================
   // ---- 材质数据引用 ----
@@ -167,17 +166,11 @@ class MaterialInstance {
 
   // 纹理存储（使用预定义的绑定点）
   // 注意：仅外部纹理，ShadowMap和Gbuffer等内部纹理不使用此接口
-  struct TextureSlot {
-    TextureGPUSlot texture;
-    uint32_t bindingPoint;
-    std::string samplerName;
-  };
-  std::vector<TextureSlot> m_Textures;
+  std::unordered_map<ExternalTextureType, TextureGPUSlot> m_Textures;
 
   // 内部方法
   void SetupTextureBinding(TextureGPUSlot texture,
-                           ExternalTextureType type,
-                           const std::string &samplerName);
+                           ExternalTextureType type);
 };
 };  // namespace mite
 

@@ -10,8 +10,9 @@ void MaterialInstance::InitializeUBO()
     return;
   }
   // 创建并初始化UBO
-  m_UBO = std::make_shared<ShaderUBO>(
-      sizeof(MaterialUniformBuffer), BindingPointManager::Get().GetMaterialUBOBinding(), GL_DYNAMIC_DRAW);
+  m_UBO = std::make_shared<ShaderUBO>(sizeof(MaterialUniformBuffer),
+                                      BindingPointManager::Get().GetMaterialUBOBinding(),
+                                      GL_DYNAMIC_DRAW);
   m_UBO->Initialize();
 
   LOG_INFO("Material UBO initialized for '{}'", m_Name);
@@ -166,73 +167,63 @@ void MaterialInstance::SetAlphaMode(int mode)
   m_MaterialData.renderProperties.z = static_cast<float>(mode);
 }
 // ===================== 纹理绑定 =====================
-void MaterialInstance::SetupTextureBinding(TextureGPUSlot texture,
-                                           ExternalTextureType type,
-                                           const std::string &samplerName)
+void MaterialInstance::SetupTextureBinding(TextureGPUSlot texture, ExternalTextureType type)
 {
   // 通过类型查询绑定点管理器获取绑定点
   uint32_t bindingPoint = BindingPointManager::Get().GetExternalTextureBinding(type);
 
   // 移除已存在的相同绑定点纹理
-  m_Textures.erase(std::remove_if(m_Textures.begin(),
-                                  m_Textures.end(),
-                                  [bindingPoint](const TextureSlot &slot) {
-                                    return slot.bindingPoint == bindingPoint;
-                                  }),
-                   m_Textures.end());
+  if (m_Textures.find(type) != m_Textures.end())
+    m_Textures.erase(type);
 
   // 添加新纹理
-  m_Textures.push_back({texture, bindingPoint, samplerName});
+  m_Textures.insert({type, texture});
 }
 void MaterialInstance::SetBaseColorTexture(TextureGPUSlot texture)
 {
-  SetupTextureBinding(texture, ExternalTextureType::BaseColor, ShaderBufferResourceNames::BASE_COLOR_TEXTURE);
+  // 设定纹理绑定
+  SetupTextureBinding(texture, ExternalTextureType::BaseColor);
+
+  // UBO更新纹理偏移/缩放
+  SetBaseColorTexParams(glm::vec4{texture.scale, texture.offset});
+
+  // 启用纹理
   SetBaseColorTextureEnabled(true);
 }
 void MaterialInstance::SetNormalTexture(TextureGPUSlot texture)
 {
-  SetupTextureBinding(
-      texture, ExternalTextureType::Normal, ShaderBufferResourceNames::NORMAL_TEXTURE);
+  SetupTextureBinding(texture, ExternalTextureType::Normal);
+  SetNormalTexParams(glm::vec4{texture.scale, texture.offset});
   SetNormalTextureEnabled(true);
 }
 void MaterialInstance::SetMetallicRoughnessTexture(TextureGPUSlot texture)
 {
-  SetupTextureBinding(texture,
-                      ExternalTextureType::MetallicRoughness,
-                      ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
+  SetupTextureBinding(texture, ExternalTextureType::MetallicRoughness);
+  SetMRTexParams(glm::vec4{texture.scale, texture.offset});
   SetMetallicRoughnessTextureEnabled(true);
 }
 void MaterialInstance::SetEmissiveTexture(TextureGPUSlot texture)
 {
-  SetupTextureBinding(
-      texture, ExternalTextureType::Emissive, ShaderBufferResourceNames::EMISSIVE_TEXTURE);
+  SetupTextureBinding(texture, ExternalTextureType::Emissive);
+  SetEmissiveTexParams(glm::vec4{texture.scale, texture.offset});
   SetEmissiveTextureEnabled(true);
 }
 void MaterialInstance::SetOcclusionTexture(TextureGPUSlot texture)
 {
-  SetupTextureBinding(
-      texture, ExternalTextureType::Occlusion, ShaderBufferResourceNames::OCCLUSION_TEXTURE);
+  SetupTextureBinding(texture, ExternalTextureType::Occlusion);
+  SetOcclusionTexParams(glm::vec4{texture.scale, texture.offset});
   SetOcclusionTextureEnabled(true);
 }
 // ===================== 绑定相关 =====================
-size_t MaterialInstance::BindTexturesOnly(TextureBindFunc textureBindFunc,
-                                          std::shared_ptr<OpenGLShader> targetShader) const
+size_t MaterialInstance::BindTexturesOnly(ExternalTextureBindFunc textureBindFunc) const
 {
-  if (!targetShader) {
-    LOG_ERROR("MaterialInstance has no valid shader for texture binding!");
-    return 0;
-  }
   // 绑定纹理到预定义的绑定点
-  for (const auto &textureSlot : m_Textures) {
+  for (const auto [textureType, textureSlot] : m_Textures) {
     // 使用传入的纹理绑定函数进行纹理绑定
-    textureBindFunc(textureSlot.texture.gpuHandle, textureSlot.bindingPoint);
+    textureBindFunc(textureType, textureSlot.gpuHandle, textureSlot.target);
 
-    // 设置着色器采样器绑定点
-    targetShader->SetTextureBinding(textureSlot.samplerName, textureSlot.bindingPoint);
-
-    // TODO: 需要将Solt的offset和scale传入Shader
-    // textureSlot.texture.offset;
-    // textureSlot.texture.scale;
+    // 注意：Texture的offset和scale通过MaterialUBO
+    // 的m_MaterialData.baseColorTexParams等参数完成传递
   }
   return m_Textures.size();
 }
@@ -245,11 +236,10 @@ void MaterialInstance::BindBuffersOnly() const
   }
 }
 
-void MaterialInstance::Apply(TextureBindFunc textureBindFunc,
-                             std::shared_ptr<OpenGLShader> targetShader) const
+void MaterialInstance::Apply(ExternalTextureBindFunc textureBindFunc) const
 {
   BindBuffersOnly();
-  BindTexturesOnly(textureBindFunc, targetShader);
+  BindTexturesOnly(textureBindFunc);
 }
 
 std::string MaterialInstance::GetName() const
