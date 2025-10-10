@@ -60,29 +60,13 @@ class RenderDevice {
    * 但Bind和Draw的操作是和Mesh强相关，
    * 所以这里实现Bind Mesh而非Bind Model
    */
-  virtual void BindMesh(Mesh mesh) const = 0;
-  /**
-   * @brief SelectMeshLODLevel 根据输入LOD偏差，选择单个Mesh的LOD层级
-   * @param mesh 网格体对象
-   * @param cameraPosition 相机距离
-   * @param worldTransform 局部空间到世界空间的旋转矩阵
-   * @param lodBias LOD层级偏差值(偏差值越高，越倾向于高精度。默认1不偏差)
-   * @return LOD层级
-   *
-   * 针对超大Model（如地形）可以逐Mesh划分LOD，降低渲染压力
-   */
-  virtual uint32_t SelectMeshLODLevel(Mesh mesh,
-                                      const glm::vec3 &cameraPosition,
-                                      const glm::mat4 &worldTransform,
-                                      const glm::mat4 &viewProjectionMatrix,
-                                      float screenWidth,
-                                      float lodBias = 1) const = 0;
+  virtual void BindMesh(std::shared_ptr<Mesh> mesh) const = 0;
   /**
    * @brief DrawMeshLOD 根据LOD绘制Mesh
    * @param mesh
    * @param lodLevel
    */
-  virtual void DrawMeshLOD(Mesh mesh, uint32_t lodLevel) const = 0;
+  virtual void DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const = 0;
   /**
    * @brief DrawIndexed 按照顶点执行绘制任务
    * @param indexCount 绘制的顶点数量

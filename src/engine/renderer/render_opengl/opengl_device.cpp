@@ -318,10 +318,16 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
   handle.indexBuffer = 0;
 }
 
-void OpenGLDevice::BindMesh(Mesh mesh) const
+void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
 {
-  ModelGPUHandle modelHandle = mesh.GetModelHandle();
-  MeshSection meshSection = mesh.GetSection();
+  if (!mesh || mesh->GetVertexCount()) {
+    m_Logger->error("Invalid Mesh in binding mesh by opengl device.");
+    return;
+  }
+   
+
+  ModelGPUHandle modelHandle = mesh->GetModelHandle();
+  MeshSection meshSection = mesh->GetSection();
 
   // 1. 参数有效性检查
   if (modelHandle.vertexArray == 0) {
@@ -365,91 +371,10 @@ void OpenGLDevice::BindMesh(Mesh mesh) const
   //                meshSection.vertexOffset);
 }
 
-uint32_t OpenGLDevice::SelectMeshLODLevel(Mesh mesh,
-                                          const glm::vec3 &cameraPosition,
-                                          const glm::mat4 &worldTransform,
-                                          const glm::mat4 &viewProjectionMatrix,
-                                          float screenWidth,
-                                          float lodBias) const
-{
-  if (mesh.GetVertexCount() == 0) {
-    return 0;
-  }
-
-  // 获取网格的世界空间包围盒
-  auto localBBox = mesh.GetBoundingBox(0);
-  glm::vec3 localMin = localBBox.first;
-  glm::vec3 localMax = localBBox.second;
-
-  // 转换到世界空间
-  glm::vec3 worldMin = glm::vec3(worldTransform * glm::vec4(localMin, 1.0f));
-  glm::vec3 worldMax = glm::vec3(worldTransform * glm::vec4(localMax, 1.0f));
-  glm::vec3 worldCenter = (worldMin + worldMax) * 0.5f;
-
-  // 计算屏幕空间覆盖率
-  //
-  // 假设一个网格：
-  // 原始大小：10米 × 10米 × 10米
-  // 距离相机：100米
-  // 屏幕宽度：1920像素
-  // screenCoverage = (10.0f / 100.0f) * 1920.0f = 192像素
-  float distance = glm::distance(cameraPosition, worldCenter);
-  glm::vec3 bboxSize = worldMax - worldMin;
-  float objectSize = glm::max(bboxSize.x, glm::max(bboxSize.y, bboxSize.z));
-  float screenCoverage = (objectSize / distance) * screenWidth * lodBias;
-
-  // 基于屏幕覆盖率的LOD选择（使用像素宽度进行判断）
-  //
-  // 200.0f: 当网格在屏幕上覆盖宽度小于200像素时，切换到LOD 1
-  // 100.0f: 当网格在屏幕上覆盖宽度小于100像素时，切换到LOD 2
-  //  50.0f: 当网格在屏幕上覆盖宽度小于 50像素时，切换到LOD 3
-  //  25.0f: 当网格在屏幕上覆盖宽度小于 25像素时，切换到LOD 4
-  //  10.0f: 当网格在屏幕上覆盖宽度小于 10像素时，切换到LOD 5
-  //   5.0f: 当网格在屏幕上覆盖宽度小于  5像素时，切换到LOD 6
-  //
-  // TODO：可以将该选择方案作为配置项，针对不同情况修改配置
-  //
-  // 高质量场景（近处细节重要）：
-  //    {300.0f, 150.0f, 75.0f, 30.0f, 15.0f, 5.0f};
-  // 性能优先场景：
-  //    {100.0f, 50.0f, 20.0f, 8.0f, 3.0f};
-  // 环境网格（可以更早降级）：
-  //    {80.0f, 40.0f, 15.0f, 5.0f};
-  uint32_t selectedLOD = 0;
-  constexpr float lodThresholds[] = {200.0f, 100.0f, 50.0f, 25.0f, 10.0f, 5.0f};
-  for (uint32_t i = 0; i < sizeof(lodThresholds) / sizeof(lodThresholds[0]); ++i) {
-    if (screenCoverage < lodThresholds[i]) {
-      selectedLOD = i + 1;
-    }
-    else {
-      break;
-    }
-  }
-
-  // 获取可用的LOD级别
-  std::set<uint32_t> availableLODs;
-  availableLODs.insert(mesh.GetBaseSection().lodLevel);
-  for (const auto &lodSection : mesh.GetAllLODSections()) {
-    availableLODs.insert(lodSection.lodLevel);
-  }
-
-  // 确保选择的LOD级别实际存在
-  if (!availableLODs.empty()) {
-    auto it = availableLODs.lower_bound(selectedLOD);
-    if (it != availableLODs.end()) {
-      selectedLOD = *it;
-    }
-    else {
-      selectedLOD = *availableLODs.rbegin();
-    }
-  }
-  return selectedLOD;
-}
-
-void OpenGLDevice::DrawMeshLOD(Mesh mesh, uint32_t lodLevel) const
+void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const
 {
   // 直接从Mesh对象获取指定LOD级别的MeshSection
-  const MeshSection *targetSection = &mesh.GetSection(lodLevel);
+  const MeshSection *targetSection = &mesh->GetSection(lodLevel);
 
   // 绘制指定LOD级别的网格
   DrawIndexed(

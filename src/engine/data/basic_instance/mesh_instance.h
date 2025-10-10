@@ -1,13 +1,11 @@
 #ifndef MITE_MESH_INSTANCE_H
 #define MITE_MESH_INSTANCE_H
 
-#include "basic_data/transform.h"
 #include "basic_data/mesh.h"
+#include "basic_data/transform.h"
 #include "basic_shader/shader_ubo.h"
 
-
 namespace mite {
-
 /**
  * @brief 网格实例类，负责管理模型UBO的生命周期
  * @note 设计理念：
@@ -62,6 +60,10 @@ class MeshInstance {
    */
   std::shared_ptr<ShaderUBO> GetUBO() const { return m_ModelUBO; }
 
+  // ==================== LOD设定接口 ====================
+  void SetMeshLODLevel(uint32_t lodLevel) { m_LODLevel = lodLevel; }
+  uint32_t GetMeshLodLevel() { return m_LODLevel; }
+
   // ==================== 实例属性管理 ====================
   /**
    * @brief 获取材质索引（用于关联MaterialInstance）
@@ -75,6 +77,7 @@ class MeshInstance {
 
  private:
   std::shared_ptr<Mesh> m_Mesh;           // 关联的网格对象
+  uint32_t m_LODLevel;                    // 网格的LOD级别
   Transform m_WorldTransform;             // 世界空间变换（缓存）
   std::shared_ptr<ShaderUBO> m_ModelUBO;  // 模型UBO实例
 
@@ -82,7 +85,6 @@ class MeshInstance {
   MeshInstance(const MeshInstance &) = delete;
   MeshInstance &operator=(const MeshInstance &) = delete;
 };
-
 }  // namespace mite
 
 #endif  // MITE_MESH_INSTANCE_H

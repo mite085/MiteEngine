@@ -21,7 +21,9 @@ RenderableItemBuilder::~RenderableItemBuilder()
 }
 
 std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
-    SceneRegistry &registry, const std::vector<SceneNode *> &sceneNodes)
+    SceneRegistry &registry,
+    std::shared_ptr<CameraInstance> camera,
+    const std::vector<SceneNode *> &sceneNodes)
 {
   std::vector<RenderableItem> items;
   items.reserve(sceneNodes.size());
@@ -33,7 +35,7 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
   for (SceneNode *node : sceneNodes) {
     // 判断是否为可渲染对象
     if (IsRenderable(registry, node->GetEntity())) {
-      RenderableItem item = BuildFromSceneNode(registry, node);
+      RenderableItem item = BuildFromSceneNode(registry, camera, node);
       if (item.entity.IsValid()) {  // 检查是否构建成功
         items.push_back(std::move(item));
 
@@ -58,6 +60,7 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
 }
 
 RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry,
+                                                         std::shared_ptr<CameraInstance> camera,
                                                          SceneNode *sceneNode)
 {
   if (!sceneNode) {
@@ -73,13 +76,24 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
 
   try {
     // 1. 获取或创建MeshInstance
-    std::shared_ptr<MeshInstance> meshInstance = GetOrCreateMeshInstance(registry, entity, sceneNode->GetWorldTransform());
+    std::shared_ptr<MeshInstance> meshInstance = GetOrCreateMeshInstance(
+        registry, entity, sceneNode->GetWorldTransform());
     if (!meshInstance) {
       m_Logger->warn("Failed to create MeshInstance for Entity {}", entity.GetUUIDString());
       return RenderableItem();
     }
     // 1.1. 更新MeshInstance的世界变换
     meshInstance->UpdateUBO(sceneNode->GetWorldTransform());
+
+    // 1.2. 更新meshInstance的LOD等级
+    uint32_t lodLevel = SelectMeshLODLevel(
+        meshInstance->GetMesh(),
+        camera->GetCameraTransform().GetPosition(),
+        sceneNode->GetWorldTransform().GetLocalMatrix(),
+        1920,  // TODO:
+               // SceneView无法获取screenwidth信息，原则上应当能获取到。待后续处理，此处随便填写一个值，不影响计算
+        0);
+    meshInstance->SetMeshLODLevel(lodLevel);
 
     // 2. 提取材质
     std::shared_ptr<MaterialInstance> material = ExtractMaterialComponent(registry, entity);
@@ -125,6 +139,87 @@ bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, Entity entity)
   return hasMesh && hasMaterial && hasTransform;
 }
 
+uint32_t RenderableItemBuilder::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
+                                                   const glm::vec3 &cameraPosition,
+                                                   const glm::mat4 &worldTransform,
+                                                   float screenWidth,
+                                                   float lodBias)
+{
+  if (!mesh || mesh->GetVertexCount()) {
+    LOG_ERROR("Invalid Mesh in selecting mesh lod by renderable item builder.");
+    return 0;
+  }
+
+  // 获取网格的世界空间包围盒
+  auto localBBox = mesh->GetBoundingBox(0);
+  glm::vec3 localMin = localBBox.first;
+  glm::vec3 localMax = localBBox.second;
+
+  // 转换到世界空间
+  glm::vec3 worldMin = glm::vec3(worldTransform * glm::vec4(localMin, 1.0f));
+  glm::vec3 worldMax = glm::vec3(worldTransform * glm::vec4(localMax, 1.0f));
+  glm::vec3 worldCenter = (worldMin + worldMax) * 0.5f;
+
+  // 计算屏幕空间覆盖率
+  //
+  // 假设一个网格：
+  // 原始大小：10米 × 10米（包围盒投影面积）
+  // 距离相机：100米
+  // 屏幕宽度：1920像素
+  // screenCoverage = (10.0f / 100.0f) * 1920.0f = 192像素
+  float distance = glm::distance(cameraPosition, worldCenter);
+  glm::vec3 bboxSize = worldMax - worldMin;
+  float objectSize = glm::max(bboxSize.x, glm::max(bboxSize.y, bboxSize.z));
+  float screenCoverage = (objectSize / distance) * screenWidth * lodBias;
+
+  // 基于屏幕覆盖率的LOD选择（使用像素宽度进行判断）
+  //
+  // 200.0f: 当网格在屏幕上覆盖宽度小于200像素时，切换到LOD 1
+  // 100.0f: 当网格在屏幕上覆盖宽度小于100像素时，切换到LOD 2
+  //  50.0f: 当网格在屏幕上覆盖宽度小于 50像素时，切换到LOD 3
+  //  25.0f: 当网格在屏幕上覆盖宽度小于 25像素时，切换到LOD 4
+  //  10.0f: 当网格在屏幕上覆盖宽度小于 10像素时，切换到LOD 5
+  //   5.0f: 当网格在屏幕上覆盖宽度小于  5像素时，切换到LOD 6
+  //
+  // TODO：可以将该选择方案作为配置项，针对不同情况修改配置
+  //
+  // 高质量场景（近处细节重要）：
+  //    {300.0f, 150.0f, 75.0f, 30.0f, 15.0f, 5.0f};
+  // 性能优先场景：
+  //    {100.0f, 50.0f, 20.0f, 8.0f, 3.0f};
+  // 环境网格（可以更早降级）：
+  //    {80.0f, 40.0f, 15.0f, 5.0f};
+  uint32_t selectedLOD = 0;
+  constexpr float lodThresholds[] = {200.0f, 100.0f, 50.0f, 25.0f, 10.0f, 5.0f};
+  for (uint32_t i = 0; i < sizeof(lodThresholds) / sizeof(lodThresholds[0]); ++i) {
+    if (screenCoverage < lodThresholds[i]) {
+      selectedLOD = i + 1;
+    }
+    else {
+      break;
+    }
+  }
+
+  // 获取可用的LOD级别
+  std::set<uint32_t> availableLODs;
+  availableLODs.insert(mesh->GetBaseSection().lodLevel);
+  for (const auto &lodSection : mesh->GetAllLODSections()) {
+    availableLODs.insert(lodSection.lodLevel);
+  }
+
+  // 确保选择的LOD级别实际存在
+  if (!availableLODs.empty()) {
+    auto it = availableLODs.lower_bound(selectedLOD);
+    if (it != availableLODs.end()) {
+      selectedLOD = *it;
+    }
+    else {
+      selectedLOD = *availableLODs.rbegin();
+    }
+  }
+  return selectedLOD;
+}
+
 std::shared_ptr<MeshInstance> RenderableItemBuilder::GetOrCreateMeshInstance(
     SceneRegistry &registry, Entity entity, const Transform &worldTransform)
 {
@@ -141,8 +236,7 @@ std::shared_ptr<MeshInstance> RenderableItemBuilder::GetOrCreateMeshInstance(
     m_Logger->warn("Entity {} has invalid mesh", entity.GetUUIDString());
     return nullptr;
   }
-  std::shared_ptr<MeshInstance> meshInstance = CreateMeshInstance(std::make_shared<Mesh>(mesh),
-                                                                  worldTransform);
+  std::shared_ptr<MeshInstance> meshInstance = CreateMeshInstance(mesh, worldTransform);
   if (!meshInstance) {
     m_Logger->error("Failed to create MeshInstance for Entity {}", entity.GetUUIDString());
     return nullptr;
@@ -209,5 +303,4 @@ void RenderableItemBuilder::ClearMeshInstanceCache()
     m_Logger->debug("Cleared {} MeshInstances from cache", cacheSize);
   }
 }
-
 }  // namespace mite
