@@ -4,6 +4,7 @@
 #include "basic_instance/camera_instance.h"
 #include "basic_instance/material_instance.h"
 #include "basic_instance/mesh_instance.h"
+#include "basic_instance/light_ssbo.h"
 #include "subscription_group.h"
 
 namespace mite {

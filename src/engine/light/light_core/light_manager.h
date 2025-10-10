@@ -2,7 +2,7 @@
 #define MITE_LIGHT_MANAGER_H
 
 #include "light.h"
-#include "light_ssbo.h"
+#include "basic_instance/light_ssbo.h"
 #include "shadow_map_type.h"
 
 namespace mite {
@@ -145,7 +145,7 @@ class LightManager {
    * @brief 获取LightSSBO实例
    * @return LightSSBO共享指针
    */
-  LightSSBOPtr GetLightSSBO() const;
+  LightShaderStorgeBuffer& GetLightSSBO() const;
 
   /**
    * @brief 设置着色器的光源SSBO绑定点

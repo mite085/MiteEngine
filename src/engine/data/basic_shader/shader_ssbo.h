@@ -112,10 +112,6 @@ class ShaderSSBO {
   {
     return m_BindingPoint;
   }
-  const std::string &GetName() const
-  {
-    return m_Name;
-  }
 
  private:
   uint32_t m_SSBOId = 0;                 // OpenGL SSBO句柄

@@ -81,6 +81,8 @@ enum class TextureFilterMode {
  * GBuffer_NPRColor：shadowTint.rgb阴影色调、rimPower边缘光衰减
  */
 enum class RuntimeTextureType {
+  None,  // 无效类型
+
   // G-Buffer 纹理类型
   GBuffer_WorldPosDepth,        // 世界坐标(xyz) + 深度(w，线性深度)(RGBA32F)
   GBuffer_BaseColorMatType,     // 基础颜色(rgb) + 材质类型(a，标志位)(RGBA16F)
@@ -123,6 +125,8 @@ enum class RuntimeTextureType {
  * 用于从外部文件加载的纹理资源
  */
 enum class ExternalTextureType {
+  None,  // 无效类型
+
   // PBR材质纹理
   BaseColor = 0,      // 基础色纹理
   Normal,             // 法线纹理
