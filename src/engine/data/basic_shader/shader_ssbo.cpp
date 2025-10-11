@@ -79,7 +79,7 @@ void ShaderSSBO::CreateSSBO()
   // 检查OpenGL错误
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
-    LOG_ERROR("Failed to create SSBO: OpenGL error 0x{:X}", error);
+    LOG_ERROR("Failed to create SSBO: OpenGL error {}", error);
     glDeleteBuffers(1, &m_SSBOId);
     m_SSBOId = 0;
     throw std::runtime_error("SSBO creation failed");

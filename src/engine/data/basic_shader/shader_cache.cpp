@@ -31,17 +31,11 @@ std::shared_ptr<OpenGLShader> ShaderCache::GetOpenGLShader(const std::string &ve
   // 4. 创建新Shader并加入缓存
   LOG_DEBUG("ShaderCache: Compiling new shader - {}", key);
   auto shader = std::make_shared<OpenGLShader>();
-  try {
-    if (geometryPath.empty()) {
-      shader->LoadFromFile(vertexPath.c_str(), fragmentPath.c_str());
-    }
-    else {
-      shader->LoadFromFile(vertexPath.c_str(), fragmentPath.c_str(), geometryPath.c_str());
-    }
+  if (geometryPath.empty()) {
+    shader->LoadFromFile(vertexPath.c_str(), fragmentPath.c_str());
   }
-  catch (const std::exception &e) {
-    LOG_ERROR("ShaderCache: Failed to compile shader {} - {}", key, e.what());
-    throw std::runtime_error("ShaderCache: Failed to compile shader - " + std::string(e.what()));
+  else {
+    shader->LoadFromFile(vertexPath.c_str(), fragmentPath.c_str(), geometryPath.c_str());
   }
   m_Cache[key] = shader;
   LOG_DEBUG("ShaderCache: Successfully cached shader - {}", key);
@@ -74,4 +68,4 @@ std::string ShaderCache::GenerateCacheKey(const std::string &vertexPath,
   }
   return key;
 }
-};
+};  // namespace mite
