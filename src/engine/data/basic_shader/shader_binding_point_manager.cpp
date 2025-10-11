@@ -187,39 +187,55 @@ void BindingPointManager::PreallocateCommonResources()
   m_LightSSBOBinding = AllocateSSBOBinding(SSBOResourceType::LightSSBO,
                                            ShaderBufferResourceNames::LIGHT_SSBO);
   // 预分配运行时纹理资源并建立映射
+  // GBuffer_WorldPosDepth----layout(location = 0)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_WorldPosDepth] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture,
       ShaderBufferResourceNames::GBUFFER_WORLD_POS_DEPTH);
+  // GBuffer_BaseColorMatType----layout(location = 1)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_BaseColorMatType] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture,
       ShaderBufferResourceNames::GBUFFER_BASE_COLOR_MAT_TYPE);
+  // GBuffer_MetallicRoughnessAO----layout(location = 2)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_MetallicRoughnessAO] =
       AllocateTextureBinding(TextureResourceType::RuntimeTexture,
                              ShaderBufferResourceNames::GBUFFER_METALLIC_ROUGHNESS_AO);
+  // GBuffer_NormalScale----layout(location = 3)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_NormalScale] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_NORMAL_SCALE);
+  // GBuffer_EmissionAlpha----layout(location = 4)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_EmissionAlpha] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_EMISSION_ALPHA);
+  // GBuffer_NPRParam----layout(location = 5)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_NPRParam] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_NPR_PARAM);
+  // GBuffer_NPRColor----layout(location = 6)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_NPRColor] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_NPR_COLOR);
+  // ShadowMap_Directional----layout(location = 7)
   m_RuntimeTextureBindings[RuntimeTextureType::ShadowMap_Directional] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::SHADOW_MAP_DIRECTIONAL);
+  // ShadowMap_Point----layout(location = 8)
   m_RuntimeTextureBindings[RuntimeTextureType::ShadowMap_Point] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::SHADOW_MAP_POINT);
+  // ShadowMap_Spot----layout(location = 9)
   m_RuntimeTextureBindings[RuntimeTextureType::ShadowMap_Spot] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::SHADOW_MAP_SPOT);
+  // ShadowMap_Area----layout(location = 10)
   m_RuntimeTextureBindings[RuntimeTextureType::ShadowMap_Area] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::SHADOW_MAP_AREA);
+  // Lighting_Diffuse----layout(location = 11)
   m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Diffuse] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_DIFFUSE);
+  // Lighting_Specular----layout(location = 12)
   m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Specular] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_SPECULAR);
+  // Lighting_Combined----layout(location = 13)
   m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Combined] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_COMBINED);
+  // Lighting_Ambient----layout(location = 14)
   m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Ambient] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_AMBIENT);
+
   //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Bloom] = AllocateTextureBinding(
   //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_BLOOM);
   //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_ToneMapped] = AllocateTextureBinding(
@@ -227,30 +243,43 @@ void BindingPointManager::PreallocateCommonResources()
   //    ShaderBufferResourceNames::POSTPROCESS_TONE_MAPPED);
   //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Final] = AllocateTextureBinding(
   //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_FINAL);
+
+  //  RenderTarget----layout(location = 15)
   m_RuntimeTextureBindings[RuntimeTextureType::RenderTarget] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::RENDER_TARGET);
+  // Depth----layout(location = 16)
   m_RuntimeTextureBindings[RuntimeTextureType::Depth] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::DEPTH_TEXTURE);
+  // Stencil----layout(location = 17)
   m_RuntimeTextureBindings[RuntimeTextureType::Stencil] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::STENCIL_TEXTURE);
+
   //m_RuntimeTextureBindings[RuntimeTextureType::Debug_View] = AllocateTextureBinding(
   //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::DEBUG_VIEW);
   //m_RuntimeTextureBindings[RuntimeTextureType::UI_Overlay] = AllocateTextureBinding(
   //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::UI_OVERLAY);
+  
   // 预分配外部加载纹理资源并建立映射
+  // BaseColor----layout(location = 18)
   m_ExternalTextureBindings[ExternalTextureType::BaseColor] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BASE_COLOR_TEXTURE);
+  // Normal----layout(location = 19)
   m_ExternalTextureBindings[ExternalTextureType::Normal] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::NORMAL_TEXTURE);
+  // MetallicRoughness----layout(location = 20)
   m_ExternalTextureBindings[ExternalTextureType::MetallicRoughness] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture,
       ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
+  // Emissive----layout(location = 21)
   m_ExternalTextureBindings[ExternalTextureType::Emissive] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::EMISSIVE_TEXTURE);
+  // Occlusion----layout(location = 22)
   m_ExternalTextureBindings[ExternalTextureType::Occlusion] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::OCCLUSION_TEXTURE);
+  // EnvironmentMap----layout(location = 23)
   m_ExternalTextureBindings[ExternalTextureType::EnvironmentMap] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::ENVIRONMENT_MAP);
+
   //m_ExternalTextureBindings[ExternalTextureType::BRDFLUT] = AllocateTextureBinding(
   //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BRDF_LUT);
   //m_ExternalTextureBindings[ExternalTextureType::IrradianceMap] = AllocateTextureBinding(

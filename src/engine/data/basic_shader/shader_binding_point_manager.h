@@ -83,7 +83,7 @@ class BindingPointManager {
   uint32_t m_LightSSBOBinding = UINT32_MAX;
 
   // 纹理单元管理
-  std::bitset<1024> m_AllocatedTextures;
+  std::bitset<1024> m_AllocatedTextures;  // 负责密集式bindpoint分配管理
   std::array<std::atomic<uint32_t>, static_cast<size_t>(TextureResourceType::Count)>
       m_NextTexturePoints; 
 
