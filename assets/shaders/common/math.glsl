@@ -85,16 +85,4 @@ float calculateGeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-// 将角度转换为弧度
-float radians(float degrees)
-{
-    return degrees * PI / 180.0;
-}
-
-// 将弧度转换为角度  
-float degrees(float radians)
-{
-    return radians * 180.0 / PI;
-}
-
 #endif
