@@ -27,17 +27,17 @@ vec3 calculatePBRF0(vec3 baseColor, float metallic)
 /**
  * @brief 验证BRDF输入参数的合法性
  */
-bool validatePBRBRDFInput(BRDFInput input)
+bool validatePBRBRDFInput(BRDFInput brdfInput)
 {
     // 检查基础参数范围
-    if (any(lessThan(input.baseColor, vec3(0.0)))) return false;
-    if (input.metallic < 0.0 || input.metallic > 1.0) return false;
-    if (input.roughness < 0.0 || input.roughness > 1.0) return false;
-    if (input.occlusion < 0.0 || input.occlusion > 1.0) return false;
+    if (any(lessThan(brdfInput.baseColor, vec3(0.0)))) return false;
+    if (brdfInput.metallic < 0.0 || brdfInput.metallic > 1.0) return false;
+    if (brdfInput.roughness < 0.0 || brdfInput.roughness > 1.0) return false;
+    if (brdfInput.occlusion < 0.0 || brdfInput.occlusion > 1.0) return false;
     
     // 检查向量合法性
-    if (length(input.normal) < EPSILON) return false;
-    if (length(input.viewDirection) < EPSILON) return false;
+    if (length(brdfInput.normal) < EPSILON) return false;
+    if (length(brdfInput.viewDirection) < EPSILON) return false;
     
     return true;
 }

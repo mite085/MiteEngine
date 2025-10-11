@@ -25,7 +25,7 @@ const uint LIGHT_TYPE_AREA_ELLIPSE = 4u;
 const uint AREA_LIGHT_SHAPE_RECTANGLE = 0u;
 const uint AREA_LIGHT_SHAPE_ELLIPSE = 1u;
 
-// GBuffer索引定义 - 与C++端GBuffer::GBufferIndex对应
+// GBuffer Output索引定义 - 与C++端GBuffer::GBufferIndex对应
 const int GBUFFER_WORLDPOS_DEPTH = 0;
 const int GBUFFER_BASECOLOR_MATTYPE = 1;
 const int GBUFFER_METALLICROUGHNESS_AO = 2;

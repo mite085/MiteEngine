@@ -14,11 +14,7 @@
  */
 BRDFResult dispatchBRDF(BRDFInput brdfInput, BRDFLightInput lightInput)
 {
-    // 材质类型相关的GBuffer已经是最邻近采样，不存在材质1和材质3线性混合为材质2的情况
-    // 但此处为了避免uint()的向下取整导致错位，使用round进行四舍五入
-    uint materialType = uint(round(brdfInput.materialType));
-    
-    switch (materialType) {
+    switch (brdfInput.materialType) {
         case 0: // PBR
             return calculatePBRDirectBRDF(brdfInput, lightInput);
         case 1: // Lambert
@@ -36,9 +32,7 @@ BRDFResult dispatchBRDF(BRDFInput brdfInput, BRDFLightInput lightInput)
  */
 BRDFResult dispatchAmbientBRDF(BRDFInput brdfInput, BRDFAmbientInput ambientInput)
 {
-    uint materialType = uint(round(brdfInput.materialType));
-    
-    switch (materialType) {
+    switch (brdfInput.materialType) {
         case 0: // PBR
             return calculatePBRAmbientBRDF(brdfInput, ambientInput);
         case 1: // Lambert

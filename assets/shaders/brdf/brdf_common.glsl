@@ -84,7 +84,7 @@ vec3 calculateF0(vec3 baseColor, float metallic);
  * @param input BRDF输入参数
  * @return 参数是否合法
  */
-bool validateBRDFInput(BRDFInput input);
+bool validateBRDFInput(BRDFInput brdfInput);
 
 /**
  * @brief 准备BRDF计算所需的中间参数
