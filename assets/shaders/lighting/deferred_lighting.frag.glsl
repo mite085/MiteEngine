@@ -3,8 +3,8 @@
 
 // 输入从顶点着色器传递的数据
 in VS_OUT {
-    vec2 texCoord;          // 纹理坐标
-    vec3 viewRay;           // 视图射线
+    layout(location = 0) vec2 texCoord;          // 纹理坐标
+    layout(location = 1) vec3 viewRay;           // 视图射线
 } fs_in;
 
 // 最终输出颜色
@@ -17,15 +17,6 @@ layout(location = 0) out vec4 o_FinalColor;
 #include "../common/light_ssbo.glsl"
 #include "../lighting/lighting_calculation.glsl"
 #include "../brdf/brdf_dispatcher.glsl"
-
-// GBuffer纹理采样器
-uniform sampler2D u_GBufferWorldPosDepth;       // GBuffer0
-uniform sampler2D u_GBufferBaseColorMatType;    // GBuffer1  
-uniform sampler2D u_GBufferMetallicRoughnessAO; // GBuffer2
-uniform sampler2D u_GBufferNormalScale;         // GBuffer3
-uniform sampler2D u_GBufferEmissionAlpha;       // GBuffer4
-uniform sampler2D u_GBufferNPRParameters;       // GBuffer5
-uniform sampler2D u_GBufferNPRColors;           // GBuffer6
 
 // 环境光照参数
 uniform samplerCube u_IrradianceMap;            // 漫反射环境贴图
@@ -92,7 +83,8 @@ BRDFInput readGBufferData(vec2 texCoord)
     // 读取基础颜色和材质类型（GBuffer1）
     vec4 baseColorMatType = texture(u_GBufferBaseColorMatType, texCoord);
     input.baseColor = baseColorMatType.rgb;
-    input.materialType = uint(baseColorMatType.a);
+    // 材质类型需要四舍五入消除偏移影响（GBuffer均为最邻近采样，避免材质1和材质3的边界被识别为材质2的情况）
+    input.materialType = uint(round(baseColorMatType.a));
     
     // 读取金属度、粗糙度和AO（GBuffer2）
     vec4 metallicRoughnessAO = texture(u_GBufferMetallicRoughnessAO, texCoord);

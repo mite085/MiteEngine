@@ -66,14 +66,39 @@ layout(std140, binding = 2) uniform ModelUBO {
 // =============================================================================
 // Texture Samplers
 // =============================================================================
-// PBR材质纹理 (绑定点 32-36)
-layout(binding = 32) uniform sampler2D u_BaseColorTexture;
-layout(binding = 33) uniform sampler2D u_NormalTexture;
-layout(binding = 34) uniform sampler2D u_MetallicRoughnessTexture;
-layout(binding = 35) uniform sampler2D u_EmissiveTexture;
-layout(binding = 36) uniform sampler2D u_OcclusionTexture;
-// 阴影和环境纹理 (绑定点 40-44)
-layout(binding = 40) uniform sampler2D u_ShadowMap;
-layout(binding = 41) uniform samplerCube u_EnvironmentMap;
+// GBuffer纹理绑定
+layout(binding = 0) uniform sampler2D u_GBufferWorldPosDepth;
+layout(binding = 1) uniform sampler2D u_GBufferBaseColorMatType;
+layout(binding = 2) uniform sampler2D u_GBufferMetallicRoughnessAO;
+layout(binding = 3) uniform sampler2D u_GBufferNormalScale;
+layout(binding = 4) uniform sampler2D u_GBufferEmissionAlpha;
+layout(binding = 5) uniform sampler2D u_GBufferNPRParam;
+layout(binding = 6) uniform sampler2D u_GBufferNPRColor;
+
+// 阴影贴图绑定
+layout(binding = 7) uniform sampler2D u_ShadowMapDirectional;
+layout(binding = 8) uniform sampler2D u_ShadowMapPoint;
+layout(binding = 9) uniform sampler2D u_ShadowMapSpot;
+layout(binding = 10) uniform sampler2D u_ShadowMapArea;
+
+// 光照纹理绑定
+layout(binding = 11) uniform sampler2D u_LightingDiffuse;
+layout(binding = 12) uniform sampler2D u_LightingSpecular;
+layout(binding = 13) uniform sampler2D u_LightingCombined;
+layout(binding = 14) uniform sampler2D u_LightingAmbient;
+
+// 渲染目标绑定
+layout(binding = 15) uniform sampler2D u_RenderTarget;
+layout(binding = 16) uniform sampler2D u_DepthTexture;
+layout(binding = 17) uniform sampler2D u_StencilTexture;
+
+// 外部纹理绑定
+layout(binding = 18) uniform sampler2D u_BaseColorTexture;
+layout(binding = 19) uniform sampler2D u_NormalTexture;
+layout(binding = 20) uniform sampler2D u_MetallicRoughnessTexture;
+layout(binding = 21) uniform sampler2D u_EmissiveTexture;
+layout(binding = 22) uniform sampler2D u_OcclusionTexture;
+layout(binding = 23) uniform sampler2D u_EnvironmentMap;
+
 
 #endif
