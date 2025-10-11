@@ -30,6 +30,7 @@ target_link_libraries(${EDITOR_LIB_NAME}
     OpenGL::GL
     glfw
     shaderc
+    glslang
     spdlog::spdlog
 
     # 资产模块依赖

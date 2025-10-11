@@ -52,6 +52,7 @@ target_link_libraries(${ENGINE_COMMAND_LIB_NAME}
     PRIVATE 
     glfw
     shaderc
+    glslang
     spdlog::spdlog
     
     # 强依赖

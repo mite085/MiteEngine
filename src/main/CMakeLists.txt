@@ -21,6 +21,7 @@ target_link_libraries(${PROJECT_NAME}
     OpenGL::GL
     glfw
     shaderc
+    glslang
     spdlog::spdlog
     Imgui
     ImGuizmo

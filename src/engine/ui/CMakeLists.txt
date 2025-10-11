@@ -95,6 +95,7 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
     PRIVATE 
     glfw
     shaderc
+    glslang
     spdlog::spdlog
     Imgui
     ImGuizmo

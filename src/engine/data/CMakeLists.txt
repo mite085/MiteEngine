@@ -103,6 +103,7 @@ target_link_libraries(${ENGINE_DATA_LIB_NAME}
     PRIVATE 
     glfw
     shaderc
+    glslang
     spdlog::spdlog
     MiteEngine_Engine_Core
     MiteEngine_Engine_Event

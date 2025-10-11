@@ -37,6 +37,7 @@ target_link_libraries(${ASSET_LIB_NAME}
     PRIVATE 
     glfw
     shaderc
+    glslang
     spdlog::spdlog
     assimp
     meshoptimizer
