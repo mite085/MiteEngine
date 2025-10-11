@@ -57,6 +57,28 @@ class OpenGLWindow : public Window {
   static void ShutdownGLFW();
   static uint32_t s_GLFWWindowCount;  // 跟踪创建的GLFW窗口数量
 
+  // 初始化SPIRV支持 (Shaderc的Vulkan风格着色器编译需要)
+  void LoadSPIRVExtensions();
+  bool InitializeSPIRVSupport();
+  void CheckSPIRVSupportDetailed();
+  void CheckGLADFunctions();
+  void CheckSPIRVExtensions();
+  bool CheckExtension(const char *extensionName);
+  void CheckBinaryFormats();
+  void CheckToolchainSupport();
+  void LogDriverInfo();
+
+  // 错误检查回调函数
+  static void GLAPIENTRY openGLErrorCallback(GLenum source,
+                                             GLenum type,
+                                             GLuint id,
+                                             GLenum severity,
+                                             GLsizei length,
+                                             const GLchar *message,
+                                             const void *userParam);
+  static void initializeOpenGLDebugging();
+  static void cleanupOpenGLDebugging();
+
  private:
   // GLFW窗口句柄
   GLFWwindow *m_Window = nullptr;
