@@ -268,7 +268,8 @@ void RenderContext::SetupShaderBindingsForNewShader(const std::string &stageName
     materialInstance->SetupShaderBinding(shader);
   }
   // 为光照SSBO设置绑定
-  m_LightSSBO->SetupShaderBinding(shader);
+  if (m_LightSSBO)
+    m_LightSSBO->SetupShaderBinding(shader);
 
   m_Logger->info("Setup shader bindings for stage: {} ({} cameras, {} meshes, {} materials)",
                  stageName,

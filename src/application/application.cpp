@@ -120,18 +120,16 @@ void MiteApplication::Initialize()
       EventPriority::Highest  // 最高优先级确保及时处理
   );
 
-
-
   // 按照依赖关系，先初始化底层模块，后初始化顶层模块
   InitializeInputSystem();
   InitializeAssertManager();
   InitializeWindowWithOpenGL();
-  InitializeMaterialSystem();
-  InitializeLightSystem();
-  InitializeSceneCore();
+  InitializeMaterialSystem();    // Material模块初始化不涉及UBO创建和绑定，无依赖
+  InitializeSceneCore();         // 无依赖
   InitializeSceneGraph();        // 依赖SceneCore
   InitializeSceneView();         // 依赖SceneCore和SceneGraph
   InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行 & 依赖SceneView
+  InitializeLightSystem();       // Light模块初始化时同步创建LightSSBO，依赖Render绑定
   InitializeUI();                // 必须在Window创建GL上下文后执行
 
   // 加载默认场景
@@ -150,11 +148,11 @@ void MiteApplication::CleanUp()
 
   // 按照初始化的倒序，依次CleanUp
   CleanUpUI();
+  CleanUpLightSystem();
   CleanUpRenderWithOpenGL();
   CleanUpSceneView();
   CleanUpSceneGraph();
   CleanUpSceneCore();
-  CleanUpLightSystem();
   CleanUpMaterialSystem();
   CleanUpWindow();
   CleanUpAssertManager();
