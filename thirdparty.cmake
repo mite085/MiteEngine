@@ -38,11 +38,15 @@ include(imguizmo.cmake)
 
 # shaderc需要依赖spirv_tools等其他第三方库
 # spirv_tools又需要手动将spirv_headers放到指定目录
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_headers/"
-     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_tools/external/spirv-headers"
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glslang/"
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/glslang"
 )
-add_subdirectory(thirdparty/spirv_tools)
-add_subdirectory(thirdparty/glslang)
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_headers/"
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-headers"
+)
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_tools/"
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-tools"
+)
 add_subdirectory(thirdparty/shaderc)
 
 
