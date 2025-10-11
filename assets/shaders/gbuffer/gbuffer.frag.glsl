@@ -5,13 +5,13 @@
 #include "../common/uniforms.glsl" 
 #include "../common/math.glsl"
 
-// 顶点着色器输出
+// 顶点着色器输出 - 为SPIR-V显式指定location
 in VS_OUT {
-    vec3 worldPos;          // 世界空间位置
-    vec3 normal;            // 世界空间法线
-    vec3 tangent;           // 世界空间切线
-    vec3 bitangent;         // 世界空间副切线
-    vec2 texCoord;          // 纹理坐标
+    layout(location = 0) vec3 worldPos;         // 世界空间位置
+    layout(location = 1) vec3 normal;           // 世界空间法线
+    layout(location = 2) vec3 tangent;          // 世界空间切线
+    layout(location = 3) vec3 bitangent;        // 世界空间副切线
+    layout(location = 4) vec2 texCoord;         // 纹理坐标
 } fs_in;
 
 // GBuffer输出 - 与C++端GBuffer布局对应
@@ -22,13 +22,6 @@ layout(location = GBUFFER_NORMAL_SCALE) out vec4 o_NormalScale;            // �
 layout(location = GBUFFEE_EMISSION_ALPHA) out vec4 o_EmissionAlpha;        // 自发光+透明度
 layout(location = GBUFFER_NPR_PARAM) out vec4 o_NPRParameters;             // NPR参数
 layout(location = GBUFFER_NPR_COLOR) out vec4 o_NPRColors;                 // NPR颜色
-
-// 纹理采样器
-uniform sampler2D u_BaseColorTexture;
-uniform sampler2D u_NormalTexture;
-uniform sampler2D u_MetallicRoughnessTexture;
-uniform sampler2D u_EmissiveTexture;
-uniform sampler2D u_OcclusionTexture;
 
 void main()
 {
@@ -138,9 +131,9 @@ void main()
     float linearDepth = linearizeDepth(gl_FragCoord.z, u_Camera.nearPlane, u_Camera.farPlane);
     
     // =========================================================================
-    // 材质类型判断
+    // 材质类型判断(转为int，四舍五入)
     // =========================================================================
-    uint materialType = u_Material.materialInfo.x;
+    uint materialType = uint(round(u_Material.materialInfo.x));
     
     // =========================================================================
     // 输出到GBuffer

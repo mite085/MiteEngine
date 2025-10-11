@@ -9,28 +9,25 @@ layout(location = 4) in vec3 a_Bitangent;       // 顶点副切线
 
 #include "../common/uniforms.glsl"
 
-// 模型矩阵 - 用于将顶点从模型空间变换到世界空间
-uniform mat4 u_Model;
-
-// 输出到片段着色器
+// 输出到片段着色器 - 为SPIR-V显式指定location
 out VS_OUT {
-    vec3 worldPos;          // 世界空间位置
-    vec3 normal;            // 世界空间法线
-    vec3 tangent;           // 世界空间切线
-    vec3 bitangent;         // 世界空间副切线
-    vec2 texCoord;          // 纹理坐标
+    layout(location = 0) vec3 worldPos;         // 世界空间位置
+    layout(location = 1) vec3 normal;           // 世界空间法线
+    layout(location = 2) vec3 tangent;          // 世界空间切线
+    layout(location = 3) vec3 bitangent;        // 世界空间副切线
+    layout(location = 4) vec2 texCoord;         // 纹理坐标
 } vs_out;
 
 void main()
 {
     // 计算世界空间位置
     // 使用模型矩阵将顶点从模型空间变换到世界空间
-    vec4 worldPosition = u_Model * vec4(a_Position, 1.0);
+    vec4 worldPosition = u_Model.model * vec4(a_Position, 1.0);
     vs_out.worldPos = worldPosition.xyz;
     
     // 构建模型矩阵的3x3部分用于法线变换（去除缩放和位移）
     // 注意--对于非均匀缩放，需要使用法线矩阵来正确变换法线
-    mat3 normalMatrix = mat3(transpose(inverse(u_Model)));
+    mat3 normalMatrix = mat3(transpose(inverse(u_Model.model)));
     
     // 变换法线到世界空间
     // 法线需要特殊处理，确保在非均匀缩放下仍保持正确方向
