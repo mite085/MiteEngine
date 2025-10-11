@@ -138,8 +138,6 @@ class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface {
     std::string content;
     std::string source_name;
   };
-
-  std::unordered_set<std::string> m_includeHistory;  // 防止循环包含
 };
 }  // namespace mite
 

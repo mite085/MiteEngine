@@ -91,8 +91,8 @@ std::vector<uint32_t> OpenGLShader::CompileGLSLToSPIRV(const std::string &source
       if (error_msg.find("include") != std::string::npos) {
         error_msg += "\nNote: Make sure include paths are relative to the current file";
       }
-
-      throw std::runtime_error("Failed to compile " + filename + ":\n" + error_msg);
+       
+      throw std::runtime_error("Failed to compile " + filename + ":\n" + error_msg); 
     }
     LOG_DEBUG("Successfully compiled {} to SPIR-V ({} words)",
               filename,
@@ -118,26 +118,70 @@ std::vector<uint32_t> OpenGLShader::CompileFileToSPIRV(const std::string &filena
   return CompileGLSLToSPIRV(source, filename, kind);
 }
 
+
+
 uint32_t OpenGLShader::CompileSPIRVToGLShader(const std::vector<uint32_t> &spirv, uint32_t type)
 {
   if (spirv.empty()) {
     throw std::runtime_error("Empty SPIR-V data provided");
   }
+
+  // 检查关键函数是否可用
+  if (!glSpecializeShader) {
+    throw std::runtime_error("glSpecializeShader function not available");
+  }
+
   uint32_t shader = glCreateShader(type);
 
-  // 使用SPIR-V专用接口
-  glShaderBinary(1,
-                 &shader,
-                 GL_SHADER_BINARY_FORMAT_SPIR_V,
-                 spirv.data(),
-                 static_cast<GLsizei>(spirv.size() * sizeof(uint32_t)));
+  // 尝试不同的SPIR-V格式枚举值
+  GLenum spirv_format = 0;
 
-  // 特殊化着色器（指定入口点）
+  // 常见的SPIR-V格式枚举值
+  const GLenum formats[] = {
+      GL_SHADER_BINARY_FORMAT_SPIR_V,  // GLAD宏
+      0x9551,                          // GL_SHADER_BINARY_FORMAT_SPIR_V_ARB
+      0x9555,                          // 其他可能的格式值
+  };
+
+  bool format_found = false;
+  for (GLenum format : formats) {
+    glShaderBinary(1,
+                   &shader,
+                   GL_SHADER_BINARY_FORMAT_SPIR_V,
+                   spirv.data(),
+                   static_cast<GLsizei>(spirv.size() * sizeof(uint32_t)));
+
+    GLenum error = glGetError();
+    if (error == GL_NO_ERROR) {
+      spirv_format = format;
+      format_found = true;
+      LOG_DEBUG("Found working SPIR-V format: 0x{:X}", format);
+      break;
+    }
+    glGetError();  // 清除错误状态
+  }
+
+  if (!format_found) {
+    glDeleteShader(shader);
+    throw std::runtime_error("No working SPIR-V format found");
+  }
+
+  // 检查SPIR-V是否成功加载
+  GLint spirv_loaded = 0;
+  glGetShaderiv(shader, GL_SPIR_V_BINARY_ARB, &spirv_loaded);
+
+  if (!spirv_loaded) {
+    glDeleteShader(shader);
+    throw std::runtime_error("SPIR-V binary was not successfully loaded");
+  }
+
+  // 特殊化着色器
   glSpecializeShader(shader, "main", 0, nullptr, nullptr);
 
   CheckCompileErrors(shader, GL_COMPILE_STATUS, false);
   return shader;
 }
+
 
 void OpenGLShader::LoadFromSPIRV(const std::vector<uint32_t> &vertexSpirv,
                                  const std::vector<uint32_t> &fragmentSpirv,
@@ -294,18 +338,10 @@ shaderc_include_result *ShaderIncluder::GetInclude(const char *requested_source,
   // 规范化路径
   full_path = NormalizeAssetPath(full_path);
 
-  // 检查循环包含
-  if (m_includeHistory.find(full_path) != m_includeHistory.end()) {
-    throw std::runtime_error("Circular include detected: " + full_path);
-  }
-
   // 检查最大深度
   if (include_depth > 16) {
     throw std::runtime_error("Include depth exceeded maximum limit");
   }
-
-  // 记录包含历史
-  m_includeHistory.insert(full_path);
 
   // 使用 FileSystem 读取文件
   std::filesystem::path absolute_path = FileSystem::GetAssetPath(full_path);
