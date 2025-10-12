@@ -279,13 +279,16 @@ void BindingPointManager::PreallocateCommonResources()
   // EnvironmentMap----layout(location = 23)
   m_ExternalTextureBindings[ExternalTextureType::EnvironmentMap] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::ENVIRONMENT_MAP);
+  // BRDFLUT----layout(location = 24)
+  m_ExternalTextureBindings[ExternalTextureType::BRDFLUT] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BRDF_LUT);
+  // IrradianceMap----layout(location = 25)
+  m_ExternalTextureBindings[ExternalTextureType::IrradianceMap] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::IRRADIANCE_MAP);
+  // PrefilterMap----layout(location = 26)
+  m_ExternalTextureBindings[ExternalTextureType::PrefilterMap] = AllocateTextureBinding(
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::PREFILTER_MAP);
 
-  //m_ExternalTextureBindings[ExternalTextureType::BRDFLUT] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BRDF_LUT);
-  //m_ExternalTextureBindings[ExternalTextureType::IrradianceMap] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::IRRADIANCE_MAP);
-  //m_ExternalTextureBindings[ExternalTextureType::PrefilterMap] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::PREFILTER_MAP);
   //m_ExternalTextureBindings[ExternalTextureType::ColorGradingLUT] = AllocateTextureBinding(
   //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::COLOR_GRADING_LUT);
   //m_ExternalTextureBindings[ExternalTextureType::BloomTexture] = AllocateTextureBinding(
