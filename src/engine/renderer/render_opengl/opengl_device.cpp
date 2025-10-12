@@ -719,6 +719,16 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
       format = GL_DEPTH_COMPONENT;
       type = GL_UNSIGNED_INT;
       break;
+    case TextureFormat::STENCIL_INDEX1:
+      internalFormat = GL_STENCIL_INDEX1;
+      format = GL_STENCIL_INDEX;
+      type = GL_UNSIGNED_BYTE;
+      break;
+    case TextureFormat::STENCIL_INDEX4:
+      internalFormat = GL_STENCIL_INDEX4;
+      format = GL_STENCIL_INDEX;
+      type = GL_UNSIGNED_BYTE;
+      break;
     case TextureFormat::STENCIL_INDEX8:
       internalFormat = GL_STENCIL_INDEX8;
       format = GL_STENCIL_INDEX;
@@ -735,40 +745,20 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
       type = GL_UNSIGNED_INT_24_8;
       break;
     // 高精度浮点格式（HDR/GBuffer专用）
-    case TextureFormat::R16F:
-      internalFormat = GL_R16F;
-      format = GL_RED;
-      type = GL_HALF_FLOAT;
-      break;
-    case TextureFormat::R32F:
-      internalFormat = GL_R32F;
-      format = GL_RED;
-      type = GL_FLOAT;
-      break;
-    case TextureFormat::RG16F:
-      internalFormat = GL_RG16F;
-      format = GL_RG;
-      type = GL_HALF_FLOAT;
-      break;
-    case TextureFormat::RG32F:
-      internalFormat = GL_RG32F;
-      format = GL_RG;
-      type = GL_FLOAT;
-      break;
     case TextureFormat::RGB16F:
       internalFormat = GL_RGB16F;
       format = GL_RGB;
+      type = GL_HALF_FLOAT;
+      break;
+    case TextureFormat::RGBA16F:
+      internalFormat = GL_RGBA16F;
+      format = GL_RGBA;
       type = GL_HALF_FLOAT;
       break;
     case TextureFormat::RGB32F:
       internalFormat = GL_RGB32F;
       format = GL_RGB;
       type = GL_FLOAT;
-      break;
-    case TextureFormat::RGBA16F:
-      internalFormat = GL_RGBA16F;
-      format = GL_RGBA;
-      type = GL_HALF_FLOAT;
       break;
     case TextureFormat::RGBA32F:
       internalFormat = GL_RGBA32F;
