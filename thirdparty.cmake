@@ -10,7 +10,6 @@ set(GLFW_BUILD_TESTS OFF)
 set(SPDLOG_BUILD_TESTS OFF)
 set(SHADERC_SKIP_TESTS ON)
 set(SPIRV_SKIP_TESTS ON)
-set(KTX_FEATURE_TESTS OFF)
 
 # 启用文件夹功能（Visual Studio专用？）
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -22,19 +21,6 @@ add_subdirectory(thirdparty/assimp)
 add_subdirectory(thirdparty/meshoptimizer)
 add_subdirectory(thirdparty/googletest)
 add_subdirectory(thirdparty/materialx)
-add_subdirectory(thirdparty/gltf_ibl_sampler/thirdparty/KTX-Software)
-add_subdirectory(thirdparty/gltf_ibl_sampler)
-# shaderc需要手动将glslang，spirv_headers放到指定目录
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glslang/"
-     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/glslang"
-)
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_headers/"
-     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-headers"
-)
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_tools/"
-     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-tools"
-)
-add_subdirectory(thirdparty/shaderc)
 
 include_directories(thirdparty/glm)
 include_directories(thirdparty/glad)
@@ -48,6 +34,21 @@ include_directories(thirdparty/threadpool/include)
 # imgui和imguizmo无cmakelist，为避免污染依赖库，此处手动添加
 include(imgui.cmake)
 include(imguizmo.cmake)
+
+
+# shaderc需要依赖spirv_tools等其他第三方库
+# spirv_tools又需要手动将spirv_headers放到指定目录
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glslang/"
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/glslang"
+)
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_headers/"
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-headers"
+)
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_tools/"
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-tools"
+)
+add_subdirectory(thirdparty/shaderc)
+
 
 # 为第三方库设置文件夹属性
 set(THIRDPARTY_FOLDER "ThirdParty")
@@ -87,7 +88,6 @@ endif()
 if(TARGET gtest_main)
     set_target_properties(gtest_main PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
 endif()
-
 
 # MaterialX
 set(MATERIALX_FOLDER "MaterialX")
@@ -211,12 +211,6 @@ endif()
 if(TARGET glslang-standalone)
     set_target_properties(glslang-standalone PROPERTIES FOLDER ${GLSLANG_FOLDER})
 endif()
-if(TARGET glslangtests)
-    set_target_properties(glslangtests PROPERTIES FOLDER ${GLSLANG_FOLDER})
-endif()
-if(TARGET OGLCompiler)
-    set_target_properties(OGLCompiler PROPERTIES FOLDER ${GLSLANG_FOLDER})
-endif()
 
 set(SPIRV_TOOLS_FOLDER "${SHADERC_FOLDER}/spirv-tools")
 if(TARGET spirv-tools-build-version)
@@ -287,69 +281,4 @@ if(TARGET SPIRV-Tools-static)
 endif()
 if(TARGET spirv-tools-vimsyntax)
     set_target_properties(spirv-tools-vimsyntax PROPERTIES FOLDER ${SPIRV_TOOLS_FOLDER})
-endif()
-
-set(GLSL_IBL_SAMPLER_FOLDER "glsl-IBL-Sampler")
-if(TARGET cli)
-    set_target_properties(cli PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET GltfIblSampler)
-    set_target_properties(GltfIblSampler PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktx)
-    set_target_properties(ktx PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktx_read)
-    set_target_properties(ktx_read PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktx_version)
-    set_target_properties(ktx_version PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktx2check)
-    set_target_properties(ktx2check PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktx2check_version)
-    set_target_properties(ktx2check_version PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktx2ktx2)
-    set_target_properties(ktx2ktx2 PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktx2ktx2_version)
-    set_target_properties(ktx2ktx2_version PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktxinfo)
-    set_target_properties(ktxinfo PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktxinfo_version)
-    set_target_properties(ktxinfo_version PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktxsc)
-    set_target_properties(ktxsc PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET ktxsc_version)
-    set_target_properties(ktxsc_version PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET makedfd2vk)
-    set_target_properties(makedfd2vk PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET makevkswitch)
-    set_target_properties(makevkswitch PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET mkvk)
-    set_target_properties(mkvk PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET mkvkformatfiles)
-    set_target_properties(mkvkformatfiles PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET obj_basisu_cbind)
-    set_target_properties(obj_basisu_cbind PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET objUtil)
-    set_target_properties(objUtil PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET toktx)
-    set_target_properties(toktx PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
-endif()
-if(TARGET toktx_version)
-    set_target_properties(toktx_version PROPERTIES FOLDER ${GLSL_IBL_SAMPLER_FOLDER})
 endif()
