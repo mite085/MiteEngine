@@ -49,20 +49,6 @@ struct TextureSourceData {
   // Mipmap设置
   bool generateMipmaps = true;     // 是否生成Mipmap（默认生成）
   uint32_t existingMipLevels = 1;  // 源数据已有的mip层级数
-
-  // 环境贴图IBL专用：KTX2和压缩格式支持
-  bool isCompressed = false;                    // 是否为压缩格式
-  bool isCubeMap = false;                       // 是否为立方体贴图
-  std::vector<std::vector<uint8_t>> mipLevels;  // 多级mip数据（KTX2需要）
-  uint32_t depth = 1;                           // 纹理深度（3D纹理）
-  uint32_t arrayLayers = 1;                     // 数组层数
-
-  // 环境贴图IBL专用：压缩格式信息
-  struct CompressionInfo {
-    uint32_t blockSize = 0;       // 压缩块大小
-    uint32_t internalFormat = 0;  // OpenGL内部格式
-    bool isSRGB = false;          // 是否sRGB色彩空间
-  } compressionInfo;
 };
 
 // 纹理GPU句柄
