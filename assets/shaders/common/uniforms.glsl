@@ -98,7 +98,10 @@ layout(binding = 19) uniform sampler2D u_NormalTexture;
 layout(binding = 20) uniform sampler2D u_MetallicRoughnessTexture;
 layout(binding = 21) uniform sampler2D u_EmissiveTexture;
 layout(binding = 22) uniform sampler2D u_OcclusionTexture;
-layout(binding = 23) uniform sampler2D u_EnvironmentMap;
 
+layout(binding = 23) uniform sampler2D u_EnvironmentMap;
+layout(binding = 24) uniform sampler2D u_BRDFLUT;
+layout(binding = 25) uniform sampler2D u_IrradianceMap;
+layout(binding = 26) uniform sampler2D u_PrefilterMap;
 
 #endif
