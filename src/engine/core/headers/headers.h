@@ -7,6 +7,7 @@
 #include <atomic>
 #include <bitset>
 #include <cassert>
+#include <chrono>
 #include <condition_variable>
 #include <cstdint>
 #include <execution>
