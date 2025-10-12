@@ -184,9 +184,9 @@ struct ShaderBufferResourceNames {
   static constexpr const char *EMISSIVE_TEXTURE = "u_EmissiveTexture";
   static constexpr const char *OCCLUSION_TEXTURE = "u_OcclusionTexture";
   static constexpr const char *ENVIRONMENT_MAP = "u_EnvironmentMap";
-  static constexpr const char *BRDF_LUT = "u_BRDFLUT";
-  static constexpr const char *IRRADIANCE_MAP = "u_IrradianceMap";
-  static constexpr const char *PREFILTER_MAP = "u_PrefilterMap";
+  // static constexpr const char *BRDF_LUT = "u_BRDFLUT";
+  // static constexpr const char *IRRADIANCE_MAP = "u_IrradianceMap";
+  // static constexpr const char *PREFILTER_MAP = "u_PrefilterMap";
   // static constexpr const char *COLOR_GRADING_LUT = "u_ColorGradingLUT";
   // static constexpr const char *BLOOM_TEXTURE = "u_BloomTexture";
   // static constexpr const char *SSAO_TEXTURE = "u_SSAOTexture";
