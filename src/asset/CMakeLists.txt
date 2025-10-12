@@ -15,10 +15,6 @@ set(ASSET_SRCS
     model_loader.cpp
     texture_loader.h
     texture_loader.cpp
-    ibl_generator.h
-    ibl_generator.cpp
-    ktx2_loader.h
-    ktx2_loader.cpp
 )
 source_group("asset_manager" FILES ${ASSET_SRCS})
 
@@ -42,8 +38,6 @@ target_link_libraries(${ASSET_LIB_NAME}
     glfw
     shaderc
     glslang
-    ktx
-    GltfIblSampler
     spdlog::spdlog
     assimp
     meshoptimizer
