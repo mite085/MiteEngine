@@ -26,20 +26,23 @@ enum class TextureFormat : unsigned int {
   DEPTH_COMPONENT16 = GL_DEPTH_COMPONENT16,  // 16位深度
   DEPTH_COMPONENT24 = GL_DEPTH_COMPONENT24,  // 24位深度
   DEPTH_COMPONENT32 = GL_DEPTH_COMPONENT32,  // 32位深度
-  STENCIL_INDEX1 = GL_STENCIL_INDEX1,        // 1位模板
-  STENCIL_INDEX4 = GL_STENCIL_INDEX4,        // 4位模板
+  DEPTH24_STENCIL8 = GL_DEPTH24_STENCIL8,    // 24位深度+8位模板
   STENCIL_INDEX8 = GL_STENCIL_INDEX8,        // 8位模板
   STENCIL_INDEX16 = GL_STENCIL_INDEX16,      // 16位模板
-  DEPTH24_STENCIL8 = GL_DEPTH24_STENCIL8,    // 24位深度+8位模板
+
 
   // sRGB格式（伽马校正）
   SRGB8 = GL_SRGB8,                // sRGB色彩空间
   SRGB8_ALPHA8 = GL_SRGB8_ALPHA8,  // sRGB+Alpha
 
-  // 高精度纹理（GBuffer专用）
+  // 高精度纹理
+  R16F = GL_R16F,        // HDR R (half float)
+  R32F = GL_R32F,        // HDR R
+  RG16F = GL_RG16F,      // HDR RG (half float)
+  RG32F = GL_RG32F,      // HDR RG
   RGB16F = GL_RGB16F,    // HDR RGB (half float)
-  RGBA16F = GL_RGBA16F,  // HDR RGBA (half float)
   RGB32F = GL_RGB32F,    // HDR RGB
+  RGBA16F = GL_RGBA16F,  // HDR RGBA (half float)
   RGBA32F = GL_RGBA32F,  // HDR RGBA
 };
 
@@ -136,9 +139,9 @@ enum class ExternalTextureType {
 
   // 环境纹理
   EnvironmentMap,  // 环境贴图
-  // BRDFLUT,         // BRDF查找表(暂未启用)
-  // IrradianceMap,   // 辐照度图(暂未启用)
-  // PrefilterMap,    // 预滤波环境图(暂未启用)
+  BRDFLUT,         // BRDF查找表(与下面两个合称IBL纹理，用于环境光着色)
+  IrradianceMap,   // 辐照度图
+  PrefilterMap,    // 预滤波环境图
 
   // 后期处理纹理(暂未启用)
   // ColorGradingLUT,  // 色彩分级LUT
