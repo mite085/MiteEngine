@@ -77,6 +77,17 @@ void ForwardStage::Execute(RenderContext &context)
     return;
   }
 
+  // 从上下文获取G-Buffer Stage的着色器
+  std::shared_ptr<OpenGLShader> forwardShader = context.GetStageShader(m_Name);
+  if (!forwardShader) {
+    m_Logger->error("Forward Stage: No shader registered for Forward Stage in context");
+    return;
+  }
+  if (forwardShader->GetProgramId() == 0) {
+    m_Logger->error("Forward Stage: Shader from context is not properly linked");
+    return;
+  }
+
   // 获取上下文记录的帧缓冲尺寸
   glm::uvec2 viewportSize = context.GetViewportSize();
 
@@ -88,7 +99,10 @@ void ForwardStage::Execute(RenderContext &context)
   // 绑定前向渲染的FrameBuffer
   RenderCommand::Get().BindFrameBuffer(m_ForwardFrameBuffer);
 
-  // stage开始渲染之前绑定相机UBO
+  // 绑定着色器
+  RenderCommand::Get().BindShader(forwardShader);
+
+  // 绑定相机UBO
   RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
   // 按顺序渲染各个队列

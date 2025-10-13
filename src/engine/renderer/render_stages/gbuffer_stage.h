@@ -46,10 +46,6 @@ class GBufferStage : public RenderStage {
    * @brief 验证渲染项是否适合G-Buffer渲染
    */
   bool ValidateGBufferRenderableItem(const RenderableItem &item) const;
-  /**
-   * @brief 从上下文获取G-Buffer着色器
-   */
-  std::shared_ptr<OpenGLShader> GetGBufferShader(RenderContext &context) const;
 
   // ---- 成员变量 ----
   GBufferPtr m_GBuffer;  // G-Buffer数据容器

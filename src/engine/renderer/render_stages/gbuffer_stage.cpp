@@ -48,13 +48,17 @@ void GBufferStage::Execute(RenderContext &context)
     return;
   }
 
-  // 检查着色器是否已注册到上下文
-  auto gbufferShader = GetGBufferShader(context);
+  // 从上下文获取G-Buffer Stage的着色器
+  std::shared_ptr<OpenGLShader> gbufferShader = context.GetStageShader(m_Name);
   if (!gbufferShader) {
-    m_Logger->error("GBufferStage: No shader registered for GBufferStage in context");
+    m_Logger->error("G-Buffer Stage: No shader registered for G-Buffer Stage in context");
     return;
   }
-
+  if (gbufferShader->GetProgramId() == 0) {
+    m_Logger->error("G-Buffer Stage: G-Buffer Shader from context is not properly linked");
+    return;
+  }
+  
   // 获取上下文记录的帧缓冲尺寸
   glm::uvec2 viewportSize = context.GetViewportSize();
 
@@ -71,6 +75,9 @@ void GBufferStage::Execute(RenderContext &context)
                              glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),  // 透明黑色清除
                              1.0f);
 
+  // 绑定着色器
+  RenderCommand::Get().BindShader(gbufferShader);
+
   // stage开始之前初始化并绑定相机UBO
   RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
@@ -83,6 +90,9 @@ void GBufferStage::Execute(RenderContext &context)
 
   // 解绑G-Buffer
   RenderCommand::Get().UnbindFrameBuffer();
+
+  // 执行渲染操作
+  RenderCommand::Get().Flush();
 
   // 存储渲染结果到上下文（并非渲染命令，这些纹理是提前创建好的，可以提前交给上下文管理）
   for (const auto &type : GBuffer::GetTextureTypes()) {
@@ -131,7 +141,7 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
     }
 
     // 使用G-Buffer着色器提交
-    auto gbufferShader = GetGBufferShader(context);
+    auto gbufferShader = context.GetStageShader(m_Name);
     if (gbufferShader) {
       RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
       renderedCount++;
@@ -172,7 +182,7 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
     }
 
     // 使用G-Buffer着色器提交
-    auto gbufferShader = GetGBufferShader(context);
+    auto gbufferShader = context.GetStageShader(m_Name);
     if (gbufferShader) {
       RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
       renderedCount++;
@@ -230,18 +240,4 @@ bool GBufferStage::ValidateGBufferRenderableItem(const RenderableItem &item) con
   return true;
 }
 
-std::shared_ptr<OpenGLShader> GBufferStage::GetGBufferShader(RenderContext &context) const
-{
-  // 从上下文获取GBufferStage的着色器
-  auto shader = context.GetStageShader(m_Name);
-  if (!shader) {
-    m_Logger->error("GBufferStage: No shader found in context for stage 'GBufferStage'");
-    return nullptr;
-  }
-  if (shader->GetProgramId() == 0) {
-    m_Logger->error("GBufferStage: Shader from context is not properly linked");
-    return nullptr;
-  }
-  return shader;
-}
 }  // namespace mite
