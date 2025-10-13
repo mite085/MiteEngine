@@ -3,12 +3,12 @@
 
 // 输入从顶点着色器传递的数据
 in VS_OUT {
-    vec3 worldPos;          // 世界空间位置
-    vec3 normal;            // 世界空间法线
-    vec3 tangent;           // 世界空间切线
-    vec3 bitangent;         // 世界空间副切线
-    vec2 texCoord;          // 纹理坐标
-    vec4 clipPos;           // 裁剪空间位置
+    layout(location = 0) vec3 worldPos;          // 世界空间位置
+    layout(location = 1) vec3 normal;            // 世界空间法线
+    layout(location = 2) vec3 tangent;           // 世界空间切线
+    layout(location = 3) vec3 bitangent;         // 世界空间副切线
+    layout(location = 4) vec2 texCoord;          // 纹理坐标
+    layout(location = 5) vec4 clipPos;           // 裁剪空间位置
 } fs_in;
 
 // 最终输出颜色
@@ -19,29 +19,9 @@ layout(location = 0) out vec4 o_FinalColor;
 #include "../common/uniforms.glsl"
 #include "../common/lights_ssbo.glsl"
 #include "../common/math.glsl"
-#include "../lighting/light_calculation.glsl"
-#include "../brdf/pbr.brdf.glsl"
-
-// 纹理采样器
-uniform sampler2D u_BaseColorTexture;
-uniform sampler2D u_NormalTexture;
-uniform sampler2D u_MetallicRoughnessTexture;
-uniform sampler2D u_EmissiveTexture;
-uniform sampler2D u_OcclusionTexture;
-
-// 环境光照参数
-uniform samplerCube u_IrradianceMap;            // 漫反射环境贴图
-uniform samplerCube u_PrefilterMap;             // 预滤波环境贴图
-uniform sampler2D u_BRDFLUT;                    // BRDF积分查找表
-uniform float u_AmbientIntensity = 0.03;        // 环境光强度
-
-// 渲染参数
-uniform int u_ReceiveShadows = 1;               // 是否接收阴影
-uniform int u_AlphaMode = ALPHA_MODE_OPAQUE;    // Alpha模式
-uniform float u_AlphaCutoff = 0.5;              // Alpha裁剪阈值
-
-// 调试参数
-uniform int u_DebugMode = 0;                    // 调试模式
+#include "../lighting/lighting_calculation.glsl"
+#include "../lighting/ambient_calculation.glsl"
+#include "../brdf/brdf_dispatcher.glsl"
 
 /**
  * @brief 应用纹理坐标变换
@@ -181,60 +161,28 @@ vec3 sampleEmission(vec2 texCoord)
  */
 BRDFInput prepareBRDFInput()
 {
-    BRDFInput input;
+    BRDFInput brdfInput;
     
     // 基础几何信息
-    input.worldPosition = fs_in.worldPos;
-    input.normal = calculateNormal(fs_in.texCoord);
-    input.viewDirection = normalize(u_Camera.cameraPosition - fs_in.worldPos);
+    brdfInput.worldPosition = fs_in.worldPos;
+    brdfInput.normal = calculateNormal(fs_in.texCoord);
+    brdfInput.viewDirection = normalize(u_Camera.cameraPosition - fs_in.worldPos);
     
     // 采样材质属性
     vec4 baseColor = sampleBaseColor(fs_in.texCoord);
-    input.baseColor = baseColor.rgb;
+    brdfInput.baseColor = baseColor.rgb;
     
     vec2 metallicRoughness = sampleMetallicRoughness(fs_in.texCoord);
-    input.metallic = metallicRoughness.r;
-    input.roughness = metallicRoughness.g;
+    brdfInput.metallic = metallicRoughness.r;
+    brdfInput.roughness = metallicRoughness.g;
     
-    input.occlusion = sampleOcclusion(fs_in.texCoord);
-    input.emission = sampleEmission(fs_in.texCoord);
+    brdfInput.occlusion = sampleOcclusion(fs_in.texCoord);
+    brdfInput.emission = sampleEmission(fs_in.texCoord);
     
     // 材质类型（前向渲染主要使用PBR）
-    input.materialType = MATERIAL_TYPE_PBR;
+    brdfInput.materialType = MATERIAL_TYPE_PBR;
     
-    return input;
-}
-
-/**
- * @brief 准备环境光照输入
- * @param brdfInput BRDF输入参数
- * @return 环境光照输入
- */
-BRDFAmbientInput prepareAmbientInput(BRDFInput brdfInput)
-{
-    BRDFAmbientInput ambientInput;
-    
-    // 标准化法线和视线方向
-    vec3 N = normalize(brdfInput.normal);
-    vec3 V = normalize(brdfInput.viewDirection);
-    vec3 R = reflect(-V, N);
-    
-    // 采样环境贴图
-    ambientInput.irradiance = texture(u_IrradianceMap, N).rgb;
-    
-    // 预滤波环境光
-    float roughness = brdfInput.roughness;
-    const float MAX_REFLECTION_LOD = 4.0;
-    ambientInput.prefilteredColor = textureLod(u_PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
-    
-    // BRDF积分查找表
-    float NdotV = max(dot(N, V), 0.0);
-    ambientInput.brdfLUT = texture(u_BRDFLUT, vec2(NdotV, roughness)).rgb;
-    
-    // 环境光参数
-    ambientInput.ambientIntensity = u_AmbientIntensity;
-    
-    return ambientInput;
+    return brdfInput;
 }
 
 /**
@@ -263,7 +211,7 @@ vec3 calculateLightContribution(uint lightIndex, BRDFInput brdfInput)
     }
     
     // 计算PBR光照
-    BRDFResult result = calculateDirectBRDF(brdfInput, lightInput);
+    BRDFResult result = dispatchBRDF(brdfInput, lightInput);
     
     return result.diffuse + result.specular;
 }
@@ -272,52 +220,52 @@ vec3 calculateLightContribution(uint lightIndex, BRDFInput brdfInput)
  * @brief Alpha测试
  * @param alpha 透明度值
  */
-void performAlphaTest(float alpha)
-{
-    if (u_AlphaMode == ALPHA_MODE_MASK && alpha < u_AlphaCutoff) {
-        discard;
-    }
-}
+// void performAlphaTest(float alpha)
+// {
+//     if (u_AlphaMode == ALPHA_MODE_MASK && alpha < u_AlphaCutoff) {
+//         discard;
+//     }
+// }
 
 /**
  * @brief 调试显示函数
  * @param brdfInput BRDF输入参数
  * @return 调试颜色
  */
-vec3 debugDisplay(BRDFInput brdfInput)
-{
-    switch (u_DebugMode) {
-        case 1: // 显示世界位置
-            return brdfInput.worldPosition * 0.1 + 0.5;
+// vec3 debugDisplay(BRDFInput brdfInput)
+// {
+//     switch (u_DebugMode) {
+//         case 1: // 显示世界位置
+//             return brdfInput.worldPosition * 0.1 + 0.5;
             
-        case 2: // 显示法线
-            return brdfInput.normal * 0.5 + 0.5;
+//         case 2: // 显示法线
+//             return brdfInput.normal * 0.5 + 0.5;
             
-        case 3: // 显示基础颜色
-            return brdfInput.baseColor;
+//         case 3: // 显示基础颜色
+//             return brdfInput.baseColor;
             
-        case 4: // 显示金属度
-            return vec3(brdfInput.metallic);
+//         case 4: // 显示金属度
+//             return vec3(brdfInput.metallic);
             
-        case 5: // 显示粗糙度
-            return vec3(brdfInput.roughness);
+//         case 5: // 显示粗糙度
+//             return vec3(brdfInput.roughness);
             
-        case 6: // 显示AO
-            return vec3(brdfInput.occlusion);
+//         case 6: // 显示AO
+//             return vec3(brdfInput.occlusion);
             
-        case 7: // 显示自发光
-            return brdfInput.emission;
+//         case 7: // 显示自发光
+//             return brdfInput.emission;
             
-        case 8: // 显示切线
-            return fs_in.tangent * 0.5 + 0.5;
+//         case 8: // 显示切线
+//             return fs_in.tangent * 0.5 + 0.5;
             
-        case 9: // 显示纹理坐标
-            return vec3(fs_in.texCoord, 0.0);
+//         case 9: // 显示纹理坐标
+//             return vec3(fs_in.texCoord, 0.0);
             
-        default:
-            return vec3(0.0);
-    }
-}
+//         default:
+//             return vec3(0.0);
+//     }
+// }
 
 void main()
 {
@@ -326,21 +274,21 @@ void main()
     
     // Alpha测试
     vec4 baseColor = sampleBaseColor(fs_in.texCoord);
-    performAlphaTest(baseColor.a);
+    // performAlphaTest(baseColor.a);
     
     // 调试模式显示
-    if (u_DebugMode > 0) {
-        vec3 debugColor = debugDisplay(brdfInput);
-        o_FinalColor = vec4(debugColor, baseColor.a);
-        return;
-    }
+    // if (u_DebugMode > 0) {
+    //     vec3 debugColor = debugDisplay(brdfInput);
+    //     o_FinalColor = vec4(debugColor, baseColor.a);
+    //     return;
+    // }
     
     // 初始化最终颜色
     vec3 finalColor = vec3(0.0);
     
     // 计算环境光照
-    BRDFAmbientInput ambientInput = prepareAmbientInput(brdfInput);
-    BRDFResult ambientResult = calculateAmbientBRDF(brdfInput, ambientInput);
+    BRDFAmbientInput ambientInput = prepareAmbientInputApprox(brdfInput, u_EnvironmentMap);
+    BRDFResult ambientResult = dispatchAmbientBRDF(brdfInput, ambientInput);
     finalColor += ambientResult.diffuse + ambientResult.specular;
     
     // 计算所有直接光源贡献

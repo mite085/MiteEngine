@@ -10,28 +10,25 @@ layout(location = 4) in vec3 a_Bitangent;
 
 // 输出到片段着色器
 out VS_OUT {
-    vec3 worldPos;          // 世界空间位置
-    vec3 normal;            // 世界空间法线
-    vec3 tangent;           // 世界空间切线
-    vec3 bitangent;         // 世界空间副切线
-    vec2 texCoord;          // 纹理坐标
-    vec4 clipPos;           // 裁剪空间位置（用于深度计算）
+    layout(location = 0) vec3 worldPos;          // 世界空间位置
+    layout(location = 1) vec3 normal;            // 世界空间法线
+    layout(location = 2) vec3 tangent;           // 世界空间切线
+    layout(location = 3) vec3 bitangent;         // 世界空间副切线
+    layout(location = 4) vec2 texCoord;          // 纹理坐标
+    layout(location = 5) vec4 clipPos;           // 裁剪空间位置（用于深度计算）
 } vs_out;
 
 // 包含必要的头文件
 #include "../common/uniforms.glsl"
 
-// 模型矩阵
-uniform mat4 u_Model;
-
 void main()
 {
     // 计算世界空间位置
-    vec4 worldPosition = u_Model * vec4(a_Position, 1.0);
+    vec4 worldPosition = u_Model.model * vec4(a_Position, 1.0);
     vs_out.worldPos = worldPosition.xyz;
     
     // 构建法线矩阵（用于正确变换法线）
-    mat3 normalMatrix = mat3(transpose(inverse(u_Model)));
+    mat3 normalMatrix = mat3(transpose(inverse(u_Model.model)));
     
     // 变换法线、切线、副切线到世界空间
     vs_out.normal = normalize(normalMatrix * a_Normal);
