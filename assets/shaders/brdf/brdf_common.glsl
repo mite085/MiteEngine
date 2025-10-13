@@ -72,21 +72,6 @@ BRDFResult calculateDirectBRDF(BRDFInput brdfInput, BRDFLightInput lightInput);
 BRDFResult calculateAmbientBRDF(BRDFInput brdfInput, BRDFAmbientInput ambientInput);
 
 /**
- * @brief 计算基础反射率F0
- * @param baseColor 基础颜色
- * @param metallic 金属度
- * @return 基础反射率
- */
-vec3 calculateF0(vec3 baseColor, float metallic);
-
-/**
- * @brief 验证BRDF输入参数的合法性
- * @param input BRDF输入参数
- * @return 参数是否合法
- */
-bool validateBRDFInput(BRDFInput brdfInput);
-
-/**
  * @brief 准备BRDF计算所需的中间参数
  * @param brdfInput BRDF输入参数
  * @param lightInput 光源输入参数
@@ -104,7 +89,5 @@ struct BRDFIntermediate {
     float D;                // 法线分布函数
     float G;                // 几何遮蔽函数
 };
-
-BRDFIntermediate prepareBRDFIntermediate(BRDFInput brdfInput, BRDFLightInput lightInput);
 
 #endif

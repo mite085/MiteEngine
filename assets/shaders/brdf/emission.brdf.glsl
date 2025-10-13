@@ -16,9 +16,8 @@ BRDFResult calculateEmissionDirectBRDF(BRDFInput brdfInput, BRDFLightInput light
     result.diffuse = vec3(0.0);
     result.specular = vec3(0.0);
     
-    // 自发光 = 基础颜色 * 自发光强度
-    float emissionIntensity = brdfInput.materialParams.w;
-    result.emission = brdfInput.baseColor * emissionIntensity;
+    // 自发光颜色
+    result.emission = brdfInput.emission;
     result.alpha = 1.0;
     
     return result;
@@ -35,9 +34,8 @@ BRDFResult calculateEmissionAmbientBRDF(BRDFInput brdfInput, BRDFAmbientInput am
     result.diffuse = vec3(0.0);
     result.specular = vec3(0.0);
     
-    // 自发光 = 基础颜色 * 自发光强度
-    float emissionIntensity = brdfInput.materialParams.w;
-    result.emission = brdfInput.baseColor * emissionIntensity;
+    // 自发光颜色
+    result.emission = brdfInput.emission;
     result.alpha = 1.0;
     
     return result;
