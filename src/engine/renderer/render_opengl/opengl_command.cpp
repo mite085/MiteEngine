@@ -238,12 +238,10 @@ void OpenGLRenderCommand::Flush()
           glClearDepth(m_DepthClearValue);
           glClearStencil(m_StencilClearValue);
           glClear(m_ClearFlags);
-          CheckGLError("Clear");
           break;
 
         default: {
           cmd.execute();
-          CheckGLError(cmd.debugName);
           break;
         }
       }
@@ -331,32 +329,4 @@ void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
   }
 }
 
-void OpenGLRenderCommand::CheckGLError(std::string debugName)
-{
-  GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    const char *errorStr = "";
-    switch (err) {
-      case GL_INVALID_ENUM:
-        errorStr = "GL_INVALID_ENUM";
-        break;
-      case GL_INVALID_VALUE:
-        errorStr = "GL_INVALID_VALUE";
-        break;
-      case GL_INVALID_OPERATION:
-        errorStr = "GL_INVALID_OPERATION";
-        break;
-      case GL_INVALID_FRAMEBUFFER_OPERATION:
-        errorStr = "GL_INVALID_FRAMEBUFFER_OPERATION";
-        break;
-      case GL_OUT_OF_MEMORY:
-        errorStr = "GL_OUT_OF_MEMORY";
-        break;
-      default:
-        errorStr = "Unknown Error";
-    }
-
-    LOG_ERROR("OpenGL Error in {}: {} ({})", debugName, err, errorStr);
-  }
-}
 }  // namespace mite
