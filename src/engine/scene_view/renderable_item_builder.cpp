@@ -145,7 +145,7 @@ uint32_t RenderableItemBuilder::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
                                                    float screenWidth,
                                                    float lodBias)
 {
-  if (!mesh || mesh->GetVertexCount()) {
+  if (!mesh || !mesh->GetVertexCount()) {
     LOG_ERROR("Invalid Mesh in selecting mesh lod by renderable item builder.");
     return 0;
   }

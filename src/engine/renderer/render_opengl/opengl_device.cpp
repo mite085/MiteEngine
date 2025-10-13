@@ -320,7 +320,7 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
 
 void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
 {
-  if (!mesh || mesh->GetVertexCount()) {
+  if (!mesh || !mesh->GetVertexCount()) {
     m_Logger->error("Invalid Mesh in binding mesh by opengl device.");
     return;
   }
@@ -396,21 +396,21 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
   GLint currentVAO = 0;
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &currentVAO);
   if (currentVAO == 0) {
-    m_Logger->error("DrawIndexed Failed：Invalid VAO");
+    m_Logger->error("DrawIndexed Failed: Invalid VAO");
     return;
   }
 
   GLint currentProgram = 0;
   glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
   if (currentProgram == 0) {
-    m_Logger->error("DrawIndexed Failed：Invalid Shader");
+    m_Logger->error("DrawIndexed Failed: Invalid Shader");
     return;
   }
 
   GLint elementBuffer = 0;
   glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &elementBuffer);
   if (elementBuffer == 0) {
-    m_Logger->error("DrawIndexed Failed：Invalid EBO");
+    m_Logger->error("DrawIndexed Failed: Invalid EBO");
     return;
   }
 
