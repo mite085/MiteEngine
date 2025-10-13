@@ -107,10 +107,8 @@ void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
   if (!m_DisplayTextureIdentify.empty() && m_DisplayTextureIdentify != event.GetIdentify())
     return;
 
-  // 若事件携带了新的FBO，则更新
-  if (event.GetTexture() && event.GetTexture() != m_DisplayTexture) {
-    m_DisplayTexture = event.GetTexture();
-  }
+  // 执行更新操作
+  m_DisplayTexture = event.GetTexture();
 
   // 已处理，继续传播
   event.SetResult(EventResult::Handled);
