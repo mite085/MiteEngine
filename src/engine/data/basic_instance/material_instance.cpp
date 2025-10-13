@@ -18,11 +18,11 @@ void MaterialInstance::InitializeUBO()
   LOG_INFO("Material UBO initialized for '{}'", m_Name);
 }
 
-void MaterialInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
-{
-  // 设置着色器绑定
-  m_UBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MATERIAL_UBO);
-}
+//void MaterialInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
+//{
+//  // 设置着色器绑定
+//  m_UBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MATERIAL_UBO);
+//}
 
 void MaterialInstance::UpdateUBO()
 {

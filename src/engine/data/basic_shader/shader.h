@@ -38,31 +38,31 @@ class OpenGLShader {
 
   void Destroy();  // 显式释放GPU资源
 
-  // ---- Uniform Buffer/ Storage Buffer设置 ----
-  /**
-   * @brief 设置Uniform缓冲区对象绑定点
-   * @param uniformBlockName Uniform块名称
-   * @param bindingPoint 绑定点索引
-   */
-  void SetUniformBlockBinding(const std::string &uniformBlockName, uint32_t bindingPoint);
-  /**
-   * @brief 设置着色器存储缓冲区对象绑定点
-   * @param storageBlockName 存储块名称
-   * @param bindingPoint 绑定点索引
-   */
-  void SetShaderStorageBlockBinding(const std::string &storageBlockName, uint32_t bindingPoint);
-  /**
-   * @brief 获取Uniform块索引
-   * @param uniformBlockName Uniform块名称
-   * @return 块索引，如果不存在返回GL_INVALID_INDEX
-   */
-  uint32_t GetUniformBlockIndex(const std::string &uniformBlockName) const;
-  /**
-   * @brief 获取着色器存储块索引
-   * @param storageBlockName 存储块名称
-   * @return 块索引，如果不存在返回GL_INVALID_INDEX
-   */
-  uint32_t GetShaderStorageBlockIndex(const std::string &storageBlockName) const;
+  // ---- Uniform Buffer/ Storage Buffer设置 (使用固定的绑定点执行显示绑定，无需手动管理) ----
+  ///**
+  // * @brief 设置Uniform缓冲区对象绑定点
+  // * @param uniformBlockName Uniform块名称
+  // * @param bindingPoint 绑定点索引
+  // */
+  //void SetUniformBlockBinding(const std::string &uniformBlockName, uint32_t bindingPoint);
+  ///**
+  // * @brief 设置着色器存储缓冲区对象绑定点
+  // * @param storageBlockName 存储块名称
+  // * @param bindingPoint 绑定点索引
+  // */
+  //void SetShaderStorageBlockBinding(const std::string &storageBlockName, uint32_t bindingPoint);
+  ///**
+  // * @brief 获取Uniform块索引
+  // * @param uniformBlockName Uniform块名称
+  // * @return 块索引，如果不存在返回GL_INVALID_INDEX
+  // */
+  //uint32_t GetUniformBlockIndex(const std::string &uniformBlockName) const;
+  ///**
+  // * @brief 获取着色器存储块索引
+  // * @param storageBlockName 存储块名称
+  // * @return 块索引，如果不存在返回GL_INVALID_INDEX
+  // */
+  //uint32_t GetShaderStorageBlockIndex(const std::string &storageBlockName) const;
 
   // ---- 状态控制 ----
   void Bind() const;    // 绑定当前Shader为激活状态
@@ -113,8 +113,8 @@ class OpenGLShader {
   ShaderGPUHandle m_Handle;                                               // OpenGL程序GPU句柄
   shaderc::Compiler m_Compiler;                                           // ShaderC编译器
   shaderc::CompileOptions m_CompileOptions;                               // ShaderC编译选项
-  mutable std::unordered_map<std::string, uint32_t> m_UniformBlockCache;  // Uniform区块缓存
-  mutable std::unordered_map<std::string, uint32_t> m_StorageBlockCache;  // Storage区块缓存
+  //mutable std::unordered_map<std::string, uint32_t> m_UniformBlockCache;  // Uniform区块缓存
+  //mutable std::unordered_map<std::string, uint32_t> m_StorageBlockCache;  // Storage区块缓存
 };
 
 //

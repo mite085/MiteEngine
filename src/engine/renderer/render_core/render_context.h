@@ -94,27 +94,30 @@ class RenderContext {
  private:
   // ---- 私有方法 ----
   /**
-   * @brief 消费事件，注册相机/网格/材质实例（自动设置所有现有着色器的UBO绑定）
+   * @brief 消费事件，注册相机/网格/材质实例（设置所有现有着色器的UBO绑定）
+   * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  void OnCameraInstanceCreated(CameraInstanceCreateEvent &event);
-  void OnMeshInstanceCreated(MeshInstanceCreateEvent &event);
-  void OnMaterialInstanceCreated(MaterialInstanceCreateEvent &event);
-  void OnLightSSBOCreated(LightSSBOCreateEvent &event);
-  /**
-   * @brief 为新着色器设置所有已注册实例的UBO绑定
-   */
-  void SetupShaderBindingsForNewShader(const std::string &stageName,
-                                       std::shared_ptr<OpenGLShader> shader);
-  /**
-   * @brief 为新实例设置所有已注册着色器的UBO绑定
-   */
-  template<typename T> void SetupShaderBindingsForNewInstance(std::shared_ptr<T> instance)
-  {
-    for (auto &[stageName, shader] : m_StageShaders) {
-      instance->SetupShaderBinding(shader);
-      m_Logger->debug("Setting up shader binding for instance in stage: {}", stageName);
-    }
-  }
+  //void OnCameraInstanceCreated(CameraInstanceCreateEvent &event);
+  //void OnMeshInstanceCreated(MeshInstanceCreateEvent &event);
+  //void OnMaterialInstanceCreated(MaterialInstanceCreateEvent &event);
+  //void OnLightSSBOCreated(LightSSBOCreateEvent &event);
+  ///**
+  // * @brief 为新着色器设置所有已注册实例的UBO绑定
+  // (使用固定的绑定点执行显示绑定，无需手动管理)
+  // */
+  //void SetupShaderBindingsForNewShader(const std::string &stageName,
+  //                                     std::shared_ptr<OpenGLShader> shader);
+  ///**
+  // * @brief 为新实例设置所有已注册着色器的UBO绑定
+  // (使用固定的绑定点执行显示绑定，无需手动管理)
+  // */
+  //template<typename T> void SetupShaderBindingsForNewInstance(std::shared_ptr<T> instance)
+  //{
+  //  for (auto &[stageName, shader] : m_StageShaders) {
+  //    instance->SetupShaderBinding(shader);
+  //    m_Logger->debug("Setting up shader binding for instance in stage: {}", stageName);
+  //  }
+  //}
 
   // ---- 场景数据 ----
   std::shared_ptr<RenderQueue> m_RenderQueue;

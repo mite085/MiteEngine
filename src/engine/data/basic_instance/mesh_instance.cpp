@@ -43,11 +43,11 @@ bool MeshInstance::InitializeUBO()
     return false;
   }
 }
-void MeshInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
-{
-  // 设置着色器绑定
-  m_ModelUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MODEL_UBO);
-}
+//void MeshInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
+//{
+//  // 设置着色器绑定
+//  m_ModelUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MODEL_UBO);
+//}
 
 void MeshInstance::UpdateUBO(const Transform &worldTransform)
 {

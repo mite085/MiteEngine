@@ -162,24 +162,24 @@ void ShaderUBO::Unbind() const
   }
 }
 
-void ShaderUBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-                                   const std::string &uniformBlockName) const
-{
-  if (!shader) {
-    LOG_ERROR("Cannot setup shader binding: null shader");
-    return;
-  }
-  if (!m_IsInitialized) {
-    LOG_ERROR("Cannot setup shader binding: UBO not initialized");
-    return;
-  }
-  if (m_BindingPoint == UINT32_MAX) {
-    LOG_ERROR("Cannot setup shader binding: UBO has no binding point");
-    return;
-  }
-  // 设置着色器的Uniform块绑定点
-  shader->SetUniformBlockBinding(uniformBlockName, m_BindingPoint);
-  LOG_DEBUG("Shader UBO binding setup - Block: '{}', Point: {}", uniformBlockName, m_BindingPoint);
-}
+//void ShaderUBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+//                                   const std::string &uniformBlockName) const
+//{
+//  if (!shader) {
+//    LOG_ERROR("Cannot setup shader binding: null shader");
+//    return;
+//  }
+//  if (!m_IsInitialized) {
+//    LOG_ERROR("Cannot setup shader binding: UBO not initialized");
+//    return;
+//  }
+//  if (m_BindingPoint == UINT32_MAX) {
+//    LOG_ERROR("Cannot setup shader binding: UBO has no binding point");
+//    return;
+//  }
+//  // 设置着色器的Uniform块绑定点
+//  shader->SetUniformBlockBinding(uniformBlockName, m_BindingPoint);
+//  LOG_DEBUG("Shader UBO binding setup - Block: '{}', Point: {}", uniformBlockName, m_BindingPoint);
+//}
 
 }  // namespace mite

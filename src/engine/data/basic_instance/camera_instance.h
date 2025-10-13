@@ -32,8 +32,10 @@ class CameraInstance {
   /**
    * @brief 设置着色器绑定（着色器初始化之后，执行一次即可）
    * @param shader 着色器对象
+   * 
+   * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
+  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
   /**
    * @brief 更新相机UBO数据（SceneView负责每帧Update）
    * @param viewMatrix 视图矩阵

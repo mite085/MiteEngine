@@ -218,57 +218,57 @@ void OpenGLShader::Destroy()
     glDeleteProgram(static_cast<GLuint>(m_Handle.programId));
     m_Handle.programId = 0;
   }
-  m_StorageBlockCache.clear();
-  m_UniformBlockCache.clear();
+  //m_StorageBlockCache.clear();
+  //m_UniformBlockCache.clear();
 }
 
-void OpenGLShader::SetUniformBlockBinding(const std::string &uniformBlockName,
-                                          uint32_t bindingPoint)
-{
-  uint32_t blockIndex = GetUniformBlockIndex(uniformBlockName);
-  if (blockIndex != GL_INVALID_INDEX) {
-    glUniformBlockBinding(static_cast<GLuint>(m_Handle.programId), blockIndex, bindingPoint);
-    LOG_DEBUG("Uniform block '{}' bound to point {}", uniformBlockName, bindingPoint);
-  }
-  else {
-    LOG_WARN("Uniform block '{}' not found in shader", uniformBlockName);
-  }
-}
-
-void OpenGLShader::SetShaderStorageBlockBinding(const std::string &storageBlockName,
-                                                uint32_t bindingPoint)
-{
-  uint32_t blockIndex = GetShaderStorageBlockIndex(storageBlockName);
-  if (blockIndex != GL_INVALID_INDEX) {
-    glShaderStorageBlockBinding(static_cast<GLuint>(m_Handle.programId), blockIndex, bindingPoint);
-    LOG_DEBUG("Shader storage block '{}' bound to point {}", storageBlockName, bindingPoint);
-  }
-  else {
-    LOG_WARN("Shader storage block '{}' not found in shader", storageBlockName);
-  }
-}
-
-uint32_t OpenGLShader::GetUniformBlockIndex(const std::string &uniformBlockName) const
-{
-  if (auto it = m_UniformBlockCache.find(uniformBlockName); it != m_UniformBlockCache.end()) {
-    return it->second;
-  }
-  uint32_t blockIndex = glGetUniformBlockIndex(static_cast<GLuint>(m_Handle.programId),
-                                               uniformBlockName.c_str());
-  m_UniformBlockCache[uniformBlockName] = blockIndex;
-  return blockIndex;
-}
-
-uint32_t OpenGLShader::GetShaderStorageBlockIndex(const std::string &storageBlockName) const
-{
-  if (auto it = m_StorageBlockCache.find(storageBlockName); it != m_StorageBlockCache.end()) {
-    return it->second;
-  }
-  uint32_t blockIndex = glGetProgramResourceIndex(
-      static_cast<GLuint>(m_Handle.programId), GL_SHADER_STORAGE_BLOCK, storageBlockName.c_str());
-  m_StorageBlockCache[storageBlockName] = blockIndex;
-  return blockIndex;
-}
+//void OpenGLShader::SetUniformBlockBinding(const std::string &uniformBlockName,
+//                                          uint32_t bindingPoint)
+//{
+//  uint32_t blockIndex = GetUniformBlockIndex(uniformBlockName);
+//  if (blockIndex != GL_INVALID_INDEX) {
+//    glUniformBlockBinding(static_cast<GLuint>(m_Handle.programId), blockIndex, bindingPoint);
+//    LOG_DEBUG("Uniform block '{}' bound to point {}", uniformBlockName, bindingPoint);
+//  }
+//  else {
+//    LOG_WARN("Uniform block '{}' not found in shader", uniformBlockName);
+//  }
+//}
+//
+//void OpenGLShader::SetShaderStorageBlockBinding(const std::string &storageBlockName,
+//                                                uint32_t bindingPoint)
+//{
+//  uint32_t blockIndex = GetShaderStorageBlockIndex(storageBlockName);
+//  if (blockIndex != GL_INVALID_INDEX) {
+//    glShaderStorageBlockBinding(static_cast<GLuint>(m_Handle.programId), blockIndex, bindingPoint);
+//    LOG_DEBUG("Shader storage block '{}' bound to point {}", storageBlockName, bindingPoint);
+//  }
+//  else {
+//    LOG_WARN("Shader storage block '{}' not found in shader", storageBlockName);
+//  }
+//}
+//
+//uint32_t OpenGLShader::GetUniformBlockIndex(const std::string &uniformBlockName) const
+//{
+//  if (auto it = m_UniformBlockCache.find(uniformBlockName); it != m_UniformBlockCache.end()) {
+//    return it->second;
+//  }
+//  uint32_t blockIndex = glGetUniformBlockIndex(static_cast<GLuint>(m_Handle.programId),
+//                                               uniformBlockName.c_str());
+//  m_UniformBlockCache[uniformBlockName] = blockIndex;
+//  return blockIndex;
+//}
+//
+//uint32_t OpenGLShader::GetShaderStorageBlockIndex(const std::string &storageBlockName) const
+//{
+//  if (auto it = m_StorageBlockCache.find(storageBlockName); it != m_StorageBlockCache.end()) {
+//    return it->second;
+//  }
+//  uint32_t blockIndex = glGetProgramResourceIndex(
+//      static_cast<GLuint>(m_Handle.programId), GL_SHADER_STORAGE_BLOCK, storageBlockName.c_str());
+//  m_StorageBlockCache[storageBlockName] = blockIndex;
+//  return blockIndex;
+//}
 
 // =============== 私有工具方法 ===============
 void OpenGLShader::CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram)

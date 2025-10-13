@@ -74,14 +74,14 @@ class ShaderSSBO {
   void Unbind() const;
 
   // ---- 工具方法 ----
-  /**
-   * @brief 为着色器设置SSBO绑定点
-   * @param shader 目标着色器
-   * @param storageBlockName 存储块名称
-   * @param bindingPoint 绑定点
-   */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-                          const std::string &storageBlockName) const;
+  ///**
+  // * @brief 为着色器设置SSBO绑定点(使用固定的绑定点执行显示绑定，无需手动管理)
+  // * @param shader 目标着色器
+  // * @param storageBlockName 存储块名称
+  // * @param bindingPoint 绑定点
+  // */
+  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+  //                        const std::string &storageBlockName) const;
   /**
    * @brief 清除SSBO数据（填充0）
    * @param clearValue 清除值

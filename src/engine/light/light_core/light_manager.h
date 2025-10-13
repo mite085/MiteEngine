@@ -150,8 +150,9 @@ class LightManager {
   /**
    * @brief 设置着色器的光源SSBO绑定点
    * @param shader 目标着色器
+   * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
+  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
 
   /**
    * @brief 绑定光源SSBO到指定绑定点

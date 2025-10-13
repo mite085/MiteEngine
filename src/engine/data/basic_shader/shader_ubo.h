@@ -56,13 +56,13 @@ class ShaderUBO {
   void Unbind() const;
 
   // ---- 工具方法 ----
-  /**
-   * @brief 为着色器设置UBO绑定点
-   * @param shader 目标着色器
-   * @param uniformBlockName Uniform块名称
-   */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-                          const std::string &uniformBlockName) const;
+  ///**
+  // * @brief 为着色器设置UBO绑定点 (使用固定的绑定点执行显示绑定，无需手动管理)
+  // * @param shader 目标着色器
+  // * @param uniformBlockName Uniform块名称
+  // */
+  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+  //                        const std::string &uniformBlockName) const;
 
   // ---- 属性访问 ----
   uint32_t GetUBOId() const

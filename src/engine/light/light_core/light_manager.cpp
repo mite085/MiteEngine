@@ -228,12 +228,12 @@ void LightManager::BindLightSSBO() const
   }
 }
 
-void LightManager::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const
-{
-  if (m_LightSSBO && shader) {
-    m_LightSSBO->SetupShaderBinding(shader);
-  }
-}
+//void LightManager::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const
+//{
+//  if (m_LightSSBO && shader) {
+//    m_LightSSBO->SetupShaderBinding(shader);
+//  }
+//}
 
 void LightManager::SetMaxLights(size_t maxLights)
 {

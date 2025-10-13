@@ -43,8 +43,9 @@ class LightShaderStorgeBuffer {
    * @brief 为着色器设置光源SSBO绑定点（着色器初始化之后，执行一次即可）
    * @param shader 目标着色器对象
    * @param bindingPoint 绑定点索引
+   * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
+  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
 
   // ---- 数据管理 ----
   /**

@@ -44,11 +44,11 @@ bool CameraInstance::InitializeUBO()
   }
 }
 
-void CameraInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
-{
-  // 设置着色器绑定
-  m_CameraUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::CAMERA_UBO);
-}
+//void CameraInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
+//{
+//  // 设置着色器绑定
+//  m_CameraUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::CAMERA_UBO);
+//}
 
 bool CameraInstance::UpdateUBO(const Transform cameraTransform)
 {

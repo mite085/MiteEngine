@@ -258,30 +258,30 @@ void ShaderSSBO::Unbind() const
   }
 }
 
-void ShaderSSBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-                                    const std::string &storageBlockName) const
-{
-  if (!shader) {
-    LOG_ERROR("Cannot setup shader binding: null shader");
-    return;
-  }
-  if (!m_IsInitialized) {
-    LOG_ERROR("Cannot setup shader binding: SSBO not initialized");
-    return;
-  }
-  if (m_IsMapped) {
-    LOG_ERROR("Cannot setup shader binding: SSBO is currently mapped");
-    return;
-  }
-  if (m_BindingPoint == UINT32_MAX) {
-    LOG_ERROR("Cannot setup shader binding: SSBO has no binding point");
-    return;
-  }
-  // 设置着色器的存储块绑定点
-  shader->SetShaderStorageBlockBinding(storageBlockName, m_BindingPoint);
-  LOG_DEBUG(
-      "Shader SSBO binding setup - Block: '{}', Point: {}", storageBlockName, m_BindingPoint);
-}
+//void ShaderSSBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+//                                    const std::string &storageBlockName) const
+//{
+//  if (!shader) {
+//    LOG_ERROR("Cannot setup shader binding: null shader");
+//    return;
+//  }
+//  if (!m_IsInitialized) {
+//    LOG_ERROR("Cannot setup shader binding: SSBO not initialized");
+//    return;
+//  }
+//  if (m_IsMapped) {
+//    LOG_ERROR("Cannot setup shader binding: SSBO is currently mapped");
+//    return;
+//  }
+//  if (m_BindingPoint == UINT32_MAX) {
+//    LOG_ERROR("Cannot setup shader binding: SSBO has no binding point");
+//    return;
+//  }
+//  // 设置着色器的存储块绑定点
+//  shader->SetShaderStorageBlockBinding(storageBlockName, m_BindingPoint);
+//  LOG_DEBUG(
+//      "Shader SSBO binding setup - Block: '{}', Point: {}", storageBlockName, m_BindingPoint);
+//}
 
 bool ShaderSSBO::ClearData(uint32_t clearValue, size_t offset, size_t size)
 {
