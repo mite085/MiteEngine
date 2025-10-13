@@ -14,20 +14,10 @@ layout(location = 0) out vec4 o_FinalColor;
 #include "../common/common.glsl"
 #include "../common/uniforms.glsl"
 #include "../common/math.glsl"
-#include "../common/light_ssbo.glsl"
+#include "../common/lights_ssbo.glsl"
 #include "../lighting/lighting_calculation.glsl"
+#include "../lighting/ambient_calculation.glsl"
 #include "../brdf/brdf_dispatcher.glsl"
-
-// 环境光照参数
-uniform samplerCube u_IrradianceMap;            // 漫反射环境贴图
-uniform samplerCube u_PrefilterMap;             // 预滤波环境贴图
-uniform sampler2D u_BRDFLUT;                    // BRDF积分查找表
-uniform float u_AmbientIntensity = 0.03;        // 环境光强度
-uniform vec3 u_AmbientColor = vec3(1.0);        // 环境光颜色
-
-// 调试参数
-uniform int u_DebugMode = 0;                    // 调试模式
-uniform int u_DebugLightIndex = 0;              // 调试光源索引
 
 /**
  * @brief 从GBuffer重建世界空间位置
@@ -68,68 +58,35 @@ vec3 reconstructWorldPosition(vec2 texCoord, vec3 viewRay)
  */
 BRDFInput readGBufferData(vec2 texCoord)
 {
-    BRDFInput input;
+    BRDFInput brdfInput;
     
     // 重建世界位置
-    input.worldPosition = reconstructWorldPosition(texCoord, fs_in.viewRay);
+    brdfInput.worldPosition = reconstructWorldPosition(texCoord, fs_in.viewRay);
     
     // 读取法线（从GBuffer3）
     vec4 normalScale = texture(u_GBufferNormalScale, texCoord);
-    input.normal = unpackNormal(normalScale.xyz);
+    brdfInput.normal = unpackNormal(normalScale.xyz);
     
     // 计算视线方向
-    input.viewDirection = normalize(u_Camera.cameraPosition - input.worldPosition);
+    brdfInput.viewDirection = normalize(u_Camera.cameraPosition - brdfInput.worldPosition);
     
     // 读取基础颜色和材质类型（GBuffer1）
     vec4 baseColorMatType = texture(u_GBufferBaseColorMatType, texCoord);
-    input.baseColor = baseColorMatType.rgb;
+    brdfInput.baseColor = baseColorMatType.rgb;
     // 材质类型需要四舍五入消除偏移影响（GBuffer均为最邻近采样，避免材质1和材质3的边界被识别为材质2的情况）
-    input.materialType = uint(round(baseColorMatType.a));
+    brdfInput.materialType = uint(round(baseColorMatType.a));
     
     // 读取金属度、粗糙度和AO（GBuffer2）
     vec4 metallicRoughnessAO = texture(u_GBufferMetallicRoughnessAO, texCoord);
-    input.metallic = metallicRoughnessAO.r;
-    input.roughness = metallicRoughnessAO.g;
-    input.occlusion = metallicRoughnessAO.b;
+    brdfInput.metallic = metallicRoughnessAO.r;
+    brdfInput.roughness = metallicRoughnessAO.g;
+    brdfInput.occlusion = metallicRoughnessAO.b;
     
     // 读取自发光（GBuffer4）
     vec4 emissionAlpha = texture(u_GBufferEmissionAlpha, texCoord);
-    input.emission = emissionAlpha.rgb;
+    brdfInput.emission = emissionAlpha.rgb;
     
-    return input;
-}
-
-/**
- * @brief 准备环境光照输入参数
- * @param brdfInput BRDF输入参数
- * @return 环境光照输入
- */
-BRDFAmbientInput prepareAmbientInput(BRDFInput brdfInput)
-{
-    BRDFAmbientInput ambientInput;
-    
-    // 标准化法线和视线方向
-    vec3 N = normalize(brdfInput.normal);
-    vec3 V = normalize(brdfInput.viewDirection);
-    vec3 R = reflect(-V, N);
-    
-    // 采样环境贴图
-    // 漫反射环境光（辐照度）
-    ambientInput.irradiance = texture(u_IrradianceMap, N).rgb;
-    
-    // 预滤波环境光（镜面反射）
-    float roughness = brdfInput.roughness;
-    const float MAX_REFLECTION_LOD = 4.0;
-    ambientInput.prefilteredColor = textureLod(u_PrefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
-    
-    // BRDF积分查找表
-    float NdotV = max(dot(N, V), 0.0);
-    ambientInput.brdfLUT = texture(u_BRDFLUT, vec2(NdotV, roughness)).rgb;
-    
-    // 环境光参数
-    ambientInput.ambientIntensity = u_AmbientIntensity;
-    
-    return ambientInput;
+    return brdfInput;
 }
 
 /**
@@ -190,7 +147,7 @@ vec3 calculateLightContribution(uint lightIndex, BRDFInput brdfInput)
 vec3 calculateAmbientContribution(BRDFInput brdfInput)
 {
     // 准备环境光照输入
-    BRDFAmbientInput ambientInput = prepareAmbientInput(brdfInput);
+    BRDFAmbientInput ambientInput = prepareAmbientInputApprox(brdfInput, u_EnvironmentMap);
     
     // 使用BRDF分发器计算环境光照
     BRDFResult result = dispatchAmbientBRDF(brdfInput, ambientInput);
@@ -205,46 +162,36 @@ vec3 calculateAmbientContribution(BRDFInput brdfInput)
  * @param texCoord 纹理坐标
  * @return 调试颜色
  */
-vec3 debugDisplay(BRDFInput brdfInput, vec2 texCoord)
-{
-    switch (u_DebugMode) {
-        case 1: // 显示世界位置
-            return brdfInput.worldPosition * 0.1 + 0.5;
-            
-        case 2: // 显示法线
-            return brdfInput.normal * 0.5 + 0.5;
-            
-        case 3: // 显示基础颜色
-            return brdfInput.baseColor;
-            
-        case 4: // 显示金属度
-            return vec3(brdfInput.metallic);
-            
-        case 5: // 显示粗糙度
-            return vec3(brdfInput.roughness);
-            
-        case 6: // 显示AO
-            return vec3(brdfInput.occlusion);
-            
-        case 7: // 显示自发光
-            return brdfInput.emission;
-            
-        case 8: // 显示材质类型
-            return (brdfInput.materialType == MATERIAL_TYPE_PBR) ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-            
-        case 9: // 显示单个光源
-            if (u_DebugLightIndex < u_Lights.header.lightCount) {
-                return calculateLightContribution(uint(u_DebugLightIndex), brdfInput);
-            }
-            return vec3(0.0);
-            
-        case 10: // 显示环境光照
-            return calculateAmbientContribution(brdfInput);
-            
-        default:
-            return vec3(0.0);
-    }
-}
+// vec3 debugDisplay(BRDFInput brdfInput, vec2 texCoord)
+// {
+//     switch (u_DebugMode) {
+//         case 1: // 显示世界位置
+//             return brdfInput.worldPosition * 0.1 + 0.5;
+//         case 2: // 显示法线
+//             return brdfInput.normal * 0.5 + 0.5;
+//         case 3: // 显示基础颜色
+//             return brdfInput.baseColor;
+//         case 4: // 显示金属度
+//             return vec3(brdfInput.metallic);
+//         case 5: // 显示粗糙度
+//             return vec3(brdfInput.roughness);
+//         case 6: // 显示AO
+//             return vec3(brdfInput.occlusion);
+//         case 7: // 显示自发光
+//             return brdfInput.emission;
+//         case 8: // 显示材质类型
+//             return (brdfInput.materialType == MATERIAL_TYPE_PBR) ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+//         case 9: // 显示单个光源
+//             if (u_DebugLightIndex < u_Lights.header.lightCount) {
+//                 return calculateLightContribution(uint(u_DebugLightIndex), brdfInput);
+//             }
+//             return vec3(0.0);
+//         case 10: // 显示环境光照
+//             return calculateAmbientContribution(brdfInput);
+//         default:
+//             return vec3(0.0);
+//     }
+// }
 
 void main()
 {
@@ -252,11 +199,11 @@ void main()
     BRDFInput brdfInput = readGBufferData(fs_in.texCoord);
     
     // 调试模式显示
-    if (u_DebugMode > 0) {
-        vec3 debugColor = debugDisplay(brdfInput, fs_in.texCoord);
-        o_FinalColor = vec4(debugColor, 1.0);
-        return;
-    }
+    //if (u_DebugMode > 0) {
+    //    vec3 debugColor = debugDisplay(brdfInput, fs_in.texCoord);
+    //    o_FinalColor = vec4(debugColor, 1.0);
+    //    return;
+    //}
     
     // 初始化最终颜色
     vec3 finalColor = vec3(0.0);
