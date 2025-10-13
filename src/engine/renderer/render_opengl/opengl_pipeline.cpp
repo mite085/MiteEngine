@@ -41,14 +41,14 @@ void OpenGLPipeline::Initialize()
 
   // 添加Forward Render Stage
   std::shared_ptr<OpenGLShader> forwardShader = ShaderCache::Get().GetOpenGLShader(
-      FileSystem::GetAssetPath("shaders/lighting/forward.vert.glsl").string(),
-      FileSystem::GetAssetPath("shaders/lighting/forward.frag.glsl").string());
+      FileSystem::GetAssetPath("shaders/forward/forward.vert.glsl").string(),
+      FileSystem::GetAssetPath("shaders/forward/forward.frag.glsl").string());
   AddStage(std::make_unique<ForwardStage>(), forwardShader);
 
   // 初始化所有阶段
   for (auto &stage : m_Stages) {
     if (stage->IsEnabled()) {
-      stage->Initialize();
+      stage->Initialize(); 
     }
   }
 
@@ -125,7 +125,7 @@ void OpenGLPipeline::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
   // 设置上下文数据
   m_Context->SetSceneData(renderQueue, cameraInstance);
 
-  // 执行所有启用的阶段（新增Pipeline逻辑）
+  // 执行所有启用的阶段
   for (auto &stage : m_Stages) {
     if (stage->IsEnabled()) {
       stage->Execute(*m_Context);
