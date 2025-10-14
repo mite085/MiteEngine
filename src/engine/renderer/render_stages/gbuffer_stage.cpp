@@ -78,7 +78,7 @@ void GBufferStage::Execute(RenderContext &context)
   // 绑定着色器
   RenderCommand::Get().BindShader(gbufferShader);
 
-  // stage开始之前初始化并绑定相机UBO
+  // 绑定相机UBO
   RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
   // 设置G-Buffer渲染状态
@@ -90,9 +90,6 @@ void GBufferStage::Execute(RenderContext &context)
 
   // 解绑G-Buffer
   RenderCommand::Get().UnbindFrameBuffer();
-
-  // 执行渲染操作
-  RenderCommand::Get().Flush();
 
   // 存储渲染结果到上下文（并非渲染命令，这些纹理是提前创建好的，可以提前交给上下文管理）
   for (const auto &type : GBuffer::GetTextureTypes()) {
@@ -143,6 +140,7 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
     // 使用G-Buffer着色器提交
     auto gbufferShader = context.GetStageShader(m_Name);
     if (gbufferShader) {
+      RenderCommand::Get().BindMaterialUBO(item.material);
       RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
       renderedCount++;
     }
@@ -184,6 +182,7 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
     // 使用G-Buffer着色器提交
     auto gbufferShader = context.GetStageShader(m_Name);
     if (gbufferShader) {
+      RenderCommand::Get().BindMaterialUBO(item.material);
       RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
       renderedCount++;
     }

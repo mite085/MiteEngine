@@ -137,6 +137,7 @@ void ForwardStage::RenderOpaqueQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
+      RenderCommand::Get().BindMaterialUBO(item.material);
       RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader(m_Name));
       renderedCount++;
     }
@@ -163,6 +164,7 @@ void ForwardStage::RenderAlphaTestQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
+      RenderCommand::Get().BindMaterialUBO(item.material);
       RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader(m_Name));
       renderedCount++;
     }
@@ -189,6 +191,7 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
+      RenderCommand::Get().BindMaterialUBO(item.material);
       RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader(m_Name));
       renderedCount++;
     }
@@ -215,6 +218,7 @@ void ForwardStage::RenderCustomQueue(RenderContext &context)
   size_t renderedCount = 0;
   for (const auto &item : items) {
     if (ValidateRenderableItem(item)) {
+      RenderCommand::Get().BindMaterialUBO(item.material);
       RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader(m_Name));
       renderedCount++;
     }
