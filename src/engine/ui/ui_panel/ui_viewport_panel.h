@@ -37,7 +37,7 @@ class ViewportPanel : public UIPanel {
 
   // ==================== 纹理显示 ====================
   RuntimeTexturePtr m_DisplayTexture = nullptr;
-  RuntimeTextureType m_DisplayTextureType = RuntimeTextureType::GBuffer_WorldPosDepth;
+  RuntimeTextureType m_DisplayTextureType = RuntimeTextureType::Lighting_Combined; 
   std::string m_DisplayTextureIdentify = "";
 
   // ==================== 状态管理 ====================

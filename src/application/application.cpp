@@ -4,6 +4,7 @@
 #include "scene_core_components/component_headers.h"
 #include "ui_panel/ui_viewport_panel.h"
 #include "basic_shader/shader_binding_point_manager.h"
+#include "light_data/point_light.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -78,6 +79,10 @@ void MiteApplication::LoadDefaultScene()
       FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
   Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle,
                     m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
+
+  // 创建灯光
+  std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>(); 
+  LightManager::Get().AddLight(pointLight);
 
   for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
     // 1. 创建网格实体
