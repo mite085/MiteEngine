@@ -14,14 +14,14 @@ in VS_OUT {
     layout(location = 4) vec2 texCoord;         // 纹理坐标
 } fs_in;
 
-// GBuffer输出 - 与C++端GBuffer布局对应
-layout(location = GBUFFER_WORLDPOS_DEPTH) out vec4 o_WorldPosDepth;        // 世界坐标+深度
-layout(location = GBUFFER_BASECOLOR_MATTYPE) out vec4 o_BaseColorMatType;  // 基础色+材质类型
-layout(location = GBUFFER_METALLICROUGHNESS_AO) out vec4 o_MetallicRoughnessAO; // 金属粗糙度+AO
-layout(location = GBUFFER_NORMAL_SCALE) out vec4 o_NormalScale;            // 法线+法线强度
-layout(location = GBUFFEE_EMISSION_ALPHA) out vec4 o_EmissionAlpha;        // 自发光+透明度
-layout(location = GBUFFER_NPR_PARAM) out vec4 o_NPRParameters;             // NPR参数
-layout(location = GBUFFER_NPR_COLOR) out vec4 o_NPRColors;                 // NPR颜色
+// GBuffer输出
+layout(location = 0) out vec4 o_WorldPosDepth;        // 世界坐标+深度
+layout(location = 1) out vec4 o_BaseColorMatType;  // 基础色+材质类型
+layout(location = 2) out vec4 o_MetallicRoughnessAO; // 金属粗糙度+AO
+layout(location = 3) out vec4 o_NormalScale;            // 法线+法线强度
+layout(location = 4) out vec4 o_EmissionAlpha;        // 自发光+透明度
+layout(location = 5) out vec4 o_NPRParameters;             // NPR参数
+layout(location = 6) out vec4 o_NPRColors;                 // NPR颜色
 
 void main()
 {
@@ -147,7 +147,7 @@ void main()
     
     // GBuffer2: 金属度(R) + 粗糙度(G) + AO(B) + 保留位(A)
     o_MetallicRoughnessAO = vec4(metallicRoughness.r, metallicRoughness.g, occlusion, 0.0);
-    
+
     // GBuffer3: 世界空间法线(XYZ) + 法线贴图强度(W)
     o_NormalScale = vec4(packNormal(normal), u_Material.normalScale.x);
     
