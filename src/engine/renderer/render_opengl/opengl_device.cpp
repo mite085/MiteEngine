@@ -14,10 +14,22 @@ OpenGLDevice::OpenGLDevice() : RenderDevice()
     m_Logger->critical("Failed to initialize GLAD");
     throw std::runtime_error("GLAD initialization failed");
   }
+
+  // 初始化默认纹理
+  InitializeDefaultTextures();
+
+  // 创建全屏四边形
+  CreateFullScreenQuad();
 }
 
 OpenGLDevice::~OpenGLDevice()
 {
+  // 清理默认纹理
+  CleanupDefaultTextures();
+
+  // 清理全屏四边形
+  DestroyFullScreenQuad();
+
   // 防御性检查：确保所有资源已释放
   CleanupResources();
   m_Logger->info("OpenGLDevice destroyed");
@@ -99,6 +111,9 @@ TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> 
   // 解除纹理绑定
   glBindTexture(static_cast<GLenum>(data->target), 0);
 
+  // 检查GLError
+  CheckGLError();
+
   m_Logger->debug("Created texture handle: {}", textureId);
 
   // 返回纹理句柄
@@ -174,6 +189,9 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
   // 记录活动纹理
   m_ActiveTextures.insert(textureId);
 
+  // 检查GLError
+  CheckGLError();
+
   m_Logger->debug("Created runtime texture: ID={}, size={}x{}, format={}",
                   textureId,
                   createInfo->width,
@@ -200,7 +218,14 @@ void OpenGLDevice::BindRuntimeTexture(RuntimeTextureType type,
   uint32_t textureUnit = BindingPointManager::Get().GetRuntimeTextureBinding(type);
   if (textureUnit != UINT32_MAX) {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
+    if (textureHandle.apiHandle != 0) {
+      // 绑定有效纹理
+      glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
+    }
+    else {
+      // 绑定默认纹理
+      glBindTexture(GL_TEXTURE_2D, m_WhiteTexture);
+    }
   }
   else {
     LOG_ERROR("Failed to bind runtime texture: binding point not allocated");
@@ -213,7 +238,14 @@ void OpenGLDevice::BindExternalTexture(ExternalTextureType type,
   uint32_t textureUnit = BindingPointManager::Get().GetExternalTextureBinding(type);
   if (textureUnit != UINT32_MAX) {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
+    if (textureHandle.apiHandle != 0) {
+      // 绑定有效纹理
+      glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
+    }
+    else {
+      // 绑定默认纹理
+      glBindTexture(GL_TEXTURE_2D, m_WhiteTexture);
+    }
   }
   else {
     LOG_ERROR("Failed to bind external texture: binding point not allocated");
@@ -324,7 +356,6 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
     m_Logger->error("Invalid Mesh in binding mesh by opengl device.");
     return;
   }
-   
 
   ModelGPUHandle modelHandle = mesh->GetModelHandle();
   MeshSection meshSection = mesh->GetSection();
@@ -463,6 +494,53 @@ void OpenGLDevice::DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer)
   m_Logger->debug("Destroyed framebuffer");
 }
 
+void OpenGLDevice::CreateFullScreenQuad()
+{
+  // 全屏四边形顶点数据 (位置, UV)
+  float quadVertices[] = {// 位置          // UV
+                          -1.0f, 1.0f,  0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+                          1.0f,  -1.0f, 1.0f, 0.0f, -1.0f, 1.0f,  0.0f, 1.0f,
+                          1.0f,  -1.0f, 1.0f, 0.0f, 1.0f,  1.0f,  1.0f, 1.0f};
+
+  // 创建VAO和VBO
+  glGenVertexArrays(1, &m_ScreenQuadVAO);
+  glGenBuffers(1, &m_ScreenQuadVBO);
+
+  // 绑定顶点数据
+  glBindVertexArray(m_ScreenQuadVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, m_ScreenQuadVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+  // 位置属性
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+
+  // UV属性
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+
+  glBindVertexArray(0);
+}
+
+void OpenGLDevice::DrawFullScreenQuad()
+{
+  glBindVertexArray(m_ScreenQuadVAO);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
+}
+
+void OpenGLDevice::DestroyFullScreenQuad() {
+  // 清理全屏四边形
+  if (m_ScreenQuadVAO != 0) {
+    glDeleteVertexArrays(1, &m_ScreenQuadVAO);
+    m_ScreenQuadVAO = 0;
+  }
+  if (m_ScreenQuadVBO != 0) {
+    glDeleteBuffers(1, &m_ScreenQuadVBO);
+    m_ScreenQuadVBO = 0;
+  }
+}
+
 // ------------------------ 辅助方法 ------------------------
 
 void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
@@ -507,6 +585,42 @@ void OpenGLDevice::OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEv
 
   // 标记事件已消费，阻断传播
   e.SetResult(EventResult::Consumed);
+}
+
+void OpenGLDevice::InitializeDefaultTextures()
+{
+  // 创建1x1白色纹理作为通用默认纹理
+  m_WhiteTexture = CreateDefaultTexture();
+
+  m_Logger->info("Initialized default textures");
+}
+void OpenGLDevice::CleanupDefaultTextures()
+{
+  if (m_WhiteTexture != 0) {
+    glDeleteTextures(1, &m_WhiteTexture);
+    m_WhiteTexture = 0;
+  }
+  m_Logger->debug("Cleaned up default textures");
+}
+GLuint OpenGLDevice::CreateDefaultTexture()
+{
+  GLuint textureId;
+  glGenTextures(1, &textureId);
+  glBindTexture(GL_TEXTURE_2D, textureId);
+
+  // 1x1 白色像素
+  unsigned char whitePixel[] = {255, 255, 255, 255};
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whitePixel);
+
+  // 设置合理的默认参数
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return textureId;
 }
 
 void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
@@ -770,5 +884,32 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
   }
   return true;
 }
-void OpenGLDevice::CheckGLError() {}
+void OpenGLDevice::CheckGLError(std::string debugName)
+{
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    const char *errorStr = "";
+    switch (err) {
+      case GL_INVALID_ENUM:
+        errorStr = "GL_INVALID_ENUM";
+        break;
+      case GL_INVALID_VALUE:
+        errorStr = "GL_INVALID_VALUE";
+        break;
+      case GL_INVALID_OPERATION:
+        errorStr = "GL_INVALID_OPERATION";
+        break;
+      case GL_INVALID_FRAMEBUFFER_OPERATION:
+        errorStr = "GL_INVALID_FRAMEBUFFER_OPERATION";
+        break;
+      case GL_OUT_OF_MEMORY:
+        errorStr = "GL_OUT_OF_MEMORY";
+        break;
+      default:
+        errorStr = "Unknown Error";
+    }
+
+    LOG_ERROR("OpenGL Error in {}: {} ({})", debugName, err, errorStr);
+  }
+}
 };  // namespace mite

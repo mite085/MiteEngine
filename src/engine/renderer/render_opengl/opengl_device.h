@@ -52,12 +52,21 @@ class OpenGLDevice : public RenderDevice {
   std::shared_ptr<FrameBuffer> CreateFrameBuffer(const FrameBufferSpec &spec) override;
   void DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer) override;
 
+  // ---- 全屏四边形（用于延迟光照和后处理） ----
+  void CreateFullScreenQuad() override;
+  void DrawFullScreenQuad() override;
+  void DestroyFullScreenQuad() override;
  private:
   // ---- 事件响应函数 ----
   void OnModelLoaded(ModelLoadEvent &e) override;
   void OnTextureLoaded(TextureLoadEvent &e) override;
   void OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e) override;
   void OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEvent &e) override;
+
+  // ---- 默认纹理管理 ----
+  void InitializeDefaultTextures();
+  void CleanupDefaultTextures();
+  GLuint CreateDefaultTexture();
 
   // ---- 辅助方法 ----
   void SetVertexAttributes(const VertexLayout &layout);
@@ -67,7 +76,7 @@ class OpenGLDevice : public RenderDevice {
                            GLenum &internalFormat,
                            GLenum &format,
                            GLenum &type);
-  void CheckGLError();
+  void CheckGLError(std::string debugName = "");
 
   // 资源追踪（用于调试和泄漏检测）
   std::unordered_set<GLuint> m_ActiveTextures;  // 活动纹理集合
@@ -75,6 +84,13 @@ class OpenGLDevice : public RenderDevice {
   std::unordered_set<GLuint> m_ActiveVBOs;      // 活动VBO集合
   std::unordered_set<GLuint> m_ActiveEBOs;      // 活动EBO集合
   std::unordered_set<GLuint> m_ActiveFBOs;      // 活动FBO集合
+
+  // 全屏四边形VAO
+  uint32_t m_ScreenQuadVAO = 0;
+  uint32_t m_ScreenQuadVBO = 0;
+
+  // 默认纹理
+  GLuint m_WhiteTexture = 0;  // 1x1 白色纹理
 
   // 日志系统
   Logger m_Logger;
