@@ -35,15 +35,10 @@ class DeferredLightingStage : public RenderStage {
   // ---- 私有方法 ----
   void CreateLightingFramebuffer();
   void SetupLightingRenderState();
-  void CreateScreenQuad();
 
   // ---- 绑定方法 ----
   void BindGBufferTextures(RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader);
   void BindLightSSBOData(RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader);
-  void BindShadowData(RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader);
-  void BindCameraAndSceneData(RenderContext &context,
-                              std::shared_ptr<OpenGLShader> lightingShader);
-  void RenderFullScreenQuad();
 
   // ---- 验证方法 ----
   void ValidateInputs(RenderContext &context) const;
@@ -54,10 +49,6 @@ class DeferredLightingStage : public RenderStage {
 
   // ---- 成员变量 ----
   std::shared_ptr<FrameBuffer> m_LightingFBO;  // 光照输出Framebuffer
-
-  // 全屏四边形VAO
-  uint32_t m_ScreenQuadVAO = 0;
-  uint32_t m_ScreenQuadVBO = 0;
 
   // 渲染状态
   std::shared_ptr<RenderState> m_LightingState;

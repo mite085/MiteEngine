@@ -24,9 +24,6 @@ void DeferredLightingStage::Initialize()
     return;
   }
 
-  // 创建全屏四边形
-  CreateScreenQuad();
-
   // 创建默认尺寸的光照Framebuffer
   CreateLightingFramebuffer();
 
@@ -65,8 +62,8 @@ void DeferredLightingStage::Execute(RenderContext &context)
   auto viewportSize = context.GetViewportSize();
   ValidateLightingFramebuffer(viewportSize);
 
-  // 绑定光照Framebuffer
-  m_LightingFBO->Bind();
+  // 绑定光照Framebuffer 
+  RenderCommand::Get().BindFrameBuffer(m_LightingFBO);
 
   // 清除输出目标
   RenderCommand::Get().Clear(
@@ -78,6 +75,9 @@ void DeferredLightingStage::Execute(RenderContext &context)
   // 绑定着色器
   RenderCommand::Get().BindShader(lightingShader);
 
+  // 绑定相机UBO
+  RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
+
   // 绑定G-Buffer纹理
   BindGBufferTextures(context, lightingShader);
 
@@ -86,18 +86,16 @@ void DeferredLightingStage::Execute(RenderContext &context)
 
   // 绑定阴影数据
   if (m_EnableShadows) {
-    BindShadowData(context, lightingShader);
+    BindShadowMapTextures(context);
   }
 
-  // 绑定相机和场景数据
-  BindCameraAndSceneData(context, lightingShader);
 
   // 渲染全屏四边形
-  RenderFullScreenQuad();
+  RenderCommand::Get().DrawFullScreenQuad();
 
   // 解绑资源
   RenderCommand::Get().UnbindShader(lightingShader);
-  m_LightingFBO->Unbind();
+  RenderCommand::Get().UnbindFrameBuffer();
 
   // 将光照输出纹理存储到上下文供后续阶段使用
   auto lightingTexture = GetLightingOutputTexture();
@@ -118,16 +116,6 @@ void DeferredLightingStage::Shutdown()
     m_LightingFBO.reset();
   }
 
-  // 清理全屏四边形
-  if (m_ScreenQuadVAO != 0) {
-    glDeleteVertexArrays(1, &m_ScreenQuadVAO);
-    m_ScreenQuadVAO = 0;
-  }
-  if (m_ScreenQuadVBO != 0) {
-    glDeleteBuffers(1, &m_ScreenQuadVBO);
-    m_ScreenQuadVBO = 0;
-  }
-
   m_Initialized = false;
   m_Logger->info("DeferredLightingStage shutdown completed");
 }
@@ -140,7 +128,7 @@ void DeferredLightingStage::CreateLightingFramebuffer()
 
   // 颜色附件配置 - 使用HDR格式存储光照结果
   FrameBufferAttachmentSpec colorSpec;
-  colorSpec.type = RuntimeTextureType::Lighting_Combined;  // 明确指定用途
+  colorSpec.type = RuntimeTextureType::Lighting_Combined;  // 仅考虑全部着色情况
   colorSpec.internalFormat = TextureFormat::RGBA16F;       // HDR输出
   colorSpec.generateMipmaps = false;
 
@@ -184,38 +172,7 @@ void DeferredLightingStage::SetupLightingRenderState()
   std::static_pointer_cast<OpenGLRenderState>(m_LightingState)->blendDst = GL_ONE;
 }
 
-void DeferredLightingStage::CreateScreenQuad()
-{
-  // 全屏四边形顶点数据 (位置, UV)
-  float quadVertices[] = {
-    // 位置          // UV
-    -1.0f,  1.0f,  0.0f, 1.0f,
-    -1.0f, -1.0f,  0.0f, 0.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
-    -1.0f,  1.0f,  0.0f, 1.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
-     1.0f,  1.0f,  1.0f, 1.0f
-  };
 
-  // 创建VAO和VBO
-  glGenVertexArrays(1, &m_ScreenQuadVAO);
-  glGenBuffers(1, &m_ScreenQuadVBO);
-
-  // 绑定顶点数据
-  glBindVertexArray(m_ScreenQuadVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, m_ScreenQuadVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-
-  // 位置属性
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
-
-  // UV属性
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
-
-  glBindVertexArray(0);
-}
 
 void DeferredLightingStage::BindGBufferTextures(RenderContext &context,
                                                 std::shared_ptr<OpenGLShader> lightingShader)
@@ -259,12 +216,6 @@ void DeferredLightingStage::BindLightSSBOData(RenderContext &context,
   }
 }
 
-void DeferredLightingStage::BindShadowData(RenderContext &context,
-                                           std::shared_ptr<OpenGLShader> lightingShader)
-{
-  BindShadowMapTextures(context);
-}
-
 void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
 {
   uint32_t shadowTextureUnit = m_NextShadowTextureUnit;
@@ -287,19 +238,6 @@ void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
   }
 }
 
-void DeferredLightingStage::BindCameraAndSceneData(RenderContext &context,
-                                                   std::shared_ptr<OpenGLShader> lightingShader)
-{
-  // 绑定相机UBO
-  RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
-}
-
-void DeferredLightingStage::RenderFullScreenQuad()
-{
-  glBindVertexArray(m_ScreenQuadVAO);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-  glBindVertexArray(0);
-}
 
 void DeferredLightingStage::ValidateInputs(RenderContext &context) const
 {
