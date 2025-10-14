@@ -99,10 +99,10 @@ enum class RuntimeTextureType {
   ShadowMap_Area,         // 面光源(平面阴影贴图)
 
   // 光照着色相关
-  Lighting_Diffuse,   // 漫反射着色结果
-  Lighting_Specular,  // 镜面反射着色结果
+  Lighting_Diffuse,   // 漫反射着色结果(暂未启用)
+  Lighting_Specular,  // 镜面反射着色结果(暂未启用)
+  Lighting_Ambient,   // 环境光结果(暂未启用)
   Lighting_Combined,  // 综合光照结果
-  Lighting_Ambient,   // 环境光结果（IBL等）
 
   // 后期处理相关(暂未启用)
   // PostProcess_Bloom,

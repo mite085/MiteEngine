@@ -148,9 +148,6 @@ class LightShaderStorgeBuffer {
   size_t m_SSBOSize;                     // SSBO总大小（字节）
   bool m_IsInitialized = false;          // 初始化状态标志
 };
-
-// ---- 类型定义 ----
-using LightSSBOPtr = std::shared_ptr<LightShaderStorgeBuffer>;
 }  // namespace mite
 
 #endif  // MITE_LIGHT_SSBO_H
