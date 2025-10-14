@@ -95,14 +95,14 @@ void OpenGLRenderCommand::SetRenderState(const std::shared_ptr<RenderState> &sta
                        "SetRenderState"});
 }
 
-void OpenGLRenderCommand::BindCameraUBO(CameraInstance &instance)
+void OpenGLRenderCommand::BindCameraUBO(std::shared_ptr<CameraInstance> instance)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push(
-      {CommandType::BindCameraUBO, [&]() { instance.BindUBO(); }, "Bind Camera UBO"});
+      {CommandType::BindCameraUBO, [=]() { instance->BindUBO(); }, "Bind Camera UBO"});
 }
 
-void OpenGLRenderCommand::BindMaterialUBO(MaterialInstance &instance)
+void OpenGLRenderCommand::BindMaterialUBO(std::shared_ptr<MaterialInstance> instance)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
@@ -111,15 +111,14 @@ void OpenGLRenderCommand::BindMaterialUBO(MaterialInstance &instance)
         m_Device->BindExternalTexture(type, textureHandle, target);
       };
   m_CommandQueue.push({CommandType::BindMaterialUBO,
-                       [&]() { instance.Apply(bindExtTextureFunc); },
+                       [=]() { instance->Apply(bindExtTextureFunc); },
                        "Bind Material UBO and Textures"});
 }
 
-void OpenGLRenderCommand::BindLightSSBO(LightShaderStorgeBuffer &instance)
+void OpenGLRenderCommand::BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance)
 {
-  m_CommandQueue.push({CommandType::BindLightSSBO,
-                       [&]() { instance.Bind(); },
-                       "Bind Material UBO and Textures"});
+  m_CommandQueue.push(
+      {CommandType::BindLightSSBO, [=]() { instance->Bind(); }, "Bind Material UBO and Textures"});
 }
 
 void OpenGLRenderCommand::BindShader(
@@ -195,11 +194,23 @@ void OpenGLRenderCommand::DrawMesh(uint32_t indexCount,
                        "DrawMesh: count=" + std::to_string(indexCount)});
 }
 
-void OpenGLRenderCommand::SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance, std::shared_ptr<OpenGLShader> shader)
+void OpenGLRenderCommand::DrawFullScreenQuad()
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::DrawIndexed,
+                       [=] { m_Device->DrawFullScreenQuad(); },
+                       "Submit Full Screen Quad Draw Call"});
+}
+
+void OpenGLRenderCommand::SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance,
+                                         std::shared_ptr<OpenGLShader> shader)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::DrawIndexed,
                        [=] {
+                         // 0. 绑定Model矩阵UBO
+                         meshInstance->BindUBO();
+
                          // 1. 绑定网格VAO
                          m_Device->BindMesh(meshInstance->GetMesh());
 
@@ -221,7 +232,7 @@ void OpenGLRenderCommand::PublishEventRuntimeTextureFinished(RuntimeTexturePtr t
                          EventBus::Publish<RuntimeTextureFinishedEvent>(
                              RuntimeTextureFinishedEvent(texture, identify));
                        },
-                       "UnbindShader"});
+                       "Publish Event Runtime Texture Finished: " + identify});
 }
 
 void OpenGLRenderCommand::Flush()
@@ -328,5 +339,4 @@ void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
     glDisable(GL_STENCIL_TEST);
   }
 }
-
 }  // namespace mite

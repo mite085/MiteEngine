@@ -90,9 +90,9 @@ class RenderCommand {
    * @param instance 相机/材质实例/光源引用
    * @param shader 当前stage使用的shader
    */
-  virtual void BindCameraUBO(CameraInstance &instance) = 0;
-  virtual void BindMaterialUBO(MaterialInstance &instance) = 0;
-  virtual void BindLightSSBO(LightShaderStorgeBuffer &instance) = 0;
+  virtual void BindCameraUBO(std::shared_ptr<CameraInstance> instance) = 0;
+  virtual void BindMaterialUBO(std::shared_ptr<MaterialInstance> instance) = 0;
+  virtual void BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance) = 0;
 
   /**
    * @brief 绑定/解绑着色器程序
@@ -138,6 +138,10 @@ class RenderCommand {
                         uint32_t indexOffset = 0,
                         uint32_t primitiveType = 0x0004,   // GL_TRIANGLES from glad
                         uint32_t indexType = 0x1405) = 0;  // GL_UNSIGNED_INT from glad
+  /**
+   * @brief 绘制全屏四边形
+   */
+  virtual void DrawFullScreenQuad() = 0;
 
   // ---------------- 整合操作命令 ----------------
   /**

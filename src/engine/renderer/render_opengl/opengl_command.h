@@ -46,9 +46,9 @@ class OpenGLRenderCommand : public RenderCommand {
   void SetRenderState(const std::shared_ptr<RenderState> &state) override;
 
   // ---------------- 原子操作命令 ----------------
-  void BindCameraUBO(CameraInstance &instance) override;
-  void BindMaterialUBO(MaterialInstance &instance) override;
-  void BindLightSSBO(LightShaderStorgeBuffer &instance) override;
+  void BindCameraUBO(std::shared_ptr<CameraInstance> instance) override;
+  void BindMaterialUBO(std::shared_ptr<MaterialInstance> instance) override;
+  void BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer>instance) override;
   void BindShader(
       std::shared_ptr<OpenGLShader> shader,
       std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup = nullptr) override;
@@ -64,6 +64,7 @@ class OpenGLRenderCommand : public RenderCommand {
                 uint32_t indexOffset = 0,
                 uint32_t primitiveType = 0x0004,
                 uint32_t indexType = 0x1405) override;
+  void DrawFullScreenQuad() override;
 
   // ---------------- 整合操作命令 ----------------
   void SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance,
