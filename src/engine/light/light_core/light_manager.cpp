@@ -216,9 +216,9 @@ std::unordered_map<LightType, size_t> LightManager::GetLightCountByType() const
   return typeCounts;
 }
 
-LightShaderStorgeBuffer& LightManager::GetLightSSBO() const
+std::shared_ptr<LightShaderStorgeBuffer> LightManager::GetLightSSBO() const
 {
-  return *m_LightSSBO;
+  return m_LightSSBO;
 }
 
 void LightManager::BindLightSSBO() const

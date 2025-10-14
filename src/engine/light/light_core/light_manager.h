@@ -1,12 +1,11 @@
 #ifndef MITE_LIGHT_MANAGER_H
 #define MITE_LIGHT_MANAGER_H
 
-#include "light.h"
 #include "basic_instance/light_ssbo.h"
+#include "light.h"
 #include "shadow_map_type.h"
 
 namespace mite {
-
 /**
  * @brief 光源管理器 (暂时使用单例模式，待后续整理调用层次)
  * @note 职责：
@@ -145,14 +144,14 @@ class LightManager {
    * @brief 获取LightSSBO实例
    * @return LightSSBO共享指针
    */
-  LightShaderStorgeBuffer& GetLightSSBO() const;
+  std::shared_ptr<LightShaderStorgeBuffer> GetLightSSBO() const;
 
   /**
    * @brief 设置着色器的光源SSBO绑定点
    * @param shader 目标着色器
    * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
+  // void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
 
   /**
    * @brief 绑定光源SSBO到指定绑定点
@@ -192,12 +191,11 @@ class LightManager {
   bool CanAddLight(LightPtr light) const;
 
   // ---- 成员变量 ----
-  std::vector<LightPtr> m_Lights;  // 所有光源列表
-  LightSSBOPtr m_LightSSBO;        // 光源统一的SSBO管理器
-  size_t m_MaxLights;              // 最大光源数量
-  bool m_IsInitialized = false;    // 初始化状态标志
+  std::vector<LightPtr> m_Lights;                        // 所有光源列表
+  std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;  // 光源统一的SSBO管理器
+  size_t m_MaxLights;                                    // 最大光源数量
+  bool m_IsInitialized = false;                          // 初始化状态标志
 };
-
 }  // namespace mite
 
 #endif  // MITE_LIGHT_MANAGER_H
