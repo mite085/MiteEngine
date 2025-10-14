@@ -17,7 +17,10 @@ struct MaterialTextureSlot {
   glm::vec2 offset = glm::vec2(0.0f);                       // 纹理偏移
 
   MaterialTextureSlot() = default;
-  explicit MaterialTextureSlot(TextureAssetID id, TextureTarget target) : textureAssetId(id), textureTarget(target) {}
+  explicit MaterialTextureSlot(TextureAssetID id, TextureTarget target)
+      : textureAssetId(id), textureTarget(target)
+  {
+  }
 };
 
 // 材质数据来源（MaterialSystem专用的过渡型数据格式）
@@ -43,8 +46,8 @@ struct MaterialMetadata {
   std::string sourcePath;  // 源文件路径
 
   // 基础信息
-  std::string name;   // 材质名称
-  MaterialType type;  // 对应Type
+  std::string name;                       // 材质名称
+  MaterialType type = MaterialType::PBR;  // 对应Type（默认PBR）
 
   // 通用参数存储（支持GLTF PBR和未来MaterialX）
   std::unordered_map<std::string, UniformVariant> parameters;
@@ -94,8 +97,10 @@ struct MaterialMetadata {
         TextureInstance textureInstance = textureResolver(textureSlot.textureAssetId);
 
         // 创建运行时纹理槽位
-        sourceData.textureSlots[slotName] = TextureGPUSlot(
-            textureInstance.gpuHandle, textureInstance.target, textureSlot.scale, textureSlot.offset);
+        sourceData.textureSlots[slotName] = TextureGPUSlot(textureInstance.gpuHandle,
+                                                           textureInstance.target,
+                                                           textureSlot.scale,
+                                                           textureSlot.offset);
       }
     }
 

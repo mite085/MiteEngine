@@ -18,11 +18,11 @@ void MaterialInstance::InitializeUBO()
   LOG_INFO("Material UBO initialized for '{}'", m_Name);
 }
 
-//void MaterialInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
+// void MaterialInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
 //{
-//  // 设置着色器绑定
-//  m_UBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MATERIAL_UBO);
-//}
+//   // 设置着色器绑定
+//   m_UBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MATERIAL_UBO);
+// }
 
 void MaterialInstance::UpdateUBO()
 {
@@ -217,14 +217,31 @@ void MaterialInstance::SetOcclusionTexture(TextureGPUSlot texture)
 // ===================== 绑定相关 =====================
 size_t MaterialInstance::BindTexturesOnly(ExternalTextureBindFunc textureBindFunc) const
 {
-  // 绑定纹理到预定义的绑定点
-  for (const auto [textureType, textureSlot] : m_Textures) {
-    // 使用传入的纹理绑定函数进行纹理绑定
-    textureBindFunc(textureType, textureSlot.gpuHandle, textureSlot.target);
+  // 注意:
+  // 为避免layout(binding = 18) uniform sampler2D u_BaseColorTexture;等纹理槽位悬空
+  // 不再遍历size未知的m_Textures，直接执行五次单独的纹理绑定操作。
+  // for (const auto [textureType, textureSlot] : m_Textures) {
+  //  // 使用传入的纹理绑定函数进行纹理绑定
+  //  textureBindFunc(textureType, textureSlot.gpuHandle, textureSlot.target);
+  //}
+  
+  // 定义绑定函数，若缺失纹理则绑定TextureGPUHandle{0}，OpenGLDevice会使用默认纹理填充
+  auto bindOperator = [&](ExternalTextureType type) {
+    if (m_Textures.find(type) != m_Textures.end())
+      textureBindFunc(type, m_Textures.at(type).gpuHandle, m_Textures.at(type).target);
+    else
+      textureBindFunc(type, {0}, TextureTarget::TEXTURE_2D);
+  };
 
-    // 注意：Texture的offset和scale通过MaterialUBO
-    // 的m_MaterialData.baseColorTexParams等参数完成传递
-  }
+  // 绑定纹理到预定义的绑定点
+  bindOperator(ExternalTextureType::BaseColor);
+  bindOperator(ExternalTextureType::Normal);
+  bindOperator(ExternalTextureType::MetallicRoughness);
+  bindOperator(ExternalTextureType::Emissive);
+  bindOperator(ExternalTextureType::Occlusion);
+
+  // TODO：Texture的offset和scale通过MaterialUBO
+  // 的m_MaterialData.baseColorTexParams等参数完成传递
   return m_Textures.size();
 }
 
