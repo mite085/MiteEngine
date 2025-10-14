@@ -77,7 +77,7 @@ class RenderContext {
 
   // 场景数据
   std::shared_ptr<RenderQueue> GetRenderQueue() const { return m_RenderQueue; }
-  CameraInstance& GetMainCameraInstance() const { return *m_MainCameraInstance; }
+  std::shared_ptr<CameraInstance> GetMainCameraInstance() const { return m_MainCameraInstance; }
   LightManager &GetLightManager() const { return LightManager::Get(); }
 
   // ---- 临时资源管理（现阶段尽量所有资源明确定义，待后续启用临时资源） ----
@@ -97,21 +97,21 @@ class RenderContext {
    * @brief 消费事件，注册相机/网格/材质实例（设置所有现有着色器的UBO绑定）
    * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  //void OnCameraInstanceCreated(CameraInstanceCreateEvent &event);
-  //void OnMeshInstanceCreated(MeshInstanceCreateEvent &event);
-  //void OnMaterialInstanceCreated(MaterialInstanceCreateEvent &event);
-  //void OnLightSSBOCreated(LightSSBOCreateEvent &event);
+  // void OnCameraInstanceCreated(CameraInstanceCreateEvent &event);
+  // void OnMeshInstanceCreated(MeshInstanceCreateEvent &event);
+  // void OnMaterialInstanceCreated(MaterialInstanceCreateEvent &event);
+  // void OnLightSSBOCreated(LightSSBOCreateEvent &event);
   ///**
   // * @brief 为新着色器设置所有已注册实例的UBO绑定
   // (使用固定的绑定点执行显示绑定，无需手动管理)
   // */
-  //void SetupShaderBindingsForNewShader(const std::string &stageName,
+  // void SetupShaderBindingsForNewShader(const std::string &stageName,
   //                                     std::shared_ptr<OpenGLShader> shader);
   ///**
   // * @brief 为新实例设置所有已注册着色器的UBO绑定
   // (使用固定的绑定点执行显示绑定，无需手动管理)
   // */
-  //template<typename T> void SetupShaderBindingsForNewInstance(std::shared_ptr<T> instance)
+  // template<typename T> void SetupShaderBindingsForNewInstance(std::shared_ptr<T> instance)
   //{
   //  for (auto &[stageName, shader] : m_StageShaders) {
   //    instance->SetupShaderBinding(shader);
@@ -131,7 +131,8 @@ class RenderContext {
   std::vector<std::shared_ptr<CameraInstance>> m_CameraInstances;
   std::vector<std::shared_ptr<MeshInstance>> m_MeshInstances;
   std::vector<std::shared_ptr<MaterialInstance>> m_MaterialInstances;
-  std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;  // LightSSBO包含了所有光照信息，无需按照Vector存储
+  std::shared_ptr<LightShaderStorgeBuffer>
+      m_LightSSBO;  // LightSSBO包含了所有光照信息，无需按照Vector存储
 
   // ---- 窗口尺寸 ----
   glm::uvec2 m_ViewportSize = {1280, 720};  // 默认尺寸

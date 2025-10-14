@@ -84,6 +84,11 @@ class RenderDevice {
   virtual std::shared_ptr<FrameBuffer> CreateFrameBuffer(const FrameBufferSpec &spec) = 0;
   virtual void DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer) = 0;
 
+  // ---- 全屏四边形（用于延迟光照和后处理） ----
+  virtual void CreateFullScreenQuad() = 0;
+  virtual void DrawFullScreenQuad() = 0;
+  virtual void DestroyFullScreenQuad() = 0;
+
  protected:
   // ---- 事件处理 ----
   virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
