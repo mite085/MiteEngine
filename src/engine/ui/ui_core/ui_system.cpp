@@ -99,17 +99,6 @@ void UISystem::EndFrame()
   }
 }
 
-void UISystem::ProcessInputEvent(Event &event)
-{
-  if (!m_Visible) {
-    return;
-  }
-
-  if (m_Backend) {
-    m_Backend->ProcessInputEvent(event);
-  }
-}
-
 void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
 {
   // 需要检查UI的ID

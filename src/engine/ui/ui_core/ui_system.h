@@ -56,12 +56,6 @@ class UISystem {
   void EndFrame();
 
   /**
-   * @brief 处理输入事件
-   * @param event 输入事件
-   */
-  void ProcessInputEvent(Event &event);
-
-  /**
    * @brief 创建面板
    * @param name 面板名称
    * @return 面板指针

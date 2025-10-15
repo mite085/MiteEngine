@@ -3,7 +3,7 @@
 
 #include "ui_core/ui_backend.h"
 #include "ui_imgui_font_manager.h"
-#include "ui_imgui_input_adapter.h"
+#include "ui_imgui_input_context.h"
 #include "ui_imgui_style_adapter.h"
 
 namespace mite {
@@ -36,7 +36,6 @@ class ImGuiBackend : public UIBackend {
   void Shutdown() override;
   void BeginFrame() override;
   void EndFrame() override;
-  void ProcessInputEvent(Event &event) override;
   void SetDisplaySize(int width, int height) override;
   glm::ivec2 GetDisplaySize() const override;
   void SetFramebufferScale(float scaleX, float scaleY) override;
@@ -56,7 +55,7 @@ class ImGuiBackend : public UIBackend {
   GLFWwindow *GetWindow() const;
 
   // 输入管理（委托给InputAdapter）
-  ImGuiInputAdapter &GetInputAdapter();
+  ImGuiInputContext &GetInputAdapter();
 
  private:
   // ==================== 内部方法 ====================
@@ -77,7 +76,7 @@ class ImGuiBackend : public UIBackend {
   glm::vec2 m_FramebufferScale;                       // 帧缓冲缩放
   double m_Time = 0.0f;                               // 时间跟踪
   std::unique_ptr<ImGuiStyleAdapter> m_StyleAdapter;  // 样式适配器
-  std::unique_ptr<ImGuiInputAdapter> m_InputAdapter;  // 输入适配器
+  std::unique_ptr<ImGuiInputContext> m_InputAdapter;  // 输入适配器
 
   Logger m_Logger;                        // 日志系统
   SubscriptionGroup m_EventSubscriptions; // 事件订阅

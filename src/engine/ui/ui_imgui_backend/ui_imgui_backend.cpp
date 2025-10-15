@@ -11,7 +11,7 @@ ImGuiBackend::ImGuiBackend()
       m_DisplaySize(1280, 720),
       m_FramebufferScale(1.0f, 1.0f),
       m_StyleAdapter(std::make_unique<ImGuiStyleAdapter>()),
-      m_InputAdapter(std::make_unique<ImGuiInputAdapter>())
+      m_InputAdapter(std::make_unique<ImGuiInputContext>())
 {
 }
 
@@ -46,9 +46,6 @@ bool ImGuiBackend::Initialize(void *glfwWindow)
   // 初始化样式适配器
   m_StyleAdapter->Initialize();
 
-  // 初始化输入适配器
-  m_InputAdapter->Initialize();
-
   // 初始化字体为中文
   ImGuiFontManager::LoadFonts();
   ImGuiFontManager::SetLanguageFont("zh-CN");
@@ -61,10 +58,7 @@ void ImGuiBackend::Shutdown()
 {
   m_Logger->debug("ImGuiBackend shutdown started");
 
-  // 1. 清理适配器
-  if (m_InputAdapter) {
-    m_InputAdapter->Shutdown();
-  }
+  // 1. 清理样式适配器
   if (m_StyleAdapter) {
     m_StyleAdapter->Shutdown();
   }
@@ -172,12 +166,6 @@ void ImGuiBackend::EndFrame()
   }
 }
 
-void ImGuiBackend::ProcessInputEvent(Event &event)
-{
-  // 委托给输入适配器处理
-  m_InputAdapter->ProcessEvent(event);
-}
-
 void ImGuiBackend::SetDisplaySize(int width, int height)
 {
   m_DisplaySize = {width, height};
@@ -267,7 +255,7 @@ GLFWwindow *ImGuiBackend::GetWindow() const
   return m_Window;
 }
 
-ImGuiInputAdapter &ImGuiBackend::GetInputAdapter()
+ImGuiInputContext &ImGuiBackend::GetInputAdapter()
 {
   return *m_InputAdapter;
 }
