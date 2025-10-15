@@ -36,6 +36,8 @@ set(SCENE_COMPONENTS_SRCS
     scene_core_components/camera_component.cpp
     scene_core_components/id_component.h
     scene_core_components/id_component.cpp
+    scene_core_components/light_component.h
+    scene_core_components/light_component.cpp
     scene_core_components/mesh_component.h
     scene_core_components/mesh_component.cpp
     scene_core_components/material_component.h
@@ -73,4 +75,5 @@ target_link_libraries(${ENGINE_SCENE_CORE_LIB_NAME}
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
     MiteEngine_Engine_Event
+    MiteEngine_Engine_Light
 )

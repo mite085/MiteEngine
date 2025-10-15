@@ -1,12 +1,12 @@
 #ifndef MITE_SCENE_VIEW_H
 #define MITE_SCENE_VIEW_H
 #include "basic_instance/camera_instance.h"
+#include "basic_event/render_event.h"
 #include "render_queue.h"
 #include "renderable_item_builder.h"
 #include "scene_node.h"
 
 namespace mite {
-
 /**
  * @brief 场景视图管理器
  * @note 职责：负责渲染数据的收集、组织和交付，作为SceneGraph与Renderer之间的桥梁
@@ -23,7 +23,7 @@ class SceneView {
    */
   void SetCamera(const std::shared_ptr<Camera> &camera);
   // 获取当前关联的摄像机实例
-  std::shared_ptr<CameraInstance>GetCameraInstance() const { return m_CameraInstance; }
+  std::shared_ptr<CameraInstance> GetCameraInstance() const { return m_CameraInstance; }
   /**
    * @brief 更新场景视图（每帧调用）
    * @note 每帧完全重建渲染队列
@@ -59,11 +59,11 @@ class SceneView {
 
  private:
   // ==================== 内部方法 ====================
-  /**
-   * @brief 执行渲染Item构建
-   */
+  // 执行渲染Item构建
   void ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes);
 
+  // 消费ViewPortResize事件，修改Camera的宽高比
+  void OnViewPortResize(ViewPortResizeEvent &event);
 
   // 成员变量
   std::unique_ptr<RenderableItemBuilder> m_Builder;  // 渲染Item构建器
@@ -81,8 +81,10 @@ class SceneView {
 
   // 日志器
   Logger m_Logger;
-};
 
+  // 事件订阅
+  SubscriptionGroup m_EventSubscriptions;
+};
 }  // namespace mite
 
 #endif

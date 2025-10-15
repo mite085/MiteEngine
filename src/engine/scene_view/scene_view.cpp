@@ -1,6 +1,5 @@
 #include "scene_view.h"
 #include "basic_event/instance_event.h"
-#include "subscription_group.h"
 #include "timer/timer.h"
 
 namespace mite {
@@ -15,6 +14,9 @@ SceneView::SceneView()
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView");
   // 初始化日志
   m_Logger->debug("SceneView initialized");
+
+  // Viewport Resize事件订阅
+  m_EventSubscriptions.SubscribeImmediate<ViewPortResizeEvent>(BIND_DISPATCH_FN(OnViewPortResize));
 }
 SceneView::~SceneView()
 {
@@ -35,7 +37,9 @@ void SceneView::SetCamera(const std::shared_ptr<Camera> &camera)
     m_Logger->warn("SceneView received null camera instance");
   }
 }
-void SceneView::Update(SceneRegistry &registry,Transform cameraTransform, std::vector<SceneNode *> visibleNodes)
+void SceneView::Update(SceneRegistry &registry,
+                       Transform cameraTransform,
+                       std::vector<SceneNode *> visibleNodes)
 {
   // 计时，确定构建RenderQueue所消耗的时间
   Timer timer;
@@ -85,5 +89,21 @@ void SceneView::ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode
   m_RenderQueue->ClearAll();
   m_RenderQueue->AddItems(renderItems);
   m_RenderQueue->SortAll();
+}
+void SceneView::OnViewPortResize(ViewPortResizeEvent &event)
+{
+  glm::uvec2 currentSize = event.GetSize();
+
+  if (currentSize.y > 0) {
+    // 设置相机宽高比（避免画面拉伸）
+    float aspectRatio = static_cast<float>(currentSize.x) / static_cast<float>(currentSize.y);
+    m_CameraInstance->GetCamera()->SetAspectRatio(aspectRatio);
+
+    event.SetResult(EventResult::Failed);
+    return;
+  }
+
+  event.SetResult(EventResult::Failed);
+  return;
 }
 }  // namespace mite
