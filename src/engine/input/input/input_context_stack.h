@@ -22,14 +22,7 @@ class InputContextStack {
   bool IsInContext(const std::string &name);
 
   // 处理输入事件
-  // 注意：
-  // 该功能暂时被ModularInputContext的SubscribeByCategory大类订阅功能替代，
-  // 未正常启用（没有地方调用该函数）
-  // 
-  // InputContextStack负责了所有的InputContext，事件类型与数量可能极多，
-  // 使用单一的ProcessEvent事件入口是否合适，每次事件都锁mutex是否会影响性能
-  // 
-  bool ProcessEvent(Event &event);
+  void ProcessEvent(Event &event);
 
   // 查询是否空栈
   bool IsEmpty();
