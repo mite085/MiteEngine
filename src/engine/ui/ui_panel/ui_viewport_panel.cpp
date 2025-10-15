@@ -3,8 +3,8 @@
 #include "imgui.h"
 
 namespace mite {
-ViewportPanel::ViewportPanel(const std::string &name, CameraComponent &camera)
-    : UIPanel(name), m_CameraComponent(camera), m_CurrentSize(glm::uvec2(1280, 720))
+ViewportPanel::ViewportPanel(const std::string &name)
+    : UIPanel(name), m_CurrentSize(glm::uvec2(1280, 720))
 {
   m_EventSubscriptions.SubscribeImmediate<RuntimeTextureFinishedEvent>(
       BIND_DISPATCH_FN(OnRenderFinished));
@@ -86,13 +86,6 @@ void ViewportPanel::HandleSizeChange(const glm::uvec2 &newSize)
 
   // 更新当前尺寸
   m_CurrentSize = newSize;
-
-  // 设置相机宽高比（避免画面拉伸）
-  if (m_CurrentSize.y > 0) {
-    float aspectRatio = static_cast<float>(m_CurrentSize.x) / static_cast<float>(m_CurrentSize.y);
-    m_CameraComponent.SetAspectRatio(aspectRatio);
-  }
-
   EventBus::Publish<ViewPortResizeEvent>(ViewPortResizeEvent(m_CurrentSize));
 
   // LOG_DEBUG("ViewportPanel size changed to {}x{}", newSize.x, newSize.y);

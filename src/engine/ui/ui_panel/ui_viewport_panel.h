@@ -19,7 +19,7 @@ namespace mite {
  */
 class ViewportPanel : public UIPanel {
  public:
-  explicit ViewportPanel(const std::string &name, CameraComponent &camera);
+  explicit ViewportPanel(const std::string &name);
   virtual ~ViewportPanel() = default;
   // UIPanel接口
   virtual void Update(float deltaTime) override;
@@ -31,9 +31,6 @@ class ViewportPanel : public UIPanel {
   void HandleSizeChange(const glm::uvec2 &newSize);
 
   void OnRenderFinished(RuntimeTextureFinishedEvent &event);
-
-  // ==================== 依赖注入 ====================
-  CameraComponent &m_CameraComponent;  // 用于设置宽高比
 
   // ==================== 纹理显示 ====================
   RuntimeTexturePtr m_DisplayTexture = nullptr;
