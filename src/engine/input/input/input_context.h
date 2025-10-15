@@ -1,30 +1,9 @@
 #ifndef MITE_INPUT_CONTEXT
 #define MITE_INPUT_CONTEXT
 
-#include "input_define.h"
 #include "input_event.h"
-#include "input_processor.h"
 
 namespace mite {
-class InputAction {
- public:
-  struct Binding {
-    InputDevice device;
-    int code;            // 键码或按钮码
-    float scale = 1.0f;  // 输入缩放
-
-    Binding(InputDevice device, int code, float scale = 1.0f)
-        : device(device), code(code), scale(scale)
-    {
-    }
-  };
-
-  std::string name;
-  std::vector<Binding> bindings;
-  float value = 0.0f;  // 当前动作值
-
-  float holdTime = 0.0f;  // 长按计时
-};
 /**
  * @brief 输入上下文
  *
@@ -35,47 +14,44 @@ class InputAction {
  */
 class InputContext {
  public:
-  explicit InputContext(const std::string &name);
-  ~InputContext();
+  explicit InputContext(const std::string &name) : m_Name(name) {}
+  ~InputContext() = default;
 
   // 基础属性
-  const std::string &GetName() const;
-  void SetBlockInput(bool block);
-  bool IsInputBlocked() const;
-
-  // 动作映射系统
-  void AddAction(const InputAction &action);
-  void RemoveAction(const std::string &name);
-  InputAction *GetAction(const std::string &actionName);
-  float GetActionValue(const std::string &name) const;
-
-  // 每帧更新
-  void Update();
+  const std::string &GetName() const { return m_Name; }
+  void SetBlockInput(bool block) { m_BlockInput = block; }
+  bool IsInputBlocked() const { return m_BlockInput; }
 
   // 输入处理: 按照优先级对事件进行排序，随后按顺序处理
-  virtual bool ProcessEvent(Event &e) = 0;
-
-  // 调试工具
-  void DebugPrintActions() const;
+  virtual void ProcessEvent(Event &e);
 
  protected:
   // 内部处理方法
-  void _ProcessKeyPressedEvent(KeyPressedEvent &e);
-  void _ProcessMouseButtonPressedEvent(MouseButtonPressedEvent &e);
-  void _ProcessMouseMoveEvent(MouseMoveEvent &e);
-  void _ProcessMouseScrollEvent(MouseScrollEvent &e);
-  void _UpdateActionValue(const std::string &actionName, float newValue);
+  virtual void ProcessMouseMoveEvent(MouseMoveEvent &e) = 0;
+  virtual void ProcessMouseButtonPressedEvent(MouseButtonPressedEvent &e) = 0;
+  virtual void ProcessMouseButtonReleasedEvent(MouseButtonReleasedEvent &e) = 0;
+  virtual void ProcessMouseScrollEvent(MouseScrollEvent &e) = 0;
+  virtual void ProcessKeyPressdEvent(KeyPressedEvent &e) = 0;
+  virtual void ProcessKeyReleasedEvent(KeyReleasedEvent &e) = 0;
+  virtual void ProcessKeyTypedEvent(KeyTypedEvent &e) = 0;
 
+  // 名称和阻塞状态
   std::string m_Name;
   bool m_BlockInput = false;
+};
 
-  // 动作系统
-  std::unordered_map<std::string, InputAction> m_Actions;
+/**
+ * @brief 输入上下文创建事件
+ */
+class InputContextCreateEvent : public Event {
+ public:
+  InputContextCreateEvent(std::shared_ptr<InputContext> context) : m_Context(context) {}
+  std::shared_ptr<InputContext> GetContext() const { return m_Context; }
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SYSTEM)
+  Event *Clone() const override { return new InputContextCreateEvent(m_Context); }
 
-  // 日志系统
-  Logger m_Logger;
-  // 订阅事件集合
-  SubscriptionGroup m_EventSubscriptions;
+ private:
+  std::shared_ptr<InputContext> m_Context;
 };
 };  // namespace mite
 

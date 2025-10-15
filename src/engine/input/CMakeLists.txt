@@ -5,22 +5,14 @@ set(ENGINE_INPUT_LIB_NAME MiteEngine_Engine_Input)
 
 # 创建源代码组(筛选器)
 set(INPUT_SRCS
-    input/input.h
-    input/input.cpp
     input/input_context.h
     input/input_context.cpp
     input/input_event.h
     input/input_event.cpp
     input/input_manager.h
     input/input_manager.cpp
-    input/input_define.h
-    input/input_define.cpp
     input/input_context_stack.h
     input/input_context_stack.cpp
-    input/input_processor.h
-    input/input_processor.cpp
-    input/modular_input_context.h
-    input/modular_input_context.cpp
 )
 source_group("input" FILES ${INPUT_SRCS})
 
@@ -51,6 +43,7 @@ target_link_libraries(${ENGINE_INPUT_LIB_NAME}
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
     MiteEngine_Engine_Event
-    MiteEngine_Engine_Material
+    MiteEngine_Engine_Command
     MiteEngine_Engine_Scene_Core
+    MiteEngine_Engine_Scene_Graph
 )
