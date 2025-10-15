@@ -161,6 +161,32 @@ sequenceDiagram
 > 本系统xxx
 
 ### Input输入系统
+> 键盘/鼠标输入处理流程
+```mermaid
+graph TB
+    A[GLFWWindow] --> B[Input Events<br/>Mouse/Key]
+    
+    B --> C[EventBus<br/>事件总线]
+    
+    C --> D[ImGui InputAdapter<br/>UI输入路由]
+    D --> E{WantCapture?}
+    E -->|true| F[ImGui Widgets<br/>UI交互]
+    E -->|false| G[Input Contexts<br/>业务输入映射]
+    
+    G --> H[Input Processor<br/>命令管理器]
+    H --> I[Command System<br/>业务操作封装]
+    
+    I --> J[ECS Components<br/>数据修改]
+    J --> K[Component Events<br/>数据变更事件]
+    
+    K --> L[Render System<br/>渲染同步]
+    K --> M[Other Systems<br/>其他系统响应]
+    
+    F --> N[UI Command<br/>UI操作命令]
+    N --> H
+
+````
+
 ```mermaid
 sequenceDiagram
     participant EventBus
