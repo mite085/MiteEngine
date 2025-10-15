@@ -1,95 +1,38 @@
-#include "ui_imgui_input_adapter.h"
+#include "ui_imgui_input_context.h"
 
 namespace mite {
-ImGuiInputAdapter::ImGuiInputAdapter()
+ImGuiInputContext::ImGuiInputContext() : InputContext("ImGUI Input Context")
 {
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Input Adapter");
-  m_Logger->info("Creating ImGuiInputAdapter");
+  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Input Context");
+  m_Logger->info("Creating ImGuiInputContext");
 }
 
-ImGuiInputAdapter::~ImGuiInputAdapter()
+ImGuiInputContext::~ImGuiInputContext()
 {
-  m_Logger->info("Destroying ImGuiInputAdapter");
+  m_Logger->info("Destroying ImGuiInputContext");
 }
 
-void ImGuiInputAdapter::Initialize()
-{
-  m_Logger->info("Initializing ImGuiInputAdapter");
-
-  // 初始化鼠标状态
-  m_LastMousePos = glm::vec2(0.0f);
-}
-
-void ImGuiInputAdapter::Shutdown()
-{
-  m_Logger->info("Shutting down ImGuiInputAdapter");
-}
-
-void ImGuiInputAdapter::ProcessEvent(Event &e)
-{
-  // 检查ImGui是否想要捕获该类型输入
-  ImGuiIO &io = ImGui::GetIO();
-  bool shouldCapture = false;
-
-  EventDispatcher dispatcher(e);
-  dispatcher.Dispatch<MouseMoveEvent>([&](MouseMoveEvent &event) {
-    shouldCapture = io.WantCaptureMouse;
-    return ProcessMouseMoveEvent(event);
-  });
-
-  dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent &event) {
-    shouldCapture = io.WantCaptureMouse;
-    return ProcessMouseButtonEvent(event);
-  });
-
-  dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent &event) {
-    shouldCapture = io.WantCaptureMouse;
-    return ProcessMouseButtonEvent(event);
-  });
-
-  dispatcher.Dispatch<MouseScrollEvent>([&](MouseScrollEvent &event) {
-    shouldCapture = io.WantCaptureMouse;
-    return ProcessMouseScrollEvent(event);
-  });
-
-  dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent &event) {
-    shouldCapture = io.WantCaptureKeyboard;
-    return ProcessKeyEvent(event);
-  });
-
-  dispatcher.Dispatch<KeyReleasedEvent>([&](KeyReleasedEvent &event) {
-    shouldCapture = io.WantCaptureKeyboard;
-    return ProcessKeyEvent(event);
-  });
-
-  dispatcher.Dispatch<KeyTypedEvent>([&](KeyTypedEvent &event) {
-    shouldCapture = io.WantCaptureKeyboard;
-    return ProcessKeyTypedEvent(event);
-  });
-
-  // 如果ImGui想要捕获该事件，标记为已处理，阻断传播
-  if (shouldCapture && e.IsHandled()) {
-    e.SetResult(EventResult::HandledAndStop);
-  }
-}
-
-void ImGuiInputAdapter::UpdateDisplaySize(GLFWwindow *window)
+void ImGuiInputContext::UpdateDisplaySize(GLFWwindow *window)
 {
   if (!window) {
     m_Logger->warn("GLFW window not available, cannot update display size");
     return;
   }
   int width, height;
+
+  // 获取窗口尺寸（逻辑分辨率）
   glfwGetWindowSize(window, &width, &height);
   m_DisplaySize = glm::ivec2(width, height);
+
   // 更新ImGui的显示尺寸
   ImGuiIO &io = ImGui::GetIO();
   io.DisplaySize = ImVec2(static_cast<float>(m_DisplaySize.x),
                           static_cast<float>(m_DisplaySize.y));
-  //m_Logger->debug("Display size updated: {}x{}", width, height);
+
+  // m_Logger->debug("Display size updated: {}x{}", width, height);
 }
 
-void ImGuiInputAdapter::UpdateFramebufferScale(GLFWwindow *window)
+void ImGuiInputContext::UpdateFramebufferScale(GLFWwindow *window)
 {
   if (!window) {
     m_Logger->warn("GLFW window not available, cannot update framebuffer scale");
@@ -102,6 +45,7 @@ void ImGuiInputAdapter::UpdateFramebufferScale(GLFWwindow *window)
   // 获取窗口尺寸（逻辑分辨率）
   int windowWidth, windowHeight;
   glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
   // 计算缩放比例（处理高DPI显示）
   if (windowWidth > 0 && windowHeight > 0) {
     m_FramebufferScale = glm::vec2(
@@ -111,45 +55,87 @@ void ImGuiInputAdapter::UpdateFramebufferScale(GLFWwindow *window)
   else {
     m_FramebufferScale = glm::vec2(1.0f);
   }
+
   // 更新ImGui的显示缩放
   ImGuiIO &io = ImGui::GetIO();
   io.DisplayFramebufferScale = ImVec2(m_FramebufferScale.x, m_FramebufferScale.y);
-  //m_Logger->debug(
-  //    "Framebuffer scale updated: {:.2f}x{:.2f}", m_FramebufferScale.x, m_FramebufferScale.y);
+  // m_Logger->debug(
+  //     "Framebuffer scale updated: {:.2f}x{:.2f}", m_FramebufferScale.x, m_FramebufferScale.y);
 }
 
-// 具体事件处理实现
-void ImGuiInputAdapter::ProcessMouseMoveEvent(MouseMoveEvent &e)
+void ImGuiInputContext::ProcessMouseMoveEvent(MouseMoveEvent &e)
 {
-  ImGuiIO &io = ImGui::GetIO();
-  io.AddMousePosEvent(static_cast<float>(e.GetXPos()), static_cast<float>(e.GetYPos()));
+  // 先检查是否应该捕获鼠标事件
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    return;  // 不处理，让事件继续传播
+  }
+
+  // ImGui捕获并消费事件
+  ImGui::GetIO().AddMousePosEvent(static_cast<float>(e.GetXPos()),
+                                  static_cast<float>(e.GetYPos()));
   m_LastMousePos = glm::vec2(e.GetXPos(), e.GetYPos());
+
+  // 组织事件继续传播
+  e.SetResult(EventResult::HandledAndStop);
 }
 
-void ImGuiInputAdapter::ProcessMouseButtonEvent(MouseButtonPressedEvent &e)
+void ImGuiInputContext::ProcessMouseButtonPressedEvent(MouseButtonPressedEvent &e)
 {
+  // 先检查是否应该捕获鼠标事件
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    return;  // 不处理，让事件继续传播
+  }
+
+  // ImGui捕获并消费事件
   ImGuiKey mouseKey = ConvertGlfwMouseButtonToImGuiKey(e.GetButton());
   if (mouseKey != ImGuiKey_None) {
     ImGui::GetIO().AddKeyEvent(mouseKey, true);
   }
+
+  // 组织事件继续传播
+  e.SetResult(EventResult::HandledAndStop);
 }
 
-void ImGuiInputAdapter::ProcessMouseButtonEvent(MouseButtonReleasedEvent &e)
+void ImGuiInputContext::ProcessMouseButtonReleasedEvent(MouseButtonReleasedEvent &e)
 {
+  // 先检查是否应该捕获鼠标事件
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    return;  // 不处理，让事件继续传播
+  }
+
+  // ImGui捕获并消费事件
   ImGuiKey mouseKey = ConvertGlfwMouseButtonToImGuiKey(e.GetButton());
   if (mouseKey != ImGuiKey_None) {
     ImGui::GetIO().AddKeyEvent(mouseKey, false);
   }
+
+  // 组织事件继续传播
+  e.SetResult(EventResult::HandledAndStop);
 }
 
-void ImGuiInputAdapter::ProcessMouseScrollEvent(MouseScrollEvent &e)
+void ImGuiInputContext::ProcessMouseScrollEvent(MouseScrollEvent &e)
 {
+  // 先检查是否应该捕获鼠标事件
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    return;  // 不处理，让事件继续传播
+  }
+
+  // ImGui捕获并消费事件
   ImGuiIO &io = ImGui::GetIO();
   io.AddMouseWheelEvent(static_cast<float>(e.GetXOffset()), static_cast<float>(e.GetYOffset()));
+
+  // 组织事件继续传播
+  e.SetResult(EventResult::HandledAndStop);
 }
 
-void ImGuiInputAdapter::ProcessKeyEvent(KeyPressedEvent &e)
+void ImGuiInputContext::ProcessKeyPressdEvent(KeyPressedEvent &e)
 {
+  // 先检查是否应该捕获键盘事件
+  if (!ImGui::GetIO().WantCaptureKeyboard) {
+    return;  // 不处理，让事件继续传播
+  }
+
+  // ImGui捕获并消费事件
   ImGuiKey key = ConvertGlfwKeyToImGuiKey(e.GetKey());
   if (key != ImGuiKey_None) {
     ImGuiIO &io = ImGui::GetIO();
@@ -161,25 +147,47 @@ void ImGuiInputAdapter::ProcessKeyEvent(KeyPressedEvent &e)
     io.AddKeyEvent(ImGuiKey_ModAlt, (e.GetMods() & GLFW_MOD_ALT) != 0);
     io.AddKeyEvent(ImGuiKey_ModSuper, (e.GetMods() & GLFW_MOD_SUPER) != 0);
   }
+
+  // 组织事件继续传播
+  e.SetResult(EventResult::HandledAndStop);
 }
 
-void ImGuiInputAdapter::ProcessKeyEvent(KeyReleasedEvent &e)
+void ImGuiInputContext::ProcessKeyReleasedEvent(KeyReleasedEvent &e)
 {
+  // 先检查是否应该捕获键盘事件
+  if (!ImGui::GetIO().WantCaptureKeyboard) {
+    return;  // 不处理，让事件继续传播
+  }
+
+  // ImGui捕获并消费事件
   ImGuiKey key = ConvertGlfwKeyToImGuiKey(e.GetKey());
   if (key != ImGuiKey_None) {
     ImGuiIO &io = ImGui::GetIO();
     io.AddKeyEvent(key, false);
   }
+
+  // 组织事件继续传播
+  e.SetResult(EventResult::HandledAndStop);
 }
 
-void ImGuiInputAdapter::ProcessKeyTypedEvent(KeyTypedEvent &e)
+void ImGuiInputContext::ProcessKeyTypedEvent(KeyTypedEvent &e)
 {
+  // 先检查是否应该捕获键盘事件
+  if (!ImGui::GetIO().WantCaptureKeyboard) {
+    return;  // 不处理，让事件继续传播
+  }
+
+  // ImGui捕获并消费事件
   ImGuiIO &io = ImGui::GetIO();
   io.AddInputCharacter(e.GetCodepoint());
+
+  // 组织事件继续传播
+  e.SetResult(EventResult::HandledAndStop);
 }
 
 // GLFW键码到ImGuiKey的转换（参考ImGui_ImplGlfw_KeyToImGuiKey）
-ImGuiKey ImGuiInputAdapter::ConvertGlfwKeyToImGuiKey(int glfwKey)
+// （由于ImGui_ImplGlfw_KeyToImGuiKey未在头文件声明，此处直接复制代码）
+ImGuiKey ImGuiInputContext::ConvertGlfwKeyToImGuiKey(int glfwKey)
 {
   switch (glfwKey) {
     case GLFW_KEY_TAB:
@@ -425,7 +433,7 @@ ImGuiKey ImGuiInputAdapter::ConvertGlfwKeyToImGuiKey(int glfwKey)
   }
 }
 
-ImGuiKey ImGuiInputAdapter::ConvertGlfwMouseButtonToImGuiKey(int glfwButton)
+ImGuiKey ImGuiInputContext::ConvertGlfwMouseButtonToImGuiKey(int glfwButton)
 {
   switch (glfwButton) {
     case GLFW_MOUSE_BUTTON_LEFT:

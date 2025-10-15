@@ -1,10 +1,11 @@
-#ifndef MITE_IMGUI_INPUT_ADAPTER_H
-#define MITE_IMGUI_INPUT_ADAPTER_H
+#ifndef MITE_IMGUI_INPUT_CONTEXT_H
+#define MITE_IMGUI_INPUT_CONTEXT_H
 
-#include "input/input_event.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
+#include "input/input_context.h"
+
 namespace mite {
 /**
  * @brief ImGui输入适配器 - 负责ImGui与引擎输入系统的桥接
@@ -17,51 +18,40 @@ namespace mite {
  * 5. OnButtonClicked();}内部可以自定义处理函数，执行鼠标点击之后的逻辑
  * 6. ImGui::End();，ImGui::Render();作为Begin和NewFrame的结束标志
  * 所以InputContext仅负责将鼠标键盘输入传递给Adapter即可，ImGui会处理好这一切
- * 
+ *
  * 功能：
  * 1. 输入事件桥接：将引擎输入事件转换为ImGui IO状态
  * 2. 输入优先级管理：作为最高优先级的输入上下文，根据ImGui状态决定是否阻止事件传递
  * 3. 输入状态同步：维护ImGui输入状态与引擎输入状态的一致性
  */
-class ImGuiInputAdapter{
+class ImGuiInputContext : public InputContext {
  public:
-  ImGuiInputAdapter();
-  ~ImGuiInputAdapter();
-
-  // InputContext接口
-  void ProcessEvent(Event &e);
-
-  // 初始化方法
-  void Initialize();
-  void Shutdown();
+  ImGuiInputContext();
+  ~ImGuiInputContext();
 
   // 显示尺寸和缩放相关方法
   void UpdateDisplaySize(GLFWwindow *window);
   void UpdateFramebufferScale(GLFWwindow *window);
 
-  glm::vec2 GetDisplaySize() const
-  {
-    return m_DisplaySize;
-  }
-  glm::vec2 GetFramebufferScale() const
-  {
-    return m_FramebufferScale;
-  }
+  // 获取显示尺寸和帧缓冲缩放
+  glm::vec2 GetDisplaySize() const { return m_DisplaySize; }
+  glm::vec2 GetFramebufferScale() const { return m_FramebufferScale; }
 
  private:
   // 具体事件处理方法
-  void ProcessMouseMoveEvent(MouseMoveEvent &e);
-  void ProcessMouseButtonEvent(MouseButtonPressedEvent &e);
-  void ProcessMouseButtonEvent(MouseButtonReleasedEvent &e);
-  void ProcessMouseScrollEvent(MouseScrollEvent &e);
-  void ProcessKeyEvent(KeyPressedEvent &e);
-  void ProcessKeyEvent(KeyReleasedEvent &e);
-  void ProcessKeyTypedEvent(KeyTypedEvent &e);
+  void ProcessMouseMoveEvent(MouseMoveEvent &e) override;
+  void ProcessMouseButtonPressedEvent(MouseButtonPressedEvent &e) override;
+  void ProcessMouseButtonReleasedEvent(MouseButtonReleasedEvent &e) override;
+  void ProcessMouseScrollEvent(MouseScrollEvent &e) override;
+  void ProcessKeyPressdEvent(KeyPressedEvent &e) override;
+  void ProcessKeyReleasedEvent(KeyReleasedEvent &e) override;
+  void ProcessKeyTypedEvent(KeyTypedEvent &e) override;
 
   // GLFW键码到ImGuiKey的转换
   ImGuiKey ConvertGlfwKeyToImGuiKey(int glfwKey);
   ImGuiKey ConvertGlfwMouseButtonToImGuiKey(int glfwButton);
 
+  // 日志记录
   Logger m_Logger;
 
   // 输入状态跟踪
@@ -71,7 +61,6 @@ class ImGuiInputAdapter{
   glm::ivec2 m_DisplaySize = glm::ivec2(0);
   glm::vec2 m_FramebufferScale = glm::vec2(1.0f);
 };
-
 }  // namespace mite
 
 #endif  // MITE_IMGUI_INPUT_ADAPTER_H
