@@ -60,6 +60,7 @@ template ComponentID ComponentID::Get<BoundingVolumeComponent>();
 template ComponentID ComponentID::Get<CameraComponent>();
 template ComponentID ComponentID::Get<DestroyComponent>();
 template ComponentID ComponentID::Get<IDComponent>();
+template ComponentID ComponentID::Get<LightComponent>();
 template ComponentID ComponentID::Get<MaterialComponent>();
 template ComponentID ComponentID::Get<MeshComponent>();
 template ComponentID ComponentID::Get<TagComponent>();

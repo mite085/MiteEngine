@@ -36,6 +36,7 @@ void SceneCore::RegisterComponentSystems()
   m_SystemManager.RegisterSystem<CameraComponentSystem>();
   m_SystemManager.RegisterSystem<DestroyComponentSystem>();
   m_SystemManager.RegisterSystem<IDComponentSystem>();
+  m_SystemManager.RegisterSystem<LightComponentSystem>();
   m_SystemManager.RegisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.RegisterSystem<MaterialComponentSystem>();
   m_SystemManager.RegisterSystem<MeshComponentSystem>();

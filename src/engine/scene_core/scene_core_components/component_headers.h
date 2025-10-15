@@ -5,6 +5,7 @@
 #include "destroy_component.h"
 #include "bounding_volume_component.h"
 #include "id_component.h"
+#include "light_component.h"
 #include "material_component.h"
 #include "mesh_component.h"
 #include "tag_component.h"
