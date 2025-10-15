@@ -8,11 +8,12 @@ namespace mite {
 // 如 flags = EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD;
 // 表示flags既是输入事件又是键盘事件。
 // 使用flags & (EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD) != 0,判断类别是否符合
-// （键盘鼠标分开意义不大，合并到EVENT_CATEGORY_INPUT了）
+// （键盘鼠标分开意义不大，合并到EVENT_CATEGORY_INPUT）
 enum EventCategory : uint64_t {
   None = 0,
-  EVENT_CATEGORY_WINDOW = 1 << 0,  // 窗口事件
-  EVENT_CATEGORY_INPUT = 1 << 1,   // 键盘/鼠标输入事件
+  EVENT_CATEGORY_SYSTEM = 1 << 0,  // 系统事件
+  EVENT_CATEGORY_WINDOW = 1 << 1,  // 窗口事件
+  EVENT_CATEGORY_INPUT = 1 << 2,   // 键盘/鼠标输入事件
 
   EVENT_CATEGORY_COMMAND = 1 << 5,       // 命令相关事件
   EVENT_CATEGORY_SCENE_CHANGE = 1 << 6,  // 场景变更事件

@@ -26,7 +26,7 @@ namespace mite {
  */
 class EventBus {
  public:
-  using EventHandler = std::function<void(Event &)>;  // 事件处理函数类型
+  
   using HandlerID = size_t;                           // 处理器ID类型
 
   // 订阅者信息结构

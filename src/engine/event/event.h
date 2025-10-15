@@ -26,7 +26,13 @@ enum class EventResult : uint8_t {
 namespace EventResultUtil {
 inline bool ShouldContinue(EventResult result)
 {
-  return (static_cast<uint8_t>(result) & static_cast<uint8_t>(EventResult::Consumed)) == 0;
+  uint8_t flags = static_cast<uint8_t>(result);
+
+  // 如果包含以下任一标志，则停止传播
+  bool shouldStop = (flags & static_cast<uint8_t>(EventResult::Consumed)) != 0 ||  // 已消费
+                    (flags & static_cast<uint8_t>(EventResult::Blocked)) != 0;     // 被阻止
+
+  return !shouldStop;
 }
 
 inline bool WasSuccessful(EventResult result)
@@ -36,7 +42,9 @@ inline bool WasSuccessful(EventResult result)
 
 inline bool WasHandled(EventResult result)
 {
-  return (static_cast<uint8_t>(result) & static_cast<uint8_t>(EventResult::Handled)) != 0;
+  uint8_t flags = static_cast<uint8_t>(result);
+  return (flags & static_cast<uint8_t>(EventResult::Handled)) != 0 ||
+         (flags & static_cast<uint8_t>(EventResult::Consumed)) != 0;
 }
 }  // namespace EventResultUtil
 /**
@@ -130,21 +138,6 @@ class Event {
   bool ShouldContinue() const
   {
     return EventResultUtil::ShouldContinue(m_Result);
-  }
-  /**
-   * @brief 标记事件已处理（兼容旧接口）
-   */
-  void Handled()
-  {
-    m_Result = EventResult::HandledAndStop;
-  }
-  /**
-   * @brief 检查事件是否已被处理（兼容旧接口）
-   * @return 是否已处理
-   */
-  bool IsHandled() const
-  {
-    return !ShouldContinue();
   }
 
  private:

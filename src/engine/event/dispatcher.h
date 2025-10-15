@@ -4,8 +4,8 @@
 #include "event.h"
 
 namespace mite {
-template<typename T> using EventFn = std::function<void(T &)>;
-
+template<typename T> using EventFn = std::function<void(T &)>;  // 事件处理函数类型（类型安全版本）
+using EventHandler = std::function<void(Event &)>;  // 事件处理函数类型（通用版本）
 /**
  * @brief 事件分发器类
  *
@@ -34,10 +34,7 @@ class EventDispatcher {
    *
    * 可以在分发器创建后重新设置关联的事件
    */
-  void SetEvent(Event &event)
-  {
-    m_Event = &event;
-  }
+  void SetEvent(Event &event) { m_Event = &event; }
 
   /**
    * @brief 分发事件到指定类型的处理函数
@@ -76,18 +73,13 @@ class EventDispatcher {
    * @brief 获取当前事件的类型信息
    * @return 类型信息指针，如果没有事件则返回nullptr
    */
-  const std::type_info *GetEventType() const
-  {
-    return m_Event ? &typeid(*m_Event) : nullptr;
-  }
+  const std::type_info *GetEventType() const { return m_Event ? &typeid(*m_Event) : nullptr; }
   /**
    * @brief 检查是否有有效的事件关联
    * @return 是否有关联的事件
    */
-  bool HasEvent() const
-  {
-    return m_Event != nullptr;
-  }
+  bool HasEvent() const { return m_Event != nullptr; }
+
  private:
   Event *m_Event = nullptr;  // 指向当前要分发的事件对象的指针
 };
@@ -102,7 +94,7 @@ class EventDispatcher {
  * );
  * 此时，BIND_DISPATCH_FN(OnWindowResized) 等价于 [this](auto&& e) { this->OnWindowResized(e); }
  */
-#define BIND_DISPATCH_FN(fn) [this](auto &&event){ return this->fn(event); }
+#define BIND_DISPATCH_FN(fn) [this](auto &&event) { return this->fn(event); }
 /**
  * @brief 辅助宏：用于静态函数的事件分发
  *

@@ -37,10 +37,7 @@ class SubscriptionGroup {
   /**
    * @brief 析构函数 - 自动取消所有订阅
    */
-  ~SubscriptionGroup()
-  {
-    UnsubscribeAll();
-  }
+  ~SubscriptionGroup() { UnsubscribeAll(); }
 
   // 禁止拷贝构造和赋值
   SubscriptionGroup(const SubscriptionGroup &) = delete;
@@ -51,23 +48,35 @@ class SubscriptionGroup {
   SubscriptionGroup &operator=(SubscriptionGroup &&) = default;
 
   /**
-   * @brief 添加事件订阅到组内，接收到事件同步处理
+   * @brief 添加事件订阅/大类订阅到组内，接收到事件同步处理
    */
   template<typename T>
   void SubscribeImmediate(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
   {
     Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Sync);
   }
+  void SubscribeByCategoryImmediate(EventCategory category,
+                                    EventHandler handler,
+                                    EventPriority priority = EventPriority::Normal)
+  {
+    SubscribeByCategory(category, std::move(handler), priority, SubscriptionFlags::Sync);
+  }
   /**
-   * @brief 添加异步事件订阅
+   * @brief 添加异步事件订阅/大类订阅
    */
   template<typename T>
   void SubscribeAsync(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
   {
     Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Async);
   }
+  void SubscribeByCategoryAsync(EventCategory category,
+                                EventHandler handler,
+                                EventPriority priority = EventPriority::Normal)
+  {
+    SubscribeByCategory(category, std::move(handler), priority, SubscriptionFlags::Async);
+  }
   /**
-   * @brief 添加线程安全的异步事件订阅
+   * @brief 添加异步延迟事件订阅/大类订阅
    */
   template<typename T>
   void SubscribeAsyncDeferred(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
@@ -75,13 +84,28 @@ class SubscriptionGroup {
     Subscribe<T>(
         std::move(handler), priority, SubscriptionFlags::Async | SubscriptionFlags::Deferred);
   }
+  void SubscribeByCategoryAsyncDeferred(EventCategory category,
+                                        EventHandler handler,
+                                        EventPriority priority = EventPriority::Normal)
+  {
+    SubscribeByCategory(category,
+                        std::move(handler),
+                        priority,
+                        SubscriptionFlags::Async | SubscriptionFlags::Deferred);
+  }
   /**
-   * @brief 添加延迟事件订阅
+   * @brief 添加延迟事件订阅/大类订阅
    */
   template<typename T>
   void SubscribeDeferred(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
   {
     Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Deferred);
+  }
+  void SubscribeByCategoryDeferred(EventCategory category,
+                                   EventHandler handler,
+                                   EventPriority priority = EventPriority::Normal)
+  {
+    SubscribeByCategory(category, std::move(handler), priority, SubscriptionFlags::Deferred);
   }
   /**
    * @brief 取消组内所有订阅
@@ -98,32 +122,20 @@ class SubscriptionGroup {
    * @brief 检查订阅组是否为空
    * @return bool 是否没有任何订阅
    */
-  bool IsEmpty() const
-  {
-    return m_Handlers.empty();
-  }
+  bool IsEmpty() const { return m_Handlers.empty(); }
   /**
    * @brief 获取订阅数量
    * @return size_t 当前管理的订阅数
    */
-  size_t Count() const
-  {
-    return m_Handlers.size();
-  }
+  size_t Count() const { return m_Handlers.size(); }
   /**
    * @brief 获取组名称
    */
-  const std::string &GetGroupName() const
-  {
-    return m_GroupName;
-  }
+  const std::string &GetGroupName() const { return m_GroupName; }
   /**
    * @brief 设置组名称
    */
-  void SetGroupName(const std::string &name)
-  {
-    m_GroupName = name;
-  }
+  void SetGroupName(const std::string &name) { m_GroupName = name; }
 
  private:
   /**
@@ -140,6 +152,14 @@ class SubscriptionGroup {
   {
     m_Handlers.push_back(
         m_EventBus.Subscribe<T>(std::move(handler), priority, flags, m_GroupName));
+  }
+  void SubscribeByCategory(EventCategory category,
+                           EventHandler handler,
+                           EventPriority priority = EventPriority::Normal,
+                           SubscriptionFlags flags = SubscriptionFlags::Sync)
+  {
+    m_Handlers.push_back(m_EventBus.SubscribeByCategory(
+        category, std::move(handler), priority, flags, m_GroupName));
   }
 
   EventBus &m_EventBus;                         // 事件总线引用
