@@ -146,12 +146,12 @@ void OpenGLPipeline::OnViewPortResize(ViewPortResizeEvent &event)
     m_PendingSize = event.GetSize();
     m_ShouldResize = true;
 
-    event.SetResult(EventResult::HandledAndStop);
+    event.SetResult(EventResult::Handled);
     return;
   }
 
   // 尺寸匹配，Resize无效
-  event.SetResult(EventResult::FailedAndStop);
+  event.SetResult(EventResult::Failed);
   return;
 }
 

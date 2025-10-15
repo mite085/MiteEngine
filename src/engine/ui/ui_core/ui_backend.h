@@ -31,12 +31,6 @@ class UIBackend {
    */
   virtual void EndFrame() = 0;
 
-  /**
-   * @brief 处理输入事件
-   * @param event 输入事件
-   */
-  virtual void ProcessInputEvent(Event &event) = 0;
-
   // ==================== 参数接口 ====================
   /**
    * @brief 设置显示尺寸
