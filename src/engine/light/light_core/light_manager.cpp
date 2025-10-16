@@ -1,6 +1,7 @@
 #include "light_manager.h"
 #include "subscription_group.h"
 #include "basic_event/instance_event.h"
+#include "light_data/point_light.h"
 
 namespace mite {
 
@@ -56,7 +57,69 @@ bool LightManager::IsInitialized() const
 {
   return m_IsInitialized;
 }
-
+LightPtr LightManager::CreatePointLight()
+{
+  auto light = std::make_shared<PointLight>();
+  if (AddLight(light)) {
+    LOG_TRACE("Point light created and added to manager");
+    return light;
+  }
+  return nullptr;
+}
+//LightPtr LightManager::CreateSpotLight()
+//{
+//  auto light = std::make_shared<SpotLight>();
+//  if (AddLight(light)) {
+//    LOG_TRACE("Spot light created and added to manager");
+//    return light;
+//  }
+//  return nullptr;
+//}
+//LightPtr LightManager::CreateDirectionalLight()
+//{
+//  auto light = std::make_shared<DirectionalLight>();
+//  if (AddLight(light)) {
+//    LOG_TRACE("Directional light created and added to manager");
+//    return light;
+//  }
+//  return nullptr;
+//}
+//LightPtr LightManager::CreateAreaRectLight()
+//{
+//  auto light = std::make_shared<AreaRectLight>();
+//  if (AddLight(light)) {
+//    LOG_TRACE("Area rectangle light created and added to manager");
+//    return light;
+//  }
+//  return nullptr;
+//}
+//LightPtr LightManager::CreateAreaEllipseLight()
+//{
+//  auto light = std::make_shared<AreaEllipseLight>();
+//  if (AddLight(light)) {
+//    LOG_TRACE("Area ellipse light created and added to manager");
+//    return light;
+//  }
+//  return nullptr;
+//}
+LightPtr LightManager::CreateLight(LightType type)
+{
+  switch (type) {
+    case LightType::POINT:
+      return CreatePointLight();
+    //case LightType::SPOT:
+    //  return CreateSpotLight();
+    //case LightType::DIRECTIONAL:
+    //  return CreateDirectionalLight();
+    //case LightType::AREA_RECT:
+    //  return CreateAreaRectLight();
+    //case LightType::AREA_ELLIPSE:
+    //  return CreateAreaEllipseLight();
+    default:
+      LOG_ERROR("Unknown light type: {}", static_cast<int>(type));
+      return nullptr;
+  }
+}
 bool LightManager::AddLight(LightPtr light)
 {
   if (!m_IsInitialized) {

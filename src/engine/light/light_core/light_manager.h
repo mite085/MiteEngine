@@ -30,20 +30,17 @@ class LightManager {
   ~LightManager() = default;
 
   // ---- 生命周期管理 ----
-
   /**
    * @brief 初始化光源管理器
    * @return 是否初始化成功
    * @note 创建LightSSBO并设置默认参数
    */
   bool Initialize();
-
   /**
    * @brief 销毁光源管理器
    * @note 清理所有光源资源和GPU缓冲区
    */
   void Destroy();
-
   /**
    * @brief 检查是否已初始化
    * @return 初始化状态
@@ -51,7 +48,22 @@ class LightManager {
   bool IsInitialized() const;
 
   // ---- 光源管理 ----
+  /**
+   * @brief 创建点光源/聚光灯/方向光/矩形与椭圆面光源
+   * @return 光源共享指针
+   */
+  LightPtr CreatePointLight();
+  //LightPtr CreateSpotLight();
+  //LightPtr CreateDirectionalLight();
+  //LightPtr CreateAreaRectLight();
+  //LightPtr CreateAreaEllipseLight();
 
+  /**
+   * @brief 创建指定类型的光源
+   * @param type 光源类型
+   * @return 光源共享指针，如果类型无效返回nullptr
+   */
+  LightPtr CreateLight(LightType type);
   /**
    * @brief 添加光源到管理器
    * @param light 要添加的光源指针
@@ -59,31 +71,26 @@ class LightManager {
    * @note 光源所有权由调用方管理，管理器只持有引用
    */
   bool AddLight(LightPtr light);
-
   /**
    * @brief 移除指定光源
    * @param light 要移除的光源指针
    * @return 是否移除成功
    */
   bool RemoveLight(LightPtr light);
-
   /**
    * @brief 移除所有光源
    */
   void ClearAllLights();
-
   /**
    * @brief 获取所有光源列表
    * @return 光源指针列表
    */
   const std::vector<LightPtr> &GetAllLights() const;
-
   /**
    * @brief 获取启用的光源列表
    * @return 启用的光源指针列表
    */
   std::vector<LightPtr> GetEnabledLights() const;
-
   /**
    * @brief 获取投射阴影的光源列表
    * @return 投射阴影的光源指针列表
@@ -91,7 +98,6 @@ class LightManager {
   std::vector<LightPtr> GetShadowCastingLights() const;
 
   // ---- 数据更新 ----
-
   /**
    * @brief 更新所有光源数据到GPU
    * @param worldTransforms 光源世界变换映射表，key为光源指针，value为变换矩阵
@@ -99,7 +105,6 @@ class LightManager {
    * @note 需要提供光源的当前世界变换矩阵
    */
   bool UpdateLightData(const std::unordered_map<LightPtr, Transform> &worldTransforms);
-
   /**
    * @brief 收集所有阴影数据
    * @param worldTransforms 光源世界变换映射表
