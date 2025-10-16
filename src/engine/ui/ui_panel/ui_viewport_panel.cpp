@@ -26,7 +26,8 @@ void ViewportPanel::Render()
 {
   try {
     // 获取当前内容区域尺寸
-    glm::vec2 contentSize = GetContentRegionAvail();
+    glm::vec2 contentStartPos = m_Renderer.GetCursorStartPos();
+    glm::vec2 contentSize = m_Renderer.GetContentRegionAvail();
 
     // 确保尺寸都是正数。否则类型转换会有问题（当ViewPort折叠起来的时候，size.y为-16）
     if (contentSize.x <= 0 || contentSize.y <= 0) {
@@ -49,14 +50,14 @@ void ViewportPanel::Render()
       m_ImageProps.enabled = IsEnabled();
 
       // 渲染图像
-      GetRenderer().RenderImage(m_ImageProps);
+      m_Renderer.RenderImage(m_ImageProps);
     }
     else {
       // FrameBuffer未就绪时的占位显示
       LabelProps placeholderProps;
       placeholderProps.visible = true;
       placeholderProps.fallbackText = "FrameBuffer Not Ready";
-      GetRenderer().RenderLabel(placeholderProps);
+      m_Renderer.RenderLabel(placeholderProps);
     }
   }
   catch (const std::exception &e) {
