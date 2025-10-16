@@ -8,10 +8,7 @@ ImGuiBackend::ImGuiBackend()
     : m_Window(nullptr),
       m_MouseCaptured(false),
       m_MouseCursorVisible(true),
-      m_DisplaySize(1280, 720),
-      m_FramebufferScale(1.0f, 1.0f),
-      m_StyleAdapter(std::make_unique<ImGuiStyleAdapter>()),
-      m_InputAdapter(std::make_unique<ImGuiInputContext>())
+      m_StyleAdapter(std::make_unique<ImGuiStyleAdapter>())
 {
 }
 
@@ -82,8 +79,6 @@ void ImGuiBackend::Shutdown()
   m_Window = nullptr;
   m_MouseCaptured = false;
   m_MouseCursorVisible = true;
-  m_DisplaySize = {0, 0};
-  m_FramebufferScale = {1.0f, 1.0f};
 
   m_Logger->info("ImGuiBackend shutdown completed");
 }
@@ -101,14 +96,6 @@ void ImGuiBackend::BeginFrame()
   // 使用Time模块设置DeltaTime
   ImGui::GetIO().DeltaTime = Time::DeltaTime();
 
-  // 更新显示尺寸（委托给输入适配器）
-  m_InputAdapter->UpdateDisplaySize(GetWindow());
-  m_DisplaySize = m_InputAdapter->GetDisplaySize();
-
-  // 更新帧缓冲缩放
-  m_InputAdapter->UpdateFramebufferScale(GetWindow());
-  m_FramebufferScale = m_InputAdapter->GetFramebufferScale();
-
   static bool opt_fullscreen = true;
   static bool opt_padding = false;
   static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
@@ -123,7 +110,7 @@ void ImGuiBackend::BeginFrame()
   window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
   window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-  ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+  ImGui::Begin("Mite DockSpace", nullptr, window_flags);
   ImGui::PopStyleVar();
   // 菜单栏
   if (ImGui::BeginMenuBar()) {
@@ -166,30 +153,6 @@ void ImGuiBackend::EndFrame()
   }
 }
 
-void ImGuiBackend::SetDisplaySize(int width, int height)
-{
-  m_DisplaySize = {width, height};
-  if (m_Window) {
-    glfwSetWindowSize(m_Window, width, height);
-  }
-}
-
-glm::ivec2 ImGuiBackend::GetDisplaySize() const
-{
-  return m_DisplaySize;
-}
-
-void ImGuiBackend::SetFramebufferScale(float scaleX, float scaleY)
-{
-  m_FramebufferScale = {scaleX, scaleY};
-  ImGui::GetIO().DisplayFramebufferScale = ImVec2(scaleX, scaleY);
-}
-
-glm::vec2 ImGuiBackend::GetFramebufferScale() const
-{
-  return m_FramebufferScale;
-}
-
 void ImGuiBackend::SetMouseCaptured(bool captured)
 {
   m_MouseCaptured = captured;
@@ -216,21 +179,6 @@ bool ImGuiBackend::IsMouseCursorVisible() const
   return m_MouseCursorVisible;
 }
 
-void ImGuiBackend::CreateDeviceObjects()
-{
-  ImGui_ImplOpenGL3_CreateDeviceObjects();
-}
-
-void ImGuiBackend::DestroyDeviceObjects()
-{
-  ImGui_ImplOpenGL3_DestroyDeviceObjects();
-}
-
-const char *ImGuiBackend::GetBackendName() const
-{
-  return "ImGui (OpenGL3 + GLFW)";
-}
-
 void ImGuiBackend::ApplyUIStyle(std::shared_ptr<UIStyle> newStyle)
 {
   m_StyleAdapter->ApplyUIStyle(newStyle);
@@ -253,11 +201,6 @@ void ImGuiBackend::SetWindow(GLFWwindow *window)
 GLFWwindow *ImGuiBackend::GetWindow() const
 {
   return m_Window;
-}
-
-ImGuiInputContext &ImGuiBackend::GetInputAdapter()
-{
-  return *m_InputAdapter;
 }
 
 bool ImGuiBackend::InitializeImGuiContext()
