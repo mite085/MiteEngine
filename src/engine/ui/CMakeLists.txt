@@ -36,8 +36,8 @@ set(UI_PANEL_SRCS
     ui_panel/ui_panel.cpp
     ui_panel/ui_viewport_panel.h     # 视口面板，核心接口
     ui_panel/ui_viewport_panel.cpp
-    ui_panel/ui_viewport_overlay.h   # 视口覆盖层，绘制统计信息、参考线等
-    ui_panel/ui_viewport_overlay.cpp
+    ui_panel/ui_viewport_gizmo_panel.h   # 视口面板Gizmo支持
+    ui_panel/ui_viewport_gizmo_panel.cpp
 )
 source_group("ui panels" FILES ${UI_PANEL_SRCS})
 
@@ -51,8 +51,6 @@ set(UI_IMGUI_BACKEND_SRCS
     ui_imgui_backend/ui_imgui_font_manager.cpp
     ui_imgui_backend/ui_imgui_style_adapter.h   # ImGui样式适配器
     ui_imgui_backend/ui_imgui_style_adapter.cpp
-    ui_imgui_backend/ui_imgui_input_adapter.h   # ImGui输入适配器（事件转换）
-    ui_imgui_backend/ui_imgui_input_adapter.cpp
 )
 source_group("ui imgui backend" FILES ${UI_IMGUI_BACKEND_SRCS})
 
