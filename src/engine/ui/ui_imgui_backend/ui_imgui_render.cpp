@@ -69,6 +69,11 @@ void ImGuiUIRender::EndChild()
 {
   ImGui::EndChild();
 }
+glm::vec2 ImGuiUIRender::GetCursorStartPos()
+{
+  ImVec2 start = ImGui::GetCursorStartPos();
+  return glm::vec2(start.x, start.y);
+}
 glm::vec2 ImGuiUIRender::GetContentRegionAvail()
 {
   ImVec2 avail = ImGui::GetContentRegionAvail();
