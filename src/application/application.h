@@ -3,8 +3,7 @@
 
 #include "asset_manager.h"
 #include "material_factory.h"
-#include "input/input.h"
-#include "input/modular_input_context.h"
+#include "input/input_manager.h"
 #include "render_core/render_pipeline.h"
 #include "scene_core/scene_core.h"
 #include "scene_graph.h"
@@ -88,7 +87,7 @@ class MiteApplication {
 
  private:
   // 子系统
-  std::shared_ptr<InputContextStack> m_InputContextStack;
+  std::unique_ptr<InputManager> m_InputManager;
   std::unique_ptr<AssetManager> m_AssetManager;
 
   std::unique_ptr<Window> m_Window;

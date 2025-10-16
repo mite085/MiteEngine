@@ -21,32 +21,29 @@ void MiteApplication::run()
   Initialize();
 
   while (!m_ShouldClose) {
-    // Time系统更新时间
+    // 0. Time系统更新时间
     Time::Update();
 
-    // 1. 处理事件
+    // 1. 处理Deferred事件
     m_Window->PollEvents();
     EventBus::Get().ProcessQueue();
 
-    // 2. 更新输入系统
-    Input::Update();
-
-    // 4. 更新场景
+    // 2. 更新场景
     Update();
 
     // 3. 开始新的一帧
     BeginFrame();
 
-    // 5. 渲染场景
+    // 4. 渲染场景
     Render();
 
-    // 6. 结束当前帧
+    // 5. 结束当前帧
     EndFrame();
 
-    // 7. UI渲染
+    // 6. UI渲染
     RenderUI();
 
-    // 8. 窗口负责交换缓冲
+    // 7. 窗口负责交换缓冲
     m_Window->SwapBuffers();
   }
 
@@ -65,50 +62,53 @@ void MiteApplication::LoadDefaultScene()
 
   // 协调各模块，加载初始场景
 
-  // 创建ViewportPanel并设置FrameBuffer（TODO：此处传入Camera应当也是错误的，但似乎没有好办法让ViewPort获取正确宽高比）
-  CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().GetComponent<CameraComponent>(
-      m_SceneCore->GetMainCamera());
-  std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>(
-      "viewport", mainCameraComponent);
+  // 创建ViewportPanel
+  std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>("viewport");
 
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
 
+  // 创建灯光、实体与对应组件
+  std::shared_ptr<Light> pointLight = LightManager::Get().CreateLight(LightType::POINT);
+  Entity lightEntity = m_SceneCore->CreateEntity("pointLight");
+  TransformComponent &lightTransformComponent =
+      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(lightEntity);
+  LightComponent &lightComponent = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
+      lightEntity);
+  lightComponent.SetLight(pointLight);
+
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
       FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
-  Model plane_model(m_AssetManager->GetModel(plane_model_asset_id)->handle,
+  Model planeModel(m_AssetManager->GetModel(plane_model_asset_id)->handle,
                     m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
-  // 创建灯光
-  std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>(); 
-  LightManager::Get().AddLight(pointLight);
-
-  for (size_t i = 0; i < plane_model.GetSubMeshCount(); ++i) {
+  // 网格体组件与实体创建
+  for (size_t i = 0; i < planeModel.GetSubMeshCount(); ++i) {
     // 1. 创建网格实体
-    Entity plane_submesh = m_SceneCore->CreateEntity("axis");
+    Entity planeSubmesh = m_SceneCore->CreateEntity("axis" + std::to_string(i));
 
     // 2. 创建网格组件，设定组件数据
-    MeshComponent &plane_mesh_component = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
-        plane_submesh);
-    plane_mesh_component.SetMesh(std::make_shared<Mesh>(plane_model.GetSubMesh(i)));
+    MeshComponent &planeMeshComponent = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
+        planeSubmesh);
+    planeMeshComponent.SetMesh(std::make_shared<Mesh>(planeModel.GetSubMesh(i)));
 
     // 3. 创建材质实例（自发光）
-    std::shared_ptr<MaterialInstance> plane_material = MaterialFactory::Get().CreateInstance(
+    std::shared_ptr<MaterialInstance> planeMaterial = MaterialFactory::Get().CreateInstance(
         MaterialType::EMISSION);
 
     // 4. 创建材质组件
-    MaterialComponent &plane_material_component =
-        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(plane_submesh);
-    plane_material_component.SetMaterialInstance(plane_material);
+    MaterialComponent &planeMaterialComponent =
+        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(planeSubmesh);
+    planeMaterialComponent.SetMaterialInstance(planeMaterial);
 
     // 5. 创建变换组件
-    TransformComponent &plane_transform_component =
-        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(plane_submesh);
+    TransformComponent &planeTransformComponent =
+        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(planeSubmesh);
 
     // 6. 创建包围盒
-    BoundingVolumeComponent &plane_bounding_volume_component =
-        m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(plane_submesh);
+    BoundingVolumeComponent &planeBoundingVolumeComponent =
+        m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(planeSubmesh);
   }
 
   // 更新场景视图
@@ -119,7 +119,7 @@ void MiteApplication::Initialize()
 {
   m_Logger->info("Initialize application");
 
-  // 订阅事件，并管理订阅句柄
+  // 订阅窗口关闭事件
   m_EventSubscriptions.SubscribeImmediate<WindowCloseEvent>(
       BIND_DISPATCH_FN(OnWindowClose),
       EventPriority::Highest  // 最高优先级确保及时处理
@@ -275,26 +275,14 @@ void MiteApplication::InitializeInputSystem()
 {
   m_Logger->info("Initializing input system");
 
-  // 创建输入上下文栈ContextStack
-  m_InputContextStack = std::make_shared<InputContextStack>();
-
-  // 初始化输入系统,将输入上下文栈ContextStack注入到Manager
-  Input::Init(m_InputContextStack);
-
-  // 创建编辑器上下文
-  // auto editorContext = std::make_shared<ModularInputContext>("Editor");
-
-  //// TODO: 为编辑器上下文装配处理器，以PropertyPanelProcessor为例
-  // std::shared_ptr<PropertyPanel> panel = std::make_shared<PropertyPanel>();
-  // editorContext->AddProcessor(std::make_shared<PropertyPanelProcessor>(panel));
-
-  // 将编辑器上下文推入全局栈
-  // Input::PushContext(editorContext);
+  // 创建并初始化输入系统
+  m_InputManager = std::make_unique<InputManager>();
+  m_InputManager->Init();
 }
 
 void MiteApplication::CleanUpInputSystem()
 {
-  Input::Shutdown();
+  m_InputManager->Shutdown();
 }
 
 void MiteApplication::CleanUpWindow()
