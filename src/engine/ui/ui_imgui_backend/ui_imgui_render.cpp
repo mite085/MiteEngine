@@ -31,11 +31,21 @@ bool ImGuiUIRender::BeginPanel(PanelProps &props)
     flags |= ImGuiConfigFlags_DockingEnable;
   }
 
-  // 开始面板
-  return ImGui::Begin(titleText.c_str(), &props.visible, flags);
+  // 开始panel
+  ImGui::Begin(titleText.c_str(), &props.visible, flags);
+
+  // 创建Child，内部不允许移动（如果没有这个child，拖动panel任意空白区域均会导致移动）
+  ChildProps childProp;
+  childProp.movable = false;
+  childProp.border = false;
+  BeginChild(childProp);
+
+  return true;
 }
 void ImGuiUIRender::EndPanel()
 {
+  // 结束child，结束panel
+  EndChild();
   ImGui::End();
 }
 bool ImGuiUIRender::BeginChild(ChildProps &props)
@@ -48,6 +58,8 @@ bool ImGuiUIRender::BeginChild(ChildProps &props)
     childId = GenerateImGuiId(props.elementId);
   }
   ImGuiWindowFlags flags = ImGuiWindowFlags_None;
+  if (!props.movable)
+    flags |= ImGuiWindowFlags_NoMove;
   if (props.border)
     flags |= ImGuiWindowFlags_ChildWindow;
   return ImGui::BeginChild(

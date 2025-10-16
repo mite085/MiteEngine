@@ -33,32 +33,6 @@ class UIBackend {
 
   // ==================== 参数接口 ====================
   /**
-   * @brief 设置显示尺寸
-   * @param width 宽度
-   * @param height 高度
-   */
-  virtual void SetDisplaySize(int width, int height) = 0;
-
-  /**
-   * @brief 获取显示尺寸
-   * @return 包含宽度和高度的pair
-   */
-  virtual glm::ivec2 GetDisplaySize() const = 0;
-
-  /**
-   * @brief 设置帧缓冲缩放
-   * @param scaleX 水平缩放
-   * @param scaleY 垂直缩放
-   */
-  virtual void SetFramebufferScale(float scaleX, float scaleY) = 0;
-
-  /**
-   * @brief 获取帧缓冲缩放
-   * @return 包含水平和垂直缩放的pair
-   */
-  virtual glm::vec2 GetFramebufferScale() const = 0;
-
-  /**
    * @brief 设置是否捕获鼠标
    * @param captured 是否捕获
    */
@@ -81,23 +55,6 @@ class UIBackend {
    * @return 是否显示
    */
   virtual bool IsMouseCursorVisible() const = 0;
-
-  // ==================== 渲染资源管理（暂时没有用到） ====================
-  /**
-   * @brief 创建后端特定的渲染资源
-   */
-  virtual void CreateDeviceObjects() = 0;
-
-  /**
-   * @brief 销毁后端特定的渲染资源
-   */
-  virtual void DestroyDeviceObjects() = 0;
-
-  /**
-   * @brief 获取后端名称（用于调试）
-   */
-  virtual const char *GetBackendName() const = 0;
-
 
   // ==================== 样式语言管理 ====================
   /**

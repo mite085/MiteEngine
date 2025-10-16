@@ -270,6 +270,7 @@ struct PanelProps : public BaseRenderProps {
  * 用于创建子窗口区域
  */
 struct ChildProps : public BaseRenderProps {
+  bool movable = true;      // 是否可移动
   bool border = false;      // 是否显示边框
   glm::vec2 size = {0, 0};  // 子窗口尺寸（0表示自动）
 };

@@ -162,7 +162,7 @@ bool UISystem::InitializeBackend(void *nativeWindow)
     return false;
   }
 
-  m_Logger->info("ImGui Backend Initialize Successed: {}", m_Backend->GetBackendName());
+  m_Logger->info("ImGui Backend Initialize Successed");
   return true;
 }
 
