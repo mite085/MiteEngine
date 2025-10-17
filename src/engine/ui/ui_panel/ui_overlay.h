@@ -12,23 +12,18 @@ namespace mite {
  */
 struct OverlayContext {
   // 视口信息
-  glm::vec2 viewportPos;   // 视口左上角屏幕坐标
-  glm::vec2 viewportSize;  // 视口尺寸
-  glm::vec2 contentPos;    // 内容区域左上角坐标
-  glm::vec2 contentSize;   // 内容区域尺寸
+  glm::vec2 viewportPos;   // Panel左上角屏幕坐标（由panel执行m_Renderer.GetCursorStartPos()获得）
+  glm::vec2 viewportSize;  // Panel尺寸（由panel执行m_Renderer.GetContentRegionAvail()获得）
+  glm::vec2 contentPos;    // OverLay内容区域左上角坐标（支持自定义）
+  glm::vec2 contentSize;   // 内容区域尺寸（支持自定义）
 
-  // 相机和变换信息
+  // 相机变换信息
   glm::mat4 viewMatrix;        // 视图矩阵
   glm::mat4 projectionMatrix;  // 投影矩阵
-  glm::mat4 modelMatrix;       // 模型矩阵（可选）
 
-  // 输入状态
-  bool isViewportHovered;  // 视口是否被悬停
-  bool isViewportFocused;  // 视口是否获得焦点
-  glm::vec2 mousePos;      // 鼠标位置（视口相对坐标）
-
-  // 帧状态
-  float deltaTime;  // 帧间隔时间
+  // 选中模型变换信息
+  bool isModelSelected;    // 是否有模型被选中
+  glm::mat4 modelMatrix;  // 模型矩阵
 
   OverlayContext()
       : viewportPos(0, 0),
@@ -37,11 +32,9 @@ struct OverlayContext {
         contentSize(0, 0),
         viewMatrix(1.0f),
         projectionMatrix(1.0f),
-        modelMatrix(1.0f),
-        isViewportHovered(false),
-        isViewportFocused(false),
-        mousePos(0, 0),
-        deltaTime(0)
+        isModelSelected(false),
+        modelMatrix(1.0f) 
+        
   {
   }
 };
@@ -61,7 +54,7 @@ class UIOverlay {
 
   // 禁止拷贝
   UIOverlay(const UIOverlay &) = delete;
-  UIOverlay &operator=(const UIOverlay &) = delete;
+  UIOverlay &operator=(UIOverlay &) = delete;
 
   // ==================== 核心接口 ====================
   /**
@@ -74,7 +67,7 @@ class UIOverlay {
    * @brief 渲染覆盖层内容
    * @param context 渲染上下文信息
    */
-  virtual void Render(const OverlayContext &context) = 0;
+  virtual void Render(OverlayContext &context) = 0;
 
   // ==================== 基础属性访问 ====================
   bool IsEnabled() const { return m_Enabled; }
