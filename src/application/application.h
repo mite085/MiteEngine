@@ -22,7 +22,6 @@ class MiteApplication {
   void run();
 
   // 场景管理
-  void NewScene();
   void LoadScene(const std::string &filepath);
   void SaveScene(const std::string &filepath);
   void LoadDefaultScene();
@@ -61,25 +60,11 @@ class MiteApplication {
   void CleanUpSceneView();
 
   // 帧循环相关
-  void BeginFrame();
   void Update();
   void Render();
-  void EndFrame();
-  void LimitFrameRate();
-  void UpdateFrameStats();
 
   // 渲染相关
   void RenderUI();
-  void RenderSceneHierarchy();
-  void RenderPropertiesPanel();
-  void RenderViewport();
-  void RenderPreviewWindow();
-  void RenderMainMenu();
-
-  // 更新相关
-  void UpdateEditorState();
-  void UpdateAnimations();
-  void HandlePendingOperations();
 
   // 事件处理
   void OnWindowResize(uint32_t width, uint32_t height);
