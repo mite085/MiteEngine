@@ -13,11 +13,12 @@ namespace mite {
  * ShadowMap,    // 阴影贴图
  * UI,           // UI相机
  * Debug         // 调试视图
+ * MainView,     // 主相机
+ * FreeView,     // 闲置相机
  */
-enum class CameraUsage {
-  FreeView,  // 闲置相机
-  MainView,  // 主视图
-};
+//enum class CameraUsage {
+//  
+//};
 
 /**
  * @brief 摄像机组件，将Camera与ECS集成
@@ -46,8 +47,8 @@ class CameraComponent : public SnapshotComponentTraits<std::shared_ptr<Camera>, 
   void Zoom(float amount);
 
   // ==================== 主摄像机与摄像机标记 ====================
-  CameraUsage GetUsage() const;
-  void SetUsage(CameraUsage usage);
+  //CameraUsage GetUsage() const;
+  //void SetUsage(CameraUsage usage);
 
   // ==================== 参数/对象获取 ====================
   glm::mat4 GetProjectionMatrix() const;
@@ -66,7 +67,7 @@ class CameraComponent : public SnapshotComponentTraits<std::shared_ptr<Camera>, 
   void SetSnapshotData(const std::shared_ptr<Camera> &data) override;
 
   std::shared_ptr<Camera> m_Camera;  // 摄像机
-  CameraUsage m_Usage = CameraUsage::FreeView;
+  //CameraUsage m_Usage = CameraUsage::FreeView;
 };
 
 // 摄像机组件系统
@@ -74,30 +75,31 @@ class CameraComponentSystem : public SnapshotComponentSystem<CameraComponent> {
   DECLARE_COMPONENT_SYSTEM(CameraComponentSystem)
  public:
   std::vector<std::type_index> GetSystemDependencies() const override;
-
-  // 获取Main相机实体
-  Entity GetMainCameraEntity() const;
-
-  // 设置主相机实体（确保唯一性）
-  void SetMainCameraEntity(Entity mainCamera);
 };
 
-/**
- * @class MainCameraChangedEvent
- * @brief 主摄像机修改事件（暂未启用）
- */
-class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
- public:
-  MainCameraChangedEvent(Entity entity, CameraComponent &newMainCamera)
-      : ComponentEvent<CameraComponent>(entity, component)
-  {
-  }
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new MainCameraChangedEvent(entity, component);
-  }
-};
+  //// 获取Main相机实体
+  //Entity GetMainCameraEntity() const;
+
+  //// 设置主相机实体（确保唯一性）
+  //void SetMainCameraEntity(Entity mainCamera);
+
+
+///**
+// * @class MainCameraChangedEvent
+// * @brief 主摄像机修改事件（暂未启用）
+// */
+//class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
+// public:
+//  MainCameraChangedEvent(Entity entity, CameraComponent &newMainCamera)
+//      : ComponentEvent<CameraComponent>(entity, component)
+//  {
+//  }
+//  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
+//  Event *Clone() const override
+//  {
+//    return new MainCameraChangedEvent(entity, component);
+//  }
+//};
 
 /**
  * @class CameraChangedEvent

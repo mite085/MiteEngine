@@ -31,14 +31,14 @@ void CameraComponent::Zoom(float amount)
 {
   m_Camera->Zoom(amount);
 }
-CameraUsage CameraComponent::GetUsage() const
-{
-  return m_Usage;
-}
-void CameraComponent::SetUsage(CameraUsage usage)
-{
-  m_Usage = usage;
-}
+//CameraUsage CameraComponent::GetUsage() const
+//{
+//  return m_Usage;
+//}
+//void CameraComponent::SetUsage(CameraUsage usage)
+//{
+//  m_Usage = usage;
+//}
 
 glm::mat4 CameraComponent::GetProjectionMatrix() const
 {
@@ -97,51 +97,51 @@ std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() cons
   return {typeid(TransformComponentSystem)};  // 需要变换信息
 }
 
-Entity CameraComponentSystem::GetMainCameraEntity() const
-{
-  for (auto [entity, component] : m_AllComponents) {
-    if (component && component->GetUsage() == CameraUsage::MainView) {
-      return component->GetEntity();
-    }
-  }
-
-  LOG_ERROR("No main camera component pointer in camera component system!");
-  return Entity{};
-}
-
-void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
-{
-  // 遍历组件列表，获取新camera组件和旧camera组件
-  CameraComponent *oldMain = nullptr, *newMain = nullptr;
-
-  for (auto [entity, component] : m_AllComponents) {
-    if (!component) {
-      LOG_ERROR("Empty camera component pointer in camera component system!");
-      continue;
-    }
-    else if (component->GetUsage() == CameraUsage::MainView) {
-      oldMain = component;
-    }
-    else if (component->GetEntity() == mainCamera) {
-      newMain = component;
-    }
-  }
-
-  // 如果新旧相同（旧的存在，都是nullptr的相同不算相同），则省略修改
-  if (oldMain && oldMain == newMain)
-    return;
-
-  // 清除之前的主相机标记
-  if (oldMain) {
-    oldMain->SetUsage(CameraUsage::FreeView);
-  }
-  // 设置新的主相机
-  if (newMain) {
-    newMain->SetUsage(CameraUsage::MainView);
-    EventBus::Publish<MainCameraChangedEvent>(MainCameraChangedEvent(mainCamera, *newMain));
-  }
-  else {
-    LOG_ERROR("Invalid camera entity when setting new main camera");
-  }
-}
+//Entity CameraComponentSystem::GetMainCameraEntity() const
+//{
+//  for (auto [entity, component] : m_AllComponents) {
+//    if (component && component->GetUsage() == CameraUsage::MainView) {
+//      return component->GetEntity();
+//    }
+//  }
+//
+//  LOG_ERROR("No main camera component pointer in camera component system!");
+//  return Entity{};
+//}
+//
+//void CameraComponentSystem::SetMainCameraEntity(Entity mainCamera)
+//{
+//  // 遍历组件列表，获取新camera组件和旧camera组件
+//  CameraComponent *oldMain = nullptr, *newMain = nullptr;
+//
+//  for (auto [entity, component] : m_AllComponents) {
+//    if (!component) {
+//      LOG_ERROR("Empty camera component pointer in camera component system!");
+//      continue;
+//    }
+//    else if (component->GetUsage() == CameraUsage::MainView) {
+//      oldMain = component;
+//    }
+//    else if (component->GetEntity() == mainCamera) {
+//      newMain = component;
+//    }
+//  }
+//
+//  // 如果新旧相同（旧的存在，都是nullptr的相同不算相同），则省略修改
+//  if (oldMain && oldMain == newMain)
+//    return;
+//
+//  // 清除之前的主相机标记
+//  if (oldMain) {
+//    oldMain->SetUsage(CameraUsage::FreeView);
+//  }
+//  // 设置新的主相机
+//  if (newMain) {
+//    newMain->SetUsage(CameraUsage::MainView);
+//    EventBus::Publish<MainCameraChangedEvent>(MainCameraChangedEvent(mainCamera, *newMain));
+//  }
+//  else {
+//    LOG_ERROR("Invalid camera entity when setting new main camera");
+//  }
+//}
 };  // namespace mite

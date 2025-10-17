@@ -68,11 +68,11 @@ class SceneCore{
     m_Name = name;
   }
 
-  /**
-   * @brief 获取主相机
-   */
-  Entity GetMainCamera() const;
-  void SetMainCamera(Entity entity);
+  ///**
+  // * @brief 获取主相机
+  // */
+  //Entity GetMainCamera() const;
+  //void SetMainCamera(Entity entity);
 
   // ------------------------ 模块访问 ------------------------
   /**

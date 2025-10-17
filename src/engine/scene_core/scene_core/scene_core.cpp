@@ -117,25 +117,25 @@ bool SceneCore::IsValid(Entity entity) const
 {
   return entity && m_Registry.IsValid(entity);
 }
-
-Entity SceneCore::GetMainCamera() const
-{
-  // 通过访问Camera组件系统，获取到其维护的主相机实体
-  Entity mainCameraEntity =
-      m_SystemManager.GetSystem<CameraComponentSystem>()->GetMainCameraEntity();
-
-  // 无主相机情况报错，并返回nullptr
-  if (!mainCameraEntity.IsValid()) {
-    LOG_ERROR("Invalid Main Camera in CameraComponentSystem!");
-    return Entity{};
-  }
-
-  return mainCameraEntity;
-}
-
-void SceneCore::SetMainCamera(Entity mainCameraEntity)
-{
-  // 通过访问Camera组件系统，更换其维护的主相机实体
-  m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);
-}
+//
+//Entity SceneCore::GetMainCamera() const
+//{
+//  // 通过访问Camera组件系统，获取到其维护的主相机实体
+//  Entity mainCameraEntity =
+//      m_SystemManager.GetSystem<CameraComponentSystem>()->GetMainCameraEntity();
+//
+//  // 无主相机情况报错，并返回nullptr
+//  if (!mainCameraEntity.IsValid()) {
+//    LOG_ERROR("Invalid Main Camera in CameraComponentSystem!");
+//    return Entity{};
+//  }
+//
+//  return mainCameraEntity;
+//}
+//
+//void SceneCore::SetMainCamera(Entity mainCameraEntity)
+//{
+//  // 通过访问Camera组件系统，更换其维护的主相机实体
+//  m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);
+//}
 }  // namespace mite
