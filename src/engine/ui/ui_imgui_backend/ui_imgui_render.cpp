@@ -1,7 +1,7 @@
 #include "ui_imgui_render.h"
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <misc/cpp/imgui_stdlib.h>
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "misc/cpp/imgui_stdlib.h"
 
 namespace mite {
 // ==================== 面板管理接口实现 ====================
@@ -15,6 +15,7 @@ bool ImGuiUIRender::BeginPanel(PanelProps &props)
 
   // 构建ImGui窗口标志
   ImGuiWindowFlags flags = ImGuiWindowFlags_None;
+
   if (!props.movable)
     flags |= ImGuiWindowFlags_NoMove;
   if (!props.resizable)
@@ -34,18 +35,19 @@ bool ImGuiUIRender::BeginPanel(PanelProps &props)
   // 开始panel
   ImGui::Begin(titleText.c_str(), &props.visible, flags);
 
-  // 创建Child，内部不允许移动（如果没有这个child，拖动panel任意空白区域均会导致移动）
-  ChildProps childProp;
-  childProp.movable = false;
-  childProp.border = false;
-  BeginChild(childProp);
+  // 若窗口悬停且鼠标在可操作区域内，窗口不可移动（操作props，在下一帧实现）
+  ImGuiWindow *window = ImGui::GetCurrentWindow();
+  if (ImGui::IsWindowHovered() &&
+      ImGui::IsMouseHoveringRect(window->InnerRect.Min, window->InnerRect.Max))
+    props.movable = false;
+  else
+    // 否则释放窗口，可移动
+    props.movable = true;
 
   return true;
 }
 void ImGuiUIRender::EndPanel()
 {
-  // 结束child，结束panel
-  EndChild();
   ImGui::End();
 }
 bool ImGuiUIRender::BeginChild(ChildProps &props)
@@ -69,15 +71,25 @@ void ImGuiUIRender::EndChild()
 {
   ImGui::EndChild();
 }
-glm::vec2 ImGuiUIRender::GetCursorStartPos()
+glm::vec2 ImGuiUIRender::GetWindowPos()
 {
-  ImVec2 start = ImGui::GetCursorStartPos();
-  return glm::vec2(start.x, start.y);
+  ImVec2 position = ImGui::GetWindowPos();
+  return glm::vec2(position.x, position.y);
 }
-glm::vec2 ImGuiUIRender::GetContentRegionAvail()
+glm::vec2 ImGuiUIRender::GetPanelPos()
 {
-  ImVec2 avail = ImGui::GetContentRegionAvail();
-  return glm::vec2(avail.x, avail.y);
+  ImVec2 position = ImGui::GetCursorScreenPos();
+  return glm::vec2(position.x, position.y);
+}
+glm::vec2 ImGuiUIRender::GetWindowSize()
+{
+  ImVec2 size = ImGui::GetWindowSize();
+  return glm::vec2(size.x, size.y);
+}
+glm::vec2 ImGuiUIRender::GetPanelSize()
+{
+  ImVec2 size = ImGui::GetContentRegionAvail();
+  return glm::vec2(size.x, size.y);
 }
 bool ImGuiUIRender::IsPanelFocused()
 {
@@ -318,7 +330,6 @@ bool ImGuiUIRender::RenderColorEdit(ColorEditProps &props)
 
   // Alpha相关设置
   if (props.showAlpha) {
-    
     flags |= ImGuiColorEditFlags_AlphaPreviewHalf;  // 半透明预览
     flags |= ImGuiColorEditFlags_AlphaBar;          // 显示alpha条
   }
@@ -523,8 +534,6 @@ glm::vec2 ImGuiUIRender::CalcTextSize(const std::string &text)
   return glm::vec2(size.x, size.y);
 }
 
-
-
 // ==================== 翻译辅助函数 ====================
 
 std::string ImGuiUIRender::GetTranslatedText(const BaseRenderProps &props)
@@ -585,5 +594,4 @@ const char *ImGuiUIRender::GenerateImGuiId(const UUID &elementId)
   snprintf(buffer, sizeof(buffer), "##%s", UUIDGenerator::UUIDToString(elementId).c_str());
   return buffer;
 }
-
 }  // namespace mite

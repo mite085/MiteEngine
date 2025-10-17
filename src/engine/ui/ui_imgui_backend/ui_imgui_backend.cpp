@@ -1,7 +1,8 @@
 #include "ui_imgui_backend.h"
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+#include "imgui.h"
+#include "imguizmo.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 namespace mite {
 ImGuiBackend::ImGuiBackend()
@@ -89,6 +90,7 @@ void ImGuiBackend::BeginFrame()
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
+  ImGuizmo::BeginFrame();
 
   // 创建一个覆盖整个视口的停靠空间
   //ImGui::DockSpaceOverViewport();

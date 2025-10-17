@@ -18,8 +18,10 @@ class ImGuiUIRender : public UIRender {
   void EndPanel() override;
   bool BeginChild(ChildProps &props) override;
   void EndChild() override;
-  glm::vec2 GetCursorStartPos() override;
-  glm::vec2 GetContentRegionAvail() override;
+  glm::vec2 GetWindowPos() override;
+  glm::vec2 GetPanelPos() override;
+  glm::vec2 GetWindowSize() override;
+  glm::vec2 GetPanelSize() override;
   bool IsPanelFocused() override;
   bool IsPanelHovered() override;
   // ==================== 基础控件渲染 ====================
