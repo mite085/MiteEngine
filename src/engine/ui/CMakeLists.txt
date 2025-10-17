@@ -34,10 +34,13 @@ set(UI_PANEL_SRCS
     ui_panel/ui_menu.cpp
     ui_panel/ui_panel.h       # 面板基类（事件订阅管理）
     ui_panel/ui_panel.cpp
-    ui_panel/ui_viewport_panel.h     # 视口面板，核心接口
+    ui_panel/ui_overlay.h     # 覆盖层基类
+    ui_panel/ui_overlay.cpp
+
+    ui_panel/ui_viewport_panel.h        # 视口面板，核心接口(后续移至Editor模块)
     ui_panel/ui_viewport_panel.cpp
-    ui_panel/ui_viewport_gizmo_panel.h   # 视口面板Gizmo支持
-    ui_panel/ui_viewport_gizmo_panel.cpp
+    ui_panel/ui_gizmo_overlay.h         # Gizmo覆盖层，控制模型拖动(后续移至Editor模块)
+    ui_panel/ui_gizmo_overlay.cpp
 )
 source_group("ui panels" FILES ${UI_PANEL_SRCS})
 
