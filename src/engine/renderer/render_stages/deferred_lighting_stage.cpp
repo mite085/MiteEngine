@@ -255,7 +255,7 @@ void DeferredLightingStage::ValidateInputs(RenderContext &context) const
   }
 }
 
-void DeferredLightingStage::ValidateLightingFramebuffer(const glm::uvec2 &viewportSize)
+void DeferredLightingStage::ValidateLightingFramebuffer(const glm::vec2 &viewportSize)
 {
   if (!m_LightingFBO) {
     m_Logger->error("Invalid lighting framebuffer");
@@ -269,7 +269,8 @@ void DeferredLightingStage::ValidateLightingFramebuffer(const glm::uvec2 &viewpo
                    currentSize.y,
                    viewportSize.x,
                    viewportSize.y);
-    m_LightingFBO->Resize(viewportSize.x, viewportSize.y);
+    m_LightingFBO->Resize(static_cast<uint32_t>(glm::max(viewportSize.x, 0.0f)),
+                          static_cast<uint32_t>(glm::max(viewportSize.y, 0.0f)));
 
     if (!m_LightingFBO->IsComplete()) {
       m_Logger->error("Failed to resize lighting FBO");

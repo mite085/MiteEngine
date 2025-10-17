@@ -49,7 +49,7 @@ class OpenGLPipeline : public RenderPipeline {
 
   // ---- Size管理 ----
   bool m_ShouldResize = false;
-  glm::uvec2 m_PendingSize = {1280, 720};  // 默认尺寸
+  glm::vec2 m_PendingSize = {1280, 720};  // 默认尺寸
 };
 }  // namespace mite
 

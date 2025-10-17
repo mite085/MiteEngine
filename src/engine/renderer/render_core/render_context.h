@@ -48,9 +48,9 @@ class RenderContext {
 
   // ---- 窗口尺寸管理 ----
   void SetViewportSize(uint32_t width, uint32_t height) { m_ViewportSize = {width, height}; }
-  const glm::uvec2 &GetViewportSize() const { return m_ViewportSize; }
-  uint32_t GetViewportWidth() const { return m_ViewportSize.x; }
-  uint32_t GetViewportHeight() const { return m_ViewportSize.y; }
+  const glm::vec2 &GetViewportSize() const { return m_ViewportSize; }
+  uint32_t GetViewportWidth() const { return static_cast<uint32_t>(m_ViewportSize.x); }
+  uint32_t GetViewportHeight() const {return static_cast<uint32_t>(m_ViewportSize.y); }
   float GetViewportAspectRatio() const
   {
     return m_ViewportSize.y > 0 ? static_cast<float>(m_ViewportSize.x) / m_ViewportSize.y : 1.0f;
@@ -135,7 +135,7 @@ class RenderContext {
       m_LightSSBO;  // LightSSBO包含了所有光照信息，无需按照Vector存储
 
   // ---- 窗口尺寸 ----
-  glm::uvec2 m_ViewportSize = {1280, 720};  // 默认尺寸
+  glm::vec2 m_ViewportSize = {1280, 720};  // 默认尺寸
 
   // ---- 分层纹理存储 ----
   std::array<RuntimeTexturePtr, GBuffer::TEXTURE_COUNT> m_GBufferTextures;

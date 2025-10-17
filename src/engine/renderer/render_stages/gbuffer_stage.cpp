@@ -60,11 +60,12 @@ void GBufferStage::Execute(RenderContext &context)
   }
   
   // 获取上下文记录的帧缓冲尺寸
-  glm::uvec2 viewportSize = context.GetViewportSize();
+  glm::vec2 viewportSize = context.GetViewportSize();
 
   // 若帧缓冲尺寸不匹配，则使用新的尺寸重新create
   if (m_GBuffer->getFramebuffer()->GetSize() != viewportSize) {
-    m_GBuffer->resize(viewportSize.x, viewportSize.y);
+    m_GBuffer->resize(static_cast<uint32_t>(glm::max(viewportSize.x, 0.0f)),
+                      static_cast<uint32_t>(glm::max(viewportSize.y, 0.0f)));
   }
 
   // 绑定G-Buffer为渲染目标

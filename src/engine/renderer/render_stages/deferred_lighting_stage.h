@@ -42,7 +42,7 @@ class DeferredLightingStage : public RenderStage {
 
   // ---- 验证方法 ----
   void ValidateInputs(RenderContext &context) const;
-  void ValidateLightingFramebuffer(const glm::uvec2 &viewportSize);
+  void ValidateLightingFramebuffer(const glm::vec2 &viewportSize);
 
   // ---- 阴影纹理绑定 ----
   void BindShadowMapTextures(RenderContext &context);

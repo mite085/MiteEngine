@@ -89,11 +89,12 @@ void ForwardStage::Execute(RenderContext &context)
   }
 
   // 获取上下文记录的帧缓冲尺寸
-  glm::uvec2 viewportSize = context.GetViewportSize();
+  glm::vec2 viewportSize = context.GetViewportSize();
 
   // 若与帧缓冲尺寸不匹配，则执行Resize（直接执行即可，无需提交给Commit队列）
   if (m_ForwardFrameBuffer->GetSize() != viewportSize) {
-    m_ForwardFrameBuffer->Resize(viewportSize.x, viewportSize.y);
+    m_ForwardFrameBuffer->Resize(static_cast<uint32_t>(glm::max(viewportSize.x, 0.0f)),
+                                 static_cast<uint32_t>(glm::max(viewportSize.y, 0.0f)));
   }
 
   // 绑定前向渲染的FrameBuffer

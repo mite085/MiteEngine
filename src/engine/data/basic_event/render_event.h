@@ -10,8 +10,8 @@ namespace mite {
  */
 class ViewPortResizeEvent : public Event {
  public:
-  explicit ViewPortResizeEvent(const glm::uvec2 &size) : m_Size(size) {}
-  const glm::uvec2 &GetSize() const
+  explicit ViewPortResizeEvent(const glm::vec2 &size) : m_Size(size) {}
+  const glm::vec2 &GetSize() const
   {
     return m_Size;
   }
@@ -22,7 +22,7 @@ class ViewPortResizeEvent : public Event {
   }
 
  private:
-  glm::uvec2 m_Size;
+  glm::vec2 m_Size;
 };
 
 

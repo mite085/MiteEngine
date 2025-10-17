@@ -75,12 +75,13 @@ void OpenGLPipeline::BeginFrame()
 
   // 设置上下文视口尺寸
   if (m_ShouldResize) {
-    m_Context->SetViewportSize(m_PendingSize.x, m_PendingSize.y);
+    m_Context->SetViewportSize(static_cast<uint32_t>(glm::max(m_PendingSize.x, 0.0f)),
+                               static_cast<uint32_t>(glm::max(m_PendingSize.y, 0.0f)));
     m_ShouldResize = false;
   }
 
   // 使用PendingSize作为当前视口尺寸（每帧仅需一次设定）
-  RenderCommand::Get().SetViewport(0, 0, m_PendingSize.x, m_PendingSize.y);
+  RenderCommand::Get().SetViewport(0, 0, static_cast<uint32_t>(glm::max(m_PendingSize.x, 0.0f)), static_cast<uint32_t>(glm::max(m_PendingSize.y, 0.0f)));
 
   // m_Logger->debug("Pipeline BeginFrame completed");
 }

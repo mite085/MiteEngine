@@ -26,7 +26,7 @@ class FrameBuffer {
   FrameBuffer(const FrameBuffer &) = delete;
   FrameBuffer &operator=(const FrameBuffer &) = delete;
 
-  glm::uvec2 GetSize() const {
+  glm::vec2 GetSize() const {
     return {m_Spec.width, m_Spec.height};
   }
 
