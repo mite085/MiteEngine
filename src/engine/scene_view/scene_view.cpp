@@ -1,20 +1,19 @@
 #include "scene_view.h"
-#include "basic_event/instance_event.h"
-#include "timer/timer.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
-SceneView::SceneView()
-    : m_Builder(std::make_unique<RenderableItemBuilder>()),
+SceneView::SceneView(SceneCore &sceneCore, SceneGraph &sceneGraph)
+    : m_SceneCore(sceneCore),
+      m_SceneGraph(sceneGraph),
+      m_Builder(std::make_unique<RenderableItemBuilder>()),
       m_RenderQueue(std::make_shared<RenderQueue>()),
       m_CameraInstance(nullptr),
       m_LastVisibleNodeCount(0),
-      m_LastRenderItemCount(0),
-      m_LastUpdateTime(0.0f)
+      m_LastRenderItemCount(0)
 {
+  // 初始化日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView");
-  // 初始化日志
-  m_Logger->debug("SceneView initialized");
-
+  
   // Viewport Resize事件订阅
   m_EventSubscriptions.SubscribeImmediate<ViewPortResizeEvent>(BIND_DISPATCH_FN(OnViewPortResize));
 }
@@ -22,34 +21,55 @@ SceneView::~SceneView()
 {
   m_Logger->debug("SceneView destroyed");
 }
-void SceneView::SetCamera(const std::shared_ptr<Camera> &camera)
+void SceneView::Initialize()
 {
-  if (camera) {
-    m_CameraInstance = std::make_shared<CameraInstance>(camera);
-    m_CameraInstance->InitializeUBO();
+  // 1. 创建相机实体（每个SceneView持有唯一的相机实体，若考虑多视口则创建多个SceneView）
+  m_CameraEntity = m_SceneCore.CreateEntity("camera");
+  // 1.1. 主相机的相机组件
+  CameraComponent &cameraComponent = m_SceneCore.GetRegistry().AddComponent<CameraComponent>(
+      m_CameraEntity);
+  // 1.2. 主相机的变换组件
+  TransformComponent &cameraTransform =
+      m_SceneCore.GetRegistry().AddComponent<TransformComponent>(m_CameraEntity);
+  cameraTransform.SetLocalPosition(glm::vec3(10.0f, 10.0f, 10.0f));
+  cameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+  // 1.3. 主相机的可见性组件
+  VisibilityComponent &cameraVisibility =
+      m_SceneCore.GetRegistry().AddComponent<VisibilityComponent>(m_CameraEntity);
 
-    // 初始化UBO后发布事件委托RenderContext注册并执行着色器绑定
-    EventBus::Publish<CameraInstanceCreateEvent>(CameraInstanceCreateEvent(m_CameraInstance));
+  // 2. 创建相机实例
+  m_CameraInstance = std::make_shared<CameraInstance>(cameraComponent.GetCamera());
+  m_CameraInstance->InitializeUBO();
+  // 2.1. 初始化UBO后发布事件委托RenderContext注册并执行着色器绑定
+  EventBus::Publish<CameraInstanceCreateEvent>(CameraInstanceCreateEvent(m_CameraInstance));
 
-    m_Logger->debug("SceneView camera instance set");
-  }
-  else {
-    m_Logger->warn("SceneView received null camera instance");
-  }
+  m_Logger->debug("SceneView initialized");
 }
-void SceneView::Update(SceneRegistry &registry,
-                       Transform cameraTransform,
-                       std::vector<SceneNode *> visibleNodes)
-{
-  // 计时，确定构建RenderQueue所消耗的时间
-  Timer timer;
 
-  // 更新相机实例
+void SceneView::Update()
+{
+  // 1. 更新相机实例
+  // （TODO: 此处使用的是局部坐标，应当从SceneNode中获取正确的相机矩阵）
+  const Transform &cameraTransform =
+      m_SceneCore.GetRegistry().GetComponent<TransformComponent>(m_CameraEntity).GetTransform();
   m_CameraInstance->UpdateUBO(cameraTransform);
 
-  // 处理可见节点
-  ProcessVisibility(registry, visibleNodes);
-  m_LastUpdateTime = timer.ElapsedMillis();
+  // 2. 获取ViewProjection矩阵，构造视锥体
+  glm::mat4 cameraView = cameraTransform.GetViewMatrix();
+  glm::mat4 cameraProjection = m_SceneCore.GetRegistry()
+                                   .GetComponent<CameraComponent>(m_CameraEntity)
+                                   .GetProjectionMatrix();
+  Frustum cameraFrustum(cameraProjection * cameraView);
+
+  // 3. 执行视锥体裁剪查询，获取可见节点列表
+  uint32_t cameraVisibilityMask = m_SceneCore.GetRegistry()
+                                          .GetComponent<VisibilityComponent>(m_CameraEntity)
+                                          .GetVisibilityMask();
+  std::vector<SceneNode *> visibleNodes = m_SceneGraph.FrustumCull(cameraFrustum,
+                                                                   cameraVisibilityMask);
+
+  // 4. 处理可见节点，构建RenderQueue
+  ProcessVisibility(visibleNodes);
 
   // m_Logger->debug("SceneView updated in {:.3f}ms, visible nodes: {}, render items: {}",
   //                m_lastUpdateTime,
@@ -70,19 +90,14 @@ size_t SceneView::GetRenderItemCount() const
 {
   return m_LastRenderItemCount;
 }
-float SceneView::GetLastUpdateTime() const
+void SceneView::ProcessVisibility(std::vector<SceneNode *> visibleNodes)
 {
-  return m_LastUpdateTime;
-}
-void SceneView::ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes)
-{
-  m_LastVisibleNodeCount = visibleNodes.size();
-
   // 1. 构建渲染项（使用相机实例辅助选择LOD）
   std::vector<RenderableItem> renderItems = m_Builder->BuildFromSceneNodes(
-      registry, m_CameraInstance, visibleNodes);
+      m_SceneCore.GetRegistry(), m_CameraInstance, visibleNodes);
 
   // 2. 更新计数
+  m_LastVisibleNodeCount = visibleNodes.size();
   m_LastRenderItemCount = renderItems.size();
 
   // 3. 更新渲染队列
@@ -92,7 +107,7 @@ void SceneView::ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode
 }
 void SceneView::OnViewPortResize(ViewPortResizeEvent &event)
 {
-  glm::uvec2 currentSize = event.GetSize();
+  glm::vec2 currentSize = event.GetSize();
 
   if (currentSize.y > 0) {
     // 设置相机宽高比（避免画面拉伸）

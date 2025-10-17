@@ -2,9 +2,11 @@
 #define MITE_SCENE_VIEW_H
 #include "basic_instance/camera_instance.h"
 #include "basic_event/render_event.h"
+#include "basic_event/instance_event.h"
 #include "render_queue.h"
 #include "renderable_item_builder.h"
-#include "scene_node.h"
+#include "scene_core/scene_core.h"
+#include "scene_graph.h"
 
 namespace mite {
 /**
@@ -14,24 +16,21 @@ namespace mite {
  */
 class SceneView {
  public:
-  SceneView();
+  SceneView(SceneCore& sceneCore, SceneGraph &sceneGraph);
   ~SceneView();
+  void Initialize();
 
   // ==================== 核心接口 ====================
   /**
-   * @brief 设定关联的摄像机实例（执行渲染之前设定一次即可）
+   * @brief 获取当前摄像机实例
    */
-  void SetCamera(const std::shared_ptr<Camera> &camera);
-  // 获取当前关联的摄像机实例
   std::shared_ptr<CameraInstance> GetCameraInstance() const { return m_CameraInstance; }
+  Entity GetCameraEntity() const { return m_CameraEntity; }
   /**
    * @brief 更新场景视图（每帧调用）
    * @note 每帧完全重建渲染队列
    */
-  void Update(SceneRegistry &registry,
-              Transform cameraTransform,
-              std::vector<SceneNode *> visibleNodes);
-
+  void Update();
   /**
    * @brief 获取渲染队列
    * @return 渲染队列的共享指针
@@ -44,36 +43,33 @@ class SceneView {
    * @return 当前帧的可见节点数量
    */
   size_t GetVisibleNodeCount() const;
-
   /**
    * @brief 获取渲染项数量
    * @return 当前帧的渲染项数量
    */
   size_t GetRenderItemCount() const;
 
-  /**
-   * @brief 获取上次更新耗时（毫秒）
-   * @return 更新耗时
-   */
-  float GetLastUpdateTime() const;
-
  private:
   // ==================== 内部方法 ====================
   // 执行渲染Item构建
-  void ProcessVisibility(SceneRegistry &registry, std::vector<SceneNode *> visibleNodes);
+  void ProcessVisibility(std::vector<SceneNode *> visibleNodes);
 
   // 消费ViewPortResize事件，修改Camera的宽高比
   void OnViewPortResize(ViewPortResizeEvent &event);
 
+  // 依赖注入
+  SceneCore &m_SceneCore;
+  SceneGraph &m_SceneGraph;
+
   // 成员变量
   std::unique_ptr<RenderableItemBuilder> m_Builder;  // 渲染Item构建器
   std::shared_ptr<RenderQueue> m_RenderQueue;        // 渲染队列
+  Entity m_CameraEntity;                             // 关联的摄像机实体
   std::shared_ptr<CameraInstance> m_CameraInstance;  // 关联的摄像机实例
 
   // 统计信息
   size_t m_LastVisibleNodeCount;  // 上次可见节点数量
   size_t m_LastRenderItemCount;   // 上次渲染Item数量
-  float m_LastUpdateTime;         // 上次更新耗时（毫秒）
 
   // 禁用拷贝构造和赋值
   SceneView(const SceneView &) = delete;
