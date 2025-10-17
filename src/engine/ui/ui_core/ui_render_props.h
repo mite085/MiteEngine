@@ -45,7 +45,7 @@ struct LabelProps : public TextRenderProps {
  */
 struct ButtonProps : public TextRenderProps {
   // 按钮的文本通过translationKey和fallbackText管理
-  glm::uvec2 size = {0, 0};
+  glm::vec2 size = {0, 0};
 };
 
 /**
@@ -74,7 +74,7 @@ struct TextInputProps : public TextRenderProps {
  */
 struct TextAreaProps : public TextInputProps {
   int lineCount = 3;  // 显示行数
-  glm::uvec2 size = {0, 0};
+  glm::vec2 size = {0, 0};
 };
 
 // ==================== 选择器控件属性 ====================
@@ -99,7 +99,7 @@ struct ListBoxProps : public TextRenderProps {
   std::vector<std::string> itemTranslationKeys;  // 列表项的翻译键
   int selectedIndex = -1;                        // 选中项索引
   float itemHeight = 20.0f;                      // 单项高度
-  glm::uvec2 size = {0, 0};
+  glm::vec2 size = {0, 0};
 };
 
 // ==================== 数值输入控件属性 ====================
@@ -170,7 +170,7 @@ struct ProgressBarProps : public TextRenderProps {
   float progress = 0.0f;              // 进度值（0.0-1.0）
   std::string overlayTranslationKey;  // 覆盖文本的翻译键
   std::string overlayFallbackText;    // 覆盖文本的回退文本
-  glm::uvec2 size = {0, 0};
+  glm::vec2 size = {0, 0};
 };
 
 /**
@@ -192,7 +192,7 @@ struct ColorEditProps : public TextRenderProps {
  */
 struct ImageProps : public TextRenderProps {
   uintptr_t textureId = 0;       // 纹理ID（后端相关）
-  glm::uvec2 size = {0, 0};      // 纹理尺寸
+  glm::vec2 size = {0, 0};      // 纹理尺寸
   glm::vec2 uv0 = {0.0f, 0.0f};  // UV坐标起始点
   glm::vec2 uv1 = {1.0f, 1.0f};  // UV坐标结束点
 };
@@ -245,7 +245,7 @@ struct TableProps : public TextRenderProps {
  * 用于布局 spacing 的空白控件
  */
 struct SpacerProps : public BaseRenderProps {
-  glm::uvec2 size = {0, 0};
+  glm::vec2 size = {0, 0};
 };
 
 // ==================== 面板控件属性 ====================
@@ -254,7 +254,7 @@ struct SpacerProps : public BaseRenderProps {
  * 用于创建和管理面板窗口
  */
 struct PanelProps : public BaseRenderProps {
-  bool movable = true;                 // 是否可移动
+  // ============ 基本属性 ============
   bool resizable = true;               // 是否可调整大小
   bool scrollable = true;              // 是否可滚动
   bool collapsed = false;              // 是否折叠标题
@@ -263,7 +263,10 @@ struct PanelProps : public BaseRenderProps {
   glm::vec2 maxSize = {10000, 10000};  // 最大尺寸
 
   // ============ Dock相关属性 ============
-  bool dockable = true;                                    // 是否可停靠
+  bool dockable = true;  // 是否可停靠
+
+  // ============ 移动flag ============
+  bool movable = true;  // 可移动flag，当鼠标移入显示区域时自动设为false
 };
 /**
  * @brief 子窗口属性
@@ -274,7 +277,6 @@ struct ChildProps : public BaseRenderProps {
   bool border = false;      // 是否显示边框
   glm::vec2 size = {0, 0};  // 子窗口尺寸（0表示自动）
 };
-
 }  // namespace mite
 
 #endif  // MITE_UI_RENDER_PROPS_H

@@ -37,13 +37,15 @@ class UIRender {
   virtual void EndChild() = 0;
   // ==================== 面板状态查询 ====================
   /**
-   * @brief 获取面板内容区域起始位置
+   * @brief 获取窗口/面板内容区域起始位置
    */
-  virtual glm::vec2 GetCursorStartPos() = 0;
+  virtual glm::vec2 GetWindowPos() = 0;
+  virtual glm::vec2 GetPanelPos() = 0;
   /**
-   * @brief 获取面板内容区域可用尺寸（结合起始位置可计算出结束位置）
+   * @brief 获取窗口/面板内容区域可用尺寸（结合起始位置可计算出结束位置）
    */
-  virtual glm::vec2 GetContentRegionAvail() = 0;
+  virtual glm::vec2 GetWindowSize() = 0;
+  virtual glm::vec2 GetPanelSize() = 0;
   /**
    * @brief 获取面板是否聚焦
    */

@@ -8,7 +8,6 @@ UIPanel::UIPanel(const std::string &name) : m_Renderer(UIRender::Get())
   m_PanelProps.visible = true;  // 默认可见
   m_PanelProps.enabled = true;  // 默认开启
   m_PanelProps.fallbackText = name;
-  m_PanelProps.movable = true;        // 默认可移动
   m_PanelProps.resizable = true;      // 默认可调整大小
   m_PanelProps.scrollable = true;     // 默认可滚动
   m_PanelProps.collapsed = false;     // 默认不折叠标题

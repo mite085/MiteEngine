@@ -2,10 +2,9 @@
 #define MITE_VIEWPORT_PANEL_H
 
 #include "basic_event/render_event.h"
-#include "render_core/render_pipeline.h"
 #include "ui_core/ui_render_props.h"
 #include "ui_panel.h"
-#include "scene_core_components/camera_component.h"
+#include "ui_gizmo_overlay.h"
 
 namespace mite {
 /**
@@ -28,9 +27,14 @@ class ViewportPanel : public UIPanel {
  private:
   // ==================== 私有方法 ====================
   void InitializePanelProps();
-  void HandleSizeChange(const glm::uvec2 &newSize);
-
+  void HandleSizeChange(const glm::vec2 &newSize);
   void OnRenderFinished(RuntimeTextureFinishedEvent &event);
+
+  // ==================== Viewport输入上下文 ====================
+
+  // ==================== OverLay显示 ====================
+  std::unique_ptr<GizmoOverlay> m_GizmoOverlay;
+  OverlayContext m_GizmoOverlayContext;
 
   // ==================== 纹理显示 ====================
   RuntimeTexturePtr m_DisplayTexture = nullptr;
@@ -39,8 +43,8 @@ class ViewportPanel : public UIPanel {
 
   // ==================== 状态管理 ====================
   ImageProps m_ImageProps;     // 图像渲染属性
-  glm::uvec2 m_CurrentSize;    // 当前面板尺寸
-  glm::uvec2 m_RequestedSize;  // 请求调整的尺寸
+  glm::vec2 m_CurrentSize;     // 当前面板尺寸
+  glm::vec2 m_RequestedSize;   // 请求调整的尺寸
   SubscriptionGroup m_EventSubscriptions;
 };
 }  // namespace mite

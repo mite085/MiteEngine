@@ -1,10 +1,8 @@
 #include "ui_viewport_panel.h"
-#include "basic_event/render_event.h"
-#include "imgui.h"
 
 namespace mite {
 ViewportPanel::ViewportPanel(const std::string &name)
-    : UIPanel(name), m_CurrentSize(glm::uvec2(1280, 720))
+    : UIPanel(name), m_CurrentSize(glm::vec2(1280, 720))
 {
   m_EventSubscriptions.SubscribeImmediate<RuntimeTextureFinishedEvent>(
       BIND_DISPATCH_FN(OnRenderFinished));
@@ -12,12 +10,15 @@ ViewportPanel::ViewportPanel(const std::string &name)
   // 初始化面板属性
   InitializePanelProps();
 
-  // 初始化ImageProps
+  // 初始化ImageProps图像属性
   m_ImageProps.elementId = UUIDGenerator::Generate();
   m_ImageProps.visible = true;
   m_ImageProps.enabled = true;
   m_ImageProps.uv0 = glm::vec2(0.0f, 1.0f);  // 翻转Y轴
   m_ImageProps.uv1 = glm::vec2(1.0f, 0.0f);
+
+  // 初始化Overlay
+  m_GizmoOverlay = std::make_unique<GizmoOverlay>();
 
   LOG_DEBUG("Created ViewportPanel: {}", name);
 }
@@ -26,18 +27,17 @@ void ViewportPanel::Render()
 {
   try {
     // 获取当前内容区域尺寸
-    glm::vec2 contentStartPos = m_Renderer.GetCursorStartPos();
-    glm::vec2 contentSize = m_Renderer.GetContentRegionAvail();
+    glm::vec2 panelPos = m_Renderer.GetPanelPos();
+    glm::vec2 panelSize = m_Renderer.GetPanelSize();
 
     // 确保尺寸都是正数。否则类型转换会有问题（当ViewPort折叠起来的时候，size.y为-16）
-    if (contentSize.x <= 0 || contentSize.y <= 0) {
+    if (panelSize.x <= 0 || panelSize.y <= 0) {
       // 面板收起或尺寸无效时跳过渲染
       return;
     }
-    glm::uvec2 newSize(static_cast<uint32_t>(contentSize.x), static_cast<uint32_t>(contentSize.y));
 
     // 处理尺寸变化
-    HandleSizeChange(newSize);
+    HandleSizeChange(panelSize);
 
     // 获取当前显示缓冲
     if (m_DisplayTexture) {
@@ -45,12 +45,21 @@ void ViewportPanel::Render()
       m_ImageProps.textureId = m_DisplayTexture->getHandle().apiHandle; 
 
       // 设置图像尺寸为面板内容尺寸
-      m_ImageProps.size = newSize;
+      m_ImageProps.size = panelSize;
       m_ImageProps.visible = IsVisible();
       m_ImageProps.enabled = IsEnabled();
 
       // 渲染图像
       m_Renderer.RenderImage(m_ImageProps);
+
+      // 更新Overlay上下文信息
+      m_GizmoOverlayContext.viewportPos = panelPos;
+      m_GizmoOverlayContext.viewportSize = panelSize;
+      m_GizmoOverlayContext.contentPos = panelPos;
+      m_GizmoOverlayContext.contentSize = panelSize;
+
+      // 绘制Gizmo Overlay
+      m_GizmoOverlay->Render(m_GizmoOverlayContext);
     }
     else {
       // FrameBuffer未就绪时的占位显示
@@ -69,7 +78,6 @@ void ViewportPanel::InitializePanelProps()
   auto &props = GetPanelProps();
 
   // 视口面板专用配置
-  props.movable = true;        // 可移动
   props.resizable = true;      // 可调整大小（关键：允许拖拽调整）
   props.scrollable = false;    // 视口不需要滚动条
   props.collapsed = false;     // 不折叠标题
@@ -79,12 +87,12 @@ void ViewportPanel::InitializePanelProps()
   props.minSize = glm::vec2(0, 0);        // 最小尺寸
   props.maxSize = glm::vec2(3840, 2160);  // 最大4K分辨率
 }
-void ViewportPanel::HandleSizeChange(const glm::uvec2 &newSize)
+void ViewportPanel::HandleSizeChange(const glm::vec2 &newSize)
 {
   if (newSize == m_CurrentSize) {
     return;
   }
-
+  
   // 更新当前尺寸
   m_CurrentSize = newSize;
   EventBus::Publish<ViewPortResizeEvent>(ViewPortResizeEvent(m_CurrentSize));
