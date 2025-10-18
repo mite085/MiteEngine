@@ -1,8 +1,6 @@
 ﻿#include "ray.h"
 
-
 namespace mite {
-
 Ray::Ray()
     : origin(0.0f),
       direction(0.0f, 0.0f, 1.0f),
@@ -17,6 +15,35 @@ Ray::Ray(const glm::vec3 &origin, const glm::vec3 &direction)
       tMin(0.0f),
       tMax(std::numeric_limits<float>::max())
 {
+}
+
+Ray Ray::GenerateRayFromScreenUV(const glm::vec2 &screenUV,
+                                 const glm::mat4 &cameraView,
+                                 const glm::mat4 &cameraProjection)
+{
+  // 1. 屏幕坐标转NDC
+  glm::vec2 ndc;
+  ndc.x = screenUV.x * 2.0f - 1.0f;  // x: [0,1] -> [-1, 1]
+  ndc.y = 1.0f - screenUV.y * 2.0f;  // y: [0,1] -> [ 1,-1] (Y轴翻转)
+
+  // 2. NDC转视图空间
+  glm::mat4 invProjection = glm::inverse(cameraProjection);
+  glm::vec4 viewNear = invProjection *
+                       glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);  // 近平面：z = -1（NDC空间）
+  glm::vec4 viewFar = invProjection *
+                      glm::vec4(ndc.x, ndc.y, 1.0f, 1.0f);  // 远平面：z = 1（NDC空间）
+
+  // 3. 透视除法（从齐次坐标到3D坐标）
+  viewNear /= viewNear.w;
+  viewFar /= viewFar.w;
+
+  // 4. 视图空间转世界空间
+  glm::mat4 invView = glm::inverse(cameraView);
+  glm::vec3 worldNear = glm::vec3(invView * viewNear);
+  glm::vec3 worldFar = glm::vec3(invView * viewFar);
+
+  // 5. 构建射线对象
+  return Ray(worldNear, glm::normalize(worldFar - worldNear));
 }
 
 glm::vec3 Ray::GetPoint(float t) const
@@ -144,17 +171,17 @@ bool Ray::Intersects(const BoundingVolumePlane &plane, float &t) const
 bool Ray::Intersects(const BoundingVolume &volume, float &t) const
 {
   switch (volume.GetType()) {
-    case BoundingVolume::BoundingVolumeType::AABB :
+    case BoundingVolumeType::AABB:
       return Intersects(volume.GetAABB(), t);
-    case BoundingVolume::BoundingVolumeType::Sphere:
+    case BoundingVolumeType::Sphere:
       return Intersects(volume.GetSphere(), t);
-    case BoundingVolume::BoundingVolumeType::OBB:
+    case BoundingVolumeType::OBB:
       return Intersects(volume.GetOBB(), t);
-    case BoundingVolume::BoundingVolumeType::Plane:
+    case BoundingVolumeType::Plane:
       return Intersects(volume.GetPlane(), t);
-      default:
-        return false;
-    }
+    default:
+      return false;
+  }
 }
 
 bool Ray::Intersects(const glm::vec3 &v0,
@@ -187,5 +214,4 @@ bool Ray::Intersects(const glm::vec3 &v0,
   t = glm::dot(edge2, qvec) * invDet;
   return t >= tMin && t <= tMax;
 }
-
 }  // namespace mite

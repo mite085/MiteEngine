@@ -4,7 +4,6 @@
 #include "basic_data/bounding_volume.h"
 
 namespace mite {
-
 /**
  * @class Ray
  * @brief 射线类，用于射线检测和相交测试
@@ -27,6 +26,16 @@ class Ray {
    * @param direction 射线方向（会自动标准化）
    */
   Ray(const glm::vec3 &origin, const glm::vec3 &direction);
+
+  /**
+   * @brief 通过起点和方向构造射线
+   * @param screenUV 屏幕空间UV坐标
+   * @param cameraView 射线方向（会自动标准化）
+   * @param cameraProjection 射线方向（会自动标准化）
+   */
+  static Ray GenerateRayFromScreenUV(const glm::vec2 &screenUV,
+                                     const glm::mat4 &cameraView,
+                                     const glm::mat4 &cameraProjection);
 
   /**
    * @brief 获取射线上某点的坐标
@@ -92,7 +101,6 @@ class Ray {
                   float &u,
                   float &v) const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_RAY_H
