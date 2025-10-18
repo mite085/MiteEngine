@@ -91,6 +91,13 @@ std::vector<SceneNode *> SceneGraph::Raycast(const Ray &ray) const
   m_SpatialPartition->Raycast(ray, results);
   return results;
 }
+SceneNode *SceneGraph::RaycastFirst(const Ray &ray) const
+{
+  SceneNode *result;
+  float distance;
+  m_SpatialPartition->RaycastFirst(ray, result, distance);
+  return result;
+}
 std::vector<SceneNode *> SceneGraph::VolumeQuery(const BoundingVolume &volume) const
 {
   std::vector<SceneNode *> results;

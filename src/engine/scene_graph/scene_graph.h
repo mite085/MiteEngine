@@ -92,11 +92,12 @@ class SceneGraph {
    */
   std::vector<SceneNode *> FrustumCull(const Frustum &frustum, const uint32_t visibleMask) const;
   /**
-   * @brief 射线检测查询
+   * @brief 射线检测查询/单次查询
    * @param ray 检测射线
    * @return 相交节点列表
    */
   std::vector<SceneNode *> Raycast(const Ray &ray) const;
+  SceneNode *RaycastFirst(const Ray &ray) const;
   /**
    * @brief 体积查询
    * @param volume 查询体积
