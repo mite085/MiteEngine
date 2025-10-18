@@ -37,10 +37,12 @@ set(UI_PANEL_SRCS
     ui_panel/ui_overlay.h     # 覆盖层基类
     ui_panel/ui_overlay.cpp
 
-    ui_panel/ui_viewport_panel.h        # 视口面板，核心接口(后续移至Editor模块)
+    ui_panel/ui_viewport_panel.h            # 视口面板，核心接口(后续移至Editor模块)
     ui_panel/ui_viewport_panel.cpp
-    ui_panel/ui_gizmo_overlay.h         # Gizmo覆盖层，控制模型拖动(后续移至Editor模块)
+    ui_panel/ui_gizmo_overlay.h             # Gizmo覆盖层，控制模型拖动(后续移至Editor模块)
     ui_panel/ui_gizmo_overlay.cpp
+    ui_panel/ui_viewport_input_context.h    # 视口输入上下文，接收事件并处理(后续移至Editor模块)
+    ui_panel/ui_viewport_input_context.cpp
 )
 source_group("ui panels" FILES ${UI_PANEL_SRCS})
 

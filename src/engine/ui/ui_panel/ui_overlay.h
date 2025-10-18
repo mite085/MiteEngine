@@ -12,17 +12,17 @@ namespace mite {
  */
 struct OverlayContext {
   // 视口信息
-  glm::vec2 viewportPos;   // Panel左上角屏幕坐标（由panel执行m_Renderer.GetCursorStartPos()获得）
+  glm::vec2 viewportPos;  // Panel左上角屏幕坐标（由panel执行m_Renderer.GetCursorStartPos()获得）
   glm::vec2 viewportSize;  // Panel尺寸（由panel执行m_Renderer.GetContentRegionAvail()获得）
   glm::vec2 contentPos;    // OverLay内容区域左上角坐标（支持自定义）
-  glm::vec2 contentSize;   // 内容区域尺寸（支持自定义）
+  glm::vec2 contentSize;  // 内容区域尺寸（支持自定义）
 
   // 相机变换信息
   glm::mat4 viewMatrix;        // 视图矩阵
   glm::mat4 projectionMatrix;  // 投影矩阵
 
   // 选中模型变换信息
-  bool isModelSelected;    // 是否有模型被选中
+  bool isModelSelected;   // 是否有模型被选中
   glm::mat4 modelMatrix;  // 模型矩阵
 
   OverlayContext()
@@ -33,8 +33,8 @@ struct OverlayContext {
         viewMatrix(1.0f),
         projectionMatrix(1.0f),
         isModelSelected(false),
-        modelMatrix(1.0f) 
-        
+        modelMatrix(1.0f)
+
   {
   }
 };
@@ -85,7 +85,6 @@ class UIOverlay {
   int m_RenderOrder = 0;  // 渲染顺序，数值小的先渲染
   UIRender &m_Renderer;
 };
-
 }  // namespace mite
 
 #endif  // MITE_UI_OVERLAY_H

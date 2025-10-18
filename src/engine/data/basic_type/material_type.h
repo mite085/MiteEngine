@@ -27,7 +27,7 @@ struct MaterialTextureSlot {
 struct MaterialSourceData {
   // 核心标识信息
   std::string name;   // 材质名称
-  MaterialType type;  // 对应Type
+  MaterialType type = MaterialType::PBR;  // 对应Type
 
   // 通用参数存储
   std::unordered_map<std::string, UniformVariant> parameters;
