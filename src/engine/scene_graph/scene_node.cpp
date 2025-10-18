@@ -6,10 +6,10 @@
 
 namespace mite {
 
-SceneNode::SceneNode(Entity entity) : m_Entity(entity)
+SceneNode::SceneNode(Entity entity)
+    : m_Entity(entity), m_WorldBounds(BoundingVolume(BoundingVolumeType::None))
 {
-  // 初始化世界包围盒为无效状态
-  m_WorldBounds = BoundingVolume(BoundingVolume::BoundingVolumeType::None);
+  // 初始化世界包围盒为无效状态，实际应当通过包围盒组件获取
 }
 
 SceneNode::~SceneNode()
@@ -241,12 +241,12 @@ void SceneNode::UpdateWorldBounds(const SceneRegistry &registry)
     }
     else {
       // 无效的局部包围盒
-      m_WorldBounds = BoundingVolume(BoundingVolume::BoundingVolumeType::None);
+      m_WorldBounds = BoundingVolume(BoundingVolumeType::None);
     }
   }
   else {
     // 没有BoundingVolumeComponent
-    m_WorldBounds = BoundingVolume(BoundingVolume::BoundingVolumeType::None);
+    m_WorldBounds = BoundingVolume(BoundingVolumeType::None);
   }
   m_BoundsDirty = false;
 }

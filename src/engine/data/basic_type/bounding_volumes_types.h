@@ -5,6 +5,17 @@
 
 namespace mite {
 /**
+ * @enum BoundingVolumeType
+ * @brief 包围体类型枚举
+ */
+enum class BoundingVolumeType {
+  AABB,    // 轴对齐包围盒
+  OBB,     // 有向包围盒
+  Sphere,  // 包围球
+  Plane,   // 平面
+  None     // 无包围体
+};
+/**
  * @brief 轴对齐包围盒 (AABB)
  * 使用min-max表示法，适用于快速相交测试和空间划分
  */

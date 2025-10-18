@@ -6,20 +6,15 @@ namespace mite {
 // ==================== BoundingVolumeComponent ====================
 
 BoundingVolumeComponent::BoundingVolumeComponent()
-    : m_Volume(BoundingVolume::BoundingVolumeType::AABB)  // 默认创建AABB
-{
-}
-
-BoundingVolumeComponent::BoundingVolumeComponent(const BoundingVolume &volume)
-    : m_Volume(volume)
+    : m_Volume(BoundingVolumeType::None)  // 默认创建无效包围盒
 {
 }
 
 void BoundingVolumeComponent::SetVolume(const BoundingVolume &volume)
 {
   // 检查类型是否改变
-  BoundingVolume::BoundingVolumeType oldType = m_Volume.GetType();
-  BoundingVolume::BoundingVolumeType newType = volume.GetType();
+  BoundingVolumeType oldType = m_Volume.GetType();
+  BoundingVolumeType newType = volume.GetType();
 
   m_Volume = volume;
 

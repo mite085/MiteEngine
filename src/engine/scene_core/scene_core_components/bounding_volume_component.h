@@ -23,12 +23,6 @@ class BoundingVolumeComponent
    */
   BoundingVolumeComponent();
 
-  /**
-   * @brief 带初始包围体的构造函数
-   * @param volume 初始包围体
-   */
-  explicit BoundingVolumeComponent(const BoundingVolume &volume);
-
   ~BoundingVolumeComponent() override = default;
 
   // ==================== 数据访问接口 ====================
@@ -52,7 +46,7 @@ class BoundingVolumeComponent
    * @brief 获取包围体类型
    * @return 包围体类型
    */
-  BoundingVolume::BoundingVolumeType GetVolumeType() const
+  BoundingVolumeType GetVolumeType() const
   {
     return m_Volume.GetType();
   }

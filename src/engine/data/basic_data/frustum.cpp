@@ -211,19 +211,19 @@ BoundingVolumeIntersection::IntersectionType Frustum::TestBoundingVolume(
     const BoundingVolume &volume) const
 {
   switch (volume.GetType()) {
-    case BoundingVolume::BoundingVolumeType::AABB:
+    case BoundingVolumeType::AABB:
       return TestAABB(volume.GetAABB());
 
-    case BoundingVolume::BoundingVolumeType::Sphere:
+    case BoundingVolumeType::Sphere:
       return TestSphere(volume.GetSphere());
 
-    case BoundingVolume::BoundingVolumeType::OBB:
+    case BoundingVolumeType::OBB:
       return TestOBB(volume.GetOBB());
 
-    case BoundingVolume::BoundingVolumeType::Plane:
+    case BoundingVolumeType::Plane:
       return TestPlane(volume.GetPlane());
 
-    case BoundingVolume::BoundingVolumeType::None:
+    case BoundingVolumeType::None:
     default:
       return BoundingVolumeIntersection::IntersectionType::Outside;
   }

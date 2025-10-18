@@ -183,7 +183,8 @@ size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &r
     return 0;
 
   results.clear();
-  BoundingVolume pointAABB(BoundingVolumeAABB(point, point));  // 创建零大小的AABB
+  BoundingVolume pointAABB = BoundingVolume::CreateFromPoints(BoundingVolumeType::AABB,
+                                                              {point});  // 创建零大小的AABB
   return VolumeQuery(pointAABB, results);
 }
 bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, float maxDistance)
@@ -751,7 +752,7 @@ void SimpleBVH::VolumeQueryBFS(BVHNode *root,
     BVHNode *current = queue.front();
     queue.pop();
 
-    BoundingVolume nodeBV(current->bounds);
+    BoundingVolume nodeBV = BoundingVolume::CreateFromAABB(current->bounds);
     auto intersection = nodeBV.Intersects(volume);
 
     // 当前BVHNode在包围盒之外，直接退出

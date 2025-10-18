@@ -4,30 +4,15 @@
 #include "basic_data/bounding_volumes_intersects.h"
 
 namespace mite {
+
 /**
  * @class BoundingVolume
  * @brief 统一的包围体类，管理多种类型的包围体并提供统一接口
  */
 class BoundingVolume {
  public:
-  /**
-   * @enum BoundingVolumeType
-   * @brief 包围体类型枚举
-   */
-  enum class BoundingVolumeType {
-    AABB,    // 轴对齐包围盒
-    OBB,     // 有向包围盒
-    Sphere,  // 包围球
-    Plane,   // 平面
-    None     // 无包围体
-  };
-
-  BoundingVolume();
   explicit BoundingVolume(BoundingVolumeType type);
-  BoundingVolume(const BoundingVolumeAABB &aabb);
-  BoundingVolume(const BoundingVolumeSphere &sphere);
-  BoundingVolume(const BoundingVolumeOBB &obb);
-  BoundingVolume(const BoundingVolumePlane &plane);
+
 
   // ==================== 类型管理 ====================
   BoundingVolumeType GetType() const;
@@ -49,6 +34,10 @@ class BoundingVolume {
    */
   static BoundingVolume CreateFromPoints(BoundingVolumeType type,
                                          const std::vector<glm::vec3> &points);
+  /**
+   * @brief 从点集创建包围体
+   */
+  static BoundingVolume CreateFromAABB(BoundingVolumeAABB aabb);
   /**
    * @brief 判断点是否在包围体内
    */
@@ -98,10 +87,16 @@ class BoundingVolume {
   void ExpandToInclude(const BoundingVolume &other);
 
  private:
+  // 私有构造函数，
+  BoundingVolume(const BoundingVolumeAABB &aabb);
+  BoundingVolume(const BoundingVolumeSphere &sphere);
+  BoundingVolume(const BoundingVolumeOBB &obb);
+  BoundingVolume(const BoundingVolumePlane &plane);
+  void CreateDefaultVolume(BoundingVolumeType type);
+
   std::variant<BoundingVolumeAABB, BoundingVolumeSphere, BoundingVolumeOBB, BoundingVolumePlane>
       m_Volume;
   BoundingVolumeType m_Type = BoundingVolumeType::None;
-  void CreateDefaultVolume(BoundingVolumeType type);
 
   // 内部辅助方法
   BoundingVolumeIntersection::IntersectionType IntersectsAABB(

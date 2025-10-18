@@ -2,10 +2,6 @@
 
 namespace mite {
 // ==================== 构造函数 ====================
-BoundingVolume::BoundingVolume() : m_Type(BoundingVolumeType::AABB)
-{
-  m_Volume = BoundingVolumeAABB();
-}
 BoundingVolume::BoundingVolume(BoundingVolumeType type) : m_Type(type)
 {
   CreateDefaultVolume(type);
@@ -28,7 +24,7 @@ BoundingVolume::BoundingVolume(const BoundingVolumePlane &plane)
 }
 
 // ==================== 类型管理 ====================
-BoundingVolume::BoundingVolumeType BoundingVolume::GetType() const
+BoundingVolumeType BoundingVolume::GetType() const
 {
   return m_Type;
 }
@@ -118,6 +114,11 @@ BoundingVolume BoundingVolume::CreateFromPoints(BoundingVolumeType type,
       throw std::runtime_error("Unsupported bounding volume type for CreateFromPoints");
   }
 }
+BoundingVolume BoundingVolume::CreateFromAABB(BoundingVolumeAABB aabb)
+{
+  return BoundingVolume(aabb);
+}
+
 bool BoundingVolume::ContainsPoint(const glm::vec3 &point) const
 {
   switch (m_Type) {
@@ -470,7 +471,7 @@ void BoundingVolume::ExpandToInclude(const BoundingVolume &other)
       BoundingVolumeOBB &obb = std::get<BoundingVolumeOBB>(m_Volume);
       // 当OBB扩展时，必须使用OBB对其进行扩展，不应当由AABB和Sphere转换而来
       // 原因：精度损失问题。OBB是最精确的有向包围盒，近似转换的操作与OBB设定不符
-      if (other.GetType() == BoundingVolume::BoundingVolumeType::OBB)
+      if (other.GetType() == BoundingVolumeType::OBB)
         obb.Expand(other.GetOBB());
       else
         LOG_ERROR("OBB can only expand to include OBB");
