@@ -96,9 +96,13 @@ void MiteApplication::LoadDefaultScene()
     TransformComponent &planeTransformComponent =
         m_SceneCore->GetRegistry().AddComponent<TransformComponent>(planeSubmesh);
 
-    // 6. 创建包围盒
+    // 6. 创建包围盒组件，使用Mesh的包围盒填充AABB包围盒数据
     BoundingVolumeComponent &planeBoundingVolumeComponent =
         m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(planeSubmesh);
+    const std::pair<glm::vec3, glm::vec3> boundingbox = planeModel.GetSubMesh(i).GetBoundingBox();
+    BoundingVolume planeBoundingVolume = BoundingVolume::CreateFromPoints(
+        BoundingVolumeType::AABB, {boundingbox.first, boundingbox.second});
+    planeBoundingVolumeComponent.SetVolume(planeBoundingVolume);
   }
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
@@ -191,8 +195,8 @@ void MiteApplication::InitializeUI()
   m_UISystem = std::make_unique<UISystem>();
   m_UISystem->Initialize(m_Window->GetNativeWindow());
 
-  // 创建ViewportPanel
-  std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>("viewport");
+  // 创建ViewportPanel（必须在SceneView创建之后创建）
+  std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>(*m_SceneView, "viewport");
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
 }
@@ -236,6 +240,7 @@ void MiteApplication::InitializeSceneView()
   if (m_SceneCore && m_SceneGraph) {
     // 初始化场景视图（具备SceneCore和SceneView的依赖注入，必须在这两个初始化之后进行）
     m_SceneView = std::make_unique<SceneView>(*m_SceneCore, *m_SceneGraph);
+    m_SceneView->Initialize();
   }
   else {
     m_Logger->error("Invalid SceneCore or SceneGraph, SceneView initialize FAILED!");
