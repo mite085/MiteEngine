@@ -36,7 +36,15 @@ class SceneView {
    * @return 渲染队列的共享指针
    */
   std::shared_ptr<RenderQueue> GetRenderQueue() const;
-
+  /**
+   * @brief 选择场景对象，设置模型矩阵（世界坐标）
+   */
+  bool PickEntity(glm::vec2 screenPosUV);
+  void SetPickedEntityModelMatrix(glm::mat4 &modelMatrix);
+  /**
+   * @brief 设定当前相机变换矩阵
+   */
+  void SetCameraViewMatrix(glm::mat4 &viewMatrix);
   // ==================== 统计信息 ====================
   /**
    * @brief 获取可见节点数量
@@ -64,9 +72,10 @@ class SceneView {
   // 成员变量
   std::unique_ptr<RenderableItemBuilder> m_Builder;  // 渲染Item构建器
   std::shared_ptr<RenderQueue> m_RenderQueue;        // 渲染队列
-  Entity m_CameraEntity;                             // 关联的摄像机实体
+  Entity m_PickedEntity;                             // 拾取的Entity
+  Entity m_CameraEntity;                             // 关联的摄像机Entity
   std::shared_ptr<CameraInstance> m_CameraInstance;  // 关联的摄像机实例
-
+  
   // 统计信息
   size_t m_LastVisibleNodeCount;  // 上次可见节点数量
   size_t m_LastRenderItemCount;   // 上次渲染Item数量

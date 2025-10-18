@@ -13,7 +13,7 @@ SceneView::SceneView(SceneCore &sceneCore, SceneGraph &sceneGraph)
 {
   // 初始化日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView");
-  
+
   // Viewport Resize事件订阅
   m_EventSubscriptions.SubscribeImmediate<ViewPortResizeEvent>(BIND_DISPATCH_FN(OnViewPortResize));
 }
@@ -29,13 +29,19 @@ void SceneView::Initialize()
   CameraComponent &cameraComponent = m_SceneCore.GetRegistry().AddComponent<CameraComponent>(
       m_CameraEntity);
   // 1.2. 主相机的变换组件
-  TransformComponent &cameraTransform =
-      m_SceneCore.GetRegistry().AddComponent<TransformComponent>(m_CameraEntity);
+  TransformComponent &cameraTransform = m_SceneCore.GetRegistry().AddComponent<TransformComponent>(
+      m_CameraEntity);
   cameraTransform.SetLocalPosition(glm::vec3(10.0f, 10.0f, 10.0f));
   cameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
   // 1.3. 主相机的可见性组件
   VisibilityComponent &cameraVisibility =
       m_SceneCore.GetRegistry().AddComponent<VisibilityComponent>(m_CameraEntity);
+  // 1.4. 主相机包围盒组件（仅当创建了包围盒才会纳入SceneGraph的空间加速结构管理）
+  BoundingVolumeComponent &cameraBoundingVolume =
+      m_SceneCore.GetRegistry().AddComponent<BoundingVolumeComponent>(m_CameraEntity);
+  cameraBoundingVolume.SetVolume(BoundingVolume::CreateFromPoints(
+      BoundingVolumeType::AABB,
+      {glm::vec3(0.0f)}));  // 包含本地空间原点即可。Camera不存在实际意义上的包围盒
 
   // 2. 创建相机实例
   m_CameraInstance = std::make_shared<CameraInstance>(cameraComponent.GetCamera());
@@ -48,14 +54,12 @@ void SceneView::Initialize()
 
 void SceneView::Update()
 {
-  // 1. 更新相机实例
-  // （TODO: 此处使用的是局部坐标，应当从SceneNode中获取正确的相机矩阵）
-  const Transform &cameraTransform =
-      m_SceneCore.GetRegistry().GetComponent<TransformComponent>(m_CameraEntity).GetTransform();
-  m_CameraInstance->UpdateUBO(cameraTransform);
+  // 1. 使用相机世界坐标更新相机实例
+  const Transform cameraWorldTransform = m_SceneGraph.GetNode(m_CameraEntity)->GetWorldTransform();
+  m_CameraInstance->UpdateUBO(cameraWorldTransform);
 
   // 2. 获取ViewProjection矩阵，构造视锥体
-  glm::mat4 cameraView = cameraTransform.GetViewMatrix();
+  glm::mat4 cameraView = cameraWorldTransform.GetViewMatrix();
   glm::mat4 cameraProjection = m_SceneCore.GetRegistry()
                                    .GetComponent<CameraComponent>(m_CameraEntity)
                                    .GetProjectionMatrix();
@@ -63,8 +67,8 @@ void SceneView::Update()
 
   // 3. 执行视锥体裁剪查询，获取可见节点列表
   uint32_t cameraVisibilityMask = m_SceneCore.GetRegistry()
-                                          .GetComponent<VisibilityComponent>(m_CameraEntity)
-                                          .GetVisibilityMask();
+                                      .GetComponent<VisibilityComponent>(m_CameraEntity)
+                                      .GetVisibilityMask();
   std::vector<SceneNode *> visibleNodes = m_SceneGraph.FrustumCull(cameraFrustum,
                                                                    cameraVisibilityMask);
 
@@ -80,6 +84,83 @@ void SceneView::Update()
 std::shared_ptr<RenderQueue> SceneView::GetRenderQueue() const
 {
   return m_RenderQueue;
+}
+
+bool SceneView::PickEntity(glm::vec2 screenPosUV)
+{
+  // 获取相机ViewProjection矩阵
+  const Transform cameraWorldTransform = m_SceneGraph.GetNode(m_CameraEntity)->GetWorldTransform();
+  glm::mat4 cameraView = cameraWorldTransform.GetViewMatrix();
+  glm::mat4 cameraProjection = m_SceneCore.GetRegistry()
+                                   .GetComponent<CameraComponent>(m_CameraEntity)
+                                   .GetProjectionMatrix();
+
+  // 构建Ray
+  Ray ray = Ray::GenerateRayFromScreenUV(screenPosUV, cameraView, cameraProjection);
+
+  // 执行RayCast
+  SceneNode *node = m_SceneGraph.RaycastFirst(ray);
+  if (node) {
+    // 查询到节点，更新PickedEntity
+    m_PickedEntity = node->GetEntity();
+    return true;
+  }
+  else {
+    // 未命中节点，清空当前pick对象
+    m_PickedEntity = Entity();
+    return false;
+  }
+}
+
+void SceneView::SetPickedEntityModelMatrix(glm::mat4 &modelMatrix)
+{
+  // 检查实体可用性
+  if (!m_PickedEntity.IsValid())
+    return;
+
+  // 通过SceneCore获取Picked的变换组件
+  TransformComponent &pickedTransformComponent =
+      m_SceneCore.GetRegistry().GetComponent<TransformComponent>(m_PickedEntity);
+
+  // 通过SceneGraph获取Picked的Parent
+  SceneNode *pickedParent = m_SceneGraph.GetNode(m_PickedEntity)->GetParent();
+  if (pickedParent) {
+    // 若Parent存在，则根据Parent的WorldTransform更新picked本地坐标
+    // World = Parent * Local，可知Local = inv(Parent) * World（等式两边均左乘inv(Parent)）
+    const Transform parentWorld = pickedParent->GetWorldTransform();
+    pickedTransformComponent.SetLocalMatrix(glm::inverse(parentWorld.GetLocalMatrix()) *
+                                            modelMatrix);
+  }
+  else {
+    // 若不存在，则直接更新本地坐标
+    pickedTransformComponent.SetLocalMatrix(modelMatrix);
+  }
+}
+void SceneView::SetCameraViewMatrix(glm::mat4 &viewMatrix)
+{
+  // 检查实体可用性
+  if (!m_CameraEntity.IsValid())
+    return;
+
+  // 通过SceneCore获取变换组件
+  TransformComponent &cameraTransformComponent =
+      m_SceneCore.GetRegistry().GetComponent<TransformComponent>(m_CameraEntity);
+
+  // 通过SceneGraph获取相机的Parent
+  SceneNode *cameraParent = m_SceneGraph.GetNode(m_CameraEntity)->GetParent();
+  if (cameraParent) {
+    // 若Parent存在，则根据Parent的WorldTransform更新相机本地坐标
+    // World = Parent * Local，可知Local = inv(Parent) * World（等式两边均左乘inv(Parent)）
+    const Transform parentWorld = cameraParent->GetWorldTransform();
+    cameraTransformComponent.SetLocalMatrix(glm::inverse(parentWorld.GetLocalMatrix()) *
+                                            glm::inverse(viewMatrix));
+  }
+  else {
+    // 若不存在，则直接更新本地坐标
+    cameraTransformComponent.SetLocalMatrix(glm::inverse(viewMatrix));
+  }
+
+  // Update会自动更新相机实例和UBO，无需在此处手动修改
 }
 
 size_t SceneView::GetVisibleNodeCount() const
