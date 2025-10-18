@@ -1,8 +1,8 @@
 #include "ui_viewport_panel.h"
 
 namespace mite {
-ViewportPanel::ViewportPanel(const std::string &name)
-    : UIPanel(name), m_CurrentSize(glm::vec2(1280, 720))
+ViewportPanel::ViewportPanel(SceneView &sceneView, const std::string &name)
+    : UIPanel(name),m_SceneView(sceneView), m_CurrentSize(glm::vec2(1280, 720))
 {
   m_EventSubscriptions.SubscribeImmediate<RuntimeTextureFinishedEvent>(
       BIND_DISPATCH_FN(OnRenderFinished));
@@ -52,14 +52,21 @@ void ViewportPanel::Render()
       // 渲染图像
       m_Renderer.RenderImage(m_ImageProps);
 
-      // 更新Overlay上下文信息
+      // 更新Overlay上下文视口信息
       m_GizmoOverlayContext.viewportPos = panelPos;
       m_GizmoOverlayContext.viewportSize = panelSize;
       m_GizmoOverlayContext.contentPos = panelPos;
       m_GizmoOverlayContext.contentSize = panelSize;
 
+      // 更新Overlay上下文矩阵信息
+      m_GizmoOverlayContext.viewMatrix = m_SceneView.GetCameraInstance()->GetViewMatrix();
+      m_GizmoOverlayContext.projectionMatrix = m_SceneView.GetCameraInstance()->GetProjectionMatrix();
+
       // 绘制Gizmo Overlay
       m_GizmoOverlay->Render(m_GizmoOverlayContext);
+
+      // 根据Overlay上下文矩阵修改Camera
+      m_SceneView.SetCameraViewMatrix(m_GizmoOverlayContext.viewMatrix);
     }
     else {
       // FrameBuffer未就绪时的占位显示

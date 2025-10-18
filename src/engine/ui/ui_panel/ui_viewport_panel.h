@@ -1,7 +1,7 @@
 #ifndef MITE_VIEWPORT_PANEL_H
 #define MITE_VIEWPORT_PANEL_H
 
-#include "basic_event/render_event.h"
+#include "scene_view.h"
 #include "ui_core/ui_render_props.h"
 #include "ui_panel.h"
 #include "ui_gizmo_overlay.h"
@@ -18,7 +18,7 @@ namespace mite {
  */
 class ViewportPanel : public UIPanel {
  public:
-  explicit ViewportPanel(const std::string &name);
+  explicit ViewportPanel(SceneView& sceneView, const std::string &name);
   virtual ~ViewportPanel() = default;
   // UIPanel接口
   virtual void Update(float deltaTime) override;
@@ -30,7 +30,8 @@ class ViewportPanel : public UIPanel {
   void HandleSizeChange(const glm::vec2 &newSize);
   void OnRenderFinished(RuntimeTextureFinishedEvent &event);
 
-  // ==================== Viewport输入上下文 ====================
+  // ==================== SceneView依赖注入（显示逻辑紧耦合，业务逻辑松耦合） ====================
+  SceneView &m_SceneView;
 
   // ==================== OverLay显示 ====================
   std::unique_ptr<GizmoOverlay> m_GizmoOverlay;
