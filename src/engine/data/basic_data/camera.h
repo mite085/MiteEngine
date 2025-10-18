@@ -62,7 +62,7 @@ class Camera {
   void SetAspectRatio(float aspect);                        // 设置宽高比
 
   // ==================== 矩阵获取 ====================
-  const glm::mat4 &GetProjectionMatrix() const;  // 获取投影矩阵
+  const glm::mat4 GetProjectionMatrix() const;  // 获取投影矩阵
 
   // ==================== 参数访问 ====================
   CameraProjectionType GetProjectionType() const;  // 获取投影类型

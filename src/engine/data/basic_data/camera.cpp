@@ -43,7 +43,7 @@ void Camera::SetAspectRatio(float aspect)
 
 // === 矩阵获取 ===
 
-const glm::mat4 &Camera::GetProjectionMatrix() const
+const glm::mat4 Camera::GetProjectionMatrix() const
 {
   if (m_ProjectionDirty) {
     UpdateProjection();

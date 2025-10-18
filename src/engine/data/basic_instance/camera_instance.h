@@ -32,10 +32,10 @@ class CameraInstance {
   /**
    * @brief 设置着色器绑定（着色器初始化之后，执行一次即可）
    * @param shader 着色器对象
-   * 
+   *
    * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
+  // void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
   /**
    * @brief 更新相机UBO数据（SceneView负责每帧Update）
    * @param viewMatrix 视图矩阵
@@ -54,14 +54,10 @@ class CameraInstance {
   std::shared_ptr<Camera> GetCamera() const { return m_Camera; }
   void SetCamera(std::shared_ptr<Camera> camera) { m_Camera = camera; }
   /**
-   * @brief 获取相机投影矩阵/View矩阵/两者乘积
+   * @brief 获取相机投影矩阵/View矩阵（原则上相机仅接受Zoom修改）
    */
-  const glm::mat4 &GetProjectionMatrix() const { return m_Camera->GetProjectionMatrix(); }
-  const glm::mat4 &GetViewMatrix() const { return m_CameraTransform.GetViewMatrix(); }
-  const glm::mat4 &GetViewProjectionMatrix() const
-  {
-    return GetProjectionMatrix() * GetViewMatrix();
-  }
+  const glm::mat4 GetProjectionMatrix() const { return m_Camera->GetProjectionMatrix(); }
+  const glm::mat4 GetViewMatrix() const { return m_CameraTransform.GetViewMatrix(); }
   /**
    * @brief 获取UBO对象（用于外部管理）
    */
