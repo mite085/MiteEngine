@@ -192,7 +192,7 @@ struct ColorEditProps : public TextRenderProps {
  */
 struct ImageProps : public TextRenderProps {
   uintptr_t textureId = 0;       // 纹理ID（后端相关）
-  glm::vec2 size = {0, 0};      // 纹理尺寸
+  glm::vec2 size = {0, 0};       // 纹理尺寸
   glm::vec2 uv0 = {0.0f, 0.0f};  // UV坐标起始点
   glm::vec2 uv1 = {1.0f, 1.0f};  // UV坐标结束点
 };
@@ -265,8 +265,10 @@ struct PanelProps : public BaseRenderProps {
   // ============ Dock相关属性 ============
   bool dockable = true;  // 是否可停靠
 
-  // ============ 移动flag ============
-  bool movable = true;  // 可移动flag，当鼠标移入显示区域时自动设为false
+  // ============ 运行时属性 ============
+  bool movable = true;     // 可移动flag，当鼠标移入显示区域时自动设为false
+  bool isFocused = false;  // 是否聚焦于此Panel
+  bool isHovered = false;  // 鼠标是否悬浮于此Panel上
 };
 /**
  * @brief 子窗口属性

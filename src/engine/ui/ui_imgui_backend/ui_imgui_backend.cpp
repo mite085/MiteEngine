@@ -90,7 +90,10 @@ void ImGuiBackend::BeginFrame()
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
+
+  // 初始化Gizmo相关
   ImGuizmo::BeginFrame();
+  ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
 
   // 创建一个覆盖整个视口的停靠空间
   //ImGui::DockSpaceOverViewport();

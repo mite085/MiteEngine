@@ -44,6 +44,18 @@ bool ImGuiUIRender::BeginPanel(PanelProps &props)
     // 否则释放窗口，可移动
     props.movable = true;
 
+  // 更新Focused信息
+  if (IsPanelFocused())
+    props.isFocused = true;
+  else
+    props.isFocused = false;
+
+  // 更新鼠标是否位于
+  if (IsPanelHovered())
+    props.isHovered = true;
+  else
+    props.isHovered = false;
+
   return true;
 }
 void ImGuiUIRender::EndPanel()
