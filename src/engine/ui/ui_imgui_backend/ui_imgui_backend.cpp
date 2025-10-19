@@ -3,6 +3,7 @@
 #include "imguizmo.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "ui_imgui_input_producer.h"
 
 namespace mite {
 ImGuiBackend::ImGuiBackend()
@@ -94,6 +95,9 @@ void ImGuiBackend::BeginFrame()
   // 初始化Gizmo相关
   ImGuizmo::BeginFrame();
   ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
+
+  // 生产输入事件
+  UIImguiInputProducer::ProduceInputEvents();
 
   // 创建一个覆盖整个视口的停靠空间
   //ImGui::DockSpaceOverViewport();

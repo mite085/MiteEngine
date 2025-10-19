@@ -56,6 +56,8 @@ set(UI_IMGUI_BACKEND_SRCS
     ui_imgui_backend/ui_imgui_font_manager.cpp
     ui_imgui_backend/ui_imgui_style_adapter.h   # ImGui样式适配器
     ui_imgui_backend/ui_imgui_style_adapter.cpp
+    ui_imgui_backend/ui_imgui_input_producer.h  # ImGui事件生产器(负责生产鼠标键盘事件)
+    ui_imgui_backend/ui_imgui_input_producer.cpp
 )
 source_group("ui imgui backend" FILES ${UI_IMGUI_BACKEND_SRCS})
 

@@ -29,30 +29,30 @@ void GLFWWindowCallbackAdapter::RegisterCallbacks(GLFWwindow *window)
   glfwSetWindowFocusCallback(window, &HandleWindowFocus);
   glfwSetWindowPosCallback(window, &HandleWindowMoved);
 
-  // 注册鼠标事件回调
-  glfwSetCursorPosCallback(window, &HandleMouseMove);
-  glfwSetMouseButtonCallback(window, &HandleMouseButton);
-  glfwSetScrollCallback(window, &HandleMouseScroll);
-
-  // 注册键盘事件回调
-  glfwSetKeyCallback(window, &HandleKeyEvent);
-  glfwSetCharCallback(window, &HandleCharInput);
+  // 注册鼠标/键盘事件回调（因为glfw无法生产imgui独立窗口的事件，该功能由UIImguiInputProducer接管）
+  //glfwSetCursorPosCallback(window, &HandleMouseMove);
+  //glfwSetMouseButtonCallback(window, &HandleMouseButton);
+  //glfwSetScrollCallback(window, &HandleMouseScroll);
+  //glfwSetKeyCallback(window, &HandleKeyEvent);
+  //glfwSetCharCallback(window, &HandleCharInput);
 }
 void GLFWWindowCallbackAdapter::UnregisterCallbacks()
 {
   if (!m_Window)
     return;
 
-  // 重置所有回调
+  // 重置窗口事件回调
   glfwSetWindowCloseCallback(m_Window, nullptr);
   glfwSetWindowSizeCallback(m_Window, nullptr);
   glfwSetWindowFocusCallback(m_Window, nullptr);
   glfwSetWindowPosCallback(m_Window, nullptr);
-  glfwSetCursorPosCallback(m_Window, nullptr);
-  glfwSetMouseButtonCallback(m_Window, nullptr);
-  glfwSetScrollCallback(m_Window, nullptr);
-  glfwSetKeyCallback(m_Window, nullptr);
-  glfwSetCharCallback(m_Window, nullptr);
+
+  // 重置鼠标/键盘事件回调（因为glfw无法生产imgui独立窗口的事件，该功能由UIImguiInputProducer接管）
+  //glfwSetCursorPosCallback(m_Window, nullptr);
+  //glfwSetMouseButtonCallback(m_Window, nullptr);
+  //glfwSetScrollCallback(m_Window, nullptr);
+  //glfwSetKeyCallback(m_Window, nullptr);
+  //glfwSetCharCallback(m_Window, nullptr);
 
   m_Window = nullptr;
 }
