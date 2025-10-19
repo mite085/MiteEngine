@@ -51,10 +51,10 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
   }
 
   // 日志记录
-  m_Logger->trace("Built {} renderable items ({} cached, {} created)",
-                  items.size(),
-                  cachedCount,
-                  createdCount);
+  //m_Logger->trace("Built {} renderable items ({} cached, {} created)",
+  //                items.size(),
+  //                cachedCount,
+  //                createdCount);
 
   return items;
 }

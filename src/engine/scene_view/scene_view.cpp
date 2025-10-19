@@ -14,8 +14,11 @@ SceneView::SceneView(SceneCore &sceneCore, SceneGraph &sceneGraph)
   // 初始化日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneView");
 
-  // Viewport Resize事件订阅
-  m_EventSubscriptions.SubscribeImmediate<ViewPortResizeEvent>(BIND_DISPATCH_FN(OnViewPortResize));
+  // Viewport事件订阅
+  m_EventSubscriptions.SubscribeImmediate<ViewportResizeEvent>(BIND_DISPATCH_FN(OnViewportResize));
+  m_EventSubscriptions.SubscribeImmediate<ViewportPickedEvent>(BIND_DISPATCH_FN(OnViewportPicked));
+  m_EventSubscriptions.SubscribeImmediate<ViewportCameraUpdateEvent>(
+      BIND_DISPATCH_FN(OnViewportCameraUpdated));
 }
 SceneView::~SceneView()
 {
@@ -31,7 +34,7 @@ void SceneView::Initialize()
   // 1.2. 主相机的变换组件
   TransformComponent &cameraTransform = m_SceneCore.GetRegistry().AddComponent<TransformComponent>(
       m_CameraEntity);
-  cameraTransform.SetLocalPosition(glm::vec3(10.0f, 10.0f, 10.0f));
+  cameraTransform.SetLocalPosition(glm::vec3(5.0f, 5.0f, 5.0f));
   cameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
   // 1.3. 主相机的可见性组件
   VisibilityComponent &cameraVisibility =
@@ -114,8 +117,8 @@ bool SceneView::PickEntity(glm::vec2 screenPosUV)
 
 void SceneView::SetPickedEntityModelMatrix(glm::mat4 &modelMatrix)
 {
-  // 检查实体可用性
-  if (!m_PickedEntity.IsValid())
+  // 检查实体可用性与在SceneGraph中是否存在对应节点
+  if (!m_PickedEntity.IsValid() || !m_SceneGraph.GetNode(m_PickedEntity))
     return;
 
   // 通过SceneCore获取Picked的变换组件
@@ -139,7 +142,7 @@ void SceneView::SetPickedEntityModelMatrix(glm::mat4 &modelMatrix)
 void SceneView::SetCameraViewMatrix(glm::mat4 &viewMatrix)
 {
   // 检查实体可用性
-  if (!m_CameraEntity.IsValid())
+  if (!m_CameraEntity.IsValid() || !m_SceneGraph.GetNode(m_CameraEntity))
     return;
 
   // 通过SceneCore获取变换组件
@@ -159,8 +162,20 @@ void SceneView::SetCameraViewMatrix(glm::mat4 &viewMatrix)
     // 若不存在，则直接更新本地坐标
     cameraTransformComponent.SetLocalMatrix(glm::inverse(viewMatrix));
   }
+}
 
-  // Update会自动更新相机实例和UBO，无需在此处手动修改
+void SceneView::SetCameraZoom(float zoom)
+{
+  // 检查实体可用性
+  if (!m_CameraEntity.IsValid() || !m_SceneGraph.GetNode(m_CameraEntity))
+    return;
+
+  // 通过SceneCore获取相机组件
+  CameraComponent &cameraComponent = m_SceneCore.GetRegistry().GetComponent<CameraComponent>(
+      m_CameraEntity);
+
+  // 执行zoom
+  cameraComponent.Zoom(zoom);
 }
 
 size_t SceneView::GetVisibleNodeCount() const
@@ -186,7 +201,7 @@ void SceneView::ProcessVisibility(std::vector<SceneNode *> visibleNodes)
   m_RenderQueue->AddItems(renderItems);
   m_RenderQueue->SortAll();
 }
-void SceneView::OnViewPortResize(ViewPortResizeEvent &event)
+void SceneView::OnViewportResize(ViewportResizeEvent &event)
 {
   glm::vec2 currentSize = event.GetSize();
 
@@ -200,6 +215,25 @@ void SceneView::OnViewPortResize(ViewPortResizeEvent &event)
   }
 
   event.SetResult(EventResult::Failed);
+  return;
+}
+void SceneView::OnViewportPicked(ViewportPickedEvent &event)
+{
+  // 尝试执行Pick
+  if (PickEntity(event.GetUV())) {
+    event.SetResult(EventResult::HandledAndStop);
+    return;
+  }
+
+  event.SetResult(EventResult::Failed);
+  return;
+}
+void SceneView::OnViewportCameraUpdated(ViewportCameraUpdateEvent &event)
+{
+  SetCameraViewMatrix(event.GetCameraTransform().GetViewMatrix());
+  SetCameraZoom(event.GetCameraZoom());
+
+  event.SetResult(EventResult::HandledAndStop);
   return;
 }
 }  // namespace mite
