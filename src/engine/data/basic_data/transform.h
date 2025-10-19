@@ -21,7 +21,7 @@ namespace mite {
  * - 支持yaw - pitch - roll的内旋->外旋方式旋转
  * - 提供高效的矩阵缓存机制（使用脏标记更新）
  * - 不依赖ECS，纯数学工具类，作为最底层设计
- * 
+ *
  * Blender导出OBJ模型时，选择Up为+Y，Forward为-Z即可。GLTF则默认设置
  * 这样可以保证建模结果的朝上和朝前方向，与导入结果的朝上和朝前方向一致
  */
@@ -71,6 +71,13 @@ class Transform {
   const glm::vec3 &GetPosition() const;
   void SetPosition(const glm::vec3 &position);
   void Translate(const glm::vec3 &direction);
+  /**
+   * @brief 基于相机语义的平移接口
+   * @param horizontal 水平方向增量（向右为正）
+   * @param vertical 竖直方向增量（向上为正）
+   * @param worldUp 世界的向上方向
+   */
+  void PanCamera(float horizontal, float vertical, const glm::vec3 &worldUp = s_WorldUp);
 
   // ==================== 旋转相关方法 ====================
   // 旋转顺序控制
@@ -107,22 +114,23 @@ class Transform {
    * @param pitch 俯仰角（相机上下俯仰）
    * @param roll 滚转角（相机画面旋转）
    * @param worldUp 世界的向上方向
-   * 
+   *
    * 旋转顺序为：yaw - pitch - roll
-   * 
+   *
    * 假设 WorldUp为 +Z方向，相机执行旋转分以下三步：
    * 1. 首先应当绕着世界 Z轴“左右”旋转yaw，确定 Right方向（世界空间）
    * 2. 随后应当绕着 Right方向所在的轴“上下”旋转pitch，确定 Forward方向（世界空间）
    * 3. 最后应当绕着 Forward方向“顺/逆时针”旋转roll，完成整个旋转过程
-   * 
+   *
    * 注意：
    * 最终旋转结果与EulerOrder无关，因为对于给定的worldUp，经过yaw - pitch - roll三次
    * 计算相机的Up、Right、Forward之后，结果都会是固定的。而这一组yaw - pitch - roll
    * 也不是相机的欧拉角。相机的欧拉角应当是根据当前四元数与EulerOrder解算出的“结果”
-   * 
+   *
    * 若 WorldUp为 +Z方向
    * 1. Yaw表示绕着Z轴逆时针旋转（从Z轴正方向向下看，RotateYaw(30.0f) → 相机向左转30度）
-   * 2. Pitch表示绕着Right轴逆时针旋转（从Right轴正方向向下看，RotatePitch(20.0f) → 相机向上抬头20度）
+   * 2. Pitch表示绕着Right轴逆时针旋转（从Right轴正方向向下看，RotatePitch(20.0f) →
+   * 相机向上抬头20度）
    * 3. Roll表示将画面顺时针旋转（从Forward轴负方向向上看，RotateRoll(15.0f) → 相机向右倾斜15度）
    */
   void RotateCamera(float yaw,
@@ -132,7 +140,6 @@ class Transform {
   void RotateYaw(float degrees, const glm::vec3 &worldUp = s_WorldUp);
   void RotatePitch(float degrees, const glm::vec3 &worldUp = s_WorldUp);
   void RotateRoll(float degrees, const glm::vec3 &worldUp = s_WorldUp);
-  
 
   // LookAt功能（由调用方指定up方向）
   void LookAt(const glm::vec3 &target, const glm::vec3 &up = s_WorldUp);
@@ -148,13 +155,13 @@ class Transform {
 
   /**
    * @brief 视图矩阵专用接口
-   * 
+   *
    * - 对于标准的右手系视图矩阵
    *   [ right.x     right.y     right.z     -dot(right, eye)  ]
    *   [ up.x        up.y        up.z        -dot(up, eye)     ]
    *   [ -forward.x -forward.y  -forward.z    dot(forward, eye)]
    *   [ 0           0           0            1                ]
-   * 
+   *
    * GLM的mat4使用了列主序，如:
    * 对于：m_ViewMatrix = GetViewMatrix();
    * 此时：m_ViewMatrix[0]              表示第一列[right.x,  up.x,  -forward.x,  0]
@@ -168,7 +175,6 @@ class Transform {
   glm::vec3 GetForward() const;  // 在世界空间，相机看向的方向（-Z方向）
   glm::vec3 GetUp() const;       // 在世界空间，相机朝上的方向（+Y方向）
   glm::vec3 GetRight() const;    // 在世界空间，相机朝右的方向（+X方向）
-
 
   // 获取防翻滚（固定Up方向）后的方向向量，与RotateWithUpConstraint配合使用
   glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = s_WorldUp) const;
@@ -232,7 +238,6 @@ class Transform {
 
   // 矩阵缓存
   mutable glm::mat4 m_LocalMatrix = glm::mat4(1.0f);
-
 };
 }  // namespace mite
 

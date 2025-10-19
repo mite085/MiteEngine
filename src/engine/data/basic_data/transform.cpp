@@ -50,6 +50,13 @@ void Transform::Translate(const glm::vec3 &direction)
   m_MatrixDirty = true;
 }
 
+void Transform::PanCamera(float horizontal, float vertical, const glm::vec3 &worldUp)
+{
+  // 执行水平/竖直方向平移
+  Translate(GetConstrainedRight(worldUp) * horizontal);
+  Translate(GetConstrainedUp(worldUp) * vertical);
+}
+
 // ==================== 旋转相关方法实现 ====================
 // 旋转顺序
 Transform::EulerOrder Transform::GetRotationOrder() const

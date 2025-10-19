@@ -54,15 +54,14 @@ class CameraInstance {
   std::shared_ptr<Camera> GetCamera() const { return m_Camera; }
   void SetCamera(std::shared_ptr<Camera> camera) { m_Camera = camera; }
   /**
-   * @brief 获取相机投影矩阵/View矩阵（原则上相机仅接受Zoom修改）
+   * @brief 获取相机变换/投影矩阵（原则上相机仅接受Zoom修改）
    */
   const glm::mat4 GetProjectionMatrix() const { return m_Camera->GetProjectionMatrix(); }
-  const glm::mat4 GetViewMatrix() const { return m_CameraTransform.GetViewMatrix(); }
+  const Transform &GetCameraTransform() const { return m_CameraTransform; }
   /**
    * @brief 获取UBO对象（用于外部管理）
    */
   std::shared_ptr<ShaderUBO> GetUBO() const { return m_CameraUBO; }
-  const Transform &GetCameraTransform() const { return m_CameraTransform; }
 
  private:
   std::shared_ptr<Camera> m_Camera;        // 关联的相机对象
