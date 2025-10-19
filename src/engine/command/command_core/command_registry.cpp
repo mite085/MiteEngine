@@ -6,12 +6,6 @@ CommandRegistry::CommandRegistry()
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Command Registry");
   m_Logger->debug("Command Registry created");
 }
-// ==================== 单例实现 ====================
-CommandRegistry &CommandRegistry::Get()
-{
-  static CommandRegistry instance;
-  return instance;
-}
 
 // ==================== 命令创建接口实现 ====================
 CommandHandle CommandRegistry::CreateCommand(std::type_index typeIndex)

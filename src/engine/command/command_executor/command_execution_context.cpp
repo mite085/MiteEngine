@@ -1,6 +1,5 @@
 #include "command_execution_context.h"
 #include "command_core/command_event.h"
-#include "command_core/command_registry.h"
 
 namespace mite {
 // ==================== 构造函数和析构函数实现 ====================
@@ -78,7 +77,8 @@ const std::string &CommandExecutionContext::GetName() const
 }
 
 // ==================== 命令可用性检查接口实现 ====================
-bool CommandExecutionContext::IsCommandAvailable(const CommandHandle &handle) const
+bool CommandExecutionContext::IsCommandAvailable(const CommandRegistry &registry,
+                                                 const CommandHandle &handle) const
 {
   if (!handle.IsValid()) {
     m_Logger->warn("Invalid command handle passed to IsCommandAvailable");
@@ -90,7 +90,6 @@ bool CommandExecutionContext::IsCommandAvailable(const CommandHandle &handle) co
     return false;
   }
   // 获取命令对象进行检查（不转移所有权）
-  auto &registry = CommandRegistry::Get();
   const Command *command = registry.PeekCommand(handle);
   if (!command) {
     m_Logger->warn("Command handle not found: {}", handle.ToString());
@@ -104,13 +103,14 @@ bool CommandExecutionContext::IsCommandAvailable(const CommandHandle &handle) co
   m_Logger->trace("Command '{}' is available in context '{}'", command->GetName(), m_name);
   return true;
 }
-bool CommandExecutionContext::IsCommandTypeAvailable(std::type_index typeIndex) const
+bool CommandExecutionContext::IsCommandTypeAvailable(const CommandRegistry &registry,
+                                                     std::type_index typeIndex) const
 {
   if (!m_isActive) {
     return false;
   }
   // 检查注册情况
-  if (!CommandRegistry::Get().IsCommandTypeRegistered(typeIndex)) {
+  if (!registry.IsCommandTypeRegistered(typeIndex)) {
     m_Logger->debug("Command type '{}' is not registered", typeIndex.name());
     return false;
   }

@@ -2,6 +2,7 @@
 #define MITE_ENGINE_COMMAND_EXECUTOR_COMMAND_EXECUTION_CONTEXT
 
 #include "command_core/command.h"
+#include "command_core/command_registry.h"
 
 namespace mite {
 /**
@@ -80,13 +81,15 @@ class CommandExecutionContext {
    * @param handle 命令句柄
    * @return bool 是否可用
    */
-  virtual bool IsCommandAvailable(const CommandHandle &handle) const;
+  virtual bool IsCommandAvailable(const CommandRegistry &registry,
+                                  const CommandHandle &handle) const;
   /**
    * @brief 检查命令类型是否在当前上下文中可用
    * @param typeIndex 命令类型索引
    * @return bool 是否可用
    */
-  virtual bool IsCommandTypeAvailable(std::type_index typeIndex) const;
+  virtual bool IsCommandTypeAvailable(const CommandRegistry &registry,
+                                      std::type_index typeIndex) const;
 
   // ==================== 命令执行跟踪接口 ====================
   /**

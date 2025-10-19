@@ -33,12 +33,9 @@ class CommandRegistry {
   // 命令类型列表
   using CommandTypeList = std::vector<std::type_index>;
 
-  // ==================== 单例访问接口 ====================
-  /**
-   * @brief 获取命令注册表单例实例
-   * @return CommandRegistry& 注册表引用
-   */
-  static CommandRegistry &Get();
+  // ==================== 构造函数 ====================
+  CommandRegistry();
+  ~CommandRegistry() = default;
 
   // ==================== 命令类型注册接口 ====================
   /**
@@ -240,10 +237,6 @@ class CommandRegistry {
  private:
   // ==================== 内部辅助方法 ====================
   bool ValidateStateTransition(CommandExecutionState from, CommandExecutionState to);
-
-  // ==================== 私有构造函数和成员 ====================
-  CommandRegistry();
-  ~CommandRegistry() = default;
 
   // 禁止拷贝和移动
   CommandRegistry(const CommandRegistry &) = delete;

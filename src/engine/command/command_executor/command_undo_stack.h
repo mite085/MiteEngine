@@ -2,6 +2,7 @@
 #define MITE_ENGINE_COMMAND_CORE_COMMAND_UNDO_STACK
 
 #include "command_core/command.h"
+#include "command_core/command_registry.h"
 
 namespace mite {
 
@@ -27,7 +28,7 @@ class CommandUndoStack {
    * @brief 将命令压入撤销栈
    * @param commandHandle 要压入的命令句柄
    */
-  void Push(CommandHandle commandHandle);
+  void Push(CommandRegistry &registry, CommandHandle commandHandle);
   /**
    * @brief 从撤销栈弹出命令
    * @return CommandHandle 弹出的命令句柄，如果栈为空返回空句柄

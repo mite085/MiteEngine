@@ -1,5 +1,4 @@
 #include "command_undo_stack.h"
-#include "command_core/command_registry.h"
 
 namespace mite {
 CommandUndoStack::CommandUndoStack(size_t maxSize) : m_MaxSize(maxSize)
@@ -7,14 +6,14 @@ CommandUndoStack::CommandUndoStack(size_t maxSize) : m_MaxSize(maxSize)
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Command Undo Stack");
   m_Logger->debug("Command Undo Stack created");
 }
-void CommandUndoStack::Push(CommandHandle commandHandle)
+void CommandUndoStack::Push(CommandRegistry &registry, CommandHandle commandHandle)
 {
   if (!commandHandle.IsValid()) {
     m_Logger->warn("Attempted to push null command handle to undo stack");
     return;
   }
   // 通过注册表Peek命令是否可以撤销
-  const Command* command = CommandRegistry::Get().PeekCommand(commandHandle);
+  const Command *command = registry.PeekCommand(commandHandle);
   if (!command) {
     m_Logger->warn("Attempted to push invalid command handle to undo stack");
     return;
