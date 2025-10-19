@@ -11,7 +11,7 @@ OpenGLPipeline::OpenGLPipeline() : RenderPipeline()
   m_Logger->info("OpenGL Pipeline created");
 
   // Viewport Resize事件订阅
-  m_EventSubscriptions.SubscribeImmediate<ViewPortResizeEvent>(BIND_DISPATCH_FN(OnViewPortResize));
+  m_EventSubscriptions.SubscribeImmediate<ViewportResizeEvent>(BIND_DISPATCH_FN(OnViewPortResize));
 }
 
 OpenGLPipeline::~OpenGLPipeline()
@@ -141,7 +141,7 @@ void OpenGLPipeline::SetClearColor(const glm::vec4 &color)
   m_ClearColor = color;
 }
 
-void OpenGLPipeline::OnViewPortResize(ViewPortResizeEvent &event)
+void OpenGLPipeline::OnViewPortResize(ViewportResizeEvent &event)
 {
   if (m_PendingSize != event.GetSize()) {
     m_PendingSize = event.GetSize();

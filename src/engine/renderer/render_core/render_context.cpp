@@ -80,7 +80,7 @@ void RenderContext::SetGBufferTexture(RuntimeTexturePtr texture)
     // 存入GBuffer纹理管理中
     if (index >= 0 && index < GBuffer::TEXTURE_COUNT) {
       m_GBufferTextures[index] = texture;
-      m_Logger->debug("Set GBuffer texture [{}]", static_cast<int>(index));
+      //m_Logger->debug("Set GBuffer texture [{}]", static_cast<int>(index));
     }
     else {
       m_Logger->warn("Invalid GBuffer index: {}", static_cast<int>(index));
@@ -121,7 +121,7 @@ void RenderContext::SetRenderTarget(const std::string &name, RuntimeTexturePtr t
     return;
   }
   m_RenderTargets[name] = texture;
-  m_Logger->debug("Set RenderTarget: {}", name);
+  //m_Logger->debug("Set RenderTarget: {}", name);
 }
 RuntimeTexturePtr RenderContext::GetRenderTarget(const std::string &name) const
 {

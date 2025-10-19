@@ -152,7 +152,7 @@ void ShaderUBO::Bind() const
         "Failed to bind UBO {} to point {}: OpenGL error 0x{:X}", m_UBOId, m_BindingPoint, error);
   }
   else {
-    LOG_TRACE("UBO bound to point: {}", m_BindingPoint);
+    //LOG_TRACE("UBO bound to point: {}", m_BindingPoint);
   }
 }
 void ShaderUBO::Unbind() const

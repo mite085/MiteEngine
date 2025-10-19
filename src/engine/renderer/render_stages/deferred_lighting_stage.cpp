@@ -103,10 +103,10 @@ void DeferredLightingStage::Execute(RenderContext &context)
     context.SetRenderTarget("DeferredLightingOutput", lightingTexture);
     // 发布纹理完成事件
     RenderCommand::Get().PublishEventRuntimeTextureFinished(lightingTexture, "DeferredLighting");
-    m_Logger->trace("Stored deferred lighting output to context");
+    //m_Logger->trace("Stored deferred lighting output to context");
   }
 
-  m_Logger->trace("Deferred lighting pass completed");
+  //m_Logger->trace("Deferred lighting pass completed");
 }
 
 void DeferredLightingStage::Shutdown()
@@ -185,9 +185,9 @@ void DeferredLightingStage::BindGBufferTextures(RenderContext &context,
       RenderCommand::Get().BindRuntimeTexture(
           type, texture->getHandle(), TextureTarget::TEXTURE_2D);
 
-      m_Logger->trace("Bound G-Buffer texture: {} to unit {}",
-                      GBuffer::GetTextureTypeName(type),
-                      static_cast<int>(type));
+      //m_Logger->trace("Bound G-Buffer texture: {} to unit {}",
+      //                GBuffer::GetTextureTypeName(type),
+      //                static_cast<int>(type));
     }
     else {
       m_Logger->warn("Missing G-Buffer texture: {}", GBuffer::GetTextureTypeName(type));
@@ -209,7 +209,7 @@ void DeferredLightingStage::BindLightSSBOData(RenderContext &context,
     // 设置光源统计信息到uniform
     size_t enabledLightCount = lightManager.GetEnabledLightCount();
 
-    m_Logger->trace("Bound light SSBO with {} enabled lights", enabledLightCount);
+    //m_Logger->trace("Bound light SSBO with {} enabled lights", enabledLightCount);
   }
   else {
     m_Logger->warn("No LightManager available");
