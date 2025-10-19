@@ -22,13 +22,12 @@ void GizmoOverlay::Render(OverlayContext &context)
   // ViewManipulate绘制区域计算
   float viewManipulateRight = context.viewportPos.x + context.viewportSize.x;
   float viewManipulateTop = context.viewportPos.y;
-  ImVec2 viewManipulateSize = {128, 128};
-  ImVec2 viewManipulatePosition = ImVec2(viewManipulateRight - viewManipulateSize.x,
+  ImVec2 viewManipulatePosition = ImVec2(viewManipulateRight - m_ViewManipulateSize.x,
                                          viewManipulateTop);
 
   // 相机与选中物体距离计算
-  glm::vec3 cameraPos = glm::vec3(glm::inverse(context.viewMatrix)[3]);  // 相机位置
-  glm::vec3 objectPos = glm::vec3(context.modelMatrix[3]);               // 选中物体位置
+  glm::vec3 cameraPos = context.cameraTransform.GetPosition();   // 相机位置
+  glm::vec3 objectPos = context.modelTransform.GetPosition();    // 选中物体位置
   float distanceToOrigin = glm::length(cameraPos);               // 计算到原点的距离
   float distanceToObject = glm::distance(cameraPos, objectPos);  // 计算到特定物体的距离
 
@@ -39,42 +38,62 @@ void GizmoOverlay::Render(OverlayContext &context)
                     context.viewportSize.x,
                     context.viewportSize.y);
 
+  // 创建临时变量用于Imgui操控
+  glm::mat4 viewMatrix = context.cameraTransform.GetViewMatrix();
+  glm::mat4 modelMatrix = context.modelTransform.GetLocalMatrix();
+
   // 若为选中状态，绘制Manipulate以及ViewManipulate
   if (context.isModelSelected) {
     // 绘制ViewManipulate，操控相机绕着模型旋转
-    ImGuizmo::ViewManipulate(glm::value_ptr(context.viewMatrix),
+    ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix),
                              distanceToObject,
                              viewManipulatePosition,
-                             viewManipulateSize,
+                             {m_ViewManipulateSize.x, m_ViewManipulateSize.y},
                              0x10101010);
     // 渲染Gizmo
-    ImGuizmo::Manipulate(glm::value_ptr(context.viewMatrix),
-                         glm::value_ptr(context.projectionMatrix),
+    ImGuizmo::Manipulate(glm::value_ptr(viewMatrix),
+                         glm::value_ptr(context.cameraProjection),
                          (ImGuizmo::OPERATION)m_CurrentOperation,
                          (ImGuizmo::MODE)m_CurrentMode,
-                         glm::value_ptr(context.modelMatrix),
+                         glm::value_ptr(modelMatrix),
                          nullptr,
                          m_UseSnap ? glm::value_ptr(m_SnapValue) : nullptr);
-
-    // 更新交互状态（暂未启用状态访问）
-    m_IsUsing = ImGuizmo::IsUsing();
-    m_IsOver = ImGuizmo::IsOver();
   }
   // 若非选中状态，仅绘制ViewManipulate
   else {
-    glm::mat4 tempModelMatrix(1.0f); // 虽然ViewManipulate的float* matrix不参与计算，但不能为空
+    glm::mat4 tempModelMatrix(1.0f);  // 虽然ViewManipulate的float* matrix不参与计算，但不能为空
 
     // 绘制ViewManipulate，操控相机绕着原点旋转
-    ImGuizmo::ViewManipulate(glm::value_ptr(context.viewMatrix),
-                             glm::value_ptr(context.projectionMatrix),
+    ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix),
+                             glm::value_ptr(context.cameraProjection),
                              (ImGuizmo::OPERATION)m_CurrentOperation,
                              (ImGuizmo::MODE)m_CurrentMode,
                              glm::value_ptr(tempModelMatrix),
                              distanceToOrigin,
                              viewManipulatePosition,
-                             viewManipulateSize,
+                             {m_ViewManipulateSize.x, m_ViewManipulateSize.y},
                              0x10101010);
   }
+
+  // 临时变量反馈回Context
+  context.cameraTransform.SetLocalMatrix(glm::inverse(viewMatrix));
+  context.modelTransform.SetLocalMatrix(modelMatrix);
+
+  // 若鼠标处于viewManipulate区域内，也认为是使用中。
+  if (context.mousePos.x > viewManipulatePosition.x &&
+      context.mousePos.y > viewManipulatePosition.y &&
+      context.mousePos.x < viewManipulatePosition.x + m_ViewManipulateSize.x &&
+      context.mousePos.y < viewManipulatePosition.y + m_ViewManipulateSize.y)
+  {
+    m_IsUsing = true;
+  }
+  else {
+    // 否则交给Imguizmo判断
+    m_IsUsing = ImGuizmo::IsUsing();
+  }
+
+  // Over逻辑完全由Imguizmo判断
+  m_IsOver = ImGuizmo::IsOver();
 }
 
 void GizmoOverlay::SetOperation(int operation)

@@ -1,6 +1,7 @@
 #ifndef MITE_UI_OVERLAY_H
 #define MITE_UI_OVERLAY_H
 
+#include "basic_data/transform.h"
 #include "ui_core/ui_render.h"
 #include "ui_core/ui_render_props.h"
 
@@ -16,24 +17,26 @@ struct OverlayContext {
   glm::vec2 viewportSize;  // Panel尺寸（由panel执行m_Renderer.GetContentRegionAvail()获得）
   glm::vec2 contentPos;    // OverLay内容区域左上角坐标（支持自定义）
   glm::vec2 contentSize;  // 内容区域尺寸（支持自定义）
+  glm::vec2 mousePos;     // 鼠标位置
 
   // 相机变换信息
-  glm::mat4 viewMatrix;        // 视图矩阵
-  glm::mat4 projectionMatrix;  // 投影矩阵
+  Transform cameraTransform;   // 相机变换
+  glm::mat4 cameraProjection;  // 相机投影矩阵
 
   // 选中模型变换信息
-  bool isModelSelected;   // 是否有模型被选中
-  glm::mat4 modelMatrix;  // 模型矩阵
+  bool isModelSelected;      // 是否有模型被选中
+  Transform modelTransform;  // 模型变换（世界坐标）
 
   OverlayContext()
       : viewportPos(0, 0),
         viewportSize(0, 0),
         contentPos(0, 0),
         contentSize(0, 0),
-        viewMatrix(1.0f),
-        projectionMatrix(1.0f),
+        mousePos(0, 0),
+        cameraTransform(),
+        cameraProjection(1.0f),
         isModelSelected(false),
-        modelMatrix(1.0f)
+        modelTransform()
 
   {
   }
