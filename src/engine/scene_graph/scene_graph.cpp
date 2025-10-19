@@ -134,10 +134,10 @@ void SceneGraph::TraverseVisible(std::function<bool(SceneNode *)> callback,
 void SceneGraph::MarkDirty(Entity entity, bool recursive)
 {
   if (recursive) {
-    m_NodeManager->MarkNodeDirtyRecursive(entity);
+    m_NodeManager->MarkNodeDirtyRecursive(GetNode(entity));
   }
   else {
-    m_NodeManager->MarkNodeDirty(entity);
+    m_NodeManager->MarkNodeDirty(GetNode(entity));
   }
 }
 void SceneGraph::Update(SceneRegistry &registry)

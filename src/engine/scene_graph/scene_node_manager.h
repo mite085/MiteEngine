@@ -116,8 +116,8 @@ class SceneNodeManager {
    * 
    * 分为仅标记当前节点，和递归标记所有子节点，两种模式
    */
-  void MarkNodeDirty(Entity entity);
-  void MarkNodeDirtyRecursive(Entity entity);
+  void MarkNodeDirty(SceneNode *node);
+  void MarkNodeDirtyRecursive(SceneNode *node);
   /**
    * @brief 批量更新所有脏节点（每帧执行）
    */
@@ -172,7 +172,7 @@ class SceneNodeManager {
   std::unordered_map<Entity, std::unique_ptr<SceneNode>> m_EntityToNodeMap;
 
   // 需要更新的脏节点列表
-  std::unordered_set<Entity> m_DirtyNodes;
+  std::unordered_set<SceneNode*> m_DirtyNodes;
 
   // 空间划分结构
   SpatialPartition& m_SpatialPartition;

@@ -1,7 +1,8 @@
 #include "scene_node_manager.h"
 
 namespace mite {
-SceneNodeManager::SceneNodeManager(SpatialPartition &spatialPartition) : m_SpatialPartition(spatialPartition)
+SceneNodeManager::SceneNodeManager(SpatialPartition &spatialPartition)
+    : m_SpatialPartition(spatialPartition)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite SceneGraph NodeManager");
 
@@ -105,7 +106,8 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   m_EntityToNodeMap.erase(it);
 
   // 从脏节点列表中移除
-  m_DirtyNodes.erase(entity);
+  if (m_DirtyNodes.find(GetNode(entity)) != m_DirtyNodes.end())
+    m_DirtyNodes.erase(GetNode(entity));
 
   // 标记路径缓存为脏
   m_PathCacheDirty = true;
@@ -271,9 +273,6 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
   // 设置节点的父节点引用
   node->SetParent(newParent);
 
-  // 递归标记节点及其所有子节点需要更新
-  MarkNodeDirtyRecursive(node->GetEntity());
-
   // 标记路径缓存为脏（父子关系变化会影响路径）
   m_PathCacheDirty = true;
 
@@ -282,29 +281,30 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
   return true;
 }
 
-void SceneNodeManager::MarkNodeDirty(Entity entity)
+void SceneNodeManager::MarkNodeDirty(SceneNode *node)
 {
+  if (!node)
+    return;
+
   // 避免重复添加
-  if (m_DirtyNodes.find(entity) == m_DirtyNodes.end()) {
-    m_DirtyNodes.insert(entity);
+  if (m_DirtyNodes.find(node) == m_DirtyNodes.end()) {
+    m_DirtyNodes.insert(node);
   }
 }
-void SceneNodeManager::MarkNodeDirtyRecursive(Entity entity)
+void SceneNodeManager::MarkNodeDirtyRecursive(SceneNode *node)
 {
-  SceneNode *node = GetNode(entity);
-  if (!node) {
-    return;
-  }
   // 标记当前节点
-  MarkNodeDirty(entity);
-  // 递归标记所有子节点
+  MarkNodeDirty(node);
+
+  // 创建递归函数
   std::function<void(SceneNode *)> markChildren = [&](SceneNode *currentNode) {
     for (SceneNode *child : currentNode->GetChildren()) {
-      MarkNodeDirty(child->GetEntity());
+      MarkNodeDirty(child);
       markChildren(child);
     }
   };
 
+  // 递归标记所有子节点
   markChildren(node);
 }
 void SceneNodeManager::Update(SceneRegistry &registry)
@@ -321,11 +321,10 @@ void SceneNodeManager::Update(SceneRegistry &registry)
   sortedDirtyNodes.reserve(m_DirtyNodes.size());
 
   // 收集脏节点及其深度
-  for (Entity entity : m_DirtyNodes) {
-    auto it = m_EntityToNodeMap.find(entity);
-    if (it != m_EntityToNodeMap.end()) {
-      int depth = it->second->GetDepth();
-      sortedDirtyNodes.emplace_back(entity, depth);
+  for (SceneNode *dirtyNode : m_DirtyNodes) {
+    if (dirtyNode) {
+      int depth = dirtyNode->GetDepth();
+      sortedDirtyNodes.emplace_back(dirtyNode->GetEntity(), depth);
     }
   }
 
@@ -522,8 +521,17 @@ std::string SceneNodeManager::CalculateNodePath(SceneNode *node) const
 
 void SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
 {
+  // 获取Node并检查可用性
+  SceneNode *node = GetNode(e.GetEntity());
+  if (!node)
+    return;
+
+  // 标记为TransformDirty与BoundingVolumeDirty（变换改变通常伴随着包围盒改变）
+  node->MarkTransformDirty();
+  node->MarkBoundsDirty();
+
   // 变换更新影响当前节点及其所有子节点的世界变换
-  MarkNodeDirtyRecursive(e.GetEntity());
+  MarkNodeDirtyRecursive(node);
 
   // 标记已处理但允许传播（其他系统可能需要知道变换更新）
   e.SetResult(EventResult::Handled);
@@ -531,8 +539,16 @@ void SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
 
 void SceneNodeManager::OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEvent &e)
 {
+  // 获取Node并检查可用性
+  SceneNode *node = GetNode(e.GetEntity());
+  if (!node)
+    return;
+
+  // 标记为BoundingVolumeDirty
+  node->MarkBoundsDirty();
+
   // 包围盒更新只影响当前节点的世界包围盒
-  MarkNodeDirty(e.GetEntity());
+  MarkNodeDirty(node);
 
   // 标记已处理但允许传播（碰撞检测等系统可能需要包围盒更新）
   e.SetResult(EventResult::Handled);
@@ -540,11 +556,18 @@ void SceneNodeManager::OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEve
 
 void SceneNodeManager::OnVisibilityComponentUpdated(VisibilityChangedEvent &e)
 {
+  // 获取Node并检查可用性
+  SceneNode *node = GetNode(e.GetEntity());
+  if (!node)
+    return;
+
+  // 标记为VisibilityDirty
+  node->MarkVisibilityDirty();
+
   // 可见性更新影响当前节点及其所有子节点的世界可见性
-  MarkNodeDirtyRecursive(e.GetEntity());
+  MarkNodeDirtyRecursive(node);
 
   // 标记已处理但允许传播（UI系统等可能需要可见性信息）
   e.SetResult(EventResult::Handled);
 }
-
 }  // namespace mite
