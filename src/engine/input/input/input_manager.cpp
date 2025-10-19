@@ -1,6 +1,11 @@
 #include "input_manager.h"
 
 namespace mite {
+InputManager &InputManager::Get()
+{
+  static InputManager instance;
+  return instance;
+}
 void InputManager::Init()
 {
   // 创建输入上下文栈

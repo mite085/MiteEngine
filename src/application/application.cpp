@@ -69,7 +69,7 @@ void MiteApplication::LoadDefaultScene()
 
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
-      FileSystem::GetAssetPath("models/axis.glb").string(), true, true);
+      FileSystem::GetAssetPath("models/monkey.glb").string(), true, true);
   Model planeModel(m_AssetManager->GetModel(plane_model_asset_id)->handle,
                    m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
 
@@ -267,14 +267,14 @@ void MiteApplication::InitializeInputSystem()
 {
   m_Logger->info("Initializing input system");
 
-  // 创建并初始化输入系统
-  m_InputManager = std::make_unique<InputManager>();
-  m_InputManager->Init();
+  // 创建并初始化输入系统（单例）
+  //m_InputManager = std::make_unique<InputManager>();
+  InputManager::Get().Init();
 }
 
 void MiteApplication::CleanUpInputSystem()
 {
-  m_InputManager->Shutdown();
+  InputManager::Get().Shutdown();
 }
 
 void MiteApplication::CleanUpWindow()

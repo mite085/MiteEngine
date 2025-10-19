@@ -13,6 +13,8 @@ set(INPUT_SRCS
     input/input_manager.cpp
     input/input_context_stack.h
     input/input_context_stack.cpp
+    input/input_state_tracker.h
+    input/input_state_tracker.cpp
 )
 source_group("input" FILES ${INPUT_SRCS})
 

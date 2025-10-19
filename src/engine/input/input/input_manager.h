@@ -10,6 +10,8 @@ namespace mite {
 // 处理输入事件的分发逻辑，并维护输入上下文栈。
 class InputManager {
  public:
+  static InputManager &Get();
+
   InputManager() = default;
   ~InputManager() = default;
 
