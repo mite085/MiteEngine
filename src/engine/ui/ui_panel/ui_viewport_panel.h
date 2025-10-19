@@ -5,6 +5,7 @@
 #include "ui_core/ui_render_props.h"
 #include "ui_panel.h"
 #include "ui_gizmo_overlay.h"
+#include "ui_viewport_input_context.h"
 
 namespace mite {
 /**
@@ -20,18 +21,25 @@ class ViewportPanel : public UIPanel {
  public:
   explicit ViewportPanel(SceneView& sceneView, const std::string &name);
   virtual ~ViewportPanel() = default;
-  // UIPanel接口
+
+  // ==================== UIPanel接口 ====================
   virtual void Update(float deltaTime) override;
   virtual void Render() override;
 
  private:
   // ==================== 私有方法 ====================
   void InitializePanelProps();
-  void HandleSizeChange(const glm::vec2 &newSize);
+  void UpdatePanelBorder(const glm::vec2 &newPos, const glm::vec2 &newSize);
   void OnRenderFinished(RuntimeTextureFinishedEvent &event);
+  void UpdateOverlayContext();
+  void UpdateImageProps();
+  void UpdateInputContext(float deltatime, bool gizmoUsing);
 
-  // ==================== SceneView依赖注入（显示逻辑紧耦合，业务逻辑松耦合） ====================
-  SceneView &m_SceneView;
+  // ==================== ViewPort输入上下文 ====================
+  std::shared_ptr<ViewportInputContext> m_InputContext;
+
+  // ==================== SceneView依赖注入 ====================
+  SceneView &m_SceneView; // 显示逻辑紧耦合，业务逻辑松耦合
 
   // ==================== OverLay显示 ====================
   std::unique_ptr<GizmoOverlay> m_GizmoOverlay;
@@ -44,8 +52,8 @@ class ViewportPanel : public UIPanel {
 
   // ==================== 状态管理 ====================
   ImageProps m_ImageProps;     // 图像渲染属性
-  glm::vec2 m_CurrentSize;     // 当前面板尺寸
-  glm::vec2 m_RequestedSize;   // 请求调整的尺寸
+  glm::vec2 m_PanelPos;	   // 当前面板位置（左上角像素坐标）
+  glm::vec2 m_PanelSize;     // 当前面板尺寸（像素尺寸）
   SubscriptionGroup m_EventSubscriptions;
 };
 }  // namespace mite

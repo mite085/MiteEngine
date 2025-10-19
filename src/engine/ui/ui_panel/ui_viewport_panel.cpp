@@ -1,8 +1,9 @@
 #include "ui_viewport_panel.h"
+#include "input/input_manager.h"
 
 namespace mite {
 ViewportPanel::ViewportPanel(SceneView &sceneView, const std::string &name)
-    : UIPanel(name),m_SceneView(sceneView), m_CurrentSize(glm::vec2(1280, 720))
+    : UIPanel(name), m_SceneView(sceneView), m_PanelSize(glm::vec2(1280, 720))
 {
   m_EventSubscriptions.SubscribeImmediate<RuntimeTextureFinishedEvent>(
       BIND_DISPATCH_FN(OnRenderFinished));
@@ -11,6 +12,7 @@ ViewportPanel::ViewportPanel(SceneView &sceneView, const std::string &name)
   InitializePanelProps();
 
   // 初始化ImageProps图像属性
+  m_ImageProps = ImageProps();
   m_ImageProps.elementId = UUIDGenerator::Generate();
   m_ImageProps.visible = true;
   m_ImageProps.enabled = true;
@@ -19,10 +21,21 @@ ViewportPanel::ViewportPanel(SceneView &sceneView, const std::string &name)
 
   // 初始化Overlay
   m_GizmoOverlay = std::make_unique<GizmoOverlay>();
+  m_GizmoOverlayContext = OverlayContext();
+
+  // 创建输入上下文，并注册
+  m_InputContext = std::make_shared<ViewportInputContext>("Viewport Input Context");
+  InputManager::Get().PushContext(m_InputContext);
 
   LOG_DEBUG("Created ViewportPanel: {}", name);
 }
-void ViewportPanel::Update(float deltaTime) {}
+void ViewportPanel::Update(float deltaTime)
+{
+  UpdateImageProps();
+  UpdateOverlayContext();
+  UpdateInputContext(deltaTime, m_GizmoOverlay->IsUsing());
+}
+
 void ViewportPanel::Render()
 {
   try {
@@ -36,37 +49,16 @@ void ViewportPanel::Render()
       return;
     }
 
-    // 处理尺寸变化
-    HandleSizeChange(panelSize);
+    // 处理边界尺寸变化
+    UpdatePanelBorder(panelPos, panelSize);
 
     // 获取当前显示缓冲
     if (m_DisplayTexture) {
-      // 更新ImageProps句柄
-      m_ImageProps.textureId = m_DisplayTexture->getHandle().apiHandle; 
-
-      // 设置图像尺寸为面板内容尺寸
-      m_ImageProps.size = panelSize;
-      m_ImageProps.visible = IsVisible();
-      m_ImageProps.enabled = IsEnabled();
-
       // 渲染图像
       m_Renderer.RenderImage(m_ImageProps);
 
-      // 更新Overlay上下文视口信息
-      m_GizmoOverlayContext.viewportPos = panelPos;
-      m_GizmoOverlayContext.viewportSize = panelSize;
-      m_GizmoOverlayContext.contentPos = panelPos;
-      m_GizmoOverlayContext.contentSize = panelSize;
-
-      // 更新Overlay上下文矩阵信息
-      m_GizmoOverlayContext.viewMatrix = m_SceneView.GetCameraInstance()->GetViewMatrix();
-      m_GizmoOverlayContext.projectionMatrix = m_SceneView.GetCameraInstance()->GetProjectionMatrix();
-
       // 绘制Gizmo Overlay
       m_GizmoOverlay->Render(m_GizmoOverlayContext);
-
-      // 根据Overlay上下文矩阵修改Camera
-      m_SceneView.SetCameraViewMatrix(m_GizmoOverlayContext.viewMatrix);
     }
     else {
       // FrameBuffer未就绪时的占位显示
@@ -94,17 +86,22 @@ void ViewportPanel::InitializePanelProps()
   props.minSize = glm::vec2(0, 0);        // 最小尺寸
   props.maxSize = glm::vec2(3840, 2160);  // 最大4K分辨率
 }
-void ViewportPanel::HandleSizeChange(const glm::vec2 &newSize)
+void ViewportPanel::UpdatePanelBorder(const glm::vec2 &newPos, const glm::vec2 &newSize)
 {
-  if (newSize == m_CurrentSize) {
-    return;
+  // 更新Panel位置
+  if (newPos != m_PanelPos) {
+    m_PanelPos = newPos;
   }
-  
-  // 更新当前尺寸
-  m_CurrentSize = newSize;
-  EventBus::Publish<ViewPortResizeEvent>(ViewPortResizeEvent(m_CurrentSize));
 
-  // LOG_DEBUG("ViewportPanel size changed to {}x{}", newSize.x, newSize.y);
+  // 更新Panel尺寸
+  if (newSize != m_PanelSize) {
+    m_PanelSize = newSize;
+
+    // 发布Resize事件，Pipeline和SceneView接收事件后调整FBO尺寸与相机宽高比
+    EventBus::Publish<ViewportResizeEvent>(ViewportResizeEvent(m_PanelSize));
+
+    // LOG_DEBUG("ViewportPanel size changed to {}x{}", newSize.x, newSize.y);
+  }
 }
 void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
 {
@@ -121,5 +118,39 @@ void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
 
   // 已处理，继续传播
   event.SetResult(EventResult::Handled);
+}
+void ViewportPanel::UpdateOverlayContext()
+{
+  // 更新Overlay上下文视口信息
+  m_GizmoOverlayContext.viewportPos = m_PanelPos;
+  m_GizmoOverlayContext.viewportSize = m_PanelSize;
+  m_GizmoOverlayContext.contentPos = m_PanelPos;  // 内容位置和尺寸与视口位置尺寸保持一致即可
+  m_GizmoOverlayContext.contentSize = m_PanelSize;
+
+  // 更新Overlay上下文矩阵信息
+  m_GizmoOverlayContext.cameraTransform = m_SceneView.GetCameraInstance()->GetCameraTransform();
+  m_GizmoOverlayContext.cameraProjection = m_SceneView.GetCameraInstance()->GetProjectionMatrix();
+}
+void ViewportPanel::UpdateImageProps()
+{
+  if (m_DisplayTexture) {
+    // 更新ImageProps句柄
+    m_ImageProps.textureId = m_DisplayTexture->getHandle().apiHandle;
+
+    // 设置图像尺寸为面板内容尺寸
+    m_ImageProps.size = m_PanelSize;
+    m_ImageProps.visible = IsVisible();
+    m_ImageProps.enabled = IsEnabled();
+  }
+}
+void ViewportPanel::UpdateInputContext(float deltatime, bool gizmoUsing)
+{
+  // 更新聚焦信息和视口尺寸
+  m_InputContext->SetViewportFocus(m_PanelProps.isFocused);
+  m_InputContext->SetViewportHovered(m_PanelProps.isHovered);
+  m_InputContext->SetViewportRect(m_PanelPos, m_PanelSize);
+
+  // 更新输入上下文
+  m_InputContext->Update(deltatime, gizmoUsing, m_GizmoOverlayContext.cameraTransform);
 }
 }  // namespace mite
