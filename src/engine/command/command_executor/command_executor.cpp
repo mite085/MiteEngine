@@ -3,13 +3,18 @@
 
 namespace mite {
 // ==================== 构造函数和析构函数实现 ====================
-CommandExecutor::CommandExecutor()
+CommandExecutor::CommandExecutor(CommandRegistry &registry) : m_Registry(registry)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Command Executor");
   m_Logger->debug("CommandExecutor created");
+
+  // 创建默认上下文用于编辑模式
+  CreateDefaultExecutionContext(CommandContextFlags::CONTEXT_EDITOR,
+                                "Mite Default Editor Command Execution Context");
 }
 CommandExecutor::~CommandExecutor()
 {
+  // 等待所有任务完成
   Stop(true);
   m_Logger->debug("CommandExecutor destroyed");
 }
@@ -79,7 +84,7 @@ bool CommandExecutor::SubmitCommandAsync(CommandHandle handle,
     return false;
   }
   // 检查命令可用性（基于句柄）
-  if (!execContext->IsCommandAvailable(handle)) {
+  if (!execContext->IsCommandAvailable(m_Registry, handle)) {
     m_Logger->warn("Command handle {} is not available in context '{}'",
                    handle.ToString(),
                    execContext->GetName());
@@ -87,7 +92,7 @@ bool CommandExecutor::SubmitCommandAsync(CommandHandle handle,
   }
 
   // 获取命令类型信息用于类型安全检查
-  const Command *command = CommandRegistry::Get().PeekCommand(handle);
+  const Command *command = m_Registry.PeekCommand(handle);
   if (!command) {
     m_Logger->warn("Command handle not found: {}", handle.ToString());
     return false;
@@ -127,7 +132,7 @@ CommandResult CommandExecutor::ExecuteCommand(CommandHandle handle,
     return CommandResult::Failure("No execution context available");
   }
   // 检查命令可用性
-  if (!execContext->IsCommandAvailable(handle)) {
+  if (!execContext->IsCommandAvailable(m_Registry, handle)) {
     m_Logger->warn("Command handle {} is not available in context '{}'",
                    handle.ToString(),
                    execContext->GetName());
@@ -135,7 +140,7 @@ CommandResult CommandExecutor::ExecuteCommand(CommandHandle handle,
   }
 
   // 获取命令类型信息用于类型安全检查
-  const Command *command = CommandRegistry::Get().PeekCommand(handle);
+  const Command *command = m_Registry.PeekCommand(handle);
   if (!command) {
     return CommandResult::Failure("Command handle not found: " + handle.ToString());
   }
@@ -178,13 +183,12 @@ size_t CommandExecutor::SubmitCommands(const std::vector<CommandHandle> &handles
   for (const auto &handle : handles) {
     if (!handle.IsValid())
       continue;
-    if (!execContext->IsCommandAvailable(handle)) {
+    if (!execContext->IsCommandAvailable(m_Registry, handle)) {
       m_Logger->warn("Command handle {} not available in context", handle.ToString());
       continue;
     }
     // 获取命令类型信息用于类型安全检查
-    auto &registry = CommandRegistry::Get();
-    const Command *command = registry.PeekCommand(handle);
+    const Command *command = m_Registry.PeekCommand(handle);
     if (!command) {
       m_Logger->warn("Command handle not found: {}", handle.ToString());
       continue;
@@ -291,7 +295,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
   }
 
   // 1.1. 从注册表获取命令对象（转移所有权）
-  CommandPtr command = CommandRegistry::Get().AcquireCommand(task.handle, task.expectedType);
+  CommandPtr command = m_Registry.AcquireCommand(task.handle, task.expectedType);
   if (!command) {
     m_ExecutingCommands--;
     return CommandResult::Failure("Failed to acquire command from registry: " +
@@ -301,7 +305,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
 
   // 1.2. 变更CommandExecutionState状态
   CommandExecutionState preExecutingState;
-  switch (CommandRegistry::Get().GetCommandState(task.handle)) {
+  switch (m_Registry.GetCommandState(task.handle)) {
     case CommandExecutionState::PENDING:
       preExecutingState = CommandExecutionState::EXECUTING;  // 命令等待执行（可执行）
       break;
@@ -317,7 +321,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
     default:
       return CommandResult::Failure("Invalid Command Execution State");  // 与情况不符
   }
-  CommandRegistry::Get().SetCommandState(task.handle, preExecutingState);
+  m_Registry.SetCommandState(task.handle, preExecutingState);
 
   // 1.3. 发布执行开始事件
   EventBus::Publish<CommandExecuteEvent>(CommandExecuteEvent(command.get(), task.context));
@@ -332,7 +336,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
   // 2. 执行阶段
   CommandResult result;
   try {
-    switch (CommandRegistry::Get().GetCommandState(task.handle)) {
+    switch (m_Registry.GetCommandState(task.handle)) {
       case CommandExecutionState::EXECUTING:
         result = command->Execute();  // 执行命令
         break;
@@ -363,7 +367,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
   // 3.2. 变更CommandExecutionState状态
   CommandExecutionState postExecutingState;
   if (result.success) {
-    switch (CommandRegistry::Get().GetCommandState(task.handle)) {
+    switch (m_Registry.GetCommandState(task.handle)) {
       case CommandExecutionState::EXECUTING:
         postExecutingState = CommandExecutionState::SUCCEEDED;  // 命令执行成功
         break;
@@ -380,12 +384,12 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
   else {
     postExecutingState = CommandExecutionState::FAILED;
   }
-  CommandRegistry::Get().SetCommandState(task.handle, postExecutingState);
+  m_Registry.SetCommandState(task.handle, postExecutingState);
 
   // 3.3. 如果执行成功，将命令重新存储到注册表
   if (result.success && command->CanUndo()) {
     // 重新存储到原句柄（不改变CommandExecutionState状态。状态与Store解耦）
-    if (CommandRegistry::Get().ReStoreCommand(task.handle, std::move(command))) {
+    if (m_Registry.ReStoreCommand(task.handle, std::move(command))) {
       // 发布事件，使用原句柄
       result.commandHandle = task.handle;
       CommandCompletedEvent event(result);

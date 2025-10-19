@@ -19,25 +19,25 @@ namespace mite {
  * CommandExecutor executor;
  * executor.Start();
  *
- * // 2. 创建执行上下文
+ * // 2. 创建执行上下文（目前使用默认上下文即可）
  * auto* context = executor.CreateDefaultExecutionContext(CONTEXT_EDITOR, "Editor");
  *
  * // 3. 异步提交命令（默认优先级）
- * auto moveCmd = CommandFactory::Get().Create<MoveEntityCommand>();
+ * auto moveCmd = CommandRegister::Get().Create<MoveEntityCommand>();
  * executor.SubmitCommand(std::move(moveCmd), context); // 转移所有权
  *
  * // 4. 异步提交命令（指定优先级）
- * auto criticalCmd = CommandFactory::Get().Create<DeleteEntityCommand>();
+ * auto criticalCmd = CommandRegister::Get().Create<DeleteEntityCommand>();
  * executor.SubmitCommand(std::move(criticalCmd), context, BS::pr::high); // 转移所有权
  *
  * // 5. 同步执行命令
- * auto saveCmd = CommandFactory::Get().Create<SaveSceneCommand>();
+ * auto saveCmd = CommandRegister::Get().Create<SaveSceneCommand>();
  * auto result = executor.ExecuteCommand(std::move(saveCmd), context); // 转移所有权
  *
  * // 6. 批量提交命令
  * std::vector<CommandPtr> commands;
- * commands.push_back(CommandFactory::Get().Create<RotateEntityCommand>());
- * commands.push_back(CommandFactory::Get().Create<ScaleEntityCommand>());
+ * commands.push_back(CommandRegister::Get().Create<RotateEntityCommand>());
+ * commands.push_back(CommandRegister::Get().Create<ScaleEntityCommand>());
  * executor.SubmitCommands(std::move(commands), context, BS::pr::normal);  // 转移所有权
  *
  * // 7. 执行控制
@@ -60,7 +60,7 @@ namespace mite {
 class CommandExecutor {
  public:
   // ==================== 构造函数和析构函数 ====================
-  CommandExecutor();
+  CommandExecutor(CommandRegistry &registry);
   virtual ~CommandExecutor();
 
   // ==================== 执行器状态管理接口 ====================
@@ -81,9 +81,16 @@ class CommandExecutor {
 
   // ==================== 命令提交接口 ====================
   /**
+   * @brief 提交命令执行（同步，使用句柄）
+   * @param handle 命令句柄
+   * @param context 执行上下文（可选，若为nullptr则使用默认上下文）
+   * @return CommandResult 执行结果
+   */
+  CommandResult ExecuteCommand(CommandHandle handle, CommandExecutionContext *context = nullptr);
+  /**
    * @brief 提交命令执行（异步，使用句柄）
    * @param handle 命令句柄
-   * @param context 执行上下文（可选）
+   * @param context 执行上下文（可选，若为nullptr则使用默认上下文）
    * @param priority 执行优先级
    * @return bool 提交是否成功
    */
@@ -91,16 +98,9 @@ class CommandExecutor {
                           CommandExecutionContext *context = nullptr,
                           CommandPriority priority = CommandPriority::NORMAL);
   /**
-   * @brief 提交命令执行（同步，使用句柄）
-   * @param handle 命令句柄
-   * @param context 执行上下文（可选）
-   * @return CommandResult 执行结果
-   */
-  CommandResult ExecuteCommand(CommandHandle handle, CommandExecutionContext *context = nullptr);
-  /**
-   * @brief 批量提交命令（使用句柄列表）
+   * @brief 批量提交命令（异步，使用句柄列表）
    * @param handles 命令句柄列表
-   * @param context 执行上下文（可选）
+   * @param context 执行上下文（可选，若为nullptr则使用默认上下文）
    * @param priority 执行优先级
    * @return size_t 成功提交的命令数量
    */
@@ -209,6 +209,7 @@ class CommandExecutor {
   Logger m_Logger;
   mutable std::mutex m_Mutex;
   ExecutionContextPtr m_DefaultContext;
+  CommandRegistry &m_Registry;
 
   // ExecuteSingleCommand可能在子线程内运行，需要确保线程安全
   std::atomic<bool> m_IsRunning{false};

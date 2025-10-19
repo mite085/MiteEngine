@@ -1,12 +1,11 @@
 #ifndef MITE_ENGINE_COMMAND_SYSTEM_COMMAND_SYSTEM
 #define MITE_ENGINE_COMMAND_SYSTEM_COMMAND_SYSTEM
 
-
-#include "command_core/command_event.h"
 #include "command_core/command.h"
+#include "command_core/command_event.h"
+#include "command_core/command_registry.h"
 #include "command_executor/command_execution_context.h"
 #include "command_executor/command_executor.h"
-#include "command_core/command_registry.h"
 #include "command_executor/command_redo_stack.h"
 #include "command_executor/command_undo_stack.h"
 
@@ -22,7 +21,6 @@ namespace mite {
 class CommandSystem {
  public:
   // ==================== 单例访问接口 ====================
-
   static CommandSystem &Get();
 
   // ==================== 系统生命周期管理接口 ====================
@@ -47,83 +45,41 @@ class CommandSystem {
    */
   bool IsInitialized() const;
 
-  // ==================== 命令注册接口 ====================
-  /**
-   * @brief 注册命令类型
-   * @tparam T 命令类型
-   * @return bool 注册是否成功
-   */
+  // ==================== 命令注册/创建接口（CommandRegistry核心方法再封装） ====================
   template<typename T> bool RegisterCommandType();
-  /**
-   * @brief 批量注册命令类型
-   * @tparam Types 命令类型列表
-   */
   template<typename... Types> void RegisterCommandTypes();
-  /**
-   * @brief 检查命令类型是否已注册
-   * @tparam T 命令类型
-   * @return bool 是否已注册
-   */
   template<typename T> bool IsCommandTypeRegistered() const;
+  template<typename T> CommandHandle CreateCommand();
+  bool HasCommand(const CommandHandle &handle) const;
+  bool ReleaseCommand(const CommandHandle &handle);
 
-  // ==================== 命令执行接口 ====================
+  // ==================== 命令执行/重做/撤销接口（CommandExecutor核心方法再封装） ====================
   /**
    * @brief 执行命令（同步，自动处理Undo/Redo栈）
    * @param handle 命令句柄
-   * @param contextName 上下文名称（可选）
    * @return CommandResult 执行结果
    */
-  CommandResult Execute(CommandHandle handle, const std::string &contextName = "Default");
+  CommandResult Execute(CommandHandle handle);
   /**
    * @brief 异步提交命令
    * @param handle 命令句柄
-   * @param contextName 上下文名称（可选）
    * @param priority 执行优先级
    * @return CommandResult 提交结果
    */
-  CommandResult Submit(CommandHandle handle,
-                       const std::string &contextName = "Default",
-                       CommandPriority priority = CommandPriority::NORMAL);
+  CommandResult Submit(CommandHandle handle, CommandPriority priority = CommandPriority::NORMAL);
   /**
    * @brief 创建并执行命令
    * @tparam T 命令类型
-   * @param contextName 上下文名称
    * @return CommandResult 执行结果
    */
-  template<typename T> CommandResult ExecuteNew(const std::string &contextName = "Default");
+  template<typename T> CommandResult ExecuteNew();
   /**
    * @brief 创建并异步提交命令
    * @tparam T 命令类型
-   * @param contextName 上下文名称
    * @param priority 执行优先级
    * @return CommandResult 提交结果
    */
-  template<typename T>
-  CommandResult SubmitNew(const std::string &contextName = "Default",
-                          CommandPriority priority = CommandPriority::NORMAL);
-
-  // ==================== 上下文管理接口 ====================
-  /**
-   * @brief 创建或获取执行上下文
-   * @param name 上下文名称
-   * @param contextFlags 上下文标志
-   * @return CommandExecutionContext* 上下文指针
-   */
-  CommandExecutionContext *GetOrCreateContext(const std::string &name,
-                                              CommandContextFlags contextFlags = CONTEXT_NONE);
-  /**
-   * @brief 获取执行上下文
-   * @param name 上下文名称
-   * @return CommandExecutionContext* 上下文指针，不存在返回nullptr
-   */
-  CommandExecutionContext *GetContext(const std::string &name) const;
-  /**
-   * @brief 移除执行上下文
-   * @param name 上下文名称
-   */
-  void RemoveContext(const std::string &name);
-
-  // ==================== Undo/Redo 接口 ====================
+  template<typename T> CommandResult SubmitNew(CommandPriority priority = CommandPriority::NORMAL);
   /**
    * @brief 执行撤销操作
    * @return CommandResult 撤销执行结果
@@ -206,10 +162,10 @@ class CommandSystem {
   CommandSystem &operator=(const CommandSystem &) = delete;
 
   // 成员变量
-  std::unique_ptr<CommandExecutor> m_executor;
-  std::unique_ptr<CommandUndoStack> m_undoStack;
-  std::unique_ptr<CommandRedoStack> m_redoStack;
-  std::unordered_map<std::string, ExecutionContextPtr> m_contexts;
+  std::unique_ptr<CommandRegistry> m_Registry;
+  std::unique_ptr<CommandExecutor> m_Executor;
+  std::unique_ptr<CommandUndoStack> m_UndoStack;
+  std::unique_ptr<CommandRedoStack> m_RedoStack;
 
   std::atomic<bool> m_initialized{false};
 
@@ -221,7 +177,7 @@ class CommandSystem {
 
 template<typename T> bool CommandSystem::RegisterCommandType()
 {
-  return CommandRegistry::Get().RegisterCommandType<T>();
+  return m_Registry->RegisterCommandType<T>();
 }
 
 template<typename... Types> void CommandSystem::RegisterCommandTypes()
@@ -231,25 +187,30 @@ template<typename... Types> void CommandSystem::RegisterCommandTypes()
 
 template<typename T> bool CommandSystem::IsCommandTypeRegistered() const
 {
-  return CommandRegistry::Get().IsCommandTypeRegistered<T>();
+  return m_Registry->IsCommandTypeRegistered<T>();
 }
 
-template<typename T> CommandResult CommandSystem::ExecuteNew(const std::string &contextName)
+template<typename T> inline CommandHandle CommandSystem::CreateCommand()
 {
-  CommandHandle handle = CommandRegistry::Get().CreateCommand<T>();
+  return m_Registry->CreateCommand<T>();
+}
+
+template<typename T> CommandResult CommandSystem::ExecuteNew()
+{
+  CommandHandle handle = m_Registry->CreateCommand<T>();
   if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to create command");
   }
-  return Execute(handle, contextName);
+  return Execute(handle);
 }
 template<typename T>
-CommandResult CommandSystem::SubmitNew(const std::string &contextName, CommandPriority priority)
+CommandResult CommandSystem::SubmitNew(CommandPriority priority)
 {
-  CommandHandle handle = CommandRegistry::Get().CreateCommand<T>();
+  CommandHandle handle = m_Registry->CreateCommand<T>();
   if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to create command");
   }
-  return Submit(handle, contextName, priority);
+  return Submit(handle, nullptr, priority);
 }
 }  // namespace mite
 
