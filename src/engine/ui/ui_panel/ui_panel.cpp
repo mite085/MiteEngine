@@ -20,10 +20,8 @@ UIPanel::UIPanel(const std::string &name) : m_Renderer(UIRender::Get())
 
 void UIPanel::RenderPanel()
 {
-  if (m_PanelProps.visible) {
-    // ImGui::Begin()
-    m_Renderer.BeginPanel(m_PanelProps);
-
+  // ImGui::Begin()
+  if (m_Renderer.BeginPanel(m_PanelProps)) {
     // 执行具体渲染操作
     Render();
 
