@@ -7,7 +7,7 @@ ViewportInputContext::ViewportInputContext(const std::string &name) : InputConte
   m_InputStateTracker = std::make_unique<InputStateTracker>();
 }
 
-void ViewportInputContext::Update(float deltatime, bool gizmoUsing, Transform cameraTransform)
+void ViewportInputContext::Update(float deltatime, bool gizmoUsing)
 {
   // 更新Gizmo占用
   m_ViewportGizmoUsing = gizmoUsing;
@@ -18,11 +18,27 @@ void ViewportInputContext::Update(float deltatime, bool gizmoUsing, Transform ca
     return;
   }
 
-  // 更新相机变换（临时变量）
-  UpdateCameraTransform(deltatime, cameraTransform);
+  // 更新相机移动
+  UpdateCameraMove(deltatime);
+}
+
+void ViewportInputContext::Apply(Transform cameraTransform)
+{
+  // 更新相机世界空间移动
+  glm::vec3 cameraWorldMove = m_CameraMoveCache.x * cameraTransform.GetConstrainedRight() +
+                              m_CameraMoveCache.y * cameraTransform.GetConstrainedUp() +
+                              m_CameraMoveCache.z * cameraTransform.GetConstrainedForward();
+  cameraTransform.Translate(cameraWorldMove);
+
+  // 更新相机旋转
+  cameraTransform.RotateCamera(m_CameraRotateCache.x, m_CameraRotateCache.y);
+
+  // 更新相机平移
+  cameraTransform.PanCamera(m_CameraPanCache.x, m_CameraPanCache.y);
 
   // 发布相机变换事件
-  EventBus::Publish<ViewportCameraUpdateEvent>(ViewportCameraUpdateEvent(cameraTransform, m_CameraZoomCache));
+  EventBus::Publish<ViewportCameraUpdateEvent>(
+      ViewportCameraUpdateEvent(cameraTransform, m_CameraZoomCache));
 
   // 清空缓存
   ClearCameraCache();
@@ -133,7 +149,7 @@ glm::vec2 ViewportInputContext::UVToScreen(const glm::vec2 &uv)
   return screenPos;
 }
 
-void ViewportInputContext::UpdateCameraTransform(float deltatime, Transform &cameraTransform)
+void ViewportInputContext::UpdateCameraMove(float deltatime)
 {
   // 相机移动方向
   glm::vec3 cameraMoveDirection = glm::vec3(0.0f);
@@ -160,18 +176,11 @@ void ViewportInputContext::UpdateCameraTransform(float deltatime, Transform &cam
     cameraMoveDirection = glm::normalize(cameraMoveDirection);
   }
 
-  // 更新相机世界空间移动
-  glm::vec3 cameraWorldDirection = cameraMoveDirection.x * cameraTransform.GetConstrainedRight() +
-                                   cameraMoveDirection.y * cameraTransform.GetConstrainedUp() +
-                                   cameraMoveDirection.z * cameraTransform.GetConstrainedForward();
-  cameraTransform.Translate(cameraWorldDirection * m_CameraMoveSpeed * deltatime);
-
-  // 更新相机旋转
-  cameraTransform.RotateCamera(m_CameraRotateCache.x, m_CameraRotateCache.y);
-
-  // 更新相机平移
-  cameraTransform.PanCamera(m_CameraPanCache.x, m_CameraPanCache.y);
+  // 计算相机移动缓存
+  m_CameraMoveCache = cameraMoveDirection * m_CameraMoveSpeed * deltatime;
 }
+
+
 void ViewportInputContext::ClearCameraCache()
 {
   m_CameraRotateCache = {0.0f, 0.0f};

@@ -59,6 +59,9 @@ void ViewportPanel::Render()
 
       // 绘制Gizmo Overlay
       m_GizmoOverlay->Render(m_GizmoOverlayContext);
+
+      // Gizmo完成之后应用变换
+      m_InputContext->Apply(m_GizmoOverlayContext.cameraTransform);
     }
     else {
       // FrameBuffer未就绪时的占位显示
@@ -151,6 +154,6 @@ void ViewportPanel::UpdateInputContext(float deltatime, bool gizmoUsing)
   m_InputContext->SetViewportRect(m_PanelPos, m_PanelSize);
 
   // 更新输入上下文
-  m_InputContext->Update(deltatime, gizmoUsing, m_GizmoOverlayContext.cameraTransform);
+  m_InputContext->Update(deltatime, gizmoUsing);
 }
 }  // namespace mite

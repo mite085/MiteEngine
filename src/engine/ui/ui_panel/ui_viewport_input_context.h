@@ -20,8 +20,10 @@ class ViewportInputContext : public InputContext {
   explicit ViewportInputContext(const std::string &name);
   virtual ~ViewportInputContext() = default;
 
-  // Update每帧更新(获取到ViewManipulate操作后新的相机ViewMatrix)
-  void Update(float deltatime, bool gizmoUsing, Transform cameraTransform);
+  // Update每帧更新
+  void Update(float deltatime, bool gizmoUsing);
+  // 应用变换 (获取到ViewManipulate操作后新的相机ViewMatrix)
+  void Apply(Transform cameraTransform);
 
   // 视口状态管理
   void SetViewportFocus(bool focused) { m_ViewportFocused = focused; }
@@ -42,7 +44,7 @@ class ViewportInputContext : public InputContext {
   void ProcessKeyTypedEvent(KeyTypedEvent &e) override;
 
   // 更新相机变换逻辑
-  void UpdateCameraTransform(float deltatime, Transform &cameraTransform);
+  void UpdateCameraMove(float deltatime);
   void ClearCameraCache();
 
  private:
@@ -51,19 +53,20 @@ class ViewportInputContext : public InputContext {
   glm::vec2 m_LastMousePos{0.0f, 0.0f};  // 鼠标位置缓存
 
   // Viewport状态
-  bool m_ViewportFocused = false;     // Viewport窗口是否聚焦
-  bool m_ViewportHovered = false;     // 鼠标是否悬停于Viewport上
+  bool m_ViewportFocused = false;  // Viewport窗口是否聚焦
+  bool m_ViewportHovered = false;  // 鼠标是否悬停于Viewport上
   bool m_ViewportGizmoUsing = false;  // Gizmo是否占用中(若占用则不接收鼠标/键盘事件)
   glm::vec2 m_ViewportPos = {0, 0};   // Viewport位置记录
   glm::vec2 m_ViewportSize = {0, 0};  // Viewport尺寸记录
 
   // Camera控制参数与操作累积
   float m_CameraMoveSpeed = 5.0f;
-  float m_CameraRotationSpeed = 0.1f;			// 0.1 deg/pix
+  float m_CameraRotationSpeed = 0.1f;  // 0.1 deg/pix
   float m_CameraZoomSpeed = 2.0f;
-  glm::vec2 m_CameraRotateCache = {0.0f, 0.0f}; // 仅支持俯仰/偏航旋转
-  glm::vec2 m_CameraPanCache = {0.0f, 0.0f};	// 仅支持上下/左右平移
-  float m_CameraZoomCache = 0.0f;				// 仅支持放大/缩小视场角
+  glm::vec3 m_CameraMoveCache = {0.0f, 0.0f, 0.0f};
+  glm::vec2 m_CameraRotateCache = {0.0f, 0.0f};  // 仅支持俯仰/偏航旋转
+  glm::vec2 m_CameraPanCache = {0.0f, 0.0f};     // 仅支持上下/左右平移
+  float m_CameraZoomCache = 0.0f;                // 仅支持放大/缩小视场角
 
   /**
    * @brief 将屏幕坐标转换为视口UV坐标
