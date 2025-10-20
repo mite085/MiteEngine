@@ -1,12 +1,12 @@
 #include "entity.h"
 
 namespace mite {
-Entity::Entity() : m_UUID(UUID{}) {}
-Entity::Entity(const UUID &uuid) : m_UUID(uuid) {}
-Entity::Entity(const Entity &other) : m_UUID(other.m_UUID) {}
-Entity Entity::CreateEntity()
+Entity::Entity() : m_Name(""), m_UUID(UUID{}) {}
+Entity::Entity(const std::string &name, const UUID &uuid) : m_Name(name), m_UUID(uuid) {}
+Entity::Entity(const Entity &other) :m_Name(other.GetName()), m_UUID(other.m_UUID) {}
+Entity Entity::CreateEntity(const std::string &name)
 {
-  return Entity(UUIDGenerator::Generate());
+  return Entity(name, UUIDGenerator::Generate());
 }
 bool Entity::IsValid() const
 {

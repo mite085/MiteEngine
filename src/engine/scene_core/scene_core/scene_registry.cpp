@@ -20,7 +20,7 @@ ComponentEventPublisher &SceneRegistry::GetEventPublisher()
 Entity SceneRegistry::CreateEntity(const std::string& name)
 {
   // 创建实体
-  Entity entity = Entity::CreateEntity();
+  Entity entity = Entity::CreateEntity(name);
 
   // 添加ID组件，自动生成唯一ID
   auto &id = AddComponent<IDComponent>(entity);
