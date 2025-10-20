@@ -79,6 +79,7 @@ class ImGuiUIRender : public UIRender {
   std::string GetTranslatedHeader(const TableProps &props, int columnIndex);  // 表头翻译处理
 
   // ==================== 私有辅助函数 ====================
+  void SetItemTooltip(std::string tooltip);
   const char *GenerateImGuiId(const UUID &elementId);  // 生成ImGui所需的唯一标识符
 };
 }  // namespace mite

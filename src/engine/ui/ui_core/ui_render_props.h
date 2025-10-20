@@ -17,6 +17,7 @@ struct BaseRenderProps {
 
   std::string translationKey;  // 翻译键（用于查找本地化文本）
   std::string fallbackText;    // 回退文本（翻译键查找失败时使用）
+  std::string tooltip;         // 提示文本
 };
 
 /**
@@ -212,9 +213,10 @@ struct GroupProps : public TextRenderProps {
  * 用于构建树状结构的节点控件
  */
 struct TreeNodeProps : public TextRenderProps {
-  bool isOpen = false;       // 节点是否展开
-  int depth = 0;             // 节点深度
-  bool hasChildren = false;  // 是否有子节点
+  bool isExpand = false;  // 节点是否展开
+  bool isSelect = false;  // 节点是否被选中
+  bool isLeaf = false;    // 是否为叶子节点
+  int depth = 0;          // 节点深度
 };
 
 /**
@@ -255,29 +257,35 @@ struct SpacerProps : public BaseRenderProps {
  */
 struct PanelProps : public BaseRenderProps {
   // ============ 基本属性 ============
-  bool resizable = true;               // 是否可调整大小
-  bool scrollable = true;              // 是否可滚动
-  bool collapsed = false;              // 是否折叠标题
-  bool bringToFront = false;           // 是否置顶
-  glm::vec2 minSize = {100, 100};      // 最小尺寸
+  bool resizable = true;      // 是否可调整大小（默认可调整）
+  bool scrollable = true;     // 是否可滚动（默认可滚动）
+  bool collapsed = false;     // 是否折叠标题（默认状态下不折叠）
+  bool bringToFront = false;  // 是否置顶（默认状态下不置顶）
+  bool dockable = true;       // 是否可停靠（默认支持）
+  bool hasMenuBar = false;  // 是否有菜单栏（默认没有，使用统一的window菜单栏）
+  bool noBackground = false;           // 无背景
+  glm::vec2 minSize = {10, 10};        // 最小尺寸
   glm::vec2 maxSize = {10000, 10000};  // 最大尺寸
 
-  // ============ Dock相关属性 ============
-  bool dockable = true;  // 是否可停靠
-
-  // ============ 运行时属性 ============
+  // ============ 运行时状态 ============
   bool movable = true;     // 可移动flag，当鼠标移入显示区域时自动设为false
   bool isFocused = false;  // 是否聚焦于此Panel
   bool isHovered = false;  // 鼠标是否悬浮于此Panel上
 };
-/**
- * @brief 子窗口属性
- * 用于创建子窗口区域
- */
+
 struct ChildProps : public BaseRenderProps {
-  bool movable = true;      // 是否可移动
-  bool border = false;      // 是否显示边框
-  glm::vec2 size = {0, 0};  // 子窗口尺寸（0表示自动）
+  // ============ 子窗口基本属性 ============
+  glm::vec2 size = {0, 0};                 // 固定尺寸（0表示自动）
+  bool border = true;                      // 是否显示边框
+  bool autoResizeX = true;                 // X轴自动调整大小
+  bool autoResizeY = true;                 // Y轴自动调整大小
+  bool alwaysVerticalScrollbar = false;    // 总是显示垂直滚动条
+  bool alwaysHorizontalScrollbar = false;  // 总是显示水平滚动条
+  bool scrollable = true;                  // 是否可滚动
+  bool noBackground = false;               // 无背景
+
+  // ============ 运行时状态 ============
+  bool isHovered = false;  // 是否悬停
 };
 }  // namespace mite
 

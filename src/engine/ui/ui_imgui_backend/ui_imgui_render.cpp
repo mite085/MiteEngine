@@ -7,6 +7,11 @@ namespace mite {
 // ==================== 面板管理接口实现 ====================
 bool ImGuiUIRender::BeginPanel(PanelProps &props)
 {
+  if (!props.visible) {
+    return false;
+  }
+
+  // 设定titie
   std::string titleText = GetTranslatedText(props);
 
   // 设置窗口尺寸约束
@@ -26,37 +31,31 @@ bool ImGuiUIRender::BeginPanel(PanelProps &props)
     flags |= ImGuiWindowFlags_NoTitleBar;
   if (props.bringToFront)
     flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-  // 添加Dock相关标志
-  if (props.dockable) {
-    flags |= ImGuiConfigFlags_DockingEnable;
-  }
+  if (props.noBackground)
+    flags |= ImGuiWindowFlags_NoBackground;
+  if (props.hasMenuBar)
+    flags |= ImGuiWindowFlags_MenuBar;
+  if (!props.dockable)
+    flags |= ImGuiWindowFlags_NoDocking;
 
   // 开始panel
-  ImGui::Begin(titleText.c_str(), &props.visible, flags);
+  bool began = ImGui::Begin(titleText.c_str(), &props.visible, flags);
 
-  // 若窗口悬停且鼠标在可操作区域内，窗口不可移动（操作props，在下一帧实现）
-  ImGuiWindow *window = ImGui::GetCurrentWindow();
-  if (ImGui::IsWindowHovered() &&
-      ImGui::IsMouseHoveringRect(window->InnerRect.Min, window->InnerRect.Max))
-    props.movable = false;
-  else
-    // 否则释放窗口，可移动
-    props.movable = true;
+  if (began) {
+    // 更新Focused信息和Hovered信息
+    props.isFocused = IsPanelFocused();
+    props.isHovered = IsPanelHovered();
 
-  // 更新Focused信息
-  if (IsPanelFocused())
-    props.isFocused = true;
-  else
-    props.isFocused = false;
-
-  // 更新鼠标是否位于
-  if (IsPanelHovered())
-    props.isHovered = true;
-  else
-    props.isHovered = false;
-
-  return true;
+    // 若窗口悬停且鼠标在可操作区域内，窗口不可移动（操作props，在下一帧实现）
+    ImGuiWindow *window = ImGui::GetCurrentWindow();
+    if (ImGui::IsWindowHovered() &&
+        ImGui::IsMouseHoveringRect(window->InnerRect.Min, window->InnerRect.Max))
+      props.movable = false;
+    else
+      // 否则释放窗口，可移动
+      props.movable = true;
+  }
+  return began;
 }
 void ImGuiUIRender::EndPanel()
 {
@@ -67,17 +66,38 @@ bool ImGuiUIRender::BeginChild(ChildProps &props)
   if (!props.visible) {
     return false;
   }
+  // 生成ID
   std::string childId = GetTranslatedText(props);
   if (childId.empty()) {
     childId = GenerateImGuiId(props.elementId);
   }
+  // 计算实际尺寸
+  ImVec2 childSize(props.size.x, props.size.y);
+  if (props.autoResizeX)
+    childSize.x = 0;
+  if (props.autoResizeY)
+    childSize.y = 0;
+
+  // 构建子窗口标志
   ImGuiWindowFlags flags = ImGuiWindowFlags_None;
-  if (!props.movable)
-    flags |= ImGuiWindowFlags_NoMove;
-  if (props.border)
-    flags |= ImGuiWindowFlags_ChildWindow;
-  return ImGui::BeginChild(
-      childId.c_str(), ImVec2(props.size.x, props.size.y), props.border, flags);
+  if (!props.scrollable)
+    flags |= ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+  if (props.noBackground)
+    flags |= ImGuiWindowFlags_NoBackground;
+  if (props.alwaysVerticalScrollbar)
+    flags |= ImGuiWindowFlags_AlwaysVerticalScrollbar;
+  if (props.alwaysHorizontalScrollbar)
+    flags |= ImGuiWindowFlags_AlwaysHorizontalScrollbar;
+
+  // 开始子窗口
+  bool began = ImGui::BeginChild(childId.c_str(), childSize, props.border, flags);
+
+  if (began) {
+    // 更新运行时状态
+    props.isHovered = IsPanelHovered();
+  }
+
+  return began;
 }
 void ImGuiUIRender::EndChild()
 {
@@ -121,6 +141,7 @@ void ImGuiUIRender::RenderLabel(const LabelProps &props)
 
   std::string displayText = GetTranslatedText(props);
   ImGui::Text("%s", displayText.c_str());
+  SetItemTooltip(props.tooltip);
 }
 
 bool ImGuiUIRender::RenderButton(const ButtonProps &props)
@@ -129,8 +150,12 @@ bool ImGuiUIRender::RenderButton(const ButtonProps &props)
     return false;
 
   std::string displayText = GetTranslatedText(props);
-  return ImGui::Button(displayText.c_str(),
-                       ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
+  bool changed = ImGui::Button(
+      displayText.c_str(),
+      ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
+  SetItemTooltip(props.tooltip);
+
+  return changed;
 }
 
 bool ImGuiUIRender::RenderCheckbox(CheckboxProps &props)
@@ -145,7 +170,7 @@ bool ImGuiUIRender::RenderCheckbox(CheckboxProps &props)
     ImGui::SameLine();
     ImGui::Text("%s", displayText.c_str());
   }
-
+  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -177,7 +202,7 @@ bool ImGuiUIRender::RenderTextInput(TextInputProps &props)
   else {
     changed = ImGui::InputTextWithHint(labelText.c_str(), hintText.c_str(), &props.text);
   }
-
+  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -187,10 +212,14 @@ bool ImGuiUIRender::RenderTextArea(TextAreaProps &props)
     return false;
 
   std::string labelText = GetTranslatedText(props);
-  return ImGui::InputTextMultiline(
+  bool changed = ImGui::InputTextMultiline(
       labelText.c_str(),
       &props.text,
       ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
+
+  SetItemTooltip(props.tooltip);
+
+  return changed;
 }
 
 // ==================== 选择器控件渲染实现 ====================
@@ -255,12 +284,14 @@ bool ImGuiUIRender::RenderDragFloat(DragFloatProps &props)
     return false;
 
   std::string labelText = GetTranslatedText(props);
-  return ImGui::DragFloat(labelText.c_str(),
+  bool changed = ImGui::DragFloat(labelText.c_str(),
                           &props.value,
                           props.speed,
                           props.minValue,
                           props.maxValue,
                           props.format.c_str());
+  SetItemTooltip(props.tooltip);
+  return changed;
 }
 
 bool ImGuiUIRender::RenderDragFloat2(DragFloat2Props &props)
@@ -269,12 +300,14 @@ bool ImGuiUIRender::RenderDragFloat2(DragFloat2Props &props)
     return false;
 
   std::string labelText = GetTranslatedText(props);
-  return ImGui::DragFloat2(labelText.c_str(),
+  bool changed = ImGui::DragFloat2(labelText.c_str(),
                            glm::value_ptr(props.value),
                            props.speed,
                            props.minValue,
                            props.maxValue,
                            props.format.c_str());
+  SetItemTooltip(props.tooltip);
+  return changed;
 }
 
 bool ImGuiUIRender::RenderDragFloat3(DragFloat3Props &props)
@@ -283,12 +316,14 @@ bool ImGuiUIRender::RenderDragFloat3(DragFloat3Props &props)
     return false;
 
   std::string labelText = GetTranslatedText(props);
-  return ImGui::DragFloat3(labelText.c_str(),
+  bool changed = ImGui::DragFloat3(labelText.c_str(),
                            glm::value_ptr(props.value),
                            props.speed,
                            props.minValue,
                            props.maxValue,
                            props.format.c_str());
+  SetItemTooltip(props.tooltip);
+  return changed;
 }
 
 bool ImGuiUIRender::RenderDragFloat4(DragFloat4Props &props)
@@ -297,12 +332,14 @@ bool ImGuiUIRender::RenderDragFloat4(DragFloat4Props &props)
     return false;
 
   std::string labelText = GetTranslatedText(props);
-  return ImGui::DragFloat4(labelText.c_str(),
+  bool changed = ImGui::DragFloat4(labelText.c_str(),
                            glm::value_ptr(props.value),
                            props.speed,
                            props.minValue,
                            props.maxValue,
                            props.format.c_str());
+  SetItemTooltip(props.tooltip);
+  return changed;
 }
 
 bool ImGuiUIRender::RenderDragInt(DragIntProps &props)
@@ -311,12 +348,14 @@ bool ImGuiUIRender::RenderDragInt(DragIntProps &props)
     return false;
 
   std::string labelText = GetTranslatedText(props);
-  return ImGui::DragInt(labelText.c_str(),
+  bool changed = ImGui::DragInt(labelText.c_str(),
                         &props.value,
                         props.speed,
                         props.minValue,
                         props.maxValue,
                         props.format.c_str());
+  SetItemTooltip(props.tooltip);
+  return changed;
 }
 
 // ==================== 特殊控件渲染实现 ====================
@@ -330,6 +369,7 @@ void ImGuiUIRender::RenderProgressBar(const ProgressBarProps &props)
   ImGui::ProgressBar(props.progress,
                      ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)),
                      overlayText.empty() ? nullptr : overlayText.c_str());
+  SetItemTooltip(props.tooltip);
 }
 
 bool ImGuiUIRender::RenderColorEdit(ColorEditProps &props)
@@ -371,7 +411,9 @@ bool ImGuiUIRender::RenderColorEdit(ColorEditProps &props)
     flags |= ImGuiColorEditFlags_NoTooltip;
   }
 
-  return ImGui::ColorEdit4(labelText.c_str(), glm::value_ptr(props.color), flags);
+  bool changed = ImGui::ColorEdit4(labelText.c_str(), glm::value_ptr(props.color), flags);
+  SetItemTooltip(props.tooltip);
+  return changed;
 }
 
 void ImGuiUIRender::RenderImage(const ImageProps &props)
@@ -415,21 +457,23 @@ bool ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
 
   std::string labelText = GetTranslatedText(props);
   ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
-  if (props.isOpen)
+  if (props.isExpand)
     flags |= ImGuiTreeNodeFlags_DefaultOpen;
-  if (!props.hasChildren)
+  if (props.isLeaf)
     flags |= ImGuiTreeNodeFlags_Leaf;
+  if (props.isSelect)
+    flags |= ImGuiTreeNodeFlags_Selected;
 
   bool isOpen = ImGui::TreeNodeEx(
       GenerateImGuiId(props.elementId), flags, "%s", labelText.c_str());
-  bool changed = (isOpen != props.isOpen);
-  props.isOpen = isOpen;
+  bool changed = (isOpen != props.isExpand);
+  props.isExpand = isOpen;
 
   if (isOpen && renderContent) {
     renderContent();
     ImGui::TreePop();
   }
-
+  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -599,6 +643,11 @@ std::string ImGuiUIRender::GetTranslatedHeader(const TableProps &props, int colu
 }
 
 // ==================== 私有辅助函数 ====================
+
+void ImGuiUIRender::SetItemTooltip(std::string tooltip)
+{
+  ImGui::SetItemTooltip(tooltip.c_str());
+}
 
 const char *ImGuiUIRender::GenerateImGuiId(const UUID &elementId)
 {
