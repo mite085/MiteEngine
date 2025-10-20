@@ -5,6 +5,7 @@
 #include "render_opengl/opengl_pipeline.h"
 #include "scene_core_components/component_headers.h"
 #include "ui_panel/ui_viewport_panel.h"
+#include "ui_panel/ui_scenetree_panel.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -197,8 +198,12 @@ void MiteApplication::InitializeUI()
 
   // 创建ViewportPanel（必须在SceneView创建之后创建）
   std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>(*m_SceneView, "viewport");
+  std::shared_ptr<SceneTreePanel> scenetreePanel = std::make_shared<SceneTreePanel>(*m_SceneGraph,
+                                                                                    "scenetree");
+
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
+  m_UISystem->RegisterPanel(scenetreePanel);
 }
 
 void MiteApplication::InitializeAssertManager()
