@@ -25,11 +25,18 @@ void GizmoOverlay::Render(OverlayContext &context)
   ImVec2 viewManipulatePosition = ImVec2(viewManipulateRight - m_ViewManipulateSize.x,
                                          viewManipulateTop);
 
-  // 相机与选中物体距离计算
-  glm::vec3 cameraPos = context.cameraTransform.GetPosition();   // 相机位置
-  glm::vec3 objectPos = context.modelTransform.GetPosition();    // 选中物体位置
-  float distanceToOrigin = glm::length(cameraPos);               // 计算到原点的距离
-  float distanceToObject = glm::distance(cameraPos, objectPos);  // 计算到特定物体的距离
+  // 相机旋转中心计算（通过cameradir和length确定的旋转中心）
+  glm::vec3 cameraPos = context.cameraTransform.GetPosition();  // 相机位置
+  glm::vec3 worldUp = Transform::GetWorldUp();                  // 世界Up方向
+  glm::vec3 cameraDir = context.cameraTransform.GetForward();   // 相机看向方向
+  glm::vec3 objectPos = context.modelTransform.GetPosition();   // 选中物体位置
+
+  // 计算绕物体旋转的最优length，用于选中物体状态下的旋转
+  float optimalLength = glm::length(objectPos - cameraPos) /
+                        glm::abs(glm::dot(cameraDir, glm::normalize(objectPos - cameraPos)));
+
+  // 非选中状态下的length使用固定值。确保不会转错
+  float defaultLength = 10.0f;
 
   // 设置ImGuizmo工作区域为整个ViewPort
   ImGuizmo::SetDrawlist();
@@ -46,7 +53,7 @@ void GizmoOverlay::Render(OverlayContext &context)
   if (context.isModelSelected) {
     // 绘制ViewManipulate，操控相机绕着模型旋转
     ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix),
-                             distanceToObject,
+                             optimalLength,
                              viewManipulatePosition,
                              {m_ViewManipulateSize.x, m_ViewManipulateSize.y},
                              0x10101010);
@@ -63,18 +70,17 @@ void GizmoOverlay::Render(OverlayContext &context)
   else {
     glm::mat4 tempModelMatrix(1.0f);  // 虽然ViewManipulate的float* matrix不参与计算，但不能为空
 
-    // 绘制ViewManipulate，操控相机绕着原点旋转
+    // 绘制ViewManipulate，操控相机绕着距离为defaultLength的正前方的点旋转
     ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix),
                              glm::value_ptr(context.cameraProjection),
                              (ImGuizmo::OPERATION)m_CurrentOperation,
                              (ImGuizmo::MODE)m_CurrentMode,
                              glm::value_ptr(tempModelMatrix),
-                             distanceToOrigin,
+                             defaultLength,
                              viewManipulatePosition,
                              {m_ViewManipulateSize.x, m_ViewManipulateSize.y},
                              0x10101010);
   }
-
   // 临时变量反馈回Context
   context.cameraTransform.SetLocalMatrix(glm::inverse(viewMatrix));
   context.modelTransform.SetLocalMatrix(modelMatrix);
