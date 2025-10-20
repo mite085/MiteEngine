@@ -182,22 +182,22 @@ class Transform {
   glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = s_WorldUp) const;
 
   // ==================== 辅助方法 ====================
-
   /**
    * @brief 重置变换为单位变换
    */
   void Reset();
-
   /**
    * @brief 检查变换是否为单位变换
-   * @return 是否为单位变换
    */
   bool IsIdentity() const;
-
   /**
    * @brief 清理脏标记
    */
   void CleanDirty();
+  /**
+   * @brief 获取世界的Up方向
+   */
+  static glm::vec3 GetWorldUp() { return s_WorldUp; }
 
  private:
   // ==================== 私有方法 ====================

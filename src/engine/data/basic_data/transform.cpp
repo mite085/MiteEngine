@@ -197,16 +197,28 @@ void Transform::RotatePitch(float degrees, const glm::vec3 &worldUp)
   // 获取当前的右向量（考虑防翻滚）
   glm::vec3 right = GetConstrainedRight(worldUp);
 
-  // 绕右轴旋转
-  RotateWorld(right, degrees);
+  // 预测旋转后的前向向量
+  float radians = glm::radians(degrees);
+  glm::quat predictedRotation = glm::angleAxis(radians, right) * m_Rotation;
+  glm::vec3 predictedForward = predictedRotation * glm::vec3(0, 0, -1);   // 右手系相机：Forward为-Z方向
 
-  // 俯仰角度限制
-  glm::vec3 forward = GetConstrainedForward(worldUp);
-  float currentPitch = glm::degrees(asin(forward.z));
+  // 计算预测的俯仰角
+  float predictedPitch = glm::degrees(glm::asin(predictedForward.y));
 
-  if (abs(currentPitch) > 89.0f) {
-    // 超过限制，撤销旋转
-    RotateWorld(right, -degrees);
+  // 检查是否超出限制
+  if (glm::abs(predictedPitch) <= 89.0f) {
+    // 安全旋转
+    RotateWorld(right, degrees);
+  }
+  else {
+    // 钳制到边界
+    float targetPitch = (predictedPitch > 0) ? 89.0f : -89.0f;
+    float currentPitch = glm::degrees(glm::asin(GetForward().y));
+    float clampedDegrees = targetPitch - currentPitch;
+
+    if (glm::abs(clampedDegrees) > 0.1f) {
+      RotateWorld(right, clampedDegrees);
+    }
   }
 }
 void Transform::RotateRoll(float degrees, const glm::vec3 &worldUp)
