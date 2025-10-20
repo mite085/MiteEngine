@@ -1,4 +1,5 @@
 #include "ui_gizmo_overlay.h"
+#include "basic_event/render_event.h"
 #include "imgui.h"
 #include "imguizmo.h"  // 必须在"imgui.h"后面
 
@@ -84,6 +85,12 @@ void GizmoOverlay::Render(OverlayContext &context)
   // 临时变量反馈回Context
   context.cameraTransform.SetLocalMatrix(glm::inverse(viewMatrix));
   context.modelTransform.SetLocalMatrix(modelMatrix);
+
+  // 发布选中物体变换事件
+  if (context.isModelSelected) {
+    EventBus::Publish<ViewportPickedUpdateEvent>(
+        ViewportPickedUpdateEvent(context.modelTransform));
+  }
 
   // 若鼠标处于viewManipulate区域内，也认为是使用中。
   if (context.mousePos.x > viewManipulatePosition.x &&

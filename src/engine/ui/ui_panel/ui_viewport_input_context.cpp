@@ -39,7 +39,7 @@ void ViewportInputContext::Apply(Transform cameraTransform)
   // 发布相机变换事件
   EventBus::Publish<ViewportCameraUpdateEvent>(
       ViewportCameraUpdateEvent(cameraTransform, m_CameraZoomCache));
-
+  
   // 清空缓存
   ClearCameraCache();
 }

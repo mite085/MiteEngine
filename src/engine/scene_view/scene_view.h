@@ -41,12 +41,14 @@ class SceneView {
   /**
    * @brief 选择场景对象，设置模型矩阵（世界坐标）
    */
-  bool PickEntity(glm::vec2 screenPosUV);
-  void SetPickedEntityModelMatrix(glm::mat4 &modelMatrix);
+  bool Pick(glm::vec2 screenPosUV);
+  bool IsPicked() const { return m_PickedEntity.IsValid(); }
+  void SetPickedWorldTransform(const Transform &worldTransform);
+  Transform GetPickedWorldTransform() const;
   /**
    * @brief 设定当前相机变换矩阵
    */
-  void SetCameraViewMatrix(glm::mat4 &viewMatrix);
+  void SetCameraWorldTransform(const Transform &worldTransform);
   void SetCameraZoom(float zoom);
 
   // ==================== 统计信息 ====================
@@ -70,6 +72,7 @@ class SceneView {
   void OnViewportResize(ViewportResizeEvent &event);               // 修改Camera的宽高比
   void OnViewportPicked(ViewportPickedEvent &event);               // 更新m_PickedEntity状态
   void OnViewportCameraUpdated(ViewportCameraUpdateEvent &event);  // 更新相机状态
+  void OnViewportPickedUpdated(ViewportPickedUpdateEvent &event);  // 更新picked状态
 
   // 依赖注入
   SceneCore &m_SceneCore;

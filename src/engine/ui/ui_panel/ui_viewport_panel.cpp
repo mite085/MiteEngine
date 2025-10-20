@@ -133,6 +133,8 @@ void ViewportPanel::UpdateOverlayContext()
   // 更新Overlay上下文矩阵信息
   m_GizmoOverlayContext.cameraTransform = m_SceneView.GetCameraInstance()->GetCameraTransform();
   m_GizmoOverlayContext.cameraProjection = m_SceneView.GetCameraInstance()->GetProjectionMatrix();
+  m_GizmoOverlayContext.isModelSelected = m_SceneView.IsPicked();
+  m_GizmoOverlayContext.modelTransform = m_SceneView.GetPickedWorldTransform();
 }
 void ViewportPanel::UpdateImageProps()
 {

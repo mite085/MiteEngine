@@ -19,6 +19,8 @@ SceneView::SceneView(SceneCore &sceneCore, SceneGraph &sceneGraph)
   m_EventSubscriptions.SubscribeImmediate<ViewportPickedEvent>(BIND_DISPATCH_FN(OnViewportPicked));
   m_EventSubscriptions.SubscribeImmediate<ViewportCameraUpdateEvent>(
       BIND_DISPATCH_FN(OnViewportCameraUpdated));
+  m_EventSubscriptions.SubscribeImmediate<ViewportPickedUpdateEvent>(
+      BIND_DISPATCH_FN(OnViewportPickedUpdated));
 }
 SceneView::~SceneView()
 {
@@ -89,7 +91,7 @@ std::shared_ptr<RenderQueue> SceneView::GetRenderQueue() const
   return m_RenderQueue;
 }
 
-bool SceneView::PickEntity(glm::vec2 screenPosUV)
+bool SceneView::Pick(glm::vec2 screenPosUV)
 {
   // 获取相机ViewProjection矩阵
   const Transform cameraWorldTransform = m_SceneGraph.GetNode(m_CameraEntity)->GetWorldTransform();
@@ -115,7 +117,7 @@ bool SceneView::PickEntity(glm::vec2 screenPosUV)
   }
 }
 
-void SceneView::SetPickedEntityModelMatrix(glm::mat4 &modelMatrix)
+void SceneView::SetPickedWorldTransform(const Transform &worldTransform)
 {
   // 检查实体可用性与在SceneGraph中是否存在对应节点
   if (!m_PickedEntity.IsValid() || !m_SceneGraph.GetNode(m_PickedEntity))
@@ -132,14 +134,24 @@ void SceneView::SetPickedEntityModelMatrix(glm::mat4 &modelMatrix)
     // World = Parent * Local，可知Local = inv(Parent) * World（等式两边均左乘inv(Parent)）
     const Transform parentWorld = pickedParent->GetWorldTransform();
     pickedTransformComponent.SetLocalMatrix(glm::inverse(parentWorld.GetLocalMatrix()) *
-                                            modelMatrix);
+                                            worldTransform.GetLocalMatrix());
   }
   else {
     // 若不存在，则直接更新本地坐标
-    pickedTransformComponent.SetLocalMatrix(modelMatrix);
+    pickedTransformComponent.SetLocalMatrix(worldTransform.GetLocalMatrix());
   }
 }
-void SceneView::SetCameraViewMatrix(glm::mat4 &viewMatrix)
+Transform SceneView::GetPickedWorldTransform() const
+{
+  // 检查实体可用性与在SceneGraph中是否存在对应节点
+  if (!m_PickedEntity.IsValid() || !m_SceneGraph.GetNode(m_PickedEntity))
+    return Transform(1.0f);
+
+  SceneNode *pickedNode = m_SceneGraph.GetNode(m_PickedEntity);
+
+  return pickedNode->GetWorldTransform();
+}
+void SceneView::SetCameraWorldTransform(const Transform &worldTransform)
 {
   // 检查实体可用性
   if (!m_CameraEntity.IsValid() || !m_SceneGraph.GetNode(m_CameraEntity))
@@ -156,11 +168,11 @@ void SceneView::SetCameraViewMatrix(glm::mat4 &viewMatrix)
     // World = Parent * Local，可知Local = inv(Parent) * World（等式两边均左乘inv(Parent)）
     const Transform parentWorld = cameraParent->GetWorldTransform();
     cameraTransformComponent.SetLocalMatrix(glm::inverse(parentWorld.GetLocalMatrix()) *
-                                            glm::inverse(viewMatrix));
+                                            worldTransform.GetLocalMatrix());
   }
   else {
     // 若不存在，则直接更新本地坐标
-    cameraTransformComponent.SetLocalMatrix(glm::inverse(viewMatrix));
+    cameraTransformComponent.SetLocalMatrix(worldTransform.GetLocalMatrix());
   }
 }
 
@@ -220,7 +232,7 @@ void SceneView::OnViewportResize(ViewportResizeEvent &event)
 void SceneView::OnViewportPicked(ViewportPickedEvent &event)
 {
   // 尝试执行Pick
-  if (PickEntity(event.GetUV())) {
+  if (Pick(event.GetUV())) {
     event.SetResult(EventResult::HandledAndStop);
     return;
   }
@@ -230,8 +242,15 @@ void SceneView::OnViewportPicked(ViewportPickedEvent &event)
 }
 void SceneView::OnViewportCameraUpdated(ViewportCameraUpdateEvent &event)
 {
-  SetCameraViewMatrix(event.GetCameraTransform().GetViewMatrix());
+  SetCameraWorldTransform(event.GetCameraTransform());
   SetCameraZoom(event.GetCameraZoom());
+
+  event.SetResult(EventResult::HandledAndStop);
+  return;
+}
+void SceneView::OnViewportPickedUpdated(ViewportPickedUpdateEvent &event)
+{
+  SetPickedWorldTransform(event.GetTransform());
 
   event.SetResult(EventResult::HandledAndStop);
   return;
