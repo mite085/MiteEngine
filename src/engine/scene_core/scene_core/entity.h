@@ -61,10 +61,11 @@ class Entity {
   void Destroy();
 
   /**
-   * @brief 获取实体UUID
+   * @brief 获取实体UUID和Name
    */
   UUID GetUUID() const { return m_UUID; }
   std::string GetName() const { return m_Name; }
+  void Rename(const std::string &name) { m_Name = name; }
 
   /**
    * @brief 获取实体UUID字符串
