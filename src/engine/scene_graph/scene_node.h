@@ -4,6 +4,7 @@
 #include "basic_data/bounding_volume.h"
 #include "basic_data/transform.h"
 #include "scene_core/entity.h"
+#include "event.h"
 
 namespace mite {
 /**
@@ -54,6 +55,10 @@ class SceneNode {
    */
   bool RemoveChild(SceneNode *child);
   /**
+   * @brief 递归判断child是否为当前节点的第n代子节点
+   */
+  bool IsChild(SceneNode *child);
+  /**
    * @brief 获取所有子节点
    * @return 子节点指针列表
    */
@@ -93,8 +98,10 @@ class SceneNode {
   bool IsTransformDirty() const;
   /**
    * @brief 标记变换为脏状态，需要重新计算世界矩阵
+   * @param transformBias 矩阵偏差，用于修正本地矩阵
    */
-  void MarkTransformDirty();
+  void MarkTransformDirty(Transform transformBias = Transform(1.0f));
+  void ClearTransformDirty();
 
   // ==================== 包围盒相关 ====================
   /**
@@ -185,8 +192,42 @@ class SceneNode {
 
   // 脏标记
   bool m_TransformDirty = true;  // 变换需要更新
+  Transform m_TransformBias;	 // 更新变换的偏差
   bool m_BoundsDirty = true;     // 包围盒需要更新
 };
+
+/**
+ * @class SceneNode
+ * @brief SceneTree的SceneNode选择事件
+ * @note 需要依赖SceneNode，无法放在Data的render_event.h中
+ */
+class SceneNodeSelectedEvent : public Event {
+ public:
+  explicit SceneNodeSelectedEvent(SceneNode *node) : m_node(node) {}
+  SceneNode *GetSceneNode() const { return m_node; }
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
+  Event *Clone() const override { return new SceneNodeSelectedEvent(m_node); }
+
+ private:
+  SceneNode *m_node;
+};
+
+class SceneNodeParentChangeEvent : public Event {
+ public:
+  explicit SceneNodeParentChangeEvent(SceneNode *node, SceneNode *newParent)
+      : m_node(node), m_newParent(newParent)
+  {
+  }
+  SceneNode *GetSceneNode() const { return m_node; }
+  SceneNode *GetNewParent() const { return m_newParent; }
+  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
+  Event *Clone() const override { return new SceneNodeParentChangeEvent(m_node, m_newParent); }
+
+ private:
+  SceneNode *m_node;
+  SceneNode *m_newParent;
+};
+
 }  // namespace mite
 
 #endif  // MITE_SCENE_NODE_H

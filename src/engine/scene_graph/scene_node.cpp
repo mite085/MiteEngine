@@ -5,7 +5,6 @@
 #include "scene_core_components/visibility_component.h"
 
 namespace mite {
-
 SceneNode::SceneNode(Entity entity)
     : m_Entity(entity), m_WorldBounds(BoundingVolume(BoundingVolumeType::None))
 {
@@ -35,19 +34,32 @@ void SceneNode::SetParent(SceneNode *parent)
   if (m_Parent == parent)
     return;
 
-  // 从原父节点移除
+  // 递归检查parent是否为当前node的child，避免循环依赖
+  if (IsChild(parent)) {
+    return;
+  }
+
+  // 记录原父节点的变换，从原父节点移除
+  Transform oldParentWorldTransform;
   if (m_Parent) {
+    oldParentWorldTransform = m_Parent->GetWorldTransform();
     m_Parent->RemoveChild(this);
   }
 
-  // 添加到新父节点
+  // 记录新父节点的变换，添加到新父节点
   m_Parent = parent;
+  Transform newParentWorldTransform;
   if (m_Parent) {
+    newParentWorldTransform = m_Parent->GetWorldTransform();
     m_Parent->AddChild(this);
   }
 
+  // world = oldParentWorld * local = newParentWorld * newLocal
+  // newLocal = inv(newParentWorld) * oldParentWorld * local
+  Transform biasTransform = Transform(glm::inverse(newParentWorldTransform.GetLocalMatrix()) *
+                                      oldParentWorldTransform.GetLocalMatrix());
   // 标记需要更新变换
-  MarkTransformDirty();
+  MarkTransformDirty(biasTransform);
   MarkBoundsDirty();
   MarkVisibilityDirty();
 }
@@ -93,6 +105,21 @@ bool SceneNode::RemoveChild(SceneNode *child)
     return true;
   }
 
+  return false;
+}
+bool SceneNode::IsChild(SceneNode *child)
+{
+  // 遍历children
+  for (SceneNode *node : GetChildren()) {
+    // 仅当node有效时
+    if (node) {
+      if (child == node)
+        return true;
+      else if (node->IsChild(child))
+        return true;
+    }
+  }
+  // 不存在指定child节点，可以作为新的child，不会循环依赖
   return false;
 }
 const std::vector<SceneNode *> &SceneNode::GetChildren() const
@@ -156,16 +183,21 @@ bool SceneNode::IsTransformDirty() const
   return m_TransformDirty;
 }
 
-void SceneNode::MarkTransformDirty()
+void SceneNode::MarkTransformDirty(Transform transformBias)
 {
   if (!m_TransformDirty) {
     m_TransformDirty = true;
+    m_TransformBias = transformBias;
 
     // 向下传递Dirty标记
     MarkChildrenTransformDirty();
   }
 }
-
+void SceneNode::ClearTransformDirty()
+{
+  m_TransformDirty = false;
+  m_TransformBias = Transform(1.0f);
+}
 // ==================== 包围盒相关 ====================
 
 BoundingVolume SceneNode::GetWorldBounds() const
@@ -215,19 +247,20 @@ void SceneNode::UpdateWorldTransform(const SceneRegistry &registry)
   if (registry.HasComponent<TransformComponent>(m_Entity)) {
     const auto &transformComp = registry.GetComponent<TransformComponent>(m_Entity);
     glm::mat4 localMatrix = transformComp.GetLocalMatrix();
-    // 计算世界变换
+    // 计算世界变换（先作用Bias修改，再作用新的Parent，以确保Parent修改时世界坐标不变）
     if (m_Parent && !m_Parent->IsRoot()) {
-      m_WorldTransform.SetLocalMatrix(m_Parent->GetWorldTransform().GetLocalMatrix() * localMatrix);
+      m_WorldTransform.SetLocalMatrix(m_Parent->GetWorldTransform().GetLocalMatrix() *
+                                      m_TransformBias.GetLocalMatrix() * localMatrix);
     }
     else {
-      m_WorldTransform.SetLocalMatrix(localMatrix);
+      m_WorldTransform.SetLocalMatrix(m_TransformBias.GetLocalMatrix() * localMatrix);
     }
   }
   else {
     // 没有TransformComponent，使用单位矩阵
     m_WorldTransform.SetLocalMatrix(glm::mat4(1.0f));
   }
-  m_TransformDirty = false;
+  ClearTransformDirty();
 }
 void SceneNode::UpdateWorldBounds(const SceneRegistry &registry)
 {
@@ -292,7 +325,7 @@ void SceneNode::Update(const SceneRegistry &registry, bool force)
 void SceneNode::MarkChildrenTransformDirty()
 {
   for (auto child : m_Children) {
-    child->MarkTransformDirty();
+    child->MarkTransformDirty(m_TransformBias);
   }
 }
 
