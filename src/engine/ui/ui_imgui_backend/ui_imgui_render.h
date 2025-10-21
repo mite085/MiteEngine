@@ -49,7 +49,10 @@ class ImGuiUIRender : public UIRender {
 
   // ==================== 容器控件渲染 ====================
   void RenderGroup(const GroupProps &props, const std::function<void()> &renderContent) override;
-  bool RenderTreeNode(TreeNodeProps &props, const std::function<void()> &renderContent) override;
+  void RenderTreeNode(TreeNodeProps &props,
+                      const std::function<void(void *)> &dragDropTargetContent,
+                      const std::function<void()> &subitemRenderContent) override;
+  void RenderTreeVoid(const std::function<void(void *)> &dragDropTargetContent) override;
   bool RenderPopup(PopupProps &props, const std::function<void()> &renderContent) override;
   void RenderTable(TableProps &props, const std::function<void()> &renderContent) override;
 
@@ -60,13 +63,14 @@ class ImGuiUIRender : public UIRender {
   void SetNewLine() override;
 
   // ==================== 状态管理 ====================
-  void BeginDisabled(bool disabled = true) override;
+  bool BeginDisabled(bool disabled = true) override;
   void EndDisabled() override;
 
   // ==================== 工具函数 ====================
   glm::vec2 GetCursorPos() override;
   void SetCursorPos(const glm::vec2 &pos) override;
   glm::vec2 CalcTextSize(const std::string &text) override;
+  glm::vec2 GetMousePos() override;
 
  private:
   // ==================== 翻译辅助函数 ====================
@@ -80,7 +84,6 @@ class ImGuiUIRender : public UIRender {
 
   // ==================== 私有辅助函数 ====================
   void SetItemTooltip(std::string tooltip);
-  const char *GenerateImGuiId(const UUID &elementId);  // 生成ImGui所需的唯一标识符
 };
 }  // namespace mite
 

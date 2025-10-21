@@ -66,11 +66,14 @@ bool ImGuiUIRender::BeginChild(ChildProps &props)
   if (!props.visible) {
     return false;
   }
-  // 生成ID
+  // 使用 PushID 自动生成唯一标识符
+  ImGui::PushID(&props);
+
   std::string childId = GetTranslatedText(props);
   if (childId.empty()) {
-    childId = GenerateImGuiId(props.elementId);
+    childId = "##Child";
   }
+
   // 计算实际尺寸
   ImVec2 childSize(props.size.x, props.size.y);
   if (props.autoResizeX)
@@ -102,6 +105,7 @@ bool ImGuiUIRender::BeginChild(ChildProps &props)
 void ImGuiUIRender::EndChild()
 {
   ImGui::EndChild();
+  ImGui::PopID();  // 与 BeginChild 中的 PushID 配对
 }
 glm::vec2 ImGuiUIRender::GetWindowPos()
 {
@@ -163,8 +167,12 @@ bool ImGuiUIRender::RenderCheckbox(CheckboxProps &props)
   if (!props.visible)
     return false;
 
+  // 使用 PushID 自动生成唯一标识符
+  ImGui::PushID(&props);
+
   std::string displayText = GetTranslatedText(props);
-  bool changed = ImGui::Checkbox(GenerateImGuiId(props.elementId), &props.checked);
+  bool changed = ImGui::Checkbox("##Checkbox", &props.checked);
+  ImGui::PopID();
 
   if (!displayText.empty()) {
     ImGui::SameLine();
@@ -182,26 +190,11 @@ bool ImGuiUIRender::RenderTextInput(TextInputProps &props)
   std::string hintText = GetTranslatedHint(props);
   std::string labelText = GetTranslatedText(props);
 
-  bool changed = false;
-  if (props.isPassword) {
-    char buffer[256] = {0};
-    std::copy_n(props.text.c_str(), std::min(props.text.size(), sizeof(buffer) - 1), buffer);
-    // 确保以null结尾
-    buffer[sizeof(buffer) - 1] = '\0';
+  // 使用 PushID 自动生成唯一标识符
+  ImGui::PushID(&props);
+  bool changed = ImGui::InputTextWithHint(labelText.c_str(), hintText.c_str(), &props.text);
+  ImGui::PopID();
 
-    if (ImGui::InputTextWithHint(labelText.c_str(),
-                                 hintText.c_str(),
-                                 buffer,
-                                 sizeof(buffer),
-                                 ImGuiInputTextFlags_Password))
-    {
-      props.text = buffer;
-      changed = true;
-    }
-  }
-  else {
-    changed = ImGui::InputTextWithHint(labelText.c_str(), hintText.c_str(), &props.text);
-  }
   SetItemTooltip(props.tooltip);
   return changed;
 }
@@ -285,11 +278,11 @@ bool ImGuiUIRender::RenderDragFloat(DragFloatProps &props)
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragFloat(labelText.c_str(),
-                          &props.value,
-                          props.speed,
-                          props.minValue,
-                          props.maxValue,
-                          props.format.c_str());
+                                  &props.value,
+                                  props.speed,
+                                  props.minValue,
+                                  props.maxValue,
+                                  props.format.c_str());
   SetItemTooltip(props.tooltip);
   return changed;
 }
@@ -301,11 +294,11 @@ bool ImGuiUIRender::RenderDragFloat2(DragFloat2Props &props)
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragFloat2(labelText.c_str(),
-                           glm::value_ptr(props.value),
-                           props.speed,
-                           props.minValue,
-                           props.maxValue,
-                           props.format.c_str());
+                                   glm::value_ptr(props.value),
+                                   props.speed,
+                                   props.minValue,
+                                   props.maxValue,
+                                   props.format.c_str());
   SetItemTooltip(props.tooltip);
   return changed;
 }
@@ -317,11 +310,11 @@ bool ImGuiUIRender::RenderDragFloat3(DragFloat3Props &props)
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragFloat3(labelText.c_str(),
-                           glm::value_ptr(props.value),
-                           props.speed,
-                           props.minValue,
-                           props.maxValue,
-                           props.format.c_str());
+                                   glm::value_ptr(props.value),
+                                   props.speed,
+                                   props.minValue,
+                                   props.maxValue,
+                                   props.format.c_str());
   SetItemTooltip(props.tooltip);
   return changed;
 }
@@ -333,11 +326,11 @@ bool ImGuiUIRender::RenderDragFloat4(DragFloat4Props &props)
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragFloat4(labelText.c_str(),
-                           glm::value_ptr(props.value),
-                           props.speed,
-                           props.minValue,
-                           props.maxValue,
-                           props.format.c_str());
+                                   glm::value_ptr(props.value),
+                                   props.speed,
+                                   props.minValue,
+                                   props.maxValue,
+                                   props.format.c_str());
   SetItemTooltip(props.tooltip);
   return changed;
 }
@@ -349,11 +342,11 @@ bool ImGuiUIRender::RenderDragInt(DragIntProps &props)
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragInt(labelText.c_str(),
-                        &props.value,
-                        props.speed,
-                        props.minValue,
-                        props.maxValue,
-                        props.format.c_str());
+                                &props.value,
+                                props.speed,
+                                props.minValue,
+                                props.maxValue,
+                                props.format.c_str());
   SetItemTooltip(props.tooltip);
   return changed;
 }
@@ -449,32 +442,76 @@ void ImGuiUIRender::RenderGroup(const GroupProps &props,
   ImGui::EndGroup();
 }
 
-bool ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
-                                   const std::function<void()> &renderContent)
+void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
+                                   const std::function<void(void *)> &dragDropTargetContent,
+                                   const std::function<void()> &subitemRenderContent)
 {
   if (!props.visible)
-    return false;
+    return;
 
   std::string labelText = GetTranslatedText(props);
   ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
-  if (props.isExpand)
-    flags |= ImGuiTreeNodeFlags_DefaultOpen;
+  flags |= ImGuiTreeNodeFlags_OpenOnArrow;
+  flags |= ImGuiTreeNodeFlags_OpenOnDoubleClick;     // imgui标准展开模式
+  flags |= ImGuiTreeNodeFlags_NavLeftJumpsToParent;  // 左侧箭头（展开用）
+  flags |= ImGuiTreeNodeFlags_SpanFullWidth;     // 占满宽度，以便更容易用鼠标操作
+  flags |= ImGuiTreeNodeFlags_DrawLinesToNodes;  // 绘制层次辅助线
+  flags |= ImGuiTreeNodeFlags_DefaultOpen;
   if (props.isLeaf)
-    flags |= ImGuiTreeNodeFlags_Leaf;
+    flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
   if (props.isSelect)
     flags |= ImGuiTreeNodeFlags_Selected;
 
-  bool isOpen = ImGui::TreeNodeEx(
-      GenerateImGuiId(props.elementId), flags, "%s", labelText.c_str());
-  bool changed = (isOpen != props.isExpand);
-  props.isExpand = isOpen;
 
-  if (isOpen && renderContent) {
-    renderContent();
+  // 使用 PushID 自动生成唯一标识符
+  ImGui::PushID(&props);
+  bool nodeOpen = ImGui::TreeNodeEx(labelText.c_str(), flags);
+
+  // 处理选择逻辑
+  if (ImGui::IsItemFocused())
+    props.isSelect = true;
+
+  // 拖拽源 - 允许拖动此节点
+  if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+    ImGui::SetDragDropPayload("TreeNode", &props, sizeof(TreeNodeProps));
+    ImGui::Text("Reset Parent of %s", labelText.c_str());
+    ImGui::EndDragDropSource();
+  }
+
+  // 拖拽目标 - 允许成为其他节点的父级（必须在子节点渲染完成之后，否则处理drop会导致子节点多次渲染）
+  if (ImGui::BeginDragDropTarget()) {
+    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("TreeNode")) {
+      dragDropTargetContent(payload->Data);
+    }
+    ImGui::EndDragDropTarget();
+  }
+
+  // 执行子节点渲染
+  if (nodeOpen && subitemRenderContent) {
+    subitemRenderContent();
     ImGui::TreePop();
   }
-  SetItemTooltip(props.tooltip);
-  return changed;
+
+  // 完成子节点渲染后才能PopID
+  ImGui::PopID();
+  // SetItemTooltip(props.tooltip);
+}
+
+void ImGuiUIRender::RenderTreeVoid(const std::function<void(void *)> &dragDropTargetContent)
+{
+  // 在面板剩余空白区域添加拖拽目标
+  ImVec2 avail_size = ImGui::GetContentRegionAvail();
+  if (avail_size.y > 0) {
+    // 不可见的按钮，用于接收拖拽目标
+    ImGui::InvisibleButton("TreeNode", avail_size);
+
+    if (ImGui::BeginDragDropTarget()) {
+      if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("TreeNode")) {
+        dragDropTargetContent(payload->Data);
+      }
+      ImGui::EndDragDropTarget();
+    }
+  }
 }
 
 bool ImGuiUIRender::RenderPopup(PopupProps &props, const std::function<void()> &renderContent)
@@ -510,10 +547,11 @@ void ImGuiUIRender::RenderTable(TableProps &props, const std::function<void()> &
 {
   if (!props.visible)
     return;
+  // 使用 PushID 自动生成唯一标识符
+  ImGui::PushID(&props);
 
-  if (ImGui::BeginTable(GenerateImGuiId(props.elementId),
-                        props.columns,
-                        ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders))
+  if (ImGui::BeginTable(
+          "##Table", props.columns, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders))
   {
     // 渲染表头
     if (props.showHeaders) {
@@ -531,6 +569,7 @@ void ImGuiUIRender::RenderTable(TableProps &props, const std::function<void()> &
 
     ImGui::EndTable();
   }
+  ImGui::PopID();
 }
 
 // ==================== 布局控件渲染实现 ====================
@@ -559,11 +598,13 @@ void ImGuiUIRender::SetNewLine()
 
 // ==================== 状态管理实现 ====================
 
-void ImGuiUIRender::BeginDisabled(bool disabled)
+bool ImGuiUIRender::BeginDisabled(bool disabled)
 {
   if (disabled) {
     ImGui::BeginDisabled();
+    return true;
   }
+  return false;
 }
 
 void ImGuiUIRender::EndDisabled()
@@ -589,8 +630,11 @@ glm::vec2 ImGuiUIRender::CalcTextSize(const std::string &text)
   ImVec2 size = ImGui::CalcTextSize(text.c_str());
   return glm::vec2(size.x, size.y);
 }
-
-// ==================== 翻译辅助函数 ====================
+glm::vec2 ImGuiUIRender::GetMousePos() {
+  ImVec2 pos = ImGui::GetMousePos();
+  return glm::vec2(pos.x, pos.y);
+}
+    // ==================== 翻译辅助函数 ====================
 
 std::string ImGuiUIRender::GetTranslatedText(const BaseRenderProps &props)
 {
@@ -647,12 +691,5 @@ std::string ImGuiUIRender::GetTranslatedHeader(const TableProps &props, int colu
 void ImGuiUIRender::SetItemTooltip(std::string tooltip)
 {
   ImGui::SetItemTooltip(tooltip.c_str());
-}
-
-const char *ImGuiUIRender::GenerateImGuiId(const UUID &elementId)
-{
-  thread_local static char buffer[64];
-  snprintf(buffer, sizeof(buffer), "##%s", UUIDGenerator::UUIDToString(elementId).c_str());
-  return buffer;
 }
 }  // namespace mite
