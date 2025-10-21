@@ -13,7 +13,6 @@ ViewportPanel::ViewportPanel(SceneView &sceneView, const std::string &name)
 
   // 初始化ImageProps图像属性
   m_ImageProps = ImageProps();
-  m_ImageProps.elementId = UUIDGenerator::Generate();
   m_ImageProps.visible = true;
   m_ImageProps.enabled = true;
   m_ImageProps.uv0 = glm::vec2(0.0f, 1.0f);  // 翻转Y轴
@@ -124,6 +123,7 @@ void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
 }
 void ViewportPanel::UpdateOverlayContext()
 {
+  m_GizmoOverlayContext.mousePos = m_Renderer.GetMousePos();
   // 更新Overlay上下文视口信息
   m_GizmoOverlayContext.viewportPos = m_PanelPos;
   m_GizmoOverlayContext.viewportSize = m_PanelSize;
