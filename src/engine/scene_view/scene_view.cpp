@@ -21,6 +21,8 @@ SceneView::SceneView(SceneCore &sceneCore, SceneGraph &sceneGraph)
       BIND_DISPATCH_FN(OnViewportCameraUpdated));
   m_EventSubscriptions.SubscribeImmediate<ViewportPickedUpdateEvent>(
       BIND_DISPATCH_FN(OnViewportPickedUpdated));
+  m_EventSubscriptions.SubscribeImmediate<SceneNodeSelectedEvent>(
+      BIND_DISPATCH_FN(OnSceneNodeSelected));
 }
 SceneView::~SceneView()
 {
@@ -106,8 +108,8 @@ bool SceneView::Pick(glm::vec2 screenPosUV)
   // 执行RayCast
   SceneNode *node = m_SceneGraph.RaycastFirst(ray);
   if (node) {
-    // 查询到节点，更新PickedEntity
-    m_PickedEntity = node->GetEntity();
+    // 查询到节点，发布SceneNodeSelected事件
+    EventBus::Publish<SceneNodeSelectedEvent>(SceneNodeSelectedEvent(node));
     return true;
   }
   else {
@@ -253,6 +255,20 @@ void SceneView::OnViewportPickedUpdated(ViewportPickedUpdateEvent &event)
   SetPickedWorldTransform(event.GetTransform());
 
   event.SetResult(EventResult::HandledAndStop);
+  return;
+}
+void SceneView::OnSceneNodeSelected(SceneNodeSelectedEvent &event)
+{
+  if (event.GetSceneNode()) {
+    // 节点可用，更新PickedEntity
+    m_PickedEntity = event.GetSceneNode()->GetEntity();
+
+    // 不停止传播，SceneTree需要同步更新SelectedNode
+    event.SetResult(EventResult::Handled);
+    return;
+  }
+
+  event.SetResult(EventResult::Failed);
   return;
 }
 }  // namespace mite
