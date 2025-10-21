@@ -534,7 +534,7 @@ void SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
   node->MarkTransformDirty();
   node->MarkBoundsDirty();
 
-  // 变换更新影响当前节点及其所有子节点的世界变换
+  // 变换更新影响当前节点及其所有子节点的世界变换（Manager独立的脏标记收集器）
   MarkNodeDirtyRecursive(node);
 
   // 标记已处理但允许传播（其他系统可能需要知道变换更新）

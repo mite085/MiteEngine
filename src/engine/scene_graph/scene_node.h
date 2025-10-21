@@ -100,8 +100,7 @@ class SceneNode {
    * @brief 标记变换为脏状态，需要重新计算世界矩阵
    * @param transformBias 矩阵偏差，用于修正本地矩阵
    */
-  void MarkTransformDirty(Transform transformBias = Transform(1.0f));
-  void ClearTransformDirty();
+  void MarkTransformDirty();
 
   // ==================== 包围盒相关 ====================
   /**
@@ -162,21 +161,6 @@ class SceneNode {
   void Update(const SceneRegistry &registry, bool force = false);
 
  private:
-  // ==================== 辅助函数 ====================
-  /**
-   * @brief 递归更新子节点的变换状态
-   */
-  void MarkChildrenTransformDirty();
-  /**
-   * @brief 递归更新子节点的包围盒状态
-   */
-  void MarkChildrenBoundsDirty();
-  /**
-   * @brief 递归更新子节点的可见性状态
-   */
-  void MarkChildrenVisibilityDirty();
-
- private:
   Entity m_Entity;                      // 关联的ECS实体
   SceneNode *m_Parent = nullptr;        // 父节点指针
   std::vector<SceneNode *> m_Children;  // 子节点列表
@@ -192,8 +176,8 @@ class SceneNode {
 
   // 脏标记
   bool m_TransformDirty = true;  // 变换需要更新
-  Transform m_TransformBias;	 // 更新变换的偏差
   bool m_BoundsDirty = true;     // 包围盒需要更新
+  glm::mat4 m_transformBias = glm::mat4(1.0f);
 };
 
 /**

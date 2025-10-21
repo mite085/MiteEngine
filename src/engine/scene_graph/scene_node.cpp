@@ -54,12 +54,13 @@ void SceneNode::SetParent(SceneNode *parent)
     m_Parent->AddChild(this);
   }
 
+  // 确保world不变，计算bias偏差
   // world = oldParentWorld * local = newParentWorld * newLocal
   // newLocal = inv(newParentWorld) * oldParentWorld * local
-  Transform biasTransform = Transform(glm::inverse(newParentWorldTransform.GetLocalMatrix()) *
-                                      oldParentWorldTransform.GetLocalMatrix());
+  m_transformBias = glm::inverse(newParentWorldTransform.GetLocalMatrix()) *
+                    oldParentWorldTransform.GetLocalMatrix();
   // 标记需要更新变换
-  MarkTransformDirty(biasTransform);
+  MarkTransformDirty();
   MarkBoundsDirty();
   MarkVisibilityDirty();
 }
@@ -80,11 +81,6 @@ void SceneNode::AddChild(SceneNode *child)
   // 添加子节点
   m_Children.push_back(child);
   child->m_Parent = this;
-
-  // 标记子节点需要更新
-  child->MarkTransformDirty();
-  child->MarkBoundsDirty();
-  child->MarkVisibilityDirty();
 }
 bool SceneNode::RemoveChild(SceneNode *child)
 {
@@ -97,11 +93,6 @@ bool SceneNode::RemoveChild(SceneNode *child)
     // 执行移除操作
     m_Children.erase(it);
     child->m_Parent = nullptr;
-
-    // 标记子节点需要更新
-    child->MarkTransformDirty();
-    child->MarkBoundsDirty();
-    child->MarkVisibilityDirty();
     return true;
   }
 
@@ -183,20 +174,16 @@ bool SceneNode::IsTransformDirty() const
   return m_TransformDirty;
 }
 
-void SceneNode::MarkTransformDirty(Transform transformBias)
+void SceneNode::MarkTransformDirty()
 {
   if (!m_TransformDirty) {
     m_TransformDirty = true;
-    m_TransformBias = transformBias;
 
     // 向下传递Dirty标记
-    MarkChildrenTransformDirty();
+    for (auto child : m_Children) {
+      child->MarkTransformDirty();
+    }
   }
-}
-void SceneNode::ClearTransformDirty()
-{
-  m_TransformDirty = false;
-  m_TransformBias = Transform(1.0f);
 }
 // ==================== 包围盒相关 ====================
 
@@ -215,7 +202,9 @@ void SceneNode::MarkBoundsDirty()
     m_BoundsDirty = true;
 
     // 向下传递Dirty标记
-    MarkChildrenBoundsDirty();
+    for (auto child : m_Children) {
+      child->MarkBoundsDirty();
+    }
   }
 }
 // ==================== 可见性相关 ====================
@@ -237,7 +226,9 @@ void SceneNode::MarkVisibilityDirty()
     m_VisibilityDirty = true;
 
     // 向下传递Dirty标记
-    MarkChildrenVisibilityDirty();
+    for (auto child : m_Children) {
+      child->MarkVisibilityDirty();
+    }
   }
 }
 // ==================== 更新操作 ====================
@@ -245,22 +236,24 @@ void SceneNode::UpdateWorldTransform(const SceneRegistry &registry)
 {
   // 从TransformComponent获取局部变换矩阵
   if (registry.HasComponent<TransformComponent>(m_Entity)) {
-    const auto &transformComp = registry.GetComponent<TransformComponent>(m_Entity);
+    TransformComponent &transformComp = registry.GetComponent<TransformComponent>(m_Entity);
+    transformComp.SetLocalMatrix(m_transformBias * transformComp.GetLocalMatrix());
+    m_transformBias = glm::mat4(1.0f);
     glm::mat4 localMatrix = transformComp.GetLocalMatrix();
-    // 计算世界变换（先作用Bias修改，再作用新的Parent，以确保Parent修改时世界坐标不变）
-    if (m_Parent && !m_Parent->IsRoot()) {
+    // 计算世界变换
+    if (m_Parent) {
       m_WorldTransform.SetLocalMatrix(m_Parent->GetWorldTransform().GetLocalMatrix() *
-                                      m_TransformBias.GetLocalMatrix() * localMatrix);
+                                      localMatrix);
     }
     else {
-      m_WorldTransform.SetLocalMatrix(m_TransformBias.GetLocalMatrix() * localMatrix);
+      m_WorldTransform.SetLocalMatrix(localMatrix);
     }
   }
   else {
     // 没有TransformComponent，使用单位矩阵
     m_WorldTransform.SetLocalMatrix(glm::mat4(1.0f));
   }
-  ClearTransformDirty();
+  m_TransformDirty = false;
 }
 void SceneNode::UpdateWorldBounds(const SceneRegistry &registry)
 {
@@ -319,26 +312,6 @@ void SceneNode::Update(const SceneRegistry &registry, bool force)
   // 递归更新子节点
   for (auto child : m_Children) {
     child->Update(registry, force);
-  }
-}
-
-void SceneNode::MarkChildrenTransformDirty()
-{
-  for (auto child : m_Children) {
-    child->MarkTransformDirty(m_TransformBias);
-  }
-}
-
-void SceneNode::MarkChildrenBoundsDirty()
-{
-  for (auto child : m_Children) {
-    child->MarkBoundsDirty();
-  }
-}
-void SceneNode::MarkChildrenVisibilityDirty()
-{
-  for (auto child : m_Children) {
-    child->MarkVisibilityDirty();
   }
 }
 }  // namespace mite
