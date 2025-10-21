@@ -6,7 +6,6 @@
 namespace mite {
 
 UISystem::UISystem()
-    : m_Visible(true)
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI System");
   m_Logger->info("Initializing UI System");
@@ -46,12 +45,8 @@ void UISystem::Shutdown()
 
 void UISystem::Update(float deltaTime)
 {
-  if (!m_Visible) {
-    return;
-  }
-
   // 更新所有面板
-  for (auto &[id, panel] : m_Panels) {
+  for (auto &panel : m_Panels) {
     if (panel->IsVisible()) {
       panel->Update(deltaTime);
     }
@@ -60,10 +55,6 @@ void UISystem::Update(float deltaTime)
 
 void UISystem::BeginFrame()
 {
-  if (!m_Visible) {
-    return;
-  }
-
   if (m_Backend) {
     m_Backend->BeginFrame();
   }
@@ -71,17 +62,9 @@ void UISystem::BeginFrame()
 
 void UISystem::Render()
 {
-  if (!m_Visible) {
-    return;
-  }
-
   if (m_Backend) {
-    // 绘制菜单栏
-
-    // 设定停靠空间（Editor专用）
-
     // 渲染所有可见面板
-    for (auto &[id, panel] : m_Panels) {
+    for (auto &panel : m_Panels) {
       if (panel->IsVisible())
         panel->RenderPanel();
     }
@@ -90,10 +73,6 @@ void UISystem::Render()
 
 void UISystem::EndFrame()
 {
-  if (!m_Visible) {
-    return;
-  }
-
   if (m_Backend) {
     m_Backend->EndFrame();
   }
@@ -102,56 +81,28 @@ void UISystem::EndFrame()
 void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
 {
   // 需要检查UI的ID
-  if (m_Panels.find(panel->GetPanelProps().elementId) != m_Panels.end()) {
-    m_Logger->error("Cannot Register Existing Panel: name = {}, UUID = {}",
-                    panel->GetName(),
-                    UUIDGenerator::UUIDToString(panel->GetPanelProps().elementId));
+  if (m_Panels.find(panel) != m_Panels.end()) {
+    m_Logger->error("Cannot Register Existing Panel: name = {}",
+                    panel->GetName());
   }
 
   // 注册进哈希表
-  m_Panels[panel->GetPanelProps().elementId] = panel;
+  m_Panels.insert(panel);
 
   // 发布面板创建事件
   EventBus::Publish<PanelOpenedEvent>(
-      PanelOpenedEvent(panel->GetPanelProps().elementId, panel->GetName()));
+      PanelOpenedEvent(panel));
 }
 
-void UISystem::DestroyPanel(UUID panelId)
+void UISystem::DestroyPanel(std::shared_ptr<UIPanel> panel)
 {
-  auto it = m_Panels.find(panelId);
+  auto it = m_Panels.find(panel);
   if (it != m_Panels.end()) {
     // 发布面板关闭事件
-    EventBus::Publish<PanelClosedEvent>(PanelClosedEvent(panelId, it->second->GetName()));
+    EventBus::Publish<PanelClosedEvent>(PanelClosedEvent(panel));
     m_Panels.erase(it);
   }
 }
-
-std::shared_ptr<UIPanel> UISystem::GetPanel(UUID panelId) const
-{
-  auto it = m_Panels.find(panelId);
-  return it != m_Panels.end() ? it->second : nullptr;
-}
-
-void UISystem::SetPanelVisible(UUID panelId, bool visible)
-{
-  if (auto panel = GetPanel(panelId)) {
-    panel->SetVisible(visible);
-    // 发布可见性变更事件
-    EventBus::Publish<UIVisibilityChangedEvent>(
-        UIVisibilityChangedEvent(panelId, "Panel", visible));
-  }
-}
-
-bool UISystem::IsVisible() const
-{
-  return m_Visible;
-}
-
-void UISystem::SetVisible(bool visible)
-{
-  m_Visible = visible;
-}
-
 bool UISystem::InitializeBackend(void *nativeWindow)
 {
   // 目前只实现ImGui后端

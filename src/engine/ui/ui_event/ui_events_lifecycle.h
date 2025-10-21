@@ -49,32 +49,17 @@ class UISystemShutdownEvent : public Event {
  */
 class PanelOpenedEvent : public UIEvent {
  public:
-  explicit PanelOpenedEvent(UUID elementId, const std::string &panelName)
-      : UIEvent(elementId), m_PanelName(panelName)
+  explicit PanelOpenedEvent(std::shared_ptr<UIPanel> panel)
+      : UIEvent(panel)
   {
-  }
-
-  const std::string &GetPanelName() const
-  {
-    return m_PanelName;
-  }
-
-  std::string ToString() const override
-  {
-    return "PanelOpenedEvent: " + m_PanelName +
-           " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) +
-           ")";
   }
 
   Event *Clone() const override
   {
-    return new PanelOpenedEvent(m_ElementId, m_PanelName);
+    return new PanelOpenedEvent(m_Panel);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
-
- private:
-  std::string m_PanelName;
 };
 
 /**
@@ -82,32 +67,13 @@ class PanelOpenedEvent : public UIEvent {
  */
 class PanelClosedEvent : public UIEvent {
  public:
-  explicit PanelClosedEvent(UUID elementId, const std::string &panelName)
-      : UIEvent(elementId), m_PanelName(panelName)
+  explicit PanelClosedEvent(std::shared_ptr<UIPanel> panel)
+      : UIEvent(panel)
   {
   }
-
-  const std::string &GetPanelName() const
-  {
-    return m_PanelName;
-  }
-
-  std::string ToString() const override
-  {
-    return "PanelClosedEvent: " + m_PanelName +
-           " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) +
-           ")";
-  }
-
-  Event *Clone() const override
-  {
-    return new PanelClosedEvent(m_ElementId, m_PanelName);
-  }
+  Event *Clone() const override { return new PanelClosedEvent(m_Panel); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
-
- private:
-  std::string m_PanelName;
 };
 
 /**
@@ -162,43 +128,6 @@ class LanguageChangedEvent : public Event {
 
  private:
   std::string m_NewLanguageCode;
-};
-
-/**
- * @brief UI可见性改变事件
- */
-class UIVisibilityChangedEvent : public UIEvent {
- public:
-  explicit UIVisibilityChangedEvent(UUID widgetId, const std::string &widgetType, bool visible)
-      : UIEvent(widgetId), m_WidgetType(widgetType), m_Visible(visible)
-  {
-  }
-
-  const std::string &GetWidgetType() const
-  {
-    return m_WidgetType;
-  }
-  bool IsVisible() const
-  {
-    return m_Visible;
-  }
-
-  std::string ToString() const override
-  {
-    return "UIVisibilityChangedEvent: " + m_WidgetType + (m_Visible ? " SHOWN" : " HIDDEN") +
-           " (ID: " + UUIDGenerator::UUIDToString(m_ElementId) + ")";
-  }
-
-  Event *Clone() const override
-  {
-    return new UIVisibilityChangedEvent(m_ElementId, m_WidgetType, m_Visible);
-  }
-
-  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
-
- private:
-  std::string m_WidgetType;
-  bool m_Visible;
 };
 }  // namespace mite
 

@@ -4,7 +4,6 @@ namespace mite {
 UIPanel::UIPanel(const std::string &name) : m_Renderer(UIRender::Get())
 {
   // 初始化PanelProps
-  m_PanelProps.elementId = UUIDGenerator::Generate();
   m_PanelProps.visible = true;  // 默认可见
   m_PanelProps.enabled = true;  // 默认开启
   m_PanelProps.fallbackText = name;

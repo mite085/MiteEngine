@@ -66,45 +66,18 @@ class UISystem {
    * @brief 销毁面板
    * @param panelId 面板ID
    */
-  void DestroyPanel(UUID panelId);
-
-  /**
-   * @brief 获取面板
-   * @param panelId 面板ID
-   * @return 面板指针
-   */
-  std::shared_ptr<UIPanel> GetPanel(UUID panelId) const;
-
-  /**
-   * @brief 显示/隐藏面板
-   * @param panelId 面板ID
-   * @param visible 是否可见
-   */
-  void SetPanelVisible(UUID panelId, bool visible);
-
-  /**
-   * @brief 获取UI是否可见
-   */
-  bool IsVisible() const;
-
-  /**
-   * @brief 设置UI可见性
-   * @param visible 是否可见
-   */
-  void SetVisible(bool visible);
+  void DestroyPanel(std::shared_ptr<UIPanel> panel);
 
  private:
   // 使用窗口句柄初始化后端
   bool InitializeBackend(void *nativeWindow);
-
-  bool m_Visible;
 
   // 核心依赖
   std::unique_ptr<UIBackend> m_Backend;
   std::unique_ptr<UIStyleManager> m_StyleManager;
 
   // 管理对象
-  std::unordered_map<UUID, std::shared_ptr<UIPanel>> m_Panels;
+  std::unordered_set<std::shared_ptr<UIPanel>> m_Panels;
 
   // 事件订阅
   SubscriptionGroup m_EventSubscriptions;
