@@ -20,6 +20,10 @@ SceneNodeManager::SceneNodeManager(SpatialPartition &spatialPartition)
       EventPriority::High  // 可见性更新优先级高，影响渲染流程
   );
 
+  // 订阅父子关系变换（延迟处理）
+  m_EventSubscriptions.SubscribeDeferred<SceneNodeParentChangeEvent>(
+      BIND_DISPATCH_FN(OnSceneNodeParentChange));
+
   m_Logger->info("SceneGraph NodeManager created with spatial partition type: {}, name: {}",
                  GetSpatialPartitionTypeName(SpatialPartitionType::BVH),
                  m_SpatialPartition.GetTypeName());
@@ -569,5 +573,13 @@ void SceneNodeManager::OnVisibilityComponentUpdated(VisibilityChangedEvent &e)
 
   // 标记已处理但允许传播（UI系统等可能需要可见性信息）
   e.SetResult(EventResult::Handled);
+}
+void SceneNodeManager::OnSceneNodeParentChange(SceneNodeParentChangeEvent &e)
+{
+  if (e.GetSceneNode()) {
+    e.GetSceneNode()->SetParent(e.GetNewParent());
+    e.SetResult(EventResult::HandledAndStop);
+    return;
+  }
 }
 }  // namespace mite

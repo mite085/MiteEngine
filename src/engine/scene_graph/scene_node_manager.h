@@ -154,18 +154,10 @@ class SceneNodeManager {
   std::string CalculateNodePath(SceneNode *node) const;
 
   // ==================== 事件消费 ====================
-  /**
-   * @brief 处理Transform组件更新事件
-   */
   void OnTransformComponentUpdated(TransformUpdatedEvent& e);
-  /**
-   * @brief 处理BoundingVolume组件更新事件
-   */
   void OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEvent &e);
-  /**
-   * @brief 处理Visibility组件更新事件
-   */
   void OnVisibilityComponentUpdated(VisibilityChangedEvent &e);
+  void OnSceneNodeParentChange(SceneNodeParentChangeEvent &e);
 
  private:
   // 实体到场景节点的映射表
