@@ -67,6 +67,11 @@ void MiteApplication::LoadDefaultScene()
   LightComponent &lightComponent = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
       lightEntity);
   lightComponent.SetLight(pointLight);
+  BoundingVolumeComponent &lightBoundingVolumeComponent =
+      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(lightEntity);
+  BoundingVolume lightBoundingVolume = BoundingVolume::CreateFromPoints(BoundingVolumeType::AABB,
+                                                                        {glm::vec3(0.0f)});
+
 
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
