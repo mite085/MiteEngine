@@ -85,18 +85,21 @@ void ViewportInputContext::ProcessMouseButtonPressedEvent(MouseButtonPressedEven
 {
   // 更新状态机
   m_InputStateTracker->OnMouseButtonPressed(e.GetButton());
-
-  // 左键点击时，执行选择
-  if (e.GetButton() == GLFW_MOUSE_BUTTON_LEFT) {
-    glm::vec2 uv = ScreenToUV({e.GetXPos(), e.GetYPos()});
-    EventBus::Publish<ViewportPickedEvent>(ViewportPickedEvent(uv));
-  }
 }
 
 void ViewportInputContext::ProcessMouseButtonReleasedEvent(MouseButtonReleasedEvent &e)
 {
+  // 判断长按/短按行为
+  float time = m_InputStateTracker->GetMouseButtonPressTime(e.GetButton());
+
   // 更新状态机
   m_InputStateTracker->OnMouseButtonReleased(e.GetButton());
+
+  // 左键短按释放时（小于0.5秒），执行选择（长按无响应）
+  if (time < 0.5 && e.GetButton() == GLFW_MOUSE_BUTTON_LEFT) {
+    glm::vec2 uv = ScreenToUV({e.GetXPos(), e.GetYPos()});
+    EventBus::Publish<ViewportPickedEvent>(ViewportPickedEvent(uv));
+  }
 }
 
 void ViewportInputContext::ProcessMouseScrollEvent(MouseScrollEvent &e)
