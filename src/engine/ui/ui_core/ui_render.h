@@ -81,10 +81,22 @@ class UIRender {
   // ==================== 容器控件渲染 ====================
   virtual void RenderGroup(const GroupProps &props,
                            const std::function<void()> &renderContent) = 0;  // 分组控件
-  virtual bool RenderTreeNode(TreeNodeProps &props,
-                              const std::function<void()> &renderContent) = 0;  // 树节点
+  /**
+   * @brief 树节点
+   * @param dragDropTargetContent 用于响应被Drop的行为
+   * @param subitemRenderContent 用于递归渲染子节点
+   */
+  virtual void RenderTreeNode(TreeNodeProps &props,
+                              const std::function<void(void *)> &dragDropTargetContent,
+                              const std::function<void()> &subitemRenderContent) = 0;
+  /**
+   * @brief 确保Tree的空白部位也能响应Drop
+   * @param dragDropTargetContent 
+   */
+  virtual void RenderTreeVoid(const std::function<void(void *)> &dragDropTargetContent) = 0;
   virtual bool RenderPopup(
-      PopupProps &props, const std::function<void()> &renderContent) = 0;  // 模态或非模态弹出窗口
+      PopupProps &props,
+      const std::function<void()> &subitemRenderContent) = 0;  // 模态或非模态弹出窗口
   virtual void RenderTable(TableProps &props,
                            const std::function<void()> &renderContent) = 0;  // 表格
 
@@ -97,13 +109,14 @@ class UIRender {
 
   // ==================== 状态管理 ====================
   // Imgui的立即模式与上下文系统支持Begin和End的便利性接口
-  virtual void BeginDisabled(bool disabled = true) = 0;  // 启用Disable区域，区域内控件均不允许编辑
+  virtual bool BeginDisabled(bool disabled = true) = 0;  // 启用Disable区域，区域内控件均不允许编辑
   virtual void EndDisabled() = 0;  // 终止Disable区域，后续的控件允许编辑
 
   // ==================== 工具函数 ====================
-  virtual glm::vec2 GetCursorPos() = 0;                 // 获取当前光标位置
-  virtual void SetCursorPos(const glm::vec2 &pos) = 0;  // 设置光标位置
+  virtual glm::vec2 GetCursorPos() = 0;                 // 获取当前窗口左上角位置
+  virtual void SetCursorPos(const glm::vec2 &pos) = 0;  // 设置窗口位置
   virtual glm::vec2 CalcTextSize(const std::string &text) = 0;  // 计算文本在当前字体下的渲染尺寸
+  virtual glm::vec2 GetMousePos() = 0;
 };
 }  // namespace mite
 

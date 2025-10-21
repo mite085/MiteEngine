@@ -11,7 +11,6 @@ namespace mite {
  * 所有控件渲染属性的基类，包含位置、尺寸、翻译等基本信息
  */
 struct BaseRenderProps {
-  UUID elementId;       // 控件唯一标识
   bool visible = true;  // 是否可见
   bool enabled = true;  // 是否启用
 
@@ -66,7 +65,6 @@ struct TextInputProps : public TextRenderProps {
   std::string hintTranslationKey;  // 提示文本的翻译键
   std::string hintFallbackText;    // 提示文本的回退文本
   size_t maxLength = 256;          // 最大输入长度
-  bool isPassword = false;         // 是否为密码输入
 };
 
 /**
@@ -213,10 +211,10 @@ struct GroupProps : public TextRenderProps {
  * 用于构建树状结构的节点控件
  */
 struct TreeNodeProps : public TextRenderProps {
-  bool isExpand = false;  // 节点是否展开
-  bool isSelect = false;  // 节点是否被选中
-  bool isLeaf = false;    // 是否为叶子节点
-  int depth = 0;          // 节点深度
+  void *nodePtr = nullptr;  // 节点指针
+  bool isSelect = false;    // 节点是否被选中
+  bool isLeaf = false;      // 是否为叶子节点
+  int depth = 0;            // 节点深度
 };
 
 /**
