@@ -39,7 +39,7 @@ void ViewportInputContext::Apply(Transform cameraTransform)
   // 发布相机变换事件
   EventBus::Publish<ViewportCameraUpdateEvent>(
       ViewportCameraUpdateEvent(cameraTransform, m_CameraZoomCache));
-  
+
   // 清空缓存
   ClearCameraCache();
 }
@@ -85,18 +85,18 @@ void ViewportInputContext::ProcessMouseButtonPressedEvent(MouseButtonPressedEven
 {
   // 更新状态机
   m_InputStateTracker->OnMouseButtonPressed(e.GetButton());
+
+  // 左键点击时，执行选择
+  if (e.GetButton() == GLFW_MOUSE_BUTTON_LEFT) {
+    glm::vec2 uv = ScreenToUV({e.GetXPos(), e.GetYPos()});
+    EventBus::Publish<ViewportPickedEvent>(ViewportPickedEvent(uv));
+  }
 }
 
 void ViewportInputContext::ProcessMouseButtonReleasedEvent(MouseButtonReleasedEvent &e)
 {
   // 更新状态机
   m_InputStateTracker->OnMouseButtonReleased(e.GetButton());
-
-  // 左键释放时，执行选择
-  if (e.GetButton() == GLFW_MOUSE_BUTTON_LEFT) {
-    glm::vec2 uv = ScreenToUV({e.GetXPos(), e.GetYPos()});
-    EventBus::Publish<ViewportPickedEvent>(ViewportPickedEvent(uv));
-  }
 }
 
 void ViewportInputContext::ProcessMouseScrollEvent(MouseScrollEvent &e)
@@ -127,8 +127,8 @@ glm::vec2 ViewportInputContext::ScreenToUV(const glm::vec2 &screenPos)
 
   // 2. 转换为UV坐标（X轴正常，Y轴翻转）
   glm::vec2 uv;
-  uv.x = localPos.x / m_ViewportSize.x;           // X: 0~1 从左到右
-  uv.y = 1.0f - (localPos.y / m_ViewportSize.y);  // Y: 0~1 从下到上（翻转Y轴）
+  uv.x = localPos.x / m_ViewportSize.x;  // X: 0~1 从左到右
+  uv.y = localPos.y / m_ViewportSize.y;  // Y: 0~1 从上到下
 
   // 3. 钳制到[0,1]范围，防止越界
   uv.x = glm::clamp(uv.x, 0.0f, 1.0f);
@@ -179,7 +179,6 @@ void ViewportInputContext::UpdateCameraMove(float deltatime)
   // 计算相机移动缓存
   m_CameraMoveCache = cameraMoveDirection * m_CameraMoveSpeed * deltatime;
 }
-
 
 void ViewportInputContext::ClearCameraCache()
 {
