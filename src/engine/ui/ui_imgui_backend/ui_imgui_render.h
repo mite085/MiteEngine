@@ -50,6 +50,7 @@ class ImGuiUIRender : public UIRender {
   // ==================== 容器控件渲染 ====================
   void RenderGroup(const GroupProps &props, const std::function<void()> &renderContent) override;
   void RenderTreeNode(TreeNodeProps &props,
+                      const std::function<void()> &itemSelectedContent,
                       const std::function<void(void *)> &dragDropTargetContent,
                       const std::function<void()> &subitemRenderContent) override;
   void RenderTreeVoid(const std::function<void(void *)> &dragDropTargetContent) override;

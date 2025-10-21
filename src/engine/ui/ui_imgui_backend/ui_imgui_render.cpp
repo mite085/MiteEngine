@@ -443,6 +443,7 @@ void ImGuiUIRender::RenderGroup(const GroupProps &props,
 }
 
 void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
+                                   const std::function<void()> &itemSelectedContent,
                                    const std::function<void(void *)> &dragDropTargetContent,
                                    const std::function<void()> &subitemRenderContent)
 {
@@ -468,8 +469,11 @@ void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
   bool nodeOpen = ImGui::TreeNodeEx(labelText.c_str(), flags);
 
   // 处理选择逻辑
-  if (ImGui::IsItemFocused())
+  if (ImGui::IsItemFocused()) {
     props.isSelect = true;
+    itemSelectedContent();
+  }
+    
 
   // 拖拽源 - 允许拖动此节点
   if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {

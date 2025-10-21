@@ -58,7 +58,7 @@ void SceneTreePanel::RenderNodeTreeRecursive(SceneNode *node)
   treeNodeProps.isSelect = (node == m_SelectedNode);
   treeNodeProps.isLeaf = node->IsLeaf();
 
-  // 当作为拖拽的目标节点时，
+  // 当作为拖拽的目标节点时，发布事件
   auto dragDropTargetContent = [this, node](void *dropTargetData) {
     TreeNodeProps *props = static_cast<TreeNodeProps *>(dropTargetData);
     SceneNode *dropNode = static_cast<SceneNode *>(props->nodePtr);
@@ -68,6 +68,11 @@ void SceneTreePanel::RenderNodeTreeRecursive(SceneNode *node)
     else {
       EventBus::Publish<SceneNodeParentChangeEvent>(SceneNodeParentChangeEvent(dropNode, nullptr));
     }
+  };
+
+  // 当选择Item时发布事件
+  auto itemSelectedContent = [this, node]() {
+    EventBus::Publish<SceneNodeSelectedEvent>(SceneNodeSelectedEvent(node));
   };
 
   // 递归渲染子节点函数
@@ -81,12 +86,7 @@ void SceneTreePanel::RenderNodeTreeRecursive(SceneNode *node)
   };
 
   // 渲染此节点（内部更新treeNodeProps.isSelect）
-  m_Renderer.RenderTreeNode(treeNodeProps, dragDropTargetContent, subitemRenderContent);
-
-  // 处理节点选择（单选，不支持多选）
-  if (treeNodeProps.isSelect && node != m_SelectedNode) {
-    EventBus::Publish<SceneNodeSelectedEvent>(SceneNodeSelectedEvent(node));
-  }
+  m_Renderer.RenderTreeNode(treeNodeProps,itemSelectedContent, dragDropTargetContent, subitemRenderContent);
 }
 
 void SceneTreePanel::RenameNode(SceneNode *node, const std::string &name)

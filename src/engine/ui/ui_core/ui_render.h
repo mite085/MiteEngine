@@ -83,10 +83,12 @@ class UIRender {
                            const std::function<void()> &renderContent) = 0;  // 分组控件
   /**
    * @brief 树节点
+   * @param itemSelectedContent 用于响应被选择的行为
    * @param dragDropTargetContent 用于响应被Drop的行为
    * @param subitemRenderContent 用于递归渲染子节点
    */
   virtual void RenderTreeNode(TreeNodeProps &props,
+                              const std::function<void()> &itemSelectedContent,
                               const std::function<void(void *)> &dragDropTargetContent,
                               const std::function<void()> &subitemRenderContent) = 0;
   /**
