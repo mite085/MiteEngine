@@ -43,6 +43,11 @@ set(UI_PANEL_SRCS
     ui_panel/ui_gizmo_overlay.cpp
     ui_panel/ui_viewport_input_context.h    # 视口输入上下文，接收事件并处理(后续移至Editor模块)
     ui_panel/ui_viewport_input_context.cpp
+
+    ui_panel/ui_scenetree_panel.h       # 场景树面板
+    ui_panel/ui_scenetree_panel.cpp
+    ui_panel/ui_property_panel.h        # 属性页面板
+    ui_panel/ui_property_panel.cpp
 )
 source_group("ui panels" FILES ${UI_PANEL_SRCS})
 
