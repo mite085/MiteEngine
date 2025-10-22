@@ -1,7 +1,6 @@
 #ifndef MITE_MATERIAL_PARAM_VARIANT
 #define MITE_MATERIAL_PARAM_VARIANT
 
-#include "headers/headers.h"
 #include "handle_type.h"
 
 namespace mite {

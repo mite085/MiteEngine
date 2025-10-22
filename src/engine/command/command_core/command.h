@@ -2,7 +2,6 @@
 #define MITE_ENGINE_COMMAND_CORE_COMMAND
 
 #include "command_type.h"
-#include "headers/headers.h"
 
 namespace mite {
 /**

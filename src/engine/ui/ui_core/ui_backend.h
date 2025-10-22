@@ -1,7 +1,6 @@
 #ifndef MITE_UI_BACKEND_H
 #define MITE_UI_BACKEND_H
 
-#include "headers/headers.h"
 #include "subscription_group.h"
 
 namespace mite {

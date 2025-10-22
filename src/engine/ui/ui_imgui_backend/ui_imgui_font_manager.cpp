@@ -1,5 +1,6 @@
 #include "ui_imgui_backend.h"
 #include "ui_imgui_font_manager.h"
+#include "filesystem/filesystem.h"
 #include <imgui.h>
 
 namespace mite {

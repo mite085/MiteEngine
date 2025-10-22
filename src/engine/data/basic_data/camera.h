@@ -2,7 +2,6 @@
 #define MITE_DATA_CAMERA
 
 #include "basic_shader/shader_ubo.h"
-#include "headers/headers.h"
 
 namespace mite {
 /**

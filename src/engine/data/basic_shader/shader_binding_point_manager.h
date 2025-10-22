@@ -1,7 +1,6 @@
 #ifndef MITE_BINDING_POINT_MANAGER_H
 #define MITE_BINDING_POINT_MANAGER_H
 
-#include "headers/headers.h"
 #include "uniform_buffer.h"
 
 namespace mite {

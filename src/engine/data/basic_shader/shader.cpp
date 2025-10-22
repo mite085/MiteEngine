@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "filesystem/filesystem.h"
 
 namespace mite {
 OpenGLShader::OpenGLShader()

@@ -1,7 +1,6 @@
 #ifndef MITE_HANDLE_TYPE
 #define MITE_HANDLE_TYPE
 
-#include "headers/headers.h"
 #include "texture_type.h"
 
 namespace mite {

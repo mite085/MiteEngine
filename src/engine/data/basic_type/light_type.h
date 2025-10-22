@@ -2,7 +2,6 @@
 #define MITE_LIGHT_TYPES_H
 
 #include "basic_data/transform.h"
-#include "headers/headers.h"
 
 namespace mite {
 // ----------------- 光源类型和基础参数 -------------------

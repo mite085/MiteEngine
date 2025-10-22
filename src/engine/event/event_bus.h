@@ -3,6 +3,8 @@
 
 #include "dispatcher.h"
 #include "subscription_flags.h"
+#include "thread/parallel_utils.h" // 线程池
+#include "thread/thread_pool_manager.h"
 
 namespace mite {
 /**

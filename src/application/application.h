@@ -1,6 +1,7 @@
 #ifndef MITE_APPLICATION
 #define MITE_APPLICATION
 
+#include "filesystem/filesystem.h"
 #include "asset_manager.h"
 #include "material_factory.h"
 #include "input/input_manager.h"

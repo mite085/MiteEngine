@@ -4,6 +4,8 @@
 #include "command_core/command.h"
 #include "command_core/command_registry.h"
 #include "command_execution_context.h"
+#include "thread/parallel_utils.h"  // 线程池
+#include "thread/thread_pool_manager.h"
 
 namespace mite {
 

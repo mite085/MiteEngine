@@ -2,6 +2,7 @@
 #define MITE_SNAPSHOT
 
 #include "headers/headers.h"
+#include "time/time.h"
 
 namespace mite {
 

@@ -1,7 +1,6 @@
 #ifndef MITE_WINDOW_EVENT
 #define MITE_WINDOW_EVENT
 
-#include "headers/headers.h"
 #include "subscription_group.h"
 
 namespace mite {

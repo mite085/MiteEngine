@@ -1,7 +1,6 @@
 #ifndef MITE_ASSET_CACHE
 #define MITE_ASSET_CACHE
 
-#include "headers/headers.h"
 #include "basic_type/asset_type.h"
 #include "basic_type/material_type.h"
 

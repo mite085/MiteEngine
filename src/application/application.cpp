@@ -6,6 +6,7 @@
 #include "scene_core_components/component_headers.h"
 #include "ui_panel/ui_viewport_panel.h"
 #include "ui_panel/ui_scenetree_panel.h"
+#include "time/time.h"
 
 namespace mite {
 MiteApplication::MiteApplication()

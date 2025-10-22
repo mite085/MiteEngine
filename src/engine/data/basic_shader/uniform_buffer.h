@@ -2,7 +2,6 @@
 #define MITE_UNIFORM_BUFFER
 
 #include "basic_type/texture_type.h"
-#include "headers/headers.h"
 
 namespace mite {
 // ---- 资源类型枚举 ----

@@ -4,6 +4,7 @@
 #include "render_stages/forward_stage.h"
 #include "render_stages/deferred_lighting_stage.h"
 #include "render_stages/gbuffer_stage.h"
+#include "filesystem/filesystem.h"
 
 namespace mite {
 OpenGLPipeline::OpenGLPipeline() : RenderPipeline()
