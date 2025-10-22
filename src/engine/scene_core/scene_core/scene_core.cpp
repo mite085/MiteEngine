@@ -33,28 +33,30 @@ void SceneCore::ShutdownComponentSystems()
 void SceneCore::RegisterComponentSystems()
 {
   // 逐个注册组件系统
+  m_SystemManager.RegisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.RegisterSystem<CameraComponentSystem>();
   m_SystemManager.RegisterSystem<DestroyComponentSystem>();
   m_SystemManager.RegisterSystem<IDComponentSystem>();
   m_SystemManager.RegisterSystem<LightComponentSystem>();
-  m_SystemManager.RegisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.RegisterSystem<MaterialComponentSystem>();
   m_SystemManager.RegisterSystem<MeshComponentSystem>();
   m_SystemManager.RegisterSystem<TagComponentSystem>();
   m_SystemManager.RegisterSystem<TransformComponentSystem>();
+  m_SystemManager.RegisterSystem<VisibilityComponentSystem>();
 }
 
 void SceneCore::UnregisterComponentSystems()
 {
   // 逐个注销组件系统
+  m_SystemManager.UnregisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.UnregisterSystem<CameraComponentSystem>();
   m_SystemManager.UnregisterSystem<DestroyComponentSystem>();
   m_SystemManager.UnregisterSystem<IDComponentSystem>();
-  m_SystemManager.UnregisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.UnregisterSystem<MaterialComponentSystem>();
   m_SystemManager.UnregisterSystem<MeshComponentSystem>();
   m_SystemManager.UnregisterSystem<TagComponentSystem>();
   m_SystemManager.UnregisterSystem<TransformComponentSystem>();
+  m_SystemManager.UnregisterSystem<VisibilityComponentSystem>();
 }
 
 void SceneCore::OnUpdate(float timestep)
@@ -118,7 +120,7 @@ bool SceneCore::IsValid(Entity entity) const
   return entity && m_Registry.IsValid(entity);
 }
 //
-//Entity SceneCore::GetMainCamera() const
+// Entity SceneCore::GetMainCamera() const
 //{
 //  // 通过访问Camera组件系统，获取到其维护的主相机实体
 //  Entity mainCameraEntity =
@@ -133,7 +135,7 @@ bool SceneCore::IsValid(Entity entity) const
 //  return mainCameraEntity;
 //}
 //
-//void SceneCore::SetMainCamera(Entity mainCameraEntity)
+// void SceneCore::SetMainCamera(Entity mainCameraEntity)
 //{
 //  // 通过访问Camera组件系统，更换其维护的主相机实体
 //  m_SystemManager.GetSystem<CameraComponentSystem>()->SetMainCameraEntity(mainCameraEntity);

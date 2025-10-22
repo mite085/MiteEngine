@@ -17,7 +17,16 @@ namespace mite {
 class ComponentID {
  public:
   // 获取特定组件类型的ID (编译期确定)
-  template<typename T> static ComponentID Get();
+  template<typename T> static ComponentID Get()
+  {
+    // 使用类型信息生成确定性UUID
+    const std::type_index typeIdx(typeid(T));
+    const size_t hash = typeIdx.hash_code();
+
+    // 静态局部变量保证每个类型只有一个ID实例
+    static const ComponentID id(UUIDGenerator::Generate(hash));
+    return id;
+  }
 
   // 获取未知类型的ID (运行时使用)
   static ComponentID FromString(const std::string &uuidStr);
