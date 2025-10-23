@@ -14,7 +14,7 @@ namespace mite {
  * 3. 提供相机View矩阵创建功能
  */
 class TransformComponent
-    : public SnapshotComponentTraits<Transform, Component::Family::Transform> {
+    : public SnapshotComponentTraits<std::shared_ptr<Transform>, Component::Family::Transform> {
  public:
   /**
    * @brief 默认构造函数
@@ -44,43 +44,19 @@ class TransformComponent
   ~TransformComponent() override = default;
   std::vector<std::type_index> GetDependencies() const override;
 
-  // ==================== 位置操作 ====================
-  const glm::vec3 &GetLocalPosition() const;
-  void SetLocalPosition(const glm::vec3 &position);
-
-  // ==================== 旋转操作（欧拉角deg、四元数） ====================
-  Transform::EulerOrder GetRotationOrder() const;
-  glm::vec3 GetLocalRotationEuler() const;
-  glm::quat GetLocalRotationQuat() const;
-  void SetLocalRotation(const glm::vec3 &rotation);
-  void SetLocalRotation(float x, float y, float z);
-  void SetLocalRotationQuat(const glm::quat &rotation);
-  void LookAt(const glm::vec3 &target, const glm::vec3 &up = Transform::s_WorldUp);
-
-  // ==================== 缩放操作 ====================
-  const glm::vec3 &GetLocalScale() const;
-  void SetLocalScale(const glm::vec3 &scale);
-  void SetLocalScale(float scale);
-
-  // ==================== 矩阵操作 ====================
-  glm::mat4 GetLocalMatrix() const;
-  void SetLocalMatrix(const glm::mat4 &matrix);
+  // ==================== 数据操作 ====================
+  const Transform& GetLocalTransform() const;
   /**
-   * @brief 创建视图矩阵（相机专用）
-   * @note 相机变换矩阵的逆就是View矩阵
+   * @brief 支持直接的值赋予与对矩阵直接执行操作两种模式。确保可便捷访问矩阵接口
+   * @note 使用实例：
+   * 1. transformComponent.SetLocalTransform(newTransform);
+   * 2. transformComponent.SetLocalTransform([](Transform &localtrans) {
+   *     localtrans.SetPosition(glm::vec3(5.0f, 5.0f, 5.0f));
+   *     localtrans.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+   *   });
    */
-  glm::mat4 CreateViewMatrix() const;
-  const Transform& GetTransform() const;
-
-  // ===================== 方向向量（相机专用，世界空间） =========================
-  glm::vec3 GetForward() const;
-  glm::vec3 GetUp() const;
-  glm::vec3 GetRight() const;
-
-  // 防翻滚的方向获取，Up直接修正为WorldUp，保持Forward不变，基于这两个向量修正Right
-  glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = Transform::s_WorldUp) const;
-  glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = Transform::s_WorldUp) const;
-  glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = Transform::s_WorldUp) const;
+  void SetLocalTransform(const Transform &transform);
+  void SetLocalTransform(std::function<void(Transform&)> transformOperator);
 
   // ==================== 序列化接口 ====================
   bool Serialize(std::ostream &output) const override;
@@ -88,11 +64,11 @@ class TransformComponent
 
  protected:
   // ==================== 快照接口 ====================
-  Transform GetSnapshotData() const override;
-  void SetSnapshotData(const Transform &data) override;
+  std::shared_ptr<Transform> GetSnapshotData() const override;
+  void SetSnapshotData(const std::shared_ptr<Transform> &data) override;
 
  private:
-  Transform m_Transform;  // 基础变换对象
+  std::shared_ptr<Transform> m_Transform;  // 基础变换对象
 };
 
 // ==================== 组件系统 ====================
