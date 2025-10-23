@@ -38,8 +38,11 @@ void SceneView::Initialize()
   // 1.2. 主相机的变换组件
   TransformComponent &cameraTransform = m_SceneCore.GetRegistry().AddComponent<TransformComponent>(
       m_CameraEntity);
-  cameraTransform.SetLocalPosition(glm::vec3(5.0f, 5.0f, 5.0f));
-  cameraTransform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+  cameraTransform.SetLocalTransform([](Transform &localtrans) {
+    localtrans.SetPosition(glm::vec3(5.0f, 5.0f, 5.0f));
+    localtrans.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+  });
+
   // 1.3. 主相机的可见性组件
   VisibilityComponent &cameraVisibility =
       m_SceneCore.GetRegistry().AddComponent<VisibilityComponent>(m_CameraEntity);
@@ -135,12 +138,12 @@ void SceneView::SetPickedWorldTransform(const Transform &worldTransform)
     // 若Parent存在，则根据Parent的WorldTransform更新picked本地坐标
     // World = Parent * Local，可知Local = inv(Parent) * World（等式两边均左乘inv(Parent)）
     const Transform parentWorld = pickedParent->GetWorldTransform();
-    pickedTransformComponent.SetLocalMatrix(glm::inverse(parentWorld.GetLocalMatrix()) *
-                                            worldTransform.GetLocalMatrix());
+    pickedTransformComponent.SetLocalTransform(glm::inverse(parentWorld.GetLocalMatrix()) *
+                                               worldTransform);
   }
   else {
     // 若不存在，则直接更新本地坐标
-    pickedTransformComponent.SetLocalMatrix(worldTransform.GetLocalMatrix());
+    pickedTransformComponent.SetLocalTransform(worldTransform);
   }
 }
 Transform SceneView::GetPickedWorldTransform() const
@@ -169,12 +172,12 @@ void SceneView::SetCameraWorldTransform(const Transform &worldTransform)
     // 若Parent存在，则根据Parent的WorldTransform更新相机本地坐标
     // World = Parent * Local，可知Local = inv(Parent) * World（等式两边均左乘inv(Parent)）
     const Transform parentWorld = cameraParent->GetWorldTransform();
-    cameraTransformComponent.SetLocalMatrix(glm::inverse(parentWorld.GetLocalMatrix()) *
-                                            worldTransform.GetLocalMatrix());
+    cameraTransformComponent.SetLocalTransform(glm::inverse(parentWorld.GetLocalMatrix()) *
+                                               worldTransform);
   }
   else {
     // 若不存在，则直接更新本地坐标
-    cameraTransformComponent.SetLocalMatrix(worldTransform.GetLocalMatrix());
+    cameraTransformComponent.SetLocalTransform(worldTransform);
   }
 }
 

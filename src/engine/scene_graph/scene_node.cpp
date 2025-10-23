@@ -239,17 +239,16 @@ void SceneNode::UpdateWorldTransform(const SceneRegistry &registry)
     TransformComponent &transformComp = registry.GetComponent<TransformComponent>(m_Entity);
 
     // 更新之前先作用父子关系修改导致的bias到局部坐标，并清空bias。
-    transformComp.SetLocalMatrix(m_transformBias * transformComp.GetLocalMatrix());
+    transformComp.SetLocalTransform(m_transformBias * transformComp.GetLocalTransform());
     m_transformBias = glm::mat4(1.0f);
 
     // 计算世界变换
-    glm::mat4 localMatrix = transformComp.GetLocalMatrix();
+    const Transform& localTransform = transformComp.GetLocalTransform();
     if (m_Parent) {
-      m_WorldTransform.SetLocalMatrix(m_Parent->GetWorldTransform().GetLocalMatrix() *
-                                      localMatrix);
+      m_WorldTransform = m_Parent->GetWorldTransform().GetLocalMatrix() * localTransform;
     }
     else {
-      m_WorldTransform.SetLocalMatrix(localMatrix);
+      m_WorldTransform = localTransform;
     }
   }
   else {
