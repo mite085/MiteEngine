@@ -59,7 +59,7 @@ void Transform::PanCamera(float horizontal, float vertical, const glm::vec3 &wor
 
 // ==================== 旋转相关方法实现 ====================
 // 旋转顺序
-Transform::EulerOrder Transform::GetRotationOrder() const
+const Transform::EulerOrder &Transform::GetRotationOrder() const
 {
   return m_RotationOrder;
 }
@@ -76,7 +76,7 @@ void Transform::SetRotationOrder(EulerOrder order)
 }
 
 // 欧拉角
-glm::vec3 Transform::GetRotationEuler() const
+const glm::vec3 &Transform::GetRotationEuler() const
 {
   if (m_RotationDirty) {
     UpdateEulerFromRotation();
@@ -99,7 +99,7 @@ void Transform::SetRotationEuler(float x, float y, float z)
 }
 
 // 四元数
-glm::quat Transform::GetRotationQuat() const
+const glm::quat &Transform::GetRotationQuat() const
 {
   return m_Rotation;
 }
@@ -275,7 +275,7 @@ void Transform::SetScale(float uniformScale)
 
 // ==================== 矩阵相关方法实现 ====================
 
-glm::mat4 Transform::GetLocalMatrix() const
+const glm::mat4 &Transform::GetLocalMatrix() const
 {
   if (m_MatrixDirty) {
     UpdateLocalMatrix();
@@ -296,7 +296,7 @@ void Transform::SetLocalMatrix(const glm::mat4 &matrix)
   m_LocalMatrix = matrix;
 }
 
-glm::mat4 Transform::GetViewMatrix() const
+const glm::mat4 &Transform::GetViewMatrix() const
 {
   // 正常的转换矩阵，是将模型顶点的Local坐标转换为World坐标
   // 而Camera的View矩阵则是将World坐标转换到Camera的Local坐标系内
@@ -310,27 +310,27 @@ bool Transform::IsViewMatrixValid() const
 
 // ==================== 方向向量方法实现 ====================
 
-glm::vec3 Transform::GetForward() const
+const glm::vec3 &Transform::GetForward() const
 {
   return m_Rotation * glm::vec3(0.0f, 0.0f, -1.0f);  // 右手系相机：Forward为-Z方向
 }
 
-glm::vec3 Transform::GetUp() const
+const glm::vec3 &Transform::GetUp() const
 {
   return m_Rotation * glm::vec3(0.0f, 1.0f, 0.0f);  // 右手系相机：Up为+Y方向
 }
 
-glm::vec3 Transform::GetRight() const
+const glm::vec3 &Transform::GetRight() const
 {
   return m_Rotation * glm::vec3(1.0f, 0.0f, 0.0f);  // 右手系相机：Right为+X方向
 }
 
-glm::vec3 Transform::GetConstrainedUp(const glm::vec3 &worldUp) const
+const glm::vec3 &Transform::GetConstrainedUp(const glm::vec3 &worldUp) const
 {
   return worldUp;  // 强制使用指定的世界向上方向
 }
 
-glm::vec3 Transform::GetConstrainedRight(const glm::vec3 &worldUp) const
+const glm::vec3 &Transform::GetConstrainedRight(const glm::vec3 &worldUp) const
 {
   // 获取世界前向向量
   // （无论是否防翻滚，这个值应当是固定朝向Target的，应当以该值作为基准进行计算）
@@ -347,7 +347,7 @@ glm::vec3 Transform::GetConstrainedRight(const glm::vec3 &worldUp) const
   return glm::normalize(glm::cross(forward, worldUp));
 }
 
-glm::vec3 Transform::GetConstrainedForward(const glm::vec3 &worldUp) const
+const glm::vec3 &Transform::GetConstrainedForward(const glm::vec3 &worldUp) const
 {
   glm::vec3 right = GetConstrainedRight(worldUp);
 
@@ -383,6 +383,23 @@ void Transform::CleanDirty()
   if (m_RotationDirty) {
     UpdateEulerFromRotation();
   }
+}
+
+// ==================== 运算符重载实现 ====================
+Transform operator*(const Transform &lhs, const Transform &rhs)
+{
+  // 继承lhs的变换模式
+  return Transform(lhs.GetLocalMatrix() * rhs.GetLocalMatrix(), lhs.GetRotationOrder());
+}
+Transform operator*(const Transform &lhs, const glm::mat4 &rhs)
+{
+  // 将变换应用于矩阵：lhs.GetLocalMatrix() * rhs
+  return Transform(lhs.GetLocalMatrix() * rhs, lhs.GetRotationOrder());
+}
+Transform operator*(const glm::mat4 &lhs, const Transform &rhs)
+{
+  // 将矩阵应用于变换：lhs * rhs.GetLocalMatrix()
+  return Transform(lhs * rhs.GetLocalMatrix(), rhs.GetRotationOrder());
 }
 
 // ==================== 私有方法实现 ====================

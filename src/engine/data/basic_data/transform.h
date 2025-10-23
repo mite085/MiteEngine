@@ -55,10 +55,10 @@ class Transform {
    * @param scale 缩放
    * @param order 欧拉角顺序
    */
-  Transform(const glm::vec3 &position,
-            const glm::vec3 &rotationEuler = glm::vec3(0.0f),
-            const glm::vec3 &scale = glm::vec3(1.0f),
-            EulerOrder order = EulerOrder::XYZ);
+  explicit Transform(const glm::vec3 &position,
+                     const glm::vec3 &rotationEuler = glm::vec3(0.0f),
+                     const glm::vec3 &scale = glm::vec3(1.0f),
+                     EulerOrder order = EulerOrder::XYZ);
 
   /**
    * @brief 使用变换矩阵的构造函数
@@ -81,16 +81,16 @@ class Transform {
 
   // ==================== 旋转相关方法 ====================
   // 旋转顺序控制
-  EulerOrder GetRotationOrder() const;
+  const EulerOrder &GetRotationOrder() const;
   void SetRotationOrder(EulerOrder order);
 
   // 欧拉角操作（度）
-  glm::vec3 GetRotationEuler() const;
+  const glm::vec3 &GetRotationEuler() const;
   void SetRotationEuler(const glm::vec3 &eulerDegrees);
   void SetRotationEuler(float x, float y, float z);
 
   // 四元数操作
-  glm::quat GetRotationQuat() const;
+  const glm::quat &GetRotationQuat() const;
   void SetRotationQuat(const glm::quat &rotation);
 
   // 世界轴旋转
@@ -150,7 +150,7 @@ class Transform {
   void SetScale(float uniformScale);
 
   // ==================== 矩阵相关方法 ====================
-  glm::mat4 GetLocalMatrix() const;
+  const glm::mat4 &GetLocalMatrix() const;
   void SetLocalMatrix(const glm::mat4 &matrix);
 
   /**
@@ -168,18 +168,18 @@ class Transform {
    *       glm::column(m_ViewMatrix,0)  表示第一列（同上）
    *       glm::row(m_ViewMatrix,0)     表示第一行[ right.x  right.y  right.z  -dot(right, eye)]
    */
-  glm::mat4 GetViewMatrix() const;
+  const glm::mat4 &GetViewMatrix() const;
   bool IsViewMatrixValid() const;
 
   // ==================== 方向向量方法（相机专用） ====================
-  glm::vec3 GetForward() const;  // 在世界空间，相机看向的方向（-Z方向）
-  glm::vec3 GetUp() const;       // 在世界空间，相机朝上的方向（+Y方向）
-  glm::vec3 GetRight() const;    // 在世界空间，相机朝右的方向（+X方向）
+  const glm::vec3 &GetForward() const;  // 在世界空间，相机看向的方向（-Z方向）
+  const glm::vec3 &GetUp() const;       // 在世界空间，相机朝上的方向（+Y方向）
+  const glm::vec3 &GetRight() const;    // 在世界空间，相机朝右的方向（+X方向）
 
   // 获取防翻滚（固定Up方向）后的方向向量，与RotateWithUpConstraint配合使用
-  glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = s_WorldUp) const;
-  glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = s_WorldUp) const;
-  glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = s_WorldUp) const;
+  const glm::vec3 &GetConstrainedUp(const glm::vec3 &worldUp = s_WorldUp) const;
+  const glm::vec3 &GetConstrainedRight(const glm::vec3 &worldUp = s_WorldUp) const;
+  const glm::vec3 &GetConstrainedForward(const glm::vec3 &worldUp = s_WorldUp) const;
 
   // ==================== 辅助方法 ====================
   /**
@@ -197,7 +197,20 @@ class Transform {
   /**
    * @brief 获取世界的Up方向
    */
-  static glm::vec3 GetWorldUp() { return s_WorldUp; }
+  static const glm::vec3 &GetWorldUp() { return s_WorldUp; }
+
+  // ==================== 运算符重载 ====================
+  /**
+   * @brief 变换组合运算符（左乘语义）
+   *
+   * 支持：
+   * - Transform * Transform：组合两个变换
+   * - Transform * glm::mat4：将变换应用于矩阵
+   * - glm::mat4 * Transform：将矩阵应用于变换（返回矩阵）
+   */
+  friend Transform operator*(const Transform &lhs, const Transform &rhs);
+  friend Transform operator*(const Transform &lhs, const glm::mat4 &rhs);
+  friend Transform operator*(const glm::mat4 &lhs, const Transform &rhs);
 
  private:
   // ==================== 私有方法 ====================
