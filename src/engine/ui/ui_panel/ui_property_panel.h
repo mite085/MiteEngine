@@ -30,15 +30,24 @@ class PropertyPanel : public UIPanel {
    */
   void OnSceneNodeSelected(SceneNodeSelectedEvent &event);
 
-
+  /**
+   * @brief 针对组件执行渲染
+   * @param property 
+   */
   template<typename T> void RenderProperty() {
     static_assert(std::is_base_of<Component T>::value, "T Must be derived from component");
     if (!m_SelectedNode)
       return;
 
+    // 查询到组件，创建属性，执行渲染操作
     if (m_SceneRegistry.HasComponent<T>(m_SelectedNode->GetEntity())) {
-      auto component = m_SceneRegistry.GetComponent<T>(m_SelectedNode->GetEntity());
-      m_
+      T& component = m_SceneRegistry.GetComponent<T>(m_SelectedNode->GetEntity());
+      PropertyBase<T> property;
+      property->Render(component, m_Renderer);
+    }
+    else {
+      // 组件不存在，不执行渲染
+      return;
     }
 	  
   }

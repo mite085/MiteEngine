@@ -6,6 +6,7 @@
 #include "scene_core_components/component_headers.h"
 #include "ui_panel/ui_viewport_panel.h"
 #include "ui_panel/ui_scenetree_panel.h"
+#include "ui_panel/ui_property_panel.h"
 #include "time/time.h"
 
 namespace mite {
@@ -118,10 +119,11 @@ void MiteApplication::LoadDefaultScene()
   TransformComponent &mainCameraTransform =
       m_SceneCore->GetRegistry().GetComponent<TransformComponent>(m_SceneView->GetCameraEntity());
   // 添加快照测试
-  std::unique_ptr<ComponentSnapshot<Transform>> transformSnap =
+  std::unique_ptr<ComponentSnapshot<std::shared_ptr<Transform>>> transformSnap =
       mainCameraTransform.CreateSnapshot();
   // 相机看向远处点，不再看向原点
-  mainCameraTransform.LookAt(glm::vec3(110.0f, 120.0f, 120.0f));
+  mainCameraTransform.SetLocalTransform(
+      [](Transform &localtrans) { localtrans.LookAt(glm::vec3(110.0f, 120.0f, 120.0f)); });
   // 恢复快照
   transformSnap->Apply();
 }
@@ -206,10 +208,13 @@ void MiteApplication::InitializeUI()
   std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>(*m_SceneView, "viewport");
   std::shared_ptr<SceneTreePanel> scenetreePanel = std::make_shared<SceneTreePanel>(*m_SceneGraph,
                                                                                     "scenetree");
+  std::shared_ptr<PropertyPanel> propertyPanel = std::make_shared<PropertyPanel>(
+      *m_SceneGraph, m_SceneCore->GetRegistry(), "properties");
 
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
   m_UISystem->RegisterPanel(scenetreePanel);
+  m_UISystem->RegisterPanel(propertyPanel);
 }
 
 void MiteApplication::InitializeAssertManager()
