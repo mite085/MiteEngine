@@ -57,7 +57,7 @@ bool LightManager::IsInitialized() const
 {
   return m_IsInitialized;
 }
-LightPtr LightManager::CreatePointLight()
+std::shared_ptr<Light> LightManager::CreatePointLight()
 {
   auto light = std::make_shared<PointLight>();
   if (AddLight(light)) {
@@ -66,7 +66,7 @@ LightPtr LightManager::CreatePointLight()
   }
   return nullptr;
 }
-//LightPtr LightManager::CreateSpotLight()
+//std::shared_ptr<Light> LightManager::CreateSpotLight()
 //{
 //  auto light = std::make_shared<SpotLight>();
 //  if (AddLight(light)) {
@@ -75,7 +75,7 @@ LightPtr LightManager::CreatePointLight()
 //  }
 //  return nullptr;
 //}
-//LightPtr LightManager::CreateDirectionalLight()
+//std::shared_ptr<Light> LightManager::CreateDirectionalLight()
 //{
 //  auto light = std::make_shared<DirectionalLight>();
 //  if (AddLight(light)) {
@@ -84,7 +84,7 @@ LightPtr LightManager::CreatePointLight()
 //  }
 //  return nullptr;
 //}
-//LightPtr LightManager::CreateAreaRectLight()
+//std::shared_ptr<Light> LightManager::CreateAreaRectLight()
 //{
 //  auto light = std::make_shared<AreaRectLight>();
 //  if (AddLight(light)) {
@@ -93,7 +93,7 @@ LightPtr LightManager::CreatePointLight()
 //  }
 //  return nullptr;
 //}
-//LightPtr LightManager::CreateAreaEllipseLight()
+//std::shared_ptr<Light> LightManager::CreateAreaEllipseLight()
 //{
 //  auto light = std::make_shared<AreaEllipseLight>();
 //  if (AddLight(light)) {
@@ -102,7 +102,7 @@ LightPtr LightManager::CreatePointLight()
 //  }
 //  return nullptr;
 //}
-LightPtr LightManager::CreateLight(LightType type)
+std::shared_ptr<Light> LightManager::CreateLight(LightType type)
 {
   switch (type) {
     case LightType::POINT:
@@ -120,7 +120,7 @@ LightPtr LightManager::CreateLight(LightType type)
       return nullptr;
   }
 }
-bool LightManager::AddLight(LightPtr light)
+bool LightManager::AddLight(std::shared_ptr<Light> light)
 {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot add light: LightManager not initialized");
@@ -151,7 +151,7 @@ bool LightManager::AddLight(LightPtr light)
   return true;
 }
 
-bool LightManager::RemoveLight(LightPtr light)
+bool LightManager::RemoveLight(std::shared_ptr<Light> light)
 {
   if (!light) {
     LOG_ERROR("Cannot remove null light");
@@ -180,33 +180,36 @@ void LightManager::ClearAllLights()
   LOG_INFO("Cleared all {} lights from LightManager", previousCount);
 }
 
-const std::vector<LightPtr> &LightManager::GetAllLights() const
+const std::vector<std::shared_ptr<Light>> &LightManager::GetAllLights() const
 {
   return m_Lights;
 }
 
-std::vector<LightPtr> LightManager::GetEnabledLights() const
+std::vector<std::shared_ptr<Light>> LightManager::GetEnabledLights() const
 {
-  std::vector<LightPtr> enabledLights;
+  std::vector<std::shared_ptr<Light>> enabledLights;
   std::copy_if(m_Lights.begin(),
                m_Lights.end(),
                std::back_inserter(enabledLights),
-               [](const LightPtr &light) { return light->IsEnabled(); });
+               [](const std::shared_ptr<Light> &light) { return light->IsEnabled(); });
   return enabledLights;
 }
 
-std::vector<LightPtr> LightManager::GetShadowCastingLights() const
+std::vector<std::shared_ptr<Light>> LightManager::GetShadowCastingLights() const
 {
-  std::vector<LightPtr> shadowLights;
+  std::vector<std::shared_ptr<Light>> shadowLights;
   std::copy_if(
       m_Lights.begin(),
       m_Lights.end(),
       std::back_inserter(shadowLights),
-      [](const LightPtr &light) { return light->IsEnabled() && light->IsCastingShadows(); });
+               [](const std::shared_ptr<Light> &light) {
+                 return light->IsEnabled() && light->IsCastingShadows();
+               });
   return shadowLights;
 }
 
-bool LightManager::UpdateLightData(const std::unordered_map<LightPtr, Transform> &worldTransforms)
+bool LightManager::UpdateLightData(
+    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms)
 {
   if (!m_IsInitialized || !m_LightSSBO) {
     LOG_ERROR("Cannot update light data: LightManager not initialized");
@@ -230,7 +233,7 @@ bool LightManager::UpdateLightData(const std::unordered_map<LightPtr, Transform>
 }
 
 std::vector<ShadowMapData> LightManager::CollectShadowData(
-    const std::unordered_map<LightPtr, Transform> &worldTransforms,
+    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms,
     const Transform &cameraView,
     const glm::mat4 &cameraProj) const
 {
@@ -317,7 +320,7 @@ size_t LightManager::GetMaxLights() const
 // ---- 内部方法实现 ----
 
 std::vector<GPULightData> LightManager::PrepareGPULightData(
-    const std::unordered_map<LightPtr, Transform> &worldTransforms) const
+    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms) const
 {
   std::vector<GPULightData> gpuData;
 
@@ -344,7 +347,7 @@ std::vector<GPULightData> LightManager::PrepareGPULightData(
   return gpuData;
 }
 
-bool LightManager::CanAddLight(LightPtr light) const
+bool LightManager::CanAddLight(std::shared_ptr<Light> light) const
 {
   // 检查是否超过最大限制
   if (m_Lights.size() >= m_MaxLights) {

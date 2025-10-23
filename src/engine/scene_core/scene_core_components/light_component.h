@@ -23,13 +23,13 @@ class LightComponent
    * @brief 使用现有光源指针的构造函数
    * @param light 光源指针
    */
-  explicit LightComponent(LightPtr light);
+  explicit LightComponent(std::shared_ptr<Light> light);
   ~LightComponent() override = default;
   std::vector<std::type_index> GetDependencies() const override;
 
   // ==================== 光源管理 ====================
-  void SetLight(LightPtr light);
-  LightPtr GetLight() const;
+  void SetLight(std::shared_ptr<Light> light);
+  std::shared_ptr<Light> GetLight() const;
   bool HasLight() const;
 
   // ==================== 类型相关 ====================
@@ -59,7 +59,7 @@ class LightComponent
   void SetSnapshotData(const std::shared_ptr<Light> &data) override;
 
  private:
-  LightPtr m_Light;  // 光源对象指针
+  std::shared_ptr<Light> m_Light;  // 光源对象指针
 };
 // ==================== 组件系统 ====================
 class LightComponentSystem : public ComponentSystem<LightComponent> {

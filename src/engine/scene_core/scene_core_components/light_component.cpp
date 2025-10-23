@@ -5,7 +5,10 @@ namespace mite {
 
 LightComponent::LightComponent() : SnapshotComponentTraits(), m_Light(nullptr) {}
 
-LightComponent::LightComponent(LightPtr light) : SnapshotComponentTraits(), m_Light(light) {}
+LightComponent::LightComponent(std::shared_ptr<Light> light)
+    : SnapshotComponentTraits(), m_Light(light)
+{
+}
 
 std::vector<std::type_index> LightComponent::GetDependencies() const
 {
@@ -15,7 +18,7 @@ std::vector<std::type_index> LightComponent::GetDependencies() const
 
 // ==================== 光源管理 ====================
 
-void LightComponent::SetLight(LightPtr light)
+void LightComponent::SetLight(std::shared_ptr<Light> light)
 {
   if (m_Light != light) {
     m_Light = light;
@@ -23,7 +26,7 @@ void LightComponent::SetLight(LightPtr light)
   }
 }
 
-LightPtr LightComponent::GetLight() const
+std::shared_ptr<Light> LightComponent::GetLight() const
 {
   return m_Light;
 }

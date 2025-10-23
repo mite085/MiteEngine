@@ -84,7 +84,6 @@ class Light {
   // ---- 内部工具方法 ----
   bool ValidateBaseParameters() const;
 };
-using LightPtr = std::shared_ptr<Light>;
 }  // namespace mite
 
 #endif  // MITE_LIGHT_H
