@@ -48,6 +48,8 @@ set(UI_PANEL_SRCS
     ui_panel/ui_scenetree_panel.cpp
     ui_panel/ui_property_panel.h        # 属性页面板
     ui_panel/ui_property_panel.cpp
+    ui_panel/ui_properties.h            # 属性详情
+    ui_panel/ui_properties.cpp
 )
 source_group("ui panels" FILES ${UI_PANEL_SRCS})
 

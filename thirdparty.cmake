@@ -20,7 +20,7 @@ add_subdirectory(thirdparty/spdlog)
 add_subdirectory(thirdparty/assimp)
 add_subdirectory(thirdparty/meshoptimizer)
 add_subdirectory(thirdparty/googletest)
-add_subdirectory(thirdparty/materialx)
+# add_subdirectory(thirdparty/materialx)  # 项目无需依赖MaterialX，移除
 
 include_directories(thirdparty/glm)
 include_directories(thirdparty/glad)
