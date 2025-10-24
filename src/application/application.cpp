@@ -119,7 +119,7 @@ void MiteApplication::LoadDefaultScene()
   TransformComponent &mainCameraTransform =
       m_SceneCore->GetRegistry().GetComponent<TransformComponent>(m_SceneView->GetCameraEntity());
   // 添加快照测试
-  std::unique_ptr<ComponentSnapshot<std::shared_ptr<Transform>>> transformSnap =
+  std::unique_ptr<ComponentSnapshot<Transform>> transformSnap =
       mainCameraTransform.CreateSnapshot();
   // 相机看向远处点，不再看向原点
   mainCameraTransform.SetLocalTransform(

@@ -168,18 +168,18 @@ class Transform {
    *       glm::column(m_ViewMatrix,0)  表示第一列（同上）
    *       glm::row(m_ViewMatrix,0)     表示第一行[ right.x  right.y  right.z  -dot(right, eye)]
    */
-  const glm::mat4 &GetViewMatrix() const;
+  const glm::mat4 GetViewMatrix() const;
   bool IsViewMatrixValid() const;
 
   // ==================== 方向向量方法（相机专用） ====================
-  const glm::vec3 &GetForward() const;  // 在世界空间，相机看向的方向（-Z方向）
-  const glm::vec3 &GetUp() const;       // 在世界空间，相机朝上的方向（+Y方向）
-  const glm::vec3 &GetRight() const;    // 在世界空间，相机朝右的方向（+X方向）
+  const glm::vec3 GetForward() const;  // 在世界空间，相机看向的方向（-Z方向）
+  const glm::vec3 GetUp() const;       // 在世界空间，相机朝上的方向（+Y方向）
+  const glm::vec3 GetRight() const;    // 在世界空间，相机朝右的方向（+X方向）
 
   // 获取防翻滚（固定Up方向）后的方向向量，与RotateWithUpConstraint配合使用
-  const glm::vec3 &GetConstrainedUp(const glm::vec3 &worldUp = s_WorldUp) const;
-  const glm::vec3 &GetConstrainedRight(const glm::vec3 &worldUp = s_WorldUp) const;
-  const glm::vec3 &GetConstrainedForward(const glm::vec3 &worldUp = s_WorldUp) const;
+  const glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = s_WorldUp) const;
+  const glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = s_WorldUp) const;
+  const glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = s_WorldUp) const;
 
   // ==================== 辅助方法 ====================
   /**

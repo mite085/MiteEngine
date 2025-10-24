@@ -296,7 +296,7 @@ void Transform::SetLocalMatrix(const glm::mat4 &matrix)
   m_LocalMatrix = matrix;
 }
 
-const glm::mat4 &Transform::GetViewMatrix() const
+const glm::mat4 Transform::GetViewMatrix() const
 {
   // 正常的转换矩阵，是将模型顶点的Local坐标转换为World坐标
   // 而Camera的View矩阵则是将World坐标转换到Camera的Local坐标系内
@@ -310,27 +310,27 @@ bool Transform::IsViewMatrixValid() const
 
 // ==================== 方向向量方法实现 ====================
 
-const glm::vec3 &Transform::GetForward() const
+const glm::vec3 Transform::GetForward() const
 {
   return m_Rotation * glm::vec3(0.0f, 0.0f, -1.0f);  // 右手系相机：Forward为-Z方向
 }
 
-const glm::vec3 &Transform::GetUp() const
+const glm::vec3 Transform::GetUp() const
 {
   return m_Rotation * glm::vec3(0.0f, 1.0f, 0.0f);  // 右手系相机：Up为+Y方向
 }
 
-const glm::vec3 &Transform::GetRight() const
+const glm::vec3 Transform::GetRight() const
 {
   return m_Rotation * glm::vec3(1.0f, 0.0f, 0.0f);  // 右手系相机：Right为+X方向
 }
 
-const glm::vec3 &Transform::GetConstrainedUp(const glm::vec3 &worldUp) const
+const glm::vec3 Transform::GetConstrainedUp(const glm::vec3 &worldUp) const
 {
   return worldUp;  // 强制使用指定的世界向上方向
 }
 
-const glm::vec3 &Transform::GetConstrainedRight(const glm::vec3 &worldUp) const
+const glm::vec3 Transform::GetConstrainedRight(const glm::vec3 &worldUp) const
 {
   // 获取世界前向向量
   // （无论是否防翻滚，这个值应当是固定朝向Target的，应当以该值作为基准进行计算）
@@ -347,7 +347,7 @@ const glm::vec3 &Transform::GetConstrainedRight(const glm::vec3 &worldUp) const
   return glm::normalize(glm::cross(forward, worldUp));
 }
 
-const glm::vec3 &Transform::GetConstrainedForward(const glm::vec3 &worldUp) const
+const glm::vec3 Transform::GetConstrainedForward(const glm::vec3 &worldUp) const
 {
   glm::vec3 right = GetConstrainedRight(worldUp);
 

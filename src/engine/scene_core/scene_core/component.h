@@ -248,7 +248,7 @@ class SnapshotComponentTraits: public SnapshotComponent {
   /**
    * @brief 获取 / 设置快照数据 - 子类必须实现
    */
-  virtual T GetSnapshotData() const = 0;
+  virtual const T &GetSnapshotData() const = 0;
   virtual void SetSnapshotData(const T &data) = 0;
 };
 
