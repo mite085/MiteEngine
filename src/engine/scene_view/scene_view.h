@@ -40,9 +40,10 @@ class SceneView {
   Entity GetCameraEntity() const { return m_CameraEntity; }
   /**
    * @brief 选择场景对象，设置模型矩阵（世界坐标）
+   * （若当前相机为选中对象，则并非正常选中状态，IsPicked()返回false）
    */
   bool Pick(glm::vec2 screenPosUV);
-  bool IsPicked() const { return m_PickedEntity.IsValid(); }
+  bool IsPicked() const { return m_PickedEntity.IsValid() && m_PickedEntity != m_CameraEntity; }
   void SetPickedWorldTransform(const Transform &worldTransform);
   Transform GetPickedWorldTransform() const;
   /**
