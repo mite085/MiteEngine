@@ -10,6 +10,7 @@ bool ImGuiUIRender::BeginPanel(PanelProps &props)
   if (!props.visible) {
     return false;
   }
+  ImGui::PushID(&props);
 
   // 设定titie
   std::string titleText = GetTranslatedText(props);
@@ -60,6 +61,7 @@ bool ImGuiUIRender::BeginPanel(PanelProps &props)
 void ImGuiUIRender::EndPanel()
 {
   ImGui::End();
+  ImGui::PopID();
 }
 bool ImGuiUIRender::BeginChild(ChildProps &props)
 {
@@ -142,21 +144,26 @@ void ImGuiUIRender::RenderLabel(const LabelProps &props)
 {
   if (!props.visible)
     return;
+  ImGui::PushID(&props);
 
   std::string displayText = GetTranslatedText(props);
   ImGui::Text("%s", displayText.c_str());
+
+  ImGui::PopID();
 }
 
 bool ImGuiUIRender::RenderButton(const ButtonProps &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string displayText = GetTranslatedText(props);
   bool changed = ImGui::Button(
       displayText.c_str(),
       ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
 
+  ImGui::PopID();
   return changed;
 }
 
@@ -183,15 +190,14 @@ bool ImGuiUIRender::RenderTextInput(TextInputProps &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string hintText = GetTranslatedHint(props);
   std::string labelText = GetTranslatedText(props);
 
-  // 使用 PushID 自动生成唯一标识符
-  ImGui::PushID(&props);
   bool changed = ImGui::InputTextWithHint(labelText.c_str(), hintText.c_str(), &props.text);
-  ImGui::PopID();
 
+  ImGui::PopID();
   return changed;
 }
 
@@ -199,6 +205,7 @@ bool ImGuiUIRender::RenderTextArea(TextAreaProps &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::InputTextMultiline(
@@ -215,6 +222,7 @@ bool ImGuiUIRender::RenderCombobox(ComboboxProps &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   bool changed = false;
@@ -234,6 +242,7 @@ bool ImGuiUIRender::RenderCombobox(ComboboxProps &props)
     ImGui::EndCombo();
   }
 
+  ImGui::PopID();
   return changed;
 }
 
@@ -241,6 +250,7 @@ bool ImGuiUIRender::RenderListBox(ListBoxProps &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   bool changed = false;
@@ -260,6 +270,7 @@ bool ImGuiUIRender::RenderListBox(ListBoxProps &props)
     ImGui::EndListBox();
   }
 
+  ImGui::PopID();
   return changed;
 }
 
@@ -269,6 +280,7 @@ bool ImGuiUIRender::RenderDragFloat(DragFloatProps &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragFloat(labelText.c_str(),
@@ -277,6 +289,7 @@ bool ImGuiUIRender::RenderDragFloat(DragFloatProps &props)
                                   props.minValue,
                                   props.maxValue,
                                   props.format.c_str());
+  ImGui::PopID();
   return changed;
 }
 
@@ -284,6 +297,7 @@ bool ImGuiUIRender::RenderDragFloat2(DragFloat2Props &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragFloat2(labelText.c_str(),
@@ -292,6 +306,7 @@ bool ImGuiUIRender::RenderDragFloat2(DragFloat2Props &props)
                                    props.minValue,
                                    props.maxValue,
                                    props.format.c_str());
+  ImGui::PopID();
   return changed;
 }
 
@@ -299,6 +314,7 @@ bool ImGuiUIRender::RenderDragFloat3(DragFloat3Props &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragFloat3(labelText.c_str(),
@@ -307,6 +323,7 @@ bool ImGuiUIRender::RenderDragFloat3(DragFloat3Props &props)
                                    props.minValue,
                                    props.maxValue,
                                    props.format.c_str());
+  ImGui::PopID();
   return changed;
 }
 
@@ -314,6 +331,7 @@ bool ImGuiUIRender::RenderDragFloat4(DragFloat4Props &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragFloat4(labelText.c_str(),
@@ -322,6 +340,7 @@ bool ImGuiUIRender::RenderDragFloat4(DragFloat4Props &props)
                                    props.minValue,
                                    props.maxValue,
                                    props.format.c_str());
+  ImGui::PopID();
   return changed;
 }
 
@@ -329,6 +348,7 @@ bool ImGuiUIRender::RenderDragInt(DragIntProps &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragInt(labelText.c_str(),
@@ -337,6 +357,7 @@ bool ImGuiUIRender::RenderDragInt(DragIntProps &props)
                                 props.minValue,
                                 props.maxValue,
                                 props.format.c_str());
+  ImGui::PopID();
   return changed;
 }
 
@@ -346,17 +367,21 @@ void ImGuiUIRender::RenderProgressBar(const ProgressBarProps &props)
 {
   if (!props.visible)
     return;
+  ImGui::PushID(&props);
 
   std::string overlayText = GetTranslatedOverlay(props);
   ImGui::ProgressBar(props.progress,
                      ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)),
                      overlayText.empty() ? nullptr : overlayText.c_str());
+
+  ImGui::PopID();
 }
 
 bool ImGuiUIRender::RenderColorEdit(ColorEditProps &props)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   ImGuiColorEditFlags flags = ImGuiColorEditFlags_None;
@@ -393,6 +418,8 @@ bool ImGuiUIRender::RenderColorEdit(ColorEditProps &props)
   }
 
   bool changed = ImGui::ColorEdit4(labelText.c_str(), glm::value_ptr(props.color), flags);
+
+  ImGui::PopID();
   return changed;
 }
 
@@ -400,11 +427,14 @@ void ImGuiUIRender::RenderImage(const ImageProps &props)
 {
   if (!props.visible)
     return;
+  ImGui::PushID(&props);
 
   ImGui::Image(props.textureId,
                ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)),
                ImVec2(props.uv0.x, props.uv0.y),
                ImVec2(props.uv1.x, props.uv1.y));
+
+  ImGui::PopID();
 }
 
 // ==================== 容器控件渲染实现 ====================
@@ -414,6 +444,7 @@ void ImGuiUIRender::RenderGroup(const GroupProps &props,
 {
   if (!props.visible)
     return;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
 
@@ -427,6 +458,7 @@ void ImGuiUIRender::RenderGroup(const GroupProps &props,
     renderContent();
   }
   ImGui::EndGroup();
+  ImGui::PopID();
 }
 
 void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
@@ -436,6 +468,7 @@ void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
 {
   if (!props.visible)
     return;
+  ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
   ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
@@ -450,9 +483,6 @@ void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
   if (props.isSelect)
     flags |= ImGuiTreeNodeFlags_Selected;
 
-
-  // 使用 PushID 自动生成唯一标识符
-  ImGui::PushID(&props);
   bool nodeOpen = ImGui::TreeNodeEx(labelText.c_str(), flags);
 
   // 处理选择逻辑
@@ -483,12 +513,13 @@ void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
     ImGui::TreePop();
   }
 
-  // 完成子节点渲染后才能PopID
   ImGui::PopID();
 }
 
 void ImGuiUIRender::RenderTreeVoid(const std::function<void(void *)> &dragDropTargetContent)
 {
+  ImGui::PushID(&dragDropTargetContent);
+
   // 在面板剩余空白区域添加拖拽目标
   ImVec2 avail_size = ImGui::GetContentRegionAvail();
   if (avail_size.y > 0) {
@@ -502,12 +533,15 @@ void ImGuiUIRender::RenderTreeVoid(const std::function<void(void *)> &dragDropTa
       ImGui::EndDragDropTarget();
     }
   }
+
+  ImGui::PopID();
 }
 
 bool ImGuiUIRender::RenderPopup(PopupProps &props, const std::function<void()> &renderContent)
 {
   if (!props.visible)
     return false;
+  ImGui::PushID(&props);
 
   std::string titleText = GetTranslatedText(props);
   bool shouldKeepOpen = props.open;
@@ -530,6 +564,7 @@ bool ImGuiUIRender::RenderPopup(PopupProps &props, const std::function<void()> &
     }
   }
 
+  ImGui::PopID();
   return shouldKeepOpen;
 }
 
@@ -537,7 +572,6 @@ void ImGuiUIRender::RenderTable(TableProps &props, const std::function<void()> &
 {
   if (!props.visible)
     return;
-  // 使用 PushID 自动生成唯一标识符
   ImGui::PushID(&props);
 
   if (ImGui::BeginTable(
@@ -559,7 +593,18 @@ void ImGuiUIRender::RenderTable(TableProps &props, const std::function<void()> &
 
     ImGui::EndTable();
   }
+
   ImGui::PopID();
+}
+
+void ImGuiUIRender::TableNextRow()
+{
+  ImGui::TableNextRow();
+}
+
+void ImGuiUIRender::TableNextColume()
+{
+  ImGui::TableNextColumn();
 }
 
 // ==================== 布局控件渲染实现 ====================
@@ -573,7 +618,11 @@ void ImGuiUIRender::RenderSpacer(const SpacerProps &props)
 {
   if (!props.visible)
     return;
+  ImGui::PushID(&props);
+
   ImGui::Dummy(ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
+
+  ImGui::PopID();
 }
 
 void ImGuiUIRender::SetSameLine(float offset, float spacing)

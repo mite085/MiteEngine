@@ -56,6 +56,8 @@ class ImGuiUIRender : public UIRender {
   void RenderTreeVoid(const std::function<void(void *)> &dragDropTargetContent) override;
   bool RenderPopup(PopupProps &props, const std::function<void()> &renderContent) override;
   void RenderTable(TableProps &props, const std::function<void()> &renderContent) override;
+  void TableNextRow() override;
+  void TableNextColume()override;
 
   // ==================== 布局控件渲染 ====================
   void RenderSeparator() override;

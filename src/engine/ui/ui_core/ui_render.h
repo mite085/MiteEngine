@@ -101,6 +101,8 @@ class UIRender {
       const std::function<void()> &subitemRenderContent) = 0;  // 模态或非模态弹出窗口
   virtual void RenderTable(TableProps &props,
                            const std::function<void()> &renderContent) = 0;  // 表格
+  virtual void TableNextRow() = 0;
+  virtual void TableNextColume() = 0;
 
   // ==================== 布局控件渲染 ====================
   virtual void RenderSeparator() = 0;
