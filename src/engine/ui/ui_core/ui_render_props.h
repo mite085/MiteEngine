@@ -110,7 +110,7 @@ struct ListBoxProps : public TextRenderProps {
 struct DragFloatProps : public TextRenderProps {
   float value = 0.0f;           // 当前值
   float speed = 0.1f;           // 拖动速度
-  float minValue = FLT_MIN;     // 最小值
+  float minValue = -FLT_MAX;    // 最小值
   float maxValue = FLT_MAX;     // 最大值
   std::string format = "%.3f";  // 显示格式
 };
@@ -121,7 +121,7 @@ struct DragFloatProps : public TextRenderProps {
 struct DragFloat2Props : public TextRenderProps {
   glm::vec2 value = {0.0f, 0.0f};  // 当前值
   float speed = 0.1f;              // 拖动速度
-  float minValue = FLT_MIN;        // 最小值
+  float minValue = -FLT_MAX;       // 最小值
   float maxValue = FLT_MAX;        // 最大值
   std::string format = "%.3f";     // 显示格式
 };
@@ -132,7 +132,7 @@ struct DragFloat2Props : public TextRenderProps {
 struct DragFloat3Props : public TextRenderProps {
   glm::vec3 value = {0.0f, 0.0f, 0.0f};  // 当前值
   float speed = 0.1f;                    // 拖动速度
-  float minValue = FLT_MIN;              // 最小值
+  float minValue = -FLT_MAX;             // 最小值
   float maxValue = FLT_MAX;              // 最大值
   std::string format = "%.3f";           // 显示格式
 };
@@ -143,7 +143,7 @@ struct DragFloat3Props : public TextRenderProps {
 struct DragFloat4Props : public TextRenderProps {
   glm::vec4 value = {0.0f, 0.0f, 0.0f, 0.0f};  // 当前值
   float speed = 0.1f;                          // 拖动速度
-  float minValue = FLT_MIN;                    // 最小值
+  float minValue = -FLT_MAX;                   // 最小值
   float maxValue = FLT_MAX;                    // 最大值
   std::string format = "%.3f";                 // 显示格式
 };
