@@ -46,7 +46,7 @@ bool BoundingVolumeComponent::Deserialize(std::istream &input)
 
   return !input.fail();
 }
-BoundingVolume BoundingVolumeComponent::GetSnapshotData() const
+const BoundingVolume &BoundingVolumeComponent::GetSnapshotData() const
 {
   return m_Volume;
 }

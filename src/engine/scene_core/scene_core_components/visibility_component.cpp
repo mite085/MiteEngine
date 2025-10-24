@@ -46,7 +46,7 @@ std::vector<std::type_index> VisibilityComponent::GetDependencies() const
 {
   return {};
 }
-Visibility VisibilityComponent::GetSnapshotData() const
+const Visibility &VisibilityComponent::GetSnapshotData() const
 {
   return m_Visibility;
 }

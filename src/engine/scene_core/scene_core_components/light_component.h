@@ -13,7 +13,7 @@ namespace mite {
  * 3. 与变换组件配合，为渲染系统提供完整的光源数据
  */
 class LightComponent
-    : public SnapshotComponentTraits<std::shared_ptr<Light>, Component::Family::Geometry> {
+    : public SnapshotComponentTraits<Light, Component::Family::Geometry> {
  public:
   /**
    * @brief 默认构造函数
@@ -55,8 +55,8 @@ class LightComponent
 
  protected:
   // ==================== 快照接口 ====================
-  std::shared_ptr<Light> GetSnapshotData() const override;
-  void SetSnapshotData(const std::shared_ptr<Light> &data) override;
+  const Light &GetSnapshotData() const override;
+  void SetSnapshotData(const Light &data) override;
 
  private:
   std::shared_ptr<Light> m_Light;  // 光源对象指针

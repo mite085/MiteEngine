@@ -14,7 +14,7 @@ namespace mite {
  * 3. 提供相机View矩阵创建功能
  */
 class TransformComponent
-    : public SnapshotComponentTraits<std::shared_ptr<Transform>, Component::Family::Transform> {
+    : public SnapshotComponentTraits<Transform, Component::Family::Transform> {
  public:
   /**
    * @brief 默认构造函数
@@ -64,8 +64,8 @@ class TransformComponent
 
  protected:
   // ==================== 快照接口 ====================
-  std::shared_ptr<Transform> GetSnapshotData() const override;
-  void SetSnapshotData(const std::shared_ptr<Transform> &data) override;
+  const Transform &GetSnapshotData() const override;
+  void SetSnapshotData(const Transform &data) override;
 
  private:
   std::shared_ptr<Transform> m_Transform;  // 基础变换对象

@@ -19,7 +19,7 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持GPU实例化
  */
-class MaterialComponent : public SnapshotComponentTraits<std::shared_ptr<MaterialInstance>,
+class MaterialComponent : public SnapshotComponentTraits<MaterialInstance,
                                                          Component::Family::Geometry> {
  public:
   /**
@@ -49,8 +49,8 @@ class MaterialComponent : public SnapshotComponentTraits<std::shared_ptr<Materia
   bool Deserialize(std::istream &input) override;
 
  private:
-  std::shared_ptr<MaterialInstance> GetSnapshotData() const override;
-  void SetSnapshotData(const std::shared_ptr<MaterialInstance> &data) override;
+  const MaterialInstance &GetSnapshotData() const override;
+  void SetSnapshotData(const MaterialInstance &data) override;
 
   std::shared_ptr<MaterialInstance> m_MaterialInstance;  // 材质实例
 };

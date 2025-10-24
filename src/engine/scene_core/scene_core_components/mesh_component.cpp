@@ -80,14 +80,14 @@ bool MeshComponent::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-std::shared_ptr<Mesh> MeshComponent::GetSnapshotData() const
+const Mesh &MeshComponent::GetSnapshotData() const
 {
-  return m_Mesh;
+  return *m_Mesh;
 }
 
-void MeshComponent::SetSnapshotData(const std::shared_ptr<Mesh> &data)
+void MeshComponent::SetSnapshotData(const Mesh &data)
 {
-  m_Mesh = data;
+  *m_Mesh = data;
   // 发布更新事件
   EventBus::Publish<MeshChangedEvent>(MeshChangedEvent(GetEntity(), *this));
 }

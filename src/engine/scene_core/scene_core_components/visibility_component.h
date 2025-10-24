@@ -74,7 +74,7 @@ class VisibilityComponent
   bool Deserialize(std::istream &input) override;
 
  private:
-  Visibility GetSnapshotData() const override;
+  const Visibility &GetSnapshotData() const override;
   void SetSnapshotData(const Visibility &data) override;
 
   Visibility m_Visibility;

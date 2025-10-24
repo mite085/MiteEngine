@@ -19,8 +19,7 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持实例化渲染
  */
-class MeshComponent
-    : public SnapshotComponentTraits<std::shared_ptr<Mesh>, Component::Family::Geometry> {
+class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Geometry> {
  public:
   /**
    * @brief 带初始值的构造函数
@@ -107,8 +106,8 @@ class MeshComponent
   bool Deserialize(std::istream &input) override;
 
  private:
-  std::shared_ptr<Mesh> GetSnapshotData() const override;
-  void SetSnapshotData(const std::shared_ptr<Mesh> &data) override;
+  const Mesh &GetSnapshotData() const override;
+  void SetSnapshotData(const Mesh &data) override;
 
   std::shared_ptr<Mesh> m_Mesh;  // 网格数据
 

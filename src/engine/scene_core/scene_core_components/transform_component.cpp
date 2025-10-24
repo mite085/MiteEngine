@@ -27,12 +27,7 @@ std::vector<std::type_index> TransformComponent::GetDependencies() const
 // ==================== 数据操作 ====================
 const Transform &TransformComponent::GetLocalTransform() const
 {
-  if (m_Transform) {
-    return *m_Transform;
-  }
-  else {
-    return Transform();
-  }
+  return *m_Transform;
 }
 void TransformComponent::SetLocalTransform(const Transform &transform)
 {
@@ -54,7 +49,6 @@ void TransformComponent::SetLocalTransform(std::function<void(Transform &)> tran
   }
 }
 
-
 // ==================== 序列化接口 ====================
 bool TransformComponent::Serialize(std::ostream &output) const
 {
@@ -70,14 +64,14 @@ bool TransformComponent::Deserialize(std::istream &input)
 }
 
 // ==================== 快照接口实现 ====================
-std::shared_ptr<Transform> TransformComponent::GetSnapshotData() const
+const Transform &TransformComponent::GetSnapshotData() const
 {
-  return m_Transform;
+  return *m_Transform;
 }
 
-void TransformComponent::SetSnapshotData(const std::shared_ptr<Transform> &data)
+void TransformComponent::SetSnapshotData(const Transform &data)
 {
-  m_Transform = data;
+  *m_Transform = data;
   // 发布更新事件
   EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
 }

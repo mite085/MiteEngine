@@ -47,14 +47,14 @@ bool MaterialComponent::Deserialize(std::istream &input)
   return !input.fail();
 }
 
-std::shared_ptr<MaterialInstance> MaterialComponent::GetSnapshotData() const
+const MaterialInstance &MaterialComponent::GetSnapshotData() const
 {
-  return m_MaterialInstance;
+  return *m_MaterialInstance;
 }
 
-void MaterialComponent::SetSnapshotData(const std::shared_ptr<MaterialInstance> &data)
+void MaterialComponent::SetSnapshotData(const MaterialInstance &data)
 {
-  m_MaterialInstance = data;
+  *m_MaterialInstance = data;
   // 发布更新事件
   EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
 }

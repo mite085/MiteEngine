@@ -70,7 +70,7 @@ class BoundingVolumeComponent
   bool Deserialize(std::istream &input) override;
 
  private:
-  BoundingVolume GetSnapshotData() const override;
+  const BoundingVolume &GetSnapshotData() const override;
   void SetSnapshotData(const BoundingVolume &data) override;
 
   BoundingVolume m_Volume;  // 局部空间包围体

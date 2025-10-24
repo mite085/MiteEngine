@@ -130,14 +130,14 @@ bool LightComponent::Deserialize(std::istream &input)
 }
 
 // ==================== 快照接口实现 ====================
-std::shared_ptr<Light> LightComponent::GetSnapshotData() const
+const Light &LightComponent::GetSnapshotData() const
 {
-  return m_Light;
+  return *m_Light;
 }
 
-void LightComponent::SetSnapshotData(const std::shared_ptr<Light> &data)
+void LightComponent::SetSnapshotData(const Light &data)
 {
-  m_Light = data;
+  *m_Light = data;
   // 发布更新事件
   EventBus::Publish<LightUpdatedEvent>(LightUpdatedEvent(GetEntity(), *this));
 }

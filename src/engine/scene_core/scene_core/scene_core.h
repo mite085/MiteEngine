@@ -1,8 +1,8 @@
 #ifndef MITE_SCENE_CORE
 #define MITE_SCENE_CORE
 
-#include "component_system_manager.h"
 #include "basic_data/camera.h"
+#include "component_system_manager.h"
 
 namespace mite {
 /**
@@ -12,7 +12,7 @@ namespace mite {
  * - 实体创建/销毁
  * - 组件系统管理
  */
-class SceneCore{
+class SceneCore {
  public:
   SceneCore(const std::string &name = "Untitled Scene");
   ~SceneCore();
@@ -59,36 +59,24 @@ class SceneCore{
   bool IsValid(Entity entity) const;
 
   // ------------------------ 场景状态 ------------------------
-  const std::string &GetName() const
-  {
-    return m_Name;
-  }
-  void SetName(const std::string &name)
-  {
-    m_Name = name;
-  }
+  const std::string &GetName() const { return m_Name; }
+  void SetName(const std::string &name) { m_Name = name; }
 
   ///**
   // * @brief 获取主相机
   // */
-  //Entity GetMainCamera() const;
-  //void SetMainCamera(Entity entity);
+  // Entity GetMainCamera() const;
+  // void SetMainCamera(Entity entity);
 
   // ------------------------ 模块访问 ------------------------
   /**
    * @brief 获取Registry
    */
-  SceneRegistry &GetRegistry()
-  {
-    return m_Registry;
-  }
+  SceneRegistry &GetRegistry() { return m_Registry; }
   /**
    * @brief 获取ComponentSystemManager
    */
-  ComponentSystemManager &GetComponentSystemManager()
-  {
-    return m_SystemManager;
-  }
+  ComponentSystemManager &GetComponentSystemManager() { return m_SystemManager; }
   /**
    * @brief 初始化组件系统
    *
@@ -102,7 +90,7 @@ class SceneCore{
 
   /**
    * @brief 关闭组件系统
-   * 
+   *
    * 注意：
    * 该步骤应当在Application关闭流程的
    * 最开始阶段调用，原因同上。
@@ -121,13 +109,13 @@ class SceneCore{
 
  private:
   // 场景名称
-  std::string m_Name;         
+  std::string m_Name;
 
   // 实体组件注册表：
   // 直接值持有,与Scene共享生命周期，
   // 避免unique_ptr不必要的堆分配，
   // 并方便其他模块直接引用m_Registry(可能存在风险？)
-  SceneRegistry m_Registry;  
+  SceneRegistry m_Registry;
 
   // 系统管理
   ComponentSystemManager m_SystemManager;
@@ -135,7 +123,6 @@ class SceneCore{
   // 实体ID生成计数
   uint32_t m_EntityCounter = 0;
 };
-
 }  // namespace mite
 
 #endif
