@@ -109,9 +109,9 @@ struct ListBoxProps : public TextRenderProps {
  */
 struct DragFloatProps : public TextRenderProps {
   float value = 0.0f;           // 当前值
-  float speed = 1.0f;           // 拖动速度
-  float minValue = 0.0f;        // 最小值
-  float maxValue = 100.0f;      // 最大值
+  float speed = 0.1f;           // 拖动速度
+  float minValue = FLT_MIN;     // 最小值
+  float maxValue = FLT_MAX;     // 最大值
   std::string format = "%.3f";  // 显示格式
 };
 
@@ -120,9 +120,9 @@ struct DragFloatProps : public TextRenderProps {
  */
 struct DragFloat2Props : public TextRenderProps {
   glm::vec2 value = {0.0f, 0.0f};  // 当前值
-  float speed = 1.0f;              // 拖动速度
-  float minValue = 0.0f;           // 最小值
-  float maxValue = 100.0f;         // 最大值
+  float speed = 0.1f;              // 拖动速度
+  float minValue = FLT_MIN;        // 最小值
+  float maxValue = FLT_MAX;        // 最大值
   std::string format = "%.3f";     // 显示格式
 };
 
@@ -131,9 +131,9 @@ struct DragFloat2Props : public TextRenderProps {
  */
 struct DragFloat3Props : public TextRenderProps {
   glm::vec3 value = {0.0f, 0.0f, 0.0f};  // 当前值
-  float speed = 1.0f;                    // 拖动速度
-  float minValue = 0.0f;                 // 最小值
-  float maxValue = 100.0f;               // 最大值
+  float speed = 0.1f;                    // 拖动速度
+  float minValue = FLT_MIN;              // 最小值
+  float maxValue = FLT_MAX;              // 最大值
   std::string format = "%.3f";           // 显示格式
 };
 
@@ -142,9 +142,9 @@ struct DragFloat3Props : public TextRenderProps {
  */
 struct DragFloat4Props : public TextRenderProps {
   glm::vec4 value = {0.0f, 0.0f, 0.0f, 0.0f};  // 当前值
-  float speed = 1.0f;                          // 拖动速度
-  float minValue = 0.0f;                       // 最小值
-  float maxValue = 100.0f;                     // 最大值
+  float speed = 0.1f;                          // 拖动速度
+  float minValue = FLT_MIN;                    // 最小值
+  float maxValue = FLT_MAX;                    // 最大值
   std::string format = "%.3f";                 // 显示格式
 };
 
@@ -154,8 +154,8 @@ struct DragFloat4Props : public TextRenderProps {
 struct DragIntProps : public TextRenderProps {
   int value = 0;              // 当前值
   float speed = 1.0f;         // 拖动速度
-  int minValue = 0;           // 最小值
-  int maxValue = 100;         // 最大值
+  int minValue = INT_MIN;     // 最小值
+  int maxValue = INT_MAX;     // 最大值
   std::string format = "%d";  // 显示格式
 };
 
@@ -255,12 +255,12 @@ struct SpacerProps : public BaseRenderProps {
  */
 struct PanelProps : public BaseRenderProps {
   // ============ 基本属性 ============
-  bool resizable = true;      // 是否可调整大小（默认可调整）
-  bool scrollable = true;     // 是否可滚动（默认可滚动）
-  bool collapsed = false;     // 是否折叠标题（默认状态下不折叠）
-  bool bringToFront = false;  // 是否置顶（默认状态下不置顶）
-  bool dockable = true;       // 是否可停靠（默认支持）
-  bool hasMenuBar = false;  // 是否有菜单栏（默认没有，使用统一的window菜单栏）
+  bool resizable = true;               // 是否可调整大小（默认可调整）
+  bool scrollable = true;              // 是否可滚动（默认可滚动）
+  bool collapsed = false;              // 是否折叠标题（默认状态下不折叠）
+  bool bringToFront = false;           // 是否置顶（默认状态下不置顶）
+  bool dockable = true;                // 是否可停靠（默认支持）
+  bool hasMenuBar = false;             // 是否有菜单栏（默认没有，使用统一的window菜单栏）
   bool noBackground = false;           // 无背景
   glm::vec2 minSize = {10, 10};        // 最小尺寸
   glm::vec2 maxSize = {10000, 10000};  // 最大尺寸
