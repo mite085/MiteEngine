@@ -7,15 +7,23 @@
 
 namespace mite {
 /**
- * @brief 属性基类 - 负责封装属性统一行为
+ * @brief 属性基类 - 基于模板特化的自动映射
  */
-template<typename T> class PropertyBase {
+template<typename T> class PropertyBase;
+
+/**
+ * @brief TransformComponent的特化
+ */
+template<> class PropertyBase<TransformComponent> {
  public:
-  /**
-   * @brief 更新属性页的组件/数据存储
-   */
-  void Render(T &component, UIRender &render);
+  explicit PropertyBase(TransformComponent &component) : m_Component(component) {}
+
+  void Render(UIRender &render);
+
+ private:
+  TransformComponent &m_Component;
 };
+
 }  // namespace mite
 
 #endif  // MITE_PROPERTIES_H

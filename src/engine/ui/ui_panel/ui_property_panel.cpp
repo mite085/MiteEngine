@@ -12,11 +12,8 @@ PropertyPanel::PropertyPanel(SceneGraph &sceneGraph,
 
 void PropertyPanel::Render()
 {
-  
   if (m_SelectedNode) {
     RenderProperty<TransformComponent>();
-
-
   }
   else {
     // 不存在选中节点的占位显示
@@ -25,5 +22,14 @@ void PropertyPanel::Render()
     placeholderProps.fallbackText = "Invalid Selected Item";
     m_Renderer.RenderLabel(placeholderProps);
   }
+}
+
+void PropertyPanel::OnSceneNodeSelected(SceneNodeSelectedEvent &event)
+{
+  if (event.GetSceneNode())
+    m_SelectedNode = event.GetSceneNode();
+
+  event.SetResult(EventResult::Handled);
+  return;
 }
 }  // namespace mite
