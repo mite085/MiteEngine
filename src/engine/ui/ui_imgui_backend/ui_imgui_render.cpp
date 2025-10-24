@@ -145,7 +145,6 @@ void ImGuiUIRender::RenderLabel(const LabelProps &props)
 
   std::string displayText = GetTranslatedText(props);
   ImGui::Text("%s", displayText.c_str());
-  SetItemTooltip(props.tooltip);
 }
 
 bool ImGuiUIRender::RenderButton(const ButtonProps &props)
@@ -157,7 +156,6 @@ bool ImGuiUIRender::RenderButton(const ButtonProps &props)
   bool changed = ImGui::Button(
       displayText.c_str(),
       ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
-  SetItemTooltip(props.tooltip);
 
   return changed;
 }
@@ -178,7 +176,6 @@ bool ImGuiUIRender::RenderCheckbox(CheckboxProps &props)
     ImGui::SameLine();
     ImGui::Text("%s", displayText.c_str());
   }
-  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -195,7 +192,6 @@ bool ImGuiUIRender::RenderTextInput(TextInputProps &props)
   bool changed = ImGui::InputTextWithHint(labelText.c_str(), hintText.c_str(), &props.text);
   ImGui::PopID();
 
-  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -209,8 +205,6 @@ bool ImGuiUIRender::RenderTextArea(TextAreaProps &props)
       labelText.c_str(),
       &props.text,
       ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)));
-
-  SetItemTooltip(props.tooltip);
 
   return changed;
 }
@@ -283,7 +277,6 @@ bool ImGuiUIRender::RenderDragFloat(DragFloatProps &props)
                                   props.minValue,
                                   props.maxValue,
                                   props.format.c_str());
-  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -299,7 +292,6 @@ bool ImGuiUIRender::RenderDragFloat2(DragFloat2Props &props)
                                    props.minValue,
                                    props.maxValue,
                                    props.format.c_str());
-  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -315,7 +307,6 @@ bool ImGuiUIRender::RenderDragFloat3(DragFloat3Props &props)
                                    props.minValue,
                                    props.maxValue,
                                    props.format.c_str());
-  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -331,7 +322,6 @@ bool ImGuiUIRender::RenderDragFloat4(DragFloat4Props &props)
                                    props.minValue,
                                    props.maxValue,
                                    props.format.c_str());
-  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -347,7 +337,6 @@ bool ImGuiUIRender::RenderDragInt(DragIntProps &props)
                                 props.minValue,
                                 props.maxValue,
                                 props.format.c_str());
-  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -362,7 +351,6 @@ void ImGuiUIRender::RenderProgressBar(const ProgressBarProps &props)
   ImGui::ProgressBar(props.progress,
                      ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y)),
                      overlayText.empty() ? nullptr : overlayText.c_str());
-  SetItemTooltip(props.tooltip);
 }
 
 bool ImGuiUIRender::RenderColorEdit(ColorEditProps &props)
@@ -405,7 +393,6 @@ bool ImGuiUIRender::RenderColorEdit(ColorEditProps &props)
   }
 
   bool changed = ImGui::ColorEdit4(labelText.c_str(), glm::value_ptr(props.color), flags);
-  SetItemTooltip(props.tooltip);
   return changed;
 }
 
@@ -498,7 +485,6 @@ void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
 
   // 完成子节点渲染后才能PopID
   ImGui::PopID();
-  // SetItemTooltip(props.tooltip);
 }
 
 void ImGuiUIRender::RenderTreeVoid(const std::function<void(void *)> &dragDropTargetContent)
