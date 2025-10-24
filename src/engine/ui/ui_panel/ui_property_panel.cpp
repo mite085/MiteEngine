@@ -14,6 +14,7 @@ void PropertyPanel::Render()
 {
   if (m_SelectedNode) {
     RenderProperty<TransformComponent>();
+
   }
   else {
     // 不存在选中节点的占位显示
