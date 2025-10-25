@@ -152,6 +152,18 @@ void ImGuiUIRender::RenderLabel(const LabelProps &props)
   ImGui::PopID();
 }
 
+void ImGuiUIRender::RenderLabelSprator(const LabelProps &props)
+{
+  if (!props.visible)
+    return;
+  ImGui::PushID(&props);
+
+  std::string displayText = GetTranslatedText(props);
+  ImGui::SeparatorText(displayText.c_str());
+
+  ImGui::PopID();
+}
+
 bool ImGuiUIRender::RenderButton(const ButtonProps &props)
 {
   if (!props.visible)
@@ -227,9 +239,18 @@ bool ImGuiUIRender::RenderCombobox(ComboboxProps &props)
   std::string labelText = GetTranslatedText(props);
   bool changed = false;
 
-  if (ImGui::BeginCombo(labelText.c_str(), props.previewText.c_str())) {
-    for (int i = 0; i < props.items.size(); ++i) {
-      std::string itemText = GetTranslatedItem(props.itemTranslationKeys, props.items, i);
+  // 获取当前显示文本（确保selectedIndex合法）
+  std::string previewText;
+  if (props.selectedIndex >= 0 && props.selectedIndex < props.itemTranslationKeys.size()) {
+    previewText = GetTranslatedItem(props.itemTranslationKeys, props.selectedIndex);
+  }
+  else {
+    previewText = "";
+  }
+  
+  if (ImGui::BeginCombo(labelText.c_str(), previewText.c_str())) {
+    for (int i = 0; i < props.itemTranslationKeys.size(); ++i) {
+      std::string itemText = GetTranslatedItem(props.itemTranslationKeys, i);
       bool isSelected = (i == props.selectedIndex);
       if (ImGui::Selectable(itemText.c_str(), isSelected)) {
         props.selectedIndex = i;
@@ -259,8 +280,8 @@ bool ImGuiUIRender::RenderListBox(ListBoxProps &props)
           labelText.c_str(),
           ImVec2(static_cast<float>(props.size.x), static_cast<float>(props.size.y))))
   {
-    for (int i = 0; i < props.items.size(); ++i) {
-      std::string itemText = GetTranslatedItem(props.itemTranslationKeys, props.items, i);
+    for (int i = 0; i < props.itemTranslationKeys.size(); ++i) {
+      std::string itemText = GetTranslatedItem(props.itemTranslationKeys, i);
       bool isSelected = (i == props.selectedIndex);
       if (ImGui::Selectable(itemText.c_str(), isSelected)) {
         props.selectedIndex = i;
@@ -475,8 +496,8 @@ void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
   flags |= ImGuiTreeNodeFlags_OpenOnArrow;
   flags |= ImGuiTreeNodeFlags_OpenOnDoubleClick;     // imgui标准展开模式
   flags |= ImGuiTreeNodeFlags_NavLeftJumpsToParent;  // 左侧箭头（展开用）
-  flags |= ImGuiTreeNodeFlags_SpanFullWidth;     // 占满宽度，以便更容易用鼠标操作
-  flags |= ImGuiTreeNodeFlags_DrawLinesToNodes;  // 绘制层次辅助线
+  flags |= ImGuiTreeNodeFlags_SpanFullWidth;         // 占满宽度，以便更容易用鼠标操作
+  flags |= ImGuiTreeNodeFlags_DrawLinesToNodes;      // 绘制层次辅助线
   flags |= ImGuiTreeNodeFlags_DefaultOpen;
   if (props.isLeaf)
     flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
@@ -490,7 +511,6 @@ void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
     props.isSelect = true;
     itemSelectedContent();
   }
-    
 
   // 拖拽源 - 允许拖动此节点
   if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
@@ -499,7 +519,8 @@ void ImGuiUIRender::RenderTreeNode(TreeNodeProps &props,
     ImGui::EndDragDropSource();
   }
 
-  // 拖拽目标 - 允许成为其他节点的父级（必须在子节点渲染完成之后，否则处理drop会导致子节点多次渲染）
+  // 拖拽目标 -
+  // 允许成为其他节点的父级（必须在子节点渲染完成之后，否则处理drop会导致子节点多次渲染）
   if (ImGui::BeginDragDropTarget()) {
     if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("TreeNode")) {
       dragDropTargetContent(payload->Data);
@@ -669,45 +690,33 @@ glm::vec2 ImGuiUIRender::CalcTextSize(const std::string &text)
   ImVec2 size = ImGui::CalcTextSize(text.c_str());
   return glm::vec2(size.x, size.y);
 }
-glm::vec2 ImGuiUIRender::GetMousePos() {
+glm::vec2 ImGuiUIRender::GetMousePos()
+{
   ImVec2 pos = ImGui::GetMousePos();
   return glm::vec2(pos.x, pos.y);
 }
-    // ==================== 翻译辅助函数 ====================
+// ==================== 翻译辅助函数 ====================
 
 std::string ImGuiUIRender::GetTranslatedText(const BaseRenderProps &props)
 {
-  if (!props.translationKey.empty()) {
-    return UILocalization::Get().Translate(props.translationKey.c_str());
-  }
-  return props.fallbackText;
+  return UILocalization::Get().Translate(props.translationKey.c_str());
 }
 
 std::string ImGuiUIRender::GetTranslatedHint(const TextInputProps &props)
 {
-  if (!props.hintTranslationKey.empty()) {
-    return UILocalization::Get().Translate(props.hintTranslationKey.c_str());
-  }
-  return props.hintFallbackText;
+  return UILocalization::Get().Translate(props.hintTranslationKey.c_str());
 }
 
 std::string ImGuiUIRender::GetTranslatedOverlay(const ProgressBarProps &props)
 {
-  if (!props.overlayTranslationKey.empty()) {
-    return UILocalization::Get().Translate(props.overlayTranslationKey.c_str());
-  }
-  return props.overlayFallbackText;
+  return UILocalization::Get().Translate(props.overlayTranslationKey.c_str());
 }
 
 std::string ImGuiUIRender::GetTranslatedItem(const std::vector<std::string> &translationKeys,
-                                             const std::vector<std::string> &fallbackItems,
                                              int index)
 {
   if (index < translationKeys.size() && !translationKeys[index].empty()) {
     return UILocalization::Get().Translate(translationKeys[index].c_str());
-  }
-  if (index < fallbackItems.size()) {
-    return fallbackItems[index];
   }
   return "Unknown";
 }
@@ -719,10 +728,7 @@ std::string ImGuiUIRender::GetTranslatedHeader(const TableProps &props, int colu
   {
     return UILocalization::Get().Translate(props.headerTranslationKeys[columnIndex].c_str());
   }
-  if (columnIndex < props.headerFallbackTexts.size()) {
-    return props.headerFallbackTexts[columnIndex];
-  }
-  return "Column";
+  return "Unknown";
 }
 
 // ==================== 私有辅助函数 ====================

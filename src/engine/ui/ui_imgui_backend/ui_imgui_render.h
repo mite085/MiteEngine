@@ -26,6 +26,7 @@ class ImGuiUIRender : public UIRender {
   bool IsPanelHovered() override;
   // ==================== 基础控件渲染 ====================
   void RenderLabel(const LabelProps &props) override;
+  void RenderLabelSprator(const LabelProps &props) override;
   bool RenderButton(const ButtonProps &props) override;
   bool RenderCheckbox(CheckboxProps &props) override;
   bool RenderTextInput(TextInputProps &props) override;
@@ -81,7 +82,6 @@ class ImGuiUIRender : public UIRender {
   std::string GetTranslatedHint(const TextInputProps &props);  // 获取输入框提示文本的翻译
   std::string GetTranslatedOverlay(const ProgressBarProps &props);  // 获取进度条覆盖文本的翻译
   std::string GetTranslatedItem(const std::vector<std::string> &translationKeys,
-                                const std::vector<std::string> &fallbackItems,
                                 int index);                                   // 选项翻译处理
   std::string GetTranslatedHeader(const TableProps &props, int columnIndex);  // 表头翻译处理
 
