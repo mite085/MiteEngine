@@ -247,7 +247,7 @@ bool ImGuiUIRender::RenderCombobox(ComboboxProps &props)
   else {
     previewText = "";
   }
-  
+
   if (ImGui::BeginCombo(labelText.c_str(), previewText.c_str())) {
     for (int i = 0; i < props.itemTranslationKeys.size(); ++i) {
       std::string itemText = GetTranslatedItem(props.itemTranslationKeys, i);
@@ -594,10 +594,67 @@ void ImGuiUIRender::RenderTable(TableProps &props, const std::function<void()> &
   if (!props.visible)
     return;
   ImGui::PushID(&props);
+  std::string labelText = GetTranslatedText(props);
+  ImGuiTreeNodeFlags flags = ImGuiTableFlags_None;
 
-  if (ImGui::BeginTable(
-          "##Table", props.columns, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders))
-  {
+  // 基础特性设置
+  if (props.resizable)
+    flags |= ImGuiTableFlags_Resizable;
+  if (props.reorderable)
+    flags |= ImGuiTableFlags_Reorderable;
+  if (props.hideable)
+    flags |= ImGuiTableFlags_Hideable;
+  if (props.sortable)
+    flags |= ImGuiTableFlags_Sortable;
+  // 装饰选项设置
+  if (props.rowBg)
+    flags |= ImGuiTableFlags_RowBg;
+  if (props.borders)
+    flags |= ImGuiTableFlags_Borders;
+  else {
+    if (props.bordersInnerH)
+      flags |= ImGuiTableFlags_BordersInnerH;
+    if (props.bordersInnerV)
+      flags |= ImGuiTableFlags_BordersInnerV;
+    if (props.bordersOuterH)
+      flags |= ImGuiTableFlags_BordersOuterH;
+    if (props.bordersOuterV)
+      flags |= ImGuiTableFlags_BordersOuterV;
+  }
+  // 尺寸策略设置
+  switch (props.sizingPolicy) {
+    case TableProps::SizingFixedFit:
+      flags |= ImGuiTableFlags_SizingFixedFit;
+      break;
+    case TableProps::SizingFixedSame:
+      flags |= ImGuiTableFlags_SizingFixedSame;
+      break;
+    case TableProps::SizingStretchProp:
+      flags |= ImGuiTableFlags_SizingStretchProp;
+      break;
+    case TableProps::SizingStretchSame:
+      flags |= ImGuiTableFlags_SizingStretchSame;
+      break;
+  }
+  // 尺寸额外选项设置
+  if (props.noHostExtendX)
+    flags |= ImGuiTableFlags_NoHostExtendX;
+  if (props.noHostExtendY)
+    flags |= ImGuiTableFlags_NoHostExtendY;
+  if (props.preciseWidths)
+    flags |= ImGuiTableFlags_PreciseWidths;
+  // 滚动选项设置
+  if (props.scrollX)
+    flags |= ImGuiTableFlags_ScrollX;
+  if (props.scrollY)
+    flags |= ImGuiTableFlags_ScrollY;
+  // 填充选项设置
+  if (props.padOuterX)
+    flags |= ImGuiTableFlags_PadOuterX;
+  if (props.noPadInnerX)
+    flags |= ImGuiTableFlags_NoPadInnerX;
+
+  if (ImGui::BeginTable(labelText.c_str(), props.columns, flags)) {
     // 渲染表头
     if (props.showHeaders) {
       for (int i = 0; i < props.columns; ++i) {
@@ -621,6 +678,7 @@ void ImGuiUIRender::RenderTable(TableProps &props, const std::function<void()> &
 void ImGuiUIRender::TableNextRow()
 {
   ImGui::TableNextRow();
+  ImGui::TableNextColumn(); // 开启新的一行时直接更新新的一列
 }
 
 void ImGuiUIRender::TableNextColume()
@@ -728,7 +786,7 @@ std::string ImGuiUIRender::GetTranslatedHeader(const TableProps &props, int colu
   {
     return UILocalization::Get().Translate(props.headerTranslationKeys[columnIndex].c_str());
   }
-  return "Unknown";
+  return "";
 }
 
 // ==================== 私有辅助函数 ====================

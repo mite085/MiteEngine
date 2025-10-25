@@ -227,8 +227,43 @@ struct PopupProps : public TextRenderProps {
 struct TableProps : public TextRenderProps {
   int columns = 1;                                 // 列数
   std::vector<std::string> headerTranslationKeys;  // 表头翻译键
-  bool showHeaders = true;                         // 是否显示表头
   float rowHeight = 25.0f;                         // 行高
+
+  // 基础特性
+  bool showHeaders = true;       // 是否显示表头（默认显示）
+  bool resizable = true;         // 是否可调整列宽（默认可调整）
+  bool reorderable = true;       // 是否可重新排序列（默认支持）
+  bool hideable = true;          // 是否可隐藏列（默认支持）
+  bool sortable = false;         // 是否可排序（默认不支持）
+
+  // 装饰选项
+  bool rowBg = true;          // 是否显示行背景色（默认显示）
+  bool borders = true;        // 是否显示边框（默认显示）
+  bool bordersInnerH = true;  // 是否显示内部水平边框（默认显示）
+  bool bordersInnerV = true;  // 是否显示内部垂直边框（默认显示）
+  bool bordersOuterH = true;  // 是否显示外部水平边框（默认显示）
+  bool bordersOuterV = true;  // 是否显示外部垂直边框（默认显示）
+
+  // 尺寸策略
+  enum SizingPolicy {
+    SizingFixedFit,     // 列宽适应内容
+    SizingFixedSame,    // 列宽相同
+    SizingStretchProp,  // 按比例拉伸
+    SizingStretchSame   // 等比例拉伸
+  } sizingPolicy = SizingStretchProp;
+
+  // 尺寸额外选项
+  bool noHostExtendX = false;  // 是否限制表格宽度（默认自动扩展）
+  bool noHostExtendY = false;  // 是否限制表格高度（默认自动扩展）
+  bool preciseWidths = false;  // 是否精确宽度分配（默认不精确）
+
+  // 滚动选项
+  bool scrollX = false;  // 是否启用水平滚动（默认不启用）
+  bool scrollY = true;   // 是否启用垂直滚动（默认启用）
+
+  // 填充选项
+  bool padOuterX = true;     // 是否启用外部X填充（默认启用）
+  bool noPadInnerX = false;  // 是否禁用内部X填充（默认不禁用）
 };
 
 // ==================== 布局控件属性 ====================
