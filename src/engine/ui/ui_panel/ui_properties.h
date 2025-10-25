@@ -4,6 +4,7 @@
 #include "scene_core/scene_core.h"
 #include "scene_graph.h"
 #include "ui_core/ui_render.h"
+#include "ui_core/ui_enum_combobox.h"
 
 namespace mite {
 /**
@@ -21,6 +22,8 @@ template<> class PropertyBase<TransformComponent> {
   void Render(UIRender &render);
 
  private:
+  static const EnumComboBoxList<Transform::EulerOrder, 6> m_EulerOrderList;
+
   TransformComponent &m_Component;
 };
 

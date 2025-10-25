@@ -1,14 +1,28 @@
 #include "ui_properties.h"
 
 namespace mite {
+// 格式：{枚举值, "显示名称"}
+const EnumComboBoxList<Transform::EulerOrder, 6>
+    PropertyBase<TransformComponent>::m_EulerOrderList = EnumComboBoxList(
+        std::array{std::pair{Transform::EulerOrder::XYZ, "XYZ"},
+                   std::pair{Transform::EulerOrder::XZY, "XZY"},
+                   std::pair{Transform::EulerOrder::YXZ, "YXZ"},
+                   std::pair{Transform::EulerOrder::YZX, "YZX"},
+                   std::pair{Transform::EulerOrder::ZXY, "ZXY"},
+                   std::pair{Transform::EulerOrder::ZYX, "ZYX"}});
+
 void PropertyBase<TransformComponent>::Render(UIRender &render)
 {
-  // 绘制Position文本
-  LabelProps posLabel;
-  posLabel.translationKey = "Position";
-  render.RenderLabel(posLabel);
+  // 绘制分隔符
+  LabelProps spratorLabel;
+  spratorLabel.translationKey = "editor.transform";
+  render.RenderLabelSprator(spratorLabel);
 
-  // 同一行绘制Position属性
+  // 绘制Location文本
+  LabelProps posLabel;
+  posLabel.translationKey = "editor.location";
+  render.RenderLabel(posLabel);
+  // 同一行绘制Location属性
   render.SetSameLine();
   DragFloat3Props posProps;
   posProps.value = m_Component.GetLocalTransform().GetPosition();
@@ -19,9 +33,8 @@ void PropertyBase<TransformComponent>::Render(UIRender &render)
 
   // 绘制Rotation文本
   LabelProps rotLabel;
-  rotLabel.translationKey = "Rotation";
+  rotLabel.translationKey = "editor.rotation";
   render.RenderLabel(rotLabel);
-
   // 同一行绘制Rotation属性
   render.SetSameLine();
   DragFloat3Props rotProps;
@@ -31,5 +44,34 @@ void PropertyBase<TransformComponent>::Render(UIRender &render)
         [=](Transform &localtrans) { localtrans.SetRotationEuler(rotProps.value); });
   }
 
+  // 绘制RotationType文本
+  LabelProps rotTypeLabel;
+  rotTypeLabel.translationKey = "editor.rotation_type";
+  render.RenderLabel(rotTypeLabel);
+  // 同一行绘制RotationType选择
+  render.SetSameLine();
+  ComboboxProps rotTypeProps;
+  rotTypeProps.itemTranslationKeys = m_EulerOrderList.GetTranslateKeys();  // 获取所有Keys
+  rotTypeProps.selectedIndex = m_EulerOrderList.GetIndex(
+      m_Component.GetLocalTransform().GetRotationOrder());  // 获取当前index
+  if (render.RenderCombobox(rotTypeProps)) {
+    m_Component.SetLocalTransform([=](Transform &localtrans) {
+      localtrans.SetRotationOrder(
+          m_EulerOrderList.GetEnumType(rotTypeProps.selectedIndex));  // 使用选择后的index执行Set逻辑
+    });
+  }
+
+  // 绘制Scale文本
+  LabelProps sclLabel;
+  sclLabel.translationKey = "editor.scale";
+  render.RenderLabel(sclLabel);
+  // 同一行绘制Rotation属性
+  render.SetSameLine();
+  DragFloat3Props sclProps;
+  sclProps.value = m_Component.GetLocalTransform().GetScale();
+  if (render.RenderDragFloat3(sclProps)) {
+    m_Component.SetLocalTransform(
+        [=](Transform &localtrans) { localtrans.SetScale(sclProps.value); });
+  }
 }
 }  // namespace mite
