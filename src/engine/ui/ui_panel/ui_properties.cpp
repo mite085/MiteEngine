@@ -18,60 +18,79 @@ void PropertyBase<TransformComponent>::Render(UIRender &render)
   spratorLabel.translationKey = "editor.transform";
   render.RenderLabelSprator(spratorLabel);
 
-  // 绘制Location文本
-  LabelProps posLabel;
-  posLabel.translationKey = "editor.location";
-  render.RenderLabel(posLabel);
-  // 同一行绘制Location属性
-  render.SetSameLine();
-  DragFloat3Props posProps;
-  posProps.value = m_Component.GetLocalTransform().GetPosition();
-  if (render.RenderDragFloat3(posProps)) {
-    m_Component.SetLocalTransform(
-        [=](Transform &localtrans) { localtrans.SetPosition(posProps.value); });
-  }
+  // 绘制表格
+  TableProps tableProps;
+  tableProps.columns = 2;          // 2列显示
+  tableProps.showHeaders = false;  // 不显示表头
+  tableProps.resizable = false;    // 不允许resize
+  tableProps.borders = false;      // 不显示边框
+  tableProps.rowBg = false;        // 无装饰
+  tableProps.bordersInnerH = false;
+  tableProps.bordersInnerV = false;
+  tableProps.bordersOuterH = false;
+  tableProps.bordersOuterV = false;
 
-  // 绘制Rotation文本
-  LabelProps rotLabel;
-  rotLabel.translationKey = "editor.rotation";
-  render.RenderLabel(rotLabel);
-  // 同一行绘制Rotation属性
-  render.SetSameLine();
-  DragFloat3Props rotProps;
-  rotProps.value = m_Component.GetLocalTransform().GetRotationEuler();
-  if (render.RenderDragFloat3(rotProps)) {
-    m_Component.SetLocalTransform(
-        [=](Transform &localtrans) { localtrans.SetRotationEuler(rotProps.value); });
-  }
+  render.RenderTable(tableProps, [&]() {
+    // 新的一行绘制Location文本
+    render.TableNextRow();
+    LabelProps posLabel;
+    posLabel.translationKey = "editor.location";
+    render.RenderLabel(posLabel);
+    // 同一行下一列绘制Location属性
+    render.TableNextColume();
+    DragFloat3Props posProps;
+    posProps.value = m_Component.GetLocalTransform().GetPosition();
+    if (render.RenderDragFloat3(posProps)) {
+      m_Component.SetLocalTransform(
+          [=](Transform &localtrans) { localtrans.SetPosition(posProps.value); });
+    }
+    render.TableNextColume();
 
-  // 绘制RotationType文本
-  LabelProps rotTypeLabel;
-  rotTypeLabel.translationKey = "editor.rotation_type";
-  render.RenderLabel(rotTypeLabel);
-  // 同一行绘制RotationType选择
-  render.SetSameLine();
-  ComboboxProps rotTypeProps;
-  rotTypeProps.itemTranslationKeys = m_EulerOrderList.GetTranslateKeys();  // 获取所有Keys
-  rotTypeProps.selectedIndex = m_EulerOrderList.GetIndex(
-      m_Component.GetLocalTransform().GetRotationOrder());  // 获取当前index
-  if (render.RenderCombobox(rotTypeProps)) {
-    m_Component.SetLocalTransform([=](Transform &localtrans) {
-      localtrans.SetRotationOrder(
-          m_EulerOrderList.GetEnumType(rotTypeProps.selectedIndex));  // 使用选择后的index执行Set逻辑
-    });
-  }
+    // 新的一行绘制Rotation文本
+    render.TableNextRow();
+    LabelProps rotLabel;
+    rotLabel.translationKey = "editor.rotation";
+    render.RenderLabel(rotLabel);
+    // 同一行下一列绘制Rotation属性
+    render.TableNextColume();
+    DragFloat3Props rotProps;
+    rotProps.value = m_Component.GetLocalTransform().GetRotationEuler();
+    if (render.RenderDragFloat3(rotProps)) {
+      m_Component.SetLocalTransform(
+          [=](Transform &localtrans) { localtrans.SetRotationEuler(rotProps.value); });
+    }
 
-  // 绘制Scale文本
-  LabelProps sclLabel;
-  sclLabel.translationKey = "editor.scale";
-  render.RenderLabel(sclLabel);
-  // 同一行绘制Rotation属性
-  render.SetSameLine();
-  DragFloat3Props sclProps;
-  sclProps.value = m_Component.GetLocalTransform().GetScale();
-  if (render.RenderDragFloat3(sclProps)) {
-    m_Component.SetLocalTransform(
-        [=](Transform &localtrans) { localtrans.SetScale(sclProps.value); });
-  }
+    // 新的一行绘制RotationType文本
+    render.TableNextRow();
+    LabelProps rotTypeLabel;
+    rotTypeLabel.translationKey = "editor.rotation_type";
+    render.RenderLabel(rotTypeLabel);
+    // 同一行下一列绘制RotationType选择
+    render.TableNextColume();
+    ComboboxProps rotTypeProps;
+    rotTypeProps.itemTranslationKeys = m_EulerOrderList.GetTranslateKeys();  // 获取所有Keys
+    rotTypeProps.selectedIndex = m_EulerOrderList.GetIndex(
+        m_Component.GetLocalTransform().GetRotationOrder());  // 获取当前index
+    if (render.RenderCombobox(rotTypeProps)) {
+      m_Component.SetLocalTransform([=](Transform &localtrans) {
+        localtrans.SetRotationOrder(m_EulerOrderList.GetEnumType(
+            rotTypeProps.selectedIndex));  // 使用选择后的index执行Set逻辑
+      });
+    }
+
+    // 绘制Scale文本
+    render.TableNextRow();
+    LabelProps sclLabel;
+    sclLabel.translationKey = "editor.scale";
+    render.RenderLabel(sclLabel);
+    // 同一行下一列绘制Rotation属性
+    render.TableNextColume();
+    DragFloat3Props sclProps;
+    sclProps.value = m_Component.GetLocalTransform().GetScale();
+    if (render.RenderDragFloat3(sclProps)) {
+      m_Component.SetLocalTransform(
+          [=](Transform &localtrans) { localtrans.SetScale(sclProps.value); });
+    }
+  });
 }
 }  // namespace mite
