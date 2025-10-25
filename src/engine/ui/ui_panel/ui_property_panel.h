@@ -43,7 +43,7 @@ class PropertyPanel : public UIPanel {
     // 查询到组件，创建属性，执行渲染操作
     if (m_SceneRegistry.HasComponent<T>(m_SelectedNode->GetEntity())) {
       T& component = m_SceneRegistry.GetComponent<T>(m_SelectedNode->GetEntity());
-      PropertyBase<T> property(component);
+      PropertyTable<T> property(component);
       property.Render(m_Renderer);
     }
     else {

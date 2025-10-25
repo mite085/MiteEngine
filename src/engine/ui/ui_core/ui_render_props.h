@@ -250,7 +250,7 @@ struct TableProps : public TextRenderProps {
     SizingFixedSame,    // 列宽相同
     SizingStretchProp,  // 按比例拉伸
     SizingStretchSame   // 等比例拉伸
-  } sizingPolicy = SizingStretchProp;
+  } sizingPolicy = SizingStretchProp; // 默认按照比例拉伸
 
   // 尺寸额外选项
   bool noHostExtendX = false;  // 是否限制表格宽度（默认自动扩展）

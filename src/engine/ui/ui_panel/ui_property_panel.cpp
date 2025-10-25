@@ -14,6 +14,7 @@ void PropertyPanel::Render()
 {
   if (m_SelectedNode) {
     RenderProperty<TransformComponent>();
+    RenderProperty<CameraComponent>();
 
   }
   else {
