@@ -35,7 +35,7 @@ class UIPanel {
   void RenderPanel();
 
   // ==================== 基础属性访问 ====================
-  const std::string &GetName() const { return m_PanelProps.fallbackText; }
+  const std::string &GetName() const { return m_PanelProps.translationKey; }
   bool IsVisible() const { return m_PanelProps.visible; }
   void SetVisible(bool visible) { m_PanelProps.visible = visible; }
   bool IsEnabled() const { return m_PanelProps.enabled; }

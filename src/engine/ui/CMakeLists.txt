@@ -26,6 +26,9 @@ set(UI_CORE_SRCS
     ui_core/ui_localization_json.h # 基于Json配置文件的本地化实现
     ui_core/ui_localization_json.cpp
 
+    # 工具类
+    ui_core/ui_enum_combobox.h  # Enum创建Combobox的辅助工具类
+
 )
 source_group("ui core" FILES ${UI_CORE_SRCS})
 

@@ -13,7 +13,12 @@
   },
   "editor": {
     "viewport": "视口",
-    "hierarchy": "层级"
+    "hierarchy": "层级",
+    "transform": "变换",
+    "location": "位置",
+    "rotation": "旋转",
+    "rotation_type": "旋转类型",
+    "scale": "缩放"
   },
   "errors": {
     "load_failed": "加载文件失败: {0}"

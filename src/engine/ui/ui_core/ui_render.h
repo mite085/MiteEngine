@@ -57,6 +57,7 @@ class UIRender {
 
   // ==================== 基础控件渲染 ====================
   virtual void RenderLabel(const LabelProps &props) = 0;    // 文本显示
+  virtual void RenderLabelSprator(const LabelProps &props) = 0;  // 文本分隔符显示
   virtual bool RenderButton(const ButtonProps &props) = 0;  // 按键
   virtual bool RenderCheckbox(CheckboxProps &props) = 0;    // 复选框（是否选中）
   virtual bool RenderTextInput(TextInputProps &props) = 0;  // 文本输入
