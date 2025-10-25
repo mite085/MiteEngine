@@ -15,7 +15,6 @@ struct BaseRenderProps {
   bool enabled = true;  // 是否启用
 
   std::string translationKey;  // 翻译键（用于查找本地化文本）
-  std::string fallbackText;    // 回退文本（翻译键查找失败时使用）
   std::string tooltip;         // 提示文本
 };
 
@@ -44,7 +43,7 @@ struct LabelProps : public TextRenderProps {
  * 可点击的按钮控件
  */
 struct ButtonProps : public TextRenderProps {
-  // 按钮的文本通过translationKey和fallbackText管理
+  // 按钮的文本通过translationKey管理
   glm::vec2 size = {0, 0};
 };
 
@@ -63,7 +62,6 @@ struct CheckboxProps : public TextRenderProps {
 struct TextInputProps : public TextRenderProps {
   std::string text;                // 当前文本内容
   std::string hintTranslationKey;  // 提示文本的翻译键
-  std::string hintFallbackText;    // 提示文本的回退文本
   size_t maxLength = 256;          // 最大输入长度
 };
 
@@ -83,10 +81,8 @@ struct TextAreaProps : public TextInputProps {
  * 包含标签文本的下拉选择控件
  */
 struct ComboboxProps : public TextRenderProps {
-  std::vector<std::string> items;                // 选项列表
-  std::vector<std::string> itemTranslationKeys;  // 选项的翻译键
+  std::vector<std::string> itemTranslationKeys;  // 选项的翻译键（下拉框所有内容）
   int selectedIndex = -1;                        // 当前选中索引
-  std::string previewText;                       // 预览文本
 };
 
 /**
@@ -94,7 +90,6 @@ struct ComboboxProps : public TextRenderProps {
  * 显示可选列表的控件
  */
 struct ListBoxProps : public TextRenderProps {
-  std::vector<std::string> items;                // 列表项
   std::vector<std::string> itemTranslationKeys;  // 列表项的翻译键
   int selectedIndex = -1;                        // 选中项索引
   float itemHeight = 20.0f;                      // 单项高度
@@ -168,7 +163,6 @@ struct DragIntProps : public TextRenderProps {
 struct ProgressBarProps : public TextRenderProps {
   float progress = 0.0f;              // 进度值（0.0-1.0）
   std::string overlayTranslationKey;  // 覆盖文本的翻译键
-  std::string overlayFallbackText;    // 覆盖文本的回退文本
   glm::vec2 size = {0, 0};
 };
 
@@ -233,7 +227,6 @@ struct PopupProps : public TextRenderProps {
 struct TableProps : public TextRenderProps {
   int columns = 1;                                 // 列数
   std::vector<std::string> headerTranslationKeys;  // 表头翻译键
-  std::vector<std::string> headerFallbackTexts;    // 表头回退文本
   bool showHeaders = true;                         // 是否显示表头
   float rowHeight = 25.0f;                         // 行高
 };

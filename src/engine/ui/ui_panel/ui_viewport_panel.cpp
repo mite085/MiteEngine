@@ -66,7 +66,7 @@ void ViewportPanel::Render()
       // FrameBuffer未就绪时的占位显示
       LabelProps placeholderProps;
       placeholderProps.visible = true;
-      placeholderProps.fallbackText = "FrameBuffer Not Ready";
+      placeholderProps.translationKey = "FrameBuffer Not Ready";
       m_Renderer.RenderLabel(placeholderProps);
     }
   }

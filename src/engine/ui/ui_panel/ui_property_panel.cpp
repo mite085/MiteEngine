@@ -20,7 +20,7 @@ void PropertyPanel::Render()
     // 不存在选中节点的占位显示
     LabelProps placeholderProps;
     placeholderProps.visible = true;
-    placeholderProps.fallbackText = "Invalid Selected Item";
+    placeholderProps.translationKey = "Invalid Selected Item";
     m_Renderer.RenderLabel(placeholderProps);
   }
 }
