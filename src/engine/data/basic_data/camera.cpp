@@ -114,17 +114,25 @@ CameraUniformBuffer Camera::FillUBOData(const glm::mat4 &viewMatrix) const
 }
 
 // === 相机控制方法实现 ===
+
+void Camera::SetFov(float fov) {
+  m_FOV = glm::clamp(fov, FovMin(), FovMax());
+  m_ProjectionDirty = true;
+}
+void Camera::SetOrthoSize(float size) {
+  m_OrthoSize = glm::clamp(size, OrthoSizeMin(), OrthoSizeMax());
+  m_ProjectionDirty = true;
+}
+
 void Camera::Zoom(float amount)
 {
   if (m_ProjectionType == CameraProjectionType::PERSPECTIVE) {
     // 透视模式：调整FOV
-    m_FOV = glm::clamp(m_FOV - amount, 1.0f, 170.0f);
-    m_ProjectionDirty = true;
+    SetFov(m_FOV - amount);
   }
   else {
     // 正交模式：调整视口大小
-    m_OrthoSize = glm::max(m_OrthoSize - amount * 0.1f, 0.1f);
-    m_ProjectionDirty = true;
+    SetOrthoSize(m_OrthoSize - amount);
   }
 }
 

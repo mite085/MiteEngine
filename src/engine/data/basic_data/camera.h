@@ -72,13 +72,19 @@ class Camera {
   float GetOrthoSize() const;                      // 正交尺寸
 
   // ==================== 投影控制方法 ====================
+  void SetFov(float fov);
+  void SetOrthoSize(float size);
   void Zoom(float amount);
+  static constexpr float FovMax() { return 179.99f; }         // fov必须小于180
+  static constexpr float FovMin() { return FLT_MIN; }        // fov必须大于0
+  static constexpr float OrthoSizeMax() { return FLT_MAX; }  // OrthoSize最大值无限制
+  static constexpr float OrthoSizeMin() { return FLT_MIN; }  // OrthoSize必须大于0
 
   /**
    * @brief 填充UBO Data
    */
   CameraUniformBuffer FillUBOData(const glm::mat4 &viewMatrix) const;
-    
+
  private:
   // 辅助方法
   void UpdateProjection() const;  // 更新投影矩阵，清理脏标记
