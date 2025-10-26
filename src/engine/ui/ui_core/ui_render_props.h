@@ -250,7 +250,7 @@ struct TableProps : public TextRenderProps {
     SizingFixedSame,    // 列宽相同
     SizingStretchProp,  // 按比例拉伸
     SizingStretchSame   // 等比例拉伸
-  } sizingPolicy = SizingStretchProp; // 默认按照比例拉伸
+  } sizingPolicy = SizingStretchProp;  // 默认按照比例拉伸
 
   // 尺寸额外选项
   bool noHostExtendX = false;  // 是否限制表格宽度（默认自动扩展）
@@ -259,10 +259,10 @@ struct TableProps : public TextRenderProps {
 
   // 滚动选项
   bool scrollX = false;  // 是否启用水平滚动（默认不启用）
-  bool scrollY = true;   // 是否启用垂直滚动（默认启用）
+  bool scrollY = false;  // 是否启用垂直滚动（默认启用）
 
   // 填充选项
-  bool padOuterX = true;     // 是否启用外部X填充（默认启用）
+  bool padOuterX = false;     // 是否启用外部X填充（默认启用）
   bool noPadInnerX = false;  // 是否禁用内部X填充（默认不禁用）
 };
 

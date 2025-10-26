@@ -56,6 +56,8 @@ class UIRender {
   virtual bool IsPanelHovered() = 0;
 
   // ==================== 基础控件渲染 ====================
+  void RenderLabel(const std::string &translateKey);
+  void RenderLabelSprator(const std::string &translateKey);
   virtual void RenderLabel(const LabelProps &props) = 0;    // 文本显示
   virtual void RenderLabelSprator(const LabelProps &props) = 0;  // 文本分隔符显示
   virtual bool RenderButton(const ButtonProps &props) = 0;  // 按键

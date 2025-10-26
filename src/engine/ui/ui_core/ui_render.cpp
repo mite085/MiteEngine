@@ -10,4 +10,19 @@ UIRender &UIRender::Get()
 
   return instance;
 }
+
+
+void UIRender::RenderLabel(const std::string &translateKey) {
+  LabelProps labelProp;
+  labelProp.translationKey = translateKey;
+  RenderLabel(labelProp);
+}
+
+void UIRender::RenderLabelSprator(const std::string &translateKey)
+{
+  LabelProps labelProp;
+  labelProp.translationKey = translateKey;
+  RenderLabelSprator(labelProp);
+}
+
 }  // namespace mite
