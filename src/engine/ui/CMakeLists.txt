@@ -51,10 +51,22 @@ set(UI_PANEL_SRCS
     ui_panel/ui_scenetree_panel.cpp
     ui_panel/ui_property_panel.h        # 属性页面板
     ui_panel/ui_property_panel.cpp
-    ui_panel/ui_properties.h            # 属性详情
-    ui_panel/ui_properties.cpp
 )
 source_group("ui panels" FILES ${UI_PANEL_SRCS})
+
+set(UI_PROPERTY_SRCS
+    ui_property/ui_property.h
+    ui_property/ui_property.cpp
+    ui_property/ui_property_camera.h
+    ui_property/ui_property_camera.cpp
+    ui_property/ui_property_light.h
+    ui_property/ui_property_light.cpp
+    ui_property/ui_property_material.h
+    ui_property/ui_property_material.cpp
+    ui_property/ui_property_transform.h
+    ui_property/ui_property_transform.cpp
+)
+source_group("ui properties" FILES ${UI_PROPERTY_SRCS})
 
 set(UI_IMGUI_BACKEND_SRCS
     ui_imgui_backend/ui_imgui_backend.h         # ImGui后端实现
@@ -94,6 +106,7 @@ add_library(${ENGINE_UI_LIB_NAME}
     STATIC
     ${UI_CORE_SRCS}
     ${UI_PANEL_SRCS}
+    ${UI_PROPERTY_SRCS}
     ${UI_IMGUI_BACKEND_SRCS}
     ${UI_EVENT_SRCS}
     ${UI_FOR_EDITOR_SRCS}
