@@ -1,10 +1,12 @@
 #include "ui_property_panel.h"
+#include "ui_property/ui_property_camera.h"
+#include "ui_property/ui_property_material.h"
+#include "ui_property/ui_property_transform.h"
+#include "ui_property/ui_property_light.h"
 
 namespace mite {
-PropertyPanel::PropertyPanel(SceneGraph &sceneGraph,
-                             SceneRegistry &sceneRegistry,
-                             const std::string &name)
-    : m_SceneGraph(sceneGraph), m_SceneRegistry(sceneRegistry), UIPanel(name)
+PropertyPanel::PropertyPanel(SceneRegistry &sceneRegistry, const std::string &name)
+    : m_SceneRegistry(sceneRegistry), UIPanel(name)
 {
   m_EventSubscriptions.SubscribeImmediate<SceneNodeSelectedEvent>(
       BIND_DISPATCH_FN(OnSceneNodeSelected));
@@ -15,7 +17,8 @@ void PropertyPanel::Render()
   if (m_SelectedNode) {
     RenderProperty<TransformComponent>();
     RenderProperty<CameraComponent>();
-
+    RenderProperty<MaterialComponent>();
+    RenderProperty<LightComponent>();
   }
   else {
     // 不存在选中节点的占位显示

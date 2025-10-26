@@ -209,7 +209,7 @@ void MiteApplication::InitializeUI()
   std::shared_ptr<SceneTreePanel> scenetreePanel = std::make_shared<SceneTreePanel>(*m_SceneGraph,
                                                                                     "scenetree");
   std::shared_ptr<PropertyPanel> propertyPanel = std::make_shared<PropertyPanel>(
-      *m_SceneGraph, m_SceneCore->GetRegistry(), "properties");
+      m_SceneCore->GetRegistry(), "properties");
 
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);

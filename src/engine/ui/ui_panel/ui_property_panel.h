@@ -2,8 +2,10 @@
 #define MITE_PROPERTY_PANEL_H
 
 #include "basic_event/render_event.h"
-#include "ui_properties.h"
+#include "ui_property/ui_property.h"
 #include "ui_panel.h"
+#include "scene_core/scene_registry.h"
+#include "scene_node.h"
 
 namespace mite {
 /**
@@ -17,7 +19,7 @@ class PropertyPanel : public UIPanel {
    * @param sceneGraph 场景图引用（依赖注入）
    * @param sceneRegistry 场景注册表引用（依赖注入）
    */
-  PropertyPanel(SceneGraph &sceneGraph, SceneRegistry &sceneRegistry, const std::string &name);
+  PropertyPanel(SceneRegistry &sceneRegistry, const std::string &name);
   ~PropertyPanel() override = default;
 
   // ==================== 核心接口实现 ====================
@@ -44,7 +46,7 @@ class PropertyPanel : public UIPanel {
     if (m_SceneRegistry.HasComponent<T>(m_SelectedNode->GetEntity())) {
       T& component = m_SceneRegistry.GetComponent<T>(m_SelectedNode->GetEntity());
       PropertyTable<T> property(component);
-      property.Render(m_Renderer);
+      property.RenderTable(m_Renderer);
     }
     else {
       // 组件不存在，不执行渲染
@@ -53,7 +55,6 @@ class PropertyPanel : public UIPanel {
   }
 
   // ==================== 成员变量 ====================
-  SceneGraph &m_SceneGraph;
   SceneRegistry &m_SceneRegistry;
   SceneNode *m_SelectedNode = nullptr;  // 当前选中的节点
 
