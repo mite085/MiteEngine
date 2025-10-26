@@ -163,6 +163,9 @@ bool UILocalizationJson::ParseLanguagePack(const json &jsonData, LanguagePack &p
 
     // 合并所有翻译项
     MergeTranslations(jsonData["common"], pack.translations, "common.");
+    if (jsonData.contains("math") && jsonData["math"].is_object()) {
+      MergeTranslations(jsonData["math"], pack.translations, "math.");
+    }
     if (jsonData.contains("editor") && jsonData["editor"].is_object()) {
       MergeTranslations(jsonData["editor"], pack.translations, "editor.");
     }

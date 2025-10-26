@@ -11,14 +11,29 @@
     "button_ok": "确定",
     "button_cancel": "取消"
   },
+  "math":{
+    "meter": "米",
+    "degree": "°(度)"
+  },
   "editor": {
     "viewport": "视口",
     "hierarchy": "层级",
+
     "transform": "变换",
-    "location": "位置",
-    "rotation": "旋转",
-    "rotation_type": "旋转类型",
-    "scale": "缩放"
+    "transform_location": "位置",
+    "transform_rotation": "旋转",
+    "transform_rotation_type": "旋转类型",
+    "transform_scale": "缩放",
+
+    "camera": "相机",
+    "camera_type": "相机类型",
+    "camera_perspective": "透视相机",
+    "camera_orthographic": "正交相机",
+    "camera_fov": "相机视场角",
+    "camera_ortho_size": "相机投影尺寸",
+
+    "material": "材质",
+    "material_base_color": "基础色"
   },
   "errors": {
     "load_failed": "加载文件失败: {0}"
