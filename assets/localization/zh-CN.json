@@ -33,7 +33,11 @@
     "camera_ortho_size": "相机投影尺寸",
 
     "material": "材质",
-    "material_base_color": "基础色"
+    "material_base_color": "基础色",
+    "material_metallic": "金属度",
+    "material_roughness": "粗糙度",
+    "material_ambient_occlusion": "环境光遮蔽",
+    "material_emission": "自发光"
   },
   "errors": {
     "load_failed": "加载文件失败: {0}"

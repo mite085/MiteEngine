@@ -19,40 +19,37 @@ void PropertyTable<CameraComponent>::Render(UIRender &render)
     return;
 
   RenderLabelItemRow(render, "editor.camera_type", [&]() {
-    ComboboxProps cameraTypeProps;
-    cameraTypeProps.itemTranslationKeys = m_CameraTypeList.GetTranslateKeys();  // 获取所有Keys
-    cameraTypeProps.selectedIndex = m_CameraTypeList.GetIndex(
+    m_CameraTypeProps.itemTranslationKeys = m_CameraTypeList.GetTranslateKeys();  // 获取所有Keys
+    m_CameraTypeProps.selectedIndex = m_CameraTypeList.GetIndex(
         camera->GetProjectionType());  // 获取当前index
-    if (render.RenderCombobox(cameraTypeProps)) {
+    if (render.RenderCombobox(m_CameraTypeProps)) {
       camera->SetProjectionType(m_CameraTypeList.GetEnumType(
-          cameraTypeProps.selectedIndex));  // 使用选择后的index执行Set逻辑
+          m_CameraTypeProps.selectedIndex));  // 使用选择后的index执行Set逻辑
     }
   });
 
 
   if (camera->GetProjectionType() == CameraProjectionType::PERSPECTIVE) {
     RenderLabelItemRow(render, "editor.camera_fov", [&]() {
-      DragFloatProps fovProps;
-      fovProps.translationKey = "math.degree";
-      fovProps.value = camera->GetFOV();
-      fovProps.minValue = Camera::FovMin();
-      fovProps.maxValue = Camera::FovMax();
-      fovProps.speed = 0.01f;
-      if (render.RenderDragFloat(fovProps)) {
-        camera->SetFov(fovProps.value);
+      m_FovProps.translationKey = "math.degree";
+      m_FovProps.value = camera->GetFOV();
+      m_FovProps.minValue = Camera::FovMin();
+      m_FovProps.maxValue = Camera::FovMax();
+      m_FovProps.speed = 0.01f;
+      if (render.RenderDragFloat(m_FovProps)) {
+        camera->SetFov(m_FovProps.value);
       }
     });
   }
   else {
     RenderLabelItemRow(render, "editor.camera_ortho_size", [&]() {
-      DragFloatProps orthoSizeProps;
-      orthoSizeProps.translationKey = "math.meter";
-      orthoSizeProps.value = camera->GetOrthoSize();
-      orthoSizeProps.minValue = Camera::OrthoSizeMin();
-      orthoSizeProps.maxValue = Camera::OrthoSizeMax();
-      orthoSizeProps.speed = 0.1f;
-      if (render.RenderDragFloat(orthoSizeProps)) {
-        camera->SetOrthoSize(orthoSizeProps.value);
+      m_FovProps.translationKey = "math.meter";
+      m_FovProps.value = camera->GetOrthoSize();
+      m_FovProps.minValue = Camera::OrthoSizeMin();
+      m_FovProps.maxValue = Camera::OrthoSizeMax();
+      m_FovProps.speed = 0.1f;
+      if (render.RenderDragFloat(m_FovProps)) {
+        camera->SetOrthoSize(m_FovProps.value);
       }
     });
   }

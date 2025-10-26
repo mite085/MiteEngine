@@ -28,6 +28,7 @@ class IPropertyTable {
                           std::function<void()> propsRenderFunc);
 
   std::string m_TableTranslateKey = "";
+  TableProps m_TableProps;
 };
 
 /**

@@ -16,6 +16,8 @@ template<> class PropertyTable<CameraComponent> : public IPropertyTable {
  private:
   static const EnumComboBoxList<CameraProjectionType, 2> m_CameraTypeList;
   CameraComponent &m_Component;
+  ComboboxProps m_CameraTypeProps;
+  DragFloatProps m_FovProps;
 };
 }  // namespace mite
 

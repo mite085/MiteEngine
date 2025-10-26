@@ -1,11 +1,10 @@
 #ifndef MITE_PROPERTY_MATERIAL_H
 #define MITE_PROPERTY_MATERIAL_H
 
-#include "ui_property.h"
 #include "scene_core_components/material_component.h"
+#include "ui_property.h"
 
 namespace mite {
-
 /**
  * @brief MaterialComponent的特化实现
  */
@@ -16,8 +15,9 @@ template<> class PropertyTable<MaterialComponent> : public IPropertyTable {
 
  private:
   MaterialComponent &m_Component;
+  ColorEditProps m_BaseColorProps, m_EmissionProps;
+  DragFloatProps m_MetallicProps, m_RoughnessProps, m_AmbientOcclusionProps;
 };
-
 }  // namespace mite
 
 #endif  // MITE_PROPERTY_MATERIAL_H

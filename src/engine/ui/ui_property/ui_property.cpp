@@ -11,19 +11,18 @@ void IPropertyTable::RenderTable(UIRender &render)
   render.RenderLabelSprator(m_TableTranslateKey);
 
   // 填充表格属性
-  TableProps tableProps;
-  tableProps.columns = 2;          // 2列显示
-  tableProps.showHeaders = false;  // 不显示表头
-  tableProps.resizable = false;    // 不允许resize
-  tableProps.borders = false;      // 不显示边框
-  tableProps.rowBg = false;        // 无装饰
-  tableProps.bordersInnerH = false;
-  tableProps.bordersInnerV = false;
-  tableProps.bordersOuterH = false;
-  tableProps.bordersOuterV = false;
+  m_TableProps.columns = 2;        // 2列显示
+  m_TableProps.showHeaders = false;  // 不显示表头
+  m_TableProps.resizable = false;    // 不允许resize
+  m_TableProps.borders = false;      // 不显示边框
+  m_TableProps.rowBg = false;        // 无装饰
+  m_TableProps.bordersInnerH = false;
+  m_TableProps.bordersInnerV = false;
+  m_TableProps.bordersOuterH = false;
+  m_TableProps.bordersOuterV = false;
 
   // 绘制表格
-  render.RenderTable(tableProps, [&render, this]() { Render(render); });
+  render.RenderTable(m_TableProps, [&render, this]() { Render(render); });
 }
 
 void IPropertyTable::RenderLabelItemRow(UIRender &render,

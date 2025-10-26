@@ -13,46 +13,49 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
   if (!instance)
     return;
 
+  // BaseColor基本色
   RenderLabelItemRow(render, "editor.material_base_color", [&]() {
-    ColorEditProps baseColorProps;
-    baseColorProps.color = instance->GetBaseColor();
-    if (render.RenderColorEdit(baseColorProps)) {
-      instance->SetBaseColor(baseColorProps.color);
+    m_BaseColorProps.color = instance->GetBaseColor();
+    if (render.RenderColorEdit(m_BaseColorProps)) {
+      instance->SetBaseColor(m_BaseColorProps.color);
     }
   });
 
+  // 金属度
   RenderLabelItemRow(render, "editor.material_metallic", [&]() {
-    DragFloatProps metallicProps;
-    metallicProps.value = instance->GetMetallic();
-    metallicProps.maxValue = 1.0f;
-    metallicProps.minValue = 0.0f;
-    if (render.RenderDragFloat(metallicProps)) {
-      instance->SetMetallic(metallicProps.value);
+    m_MetallicProps.value = instance->GetMetallic();
+    m_MetallicProps.maxValue = 1.0f;
+    m_MetallicProps.minValue = 0.0f;
+    if (render.RenderDragFloat(m_MetallicProps)) {
+      instance->SetMetallic(m_MetallicProps.value);
     }
   });
+
+  // 粗糙度
   RenderLabelItemRow(render, "editor.material_roughness", [&]() {
-    DragFloatProps roughnessProps;
-    roughnessProps.value = instance->GetRoughness();
-    roughnessProps.maxValue = 1.0f;
-    roughnessProps.minValue = 0.0f;
-    if (render.RenderDragFloat(roughnessProps)) {
-      instance->SetRoughness(roughnessProps.value);
+    m_RoughnessProps.value = instance->GetRoughness();
+    m_RoughnessProps.maxValue = 1.0f;
+    m_RoughnessProps.minValue = 0.0f;
+    if (render.RenderDragFloat(m_RoughnessProps)) {
+      instance->SetRoughness(m_RoughnessProps.value);
     }
   });
+
+  // 环境光遮蔽
   RenderLabelItemRow(render, "editor.material_ambient_occlusion", [&]() {
-    DragFloatProps ambientOcclusionProps;
-    ambientOcclusionProps.value = instance->GetAO();
-    ambientOcclusionProps.maxValue = 1.0f;
-    ambientOcclusionProps.minValue = 0.0f;
-    if (render.RenderDragFloat(ambientOcclusionProps)) {
-      instance->SetAO(ambientOcclusionProps.value);
+    m_AmbientOcclusionProps.value = instance->GetAO();
+    m_AmbientOcclusionProps.maxValue = 1.0f;
+    m_AmbientOcclusionProps.minValue = 0.0f;
+    if (render.RenderDragFloat(m_AmbientOcclusionProps)) {
+      instance->SetAO(m_AmbientOcclusionProps.value);
     }
   });
+
+  // 自发光
   RenderLabelItemRow(render, "editor.material_emission", [&]() {
-    ColorEditProps emissionProps;
-    emissionProps.color = instance->GetEmission();
-    if (render.RenderColorEdit(emissionProps)) {
-      instance->SetEmission(emissionProps.color);
+    m_EmissionProps.color = instance->GetEmission();
+    if (render.RenderColorEdit(m_EmissionProps)) {
+      instance->SetEmission(m_EmissionProps.color);
     }
   });
 }
