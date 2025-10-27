@@ -31,8 +31,8 @@ BoundingVolumeType BoundingVolume::GetType() const
 void BoundingVolume::SetType(BoundingVolumeType type)
 {
   if (m_Type != type) {
-    m_Type = type;
-    CreateDefaultVolume(type);
+    // 直接执行类型转换
+    ConvertTo(type);
   }
 }
 
@@ -172,7 +172,7 @@ BoundingVolume BoundingVolume::Merge(BoundingVolumeType resultType,
 {
   // 情况1：a和b之间不存在类型转换
   if (a.GetType() == b.GetType()) {
-    BoundingVolume temp(a.GetType()), ret(resultType);
+    BoundingVolume temp(a.GetType());  // 先按照a和b的类型合并包围盒
     switch (a.GetType()) {
       case BoundingVolumeType::AABB:
         temp = BoundingVolume(BoundingVolumeAABB(a.GetAABB()).Expand(b.GetAABB()));
@@ -186,9 +186,9 @@ BoundingVolume BoundingVolume::Merge(BoundingVolumeType resultType,
       default:
         throw std::runtime_error("Unsupported result type for Merge");
     }
-    // 将temp转换为需要返回的类型（若一致则使用ConvertTo()的内部优化）
-    if (temp.ConvertTo(resultType, ret))
-      return ret;
+    // 再将合并结果temp转换为需要返回的类型
+    if (temp.ConvertTo(resultType))
+      return temp;
     else
       throw std::runtime_error("Unsupported result type for Merge");
   }
@@ -267,21 +267,20 @@ BoundingVolumeSphere BoundingVolume::GetSphereApproximation() const
       return BoundingVolumeSphere();
   }
 }
-bool BoundingVolume::ConvertTo(BoundingVolumeType targetType, BoundingVolume &result) const
+bool BoundingVolume::ConvertTo(BoundingVolumeType targetType)
 {
   // 类型相同，无需转换，直接复制
   if (targetType == m_Type) {
-    result = *this;
     return true;
   }
 
   try {
     switch (targetType) {
       case BoundingVolumeType::AABB:
-        result = BoundingVolume(GetAABBApproximation());
+        *this = BoundingVolume(GetAABBApproximation());  // 所有类型转换AABB均可使用外接AABB接口
         return true;
-      case BoundingVolumeType::Sphere:
-        result = BoundingVolume(GetSphereApproximation());
+      case BoundingVolumeType::Sphere:  // 所有类型转换Sphere均可使用外接球接口
+        *this = BoundingVolume(GetSphereApproximation());
         return true;
       case BoundingVolumeType::OBB:
         // 不同类型转换OBB需要分情况讨论
@@ -292,7 +291,7 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType, BoundingVolume &re
             glm::vec3 center = aabb.GetCenter();
             glm::vec3 extents = aabb.GetHalfExtents();
             BoundingVolumeOBB obb(center, extents, glm::mat3(1.0f));
-            result = BoundingVolume(obb);
+            *this = BoundingVolume(obb);
             return true;
           }
 
@@ -301,7 +300,7 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType, BoundingVolume &re
             const BoundingVolumeSphere &sphere = std::get<BoundingVolumeSphere>(m_Volume);
             glm::vec3 extents(sphere.radius);
             BoundingVolumeOBB obb(sphere.center, extents, glm::mat3(1.0f));
-            result = BoundingVolume(obb);
+            *this = BoundingVolume(obb);
             return true;
           }
 
@@ -330,7 +329,7 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType, BoundingVolume &re
             glm::vec3 pointOnPlane = normal * -plane.distance;
 
             BoundingVolumeOBB obb(pointOnPlane, extents, orientation);
-            result = BoundingVolume(obb);
+            *this = BoundingVolume(obb);
             return true;
           }
 

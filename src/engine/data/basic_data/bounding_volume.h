@@ -69,7 +69,7 @@ class BoundingVolume {
   /**
    * @brief 转换为指定类型
    */
-  bool ConvertTo(BoundingVolumeType targetType, BoundingVolume &result) const;
+  bool ConvertTo(BoundingVolumeType targetType);
 
   // ==================== 工具方法 ====================
   bool IsValid() const;
@@ -87,7 +87,7 @@ class BoundingVolume {
   void ExpandToInclude(const BoundingVolume &other);
 
  private:
-  // 私有构造函数，
+  // 私有构造函数
   BoundingVolume(const BoundingVolumeAABB &aabb);
   BoundingVolume(const BoundingVolumeSphere &sphere);
   BoundingVolume(const BoundingVolumeOBB &obb);
@@ -96,7 +96,7 @@ class BoundingVolume {
 
   std::variant<BoundingVolumeAABB, BoundingVolumeSphere, BoundingVolumeOBB, BoundingVolumePlane>
       m_Volume;
-  BoundingVolumeType m_Type = BoundingVolumeType::None;
+  BoundingVolumeType m_Type = BoundingVolumeType::None; // 默认包围盒类型为None不可用
 
   // 内部辅助方法
   BoundingVolumeIntersection::IntersectionType IntersectsAABB(
