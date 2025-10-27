@@ -49,9 +49,6 @@ void SceneView::Initialize()
   // 1.4. 主相机包围盒组件（仅当创建了包围盒才会纳入SceneGraph的空间加速结构管理）
   BoundingVolumeComponent &cameraBoundingVolume =
       m_SceneCore.GetRegistry().AddComponent<BoundingVolumeComponent>(m_CameraEntity);
-  cameraBoundingVolume.SetVolume(BoundingVolume::CreateFromPoints(
-      BoundingVolumeType::AABB,
-      {glm::vec3(0.0f)}));  // 包含本地空间原点即可。Camera不存在实际意义上的包围盒
 
   // 2. 创建相机实例
   m_CameraInstance = std::make_shared<CameraInstance>(cameraComponent.GetCamera());

@@ -71,7 +71,6 @@ void MiteApplication::LoadDefaultScene()
   lightComponent.SetLight(pointLight);
   BoundingVolumeComponent &lightBoundingVolumeComponent =
       m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(lightEntity);
-  BoundingVolume lightBoundingVolume = BoundingVolume::CreateFromPoints(BoundingVolumeType::None);
 
 
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
@@ -231,21 +230,6 @@ void MiteApplication::InitializeSceneCore()
   // 初始化ECS场景核心
   m_SceneCore = std::make_unique<SceneCore>();
   m_SceneCore->InitializeComponentSystems();
-
-  // 创建并绑定主相机（该步骤必须在SceneView初始化之前执行，后续应当改成SceneView运行时初始化，多视口渲染时创建多个SceneView）
-  Camera mainCamera;
-  Entity mainCameraEntity = m_SceneCore->CreateEntity("main_camera");
-
-  // 主相机的相机组件与投影参数设定
-  CameraComponent &mainCameraComponent = m_SceneCore->GetRegistry().AddComponent<CameraComponent>(
-      mainCameraEntity);
-
-  // 主相机的变换组件
-  TransformComponent &mainCameraTransform =
-      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(mainCameraEntity);
-  // 主相机的可见性组件
-  VisibilityComponent &mainCameraVisibility =
-      m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(mainCameraEntity);
 }
 
 void MiteApplication::InitializeSceneView()
