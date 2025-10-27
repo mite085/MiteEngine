@@ -37,7 +37,24 @@
     "material_metallic": "金属度",
     "material_roughness": "粗糙度",
     "material_ambient_occlusion": "环境光遮蔽",
-    "material_emission": "自发光"
+    "material_emission": "自发光",
+
+    "bounding_volume": "包围盒",
+    "bounding_volume_type": "包围盒类型",
+    "bounding_volume_aabb": "轴对齐包围盒",
+    "bounding_volume_aabb_max": "轴对齐包围盒-上边界",
+    "bounding_volume_aabb_min": "轴对齐包围盒-下边界",
+    "bounding_volume_sphere": "球形包围盒",
+    "bounding_volume_sphere_center": "球形包围盒-中心位置",
+    "bounding_volume_sphere_radius": "球形包围盒-半径",
+    "bounding_volume_obb": "有向包围盒",
+    "bounding_volume_obb_center": "有向包围盒-中心位置",
+    "bounding_volume_obb_extents": "有向包围盒-半轴长度",
+    "bounding_volume_obb_orientation": "有向包围盒-方向矩阵",
+    "bounding_volume_plane": "平面",
+    "bounding_volume_plane_center": "平面-法线方向",
+    "bounding_volume_plane_distance": "平面-与原点距离",
+    "bounding_volume_none": "无效包围盒"
   },
   "errors": {
     "load_failed": "加载文件失败: {0}"
