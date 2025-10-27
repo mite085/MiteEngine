@@ -55,7 +55,7 @@ set(UI_PANEL_SRCS
 source_group("ui panels" FILES ${UI_PANEL_SRCS})
 
 set(UI_PROPERTY_SRCS
-    ui_property/ui_property.h
+    ui_property/ui_property.h        # 属性页：所有属性均存在对应组件
     ui_property/ui_property.cpp
     ui_property/ui_property_camera.h
     ui_property/ui_property_camera.cpp
@@ -65,6 +65,12 @@ set(UI_PROPERTY_SRCS
     ui_property/ui_property_material.cpp
     ui_property/ui_property_transform.h
     ui_property/ui_property_transform.cpp
+    ui_property/ui_property_bounding_volume.h
+    ui_property/ui_property_bounding_volume.cpp
+    ui_property/ui_property_mesh.h
+    ui_property/ui_property_mesh.cpp
+    ui_property/ui_property_visibility.h
+    ui_property/ui_property_visibility.cpp
 )
 source_group("ui properties" FILES ${UI_PROPERTY_SRCS})
 
