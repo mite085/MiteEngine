@@ -70,11 +70,23 @@ class UIRender {
   virtual bool RenderListBox(ListBoxProps &props) = 0;    // 列表框
 
   // ==================== 数值输入控件渲染 ====================
-  virtual bool RenderDragFloat(DragFloatProps &props) = 0;    // 浮点数（支持拖动编辑）
-  virtual bool RenderDragFloat2(DragFloat2Props &props) = 0;  // 二维向量（支持拖动编辑）
-  virtual bool RenderDragFloat3(DragFloat3Props &props) = 0;  // 三维向量（支持拖动编辑）
-  virtual bool RenderDragFloat4(DragFloat4Props &props) = 0;  // 四维向量（支持拖动编辑）
-  virtual bool RenderDragInt(DragIntProps &props) = 0;        // 整数（支持拖动编辑）
+  // 支持只读模式/滑动条输入/拖拽输入
+  virtual void RenderReadOnlyInt(EditIntProps &props) = 0;
+  virtual void RenderReadOnlyFloat(EditFloatProps &props) = 0;
+  virtual void RenderReadOnlyFloat2(EditFloat2Props &props) = 0;
+  virtual void RenderReadOnlyFloat3(EditFloat3Props &props) = 0;
+  virtual void RenderReadOnlyFloat4(EditFloat4Props &props) = 0;
+  virtual bool RenderSliderInt(EditIntProps &props) = 0;
+  virtual bool RenderSliderFloat(EditFloatProps &props) = 0;
+  virtual bool RenderSliderFloat2(EditFloat2Props &props) = 0;
+  virtual bool RenderSliderFloat3(EditFloat3Props &props) = 0;
+  virtual bool RenderSliderFloat4(EditFloat4Props &props) = 0;
+  virtual bool RenderDragInt(EditIntProps &props) = 0; 
+  virtual bool RenderDragFloat(EditFloatProps &props) = 0;
+  virtual bool RenderDragFloat2(EditFloat2Props &props) = 0;
+  virtual bool RenderDragFloat3(EditFloat3Props &props) = 0;
+  virtual bool RenderDragFloat4(EditFloat4Props &props) = 0;
+
 
   // ==================== 特殊控件渲染 ====================
   virtual void RenderProgressBar(const ProgressBarProps &props) = 0;  // 进度条

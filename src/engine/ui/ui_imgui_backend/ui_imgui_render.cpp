@@ -140,7 +140,6 @@ bool ImGuiUIRender::IsPanelHovered()
 
 // ==================== 基础控件渲染实现 ====================
 
-
 void ImGuiUIRender::RenderLabel(const LabelProps &props)
 {
   if (!props.visible)
@@ -296,77 +295,161 @@ bool ImGuiUIRender::RenderListBox(ListBoxProps &props)
   return changed;
 }
 
+void ImGuiUIRender::RenderReadOnlyInt(EditIntProps &props)
+{
+  if (!props.visible)
+    return;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  // NULL的位置为控制右侧step buttons的参数，设为NULL则不显示step buttons
+  ImGui::InputInt(labelText.c_str(),
+                  &props.value,
+                  NULL,
+                  NULL,
+                  ImGuiInputTextFlags_ReadOnly);
+  ImGui::PopID();
+  return;
+}
+
+void ImGuiUIRender::RenderReadOnlyFloat(EditFloatProps &props)
+{
+  if (!props.visible)
+    return;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  ImGui::InputFloat(labelText.c_str(),
+                    &props.value,
+                    NULL,
+                    NULL,
+                    props.format.c_str(),
+                    ImGuiInputTextFlags_ReadOnly);
+  ImGui::PopID();
+  return;
+}
+
+void ImGuiUIRender::RenderReadOnlyFloat2(EditFloat2Props &props)
+{
+  if (!props.visible)
+    return;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  ImGui::InputFloat2(labelText.c_str(),
+                     glm::value_ptr(props.value),
+                     props.format.c_str(),
+                     ImGuiInputTextFlags_ReadOnly);
+  ImGui::PopID();
+  return;
+}
+
+void ImGuiUIRender::RenderReadOnlyFloat3(EditFloat3Props &props)
+{
+  if (!props.visible)
+    return;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  ImGui::InputFloat3(labelText.c_str(),
+                     glm::value_ptr(props.value),
+                     props.format.c_str(),
+                     ImGuiInputTextFlags_ReadOnly);
+  ImGui::PopID();
+  return;
+}
+
+void ImGuiUIRender::RenderReadOnlyFloat4(EditFloat4Props &props)
+{
+  if (!props.visible)
+    return;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  ImGui::InputFloat4(labelText.c_str(),
+                     glm::value_ptr(props.value),
+                     props.format.c_str(),
+                     ImGuiInputTextFlags_ReadOnly);
+  ImGui::PopID();
+  return;
+}
+
 // ==================== 数值输入控件渲染实现 ====================
-
-bool ImGuiUIRender::RenderDragFloat(DragFloatProps &props)
+bool ImGuiUIRender::RenderSliderInt(EditIntProps &props)
 {
   if (!props.visible)
     return false;
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  bool changed = ImGui::DragFloat(labelText.c_str(),
-                                  &props.value,
-                                  props.speed,
-                                  props.minValue,
-                                  props.maxValue,
-                                  props.format.c_str());
+  bool changed = ImGui::SliderInt(
+      labelText.c_str(), &props.value, props.minValue, props.maxValue, props.format.c_str());
   ImGui::PopID();
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragFloat2(DragFloat2Props &props)
+bool ImGuiUIRender::RenderSliderFloat(EditFloatProps &props)
 {
   if (!props.visible)
     return false;
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  bool changed = ImGui::DragFloat2(labelText.c_str(),
-                                   glm::value_ptr(props.value),
-                                   props.speed,
-                                   props.minValue,
-                                   props.maxValue,
-                                   props.format.c_str());
+  bool changed = ImGui::SliderFloat(
+      labelText.c_str(), &props.value, props.minValue, props.maxValue, props.format.c_str());
   ImGui::PopID();
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragFloat3(DragFloat3Props &props)
+bool ImGuiUIRender::RenderSliderFloat2(EditFloat2Props &props)
 {
   if (!props.visible)
     return false;
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  bool changed = ImGui::DragFloat3(labelText.c_str(),
-                                   glm::value_ptr(props.value),
-                                   props.speed,
-                                   props.minValue,
-                                   props.maxValue,
-                                   props.format.c_str());
+  bool changed = ImGui::SliderFloat2(labelText.c_str(),
+                                     glm::value_ptr(props.value),
+                                     props.minValue,
+                                     props.maxValue,
+                                     props.format.c_str());
   ImGui::PopID();
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragFloat4(DragFloat4Props &props)
+bool ImGuiUIRender::RenderSliderFloat3(EditFloat3Props &props)
 {
   if (!props.visible)
     return false;
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  bool changed = ImGui::DragFloat4(labelText.c_str(),
-                                   glm::value_ptr(props.value),
-                                   props.speed,
-                                   props.minValue,
-                                   props.maxValue,
-                                   props.format.c_str());
+  bool changed = ImGui::SliderFloat3(labelText.c_str(),
+                                     glm::value_ptr(props.value),
+                                     props.minValue,
+                                     props.maxValue,
+                                     props.format.c_str());
   ImGui::PopID();
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragInt(DragIntProps &props)
+bool ImGuiUIRender::RenderSliderFloat4(EditFloat4Props &props)
+{
+  if (!props.visible)
+    return false;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  bool changed = ImGui::SliderFloat4(labelText.c_str(),
+                                     glm::value_ptr(props.value),
+                                     props.minValue,
+                                     props.maxValue,
+                                     props.format.c_str());
+  ImGui::PopID();
+  return changed;
+}
+
+bool ImGuiUIRender::RenderDragInt(EditIntProps &props)
 {
   if (!props.visible)
     return false;
@@ -375,10 +458,78 @@ bool ImGuiUIRender::RenderDragInt(DragIntProps &props)
   std::string labelText = GetTranslatedText(props);
   bool changed = ImGui::DragInt(labelText.c_str(),
                                 &props.value,
-                                props.speed,
+                                props.dragSpeed,
                                 props.minValue,
                                 props.maxValue,
                                 props.format.c_str());
+  ImGui::PopID();
+  return changed;
+}
+
+bool ImGuiUIRender::RenderDragFloat(EditFloatProps &props)
+{
+  if (!props.visible)
+    return false;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  bool changed = ImGui::DragFloat(labelText.c_str(),
+                                  &props.value,
+                                  props.dragSpeed,
+                                  props.minValue,
+                                  props.maxValue,
+                                  props.format.c_str());
+  ImGui::PopID();
+  return changed;
+}
+
+bool ImGuiUIRender::RenderDragFloat2(EditFloat2Props &props)
+{
+  if (!props.visible)
+    return false;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  bool changed = ImGui::DragFloat2(labelText.c_str(),
+                                   glm::value_ptr(props.value),
+                                   props.dragSpeed,
+                                   props.minValue,
+                                   props.maxValue,
+                                   props.format.c_str());
+  ImGui::PopID();
+  return changed;
+}
+
+bool ImGuiUIRender::RenderDragFloat3(EditFloat3Props &props)
+{
+  if (!props.visible)
+    return false;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  bool changed = ImGui::DragFloat3(labelText.c_str(),
+                                   glm::value_ptr(props.value),
+                                   props.dragSpeed,
+                                   props.minValue,
+                                   props.maxValue,
+                                   props.format.c_str());
+  ImGui::PopID();
+  return changed;
+}
+
+bool ImGuiUIRender::RenderDragFloat4(EditFloat4Props &props)
+{
+  if (!props.visible)
+    return false;
+  ImGui::PushID(&props);
+
+  std::string labelText = GetTranslatedText(props);
+  bool changed = ImGui::DragFloat4(labelText.c_str(),
+                                   glm::value_ptr(props.value),
+                                   props.dragSpeed,
+                                   props.minValue,
+                                   props.maxValue,
+                                   props.format.c_str());
   ImGui::PopID();
   return changed;
 }
@@ -679,7 +830,7 @@ void ImGuiUIRender::RenderTable(TableProps &props, const std::function<void()> &
 void ImGuiUIRender::TableNextRow()
 {
   ImGui::TableNextRow();
-  ImGui::TableNextColumn(); // 开启新的一行时直接更新新的一列
+  ImGui::TableNextColumn();  // 开启新的一行时直接更新新的一列
 }
 
 void ImGuiUIRender::TableNextColume()
