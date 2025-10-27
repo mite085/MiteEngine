@@ -67,7 +67,7 @@ template<typename EnumType, size_t N> class EnumComboBoxList {
    * @brief 获取所有显示名称的字符串向量
    * @return 包含所有显示名称的std::vector<std::string>
    */
-  std::vector<std::string> GetTranslateKeys() const
+  std::vector<std::string> GetTranslateKeyList() const
   {
     std::vector<std::string> result;
     result.reserve(N);  // 预分配内存提高性能
@@ -84,7 +84,7 @@ template<typename EnumType, size_t N> class EnumComboBoxList {
    * @param type 要查找的枚举值
    * @return 对应的显示名称字符串，如果未找到返回第一个元素的名称
    */
-  std::string GetName(EnumType type) const
+  std::string GetTranslateKey(EnumType type) const
   {
     // 遍历数组查找匹配的枚举值
     for (const auto &item : m_Items) {

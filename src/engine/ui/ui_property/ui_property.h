@@ -1,8 +1,8 @@
 #ifndef MITE_PROPERTY_H
 #define MITE_PROPERTY_H
 
-#include "ui_core/ui_render.h"
 #include "ui_core/ui_enum_combobox.h"
+#include "ui_core/ui_render.h"
 
 namespace mite {
 /**
@@ -23,6 +23,11 @@ class IPropertyTable {
   virtual void Render(UIRender &render) = 0;
 
  protected:
+  /**
+   * @brief 绘制属性页表格的一行
+   * @param labelTranslateKey 名称显示
+   * @param propsRenderFunc 属性绘制函数
+   */
   void RenderLabelItemRow(UIRender &render,
                           std::string labelTranslateKey,
                           std::function<void()> propsRenderFunc);
@@ -35,7 +40,6 @@ class IPropertyTable {
  * @brief 属性模板基类 - 基于模板特化的自动映射
  */
 template<typename T> class PropertyTable : public IPropertyTable {};
-
 };  // namespace mite
 
 #endif  // MITE_PROPERTY_H

@@ -243,7 +243,7 @@ void SceneNode::UpdateWorldTransform(const SceneRegistry &registry)
     m_transformBias = glm::mat4(1.0f);
 
     // 计算世界变换
-    const Transform& localTransform = transformComp.GetLocalTransform();
+    const Transform &localTransform = transformComp.GetLocalTransform();
     if (m_Parent) {
       m_WorldTransform = m_Parent->GetWorldTransform().GetLocalMatrix() * localTransform;
     }
@@ -262,7 +262,7 @@ void SceneNode::UpdateWorldBounds(const SceneRegistry &registry)
   // 从BoundingVolumeComponent获取局部包围盒
   if (registry.HasComponent<BoundingVolumeComponent>(m_Entity)) {
     const auto &boundsComp = registry.GetComponent<BoundingVolumeComponent>(m_Entity);
-    const BoundingVolume &localBounds = boundsComp.GetVolume();
+    const BoundingVolume &localBounds = *boundsComp.GetVolume();
     // 变换到世界空间
     if (localBounds.IsValid()) {
       m_WorldBounds = localBounds.Transform(m_WorldTransform.GetLocalMatrix());

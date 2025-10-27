@@ -3,6 +3,7 @@
 #include "ui_property/ui_property_material.h"
 #include "ui_property/ui_property_transform.h"
 #include "ui_property/ui_property_light.h"
+#include "ui_property/ui_property_bounding_volume.h"
 
 namespace mite {
 PropertyPanel::PropertyPanel(SceneRegistry &sceneRegistry, const std::string &name)
@@ -19,6 +20,7 @@ void PropertyPanel::Render()
     RenderProperty<CameraComponent>();
     RenderProperty<MaterialComponent>();
     RenderProperty<LightComponent>();
+    RenderProperty<BoundingVolumeComponent>();
   }
   else {
     // 不存在选中节点的占位显示
