@@ -43,63 +43,6 @@ class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Ge
    */
   void SetMesh(std::shared_ptr<Mesh> mesh);
 
-  /**
-   * @brief 检查是否有有效网格数据
-   * @return 是否有效
-   */
-  bool HasMesh() const;
-
-  /**
-   * @brief 获取Mesh的包围盒
-   * @return
-   */
-  const std::pair<glm::vec3, glm::vec3> GetBoundingBox() const
-  {
-    if (m_Mesh)
-      return m_Mesh->GetBoundingBox();
-    else
-      return {glm::vec3(0.0f), glm::vec3(0.0f)};
-  }
-
-  // ================== 渲染属性控制 ========================
-
-  /**
-   * @brief 设置是否投射阴影
-   * @param castShadows 阴影标志
-   */
-  void SetCastShadows(bool castShadows);
-
-  /**
-   * @brief 检查是否投射阴影
-   * @return 阴影标志
-   */
-  bool CastsShadows() const;
-
-  /**
-   * @brief 设置是否接收阴影
-   * @param receiveShadows 接收阴影标志
-   */
-  void SetReceiveShadows(bool receiveShadows);
-
-  /**
-   * @brief 检查是否接收阴影
-   * @return 接收阴影标志
-   */
-  bool ReceivesShadows() const;
-
-  // ==================== LOD控制 ==========================
-  /**
-   * @brief 设置LOD级别
-   * @param lodLevel LOD级别(0为最高细节)
-   */
-  void SetLODLevel(int lodLevel);
-
-  /**
-   * @brief 获取当前LOD级别
-   * @return LOD级别
-   */
-  int GetLODLevel() const;
-
   // =================== 组件接口实现 =======================
   std::vector<std::type_index> GetDependencies() const override;
   bool Serialize(std::ostream &output) const override;
@@ -110,12 +53,6 @@ class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Ge
   void SetSnapshotData(const Mesh &data) override;
 
   std::shared_ptr<Mesh> m_Mesh;  // 网格数据
-
-  // 以下Flag不支持快照恢复，若需要支持则将定义移至Mesh中
-  bool m_IsVisible = true;       // 可见性标志
-  bool m_CastShadows = true;     // 是否投射阴影
-  bool m_ReceiveShadows = true;  // 是否接收阴影
-  int m_LODLevel = 0;            // LOD级别
 };
 
 // ========================= Mesh组件系统 ============================

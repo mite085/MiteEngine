@@ -17,44 +17,6 @@ void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
   EventBus::Publish<MeshChangedEvent>(MeshChangedEvent(GetEntity(), *this));
 }
 
-bool MeshComponent::HasMesh() const
-{
-  return m_Mesh && m_Mesh->GetSection().indexCount != 0 && m_Mesh->GetSection().vertexCount != 0;
-}
-
-// 渲染属性控制 ==========================================
-
-void MeshComponent::SetCastShadows(bool castShadows)
-{
-  m_CastShadows = castShadows;
-}
-
-bool MeshComponent::CastsShadows() const
-{
-  return m_CastShadows;
-}
-
-void MeshComponent::SetReceiveShadows(bool receiveShadows)
-{
-  m_ReceiveShadows = receiveShadows;
-}
-
-bool MeshComponent::ReceivesShadows() const
-{
-  return m_ReceiveShadows;
-}
-
-// LOD控制 ==============================================
-void MeshComponent::SetLODLevel(int lodLevel)
-{
-  m_LODLevel = std::max(0, lodLevel);
-}
-
-int MeshComponent::GetLODLevel() const
-{
-  return m_LODLevel;
-}
-
 // 组件接口实现 ==========================================
 std::vector<std::type_index> MeshComponent::GetDependencies() const
 {
