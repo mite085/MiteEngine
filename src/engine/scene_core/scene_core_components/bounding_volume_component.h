@@ -5,7 +5,6 @@
 #include "scene_core/component_system.h"
 
 namespace mite {
-
 /**
  * @class BoundingVolumeComponent
  * @brief 包围体组件，仅存储局部空间的包围体信息
@@ -26,30 +25,16 @@ class BoundingVolumeComponent
   ~BoundingVolumeComponent() override = default;
 
   // ==================== 数据访问接口 ====================
-
+  /**
+   * @brief 设定包围盒
+   * @return 包围体引用
+   */
+  void SetVolume(const BoundingVolume &volume);
   /**
    * @brief 获取局部空间包围体
    * @return 包围体引用
    */
-  const BoundingVolume &GetVolume() const
-  {
-    return m_Volume;
-  }
-
-  /**
-   * @brief 设置局部空间包围体
-   * @param volume 新的包围体
-   */
-  void SetVolume(const BoundingVolume &volume);
-
-  /**
-   * @brief 获取包围体类型
-   * @return 包围体类型
-   */
-  BoundingVolumeType GetVolumeType() const
-  {
-    return m_Volume.GetType();
-  }
+  std::shared_ptr<BoundingVolume> GetVolume() const { return m_Volume; }
 
   // ==================== 组件接口 ====================
 
@@ -73,7 +58,7 @@ class BoundingVolumeComponent
   const BoundingVolume &GetSnapshotData() const override;
   void SetSnapshotData(const BoundingVolume &data) override;
 
-  BoundingVolume m_Volume;  // 局部空间包围体
+  std::shared_ptr<BoundingVolume> m_Volume;  // 局部空间包围体
 };
 
 // ==================== 组件系统 ====================
@@ -94,19 +79,14 @@ class BoundingVolumeComponentSystem : public SnapshotComponentSystem<BoundingVol
  */
 class BoundingVolumeChangedEvent : public ComponentEvent<BoundingVolumeComponent> {
  public:
-  BoundingVolumeChangedEvent(Entity entity,
-                             BoundingVolumeComponent &component)
+  BoundingVolumeChangedEvent(Entity entity, BoundingVolumeComponent &component)
       : ComponentEvent<BoundingVolumeComponent>(entity, component)
   {
   }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
-  Event *Clone() const override
-  {
-    return new BoundingVolumeChangedEvent(entity, component);
-  }
+  Event *Clone() const override { return new BoundingVolumeChangedEvent(entity, component); }
 };
-
 }  // namespace mite
 
 #endif  // MITE_BOUNDING_VOLUME_COMPONENT_H
