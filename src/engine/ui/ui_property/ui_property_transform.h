@@ -17,7 +17,7 @@ template<> class PropertyTable<TransformComponent> : public IPropertyTable {
  private:
   static const EnumComboBoxList<Transform::EulerOrder, 6> m_EulerOrderList;
   TransformComponent &m_Component;
-  DragFloat3Props m_PosProps, m_RotProps, m_SclProps;
+  EditFloat3Props m_PosProps, m_RotProps, m_SclProps;
   ComboboxProps m_RotTypeProps;
 };
 }  // namespace mite

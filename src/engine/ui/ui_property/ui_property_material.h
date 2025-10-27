@@ -16,7 +16,7 @@ template<> class PropertyTable<MaterialComponent> : public IPropertyTable {
  private:
   MaterialComponent &m_Component;
   ColorEditProps m_BaseColorProps, m_EmissionProps;
-  DragFloatProps m_MetallicProps, m_RoughnessProps, m_AmbientOcclusionProps;
+  EditFloatProps m_MetallicProps, m_RoughnessProps, m_AmbientOcclusionProps;
 };
 }  // namespace mite
 

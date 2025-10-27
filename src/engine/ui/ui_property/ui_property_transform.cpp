@@ -40,7 +40,7 @@ void PropertyTable<TransformComponent>::Render(UIRender &render)
 
   // 局部空间旋转类型（欧拉）
   RenderLabelItemRow(render, "editor.transform_rotation_type", [&]() {
-    m_RotTypeProps.itemTranslationKeys = m_EulerOrderList.GetTranslateKeys();  // 获取所有Keys
+    m_RotTypeProps.itemTranslationKeys = m_EulerOrderList.GetTranslateKeyList();  // 获取所有Keys
     m_RotTypeProps.selectedIndex = m_EulerOrderList.GetIndex(
         m_Component.GetLocalTransform().GetRotationOrder());  // 获取当前index
     if (render.RenderCombobox(m_RotTypeProps)) {
@@ -54,7 +54,7 @@ void PropertyTable<TransformComponent>::Render(UIRender &render)
   // 局部空间缩放
   RenderLabelItemRow(render, "editor.transform_scale", [&]() {
     m_SclProps.value = m_Component.GetLocalTransform().GetScale();
-    m_SclProps.speed = 0.01f;
+    m_SclProps.dragSpeed = 0.01f;
 
     // 注意：
     // Transform类同时存储了TRS + Matrix，但Gizmo使用了Imguizmo的，仅管理Matrix。

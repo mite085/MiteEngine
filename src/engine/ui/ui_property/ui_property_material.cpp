@@ -26,7 +26,7 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
     m_MetallicProps.value = instance->GetMetallic();
     m_MetallicProps.maxValue = 1.0f;
     m_MetallicProps.minValue = 0.0f;
-    if (render.RenderDragFloat(m_MetallicProps)) {
+    if (render.RenderSliderFloat(m_MetallicProps)) {
       instance->SetMetallic(m_MetallicProps.value);
     }
   });
@@ -36,7 +36,7 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
     m_RoughnessProps.value = instance->GetRoughness();
     m_RoughnessProps.maxValue = 1.0f;
     m_RoughnessProps.minValue = 0.0f;
-    if (render.RenderDragFloat(m_RoughnessProps)) {
+    if (render.RenderSliderFloat(m_RoughnessProps)) {
       instance->SetRoughness(m_RoughnessProps.value);
     }
   });
@@ -46,7 +46,7 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
     m_AmbientOcclusionProps.value = instance->GetAO();
     m_AmbientOcclusionProps.maxValue = 1.0f;
     m_AmbientOcclusionProps.minValue = 0.0f;
-    if (render.RenderDragFloat(m_AmbientOcclusionProps)) {
+    if (render.RenderSliderFloat(m_AmbientOcclusionProps)) {
       instance->SetAO(m_AmbientOcclusionProps.value);
     }
   });

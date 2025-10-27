@@ -99,56 +99,55 @@ struct ListBoxProps : public TextRenderProps {
 // ==================== 数值输入控件属性 ====================
 
 /**
- * @brief 浮点数拖动输入属性
- * 包含标签文本的数值输入控件
+ * @brief 浮点数编辑属性
  */
-struct DragFloatProps : public TextRenderProps {
+struct EditFloatProps : public TextRenderProps {
   float value = 0.0f;           // 当前值
-  float speed = 0.1f;           // 拖动速度
+  float dragSpeed = 0.1f;       // 拖动速度（Drag控件专用）
   float minValue = -FLT_MAX;    // 最小值
   float maxValue = FLT_MAX;     // 最大值
   std::string format = "%.3f";  // 显示格式
 };
 
 /**
- * @brief 二维向量拖动属性
+ * @brief 二维向量编辑属性
  */
-struct DragFloat2Props : public TextRenderProps {
+struct EditFloat2Props : public TextRenderProps {
   glm::vec2 value = {0.0f, 0.0f};  // 当前值
-  float speed = 0.1f;              // 拖动速度
+  float dragSpeed = 0.1f;          // 拖动速度（Drag控件专用）
   float minValue = -FLT_MAX;       // 最小值
   float maxValue = FLT_MAX;        // 最大值
   std::string format = "%.3f";     // 显示格式
 };
 
 /**
- * @brief 三维向量拖动属性
+ * @brief 三维向量编辑属性
  */
-struct DragFloat3Props : public TextRenderProps {
+struct EditFloat3Props : public TextRenderProps {
   glm::vec3 value = {0.0f, 0.0f, 0.0f};  // 当前值
-  float speed = 0.1f;                    // 拖动速度
+  float dragSpeed = 0.1f;                // 拖动速度（Drag控件专用）
   float minValue = -FLT_MAX;             // 最小值
   float maxValue = FLT_MAX;              // 最大值
   std::string format = "%.3f";           // 显示格式
 };
 
 /**
- * @brief 四维向量拖动属性
+ * @brief 四维向量编辑属性
  */
-struct DragFloat4Props : public TextRenderProps {
+struct EditFloat4Props : public TextRenderProps {
   glm::vec4 value = {0.0f, 0.0f, 0.0f, 0.0f};  // 当前值
-  float speed = 0.1f;                          // 拖动速度
+  float dragSpeed = 0.1f;                      // 拖动速度（Drag控件专用）
   float minValue = -FLT_MAX;                   // 最小值
   float maxValue = FLT_MAX;                    // 最大值
   std::string format = "%.3f";                 // 显示格式
 };
 
 /**
- * @brief 整数拖动属性
+ * @brief 整数编辑属性
  */
-struct DragIntProps : public TextRenderProps {
+struct EditIntProps : public TextRenderProps {
   int value = 0;              // 当前值
-  float speed = 1.0f;         // 拖动速度
+  float dragSpeed = 1.0f;     // 拖动速度（Drag控件专用）
   int minValue = INT_MIN;     // 最小值
   int maxValue = INT_MAX;     // 最大值
   std::string format = "%d";  // 显示格式
@@ -230,11 +229,11 @@ struct TableProps : public TextRenderProps {
   float rowHeight = 25.0f;                         // 行高
 
   // 基础特性
-  bool showHeaders = true;       // 是否显示表头（默认显示）
-  bool resizable = true;         // 是否可调整列宽（默认可调整）
-  bool reorderable = true;       // 是否可重新排序列（默认支持）
-  bool hideable = true;          // 是否可隐藏列（默认支持）
-  bool sortable = false;         // 是否可排序（默认不支持）
+  bool showHeaders = true;  // 是否显示表头（默认显示）
+  bool resizable = true;    // 是否可调整列宽（默认可调整）
+  bool reorderable = true;  // 是否可重新排序列（默认支持）
+  bool hideable = true;     // 是否可隐藏列（默认支持）
+  bool sortable = false;    // 是否可排序（默认不支持）
 
   // 装饰选项
   bool rowBg = true;          // 是否显示行背景色（默认显示）
@@ -246,10 +245,10 @@ struct TableProps : public TextRenderProps {
 
   // 尺寸策略
   enum SizingPolicy {
-    SizingFixedFit,     // 列宽适应内容
-    SizingFixedSame,    // 列宽相同
-    SizingStretchProp,  // 按比例拉伸
-    SizingStretchSame   // 等比例拉伸
+    SizingFixedFit,                    // 列宽适应内容
+    SizingFixedSame,                   // 列宽相同
+    SizingStretchProp,                 // 按比例拉伸
+    SizingStretchSame                  // 等比例拉伸
   } sizingPolicy = SizingStretchProp;  // 默认按照比例拉伸
 
   // 尺寸额外选项
@@ -262,7 +261,7 @@ struct TableProps : public TextRenderProps {
   bool scrollY = false;  // 是否启用垂直滚动（默认启用）
 
   // 填充选项
-  bool padOuterX = false;     // 是否启用外部X填充（默认启用）
+  bool padOuterX = false;    // 是否启用外部X填充（默认启用）
   bool noPadInnerX = false;  // 是否禁用内部X填充（默认不禁用）
 };
 

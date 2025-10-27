@@ -19,7 +19,7 @@ void PropertyTable<CameraComponent>::Render(UIRender &render)
     return;
 
   RenderLabelItemRow(render, "editor.camera_type", [&]() {
-    m_CameraTypeProps.itemTranslationKeys = m_CameraTypeList.GetTranslateKeys();  // 获取所有Keys
+    m_CameraTypeProps.itemTranslationKeys = m_CameraTypeList.GetTranslateKeyList();  // 获取所有Keys
     m_CameraTypeProps.selectedIndex = m_CameraTypeList.GetIndex(
         camera->GetProjectionType());  // 获取当前index
     if (render.RenderCombobox(m_CameraTypeProps)) {
@@ -35,7 +35,7 @@ void PropertyTable<CameraComponent>::Render(UIRender &render)
       m_FovProps.value = camera->GetFOV();
       m_FovProps.minValue = Camera::FovMin();
       m_FovProps.maxValue = Camera::FovMax();
-      m_FovProps.speed = 0.01f;
+      m_FovProps.dragSpeed = 0.01f;
       if (render.RenderDragFloat(m_FovProps)) {
         camera->SetFov(m_FovProps.value);
       }
@@ -47,7 +47,7 @@ void PropertyTable<CameraComponent>::Render(UIRender &render)
       m_FovProps.value = camera->GetOrthoSize();
       m_FovProps.minValue = Camera::OrthoSizeMin();
       m_FovProps.maxValue = Camera::OrthoSizeMax();
-      m_FovProps.speed = 0.1f;
+      m_FovProps.dragSpeed = 0.1f;
       if (render.RenderDragFloat(m_FovProps)) {
         camera->SetOrthoSize(m_FovProps.value);
       }
