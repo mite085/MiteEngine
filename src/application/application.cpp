@@ -71,8 +71,7 @@ void MiteApplication::LoadDefaultScene()
   lightComponent.SetLight(pointLight);
   BoundingVolumeComponent &lightBoundingVolumeComponent =
       m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(lightEntity);
-  BoundingVolume lightBoundingVolume = BoundingVolume::CreateFromPoints(BoundingVolumeType::AABB,
-                                                                        {glm::vec3(0.0f)});
+  BoundingVolume lightBoundingVolume = BoundingVolume::CreateFromPoints(BoundingVolumeType::None);
 
 
   // 加载模型（启用LOD，按照默认4层LOD参数生成）

@@ -1,12 +1,13 @@
 #include "ui_property_bounding_volume.h"
 
 namespace mite {
-const EnumComboBoxList<BoundingVolumeType, 4>
+const EnumComboBoxList<BoundingVolumeType, 5>
     PropertyTable<BoundingVolumeComponent>::m_BoundingVolumeTypeList = EnumComboBoxList(
         std::array{std::pair{BoundingVolumeType::AABB, "editor.bounding_volume_aabb"},
                    std::pair{BoundingVolumeType::OBB, "editor.bounding_volume_obb"},
                    std::pair{BoundingVolumeType::Sphere, "editor.bounding_volume_sphere"},
-                   std::pair{BoundingVolumeType::Plane, "editor.bounding_volume_plane"}});
+                   std::pair{BoundingVolumeType::Plane, "editor.bounding_volume_plane"},
+                   std::pair{BoundingVolumeType::None, "editor.bounding_volume_none"}});
 
 PropertyTable<BoundingVolumeComponent>::PropertyTable(BoundingVolumeComponent &component)
     : IPropertyTable("editor.bounding_volume"), m_Component(component)
@@ -24,7 +25,7 @@ void PropertyTable<BoundingVolumeComponent>::Render(UIRender &render)
     m_VolumeTypeProps.selectedIndex = m_BoundingVolumeTypeList.GetIndex(
         m_Component.GetVolume()->GetType());  // 获取当前index
     if (render.RenderCombobox(m_VolumeTypeProps)) {
-      // 响应类型变换
+      // 响应类型变换，执行切换操作
       m_Component.GetVolume()->SetType(
           m_BoundingVolumeTypeList.GetEnumType(m_VolumeTypeProps.selectedIndex));
     }

@@ -19,7 +19,7 @@ template<> class PropertyTable<BoundingVolumeComponent> : public IPropertyTable 
   void RenderOBBProperty(UIRender &render, const BoundingVolumeOBB &obb);
   void RenderPlaneProperty(UIRender &render, const BoundingVolumePlane &plane);
 
-  static const EnumComboBoxList<BoundingVolumeType, 4> m_BoundingVolumeTypeList;
+  static const EnumComboBoxList<BoundingVolumeType, 5> m_BoundingVolumeTypeList;
   BoundingVolumeComponent &m_Component;
   ComboboxProps m_VolumeTypeProps;
 };
