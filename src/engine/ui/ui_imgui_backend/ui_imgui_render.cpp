@@ -302,12 +302,9 @@ void ImGuiUIRender::RenderReadOnlyInt(EditIntProps &props)
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  // NULL的位置为控制右侧step buttons的参数，设为NULL则不显示step buttons
-  ImGui::InputInt(labelText.c_str(),
-                  &props.value,
-                  NULL,
-                  NULL,
-                  ImGuiInputTextFlags_ReadOnly);
+
+  ImGui::LabelText(labelText.c_str(), props.format.c_str(), props.value);
+
   ImGui::PopID();
   return;
 }
@@ -319,12 +316,7 @@ void ImGuiUIRender::RenderReadOnlyFloat(EditFloatProps &props)
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  ImGui::InputFloat(labelText.c_str(),
-                    &props.value,
-                    NULL,
-                    NULL,
-                    props.format.c_str(),
-                    ImGuiInputTextFlags_ReadOnly);
+  ImGui::LabelText(labelText.c_str(), props.format.c_str(), props.value);
   ImGui::PopID();
   return;
 }
@@ -336,10 +328,10 @@ void ImGuiUIRender::RenderReadOnlyFloat2(EditFloat2Props &props)
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  ImGui::InputFloat2(labelText.c_str(),
-                     glm::value_ptr(props.value),
-                     props.format.c_str(),
-                     ImGuiInputTextFlags_ReadOnly);
+  ImGui::LabelText(labelText.c_str(),
+                   (props.format + ",   " + props.format).c_str(),
+                   props.value.x,
+                   props.value.y);
   ImGui::PopID();
   return;
 }
@@ -351,10 +343,11 @@ void ImGuiUIRender::RenderReadOnlyFloat3(EditFloat3Props &props)
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  ImGui::InputFloat3(labelText.c_str(),
-                     glm::value_ptr(props.value),
-                     props.format.c_str(),
-                     ImGuiInputTextFlags_ReadOnly);
+  ImGui::LabelText(labelText.c_str(),
+                   (props.format + ",   " + props.format + ",   " + props.format).c_str(),
+                   props.value.x,
+                   props.value.y,
+                   props.value.z);
   ImGui::PopID();
   return;
 }
@@ -366,10 +359,14 @@ void ImGuiUIRender::RenderReadOnlyFloat4(EditFloat4Props &props)
   ImGui::PushID(&props);
 
   std::string labelText = GetTranslatedText(props);
-  ImGui::InputFloat4(labelText.c_str(),
-                     glm::value_ptr(props.value),
-                     props.format.c_str(),
-                     ImGuiInputTextFlags_ReadOnly);
+  ImGui::LabelText(
+      labelText.c_str(),
+      (props.format + ",   " + props.format + ",   " + props.format + ",   " + props.format)
+          .c_str(),
+      props.value.x,
+      props.value.y,
+      props.value.z,
+      props.value.w);
   ImGui::PopID();
   return;
 }
