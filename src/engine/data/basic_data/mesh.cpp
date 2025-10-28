@@ -60,14 +60,15 @@ const MeshSection &Mesh::GetBaseSection() const
   return m_LODChain.baseSection;
 }
 
-const std::vector<MeshSection> &Mesh::GetAllLODSections() const
+const std::vector<MeshSection> &Mesh::GetSubLODSections() const
 {
   return m_LODChain.lodSections;
 }
 
 uint32_t Mesh::GetLODCount() const
 {
-  return static_cast<uint32_t>(m_LODChain.lodSections.size());
+  // Base级别+SubLODSection数量
+  return static_cast<uint32_t>(m_LODChain.lodSections.size() + 1);
 }
 
 ModelGPUHandle Mesh::GetModelHandle() const

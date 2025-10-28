@@ -45,7 +45,7 @@ class Mesh {
   /**
    * 获取所有LOD级别的网格数据段信息
    */
-  const std::vector<MeshSection> &GetAllLODSections() const;
+  const std::vector<MeshSection> &GetSubLODSections() const;
   /**
    * 获取支持的LOD级别数量
    */

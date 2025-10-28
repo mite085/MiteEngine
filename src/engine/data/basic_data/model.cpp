@@ -39,7 +39,7 @@ std::vector<uint32_t> Model::GetSupportedLODLevels() const
 
   // 遍历所有SubMesh，获取Lod层级
   for (const auto &mesh : m_SubMeshes) {
-    for (const auto &section : mesh.GetAllLODSections()) {
+    for (const auto &section : mesh.GetSubLODSections()) {
       lodLevels.insert(section.lodLevel);
     }
   }

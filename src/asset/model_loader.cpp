@@ -1,12 +1,12 @@
 #include "model_loader.h"
-#include "material_loader.h"
-#include "texture_loader.h"
 #include "basic_event/asset_event.h"
+#include "material_loader.h"
 #include "meshoptimizer.h"
-#include <assimp/scene.h>
+#include "texture_loader.h"
 #include <assimp/Importer.hpp>   // Assimp模型导入器
+#include <assimp/pbrmaterial.h>  // AssimpPBR材质处理
 #include <assimp/postprocess.h>  // Assimp后处理标志
-#include <assimp/pbrmaterial.h>  // AssimpPBR材质处理 
+#include <assimp/scene.h>
 
 namespace mite {
 ModelAssetID ModelLoader::LoadGLTFModel(ModelCache &modelCache,
@@ -17,7 +17,6 @@ ModelAssetID ModelLoader::LoadGLTFModel(ModelCache &modelCache,
                                         bool generateLODs,
                                         const std::vector<float> &lodLevels)
 {
-
   // GLTF特化配置
   Assimp::Importer importer;
   unsigned int flags = GetAssimpImportFlags("gltf", flipUVs);
@@ -42,7 +41,6 @@ ModelAssetID ModelLoader::LoadObjModel(ModelCache &modelCache,
                                        bool generateLODs,
                                        const std::vector<float> &lodLevels)
 {
-
   // OBJ特化配置
   Assimp::Importer importer;
   unsigned int flags = GetAssimpImportFlags("obj", flipUVs);
@@ -67,7 +65,6 @@ ModelAssetID ModelLoader::LoadModel(ModelCache &modelCache,
                                     bool generateLODs,
                                     const std::vector<float> &lodLevels)
 {
-
   // 通用模型加载
   Assimp::Importer importer;
   std::string extension = path.substr(path.find_last_of(".") + 1);
@@ -90,7 +87,6 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
                                             bool generateLODs,
                                             const std::vector<float> &lodLevels)
 {
-
   // 检查缓存
   ModelAssetID existingModelID = FindModelByPath(modelCache, path);
   if (existingModelID.IsValid()) {
@@ -106,12 +102,13 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
     MeshDataLODChain subMeshLodChain{ProcessMesh(scene->mMeshes[i], scene), {}};
     // 生成多级LOD
     if (generateLODs) {
-      for (size_t lodLevel = 0; lodLevel < lodLevels.size(); lodLevel++) {
-        if (lodLevels[lodLevel] < 1.0f) {
-          MeshData simplifiedMesh = SimplifyMesh(subMeshLodChain.baseSection, lodLevels[lodLevel]);
-          simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel + 1);
-          subMeshLodChain.lodSections.push_back(simplifiedMesh);
-        }
+      // lodLevels = {1.0f, 0.5f, 0.25f, 0.1f}，
+      // lodLevels[0] = 1.0f 为原始等级，不执行Simplify处理。
+      // 故此处从1开始计数
+      for (size_t lodLevel = 1; lodLevel < lodLevels.size(); lodLevel++) {
+        MeshData simplifiedMesh = SimplifyMesh(subMeshLodChain.baseSection, lodLevels[lodLevel]);
+        simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel);
+        subMeshLodChain.lodSections.push_back(simplifiedMesh);
       }
     }
     subMeshData.push_back(subMeshLodChain);
@@ -283,11 +280,10 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
 
   // 计算目标索引数量
   const size_t targetIndexCount = static_cast<size_t>(indexCount * targetRatio);
-  const float targetError = 1e-2f;  // 可接受的简化误差
 
-  // 使用meshoptimizer进行网格简化
+  // 使用meshoptimizer进行网格简化（使用Sloppy确保顶点数量正常减少，而非靠target_error限制误差）
   std::vector<unsigned int> simplifiedIndices(indices.size());
-  size_t simplifiedIndexCount = meshopt_simplify(
+  size_t simplifiedIndexCount = meshopt_simplifySloppy(
       simplifiedIndices.data(),
       indices.data(),
       indexCount,
@@ -295,7 +291,7 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
       vertexCount,
       originalMesh.layout.stride,
       targetIndexCount,
-      targetError);
+      1);  // Sloppy无target_error输入
 
   // 调整简化后的索引数组大小
   simplifiedIndices.resize(simplifiedIndexCount);
@@ -352,7 +348,6 @@ void ModelLoader::CalculateBoundingBox(const std::vector<MeshDataLODChain> &subM
     outMax = glm::max(outMax, subMesh.baseSection.boundingBoxMax);
   }
 }
-
 
 std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
     std::shared_ptr<ModelAsset> model, const std::vector<MeshDataLODChain> &subMeshData)
@@ -479,5 +474,4 @@ ModelAssetID ModelLoader::FindModelByPath(ModelCache &cache, const std::string &
   auto model = cache.Get(searchId);
   return model ? searchId : ModelAssetID{};
 }
-
 };  // namespace mite
