@@ -148,9 +148,11 @@ class MaterialInstance {
   void SetMetallicRoughnessTexture(TextureGPUSlot texture);
   void SetEmissiveTexture(TextureGPUSlot texture);
   void SetOcclusionTexture(TextureGPUSlot texture);
-
-  // --------------------- 绑定相关 ---------------------
-
+  TextureGPUSlot GetBaseColorTexture() const;
+  TextureGPUSlot GetNormalTexture() const;
+  TextureGPUSlot GetMetallicRoughnessTexture() const;
+  TextureGPUSlot GetEmissiveTexture() const;
+  TextureGPUSlot GetOcclusionTexture() const;
 
   // --------------------- 属性访问 ---------------------
   std::string GetName() const;

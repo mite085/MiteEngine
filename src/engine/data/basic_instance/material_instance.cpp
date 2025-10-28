@@ -214,6 +214,51 @@ void MaterialInstance::SetOcclusionTexture(TextureGPUSlot texture)
   SetOcclusionTexParams(glm::vec4{texture.scale, texture.offset});
   SetOcclusionTextureEnabled(true);
 }
+TextureGPUSlot MaterialInstance::GetBaseColorTexture() const
+{
+  if (m_Textures.find(ExternalTextureType::BaseColor) != m_Textures.end()) {
+    return m_Textures.at(ExternalTextureType::BaseColor);
+  }
+  else {
+    return TextureGPUSlot();
+  }
+}
+TextureGPUSlot MaterialInstance::GetNormalTexture() const
+{
+  if (m_Textures.find(ExternalTextureType::Normal) != m_Textures.end()) {
+    return m_Textures.at(ExternalTextureType::Normal);
+  }
+  else {
+    return TextureGPUSlot();
+  }
+}
+TextureGPUSlot MaterialInstance::GetMetallicRoughnessTexture() const
+{
+  if (m_Textures.find(ExternalTextureType::MetallicRoughness) != m_Textures.end()) {
+    return m_Textures.at(ExternalTextureType::MetallicRoughness);
+  }
+  else {
+    return TextureGPUSlot();
+  }
+}
+TextureGPUSlot MaterialInstance::GetEmissiveTexture() const
+{
+  if (m_Textures.find(ExternalTextureType::Emissive) != m_Textures.end()) {
+    return m_Textures.at(ExternalTextureType::Emissive);
+  }
+  else {
+    return TextureGPUSlot();
+  }
+}
+TextureGPUSlot MaterialInstance::GetOcclusionTexture() const
+{
+  if (m_Textures.find(ExternalTextureType::Occlusion) != m_Textures.end()) {
+    return m_Textures.at(ExternalTextureType::Occlusion);
+  }
+  else {
+    return TextureGPUSlot();
+  }
+}
 // ===================== 绑定相关 =====================
 size_t MaterialInstance::BindTexturesOnly(ExternalTextureBindFunc textureBindFunc) const
 {
