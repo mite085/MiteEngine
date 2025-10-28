@@ -15,6 +15,16 @@ template<> class PropertyTable<MaterialComponent> : public IPropertyTable {
 
  private:
   MaterialComponent &m_Component;
+
+  // 纹理启用flag
+  CheckboxProps m_IsBaseColorTextureEnabled, m_IsMetallicRoughnessTextureEnabled,
+      m_IsOcclusionTextureEnabled, m_IsEmissiveTextureEnabled, m_IsNormalTextureEnabled;
+
+  // 纹理属性
+  ImageProps m_BaseColorTexture, m_MetallicRoughnessTexture, m_OcclusionTexture, m_EmissiveTexture,
+      m_NormalTexture;
+
+  // 非纹理状态下的值属性
   ColorEditProps m_BaseColorProps, m_EmissionProps;
   EditFloatProps m_MetallicProps, m_RoughnessProps, m_AmbientOcclusionProps;
 };
