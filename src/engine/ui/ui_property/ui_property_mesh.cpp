@@ -13,10 +13,34 @@ void PropertyTable<MeshComponent>::Render(UIRender &render)
   if (!mesh)
     return;
 
-  // 绘制Mesh属性页
+  // 绘制Mesh属性页（显示LOD以及顶点与索引数量）
+  for (int i = 0; i < int(mesh->GetLODCount()); i++) {
+    // LOD等级
+    RenderLabelItemRow(render, "editor.mesh_lod_level", [&]() {
+      EditIntProps lodLevelProps;
+      lodLevelProps.value = i;
+      render.RenderReadOnlyInt(lodLevelProps);
+    });
 
-  // LOD级别选择
+    // 顶点计数
+    RenderLabelItemRow(render, "editor.mesh_vertix_count", [&]() {
+      EditIntProps meshVertixCount;
+      meshVertixCount.value = mesh->GetVertexCount(i);
+      render.RenderReadOnlyInt(meshVertixCount);
+    });
 
+    // 索引计数
+    RenderLabelItemRow(render, "editor.mesh_index_count", [&]() {
+      EditIntProps meshIndexCount;
+      meshIndexCount.value = mesh->GetIndexCount(i);
+      render.RenderReadOnlyInt(meshIndexCount);
+    });
 
+    // 绘制空行进行分割操作（最后一行不绘制）
+    if (i == mesh->GetLODCount() - 1) {
+      break;
+    }
+    RenderLabelItemRow(render, "", [&]() {});
+  }
 }
 }  // namespace mite
