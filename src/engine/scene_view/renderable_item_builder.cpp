@@ -90,9 +90,7 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
         meshInstance->GetMesh(),
         camera->GetCameraTransform().GetPosition(),
         sceneNode->GetWorldTransform().GetLocalMatrix(),
-        1920,  // TODO:
-               // SceneView无法获取screenwidth信息，原则上应当能获取到。待后续处理，此处随便填写一个值，不影响计算
-        0);
+        1);
     meshInstance->SetMeshLODLevel(lodLevel);
 
     // 2. 提取材质
@@ -142,7 +140,6 @@ bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, Entity entity)
 uint32_t RenderableItemBuilder::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
                                                    const glm::vec3 &cameraPosition,
                                                    const glm::mat4 &worldTransform,
-                                                   float screenWidth,
                                                    float lodBias)
 {
   if (!mesh || !mesh->GetVertexCount()) {
@@ -170,9 +167,9 @@ uint32_t RenderableItemBuilder::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
   float distance = glm::distance(cameraPosition, worldCenter);
   glm::vec3 bboxSize = worldMax - worldMin;
   float objectSize = glm::max(bboxSize.x, glm::max(bboxSize.y, bboxSize.z));
-  float screenCoverage = (objectSize / distance) * screenWidth * lodBias;
+  float screenCoverage = (objectSize / distance) * 1920 * lodBias;
 
-  // 基于屏幕覆盖率的LOD选择（使用像素宽度进行判断）
+  // 基于“1920像素宽度的”屏幕覆盖率的LOD选择
   //
   // 200.0f: 当网格在屏幕上覆盖宽度小于200像素时，切换到LOD 1
   // 100.0f: 当网格在屏幕上覆盖宽度小于100像素时，切换到LOD 2
@@ -181,8 +178,8 @@ uint32_t RenderableItemBuilder::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
   //  10.0f: 当网格在屏幕上覆盖宽度小于 10像素时，切换到LOD 5
   //   5.0f: 当网格在屏幕上覆盖宽度小于  5像素时，切换到LOD 6
   //
-  // TODO：可以将该选择方案作为配置项，针对不同情况修改配置
-  //
+  // 注意：可以将该选择方案作为配置项，针对不同情况修改配置
+  // 如：
   // 高质量场景（近处细节重要）：
   //    {300.0f, 150.0f, 75.0f, 30.0f, 15.0f, 5.0f};
   // 性能优先场景：
@@ -203,7 +200,7 @@ uint32_t RenderableItemBuilder::SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
   // 获取可用的LOD级别
   std::set<uint32_t> availableLODs;
   availableLODs.insert(mesh->GetBaseSection().lodLevel);
-  for (const auto &lodSection : mesh->GetAllLODSections()) {
+  for (const auto &lodSection : mesh->GetSubLODSections()) {
     availableLODs.insert(lodSection.lodLevel);
   }
 

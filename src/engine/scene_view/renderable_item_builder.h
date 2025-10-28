@@ -98,7 +98,7 @@ class RenderableItemBuilder {
    * @param mesh 网格体对象
    * @param cameraPosition 相机距离
    * @param worldTransform 局部空间到世界空间的旋转矩阵
-   * @param lodBias LOD层级偏差值(偏差值越高，越倾向于高精度。默认1不偏差)
+   * @param lodBias LOD层级偏差值(偏差值越高，越倾向于高精度，如10代表距离为默认值10倍时才切换下一个LOD)
    * @return LOD层级
    *
    * 针对超大Model（如地形）可以逐Mesh划分LOD，降低渲染压力
@@ -106,8 +106,7 @@ class RenderableItemBuilder {
   static uint32_t SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
                                      const glm::vec3 &cameraPosition,
                                      const glm::mat4 &worldTransform,
-                                     float screenWidth,
-                                     float lodBias);
+                                     float lodBias = 1.0f);
 
  private:
   /**
