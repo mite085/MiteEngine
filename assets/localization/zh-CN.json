@@ -34,10 +34,18 @@
 
     "material": "材质",
     "material_base_color": "基础色",
+    "material_base_color_texture_using": "基础色：启用纹理",
+    "material_base_color_texture": "基础色纹理",
     "material_metallic": "金属度",
     "material_roughness": "粗糙度",
+    "material_metallic_roughness_texture_using": "金属度-粗糙度：启用纹理",
+    "material_metallic_roughness_texture": "金属度-粗糙度纹理",
     "material_ambient_occlusion": "环境光遮蔽",
+    "material_ambient_occlusion_texture_using": "环境光遮蔽：启用纹理",
+    "material_ambient_occlusion_texture": "环境光遮蔽纹理",
     "material_emission": "自发光",
+    "material_emission_texture_using": "自发光：启用纹理",
+    "material_emission_texture": "自发光纹理",
 
     "bounding_volume": "包围盒",
     "bounding_volume_type": "包围盒类型",
@@ -54,7 +62,12 @@
     "bounding_volume_plane": "平面",
     "bounding_volume_plane_center": "平面-法线方向",
     "bounding_volume_plane_distance": "平面-与原点距离",
-    "bounding_volume_none": "无效包围盒"
+    "bounding_volume_none": "无效包围盒",
+
+    "mesh":  "网格",
+    "mesh_lod_level": "网格LOD级别",
+    "mesh_vertix_count": "网格顶点数量",
+    "mesh_index_count": "网格索引数量"
   },
   "errors": {
     "load_failed": "加载文件失败: {0}"

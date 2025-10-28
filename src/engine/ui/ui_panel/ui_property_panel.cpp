@@ -4,6 +4,8 @@
 #include "ui_property/ui_property_transform.h"
 #include "ui_property/ui_property_light.h"
 #include "ui_property/ui_property_bounding_volume.h"
+#include "ui_property/ui_property_mesh.h"
+#include "ui_property/ui_property_visibility.h"
 
 namespace mite {
 PropertyPanel::PropertyPanel(SceneRegistry &sceneRegistry, const std::string &name)
@@ -21,6 +23,10 @@ void PropertyPanel::Render()
     RenderProperty<MaterialComponent>();
     RenderProperty<LightComponent>();
     RenderProperty<BoundingVolumeComponent>();
+    RenderProperty<VisibilityComponent>();
+
+    // 网格体显示在最下面
+    RenderProperty<MeshComponent>();
   }
   else {
     // 不存在选中节点的占位显示

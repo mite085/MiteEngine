@@ -125,8 +125,6 @@ enum class RuntimeTextureType {
  * 用于从外部文件加载的纹理资源
  */
 enum class ExternalTextureType {
-  None,  // 无效类型
-
   // PBR材质纹理
   BaseColor = 0,      // 基础色纹理
   Normal,             // 法线纹理
