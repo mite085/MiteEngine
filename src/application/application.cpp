@@ -4,10 +4,10 @@
 #include "material_templates/material_template_pure_color.h"
 #include "render_opengl/opengl_pipeline.h"
 #include "scene_core_components/component_headers.h"
-#include "ui_panel/ui_viewport_panel.h"
-#include "ui_panel/ui_scenetree_panel.h"
-#include "ui_panel/ui_property_panel.h"
 #include "time/time.h"
+#include "ui_panel/ui_property_panel.h"
+#include "ui_panel/ui_scenetree_panel.h"
+#include "ui_panel/ui_viewport_panel.h"
 
 namespace mite {
 MiteApplication::MiteApplication()
@@ -72,12 +72,11 @@ void MiteApplication::LoadDefaultScene()
   BoundingVolumeComponent &lightBoundingVolumeComponent =
       m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(lightEntity);
 
-
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
-  ModelAssetID plane_model_asset_id = m_AssetManager->LoadGLTFModel(
+  ModelAssetID plane_model_asset_id = AssetManager::Get().LoadGLTFModel(
       FileSystem::GetAssetPath("models/monkey.glb").string(), true, true);
-  Model planeModel(m_AssetManager->GetModel(plane_model_asset_id)->handle,
-                   m_AssetManager->GetModel(plane_model_asset_id)->subMeshSection);
+  Model planeModel(AssetManager::Get().GetModel(plane_model_asset_id)->handle,
+                   AssetManager::Get().GetModel(plane_model_asset_id)->subMeshSection);
 
   // 网格体组件与实体创建
   for (size_t i = 0; i < planeModel.GetSubMeshCount(); ++i) {
@@ -145,8 +144,8 @@ void MiteApplication::Initialize()
   InitializeSceneGraph();        // 依赖SceneCore
   InitializeSceneView();         // 依赖SceneCore和SceneGraph
   InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行 & 依赖SceneView
-  InitializeLightSystem();  // Light模块初始化时同步创建LightSSBO，依赖Render绑定
-  InitializeUI();           // 必须在Window创建GL上下文后执行
+  InitializeLightSystem();       // Light模块初始化时同步创建LightSSBO，依赖Render绑定
+  InitializeUI();                // 必须在Window创建GL上下文后执行
 
   // 加载默认场景
   LoadDefaultScene();
@@ -203,7 +202,8 @@ void MiteApplication::InitializeUI()
   m_UISystem->Initialize(m_Window->GetNativeWindow());
 
   // 创建ViewportPanel（必须在SceneView创建之后创建）
-  std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>(*m_SceneView, "viewport");
+  std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>(*m_SceneView,
+                                                                                 "viewport");
   std::shared_ptr<SceneTreePanel> scenetreePanel = std::make_shared<SceneTreePanel>(*m_SceneGraph,
                                                                                     "scenetree");
   std::shared_ptr<PropertyPanel> propertyPanel = std::make_shared<PropertyPanel>(
@@ -220,7 +220,7 @@ void MiteApplication::InitializeAssertManager()
   m_Logger->info("Initializing asset manager");
 
   // 初始化资产管理器
-  m_AssetManager = std::make_unique<AssetManager>();
+  //m_AssetManager = std::make_unique<AssetManager>();
 }
 
 void MiteApplication::InitializeSceneCore()
@@ -267,7 +267,7 @@ void MiteApplication::InitializeInputSystem()
   m_Logger->info("Initializing input system");
 
   // 创建并初始化输入系统（单例）
-  //m_InputManager = std::make_unique<InputManager>();
+  // m_InputManager = std::make_unique<InputManager>();
   InputManager::Get().Init();
 }
 

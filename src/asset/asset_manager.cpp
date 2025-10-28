@@ -4,6 +4,12 @@
 #include "model_loader.h"
 
 namespace mite {
+AssetManager &AssetManager::Get()
+{
+  static AssetManager instance;
+  return instance;
+}
+
 
 AssetManager::~AssetManager()
 {

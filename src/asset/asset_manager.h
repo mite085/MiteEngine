@@ -13,6 +13,8 @@ namespace mite {
  */
 class AssetManager {
  public:
+  static AssetManager &Get();
+
   AssetManager() = default;
   ~AssetManager();
 

@@ -74,7 +74,7 @@ class MiteApplication {
  private:
   // 子系统
   //std::unique_ptr<InputManager> m_InputManager; // 单例
-  std::unique_ptr<AssetManager> m_AssetManager;
+  //std::unique_ptr<AssetManager> m_AssetManager; // 单例
 
   std::unique_ptr<Window> m_Window;
   std::unique_ptr<RenderPipeline> m_Renderer;
