@@ -46,6 +46,9 @@
     "material_emission": "自发光",
     "material_emission_texture_using": "自发光：启用纹理",
     "material_emission_texture": "自发光纹理",
+    "material_normal_texture_using": "启用法线纹理",
+    "material_normal_texture": "法线纹理",
+
 
     "bounding_volume": "包围盒",
     "bounding_volume_type": "包围盒类型",
@@ -67,7 +70,15 @@
     "mesh":  "网格",
     "mesh_lod_level": "网格LOD级别",
     "mesh_vertix_count": "网格顶点数量",
-    "mesh_index_count": "网格索引数量"
+    "mesh_index_count": "网格索引数量",
+
+    "visibility":  "可见性",
+    "visibility_is_visible": "是否可见",
+    "visibility_mask": "可见性掩码",
+    "visibility_mask_none": "完全不可见",
+    "visibility_mask_all": "完全可见",
+
+    "" : ""
   },
   "errors": {
     "load_failed": "加载文件失败: {0}"
