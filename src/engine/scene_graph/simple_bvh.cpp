@@ -727,8 +727,8 @@ void SimpleBVH::FrustumCullBFS(BVHNode *root,
                 frustum.TestBoundingVolume(sceneNode->GetWorldBounds()) !=
                 BoundingVolumeIntersection::IntersectionType::Outside)
         {
-          // 确保可见性匹配
-          if ((sceneNode->GetVisibilityMask() & visibleMask) != 0)
+          // 确保可见，且可见性掩码匹配
+          if (sceneNode->IsWorldVisible() && (sceneNode->GetVisibilityMask() & visibleMask) != 0)
             // 记录SceneNode，不被裁剪
             results.push_back(sceneNode);
         }

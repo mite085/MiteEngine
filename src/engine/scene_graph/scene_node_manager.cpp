@@ -530,7 +530,7 @@ void SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
   if (!node)
     return;
 
-  // 标记为TransformDirty与BoundingVolumeDirty（变换改变通常伴随着包围盒改变）
+  // 标记为TransformDirty与BoundingVolumeDirty（变换改变通常伴随着包围盒改变），等待Update阶段执行更新
   node->MarkTransformDirty();
   node->MarkBoundsDirty();
 
@@ -548,7 +548,7 @@ void SceneNodeManager::OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEve
   if (!node)
     return;
 
-  // 标记为BoundingVolumeDirty
+  // 标记为BoundingVolumeDirty，等待Update阶段执行更新
   node->MarkBoundsDirty();
 
   // 包围盒更新只影响当前节点的世界包围盒
@@ -565,7 +565,7 @@ void SceneNodeManager::OnVisibilityComponentUpdated(VisibilityChangedEvent &e)
   if (!node)
     return;
 
-  // 标记为VisibilityDirty
+  // 标记为VisibilityDirty，等待Update阶段执行更新
   node->MarkVisibilityDirty();
 
   // 可见性更新影响当前节点及其所有子节点的世界可见性

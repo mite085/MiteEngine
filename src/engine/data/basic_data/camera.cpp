@@ -31,14 +31,18 @@ void Camera::SetOrthographic(float size, float near, float far)
 
 void Camera::SetProjectionType(CameraProjectionType type)
 {
-  m_ProjectionType = type;
-  m_ProjectionDirty = true;
+  if (m_ProjectionType != type) {
+    m_ProjectionType = type;
+    m_ProjectionDirty = true;
+  }
 }
 
 void Camera::SetAspectRatio(float aspect)
 {
-  m_Aspect = aspect;
-  m_ProjectionDirty = true;
+  if (m_Aspect != aspect) {
+    m_Aspect = aspect;
+    m_ProjectionDirty = true;
+  }
 }
 
 // === 矩阵获取 ===
