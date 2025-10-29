@@ -74,14 +74,14 @@ void MiteApplication::LoadDefaultScene()
 
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = AssetManager::Get().LoadGLTFModel(
-      FileSystem::GetAssetPath("models/monkey.glb").string(), true, true);
+      FileSystem::GetAssetPath("models/car.glb").string(), true, true);
   Model planeModel(AssetManager::Get().GetModel(plane_model_asset_id)->handle,
                    AssetManager::Get().GetModel(plane_model_asset_id)->subMeshSection);
 
   // 网格体组件与实体创建
   for (size_t i = 0; i < planeModel.GetSubMeshCount(); ++i) {
     // 1. 创建网格实体
-    Entity planeSubmesh = m_SceneCore->CreateEntity("axis" + std::to_string(i));
+    Entity planeSubmesh = m_SceneCore->CreateEntity("part_" + std::to_string(i));
 
     // 2. 创建网格组件，设定组件数据
     MeshComponent &planeMeshComponent = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
@@ -108,6 +108,10 @@ void MiteApplication::LoadDefaultScene()
     BoundingVolume planeBoundingVolume = BoundingVolume::CreateFromPoints(
         BoundingVolumeType::AABB, {boundingbox.first, boundingbox.second});
     planeBoundingVolumeComponent.SetVolume(planeBoundingVolume);
+
+    // 7. 创建可见性组件
+    VisibilityComponent &planeVisibilityComponent =
+        m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(planeSubmesh);
   }
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
