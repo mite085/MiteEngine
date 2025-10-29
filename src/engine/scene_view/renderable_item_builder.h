@@ -106,7 +106,7 @@ class RenderableItemBuilder {
   static uint32_t SelectMeshLODLevel(std::shared_ptr<Mesh> mesh,
                                      const glm::vec3 &cameraPosition,
                                      const glm::mat4 &worldTransform,
-                                     float lodBias = 1.0f);
+                                     float lodBias = 3.0f);
 
  private:
   /**

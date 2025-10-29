@@ -51,7 +51,7 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
   }
 
   // 日志记录
-  //m_Logger->trace("Built {} renderable items ({} cached, {} created)",
+  // m_Logger->trace("Built {} renderable items ({} cached, {} created)",
   //                items.size(),
   //                cachedCount,
   //                createdCount);
@@ -86,11 +86,9 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     meshInstance->UpdateUBO(sceneNode->GetWorldTransform());
 
     // 1.2. 更新meshInstance的LOD等级
-    uint32_t lodLevel = SelectMeshLODLevel(
-        meshInstance->GetMesh(),
-        camera->GetCameraTransform().GetPosition(),
-        sceneNode->GetWorldTransform().GetLocalMatrix(),
-        1);
+    uint32_t lodLevel = SelectMeshLODLevel(meshInstance->GetMesh(),
+                                           camera->GetCameraTransform().GetPosition(),
+                                           sceneNode->GetWorldTransform().GetLocalMatrix());
     meshInstance->SetMeshLODLevel(lodLevel);
 
     // 2. 提取材质
