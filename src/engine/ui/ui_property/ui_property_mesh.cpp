@@ -17,21 +17,21 @@ void PropertyTable<MeshComponent>::Render(UIRender &render)
   for (int i = 0; i < int(mesh->GetLODCount()); i++) {
     // LOD等级
     RenderLabelItemRow(render, "editor.mesh_lod_level", [&]() {
-      EditIntProps lodLevelProps;
+      IntEditProps lodLevelProps;
       lodLevelProps.value = i;
       render.RenderReadOnlyInt(lodLevelProps);
     });
 
     // 顶点计数
     RenderLabelItemRow(render, "editor.mesh_vertix_count", [&]() {
-      EditIntProps meshVertixCount;
+      IntEditProps meshVertixCount;
       meshVertixCount.value = mesh->GetVertexCount(i);
       render.RenderReadOnlyInt(meshVertixCount);
     });
 
     // 索引计数
     RenderLabelItemRow(render, "editor.mesh_index_count", [&]() {
-      EditIntProps meshIndexCount;
+      IntEditProps meshIndexCount;
       meshIndexCount.value = mesh->GetIndexCount(i);
       render.RenderReadOnlyInt(meshIndexCount);
     });

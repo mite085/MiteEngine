@@ -101,7 +101,7 @@ struct ListBoxProps : public TextRenderProps {
 /**
  * @brief 浮点数编辑属性
  */
-struct EditFloatProps : public TextRenderProps {
+struct FloatEditProps : public TextRenderProps {
   float value = 0.0f;           // 当前值
   float dragSpeed = 0.1f;       // 拖动速度（Drag控件专用）
   float minValue = -FLT_MAX;    // 最小值
@@ -112,7 +112,7 @@ struct EditFloatProps : public TextRenderProps {
 /**
  * @brief 二维向量编辑属性
  */
-struct EditFloat2Props : public TextRenderProps {
+struct Float2EditProps : public TextRenderProps {
   glm::vec2 value = {0.0f, 0.0f};  // 当前值
   float dragSpeed = 0.1f;          // 拖动速度（Drag控件专用）
   float minValue = -FLT_MAX;       // 最小值
@@ -123,7 +123,7 @@ struct EditFloat2Props : public TextRenderProps {
 /**
  * @brief 三维向量编辑属性
  */
-struct EditFloat3Props : public TextRenderProps {
+struct Float3EditProps : public TextRenderProps {
   glm::vec3 value = {0.0f, 0.0f, 0.0f};  // 当前值
   float dragSpeed = 0.1f;                // 拖动速度（Drag控件专用）
   float minValue = -FLT_MAX;             // 最小值
@@ -134,7 +134,7 @@ struct EditFloat3Props : public TextRenderProps {
 /**
  * @brief 四维向量编辑属性
  */
-struct EditFloat4Props : public TextRenderProps {
+struct Float4EditProps : public TextRenderProps {
   glm::vec4 value = {0.0f, 0.0f, 0.0f, 0.0f};  // 当前值
   float dragSpeed = 0.1f;                      // 拖动速度（Drag控件专用）
   float minValue = -FLT_MAX;                   // 最小值
@@ -145,7 +145,7 @@ struct EditFloat4Props : public TextRenderProps {
 /**
  * @brief 整数编辑属性
  */
-struct EditIntProps : public TextRenderProps {
+struct IntEditProps : public TextRenderProps {
   int value = 0;              // 当前值
   float dragSpeed = 1.0f;     // 拖动速度（Drag控件专用）
   int minValue = INT_MIN;     // 最小值

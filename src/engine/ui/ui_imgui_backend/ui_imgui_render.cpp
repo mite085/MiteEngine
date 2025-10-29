@@ -295,7 +295,7 @@ bool ImGuiUIRender::RenderListBox(ListBoxProps &props)
   return changed;
 }
 
-void ImGuiUIRender::RenderReadOnlyInt(EditIntProps &props)
+void ImGuiUIRender::RenderReadOnlyInt(IntEditProps &props)
 {
   if (!props.visible)
     return;
@@ -309,7 +309,7 @@ void ImGuiUIRender::RenderReadOnlyInt(EditIntProps &props)
   return;
 }
 
-void ImGuiUIRender::RenderReadOnlyFloat(EditFloatProps &props)
+void ImGuiUIRender::RenderReadOnlyFloat(FloatEditProps &props)
 {
   if (!props.visible)
     return;
@@ -321,7 +321,7 @@ void ImGuiUIRender::RenderReadOnlyFloat(EditFloatProps &props)
   return;
 }
 
-void ImGuiUIRender::RenderReadOnlyFloat2(EditFloat2Props &props)
+void ImGuiUIRender::RenderReadOnlyFloat2(Float2EditProps &props)
 {
   if (!props.visible)
     return;
@@ -336,7 +336,7 @@ void ImGuiUIRender::RenderReadOnlyFloat2(EditFloat2Props &props)
   return;
 }
 
-void ImGuiUIRender::RenderReadOnlyFloat3(EditFloat3Props &props)
+void ImGuiUIRender::RenderReadOnlyFloat3(Float3EditProps &props)
 {
   if (!props.visible)
     return;
@@ -352,7 +352,7 @@ void ImGuiUIRender::RenderReadOnlyFloat3(EditFloat3Props &props)
   return;
 }
 
-void ImGuiUIRender::RenderReadOnlyFloat4(EditFloat4Props &props)
+void ImGuiUIRender::RenderReadOnlyFloat4(Float4EditProps &props)
 {
   if (!props.visible)
     return;
@@ -372,7 +372,7 @@ void ImGuiUIRender::RenderReadOnlyFloat4(EditFloat4Props &props)
 }
 
 // ==================== 数值输入控件渲染实现 ====================
-bool ImGuiUIRender::RenderSliderInt(EditIntProps &props)
+bool ImGuiUIRender::RenderSliderInt(IntEditProps &props)
 {
   if (!props.visible)
     return false;
@@ -385,7 +385,7 @@ bool ImGuiUIRender::RenderSliderInt(EditIntProps &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderSliderFloat(EditFloatProps &props)
+bool ImGuiUIRender::RenderSliderFloat(FloatEditProps &props)
 {
   if (!props.visible)
     return false;
@@ -398,7 +398,7 @@ bool ImGuiUIRender::RenderSliderFloat(EditFloatProps &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderSliderFloat2(EditFloat2Props &props)
+bool ImGuiUIRender::RenderSliderFloat2(Float2EditProps &props)
 {
   if (!props.visible)
     return false;
@@ -414,7 +414,7 @@ bool ImGuiUIRender::RenderSliderFloat2(EditFloat2Props &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderSliderFloat3(EditFloat3Props &props)
+bool ImGuiUIRender::RenderSliderFloat3(Float3EditProps &props)
 {
   if (!props.visible)
     return false;
@@ -430,7 +430,7 @@ bool ImGuiUIRender::RenderSliderFloat3(EditFloat3Props &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderSliderFloat4(EditFloat4Props &props)
+bool ImGuiUIRender::RenderSliderFloat4(Float4EditProps &props)
 {
   if (!props.visible)
     return false;
@@ -446,7 +446,7 @@ bool ImGuiUIRender::RenderSliderFloat4(EditFloat4Props &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragInt(EditIntProps &props)
+bool ImGuiUIRender::RenderDragInt(IntEditProps &props)
 {
   if (!props.visible)
     return false;
@@ -463,7 +463,7 @@ bool ImGuiUIRender::RenderDragInt(EditIntProps &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragFloat(EditFloatProps &props)
+bool ImGuiUIRender::RenderDragFloat(FloatEditProps &props)
 {
   if (!props.visible)
     return false;
@@ -480,7 +480,7 @@ bool ImGuiUIRender::RenderDragFloat(EditFloatProps &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragFloat2(EditFloat2Props &props)
+bool ImGuiUIRender::RenderDragFloat2(Float2EditProps &props)
 {
   if (!props.visible)
     return false;
@@ -497,7 +497,7 @@ bool ImGuiUIRender::RenderDragFloat2(EditFloat2Props &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragFloat3(EditFloat3Props &props)
+bool ImGuiUIRender::RenderDragFloat3(Float3EditProps &props)
 {
   if (!props.visible)
     return false;
@@ -514,7 +514,7 @@ bool ImGuiUIRender::RenderDragFloat3(EditFloat3Props &props)
   return changed;
 }
 
-bool ImGuiUIRender::RenderDragFloat4(EditFloat4Props &props)
+bool ImGuiUIRender::RenderDragFloat4(Float4EditProps &props)
 {
   if (!props.visible)
     return false;

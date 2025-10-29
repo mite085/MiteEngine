@@ -50,7 +50,7 @@ void PropertyTable<BoundingVolumeComponent>::RenderAABBProperty(UIRender &render
 {
   // 由于存在多种情况，不适合将属性放在成员变量中，所以作为临时变量
   // 轴对齐包围盒上下限
-  EditFloat3Props aabbMaxProps, aabbMinProps;
+  Float3EditProps aabbMaxProps, aabbMinProps;
   aabbMaxProps.translationKey = "math.meter";
   aabbMaxProps.value = aabb.max;
   aabbMinProps.translationKey = "math.meter";
@@ -68,8 +68,8 @@ void PropertyTable<BoundingVolumeComponent>::RenderSphereProperty(
     UIRender &render, const BoundingVolumeSphere &sphere)
 {
   // 球包围盒中心与半径
-  EditFloat3Props centerProps;
-  EditFloatProps radiusProps;
+  Float3EditProps centerProps;
+  FloatEditProps radiusProps;
   centerProps.translationKey = "math.meter";
   centerProps.value = sphere.center;
   radiusProps.translationKey = "math.meter";
@@ -87,7 +87,7 @@ void PropertyTable<BoundingVolumeComponent>::RenderOBBProperty(UIRender &render,
                                                                const BoundingVolumeOBB &obb)
 {
   // 轴对齐包围盒中心、半长和方向矩阵
-  EditFloat3Props obbCenterProps, obbExtentsProps;
+  Float3EditProps obbCenterProps, obbExtentsProps;
   obbCenterProps.translationKey = "math.meter";
   obbCenterProps.value = obb.center;
   obbExtentsProps.translationKey = "math.meter";
@@ -111,8 +111,8 @@ void PropertyTable<BoundingVolumeComponent>::RenderPlaneProperty(UIRender &rende
                                                                  const BoundingVolumePlane &plane)
 {
   // 球包围盒中心与半径
-  EditFloat3Props normalProps;
-  EditFloatProps distanceProps;
+  Float3EditProps normalProps;
+  FloatEditProps distanceProps;
   normalProps.value = plane.normal;
   distanceProps.translationKey = "math.meter";
   distanceProps.value = plane.distance;

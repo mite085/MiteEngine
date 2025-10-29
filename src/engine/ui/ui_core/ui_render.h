@@ -71,21 +71,21 @@ class UIRender {
 
   // ==================== 数值输入控件渲染 ====================
   // 支持只读模式/滑动条输入/拖拽输入
-  virtual void RenderReadOnlyInt(EditIntProps &props) = 0;
-  virtual void RenderReadOnlyFloat(EditFloatProps &props) = 0;
-  virtual void RenderReadOnlyFloat2(EditFloat2Props &props) = 0;
-  virtual void RenderReadOnlyFloat3(EditFloat3Props &props) = 0;
-  virtual void RenderReadOnlyFloat4(EditFloat4Props &props) = 0;
-  virtual bool RenderSliderInt(EditIntProps &props) = 0;
-  virtual bool RenderSliderFloat(EditFloatProps &props) = 0;
-  virtual bool RenderSliderFloat2(EditFloat2Props &props) = 0;
-  virtual bool RenderSliderFloat3(EditFloat3Props &props) = 0;
-  virtual bool RenderSliderFloat4(EditFloat4Props &props) = 0;
-  virtual bool RenderDragInt(EditIntProps &props) = 0; 
-  virtual bool RenderDragFloat(EditFloatProps &props) = 0;
-  virtual bool RenderDragFloat2(EditFloat2Props &props) = 0;
-  virtual bool RenderDragFloat3(EditFloat3Props &props) = 0;
-  virtual bool RenderDragFloat4(EditFloat4Props &props) = 0;
+  virtual void RenderReadOnlyInt(IntEditProps &props) = 0;
+  virtual void RenderReadOnlyFloat(FloatEditProps &props) = 0;
+  virtual void RenderReadOnlyFloat2(Float2EditProps &props) = 0;
+  virtual void RenderReadOnlyFloat3(Float3EditProps &props) = 0;
+  virtual void RenderReadOnlyFloat4(Float4EditProps &props) = 0;
+  virtual bool RenderSliderInt(IntEditProps &props) = 0;
+  virtual bool RenderSliderFloat(FloatEditProps &props) = 0;
+  virtual bool RenderSliderFloat2(Float2EditProps &props) = 0;
+  virtual bool RenderSliderFloat3(Float3EditProps &props) = 0;
+  virtual bool RenderSliderFloat4(Float4EditProps &props) = 0;
+  virtual bool RenderDragInt(IntEditProps &props) = 0; 
+  virtual bool RenderDragFloat(FloatEditProps &props) = 0;
+  virtual bool RenderDragFloat2(Float2EditProps &props) = 0;
+  virtual bool RenderDragFloat3(Float3EditProps &props) = 0;
+  virtual bool RenderDragFloat4(Float4EditProps &props) = 0;
 
 
   // ==================== 特殊控件渲染 ====================

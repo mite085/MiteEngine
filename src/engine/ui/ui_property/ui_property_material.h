@@ -26,7 +26,7 @@ template<> class PropertyTable<MaterialComponent> : public IPropertyTable {
 
   // 非纹理状态下的值属性
   ColorEditProps m_BaseColorProps, m_EmissionProps;
-  EditFloatProps m_MetallicProps, m_RoughnessProps, m_AmbientOcclusionProps;
+  FloatEditProps m_MetallicProps, m_RoughnessProps, m_AmbientOcclusionProps;
 };
 }  // namespace mite
 

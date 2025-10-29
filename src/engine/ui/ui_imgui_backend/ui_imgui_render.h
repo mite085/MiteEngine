@@ -37,23 +37,23 @@ class ImGuiUIRender : public UIRender {
   bool RenderListBox(ListBoxProps &props) override;
 
   // ==================== 数值输入控件渲染 ====================
-  void RenderReadOnlyInt(EditIntProps &props) override;
-  void RenderReadOnlyFloat(EditFloatProps &props) override;
-  void RenderReadOnlyFloat2(EditFloat2Props &props) override;
-  void RenderReadOnlyFloat3(EditFloat3Props &props) override;
-  void RenderReadOnlyFloat4(EditFloat4Props &props) override;
+  void RenderReadOnlyInt(IntEditProps &props) override;
+  void RenderReadOnlyFloat(FloatEditProps &props) override;
+  void RenderReadOnlyFloat2(Float2EditProps &props) override;
+  void RenderReadOnlyFloat3(Float3EditProps &props) override;
+  void RenderReadOnlyFloat4(Float4EditProps &props) override;
 
-  bool RenderSliderInt(EditIntProps &props) override;
-  bool RenderSliderFloat(EditFloatProps &props) override;
-  bool RenderSliderFloat2(EditFloat2Props &props) override;
-  bool RenderSliderFloat3(EditFloat3Props &props) override;
-  bool RenderSliderFloat4(EditFloat4Props &props) override;
+  bool RenderSliderInt(IntEditProps &props) override;
+  bool RenderSliderFloat(FloatEditProps &props) override;
+  bool RenderSliderFloat2(Float2EditProps &props) override;
+  bool RenderSliderFloat3(Float3EditProps &props) override;
+  bool RenderSliderFloat4(Float4EditProps &props) override;
   
-  bool RenderDragInt(EditIntProps &props) override;
-  bool RenderDragFloat(EditFloatProps &props) override;
-  bool RenderDragFloat2(EditFloat2Props &props) override;
-  bool RenderDragFloat3(EditFloat3Props &props) override;
-  bool RenderDragFloat4(EditFloat4Props &props) override;
+  bool RenderDragInt(IntEditProps &props) override;
+  bool RenderDragFloat(FloatEditProps &props) override;
+  bool RenderDragFloat2(Float2EditProps &props) override;
+  bool RenderDragFloat3(Float3EditProps &props) override;
+  bool RenderDragFloat4(Float4EditProps &props) override;
   
 
   // ==================== 特殊控件渲染 ====================
