@@ -419,7 +419,8 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
 {
   // 1. 参数验证
   if (indexCount == 0) {
-    m_Logger->warn("Attempted to draw with indexCount = 0");
+    // index count = 0时无需warn，直接返回即可。仅检测，不执行draw call，基本无资源消耗
+    //m_Logger->warn("Attempted to draw with indexCount = 0"); 
     return;
   }
 

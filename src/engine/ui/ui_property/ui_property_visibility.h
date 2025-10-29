@@ -14,7 +14,10 @@ template<> class PropertyTable<VisibilityComponent> : public IPropertyTable {
   void Render(UIRender &render);
 
  private:
+  static const EnumComboBoxList<uint32_t, 2> m_VisibilityMaskList;
   VisibilityComponent &m_Component;
+  CheckboxProps m_VisibilityProps;
+  ComboboxProps m_VisibilityMaskProps;
 };
 
 }  // namespace mite
