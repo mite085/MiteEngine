@@ -14,6 +14,13 @@ template<> class PropertyTable<LightComponent> : public IPropertyTable {
   void Render(UIRender &render);
 
  private:
+  void RenderPointLightProperty(UIRender &render);
+  void RenderSpotLightProperty(UIRender &render);
+  void RenderDirectionalLightProperty(UIRender &render);
+  void RenderAreaRectLightProperty(UIRender &render);
+  void RenderAreaEllipseLightProperty(UIRender &render);
+
+  static const EnumComboBoxList<LightType, 5> m_LightTypeList;
   LightComponent &m_Component;
 };
 
