@@ -358,8 +358,17 @@ BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int en
     return node;
   }
 
-  // 分割节点
+  // 寻找分割节点的位置
   int splitIndex = PartitionNodes(nodes, start, end, bestAxis, bestSplitPos);
+
+  // 确保分割后的两个区间都非空
+  if (splitIndex == start || splitIndex == end) {
+    // 分割失败，回退到叶子节点
+    for (int i = start; i < end; ++i) {
+      node->sceneNodes.push_back(nodes[i]);
+    }
+    return node;
+  }
 
   // 递归构建左右子树
   node->left = BuildTree(nodes, start, splitIndex, depth + 1);
@@ -388,6 +397,11 @@ bool SimpleBVH::FindBestSplit(
     axis = 1;
   if (size.z > size[axis])
     axis = 2;
+
+  // 如果所有中心点在同一位置，无法分割，直接返回
+  if (size[axis] < 1e-6f) {
+    return false;
+  }
 
   // 简单选择中心点中位数
   std::vector<float> centers;

@@ -52,7 +52,7 @@ void ShaderUBO::Destroy()
     m_UBOId = 0;
     m_IsInitialized = false;
 
-    LOG_DEBUG("ShaderUBO destroyed");
+    //LOG_DEBUG("ShaderUBO destroyed");
   }
 }
 

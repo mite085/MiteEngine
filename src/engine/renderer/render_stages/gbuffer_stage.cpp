@@ -125,7 +125,6 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
   }
 
   // 检查GBuffer着色器情况
-  // 使用G-Buffer着色器提交
   auto gbufferShader = context.GetStageShader(m_Name);
   if (gbufferShader) {
     m_Logger->error("No G-Buffer shader available");
@@ -138,6 +137,7 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
   size_t renderedCount = 0;
   size_t skippedCount = 0;
 
+  // 使用G-Buffer着色器提交
   for (const auto &item : items) {
     if (!ValidateGBufferRenderableItem(item)) {
       skippedCount++;
@@ -166,6 +166,13 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
     return;
   }
 
+  // 检查GBuffer着色器情况
+  auto gbufferShader = context.GetStageShader(m_Name);
+  if (gbufferShader) {
+    m_Logger->error("No G-Buffer shader available");
+  }
+
+
   // 设置Alpha测试物体渲染状态
   RenderCommand::Get().SetRenderState(m_AlphaTestState);
 
@@ -173,22 +180,17 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
   size_t renderedCount = 0;
   size_t skippedCount = 0;
 
+  // 使用G-Buffer着色器提交
   for (const auto &item : items) {
     if (!ValidateGBufferRenderableItem(item)) {
       skippedCount++;
       continue;
     }
 
-    // 使用G-Buffer着色器提交
-    auto gbufferShader = context.GetStageShader(m_Name);
-    if (gbufferShader) {
-      RenderCommand::Get().BindMaterialUBO(item.material);
-      RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
-      renderedCount++;
-    }
-    else {
-      skippedCount++;
-    }
+    // 提交渲染
+    RenderCommand::Get().BindMaterialUBO(item.material);
+    RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
+    renderedCount++;
   }
   m_Logger->trace(
       "Rendered {} alpha-test objects to G-Buffer, skipped {}", renderedCount, skippedCount);
