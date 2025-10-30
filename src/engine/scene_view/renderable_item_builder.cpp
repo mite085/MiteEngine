@@ -98,12 +98,20 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
       return RenderableItem();
     }
 
+    // 3. 根据包围盒计算与相机的最短距离
+    glm::vec3 closestPoint = glm::clamp(camera->GetCameraTransform().GetPosition(),
+                                        meshInstance->GetWorldBoundingBox().first,
+                                        meshInstance->GetWorldBoundingBox().second);
+    float distanceToCamera = glm::distance(camera->GetCameraTransform().GetPosition()
+                                               ,closestPoint);
+
     // 3. 构建RenderableItem
     RenderableItem item;
     item.entity = entity;
     item.worldTransform = sceneNode->GetWorldTransform();
     item.mesh = meshInstance;
     item.material = material;
+    item.distanceToCamera = distanceToCamera;
 
     // m_Logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
     return item;
