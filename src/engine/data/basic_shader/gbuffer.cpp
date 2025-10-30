@@ -220,6 +220,13 @@ FrameBufferSpec GBuffer::createFrameBufferSpec() const
     spec.attachments.push_back(attachment);
   }
 
+  // 创建深度附件
+  FrameBufferAttachmentSpec depthAttachment;
+  depthAttachment.type = RuntimeTextureType::Depth;
+  depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
+  depthAttachment.generateMipmaps = false;
+  spec.attachments.push_back(depthAttachment);
+
   return spec;
 }
 
@@ -235,6 +242,7 @@ TextureFormat GBuffer::getTextureFormat(RuntimeTextureType index) const
     case RuntimeTextureType::GBuffer_EmissionAlpha:
     case RuntimeTextureType::GBuffer_NPRParam:
     case RuntimeTextureType::GBuffer_NPRColor:
+    case RuntimeTextureType::Depth:
       return TextureFormat::RGBA16F;  // 其他普通精度即可
 
     default:

@@ -1,8 +1,8 @@
 #include "gbuffer_stage.h"
+#include "basic_event/render_event.h"
 #include "basic_instance/material_instance.h"
 #include "basic_shader/shader_cache.h"
 #include "render_core/render_command.h"
-#include "basic_event/render_event.h"
 #include "render_opengl/opengl_command.h"
 
 namespace mite {
@@ -58,7 +58,7 @@ void GBufferStage::Execute(RenderContext &context)
     m_Logger->error("G-Buffer Stage: G-Buffer Shader from context is not properly linked");
     return;
   }
-  
+
   // 获取上下文记录的帧缓冲尺寸
   glm::vec2 viewportSize = context.GetViewportSize();
 
@@ -101,7 +101,6 @@ void GBufferStage::Execute(RenderContext &context)
   for (const auto &type : GBuffer::GetTextureTypes()) {
     RenderCommand::Get().PublishEventRuntimeTextureFinished(m_GBuffer->getTexture(type));
   }
-
 }
 void GBufferStage::Shutdown()
 {
@@ -125,6 +124,13 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
     return;
   }
 
+  // 检查GBuffer着色器情况
+  // 使用G-Buffer着色器提交
+  auto gbufferShader = context.GetStageShader(m_Name);
+  if (gbufferShader) {
+    m_Logger->error("No G-Buffer shader available");
+  }
+
   // 设置不透明物体渲染状态
   RenderCommand::Get().SetRenderState(m_OpaqueState);
 
@@ -138,21 +144,14 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
       continue;
     }
 
-    // 使用G-Buffer着色器提交
-    auto gbufferShader = context.GetStageShader(m_Name);
-    if (gbufferShader) {
-      RenderCommand::Get().BindMaterialUBO(item.material);
-      RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
-      renderedCount++;
-    }
-    else {
-      skippedCount++;
-      m_Logger->warn("No G-Buffer shader available for material, skipping renderable item");
-    }
+    // 提交渲染
+    RenderCommand::Get().BindMaterialUBO(item.material);
+    RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
+    renderedCount++;
   }
 
-  //m_Logger->trace(
-  //    "Rendered {} opaque objects to G-Buffer, skipped {}", renderedCount, skippedCount);
+  // m_Logger->trace(
+  //     "Rendered {} opaque objects to G-Buffer, skipped {}", renderedCount, skippedCount);
 }
 
 void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
@@ -239,5 +238,4 @@ bool GBufferStage::ValidateGBufferRenderableItem(const RenderableItem &item) con
 
   return true;
 }
-
 }  // namespace mite
