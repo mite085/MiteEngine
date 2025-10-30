@@ -29,7 +29,7 @@ struct GPULightData {
 };
 
 // 光源SSBO绑定 - 占用绑定点16 (参考ShaderBufferBindingRanges设定)
-layout(std430, binding = 16) buffer LightsSSBO {
+layout(std430, binding = 0) buffer LightsSSBO {
     LightSSBOHeader header;         // 头部信息
     GPULightData lights[MAX_LIGHTS]; // 光源数据数组
 } u_Lights;
