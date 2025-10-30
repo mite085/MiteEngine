@@ -78,6 +78,18 @@
     "visibility_mask_none": "完全不可见",
     "visibility_mask_all": "完全可见",
 
+    "light":  "光源",
+    "light_enable": "是否启用",
+    "light_color": "光源颜色",
+    "light_intensity": "光源强度",
+    "light_point": "点光源",
+    "light_point_radius": "点光源影响半径",
+    "light_point_falloff": "点光源衰减系数",
+    "light_spot": "聚光灯",
+    "light_directional": "方向光",
+    "light_area_rect": "矩形面光源",
+    "light_area_ellipse": "椭圆面光源",
+
     "" : ""
   },
   "errors": {

@@ -56,7 +56,7 @@ void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render)
     // 是否启用
     CheckboxProps m_PointEnableProps;
     m_PointEnableProps.checked = pointLight->IsEnabled();
-    RenderLabelItemRow(render, "editor.light_point_enable", [&]() {
+    RenderLabelItemRow(render, "editor.light_enable", [&]() {
       if (render.RenderCheckbox(m_PointEnableProps)) {
         pointLight->SetEnabled(m_PointEnableProps.checked);
         ;
@@ -67,7 +67,7 @@ void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render)
     ColorEditProps m_PointColorProps;
     m_PointColorProps.showAlpha = false;
     m_PointColorProps.color = {pointLight->GetColor(), 1.0f};
-    RenderLabelItemRow(render, "editor.light_point_color", [&]() {
+    RenderLabelItemRow(render, "editor.light_color", [&]() {
       if (render.RenderColorEdit(m_PointColorProps)) {
         pointLight->SetColor(glm::vec3(
             m_PointColorProps.color.x, m_PointColorProps.color.y, m_PointColorProps.color.z));
@@ -78,7 +78,7 @@ void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render)
     FloatEditProps m_PointLightIntensityProps;
     m_PointLightIntensityProps.value = pointLight->GetIntensity();
     m_PointLightIntensityProps.minValue = 0.0f;  // 最小值限制在0.0
-    RenderLabelItemRow(render, "editor.light_point_intensity", [&]() {
+    RenderLabelItemRow(render, "editor.light_intensity", [&]() {
       if (render.RenderDragFloat(m_PointLightIntensityProps)) {
         pointLight->SetIntensity(m_PointLightIntensityProps.value);
       }
