@@ -36,7 +36,7 @@ void ViewportInputContext::Apply(Transform cameraTransform)
   // 更新相机平移
   cameraTransform.PanCamera(m_CameraPanCache.x, m_CameraPanCache.y);
 
-  // 发布相机变换事件
+  // 发布相机变换事件（注意，这里是没有Dirty检测的，也就是每帧都会执行更新操作，向SceneGraph塞入Dirty节点）
   EventBus::Publish<ViewportCameraUpdateEvent>(
       ViewportCameraUpdateEvent(cameraTransform, m_CameraZoomCache));
 

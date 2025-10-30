@@ -72,6 +72,16 @@ void MiteApplication::LoadDefaultScene()
   BoundingVolumeComponent &lightBoundingVolumeComponent =
       m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(lightEntity);
 
+  std::shared_ptr<Light> pointLight2 = LightManager::Get().CreateLight(LightType::POINT);
+  Entity light2Entity = m_SceneCore->CreateEntity("pointLight2");
+  TransformComponent &light2TransformComponent =
+      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(light2Entity);
+  LightComponent &light2Component = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
+      light2Entity);
+  light2Component.SetLight(pointLight2);
+  BoundingVolumeComponent &light2BoundingVolumeComponent =
+      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(light2Entity);
+
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = AssetManager::Get().LoadGLTFModel(
       FileSystem::GetAssetPath("models/car.glb").string(), true, true);

@@ -24,7 +24,7 @@ ModelAssetID ModelLoader::LoadGLTFModel(ModelCache &modelCache,
   // GLTF特定优化
   flags |= aiProcess_ImproveCacheLocality;  // GLTF已经优化过，可以跳过一些预处理
 
-  const aiScene *scene = importer.ReadFile(path, flags);
+  const aiScene *scene = importer.ReadFile(path, flags); // 无需释放，importer析构时会自动释放所有相关内存
   if (!scene || !scene->mRootNode) {
     LOG_ERROR("GLTF load failed: " + std::string(importer.GetErrorString()));
     return ModelAssetID{};
@@ -141,6 +141,7 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
     LOG_ERROR("Failed to store model in cache: " + path);
     return ModelAssetID{};
   }
+  
 }
 
 MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)

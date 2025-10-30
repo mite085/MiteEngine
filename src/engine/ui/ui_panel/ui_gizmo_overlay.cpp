@@ -86,7 +86,7 @@ void GizmoOverlay::Render(OverlayContext &context)
   context.cameraTransform.SetLocalMatrix(glm::inverse(viewMatrix));
   context.modelTransform.SetLocalMatrix(modelMatrix);
 
-  // 发布选中物体变换事件
+  // 发布选中物体变换事件（注意，这里是没有Dirty检测的，也就是每帧都会执行更新操作，向SceneGraph塞入Dirty节点）
   if (context.isModelSelected) {
     EventBus::Publish<ViewportPickedUpdateEvent>(
         ViewportPickedUpdateEvent(context.modelTransform));
