@@ -7,6 +7,7 @@
 #include "scene_core_components/bounding_volume_component.h"
 #include "scene_core_components/transform_component.h"
 #include "scene_core_components/visibility_component.h"
+#include "scene_core_components/light_component.h"
 
 namespace mite {
 /**
@@ -71,6 +72,11 @@ class SceneNodeManager {
    * @return 所有场景节点指针列表
    */
   std::vector<SceneNode *> GetAllNodes() const;
+  /**
+   * @brief 获取所有光源节点
+   * @return 所有光源节点指针列表
+   */
+  std::vector<SceneNode *> GetLightNodes() const;
   /**
    * @brief 获取场景节点数量
    * @return 节点总数
@@ -162,6 +168,9 @@ class SceneNodeManager {
  private:
   // 实体到场景节点的映射表
   std::unordered_map<Entity, std::unique_ptr<SceneNode>> m_EntityToNodeMap;
+
+  // 光源节点列表（只要包含Light组件即可认为是光照节点）
+  std::unordered_set<SceneNode *> m_LightNodes;
 
   // 需要更新的脏节点列表
   std::unordered_set<SceneNode*> m_DirtyNodes;

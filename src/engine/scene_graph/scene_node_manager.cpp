@@ -33,6 +33,7 @@ void SceneNodeManager::Clear()
   // 清空所有节点（会自动处理父子关系）
   std::lock_guard<std::mutex> lock(m_Mutex);
   m_EntityToNodeMap.clear();
+  m_LightNodes.clear();
   m_DirtyNodes.clear();
   m_PathToNodeCache.clear();
   m_PathCacheDirty = false;
@@ -62,6 +63,11 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
 
     // 立即更新节点的世界变换和包围盒
     nodePtr->Update(registry, true);  // force update
+
+    // 如果包含光照组件，则被认为是光源节点，需要参与每帧的光照构建环节
+    if (registry.HasComponent<LightComponent>(entity)) {
+      m_LightNodes.insert(nodePtr);
+    }
 
     // 根据可见性决定是否添加到空间划分结构
     if (nodePtr->IsWorldVisible()) {
@@ -109,6 +115,10 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
   // 从映射表中移除
   m_EntityToNodeMap.erase(it);
 
+  // 从光源节点列表中移除
+  if (m_LightNodes.find(GetNode(entity)) != m_LightNodes.end())
+    m_LightNodes.erase(GetNode(entity));
+
   // 从脏节点列表中移除
   if (m_DirtyNodes.find(GetNode(entity)) != m_DirtyNodes.end())
     m_DirtyNodes.erase(GetNode(entity));
@@ -123,20 +133,17 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
 // ==================== 场景节点查询接口 ====================
 SceneNode *SceneNodeManager::GetNode(Entity entity) const
 {
-  std::lock_guard<std::mutex> lock(m_Mutex);
   auto it = m_EntityToNodeMap.find(entity);
   return it != m_EntityToNodeMap.end() ? it->second.get() : nullptr;
 }
 
 bool SceneNodeManager::HasNode(Entity entity) const
 {
-  std::lock_guard<std::mutex> lock(m_Mutex);
   return m_EntityToNodeMap.find(entity) != m_EntityToNodeMap.end();
 }
 
 std::vector<SceneNode *> SceneNodeManager::GetRootNodes() const
 {
-  std::lock_guard<std::mutex> lock(m_Mutex);
   std::vector<SceneNode *> rootNodes;
 
   // 执行遍历操作，检查Root
@@ -150,7 +157,6 @@ std::vector<SceneNode *> SceneNodeManager::GetRootNodes() const
 
 std::vector<SceneNode *> SceneNodeManager::GetAllNodes() const
 {
-  std::lock_guard<std::mutex> lock(m_Mutex);
   std::vector<SceneNode *> nodes;
   nodes.reserve(m_EntityToNodeMap.size());
 
@@ -161,9 +167,20 @@ std::vector<SceneNode *> SceneNodeManager::GetAllNodes() const
   return nodes;
 }
 
+std::vector<SceneNode *> SceneNodeManager::GetLightNodes() const
+{
+  std::vector<SceneNode *> nodes;
+  nodes.reserve(m_LightNodes.size());
+
+  // 遍历赋值
+  for (const auto node : m_LightNodes) {
+    nodes.push_back(node);
+  }
+  return nodes;
+}
+
 size_t SceneNodeManager::GetNodeCount() const
 {
-  std::lock_guard<std::mutex> lock(m_Mutex);
   return m_EntityToNodeMap.size();
 }
 
@@ -200,7 +217,6 @@ std::string SceneNodeManager::GetNodePath(SceneNode *node) const
 
 SceneNode *SceneNodeManager::FindNodeByPath(const std::string &path) const
 {
-  std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 简单的路径查找实现（可根据需要优化）
   for (const auto &[entity, node] : m_EntityToNodeMap) {
@@ -215,7 +231,6 @@ SceneNode *SceneNodeManager::FindNodeByPath(const std::string &path) const
 void SceneNodeManager::TraverseTree(std::function<bool(SceneNode *)> callback,
                                     TraversalType traversalType) const
 {
-  std::lock_guard<std::mutex> lock(m_Mutex);
   for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (node->IsRoot()) {
       bool shouldContinue = true;

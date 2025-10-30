@@ -1,4 +1,5 @@
 #include "scene_graph.h"
+#include "light_core/light_manager.h"
 
 namespace mite {
 SceneGraph::SceneGraph()
@@ -147,6 +148,20 @@ void SceneGraph::Update(SceneRegistry &registry)
 
   // NodeManager->Update()包含了SpatialPartition的Update()
   m_NodeManager->Update(registry);
+
+  // 根据光照数据和新的世界变换组建光源数据
+  std::unordered_map<std::shared_ptr<Light>, Transform> lightTransforms;
+  for (SceneNode *node : m_NodeManager->GetLightNodes()) {
+    if (node && registry.HasComponent<LightComponent>(node->GetEntity())) {
+      // 获取组件光源数据
+      std::shared_ptr<Light> light =
+          registry.GetComponent<LightComponent>(node->GetEntity()).GetLight();
+      lightTransforms.insert(std::make_pair(light, node->GetWorldTransform()));
+    }
+  }
+
+  // 使用光源数据更新LightData
+  LightManager::Get().UpdateLightData(lightTransforms);
 }
 
 // ==================== 状态查询接口 ====================

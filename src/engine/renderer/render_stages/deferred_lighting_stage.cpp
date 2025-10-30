@@ -206,10 +206,7 @@ void DeferredLightingStage::BindLightSSBOData(RenderContext &context,
     // 绑定光源SSBO到着色器
     RenderCommand::Get().BindLightSSBO(lightManager.GetLightSSBO());
 
-    // 设置光源统计信息到uniform
-    size_t enabledLightCount = lightManager.GetEnabledLightCount();
-
-    //m_Logger->trace("Bound light SSBO with {} enabled lights", enabledLightCount);
+    m_Logger->trace("Bound light SSBO with lights");
   }
   else {
     m_Logger->warn("No LightManager available");

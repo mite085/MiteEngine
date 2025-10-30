@@ -294,7 +294,7 @@ void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
     glDisable(GL_DEPTH_TEST);
   }
 
-  // 深度写入控制（新增）
+  // 深度写入控制
   glDepthMask(state.depthWrite ? GL_TRUE : GL_FALSE);
 
   // 混合设置
