@@ -36,15 +36,14 @@ void OpenGLRenderCommand::Clear(uint32_t clearFlags,
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  // 更新清除参数
-  m_ClearColor = clearColor;
-  m_DepthClearValue = depthClear;
-  m_StencilClearValue = stencilClear;
-  m_ClearFlags = clearFlags;
-
   // 提交清除命令
   m_CommandQueue.push({CommandType::Clear,
-                       [] {},  // 实际清除操作在Flush时执行
+                       [=] {
+                         glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+                         glClearDepth(depthClear);
+                         glClearStencil(stencilClear);
+                         glClear(clearFlags);
+                       },
                        "Clear"});
 }
 
@@ -243,19 +242,7 @@ void OpenGLRenderCommand::Flush()
     const auto &cmd = m_CommandQueue.front();
 
     try {
-      switch (cmd.type) {
-        case CommandType::Clear:
-          glClearColor(m_ClearColor.r, m_ClearColor.g, m_ClearColor.b, m_ClearColor.a);
-          glClearDepth(m_DepthClearValue);
-          glClearStencil(m_StencilClearValue);
-          glClear(m_ClearFlags);
-          break;
-
-        default: {
-          cmd.execute();
-          break;
-        }
-      }
+      cmd.execute();
     }
     catch (const std::exception &e) {
       m_Logger->error("Failed to execute command {}: {}", cmd.debugName, e.what());

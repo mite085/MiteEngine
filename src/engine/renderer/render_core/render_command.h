@@ -177,12 +177,6 @@ class RenderCommand {
   std::unique_ptr<RenderDevice> m_Device;  // 设备管理
   std::queue<Command> m_CommandQueue;      // 命令存储
   std::mutex m_QueueMutex;                 // 命令锁
-
-  // 清除状态
-  glm::vec4 m_ClearColor{0.1f, 0.1f, 0.1f, 1.0f};
-  float m_DepthClearValue = 1.0f;
-  int m_StencilClearValue = 0;
-  uint32_t m_ClearFlags = 0;
 };
 // 辅助函数
 template<typename Func>
