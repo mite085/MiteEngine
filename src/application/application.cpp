@@ -82,25 +82,41 @@ void MiteApplication::LoadDefaultScene()
   BoundingVolumeComponent &light2BoundingVolumeComponent =
       m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(light2Entity);
 
+  // 摆放位置，设定强度
+  lightTransformComponent.SetLocalTransform(
+      [=](Transform &localtrans) { localtrans.Translate(glm::vec3(3.2f, 1.2f, 0.0f)); });
+  lightComponent.SetIntensity(100);
+  light2TransformComponent.SetLocalTransform(
+      [=](Transform &localtrans) { localtrans.Translate(glm::vec3(0.0f, 1.5f, 1.2f)); });
+  light2Component.SetIntensity(100);
+
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = AssetManager::Get().LoadGLTFModel(
       FileSystem::GetAssetPath("models/car.glb").string(), true, true);
-  Model planeModel(AssetManager::Get().GetModel(plane_model_asset_id)->handle,
-                   AssetManager::Get().GetModel(plane_model_asset_id)->subMeshSection);
+  std::shared_ptr<ModelAsset> modelAsset = AssetManager::Get().GetModel(plane_model_asset_id);
+
+  // 获取材质列表
+  std::vector<MaterialAssetID> modelMaterialIDs = modelAsset->materialRefs;
+  std::vector<std::shared_ptr<MaterialInstance>> modelMaterials;
+  for (const MaterialAssetID &id : modelMaterialIDs) {
+    std::shared_ptr<MaterialInstance> instance = AssetManager::Get().GetMaterial(id)->instance;
+    modelMaterials.push_back(instance);
+  }
+  Model planeModel(modelAsset->handle, modelAsset->subMeshSection, modelMaterials);
 
   // 网格体组件与实体创建
   for (size_t i = 0; i < planeModel.GetSubMeshCount(); ++i) {
     // 1. 创建网格实体
-    Entity planeSubmesh = m_SceneCore->CreateEntity("part_" + std::to_string(i));
+    Entity planeSubmesh = m_SceneCore->CreateEntity(planeModel.GetSubMesh(i).GetName());
 
     // 2. 创建网格组件，设定组件数据
     MeshComponent &planeMeshComponent = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
         planeSubmesh);
     planeMeshComponent.SetMesh(std::make_shared<Mesh>(planeModel.GetSubMesh(i)));
 
-    // 3. 创建材质实例（自发光）
-    std::shared_ptr<MaterialInstance> planeMaterial = MaterialFactory::Get().CreateInstance(
-        MaterialType::EMISSION);
+    // 3. 获取材质
+    std::shared_ptr<MaterialInstance> planeMaterial = planeModel.GetSubMaterial(
+        planeModel.GetSubMesh(i).GetMaterialIndex());
 
     // 4. 创建材质组件
     MaterialComponent &planeMaterialComponent =
@@ -234,7 +250,7 @@ void MiteApplication::InitializeAssertManager()
   m_Logger->info("Initializing asset manager");
 
   // 初始化资产管理器
-  //m_AssetManager = std::make_unique<AssetManager>();
+  // m_AssetManager = std::make_unique<AssetManager>();
 }
 
 void MiteApplication::InitializeSceneCore()
