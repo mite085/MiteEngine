@@ -90,6 +90,7 @@ struct MeshData {
 
 // 子网格 LOD 链结构
 struct MeshDataLODChain {
+  std::string name;
   MeshData baseSection;               // 基础 LOD (level 0)
   std::vector<MeshData> lodSections;  // 其他 LOD 级别 (level 1+)
 };

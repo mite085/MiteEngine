@@ -124,6 +124,7 @@ struct MeshSection {
 
 // 子网格 LOD 链结构
 struct MeshSectionLODChain {
+  std::string name;                      // Mesh名称
   MeshSection baseSection;               // 基础 LOD (level 0)
   std::vector<MeshSection> lodSections;  // 其他 LOD 级别 (level 1+)
 };
