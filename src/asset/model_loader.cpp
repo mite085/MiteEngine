@@ -24,7 +24,8 @@ ModelAssetID ModelLoader::LoadGLTFModel(ModelCache &modelCache,
   // GLTF特定优化
   flags |= aiProcess_ImproveCacheLocality;  // GLTF已经优化过，可以跳过一些预处理
 
-  const aiScene *scene = importer.ReadFile(path, flags); // 无需释放，importer析构时会自动释放所有相关内存
+  const aiScene *scene = importer.ReadFile(
+      path, flags);  // 无需释放，importer析构时会自动释放所有相关内存
   if (!scene || !scene->mRootNode) {
     LOG_ERROR("GLTF load failed: " + std::string(importer.GetErrorString()));
     return ModelAssetID{};
@@ -99,7 +100,8 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
   // 2. 处理所有子网格
   std::vector<MeshDataLODChain> subMeshData;
   for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-    MeshDataLODChain subMeshLodChain{ProcessMesh(scene->mMeshes[i], scene), {}};
+    MeshDataLODChain subMeshLodChain{
+        scene->mMeshes[i]->mName.C_Str(), ProcessMesh(scene->mMeshes[i], scene), {}};
     // 生成多级LOD
     if (generateLODs) {
       // lodLevels = {1.0f, 0.5f, 0.25f, 0.1f}，
@@ -141,7 +143,6 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
     LOG_ERROR("Failed to store model in cache: " + path);
     return ModelAssetID{};
   }
-  
 }
 
 MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)
@@ -431,6 +432,9 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
   // 遍历MeshData并逐个执行合并操作，并构建MeshSection
   for (const MeshDataLODChain &meshLODChain : subMeshData) {
     MeshSectionLODChain sectionLODChain;
+
+    // 传递Name
+    sectionLODChain.name = meshLODChain.name;
 
     // 处理基础 LOD
     sectionLODChain.baseSection = MergeMeshDataToSourceData(meshLODChain.baseSection);

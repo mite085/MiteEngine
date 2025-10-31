@@ -43,7 +43,7 @@ class TextureLoader {
                                             const std::string &modelPath,
                                             const aiTexture *aiTexture,
                                             int desiredChannels = 4,
-                                            bool flipVertical = true);
+                                            bool flipVertical = false);
   /**
    * 检查路径是否为嵌入式纹理标识（以'*'开头）
    */
