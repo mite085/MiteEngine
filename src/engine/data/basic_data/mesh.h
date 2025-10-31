@@ -20,50 +20,55 @@ class Mesh {
    * @param baseSection 基础LOD级别的网格数据段信息
    * @param lodSections_ 所有LOD级别的网格数据段信息
    */
-  explicit Mesh(ModelGPUHandle modelHandle, const MeshSectionLODChain &lodChain);
-
+  explicit Mesh(ModelGPUHandle modelHandle,
+                const MeshSectionLODChain &lodChain);
   /**
-   * 获取指定LOD级别的顶点数量
+   * @brief 获取指定LOD级别的顶点数量
    */
   uint32_t GetVertexCount(uint32_t lodLevel = 0) const;
   /**
-   * 获取指定LOD级别的索引数量
+   * @brief 获取指定LOD级别的索引数量
    */
   uint32_t GetIndexCount(uint32_t lodLevel = 0) const;
   /**
-   * 获取指定LOD级别的索引偏移
+   * @brief 获取指定LOD级别的索引偏移
    */
   uint32_t GetIndexOffset(uint32_t lodLevel = 0) const;
   /**
-   * 获取指定LOD级别的网格数据段信息
+   * @brief 获取指定LOD级别的网格数据段信息
    */
   const MeshSection &GetSection(uint32_t lodLevel = 0) const;
   /**
-   * 获取基础LOD级别的网格数据段信息
+   * @brief 获取基础LOD级别的网格数据段信息
    */
   const MeshSection &GetBaseSection() const;
   /**
-   * 获取所有LOD级别的网格数据段信息
+   * @brief 获取所有LOD级别的网格数据段信息
    */
   const std::vector<MeshSection> &GetSubLODSections() const;
   /**
-   * 获取支持的LOD级别数量
+   * @brief 获取支持的LOD级别数量
    */
   uint32_t GetLODCount() const;
   /**
-   * 获取父模型GPU资源
+   * @brief 获取父模型GPU资源
    */
   ModelGPUHandle GetModelHandle() const;
   /**
-   * 获取子网格级包围盒
+   * @brief 获取子网格级包围盒
    */
   const std::pair<glm::vec3, glm::vec3> GetBoundingBox(uint32_t lodLevel = 0) const;
   /**
-   * 获取材质索引
+   * @brief 获取材质索引
    */
   uint32_t GetMaterialIndex() const;
+  /**
+   * @brief 获取名称
+   */
+  std::string GetName() const;
 
  private:
+  std::string m_Name;
   ModelGPUHandle m_ModelGPUHandle;  // 父模型资源
   MeshSectionLODChain m_LODChain;  // 包含网格体Section的LODChain对象，可从中提取到Offset信息
 };

@@ -1,14 +1,14 @@
 #include "mesh.h"
 
 namespace mite {
-Mesh::Mesh(ModelGPUHandle modelHandle, const MeshSectionLODChain &lodChain)
+Mesh::Mesh(ModelGPUHandle modelHandle,
+           const MeshSectionLODChain &lodChain)
     : m_ModelGPUHandle(modelHandle), m_LODChain(lodChain)
 {
   // 检查是否为空Mesh
   if (m_LODChain.baseSection.vertexCount == 0 || m_LODChain.baseSection.indexCount == 0) {
     throw std::invalid_argument("Invalid mesh section: vertex or index count is zero");
   }
-
 }
 
 uint32_t Mesh::GetVertexCount(uint32_t lodLevel) const
@@ -86,11 +86,14 @@ const std::pair<glm::vec3, glm::vec3> Mesh::GetBoundingBox(uint32_t lodLevel) co
   // 如果找不到指定LOD级别，返回基础LOD级别的包围盒
   return {m_LODChain.baseSection.bboxMin, m_LODChain.baseSection.bboxMax};
 }
-/**
- * 获取材质索引
- */
+
 uint32_t Mesh::GetMaterialIndex() const
 {
   return m_LODChain.baseSection.materialIndex;
+}
+
+std::string Mesh::GetName() const
+{
+  return m_LODChain.name;
 }
 };  // namespace mite
