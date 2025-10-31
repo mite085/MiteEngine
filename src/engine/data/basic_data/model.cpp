@@ -1,8 +1,12 @@
 #include "model.h"
 
 namespace mite {
-Model::Model(ModelGPUHandle modelHandle, std::vector<MeshSectionLODChain> meshs)
-    :m_Path(modelHandle.path), m_BoundingBox(modelHandle.bboxMin, modelHandle.bboxMax)
+Model::Model(ModelGPUHandle modelHandle,
+             std::vector<MeshSectionLODChain> meshs,
+             std::vector<std::shared_ptr<MaterialInstance>> materials)
+    : m_Path(modelHandle.path),
+      m_BoundingBox(modelHandle.bboxMin, modelHandle.bboxMax),
+      m_Materials(materials)
 {
   // 基于每个原始 LOD 创建的分组，逐个构建 Mesh 对象
   for (MeshSectionLODChain &lodChain : meshs) {
@@ -25,11 +29,23 @@ Mesh Model::GetSubMesh(size_t index) const
 {
   // 越界检查
   if (index < m_SubMeshes.size())
-    return m_SubMeshes[index];
+    return m_SubMeshes.at(index);
   else {
-    LOG_ERROR("Invalid getting submesh index: {}, Model path: {}, return empty mesh",
-              index, m_Path);
+    LOG_ERROR(
+        "Invalid getting submesh index: {}, Model path: {}, return empty mesh", index, m_Path);
     return Mesh();
+  }
+}
+
+std::shared_ptr<MaterialInstance> Model::GetSubMaterial(size_t index) const
+{
+  // 越界检查
+  if (index < m_Materials.size()) {
+    return m_Materials.at(index);
+  }
+  else {
+    LOG_ERROR("Invalid getting material index: {}, Model path: {}, return nullptr", index, m_Path);
+    return nullptr;
   }
 }
 
