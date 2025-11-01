@@ -141,7 +141,7 @@ bool PointLight::ValidatePointLightParameters() const
     return false;
   }
 
-  // 检查强度是否合理（可选，根据项目需求调整）
+  // 检查强度是否合理（仅报warn，不返回错误信息）
   if (m_Properties.intensity > 100000.0f) {
     LOG_WARN("PointLight intensity is very high: {}", m_Properties.intensity);
   }
