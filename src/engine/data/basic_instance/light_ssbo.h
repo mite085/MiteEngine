@@ -20,9 +20,9 @@ class LightShaderStorgeBuffer {
  public:
   /**
    * @brief 构造函数
-   * @param maxLights 支持的最大光源数量，默认1024个
+   * @param maxLights 支持的最大光源数量，默认128个
    */
-  explicit LightShaderStorgeBuffer(size_t maxLights = 1024);
+  explicit LightShaderStorgeBuffer(size_t maxLights = 128);
   ~LightShaderStorgeBuffer() = default;
 
   // ---- 生命周期管理 ----

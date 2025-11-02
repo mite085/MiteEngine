@@ -1,143 +1,10 @@
 #ifndef MITE_UNIFORM_BUFFER
 #define MITE_UNIFORM_BUFFER
 
+#include "basic_type/light_type.h"
 #include "basic_type/texture_type.h"
 
 namespace mite {
-// ---- 资源类型枚举 ----
-/**
- * @brief UBO 资源类型枚举
- * @note 使用独立的 UBO 绑定点命名空间
- */
-enum class UBOResourceType {
-  CameraUBO = 0,  // 相机参数
-  MaterialUBO,    // 材质参数
-  ModelUBO,       // 模型矩阵
-  SceneUBO,       // 场景全局参数
-  Count           // 类型计数
-};
-/**
- * @brief SSBO 资源类型枚举
- * @note 使用独立的 SSBO 绑定点命名空间
- */
-enum class SSBOResourceType {
-  LightSSBO = 0,  // 光源数据
-  InstanceSSBO,   // 实例数据
-  BoneSSBO,       // 骨骼动画数据
-  Count           // 类型计数
-};
-/**
- * @brief 纹理资源类型枚举
- * @note 使用独立的纹理单元命名空间
- */
-enum class TextureResourceType {
-  // 运行时纹理类型
-  RuntimeTexture = 0,
-  // 外部加载纹理类型
-  ExternalTexture,
-  Count
-};
-// ---- 绑定点范围定义（基于实际硬件查询） ----
-struct BindingRanges {
-  // 查询硬件实际限制
-  static uint32_t GetMaxTextureUnits()
-  {
-    static GLint maxUnits = []() {
-      GLint units;
-      glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &units);
-      return units > 0 ? units : 32;  // 默认值
-    }();
-    return static_cast<uint32_t>(maxUnits);
-  }
-
-  static uint32_t GetMaxUBOBindings()
-  {
-    static GLint maxBindings = []() {
-      GLint bindings;
-      glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &bindings);
-      return bindings > 0 ? bindings : 72;  // 默认值
-    }();
-    return static_cast<uint32_t>(maxBindings);
-  }
-
-  static uint32_t GetMaxSSBOBindings()
-  {
-    static GLint maxBindings = []() {
-      GLint bindings;
-      glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &bindings);
-      return bindings > 0 ? bindings : 8;  // 默认值
-    }();
-    return static_cast<uint32_t>(maxBindings);
-  }
-};
-
-/**
- * @brief 相机参数UBO结构体
- * @note 按照std140布局规则对齐，包含所有材质参数
- */
-struct alignas(16) CameraUniformBuffer {
-  // ---- 矩阵部分 (3 * 64 = 192字节) ----
-  glm::mat4 view;            // 64字节 - 视图矩阵
-  glm::mat4 projection;      // 64字节 - 投影矩阵
-  glm::mat4 viewProjection;  // 64字节 - 视图投影矩阵
-
-  // ---- 相机参数部分 (2 * 12 + 2 * 4 + 192 = 224字节) ----
-  glm::vec3 position;  // 12字节 - 相机世界坐标（vec3占用12字节，但整个块是16字节）
-  float nearPlane;  // 4字节  - 近平面距离  （后面的标量可以占用剩余的4字节）
-  glm::vec3 forward;  // 12字节 - 相机前向向量（但下个vec3必须从新的16字节开始）
-  float farPlane;  // 4字节  - 远平面距离  （如果没有跟随float/int，则vec3应当占16字节）
-
-  // ---- 投影参数部分 (3 * 4 + 224 = 236字节) ----
-  float fov;           // 4字节 - 垂直FOV（弧度）
-  float orthoSize;     // 4字节 - 正交投影尺寸
-  int projectionType;  // 4字节 - 投影类型标志 (1 = 透视, 0 = 正交)
-
-  // 4字节填充
-  float padding;
-
-  // 总大小: 236 + 4 = 240字节 (16字节对齐)
-};
-/**
- * @brief GBuffer材质参数UBO结构体
- * @note 按照std140布局规则对齐，包含所有材质参数
- */
-struct alignas(16) MaterialUniformBuffer {
-  // ---- 材质类型标识（1 * 16 = 16 字节） ----
-  glm::vec4 materialInfo;  // x: MaterialType, yzw: 保留
-
-  // ---- 基础PBR参数 (4 * 16 + 16 = 80 字节) ----
-  glm::vec4 baseColor;            // RGB + Alpha (w分量)
-  glm::vec4 metallicRoughnessAO;  // x: metallic, y: roughness, z: AO, w: unused
-  glm::vec4 emission;             // RGB + Intensity (w分量)
-  glm::vec4 normalScale;          // x: normal scale, yzw: unused
-
-  // ---- NPR参数 (2 * 16 + 80 = 112 字节) ----
-  glm::vec4 nprParameters;  // xyzw：rampThreshold, rampSmoothness, specularSize, outlineWidth
-  glm::vec4 nprColors;      // xyz: shadowTint, w: rimPower
-
-  // ---- 纹理标识和参数 (7 * 16 + 96 = 224 字节) ----
-  glm::vec4 textureCNMROFlags;    // xyzw has: BaseColorTex, NormalTex, MRTex, OcclusionTex
-  glm::vec4 textureEmissionFlag;  // x: hasEmissiveTex, yzw: reserved
-  glm::vec4 baseColorTexParams;   // xy: scale, zw: offset
-  glm::vec4 normalTexParams;      // xy: scale, zw: offset
-  glm::vec4 mrTexParams;          // xy: scale, zw: offset
-  glm::vec4 emissiveTexParams;    // xy: scale, zw: offset
-  glm::vec4 occlusionTexParams;   // xy: scale, zw: offset
-
-  // ---- 渲染属性 (1 * 16 + 224 = 240 字节) ----
-  glm::vec4 renderProperties;  // x: alphaCutoff, y: doubleSided, z: alphaMode, w: unused
-
-  // 总大小: 240 字节 (16字节对齐)
-};
-
-/**
- * @brief 模型矩阵UBO结构体
- */
-struct alignas(16) ModelUniformBuffer {
-  glm::mat4 model;
-  glm::mat4 normalMatrix;  // 用于法线变换的矩阵
-};
-
 // ---- 常用UBO/SSBO/Texture名称定义 ----
 struct ShaderBufferResourceNames {
   // UBO名称
@@ -223,7 +90,183 @@ static constexpr const char *EMISSIVE_TEXTURE = ShaderBufferResourceNames::EMISS
 static constexpr const char *OCCLUSION_TEXTURE = ShaderBufferResourceNames::OCCLUSION_TEXTURE;
 }  // namespace MaterialParamKeys
 
+// ---- 资源类型枚举 ----
+/**
+ * @brief UBO 资源类型枚举
+ * @note 使用独立的 UBO 绑定点命名空间
+ */
+enum class UBOResourceType {
+  CameraUBO = 0,  // 相机参数
+  MaterialUBO,    // 材质参数
+  ModelUBO,       // 模型矩阵
+  SceneUBO,       // 场景全局参数
+  Count           // 类型计数
+};
+/**
+ * @brief SSBO 资源类型枚举
+ * @note 使用独立的 SSBO 绑定点命名空间
+ */
+enum class SSBOResourceType {
+  LightSSBO = 0,  // 光源数据
+  InstanceSSBO,   // 实例数据
+  BoneSSBO,       // 骨骼动画数据
+  Count           // 类型计数
+};
+/**
+ * @brief 纹理资源类型枚举
+ * @note 使用独立的纹理单元命名空间
+ */
+enum class TextureResourceType {
+  // 运行时纹理类型
+  RuntimeTexture = 0,
+  // 外部加载纹理类型
+  ExternalTexture,
+  Count
+};
+// ---- 绑定点范围定义（基于实际硬件查询） ----
+struct BindingRanges {
+  // 查询硬件实际限制
+  static uint32_t GetMaxTextureUnits()
+  {
+    static GLint maxUnits = []() {
+      GLint units;
+      glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &units);
+      return units > 0 ? units : 32;  // 默认值
+    }();
+    return static_cast<uint32_t>(maxUnits);
+  }
 
+  static uint32_t GetMaxUBOBindings()
+  {
+    static GLint maxBindings = []() {
+      GLint bindings;
+      glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &bindings);
+      return bindings > 0 ? bindings : 72;  // 默认值
+    }();
+    return static_cast<uint32_t>(maxBindings);
+  }
+
+  static uint32_t GetMaxSSBOBindings()
+  {
+    static GLint maxBindings = []() {
+      GLint bindings;
+      glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &bindings);
+      return bindings > 0 ? bindings : 8;  // 默认值
+    }();
+    return static_cast<uint32_t>(maxBindings);
+  }
+};
+
+/**
+ * @brief 相机参数UBO结构体
+ * @note 按照std140布局规则对齐，包含所有材质参数
+ */
+struct alignas(16) CameraUniformBuffer {
+  // ---- 矩阵部分 (3 * 64 = 192字节) ----
+  glm::mat4 view;            // 64字节 - 视图矩阵
+  glm::mat4 projection;      // 64字节 - 投影矩阵
+  glm::mat4 viewProjection;  // 64字节 - 视图投影矩阵
+
+  // ---- 相机参数部分 (2 * 12 + 2 * 4 + 192 = 224字节) ----
+  glm::vec3 position;  // 12字节 - 相机世界坐标（vec3占用12字节，但整个块是16字节）
+  float nearPlane;     // 4字节  - 近平面距离  （后面的标量可以占用剩余的4字节）
+  glm::vec3 forward;   // 12字节 - 相机前向向量（但下个vec3必须从新的16字节开始）
+  float farPlane;      // 4字节  - 远平面距离  （如果没有跟随float/int，则vec3应当占16字节）
+
+  // ---- 投影参数部分 (3 * 4 + 224 = 236字节) ----
+  float fov;           // 4字节 - 垂直FOV（弧度）
+  float orthoSize;     // 4字节 - 正交投影尺寸
+  int projectionType;  // 4字节 - 投影类型标志 (1 = 透视, 0 = 正交)
+
+  // 4字节填充
+  float padding;
+
+  // 总大小: 236 + 4 = 240字节 (16字节对齐)
+};
+/**
+ * @brief GBuffer材质参数UBO结构体
+ * @note 按照std140布局规则对齐，包含所有材质参数
+ */
+struct alignas(16) MaterialUniformBuffer {
+  // ---- 材质类型标识（1 * 16 = 16 字节） ----
+  glm::vec4 materialInfo;  // x: MaterialType, yzw: 保留
+
+  // ---- 基础PBR参数 (4 * 16 + 16 = 80 字节) ----
+  glm::vec4 baseColor;            // RGB + Alpha (w分量)
+  glm::vec4 metallicRoughnessAO;  // x: metallic, y: roughness, z: AO, w: unused
+  glm::vec4 emission;             // RGB + Intensity (w分量)
+  glm::vec4 normalScale;          // x: normal scale, yzw: unused
+
+  // ---- NPR参数 (2 * 16 + 80 = 112 字节) ----
+  glm::vec4 nprParameters;  // xyzw：rampThreshold, rampSmoothness, specularSize, outlineWidth
+  glm::vec4 nprColors;      // xyz: shadowTint, w: rimPower
+
+  // ---- 纹理标识和参数 (7 * 16 + 96 = 224 字节) ----
+  glm::vec4 textureCNMROFlags;    // xyzw has: BaseColorTex, NormalTex, MRTex, OcclusionTex
+  glm::vec4 textureEmissionFlag;  // x: hasEmissiveTex, yzw: reserved
+  glm::vec4 baseColorTexParams;   // xy: scale, zw: offset
+  glm::vec4 normalTexParams;      // xy: scale, zw: offset
+  glm::vec4 mrTexParams;          // xy: scale, zw: offset
+  glm::vec4 emissiveTexParams;    // xy: scale, zw: offset
+  glm::vec4 occlusionTexParams;   // xy: scale, zw: offset
+
+  // ---- 渲染属性 (1 * 16 + 224 = 240 字节) ----
+  glm::vec4 renderProperties;  // x: alphaCutoff, y: doubleSided, z: alphaMode, w: unused
+
+  // 总大小: 240 字节 (16字节对齐)
+};
+
+/**
+ * @brief 模型矩阵UBO结构体
+ */
+struct alignas(16) ModelUniformBuffer {
+  glm::mat4 model;
+  glm::mat4 normalMatrix;  // 用于法线变换的矩阵
+};
+
+/**
+ * @brief Shadow相关UBO结构体，用于ShadowMap生成
+ */
+struct alignas(16) ShadowUniformBuffer {
+  // ---- 方向光源阴影参数 ----
+  // 级联分割距离 (MAX_CASCADES(4) * 16 = 64字节)
+  glm::vec4 cascadeSplits[MAX_CASCADES];  // 每个级联的远平面距离
+
+  // 方向光源阴影矩阵 (MAX_DIRECTIONAL_LIGHTS(8) * MAX_CASCADES(4) * 64 = 2048字节)
+  glm::mat4 directionalMatrices[MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES];
+
+  // ---- 点光源阴影参数 ----
+  // 点光源阴影矩阵 (MAX_POINT_LIGHTS(16) * 6 * 64 = 6144字节)
+  glm::mat4 pointLightMatrices[MAX_POINT_LIGHTS * 6];  // 每个点光源6个面
+
+  // ---- 聚光灯阴影参数 ----
+  // 聚光灯阴影矩阵 (MAX_SPOT_LIGHTS(32) * 64 = 2048字节)
+  glm::mat4 spotLightMatrices[MAX_SPOT_LIGHTS];
+
+  // ---- 光源计数和配置 ----
+  // x: directionalCount, y: pointLightCount, z: spotLightCount, w: cascadeCount (16字节)
+  glm::ivec4 shadowConfig;
+
+  // ---- 通用阴影参数 ----
+  // x: shadowBias, y: normalBias, z: shadowFilterSize, w: shadowMapSize (16字节)
+  glm::vec4 shadowParams;
+
+  // ---- 光源特定阴影索引 ----
+  // 方向光源阴影索引 (MAX_DIRECTIONAL_LIGHTS(8) * 16 = 128字节)
+  glm::ivec4 directionalShadowIndices[MAX_DIRECTIONAL_LIGHTS];  // 每个光源的阴影图起始索引
+
+  // 点光源阴影索引 (MAX_POINT_LIGHTS(16) * 16 = 256字节)
+  glm::ivec4 pointShadowIndices[MAX_POINT_LIGHTS];  // 每个点光源在立方体贴图数组中的索引
+
+  // 聚光灯阴影索引 (MAX_SPOT_LIGHTS(32) * 16 = 512字节)
+  glm::ivec4 spotShadowIndices[MAX_SPOT_LIGHTS];  // 每个聚光灯在阴影图数组中的索引
+
+  // 面光源阴影索引 (MAX_AREA_LIGHTS(8) * 16 = 128字节)（未启用）
+  glm::ivec4 spotShadowIndices[MAX_AREA_LIGHTS];  // 每个面光源在阴影图数组中的索引（未启用）
+
+  // 总大小: 64 + 2048 + 6144 + 2048 + 16 + 16 + 1024 = 11360字节
+  // 11360字节 < 64KB(65536字节，OpenGL最低标准)，符合UBO大小限制
+};
 };  // namespace mite
 
 #endif

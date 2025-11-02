@@ -24,9 +24,9 @@ class LightManager {
   }
   /**
    * @brief 构造函数
-   * @param maxLights 支持的最大光源数量，默认1024个
+   * @param maxLights 支持的最大光源数量，默认128个
    */
-  explicit LightManager(size_t maxLights = 1024);
+  explicit LightManager(size_t maxLights = 128);
   ~LightManager() = default;
 
   // ---- 生命周期管理 ----
