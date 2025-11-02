@@ -38,7 +38,7 @@ layout(std140, binding = 1) uniform MaterialUBO {
     vec4 emission;              // RGB + 强度(w分量)
     vec4 normalScale;           // x:法线贴图强度, yzw:未使用
     
-    // NPR参数
+    // NPR参数(暂未启用，保留接口)
     vec4 nprParameters;         // x:色阶阈值, y:色阶平滑度, z:高光尺寸, w:描边宽度
     vec4 nprColors;             // xyz:阴影色调, w:边缘光强度
     
@@ -63,6 +63,43 @@ layout(std140, binding = 2) uniform ModelUBO {
     mat4 normalMatrix;
 } u_Model;
 
+// 阴影UBO - 绑定点 3
+layout(std140, binding = 3) uniform ShadowUBO {
+    // ---- 方向光源阴影参数 ----
+    // 级联分割距离 (MAX_CASCADES * 16 = 64字节)
+    vec4 cascadeSplits[MAX_CASCADES];  // 每个级联的远平面距离
+    
+    // 方向光源阴影矩阵 (MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES * 64 = 2048字节)
+    mat4 directionalMatrices[MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES];
+    
+    // ---- 点光源阴影参数 ----
+    // 点光源阴影矩阵 (MAX_POINT_LIGHTS * 6 * 64 = 6144字节)
+    mat4 pointLightMatrices[MAX_POINT_LIGHTS * 6];  // 每个点光源6个面
+    
+    // ---- 聚光灯阴影参数 ----
+    // 聚光灯阴影矩阵 (MAX_SPOT_LIGHTS * 64 = 2048字节)
+    mat4 spotLightMatrices[MAX_SPOT_LIGHTS];
+    
+    // ---- 光源计数和配置 ----
+    ivec4 shadowConfig;  // x: directionalCount, y: pointLightCount, z: spotLightCount, w: cascadeCount
+    
+    // ---- 通用阴影参数 ----
+    vec4 shadowParams;   // x: shadowBias, y: normalBias, z: shadowFilterSize, w: shadowMapSize
+    
+    // ---- 光源特定阴影索引 ----
+    // 方向光源阴影索引 (MAX_DIRECTIONAL_LIGHTS * 16 = 128字节)
+    ivec4 directionalShadowIndices[MAX_DIRECTIONAL_LIGHTS];  // 每个光源的阴影图起始索引
+    
+    // 点光源阴影索引 (MAX_POINT_LIGHTS * 16 = 256字节)
+    ivec4 pointShadowIndices[MAX_POINT_LIGHTS];  // 每个点光源在立方体贴图数组中的索引
+    
+    // 聚光灯阴影索引 (MAX_SPOT_LIGHTS * 16 = 512字节)
+    ivec4 spotShadowIndices[MAX_SPOT_LIGHTS];  // 每个聚光灯在阴影图数组中的索引
+    
+    // 面光源阴影索引 (MAX_AREA_LIGHTS * 16 = 128字节) - (暂未启用，保留扩展)
+    ivec4 areaShadowIndices[MAX_AREA_LIGHTS];
+} u_Shadow;
+
 // =============================================================================
 // Texture Samplers
 // =============================================================================
@@ -76,10 +113,10 @@ layout(binding = 5) uniform sampler2D u_GBufferNPRParam;
 layout(binding = 6) uniform sampler2D u_GBufferNPRColor;
 
 // 阴影贴图绑定
-layout(binding = 7) uniform sampler2D u_ShadowMapDirectional;
-layout(binding = 8) uniform sampler2D u_ShadowMapPoint;
-layout(binding = 9) uniform sampler2D u_ShadowMapSpot;
-layout(binding = 10) uniform sampler2D u_ShadowMapArea;
+layout(binding = 7) uniform sampler2DArray u_ShadowMapDirectional;
+layout(binding = 8) uniform samplerCubeArray u_ShadowMapPoint;
+layout(binding = 9) uniform sampler2DArray u_ShadowMapSpot;
+layout(binding = 10) uniform sampler2DArray u_ShadowMapArea;
 
 // 光照纹理绑定
 layout(binding = 11) uniform sampler2D u_LightingDiffuse;
