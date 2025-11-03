@@ -29,13 +29,13 @@ void FrameBuffer::Invalidate()
   m_DepthAttachment = nullptr;
   m_StencilAttachment = nullptr;
   for (size_t i = 0; i < m_Spec.attachments.size(); ++i) {
-    const auto &attachmentSpec = m_Spec.attachments[i];
+    const FrameBufferAttachmentSpec &attachmentSpec = m_Spec.attachments[i];
 
     // 创建运行时纹理
-    auto runtimeTexture = std::make_shared<RuntimeTexture>();
+    RuntimeTexturePtr runtimeTexture = std::make_shared<RuntimeTexture>();
 
     if (!runtimeTexture->initialize(
-            attachmentSpec.type, m_Spec.width, m_Spec.height, attachmentSpec.internalFormat))
+            attachmentSpec.type, m_Spec.width, m_Spec.height, attachmentSpec.internalFormat, attachmentSpec.internalTarget))
     {
       LOG_ERROR("Failed to create runtime texture for framebuffer attachment type: {}",
                 static_cast<int>(attachmentSpec.type));

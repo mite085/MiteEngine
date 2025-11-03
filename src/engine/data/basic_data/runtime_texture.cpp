@@ -8,10 +8,8 @@ RuntimeTexture::~RuntimeTexture()
   cleanup();
 }
 
-bool RuntimeTexture::initialize(RuntimeTextureType type,
-                                int width,
-                                int height,
-                                TextureFormat format)
+bool RuntimeTexture::initialize(
+    RuntimeTextureType type, int width, int height, TextureFormat format, TextureTarget target)
 {
   // 参数验证
   if (width <= 0 || height <= 0) {
@@ -30,12 +28,14 @@ bool RuntimeTexture::initialize(RuntimeTextureType type,
   m_width = width;
   m_height = height;
   m_format = format;
+  m_Target = target;
 
   // 创建纹理创建信息
   std::shared_ptr<TextureCreateInfo> createInfo = std::make_shared<TextureCreateInfo>();
   createInfo->width = width;
   createInfo->height = height;
   createInfo->format = format;
+  createInfo->target = target;
   createInfo->generateMipmaps = false;  // G-Buffer通常不需要mipmap
 
   // 根据纹理类型设置特定参数
@@ -120,6 +120,7 @@ void RuntimeTexture::cleanup()
   m_width = 0;
   m_height = 0;
   m_format = TextureFormat::RGBA8;
+  m_Target = TextureTarget::TEXTURE_2D;
 }
 
 bool RuntimeTexture::resize(int newWidth, int newHeight)
@@ -139,11 +140,11 @@ bool RuntimeTexture::resize(int newWidth, int newHeight)
   // 保存原有类型和格式
   RuntimeTextureType oldType = m_type;
   TextureFormat oldFormat = m_format;
-
+  TextureTarget oldTarget = m_Target;
   // 清理旧资源
   cleanup();
 
   // 使用新尺寸重新初始化
-  return initialize(oldType, newWidth, newHeight, oldFormat);
+  return initialize(oldType, newWidth, newHeight, oldFormat, m_Target);
 }
 }  // namespace mite
