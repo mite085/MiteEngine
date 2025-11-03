@@ -35,19 +35,20 @@ class RuntimeTexture {
   bool resize(int newWidth, int newHeight);
 
   // 访问器
-  TextureGPUHandle GetHandle() const { return m_handle; }
-  RuntimeTextureType GetType() const { return m_type; }
-  int GetWidth() const { return m_width; }
-  int GetHeight() const { return m_height; }
-  TextureFormat GetFormat() const { return m_format; }
-  bool IsValid() const { return m_handle.apiHandle != 0; }
+  TextureGPUHandle GetHandle() const { return m_Handle; }
+  RuntimeTextureType GetType() const { return m_Type; }
+  int GetWidth() const { return m_Width; }
+  int GetHeight() const { return m_Height; }
+  TextureFormat GetFormat() const { return m_Format; }
+  TextureTarget GetTarget() const { return m_Target; }
+  bool IsValid() const { return m_Handle.apiHandle != 0; }
 
  private:
-  TextureGPUHandle m_handle{0};                                  // GPU纹理句柄
-  RuntimeTextureType m_type = RuntimeTextureType::RenderTarget;  // 纹理类型
-  int m_width = 0;                                               // 纹理宽度
-  int m_height = 0;                                              // 纹理高度
-  TextureFormat m_format = TextureFormat::RGBA8;                 // 纹理格式
+  TextureGPUHandle m_Handle{0};                                  // GPU纹理句柄
+  RuntimeTextureType m_Type = RuntimeTextureType::RenderTarget;  // 纹理类型
+  int m_Width = 0;                                               // 纹理宽度
+  int m_Height = 0;                                              // 纹理高度
+  TextureFormat m_Format = TextureFormat::RGBA8;                 // 纹理格式
   TextureTarget m_Target = TextureTarget::TEXTURE_2D;			 // 纹理目标
 };
 

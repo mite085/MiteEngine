@@ -55,7 +55,7 @@ void ShadowMapStage::Execute(RenderContext &context)
   // 验证输入
   ValidateShadowInputs(context);
 
-  // 更新阴影矩阵（需要在C++端计算）
+  // 更新阴影矩阵
   UpdateShadowMatrices(context);
 
   // 设置阴影渲染状态

@@ -24,10 +24,10 @@ bool RuntimeTexture::initialize(
   }
 
   // 存储属性
-  m_type = type;
-  m_width = width;
-  m_height = height;
-  m_format = format;
+  m_Type = type;
+  m_Width = width;
+  m_Height = height;
+  m_Format = format;
   m_Target = target;
 
   // 创建纹理创建信息
@@ -84,7 +84,7 @@ bool RuntimeTexture::initialize(
 
   // 发布事件委托OpenGLDevice创建纹理
   std::function<void(TextureGPUHandle)> onComplete = [this](TextureGPUHandle handle) {
-    m_handle = handle;
+    m_Handle = handle;
   };
   EventBus::Publish<RuntimeTextureCreateEvent>(RuntimeTextureCreateEvent(createInfo, onComplete));
 
@@ -110,16 +110,16 @@ void RuntimeTexture::cleanup()
   if (IsValid()) {
     // 发布事件委托OpenGLDevice销毁纹理
     EventBus::Publish<RuntimeTextureDestroyRequestEvent>(
-        RuntimeTextureDestroyRequestEvent(m_handle));
-    m_handle.apiHandle = 0;
+        RuntimeTextureDestroyRequestEvent(m_Handle));
+    m_Handle.apiHandle = 0;
 
-    LOG_DEBUG("Cleaned up runtime texture: type={}", static_cast<int>(m_type));
+    LOG_DEBUG("Cleaned up runtime texture: type={}", static_cast<int>(m_Type));
   }
 
   // 重置状态
-  m_width = 0;
-  m_height = 0;
-  m_format = TextureFormat::RGBA8;
+  m_Width = 0;
+  m_Height = 0;
+  m_Format = TextureFormat::RGBA8;
   m_Target = TextureTarget::TEXTURE_2D;
 }
 
@@ -130,16 +130,16 @@ bool RuntimeTexture::resize(int newWidth, int newHeight)
     return false;
   }
 
-  if (newWidth == m_width && newHeight == m_height) {
+  if (newWidth == m_Width && newHeight == m_Height) {
     // 尺寸未变化，无需调整
     return true;
   }
 
-  LOG_INFO("Resizing runtime texture from {}x{} to {}x{}", m_width, m_height, newWidth, newHeight);
+  LOG_INFO("Resizing runtime texture from {}x{} to {}x{}", m_Width, m_Height, newWidth, newHeight);
 
   // 保存原有类型和格式
-  RuntimeTextureType oldType = m_type;
-  TextureFormat oldFormat = m_format;
+  RuntimeTextureType oldType = m_Type;
+  TextureFormat oldFormat = m_Format;
   TextureTarget oldTarget = m_Target;
   // 清理旧资源
   cleanup();
