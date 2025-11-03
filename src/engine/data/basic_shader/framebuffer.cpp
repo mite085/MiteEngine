@@ -42,7 +42,7 @@ void FrameBuffer::Invalidate()
       continue;
     }
     // 配置纹理参数和附件点
-    TextureGPUHandle handle = runtimeTexture->getHandle();
+    TextureGPUHandle handle = runtimeTexture->GetHandle();
     GLenum attachmentPoint = GL_NONE;
     GLuint handleID = static_cast<GLuint>(handle.apiHandle); 
     bool isColorAttachment = false;

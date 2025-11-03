@@ -54,11 +54,11 @@ class GBuffer {
   bool validate() const;
 
   // 访问器
-  RuntimeTexturePtr getTexture(RuntimeTextureType index) const;
-  std::shared_ptr<FrameBuffer> getFramebuffer() const;
-  int getWidth() const;
-  int getHeight() const;
-  bool isValid() const;
+  RuntimeTexturePtr GetTexture(RuntimeTextureType index) const;
+  std::shared_ptr<FrameBuffer> GetFramebuffer() const;
+  int GetWidth() const;
+  int GetHeight() const;
+  bool IsValid() const;
 
   /**
    * 绑定G-Buffer为当前渲染目标
@@ -75,14 +75,14 @@ class GBuffer {
    * 创建G-Buffer帧缓冲规格
    * @return 帧缓冲规格
    */
-  FrameBufferSpec createFrameBufferSpec() const;
+  FrameBufferSpec CreateFrameBufferSpec() const;
 
   /**
    * 获取指定索引的纹理格式
    * @param index 纹理索引
    * @return 纹理格式
    */
-  TextureFormat getTextureFormat(RuntimeTextureType index) const;
+  TextureFormat GetTextureFormat(RuntimeTextureType index) const;
 
  private:
   std::shared_ptr<FrameBuffer> m_framebuffer;  // G-Buffer帧缓冲

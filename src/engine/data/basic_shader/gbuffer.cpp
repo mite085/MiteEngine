@@ -65,7 +65,7 @@ bool GBuffer::create()
   LOG_INFO("Initializing GBuffer with size {}x{}", m_width, m_height);
 
   // 直接创建帧缓冲，FrameBuffer会自动创建所有运行时纹理
-  FrameBufferSpec spec = createFrameBufferSpec();
+  FrameBufferSpec spec = CreateFrameBufferSpec();
   m_framebuffer = std::make_shared<FrameBuffer>(spec);
 
   if (!m_framebuffer->IsComplete()) {
@@ -114,13 +114,13 @@ bool GBuffer::validate() const
   }
   // 验证所有纹理附件是否有效
   for (const auto &type : GetTextureTypes()) {
-    auto texture = getTexture(type);
-    if (!texture || !texture->isValid()) {
+    auto texture = GetTexture(type);
+    if (!texture || !texture->IsValid()) {
       LOG_ERROR("GBuffer validation failed: texture is invalid");
       return false;
     }
     // 检查纹理尺寸是否匹配
-    if (texture->getWidth() != m_width || texture->getHeight() != m_height) {
+    if (texture->GetWidth() != m_width || texture->GetHeight() != m_height) {
       LOG_ERROR("GBuffer validation failed: texture size mismatch");
       return false;
     }
@@ -154,7 +154,7 @@ bool GBuffer::resize(uint32_t newWidth, uint32_t newHeight)
   }
   return false;
 }
-RuntimeTexturePtr GBuffer::getTexture(RuntimeTextureType type) const
+RuntimeTexturePtr GBuffer::GetTexture(RuntimeTextureType type) const
 {
   if (!m_framebuffer) {
     LOG_ERROR("Cannot get texture: framebuffer is null");
@@ -170,19 +170,19 @@ RuntimeTexturePtr GBuffer::getTexture(RuntimeTextureType type) const
   return m_framebuffer->GetColorAttachment(static_cast<uint32_t>(it->second));
 }
 
-std::shared_ptr<FrameBuffer> GBuffer::getFramebuffer() const
+std::shared_ptr<FrameBuffer> GBuffer::GetFramebuffer() const
 {
   return m_framebuffer;
 }
-int GBuffer::getWidth() const
+int GBuffer::GetWidth() const
 {
   return m_width;
 }
-int GBuffer::getHeight() const
+int GBuffer::GetHeight() const
 {
   return m_height;
 }
-bool GBuffer::isValid() const
+bool GBuffer::IsValid() const
 {
   return m_isValid;
 }
@@ -204,7 +204,7 @@ void GBuffer::unbind() const
   }
 }
 
-FrameBufferSpec GBuffer::createFrameBufferSpec() const
+FrameBufferSpec GBuffer::CreateFrameBufferSpec() const
 {
   FrameBufferSpec spec;
   spec.width = m_width;
@@ -215,7 +215,7 @@ FrameBufferSpec GBuffer::createFrameBufferSpec() const
   for (const auto &type : GetTextureTypes()) {
     FrameBufferAttachmentSpec attachment;
     attachment.type = type;
-    attachment.internalFormat = getTextureFormat(type);
+    attachment.internalFormat = GetTextureFormat(type);
     attachment.generateMipmaps = false;  // G-Buffer不需要mipmap
     spec.attachments.push_back(attachment);
   }
@@ -230,7 +230,7 @@ FrameBufferSpec GBuffer::createFrameBufferSpec() const
   return spec;
 }
 
-TextureFormat GBuffer::getTextureFormat(RuntimeTextureType index) const
+TextureFormat GBuffer::GetTextureFormat(RuntimeTextureType index) const
 {
   switch (index) {
     case RuntimeTextureType::GBuffer_WorldPosDepth:

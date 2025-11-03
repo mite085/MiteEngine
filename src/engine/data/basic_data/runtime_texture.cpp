@@ -18,7 +18,7 @@ bool RuntimeTexture::initialize(
   }
 
   // 如果已经初始化，先清理
-  if (isValid()) {
+  if (IsValid()) {
     LOG_WARN("RuntimeTexture already initialized, cleaning up first");
     cleanup();
   }
@@ -88,7 +88,7 @@ bool RuntimeTexture::initialize(
   };
   EventBus::Publish<RuntimeTextureCreateEvent>(RuntimeTextureCreateEvent(createInfo, onComplete));
 
-  if (!isValid()) {
+  if (!IsValid()) {
     LOG_ERROR("Failed to create runtime texture of type {} ({}x{})",
               static_cast<int>(type),
               width,
@@ -107,7 +107,7 @@ bool RuntimeTexture::initialize(
 
 void RuntimeTexture::cleanup()
 {
-  if (isValid()) {
+  if (IsValid()) {
     // 发布事件委托OpenGLDevice销毁纹理
     EventBus::Publish<RuntimeTextureDestroyRequestEvent>(
         RuntimeTextureDestroyRequestEvent(m_handle));

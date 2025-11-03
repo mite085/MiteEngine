@@ -358,7 +358,7 @@ RuntimeTexturePtr ShadowMapStage::GetDirectionalShadowMap(uint32_t lightIndex,
 
   // 获取深度附件（2D数组纹理）
   auto depthTexture = fbo->GetDepthAttachment();
-  if (!depthTexture || !depthTexture->isValid()) {
+  if (!depthTexture || !depthTexture->IsValid()) {
     m_Logger->warn("Directional shadow FBO for light {} has invalid depth attachment", lightIndex);
     return nullptr;
   }
@@ -389,13 +389,13 @@ RuntimeTexturePtr ShadowMapStage::GetPointShadowMap(uint32_t lightIndex) const
 
   // 获取深度附件（立方体贴图）
   RuntimeTexturePtr depthTexture = fbo->GetDepthAttachment();
-  if (!depthTexture || !depthTexture->isValid()) {
+  if (!depthTexture || !depthTexture->IsValid()) {
     m_Logger->warn("Point shadow FBO for light {} has invalid depth attachment", lightIndex);
     return nullptr;
   }
 
   // 验证是否为立方体贴图
-  if (depthTexture->getType != TextureTarget::TEXTURE_CUBE_MAP) {
+  if (depthTexture->GetTarget() != TextureTarget::TEXTURE_CUBE_MAP) {
     m_Logger->warn("Point shadow texture for light {} is not a cube map", lightIndex);
     return nullptr;
   }
@@ -419,7 +419,7 @@ RuntimeTexturePtr ShadowMapStage::GetSpotShadowMap(uint32_t lightIndex) const
 
   // 获取深度附件（普通2D纹理）
   auto depthTexture = fbo->GetDepthAttachment();
-  if (!depthTexture || !depthTexture->isValid()) {
+  if (!depthTexture || !depthTexture->IsValid()) {
     m_Logger->warn("Spot shadow FBO for light {} has invalid depth attachment", lightIndex);
     return nullptr;
   }

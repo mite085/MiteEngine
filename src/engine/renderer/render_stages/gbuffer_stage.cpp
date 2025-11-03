@@ -37,7 +37,7 @@ void GBufferStage::Initialize()
 void GBufferStage::Execute(RenderContext &context)
 {
   // 检查初始化和GBuffer状态
-  if (!m_Initialized || !m_GBuffer || !m_GBuffer->isValid()) {
+  if (!m_Initialized || !m_GBuffer || !m_GBuffer->IsValid()) {
     m_Logger->warn("GBufferStage executed but not properly initialized");
     return;
   }
@@ -63,13 +63,13 @@ void GBufferStage::Execute(RenderContext &context)
   glm::vec2 viewportSize = context.GetViewportSize();
 
   // 若帧缓冲尺寸不匹配，则使用新的尺寸重新create
-  if (m_GBuffer->getFramebuffer()->GetSize() != viewportSize) {
+  if (m_GBuffer->GetFramebuffer()->GetSize() != viewportSize) {
     m_GBuffer->resize(static_cast<uint32_t>(glm::max(viewportSize.x, 0.0f)),
                       static_cast<uint32_t>(glm::max(viewportSize.y, 0.0f)));
   }
 
   // 绑定G-Buffer为渲染目标
-  RenderCommand::Get().BindFrameBuffer(m_GBuffer->getFramebuffer());
+  RenderCommand::Get().BindFrameBuffer(m_GBuffer->GetFramebuffer());
 
   // 清除G-Buffer
   RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
@@ -94,12 +94,12 @@ void GBufferStage::Execute(RenderContext &context)
 
   // 存储渲染结果到上下文（并非渲染命令，这些纹理是提前创建好的，可以提前交给上下文管理）
   for (const auto &type : GBuffer::GetTextureTypes()) {
-    context.SetGBufferTexture(m_GBuffer->getTexture(type));
+    context.SetGBufferTexture(m_GBuffer->GetTexture(type));
   }
 
   // 发布绘制完成事件
   for (const auto &type : GBuffer::GetTextureTypes()) {
-    RenderCommand::Get().PublishEventRuntimeTextureFinished(m_GBuffer->getTexture(type));
+    RenderCommand::Get().PublishEventRuntimeTextureFinished(m_GBuffer->GetTexture(type));
   }
 }
 void GBufferStage::Shutdown()

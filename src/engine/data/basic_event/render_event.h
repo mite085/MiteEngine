@@ -94,7 +94,7 @@ class RuntimeTextureFinishedEvent : public Event {
   RuntimeTextureType GetTextureType()
   {
     if (m_Texture)
-      return m_Texture->getType();
+      return m_Texture->GetType();
     else
       return RuntimeTextureType::None;
   }

@@ -140,7 +140,7 @@ void ViewportPanel::UpdateImageProps()
 {
   if (m_DisplayTexture) {
     // 更新ImageProps句柄
-    m_ImageProps.textureId = m_DisplayTexture->getHandle().apiHandle;
+    m_ImageProps.textureId = m_DisplayTexture->GetHandle().apiHandle;
 
     // 设置图像尺寸为面板内容尺寸
     m_ImageProps.size = m_PanelSize;

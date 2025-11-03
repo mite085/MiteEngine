@@ -99,7 +99,7 @@ void DeferredLightingStage::Execute(RenderContext &context)
 
   // 将光照输出纹理存储到上下文供后续阶段使用
   auto lightingTexture = GetLightingOutputTexture();
-  if (lightingTexture && lightingTexture->isValid()) {
+  if (lightingTexture && lightingTexture->IsValid()) {
     context.SetRenderTarget("DeferredLightingOutput", lightingTexture);
     // 发布纹理完成事件
     RenderCommand::Get().PublishEventRuntimeTextureFinished(lightingTexture, "DeferredLighting");
@@ -180,10 +180,10 @@ void DeferredLightingStage::BindGBufferTextures(RenderContext &context,
   // 绑定所有G-Buffer纹理到对应的纹理单元
   for (const auto &type : GBuffer::GetTextureTypes()) {
     auto texture = context.GetGBufferTexture(type);
-    if (texture && texture->isValid()) {
+    if (texture && texture->IsValid()) {
       // 发布绑定命令
       RenderCommand::Get().BindRuntimeTexture(
-          type, texture->getHandle(), TextureTarget::TEXTURE_2D);
+          type, texture->GetHandle(), TextureTarget::TEXTURE_2D);
 
       //m_Logger->trace("Bound G-Buffer texture: {} to unit {}",
       //                GBuffer::GetTextureTypeName(type),
@@ -221,9 +221,9 @@ void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
   // 从上下文获取阴影贴图并绑定
   for (uint32_t i = 0; i < MAX_SHADOW_MAPS && shadowTextureUnit < 32; ++i) {
     auto shadowTexture = context.GetShadowMapTexture(0, i);
-    if (shadowTexture && shadowTexture->isValid()) {
+    if (shadowTexture && shadowTexture->IsValid()) {
       RenderCommand::Get().BindRuntimeTexture(
-          shadowTexture->getType(), shadowTexture->getHandle(), TextureTarget::TEXTURE_2D);
+          shadowTexture->GetType(), shadowTexture->GetHandle(), TextureTarget::TEXTURE_2D);
 
       boundShadowCount++;
       shadowTextureUnit++;
@@ -245,7 +245,7 @@ void DeferredLightingStage::ValidateInputs(RenderContext &context) const
 
   for (const auto &type : essentialTypes) {
     auto texture = context.GetGBufferTexture(type);
-    if (!texture || !texture->isValid()) {
+    if (!texture || !texture->IsValid()) {
       m_Logger->error("Missing essential G-Buffer texture: {}", GBuffer::GetTextureTypeName(type));
       throw std::runtime_error("Deferred lighting stage missing essential G-Buffer textures");
     }

@@ -74,8 +74,8 @@ const std::unordered_map<std::string, std::shared_ptr<OpenGLShader>> &RenderCont
 // ---- 分层纹理管理实现 ----
 void RenderContext::SetGBufferTexture(RuntimeTexturePtr texture)
 {
-  if (texture && texture->isValid()) {
-    uint32_t index = GBuffer::TextureTypeToIndex.at(texture->getType());
+  if (texture && texture->IsValid()) {
+    uint32_t index = GBuffer::TextureTypeToIndex.at(texture->GetType());
 
     // 存入GBuffer纹理管理中
     if (index >= 0 && index < GBuffer::TEXTURE_COUNT) {

@@ -35,12 +35,12 @@ class RuntimeTexture {
   bool resize(int newWidth, int newHeight);
 
   // 访问器
-  TextureGPUHandle getHandle() const { return m_handle; }
-  RuntimeTextureType getType() const { return m_type; }
-  int getWidth() const { return m_width; }
-  int getHeight() const { return m_height; }
-  TextureFormat getFormat() const { return m_format; }
-  bool isValid() const { return m_handle.apiHandle != 0; }
+  TextureGPUHandle GetHandle() const { return m_handle; }
+  RuntimeTextureType GetType() const { return m_type; }
+  int GetWidth() const { return m_width; }
+  int GetHeight() const { return m_height; }
+  TextureFormat GetFormat() const { return m_format; }
+  bool IsValid() const { return m_handle.apiHandle != 0; }
 
  private:
   TextureGPUHandle m_handle{0};                                  // GPU纹理句柄
