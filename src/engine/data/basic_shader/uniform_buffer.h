@@ -11,6 +11,8 @@ struct ShaderBufferResourceNames {
   static constexpr const char *CAMERA_UBO = "CameraUBO";
   static constexpr const char *MATERIAL_UBO = "MaterialUBO";
   static constexpr const char *MODEL_UBO = "ModelUBO";
+  static constexpr const char *SHADOW_UBO = "ShadowUBO";
+  static constexpr const char *SHADOW_RENDER_CONTEXT_UBO = "ShadowRenderContextUBO";
   static constexpr const char *SCENE_UBO = "SceneUBO";
 
   // SSBO名称
@@ -96,11 +98,13 @@ static constexpr const char *OCCLUSION_TEXTURE = ShaderBufferResourceNames::OCCL
  * @note 使用独立的 UBO 绑定点命名空间
  */
 enum class UBOResourceType {
-  CameraUBO = 0,  // 相机参数
-  MaterialUBO,    // 材质参数
-  ModelUBO,       // 模型矩阵
-  SceneUBO,       // 场景全局参数
-  Count           // 类型计数
+  CameraUBO = 0,           // 相机参数 binding = 0
+  MaterialUBO,             // 材质参数 binding = 1
+  ModelUBO,                // 模型矩阵 binding = 2
+  ShadowUBO,               // 阴影 binding = 3
+  ShadowRenderContextUBO,  // 阴影渲染上下文 binding = 4
+  SceneUBO,                // 场景全局参数(未启用)
+  Count                    // 类型计数
 };
 /**
  * @brief SSBO 资源类型枚举
@@ -266,6 +270,17 @@ struct alignas(16) ShadowUniformBuffer {
 
   // 总大小: 64 + 2048 + 6144 + 2048 + 16 + 16 + 1024 = 11360字节
   // 11360字节 < 64KB(65536字节，OpenGL最低标准)，符合UBO大小限制
+};
+
+/**
+ * @brief 阴影渲染上下文UBO结构体
+ * @note 用于ShadowMap生成时的渲染上下文传递
+ */
+struct alignas(16) ShadowRenderContextUniformBuffer {
+  // x: lightIndex, y: cascadeIndex, z: faceIndex, w: shadowMapType
+  glm::ivec4 shadowRenderContext;
+  // x: currentDepth, y: shadowMapSize, z: lightRange, w: padding(预留参数，暂未启用)
+  glm::vec4 shadowRenderParams;
 };
 };  // namespace mite
 

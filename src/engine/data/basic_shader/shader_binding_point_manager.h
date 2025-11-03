@@ -27,6 +27,8 @@ class BindingPointManager {
   uint32_t GetCameraUBOBinding() const { return m_CameraUBOBinding; }
   uint32_t GetMaterialUBOBinding() const { return m_MaterialUBOBinding; }
   uint32_t GetModelUBOBinding() const { return m_ModelUBOBinding; }
+  uint32_t GetShadowUBOBinding() const { return m_ShadowUBOBinding; }
+  uint32_t GetShadowRenderContextUBOBinding() const { return m_ShadowRenderContextUBOBinding; }
 
   // ---- SSBO 绑定点接口 ----
   uint32_t AllocateSSBOBinding(SSBOResourceType type, const std::string &name = "");
@@ -75,6 +77,8 @@ class BindingPointManager {
   uint32_t m_CameraUBOBinding = UINT32_MAX;
   uint32_t m_MaterialUBOBinding = UINT32_MAX;
   uint32_t m_ModelUBOBinding = UINT32_MAX;
+  uint32_t m_ShadowUBOBinding = UINT32_MAX;
+  uint32_t m_ShadowRenderContextUBOBinding = UINT32_MAX;
 
   // SSBO 绑定点管理
   std::bitset<1024> m_AllocatedSSBOs;

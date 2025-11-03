@@ -161,7 +161,7 @@ uint32_t BindingPointManager::AllocateFromRange(std::bitset<1024> &allocated,
     // 查询下一位
     current = (current + 1) % rangeEnd;
     if (current < rangeStart)
-      current = rangeStart; // 复位，退出循环
+      current = rangeStart;  // 复位，退出循环
   } while (current != start);
   LOG_ERROR("Failed to allocate binding point for {}: no available points", name);
   return UINT32_MAX;
@@ -183,18 +183,22 @@ void BindingPointManager::PreallocateCommonResources()
                                             ShaderBufferResourceNames::MATERIAL_UBO);
   m_ModelUBOBinding = AllocateUBOBinding(UBOResourceType::ModelUBO,
                                          ShaderBufferResourceNames::MODEL_UBO);
+  m_ShadowUBOBinding = AllocateUBOBinding(UBOResourceType::ShadowUBO,
+                                          ShaderBufferResourceNames::SHADOW_UBO);
+  m_ShadowRenderContextUBOBinding = AllocateUBOBinding(
+      UBOResourceType::ShadowRenderContextUBO,
+      ShaderBufferResourceNames::SHADOW_RENDER_CONTEXT_UBO);
+
   // SSBO 预分配
   m_LightSSBOBinding = AllocateSSBOBinding(SSBOResourceType::LightSSBO,
                                            ShaderBufferResourceNames::LIGHT_SSBO);
   // 预分配运行时纹理资源并建立映射
   // GBuffer_WorldPosDepth----layout(location = 0)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_WorldPosDepth] = AllocateTextureBinding(
-      TextureResourceType::RuntimeTexture,
-      ShaderBufferResourceNames::GBUFFER_WORLD_POS_DEPTH);
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_WORLD_POS_DEPTH);
   // GBuffer_BaseColorMatType----layout(location = 1)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_BaseColorMatType] = AllocateTextureBinding(
-      TextureResourceType::RuntimeTexture,
-      ShaderBufferResourceNames::GBUFFER_BASE_COLOR_MAT_TYPE);
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::GBUFFER_BASE_COLOR_MAT_TYPE);
   // GBuffer_MetallicRoughnessAO----layout(location = 2)
   m_RuntimeTextureBindings[RuntimeTextureType::GBuffer_MetallicRoughnessAO] =
       AllocateTextureBinding(TextureResourceType::RuntimeTexture,
@@ -236,13 +240,13 @@ void BindingPointManager::PreallocateCommonResources()
   m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Ambient] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_AMBIENT);
 
-  //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Bloom] = AllocateTextureBinding(
-  //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_BLOOM);
-  //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_ToneMapped] = AllocateTextureBinding(
-  //    TextureResourceType::RuntimeTexture,
-  //    ShaderBufferResourceNames::POSTPROCESS_TONE_MAPPED);
-  //m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Final] = AllocateTextureBinding(
-  //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_FINAL);
+  // m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Bloom] = AllocateTextureBinding(
+  //     TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_BLOOM);
+  // m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_ToneMapped] = AllocateTextureBinding(
+  //     TextureResourceType::RuntimeTexture,
+  //     ShaderBufferResourceNames::POSTPROCESS_TONE_MAPPED);
+  // m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Final] = AllocateTextureBinding(
+  //     TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_FINAL);
 
   //  RenderTarget----layout(location = 15)
   m_RuntimeTextureBindings[RuntimeTextureType::RenderTarget] = AllocateTextureBinding(
@@ -254,11 +258,11 @@ void BindingPointManager::PreallocateCommonResources()
   m_RuntimeTextureBindings[RuntimeTextureType::Stencil] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::STENCIL_TEXTURE);
 
-  //m_RuntimeTextureBindings[RuntimeTextureType::Debug_View] = AllocateTextureBinding(
-  //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::DEBUG_VIEW);
-  //m_RuntimeTextureBindings[RuntimeTextureType::UI_Overlay] = AllocateTextureBinding(
-  //    TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::UI_OVERLAY);
-  
+  // m_RuntimeTextureBindings[RuntimeTextureType::Debug_View] = AllocateTextureBinding(
+  //     TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::DEBUG_VIEW);
+  // m_RuntimeTextureBindings[RuntimeTextureType::UI_Overlay] = AllocateTextureBinding(
+  //     TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::UI_OVERLAY);
+
   // 预分配外部加载纹理资源并建立映射
   // BaseColor----layout(location = 18)
   m_ExternalTextureBindings[ExternalTextureType::BaseColor] = AllocateTextureBinding(
@@ -268,8 +272,7 @@ void BindingPointManager::PreallocateCommonResources()
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::NORMAL_TEXTURE);
   // MetallicRoughness----layout(location = 20)
   m_ExternalTextureBindings[ExternalTextureType::MetallicRoughness] = AllocateTextureBinding(
-      TextureResourceType::ExternalTexture,
-      ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
+      TextureResourceType::ExternalTexture, ShaderBufferResourceNames::METALLIC_ROUGHNESS_TEXTURE);
   // Emissive----layout(location = 21)
   m_ExternalTextureBindings[ExternalTextureType::Emissive] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::EMISSIVE_TEXTURE);
@@ -280,26 +283,26 @@ void BindingPointManager::PreallocateCommonResources()
   m_ExternalTextureBindings[ExternalTextureType::EnvironmentMap] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::ENVIRONMENT_MAP);
 
-  //m_ExternalTextureBindings[ExternalTextureType::BRDFLUT] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BRDF_LUT);
-  //m_ExternalTextureBindings[ExternalTextureType::IrradianceMap] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::IRRADIANCE_MAP);
-  //m_ExternalTextureBindings[ExternalTextureType::PrefilterMap] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::PREFILTER_MAP);
-  //m_ExternalTextureBindings[ExternalTextureType::ColorGradingLUT] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::COLOR_GRADING_LUT);
-  //m_ExternalTextureBindings[ExternalTextureType::BloomTexture] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BLOOM_TEXTURE);
-  //m_ExternalTextureBindings[ExternalTextureType::SSAOTexture] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::SSAO_TEXTURE);
-  //m_ExternalTextureBindings[ExternalTextureType::Custom0] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_0);
-  //m_ExternalTextureBindings[ExternalTextureType::Custom1] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_1);
-  //m_ExternalTextureBindings[ExternalTextureType::Custom2] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_2);
-  //m_ExternalTextureBindings[ExternalTextureType::Custom3] = AllocateTextureBinding(
-  //    TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_3);
+  // m_ExternalTextureBindings[ExternalTextureType::BRDFLUT] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BRDF_LUT);
+  // m_ExternalTextureBindings[ExternalTextureType::IrradianceMap] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::IRRADIANCE_MAP);
+  // m_ExternalTextureBindings[ExternalTextureType::PrefilterMap] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::PREFILTER_MAP);
+  // m_ExternalTextureBindings[ExternalTextureType::ColorGradingLUT] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::COLOR_GRADING_LUT);
+  // m_ExternalTextureBindings[ExternalTextureType::BloomTexture] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BLOOM_TEXTURE);
+  // m_ExternalTextureBindings[ExternalTextureType::SSAOTexture] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::SSAO_TEXTURE);
+  // m_ExternalTextureBindings[ExternalTextureType::Custom0] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_0);
+  // m_ExternalTextureBindings[ExternalTextureType::Custom1] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_1);
+  // m_ExternalTextureBindings[ExternalTextureType::Custom2] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_2);
+  // m_ExternalTextureBindings[ExternalTextureType::Custom3] = AllocateTextureBinding(
+  //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::CUSTOM_TEXTURE_3);
   LOG_INFO("Preallocated common resources:");
   LOG_INFO("  UBOs: Camera={}, Material={}, Model={}",
            m_CameraUBOBinding,
@@ -310,5 +313,4 @@ void BindingPointManager::PreallocateCommonResources()
            m_RuntimeTextureBindings.size(),
            m_ExternalTextureBindings.size());
 }
-
 }  // namespace mite
