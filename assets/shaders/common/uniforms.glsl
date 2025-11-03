@@ -100,6 +100,12 @@ layout(std140, binding = 3) uniform ShadowUBO {
     ivec4 areaShadowIndices[MAX_AREA_LIGHTS];
 } u_Shadow;
 
+// 阴影渲染上下文UBO - 绑定点 4
+layout(std140, binding = 4) uniform ShadowRenderContextUBO {
+    ivec4 shadowRenderContext;  // x: lightIndex, y: cascadeIndex, z: faceIndex, w: shadowMapType
+    vec4 shadowRenderParams;    // x: currentDepth, y: shadowMapSize, z: lightRange, w: padding(预留参数，暂未启用)
+} u_ShadowContext;
+
 // =============================================================================
 // Texture Samplers
 // =============================================================================
