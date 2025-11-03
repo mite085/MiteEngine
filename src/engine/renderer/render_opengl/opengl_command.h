@@ -48,6 +48,7 @@ class OpenGLRenderCommand : public RenderCommand {
   // ---------------- 原子操作命令 ----------------
   void BindCameraUBO(std::shared_ptr<CameraInstance> instance) override;
   void BindMaterialUBO(std::shared_ptr<MaterialInstance> instance) override;
+  void BindModelUBO(std::shared_ptr<MeshInstance> instance) override;
   void BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer>instance) override;
   void BindShader(
       std::shared_ptr<OpenGLShader> shader,

@@ -52,6 +52,7 @@ class RenderCommand {
     // 原子操作命令
     BindCameraUBO,         // 绑定相机UBO
     BindMaterialUBO,       // 绑定材质UBO
+    BindModelUBO,          // 绑定模型UBO
     BindLightSSBO,         // 绑定光源SSBO
     BindShader,            // 绑定着色器程序
     UnbindShader,          // 解绑着色器程序
@@ -92,6 +93,7 @@ class RenderCommand {
    */
   virtual void BindCameraUBO(std::shared_ptr<CameraInstance> instance) = 0;
   virtual void BindMaterialUBO(std::shared_ptr<MaterialInstance> instance) = 0;
+  virtual void BindModelUBO(std::shared_ptr<MeshInstance> instance) = 0;
   virtual void BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance) = 0;
 
   /**

@@ -114,10 +114,18 @@ void OpenGLRenderCommand::BindMaterialUBO(std::shared_ptr<MaterialInstance> inst
                        "Bind Material UBO and Textures"});
 }
 
+void OpenGLRenderCommand::BindModelUBO(std::shared_ptr<MeshInstance> instance)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push(
+      {CommandType::BindModelUBO, [=]() { instance->BindUBO(); }, "Bind Model UBO"});
+}
+
 void OpenGLRenderCommand::BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance)
 {
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push(
-      {CommandType::BindLightSSBO, [=]() { instance->Bind(); }, "Bind Material UBO and Textures"});
+      {CommandType::BindLightSSBO, [=]() { instance->Bind(); }, "Bind Light SSBO"});
 }
 
 void OpenGLRenderCommand::BindShader(
