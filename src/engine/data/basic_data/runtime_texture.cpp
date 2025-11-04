@@ -8,15 +8,27 @@ RuntimeTexture::~RuntimeTexture()
   cleanup();
 }
 
-bool RuntimeTexture::initialize(
-    RuntimeTextureType type, int width, int height, TextureFormat format, TextureTarget target)
+bool RuntimeTexture::initialize(RuntimeTextureType type,
+                                int width,
+                                int height,
+                                TextureFormat format,
+                                TextureTarget target,
+                                uint32_t arrayLayers)
 {
   // 参数验证
   if (width <= 0 || height <= 0) {
     LOG_ERROR("Invalid texture dimensions: {}x{}", width, height);
     return false;
   }
-
+  // ==================== 新增：数组纹理层数验证 ====================
+  if ((target == TextureTarget::TEXTURE_2D_ARRAY ||
+       target == TextureTarget::TEXTURE_CUBE_MAP_ARRAY ||
+       target == TextureTarget::TEXTURE_2D_MULTISAMPLE_ARRAY) &&
+      arrayLayers == 0)
+  {
+    LOG_ERROR("Array texture target requires arrayLayers > 0");
+    return false;
+  }
   // 如果已经初始化，先清理
   if (IsValid()) {
     LOG_WARN("RuntimeTexture already initialized, cleaning up first");
@@ -29,6 +41,7 @@ bool RuntimeTexture::initialize(
   m_Height = height;
   m_Format = format;
   m_Target = target;
+  m_ArrayLayers = arrayLayers;
 
   // 创建纹理创建信息
   std::shared_ptr<TextureCreateInfo> createInfo = std::make_shared<TextureCreateInfo>();
@@ -37,6 +50,7 @@ bool RuntimeTexture::initialize(
   createInfo->format = format;
   createInfo->target = target;
   createInfo->generateMipmaps = false;  // G-Buffer通常不需要mipmap
+  createInfo->arrayLayers = arrayLayers;
 
   // 根据纹理类型设置特定参数
   switch (type) {
@@ -141,10 +155,11 @@ bool RuntimeTexture::resize(int newWidth, int newHeight)
   RuntimeTextureType oldType = m_Type;
   TextureFormat oldFormat = m_Format;
   TextureTarget oldTarget = m_Target;
+  uint32_t oldLayers = m_ArrayLayers;
   // 清理旧资源
   cleanup();
 
   // 使用新尺寸重新初始化
-  return initialize(oldType, newWidth, newHeight, oldFormat, m_Target);
+  return initialize(oldType, newWidth, newHeight, oldFormat, m_Target, oldLayers);
 }
 }  // namespace mite

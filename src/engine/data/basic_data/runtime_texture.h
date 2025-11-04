@@ -21,7 +21,12 @@ class RuntimeTexture {
    * @param format 纹理格式
    * @return 初始化是否成功
    */
-  bool initialize(RuntimeTextureType type, int width, int height, TextureFormat format, TextureTarget target);
+  bool initialize(RuntimeTextureType type,
+                  int width,
+                  int height,
+                  TextureFormat format,
+                  TextureTarget target,
+                  uint32_t arrayLayers);
   /**
    * 清理纹理资源
    */
@@ -41,6 +46,7 @@ class RuntimeTexture {
   int GetHeight() const { return m_Height; }
   TextureFormat GetFormat() const { return m_Format; }
   TextureTarget GetTarget() const { return m_Target; }
+  uint32_t GetArrayLayers() const { return m_ArrayLayers; }
   bool IsValid() const { return m_Handle.apiHandle != 0; }
 
  private:
@@ -49,7 +55,8 @@ class RuntimeTexture {
   int m_Width = 0;                                               // 纹理宽度
   int m_Height = 0;                                              // 纹理高度
   TextureFormat m_Format = TextureFormat::RGBA8;                 // 纹理格式
-  TextureTarget m_Target = TextureTarget::TEXTURE_2D;			 // 纹理目标
+  TextureTarget m_Target = TextureTarget::TEXTURE_2D;            // 纹理目标
+  uint32_t m_ArrayLayers = 1;                                    // 纹理层数（如果是数组纹理）
 };
 
 // 智能指针别名
