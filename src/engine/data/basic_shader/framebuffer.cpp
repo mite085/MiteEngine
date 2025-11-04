@@ -34,8 +34,12 @@ void FrameBuffer::Invalidate()
     // 创建运行时纹理
     RuntimeTexturePtr runtimeTexture = std::make_shared<RuntimeTexture>();
 
-    if (!runtimeTexture->initialize(
-            attachmentSpec.type, m_Spec.width, m_Spec.height, attachmentSpec.internalFormat, attachmentSpec.internalTarget))
+    if (!runtimeTexture->initialize(attachmentSpec.type,
+                                    m_Spec.width,
+                                    m_Spec.height,
+                                    attachmentSpec.internalFormat,
+                                    attachmentSpec.internalTarget,
+                                    attachmentSpec.arrayLayers))
     {
       LOG_ERROR("Failed to create runtime texture for framebuffer attachment type: {}",
                 static_cast<int>(attachmentSpec.type));
@@ -44,8 +48,9 @@ void FrameBuffer::Invalidate()
     // 配置纹理参数和附件点
     TextureGPUHandle handle = runtimeTexture->GetHandle();
     GLenum attachmentPoint = GL_NONE;
-    GLuint handleID = static_cast<GLuint>(handle.apiHandle); 
+    GLuint handleID = static_cast<GLuint>(handle.apiHandle);
     bool isColorAttachment = false;
+    GLenum textureTarget = static_cast<GLenum>(attachmentSpec.internalTarget);
     // 根据RuntimeTextureType确定OpenGL附件点和存储位置
     switch (attachmentSpec.type) {
       case RuntimeTextureType::Depth:
@@ -93,12 +98,58 @@ void FrameBuffer::Invalidate()
         colorAttachments.push_back(attachmentPoint);
         break;
     }
-    // 附加纹理到帧缓冲
-    glFramebufferTexture2D(GL_FRAMEBUFFER,
-                           attachmentPoint,
-                           multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
-                           handleID,
-                           0);
+    // 根据纹理目标类型使用不同的绑定函数
+    // 最后一个参数含义为 Mipmap level=0
+    switch (attachmentSpec.internalTarget) {
+      case TextureTarget::TEXTURE_2D:
+      case TextureTarget::TEXTURE_CUBE_MAP:
+        // 标准2D纹理和立方体贴图使用glFramebufferTexture2D
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget, handleID, 0);
+        break;
+
+      case TextureTarget::TEXTURE_2D_ARRAY:
+      case TextureTarget::TEXTURE_CUBE_MAP_ARRAY:
+      case TextureTarget::TEXTURE_3D:
+        // 数组纹理和3D纹理使用glFramebufferTexture
+        glFramebufferTexture(GL_FRAMEBUFFER, attachmentPoint, handleID, 0);
+        break;
+
+      case TextureTarget::TEXTURE_2D_MULTISAMPLE:
+        // 多重采样纹理
+        if (multisample) {
+          glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget, handleID, 0);
+        }
+        else {
+          LOG_WARN("Multisample texture target used but samples=1");
+          glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget, handleID, 0);
+        }
+        break;
+
+      case TextureTarget::TEXTURE_2D_MULTISAMPLE_ARRAY:
+        // 多重采样数组纹理
+        if (multisample) {
+          glFramebufferTexture(GL_FRAMEBUFFER, attachmentPoint, handleID, 0);
+        }
+        else {
+          LOG_WARN("Multisample array texture target used but samples=1");
+          glFramebufferTexture(GL_FRAMEBUFFER, attachmentPoint, handleID, 0);
+        }
+        break;
+
+      default:
+        // 其他类型默认使用glFramebufferTexture
+        LOG_WARN("Unsupported texture target: {}, using glFramebufferTexture",
+                 static_cast<int>(attachmentSpec.internalTarget));
+        glFramebufferTexture(GL_FRAMEBUFFER, attachmentPoint, handleID, 0);
+        break;
+    }
+
+    //// 附加纹理到帧缓冲
+    // glFramebufferTexture2D(GL_FRAMEBUFFER,
+    //                        attachmentPoint,
+    //                        multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
+    //                        handleID,
+    //                        0);
     LOG_DEBUG("Created framebuffer attachment: type={}, format={}, size={}x{}",
               static_cast<int>(attachmentSpec.type),
               static_cast<int>(attachmentSpec.internalFormat),
