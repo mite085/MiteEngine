@@ -12,8 +12,11 @@ namespace mite {
 struct FrameBufferAttachmentSpec {
   RuntimeTextureType type = RuntimeTextureType::RenderTarget;
   TextureFormat internalFormat = TextureFormat::RGB8;        // 内部格式
-  TextureTarget internalTarget = TextureTarget::TEXTURE_2D;  // 目标类型
+  TextureTarget internalTarget = TextureTarget::TEXTURE_2D;  // 目标纹理类型
   bool generateMipmaps = false;                              // 是否生成mipmaps
+  bool isArrayTexture = false;                               // 是否为数组纹理
+  bool isCubeMap = false;                                    // 是否为立方体贴图
+  uint32_t arrayLayers = 1;                                  // 数组层数（如果是数组纹理）
 };
 
 // 帧缓冲规格结构体

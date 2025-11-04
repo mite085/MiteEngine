@@ -26,6 +26,7 @@ struct TextureCreateInfo {
   TextureFilterMode minFilter = TextureFilterMode::Linear;  // 分离缩小/放大过滤
   TextureFilterMode magFilter = TextureFilterMode::Linear;
   bool generateMipmaps = false;  // 是否生成Mipmap（运行时纹理默认不生成mipmap）
+  uint32_t arrayLayers = 1;      // 纹理层数（如果是数组纹理）
 };
 
 // 纹理数据来源（TextureAsset外部载入纹理专用）
@@ -74,8 +75,8 @@ struct TextureInstance {
 // 透明度模式（GLTF标准）
 enum class AlphaMode {
   OPAQUE = 0,  // 不透明材质
-  MASK = 1,  // 透明度裁剪（硬边缘，仅支持0和1的透明度，无需考虑渲染顺序）
-  BLEND = 2  // 透明度混合（软边缘，需要从后向前渲染）
+  MASK = 1,    // 透明度裁剪（硬边缘，仅支持0和1的透明度，无需考虑渲染顺序）
+  BLEND = 2    // 透明度混合（软边缘，需要从后向前渲染）
 };
 
 // 运行时纹理槽位纹理槽，包含纹理GPUHandle和缩放偏移，仅渲染前的材质Apply时需要
@@ -86,8 +87,11 @@ struct TextureGPUSlot {
   glm::vec2 offset = glm::vec2(0.0f);                // 纹理偏移
 
   TextureGPUSlot() = default;
-  TextureGPUSlot(TextureGPUHandle handle, TextureTarget target, const glm::vec2 &s, const glm::vec2 &o)
-      : gpuHandle(handle),target(target), scale(s), offset(o)
+  TextureGPUSlot(TextureGPUHandle handle,
+                 TextureTarget target,
+                 const glm::vec2 &s,
+                 const glm::vec2 &o)
+      : gpuHandle(handle), target(target), scale(s), offset(o)
   {
   }
 };
