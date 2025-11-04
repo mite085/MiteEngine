@@ -62,9 +62,10 @@ class RenderContext {
   void SetGBufferTexture(RuntimeTexturePtr texture);
   RuntimeTexturePtr GetGBufferTexture(RuntimeTextureType type) const;
 
-  // ShadowMap纹理管理（动态数量）
-  void SetShadowMapTexture(uint32_t lightId, uint32_t shadowIndex, RuntimeTexturePtr texture);
-  RuntimeTexturePtr GetShadowMapTexture(uint32_t lightId, uint32_t shadowIndex) const;
+  // ShadowMap纹理管理（动态数量，按类型存储）
+  void SetShadowMapTexture(LightType type, RuntimeTexturePtr texture);
+  RuntimeTexturePtr GetShadowMapTexture(LightType type) const;
+  bool HasShadowMapTexture(LightType type) const;
 
   // RenderTarget纹理管理（自定义命名）
   void SetRenderTarget(const std::string &name, RuntimeTexturePtr texture);
@@ -139,7 +140,7 @@ class RenderContext {
 
   // ---- 分层纹理存储 ----
   std::array<RuntimeTexturePtr, GBuffer::TEXTURE_COUNT> m_GBufferTextures;
-  std::unordered_map<uintptr_t, RuntimeTexturePtr> m_ShadowMapTextures;
+  std::unordered_map<LightType, RuntimeTexturePtr> m_ShadowMapTextures;
   std::unordered_map<std::string, RuntimeTexturePtr> m_RenderTargets;
 
   // ---- 临时资源存储（现阶段尽量所有资源明确定义，待后续启用临时资源） ----

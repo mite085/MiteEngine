@@ -96,23 +96,31 @@ RuntimeTexturePtr RenderContext::GetGBufferTexture(RuntimeTextureType type) cons
   m_Logger->warn("Invalid GBuffer index: {}", static_cast<int>(index));
   return nullptr;
 }
-void RenderContext::SetShadowMapTexture(uint32_t lightId,
-                                        uint32_t shadowIndex,
-                                        RuntimeTexturePtr texture)
+// ---- 阴影贴图管理实现 ----
+void RenderContext::SetShadowMapTexture(LightType type, RuntimeTexturePtr texture)
 {
-  uint64_t key = (static_cast<uint64_t>(lightId) << 32) | shadowIndex;
-  m_ShadowMapTextures[key] = texture;
-  m_Logger->debug("Set ShadowMap texture [light:{}, index:{}]", lightId, shadowIndex);
+  if (texture && texture->IsValid()) {
+    m_ShadowMapTextures[type] = texture;
+    m_Logger->debug("Set shadow map texture for type: {}", static_cast<int>(type));
+  }
+  else {
+    m_Logger->warn("Attempted to set invalid shadow map texture for type: {}",
+                   static_cast<int>(type));
+  }
 }
-RuntimeTexturePtr RenderContext::GetShadowMapTexture(uint32_t lightId, uint32_t shadowIndex) const
+RuntimeTexturePtr RenderContext::GetShadowMapTexture(LightType type) const
 {
-  uint64_t key = (static_cast<uint64_t>(lightId) << 32) | shadowIndex;
-  auto it = m_ShadowMapTextures.find(key);
+  auto it = m_ShadowMapTextures.find(type);
   if (it != m_ShadowMapTextures.end()) {
     return it->second;
   }
-  m_Logger->debug("ShadowMap texture not found [light:{}, index:{}]", lightId, shadowIndex);
+  m_Logger->debug("Shadow map texture not found for type: {}", static_cast<int>(type));
   return nullptr;
+}
+bool RenderContext::HasShadowMapTexture(LightType type) const
+{
+  auto it = m_ShadowMapTextures.find(type);
+  return it != m_ShadowMapTextures.end() && it->second && it->second->IsValid();
 }
 void RenderContext::SetRenderTarget(const std::string &name, RuntimeTexturePtr texture)
 {
