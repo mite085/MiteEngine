@@ -133,6 +133,18 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
     return TextureGPUHandle{0};
   }
 
+  // 数组纹理层数验证
+  if ((createInfo->target == TextureTarget::TEXTURE_2D_ARRAY ||
+       createInfo->target == TextureTarget::TEXTURE_CUBE_MAP_ARRAY ||
+       createInfo->target == TextureTarget::TEXTURE_2D_MULTISAMPLE_ARRAY) &&
+      createInfo->arrayLayers == 0)
+  {
+    LOG_ERROR("Array texture target requires arrayLayers > 0, target: {}, layers: {}",
+              static_cast<int>(createInfo->target),
+              createInfo->arrayLayers);
+    return TextureGPUHandle{0};
+  }
+
   // 生成纹理ID
   GLuint textureId = 0;
   glGenTextures(1, &textureId);
@@ -167,16 +179,78 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
     return TextureGPUHandle{0};
   }
 
-  // 分配纹理存储（不上传数据，因为这是渲染目标）
-  glTexImage2D(static_cast<GLenum>(createInfo->target),
-               0,
-               internalFormat,
-               createInfo->width,
-               createInfo->height,
-               0,
-               format,
-               type,
-               nullptr);  // 注意：这里传递nullptr，只分配不初始化
+  // ==================== 修改：根据纹理目标使用不同的分配函数 ====================
+  switch (createInfo->target) {
+    case TextureTarget::TEXTURE_2D:
+    case TextureTarget::TEXTURE_CUBE_MAP:
+      // 标准2D纹理和立方体贴图使用glTexImage2D
+      if (createInfo->target == TextureTarget::TEXTURE_CUBE_MAP) {
+        // 立方体贴图需要为6个面分别分配存储
+        for (GLuint face = 0; face < 6; ++face) {
+          glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+                       0,
+                       internalFormat,
+                       createInfo->width,
+                       createInfo->height,
+                       0,
+                       format,
+                       type,
+                       nullptr);
+        }
+      }
+      else {
+        // 普通2D纹理
+        glTexImage2D(static_cast<GLenum>(createInfo->target),
+                     0,
+                     internalFormat,
+                     createInfo->width,
+                     createInfo->height,
+                     0,
+                     format,
+                     type,
+                     nullptr);
+      }
+      break;
+    case TextureTarget::TEXTURE_2D_ARRAY:
+    case TextureTarget::TEXTURE_CUBE_MAP_ARRAY:
+    case TextureTarget::TEXTURE_3D:
+      // 数组纹理和3D纹理使用glTexImage3D
+      glTexImage3D(static_cast<GLenum>(createInfo->target),
+                   0,
+                   internalFormat,
+                   createInfo->width,
+                   createInfo->height,
+                   createInfo->arrayLayers,
+                   0,
+                   format,
+                   type,
+                   nullptr);
+      break;
+    case TextureTarget::TEXTURE_2D_MULTISAMPLE:
+      // 多重采样2D纹理
+      glTexImage2DMultisample(static_cast<GLenum>(createInfo->target),
+                              4,  // 采样数 createInfo->samples，未实现，默认为4平衡性能
+                              internalFormat,
+                              createInfo->width,
+                              createInfo->height,
+                              GL_TRUE);  // 固定采样位置
+      break;
+    case TextureTarget::TEXTURE_2D_MULTISAMPLE_ARRAY:
+      // 多重采样数组纹理
+      glTexImage3DMultisample(static_cast<GLenum>(createInfo->target),
+                              4,  // 采样数 createInfo->samples，未实现，默认为4平衡性能
+                              internalFormat,
+                              createInfo->width,
+                              createInfo->height,
+                              createInfo->arrayLayers,
+                              GL_TRUE);  // 固定采样位置
+      break;
+    default:
+      LOG_ERROR("Unsupported texture target for runtime texture: {}",
+                static_cast<int>(createInfo->target));
+      glDeleteTextures(1, &textureId);
+      return TextureGPUHandle{0};
+  }
 
   // 生成Mipmaps（如果需要）
   if (createInfo->generateMipmaps) {
@@ -192,11 +266,13 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
   // 检查GLError
   CheckGLError();
 
-  m_Logger->debug("Created runtime texture: ID={}, size={}x{}, format={}",
+  m_Logger->debug("Created runtime texture: ID={}, size={}x{}, layers={}, format={}, target={}",
                   textureId,
                   createInfo->width,
                   createInfo->height,
-                  static_cast<int>(createInfo->format));
+                  createInfo->arrayLayers,
+                  static_cast<int>(createInfo->format),
+                  static_cast<int>(createInfo->target));
 
   return TextureGPUHandle{static_cast<uintptr_t>(textureId)};
 }
@@ -420,7 +496,7 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
   // 1. 参数验证
   if (indexCount == 0) {
     // index count = 0时无需warn，直接返回即可。仅检测，不执行draw call，基本无资源消耗
-    //m_Logger->warn("Attempted to draw with indexCount = 0"); 
+    // m_Logger->warn("Attempted to draw with indexCount = 0");
     return;
   }
 
@@ -530,7 +606,8 @@ void OpenGLDevice::DrawFullScreenQuad()
   glBindVertexArray(0);
 }
 
-void OpenGLDevice::DestroyFullScreenQuad() {
+void OpenGLDevice::DestroyFullScreenQuad()
+{
   // 清理全屏四边形
   if (m_ScreenQuadVAO != 0) {
     glDeleteVertexArrays(1, &m_ScreenQuadVAO);
