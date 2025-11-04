@@ -57,6 +57,8 @@ class ShadowMapStage : public RenderStage {
   void CalculateDirectionalShadowMatrices(RenderContext &context);
   void CalculatePointShadowMatrices(RenderContext &context);
   void CalculateSpotShadowMatrices(RenderContext &context);
+  // 存储shadow map到上下文
+  void StoreShadowMapsToContext(RenderContext &context);
 
   // ---- 验证方法 ----
   void ValidateShadowInputs(RenderContext &context) const;

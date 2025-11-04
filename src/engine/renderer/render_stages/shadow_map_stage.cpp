@@ -1,11 +1,10 @@
+#include "shadow_map_stage.h"
 #include "basic_shader/shader_binding_point_manager.h"
 #include "basic_shader/shader_cache.h"
 #include "basic_shader/uniform_buffer.h"
 #include "render_opengl/opengl_command.h"
-#include "shadow_map_stage.h"
 
 namespace mite {
-
 ShadowMapStage::ShadowMapStage() : RenderStage("ShadowMapStage")
 {
   SetupShadowRenderState();
@@ -24,7 +23,7 @@ void ShadowMapStage::Initialize()
     return;
   }
 
-  // 创建各种光源的阴影贴图
+  // 创建光源的阴影贴图
   CreateDirectionalShadowMaps();
   CreatePointShadowMaps();
   CreateSpotShadowMaps();
@@ -104,6 +103,8 @@ void ShadowMapStage::CreateDirectionalShadowMaps()
     depthSpec.type = RuntimeTextureType::ShadowMap_Directional;
     depthSpec.internalFormat = TextureFormat::DEPTH_COMPONENT32;
     depthSpec.generateMipmaps = false;
+    depthSpec.internalTarget = TextureTarget::TEXTURE_2D_ARRAY;  // 2D数组纹理(包含级联)
+    depthSpec.arrayLayers = MAX_CASCADES;                        // 每个光源的级联数量
 
     spec.attachments.push_back(depthSpec);
 
@@ -135,6 +136,8 @@ void ShadowMapStage::CreatePointShadowMaps()
     depthSpec.type = RuntimeTextureType::ShadowMap_Point;
     depthSpec.internalFormat = TextureFormat::DEPTH_COMPONENT32;
     depthSpec.generateMipmaps = false;
+    depthSpec.isCubeMap = true;                                  // 标记为立方体贴图
+    depthSpec.internalTarget = TextureTarget::TEXTURE_CUBE_MAP;  // Cube纹理
 
     spec.attachments.push_back(depthSpec);
 
@@ -165,6 +168,7 @@ void ShadowMapStage::CreateSpotShadowMaps()
     depthSpec.type = RuntimeTextureType::ShadowMap_Spot;
     depthSpec.internalFormat = TextureFormat::DEPTH_COMPONENT32;
     depthSpec.generateMipmaps = false;
+    depthSpec.internalTarget = TextureTarget::TEXTURE_2D; // 单张2D纹理
 
     spec.attachments.push_back(depthSpec);
 
@@ -186,7 +190,7 @@ void ShadowMapStage::RenderDirectionalShadowMaps(RenderContext &context)
   if (!lightManager.IsInitialized())
     return;
   // TODO: 获取实际的方向光源数量
-  uint32_t directionalLightCount = 0; // lightManager.GetDirectionalLightCount();
+  uint32_t directionalLightCount = 0;  // lightManager.GetDirectionalLightCount();
 
   for (uint32_t lightIdx = 0; lightIdx < directionalLightCount; lightIdx++) {
     if (lightIdx >= m_DirectionalShadowFBOs.size() || !m_DirectionalShadowFBOs[lightIdx]) {
@@ -208,7 +212,8 @@ void ShadowMapStage::RenderDirectionalShadowMaps(RenderContext &context)
       BindShadowRenderContext(lightIdx, cascadeIdx, 0, 0);
 
       // 渲染场景到当前级联
-      RenderSceneToShadowMap(context, context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
+      RenderSceneToShadowMap(context,
+                             context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
     }
   }
 }
@@ -218,7 +223,7 @@ void ShadowMapStage::RenderPointShadowMaps(RenderContext &context)
   if (!lightManager.IsInitialized())
     return;
   // TODO: 获取实际的点光源数量
-  uint32_t pointLightCount = 0; // lightManager.GetDirectionalLightCount();
+  uint32_t pointLightCount = 0;  // lightManager.GetDirectionalLightCount();
 
   for (uint32_t lightIdx = 0; lightIdx < pointLightCount; lightIdx++) {
     if (lightIdx >= m_PointShadowFBOs.size() || !m_PointShadowFBOs[lightIdx]) {
@@ -428,8 +433,6 @@ RuntimeTexturePtr ShadowMapStage::GetSpotShadowMap(uint32_t lightIndex) const
   return depthTexture;
 }
 
-
-
 void ShadowMapStage::RenderSceneToShadowMap(RenderContext &context,
                                             const std::vector<RenderableItem> &items)
 {
@@ -497,5 +500,33 @@ void ShadowMapStage::CalculateSpotShadowMatrices(RenderContext &context)
   m_Logger->info("Spot shadow matrix calculation - TODO: implement");
 }
 
+void ShadowMapStage::StoreShadowMapsToContext(RenderContext &context)
+{
+  // 存储方向光源阴影贴图（2D数组纹理）
+  if (!m_DirectionalShadowFBOs.empty() && m_DirectionalShadowFBOs[0]) {
+    auto texture = m_DirectionalShadowFBOs[0]->GetDepthAttachment();
+    if (texture && texture->IsValid()) {
+      context.SetShadowMapTexture(LightType::DIRECTIONAL, texture);
+      m_Logger->trace("Stored directional shadow map array");
+    }
+  }
 
+  // 存储点光源阴影贴图（立方体贴图数组）
+  if (!m_PointShadowFBOs.empty() && m_PointShadowFBOs[0]) {
+    auto texture = m_PointShadowFBOs[0]->GetDepthAttachment();
+    if (texture && texture->IsValid()) {
+      context.SetShadowMapTexture(LightType::POINT, texture);
+      m_Logger->trace("Stored point shadow cube map array");
+    }
+  }
+
+  // 存储聚光灯阴影贴图（2D数组纹理）
+  if (!m_SpotShadowFBOs.empty() && m_SpotShadowFBOs[0]) {
+    auto texture = m_SpotShadowFBOs[0]->GetDepthAttachment();
+    if (texture && texture->IsValid()) {
+      context.SetShadowMapTexture(LightType::SPOT, texture);
+      m_Logger->trace("Stored spot shadow map array");
+    }
+  }
+}
 }  // namespace mite
