@@ -189,8 +189,9 @@ void ShadowMapStage::RenderDirectionalShadowMaps(RenderContext &context)
   auto lightManager = context.GetLightManager();
   if (!lightManager.IsInitialized())
     return;
-  // TODO: 获取实际的方向光源数量
-  uint32_t directionalLightCount = 0;  // lightManager.GetDirectionalLightCount();
+
+  // 获取实际的方向光源数量
+  uint32_t directionalLightCount = lightManager.GetLightCountByType(LightType::DIRECTIONAL);
 
   for (uint32_t lightIdx = 0; lightIdx < directionalLightCount; lightIdx++) {
     if (lightIdx >= m_DirectionalShadowFBOs.size() || !m_DirectionalShadowFBOs[lightIdx]) {
@@ -222,8 +223,8 @@ void ShadowMapStage::RenderPointShadowMaps(RenderContext &context)
   auto lightManager = context.GetLightManager();
   if (!lightManager.IsInitialized())
     return;
-  // TODO: 获取实际的点光源数量
-  uint32_t pointLightCount = 0;  // lightManager.GetDirectionalLightCount();
+  // 获取实际的点光源数量
+  uint32_t pointLightCount = lightManager.GetLightCountByType(LightType::POINT);
 
   for (uint32_t lightIdx = 0; lightIdx < pointLightCount; lightIdx++) {
     if (lightIdx >= m_PointShadowFBOs.size() || !m_PointShadowFBOs[lightIdx]) {
@@ -253,8 +254,8 @@ void ShadowMapStage::RenderSpotShadowMaps(RenderContext &context)
     return;
   }
 
-  // TODO: 获取聚光灯数量
-  uint32_t spotLightCount = 0;  // lightManager.GetSpotLightCount();
+  // 获取聚光灯数量
+  uint32_t spotLightCount = lightManager.GetLightCountByType(LightType::SPOT);
 
   for (uint32_t lightIdx = 0; lightIdx < spotLightCount; lightIdx++) {
     // 绑定聚光灯阴影FBO
@@ -268,7 +269,10 @@ void ShadowMapStage::RenderSpotShadowMaps(RenderContext &context)
     // 渲染场景几何体
     auto renderQueue = context.GetRenderQueue();
     if (renderQueue) {
-      // TODO: 实现聚光灯阴影的场景渲染
+      // 实现聚光灯阴影的场景渲染
+
+      RenderSceneToShadowMap(context,
+                             context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
     }
   }
 
