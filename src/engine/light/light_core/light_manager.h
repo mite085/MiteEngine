@@ -49,11 +49,47 @@ class LightManager {
 
   // ---- 光源管理 ----
   /**
+   * @brief 创建点光源/聚光灯/方向光/矩形与椭圆面光源
+   * @return 光源共享指针
+   */
+  std::shared_ptr<Light> CreatePointLight();
+  // std::shared_ptr<Light> CreateSpotLight();
+  // std::shared_ptr<Light> CreateDirectionalLight();
+  // std::shared_ptr<Light> CreateAreaRectLight();
+  // std::shared_ptr<Light> CreateAreaEllipseLight();
+  /**
    * @brief 创建指定类型的光源
    * @param type 光源类型
    * @return 光源共享指针，如果类型无效返回nullptr
    */
   std::shared_ptr<Light> CreateLight(LightType type);
+  /**
+   * @brief 添加光源到管理器
+   * @param light 要添加的光源指针
+   * @return 是否添加成功
+   * @note 光源所有权由调用方管理，管理器只持有引用
+   */
+  bool AddLight(std::shared_ptr<Light> light);
+  /**
+   * @brief 移除指定光源
+   * @param light 要移除的光源指针
+   * @return 是否移除成功
+   */
+  bool RemoveLight(std::shared_ptr<Light> light);
+  /**
+   * @brief 移除所有光源
+   */
+  void ClearAllLights();
+  /**
+   * @brief 获取所有光源列表
+   * @return 光源指针列表
+   */
+  const std::vector<std::shared_ptr<Light>> &GetAllLights() const;
+  /**
+   * @brief 获取启用的光源列表
+   * @return 启用的光源指针列表
+   */
+  std::vector<std::shared_ptr<Light>> GetEnabledLights() const;
 
   // ---- 数据更新 ----
   /**
@@ -64,17 +100,17 @@ class LightManager {
    */
   bool UpdateLightData(
       const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms);
-  /**
-   * @brief 收集所有阴影数据
-   * @param worldTransforms 光源世界变换映射表
-   * @param cameraView 相机视图矩阵，用于级联阴影计算
-   * @param cameraProj 相机投影矩阵，用于级联阴影计算
-   * @return 阴影数据列表
-   */
-  std::vector<ShadowMapData> CollectShadowData(
-      const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms,
-      const Transform &cameraView,
-      const glm::mat4 &cameraProj = glm::mat4(1.0f)) const;
+  ///**
+  // * @brief 收集所有阴影数据
+  // * @param worldTransforms 光源世界变换映射表
+  // * @param cameraView 相机视图矩阵，用于级联阴影计算
+  // * @param cameraProj 相机投影矩阵，用于级联阴影计算
+  // * @return 阴影数据列表
+  // */
+  //std::vector<ShadowMapData> CollectShadowData(
+  //    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms,
+  //    const Transform &cameraView,
+  //    const glm::mat4 &cameraProj = glm::mat4(1.0f)) const;
 
   // ---- SSBO管理 ----
 
@@ -99,6 +135,25 @@ class LightManager {
    */
   size_t GetMaxLights() const;
 
+  // ---- 统计信息 ----
+
+  /**
+   * @brief 获取总光源数量
+   * @return 光源总数
+   */
+  size_t GetTotalLightCount() const;
+
+  /**
+   * @brief 获取启用的光源数量
+   * @return 启用光源数量
+   */
+  size_t GetEnabledLightCount() const;
+
+  /**
+   * @brief 获取按类型统计的光源数量
+   */
+  size_t GetLightCountByType(LightType type) const;
+
  private:
   // ---- 内部方法 ----
   /**
@@ -108,10 +163,17 @@ class LightManager {
    */
   std::vector<GPULightData> PrepareGPULightData(
       const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms) const;
+  /**
+   * @brief 验证光源是否可以添加
+   * @param light 要验证的光源
+   * @return 是否可以添加
+   */
+  bool CanAddLight(std::shared_ptr<Light> light) const;
 
   // ---- 成员变量 ----
+  std::vector<std::shared_ptr<Light>> m_Lights;          // 所有光源列表
   std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;  // 光源统一的SSBO管理器
-  size_t m_MaxLights;                                    // 最大光源数量（暂未启用）
+  size_t m_MaxLights;                                    // 最大光源数量
   bool m_IsInitialized = false;                          // 初始化状态标志
 };
 }  // namespace mite
