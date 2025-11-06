@@ -7,11 +7,11 @@ namespace mite {
 /**
  * @brief 阴影质量配置
  */
-enum class ShadowQuality {
-  LOW = 0,     // 512x512
-  MEDIUM = 1,  // 1024x1024
-  HIGH = 2,    // 2048x2048
-  ULTRA = 3    // 4096x4096
+enum class ShadowQuality : uint32_t {
+  LOW = 512,      // 512x512
+  MEDIUM = 1024,  // 1024x1024
+  HIGH = 2048,    // 2048x2048
+  ULTRA = 4096    // 4096x4096
 };
 /**
  * @brief 阴影过滤模式
@@ -28,10 +28,6 @@ enum class ShadowFilter {
 struct ShadowMapData {
   // 基础阴影配置
   bool enabled = false;
-  ShadowQuality quality = ShadowQuality::MEDIUM;
-  ShadowFilter filter = ShadowFilter::PCF;
-  float bias = 0.005f;
-  float normalBias = 0.01f;
 
   // 阴影贴图索引（由Renderer分配）
   int shadowMapIndex = -1;
@@ -77,25 +73,6 @@ struct ShadowMapData {
    * @brief 默认构造函数
    */
   ShadowMapData() : specific{} {}
-
-  /**
-   * @brief 获取阴影贴图尺寸
-   */
-  uint32_t GetShadowMapSize() const
-  {
-    switch (quality) {
-      case ShadowQuality::LOW:
-        return 512;
-      case ShadowQuality::MEDIUM:
-        return 1024;
-      case ShadowQuality::HIGH:
-        return 2048;
-      case ShadowQuality::ULTRA:
-        return 4096;
-      default:
-        return 1024;
-    }
-  }
 
   /**
    * @brief 获取阴影矩阵数量
@@ -144,7 +121,6 @@ struct ShadowMapData {
     return glm::mat4(1.0f);
   }
 };
-
 }  // namespace mite
 
 #endif  // MITE_SHADOW_CONFIG_H
