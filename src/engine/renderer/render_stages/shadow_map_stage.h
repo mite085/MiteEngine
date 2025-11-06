@@ -61,14 +61,6 @@ class ShadowMapStage : public RenderStage {
                                uint32_t cascadeIndex,
                                uint32_t faceIndex,
                                uint32_t shadowMapType);
-  // 分层渲染辅助方法
-  void BindFramebufferLayer(std::shared_ptr<FrameBuffer> fbo,
-                            uint32_t attachmentPoint,
-                            uint32_t layer);
-  void BindFramebufferCubeFace(std::shared_ptr<FrameBuffer> fbo,
-                               uint32_t attachmentPoint,
-                               uint32_t layer,
-                               uint32_t face);
   // 场景几何体渲染辅助方法
   void RenderSceneToShadowMap(RenderContext &context, const std::vector<RenderableItem> &items);
   // 存储shadow map到上下文

@@ -27,8 +27,7 @@ void ShadowMapStage::SetShadowQuality(ShadowQuality quality)
       Initialize();
     }
 
-    m_Logger->info(
-        "Shadow quality set to {}", static_cast<int>(quality));
+    m_Logger->info("Shadow quality set to {}", static_cast<int>(quality));
   }
 }
 void ShadowMapStage::SetShadowFilter(ShadowFilter filter)
@@ -115,7 +114,7 @@ void ShadowMapStage::Shutdown()
   // 清理阴影贴图Framebuffer
   m_DirectionalShadowFBO = nullptr;
   m_PointShadowFBO = nullptr;
-  m_SpotShadowFBO = nullptr; 
+  m_SpotShadowFBO = nullptr;
 
   m_Initialized = false;
   m_Logger->info("ShadowMapStage shutdown completed");
@@ -245,8 +244,8 @@ void ShadowMapStage::CreateSpotShadowMap()
   }
 }
 
-void ShadowMapStage::RenderDirectionalShadowMap(RenderContext &context,
-                                  const std::vector<std::shared_ptr<Light>> &directionalLights)
+void ShadowMapStage::RenderDirectionalShadowMap(
+    RenderContext &context, const std::vector<std::shared_ptr<Light>> &directionalLights)
 {
   if (!m_DirectionalShadowFBO) {
     m_Logger->warn("Directional shadow FBO not available");
@@ -281,7 +280,7 @@ void ShadowMapStage::RenderDirectionalShadowMap(RenderContext &context,
     {
       // 使用分层渲染到数组纹理的特定层
       uint32_t layer = lightIdx * MAX_CASCADES + cascadeIdx;
-      BindFramebufferLayer(m_DirectionalShadowFBO, GL_DEPTH_ATTACHMENT, layer);
+      RenderCommand::Get().BindFrameBufferDepthLayer(m_DirectionalShadowFBO, layer);
       // 绑定阴影渲染上下文
       BindShadowRenderContext(lightIdx, cascadeIdx, 0, 0);
       // 渲染场景到当前级联
@@ -314,7 +313,7 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
     }
     // 为立方体贴图数组的6个面分别渲染
     for (uint32_t faceIdx = 0; faceIdx < 6; faceIdx++) {
-      BindFramebufferCubeFace(m_PointShadowFBO, GL_DEPTH_ATTACHMENT, lightIdx, faceIdx);
+      RenderCommand::Get().BindFramebufferDepthCubeFace(m_SpotShadowFBO, lightIdx, faceIdx);
       BindShadowRenderContext(lightIdx, 0, faceIdx, 1);
       RenderSceneToShadowMap(context,
                              context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
@@ -345,7 +344,8 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
       continue;
     }
     // 使用分层渲染到数组纹理的特定层
-    BindFramebufferLayer(m_SpotShadowFBO, GL_DEPTH_ATTACHMENT, lightIdx);
+    RenderCommand::Get().BindFrameBufferDepthLayer(m_SpotShadowFBO, lightIdx);
+
     // 绑定阴影渲染上下文
     BindShadowRenderContext(lightIdx, 0, 0, 2);  // 类型2=聚光灯
     // 渲染场景几何体
@@ -391,42 +391,6 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
                   cascadeIndex,
                   faceIndex,
                   shadowMapType);
-}
-
-void ShadowMapStage::BindFramebufferLayer(std::shared_ptr<FrameBuffer> fbo,
-                                          uint32_t attachmentPoint,
-                                          uint32_t layer)
-{
-  if (!fbo)
-    return;
-
-  auto depthTexture = fbo->GetDepthAttachment();
-  if (!depthTexture || !depthTexture->IsValid())
-    return;
-
-  GLuint textureID = static_cast<GLuint>(depthTexture->GetHandle().apiHandle);
-
-  // 使用glFramebufferTextureLayer绑定到特定层
-  glFramebufferTextureLayer(GL_FRAMEBUFFER, attachmentPoint, textureID, 0, layer);
-}
-void ShadowMapStage::BindFramebufferCubeFace(std::shared_ptr<FrameBuffer> fbo,
-                                             uint32_t attachmentPoint,
-                                             uint32_t layer,
-                                             uint32_t face)
-{
-  if (!fbo)
-    return;
-
-  auto depthTexture = fbo->GetDepthAttachment();
-  if (!depthTexture || !depthTexture->IsValid())
-    return;
-
-  GLuint textureID = static_cast<GLuint>(depthTexture->GetHandle().apiHandle);
-
-  // 对于立方体贴图数组，使用glFramebufferTextureLayer绑定到特定层和面
-  // 注意：立方体贴图数组的层索引计算为 layer * 6 + face
-  uint32_t arrayLayer = layer * 6 + face;
-  glFramebufferTextureLayer(GL_FRAMEBUFFER, attachmentPoint, textureID, 0, arrayLayer);
 }
 
 void ShadowMapStage::RenderSceneToShadowMap(RenderContext &context,
@@ -513,5 +477,4 @@ void ShadowMapStage::ValidateShadowInputs(RenderContext &context) const
     throw std::runtime_error("ShadowMap stage missing valid shadow shader");
   }
 }
-
 }  // namespace mite
