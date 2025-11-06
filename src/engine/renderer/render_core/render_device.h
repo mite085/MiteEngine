@@ -47,6 +47,12 @@ class RenderDevice {
                                    TextureGPUHandle textureHandle,
                                    TextureTarget target = TextureTarget::TEXTURE_2D) const = 0;
 
+  // ShadowMap的FrameBuffer深度数组纹理附件绑定的便捷方法（2D_ARRAY和CUBE_MAP_ARRAY专用）
+  virtual void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
+                                         uint32_t layer) const = 0;
+  virtual void BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
+                                            uint32_t layer,
+                                            uint32_t face) const = 0;
   // ---- 模型/网格操作 ----
   virtual ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) = 0;
   virtual void DestroyModel(ModelGPUHandle handle) = 0;

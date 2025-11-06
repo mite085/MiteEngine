@@ -182,6 +182,26 @@ void OpenGLRenderCommand::BindExternalTexture(ExternalTextureType type,
                        "BindExternalTexture"});
 }
 
+void OpenGLRenderCommand::BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
+                                                    uint32_t layer)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::BindTextures,
+                       [this, fbo, layer] { m_Device->BindFrameBufferDepthLayer(fbo, layer); },
+                       "BindFrameBufferDepthLayer"});
+}
+
+void OpenGLRenderCommand::BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
+                                                       uint32_t layer,
+                                                       uint32_t face)
+{
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push(
+      {CommandType::BindTextures,
+       [this, fbo, layer, face] { m_Device->BindFramebufferDepthCubeFace(fbo, layer, face); },
+       "BindFramebufferDepthCubeFace"});
+}
+
 void OpenGLRenderCommand::BindMesh(std::shared_ptr<Mesh> mesh)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);

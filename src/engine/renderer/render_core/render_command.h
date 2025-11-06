@@ -125,6 +125,17 @@ class RenderCommand {
                                    TextureGPUHandle textureHandle,
                                    TextureTarget target = TextureTarget::TEXTURE_2D) = 0;
   /**
+   * @brief ShadowMap的FrameBuffer深度数组纹理附件绑定的便捷方法（2D_ARRAY和CUBE_MAP_ARRAY专用）
+   * @param fbo ShadowMap帧缓冲
+   * @param layer 需要绑定的纹理层数
+   * @param face 需要绑定的Cube面索引（CubeMapArray专用）
+   */
+  virtual void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
+                                         uint32_t layer) = 0;
+  virtual void BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
+                                            uint32_t layer,
+                                            uint32_t face) = 0;
+  /**
    * @brief 绑定网格VAO
    * @param mesh 网格数据
    */

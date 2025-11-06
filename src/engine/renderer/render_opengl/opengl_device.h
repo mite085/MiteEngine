@@ -27,6 +27,11 @@ class OpenGLDevice : public RenderDevice {
   void BindExternalTexture(ExternalTextureType type,
                            TextureGPUHandle textureHandle,
                            TextureTarget target = TextureTarget::TEXTURE_2D) const override;
+  void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
+                                 uint32_t layer) const override;
+  void BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
+                                    uint32_t layer,
+                                    uint32_t face) const override;
 
   // ---- 模型操作 ----
   ModelGPUHandle CreateModel(std::shared_ptr<ModelSourceData> data) override;
@@ -56,6 +61,7 @@ class OpenGLDevice : public RenderDevice {
   void CreateFullScreenQuad() override;
   void DrawFullScreenQuad() override;
   void DestroyFullScreenQuad() override;
+
  private:
   // ---- 事件响应函数 ----
   void OnModelLoaded(ModelLoadEvent &e) override;

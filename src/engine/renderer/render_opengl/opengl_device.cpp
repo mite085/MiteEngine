@@ -327,6 +327,46 @@ void OpenGLDevice::BindExternalTexture(ExternalTextureType type,
     LOG_ERROR("Failed to bind external texture: binding point not allocated");
   }
 }
+
+void OpenGLDevice::BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
+                                        uint32_t layer) const
+{
+  if (!fbo)
+    return;
+
+  // 获取深度纹理附件
+  auto depthTexture = fbo->GetDepthAttachment();
+  if (!depthTexture || !depthTexture->IsValid()) {
+    LOG_ERROR("Failed to bind frame buffer layer: invalid depth attachment");
+    return;
+  }
+  GLuint textureID = static_cast<GLuint>(depthTexture->GetHandle().apiHandle);
+
+  // 使用glFramebufferTextureLayer绑定到特定层
+  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0, layer);
+}
+void OpenGLDevice::BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
+                                           uint32_t layer,
+                                           uint32_t face) const
+{
+  if (!fbo)
+    return;
+
+  // 获取深度纹理附件
+  auto depthTexture = fbo->GetDepthAttachment();
+  if (!depthTexture || !depthTexture->IsValid()) {
+    LOG_ERROR("Failed to bind frame buffer layer: invalid depth attachment");
+    return;
+  }
+
+  GLuint textureID = static_cast<GLuint>(depthTexture->GetHandle().apiHandle);
+
+  // 对于立方体贴图数组，使用glFramebufferTextureLayer绑定到特定层和面
+  // 注意：立方体贴图数组的层索引计算为 layer * 6 + face
+  uint32_t arrayLayer = layer * 6 + face;
+  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0, arrayLayer);
+}
+
 // ------------------------ 模型操作 ------------------------
 ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
 {
