@@ -40,7 +40,7 @@ void LightManager::Destroy()
   }
 
   // 清理光源列表
-   m_Lights.clear();
+  m_Lights.clear();
 
   // 销毁SSBO
   if (m_LightSSBO) {
@@ -221,29 +221,29 @@ bool LightManager::UpdateLightData(
   return success;
 }
 
-//std::vector<ShadowMapData> LightManager::CollectShadowData(
-//    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms,
-//    const Transform &cameraView,
-//    const glm::mat4 &cameraProj) const
+// std::vector<ShadowMapData> LightManager::CollectShadowData(
+//     const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms,
+//     const Transform &cameraView,
+//     const glm::mat4 &cameraProj) const
 //{
-//  std::vector<ShadowMapData> shadowDataList;
+//   std::vector<ShadowMapData> shadowDataList;
 //
-//  for (const auto &[light, transform] : worldTransforms) {
-//    ShadowMapData shadowData = light->PrepareShadowData(transform, cameraView, cameraProj);
-//    if (shadowData.isValid) {
-//      shadowDataList.push_back(shadowData);
-//    }
-//  }
+//   for (const auto &[light, transform] : worldTransforms) {
+//     ShadowMapData shadowData = light->PrepareShadowData(transform, cameraView, cameraProj);
+//     if (shadowData.isValid) {
+//       shadowDataList.push_back(shadowData);
+//     }
+//   }
 //
-//  LOG_TRACE("Collected shadow data for {} lights", shadowDataList.size());
-//  return shadowDataList;
-//}
+//   LOG_TRACE("Collected shadow data for {} lights", shadowDataList.size());
+//   return shadowDataList;
+// }
 
-size_t LightManager::GetLightCountByType(
-    LightType type) const
+size_t LightManager::GetLightCountByType(LightType type) const
 {
   size_t lightCount = 0;
 
+  // 遍历执行计数操作（光源数量上百已是极限，无需考虑此处的时间复杂度优化）
   for (const auto &light : m_Lights) {
     if (light && light->GetType() == type) {
       lightCount++;
@@ -252,7 +252,19 @@ size_t LightManager::GetLightCountByType(
 
   return lightCount;
 }
+std::vector<std::shared_ptr<Light>> LightManager::GetLightsByType(LightType type) const
+{
+  std::vector<std::shared_ptr<Light>> lights;
 
+  // 遍历按照类型获取（光源数量上百已是极限，无需考虑此处的时间复杂度优化）
+  for (const auto &light : m_Lights) {
+    if (light && light->GetType() == type) {
+      lights.push_back(light);
+    }
+  }
+
+  return lights;
+}
 std::shared_ptr<LightShaderStorgeBuffer> LightManager::GetLightSSBO() const
 {
   return m_LightSSBO;
@@ -313,5 +325,4 @@ bool LightManager::CanAddLight(std::shared_ptr<Light> light) const
 
   return true;
 }
-
 }  // namespace mite

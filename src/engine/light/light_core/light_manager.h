@@ -153,6 +153,7 @@ class LightManager {
    * @brief 获取按类型统计的光源数量
    */
   size_t GetLightCountByType(LightType type) const;
+  std::vector<std::shared_ptr<Light>> GetLightsByType(LightType type) const;
 
  private:
   // ---- 内部方法 ----
