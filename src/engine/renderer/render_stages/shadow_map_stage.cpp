@@ -7,7 +7,6 @@
 namespace mite {
 ShadowMapStage::ShadowMapStage() : RenderStage("ShadowMapStage")
 {
-  SetupShadowRenderState();
   m_Logger->info("ShadowMapStage created");
 }
 
@@ -50,6 +49,9 @@ void ShadowMapStage::Initialize()
     m_Logger->warn("ShadowMapStage already initialized");
     return;
   }
+
+  // 初始化Shadow渲染状态
+  SetupShadowRenderState();
 
   // 创建光源的阴影贴图
   CreateDirectionalShadowMap();
@@ -124,7 +126,13 @@ void ShadowMapStage::Shutdown()
   m_PointlightUBOs.fill(nullptr);
   m_SpotlightUBOs.fill(nullptr);
 
+  // 清理其他状态为默认值
+  m_ShadowRenderState = nullptr;
   m_Initialized = false;
+  m_ShadowQuality = ShadowQuality::MEDIUM;
+  m_ShadowFilter = ShadowFilter::PCF;
+  m_ShadowBias = 0.005f;
+  m_NormalBias = 0.01f;
   m_Logger->info("ShadowMapStage shutdown completed");
 }
 
