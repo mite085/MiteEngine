@@ -96,9 +96,8 @@ class RenderCommand {
   virtual void BindCameraUBO(std::shared_ptr<CameraInstance> instance) = 0;
   virtual void BindMaterialUBO(std::shared_ptr<MaterialInstance> instance) = 0;
   virtual void BindModelUBO(std::shared_ptr<MeshInstance> instance) = 0;
-  virtual void BindShadowUBO(const ShadowUniformBuffer &shadowUBO) = 0;
-  virtual void BindShadowRenderContextUBO(
-      const ShadowRenderContextUniformBuffer &shadowRenderCtxUBO) = 0;
+  virtual void BindShadowUBO(std::shared_ptr<ShaderUBO> shadowUBO) = 0;
+  virtual void BindShadowRenderContextUBO(std::shared_ptr<ShaderUBO> shadowRenderCtxUBO) = 0;
   virtual void BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance) = 0;
 
   /**

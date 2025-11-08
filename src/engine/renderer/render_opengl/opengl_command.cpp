@@ -121,19 +121,18 @@ void OpenGLRenderCommand::BindModelUBO(std::shared_ptr<MeshInstance> instance)
       {CommandType::BindModelUBO, [=]() { instance->BindUBO(); }, "Bind Model UBO"});
 }
 
-void OpenGLRenderCommand::BindShadowUBO(const ShadowUniformBuffer &shadowUBO)
+void OpenGLRenderCommand::BindShadowUBO(std::shared_ptr<ShaderUBO> shadowUBO)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push(
-      {CommandType::BindShadowUBO, [=]() { instance->BindUBO(); }, "Bind Shadow UBO"});
+      {CommandType::BindShadowUBO, [=]() { shadowUBO->Bind(); }, "Bind Shadow UBO"});
 }
 
-void OpenGLRenderCommand::BindShadowRenderContextUBO(
-    const ShadowRenderContextUniformBuffer &shadowRenderCtxUBO)
+void OpenGLRenderCommand::BindShadowRenderContextUBO(std::shared_ptr<ShaderUBO> shadowRenderCtxUBO)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::BindShadowRenderContextUBO,
-                       [=]() { instance->BindUBO(); },
+                       [=]() { shadowRenderCtxUBO->Bind(); },
                        "Bind Shadow Render Context UBO"});
 }
 
