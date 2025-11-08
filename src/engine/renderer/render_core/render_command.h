@@ -3,8 +3,8 @@
 
 #include "basic_event/render_event.h"
 #include "basic_instance/camera_instance.h"
-#include "basic_instance/material_instance.h"
 #include "basic_instance/light_ssbo.h"
+#include "basic_instance/material_instance.h"
 #include "basic_shader/framebuffer.h"
 #include "render_device.h"
 #include "renderable_item.h"
@@ -50,16 +50,18 @@ class RenderCommand {
     SetRenderState,     // 设置渲染状态
 
     // 原子操作命令
-    BindCameraUBO,         // 绑定相机UBO
-    BindMaterialUBO,       // 绑定材质UBO
-    BindModelUBO,          // 绑定模型UBO
-    BindLightSSBO,         // 绑定光源SSBO
-    BindShader,            // 绑定着色器程序
-    UnbindShader,          // 解绑着色器程序
-    UploadShaderUniforms,  // 上传着色器Uniforms
-    BindTextures,          // 绑定纹理
-    BindMesh,              // 绑定网格VAO
-    DrawMesh,              // 绘制网格
+    BindCameraUBO,               // 绑定相机UBO
+    BindMaterialUBO,             // 绑定材质UBO
+    BindModelUBO,                // 绑定模型UBO
+    BindShadowUBO,               // 绑定shadow UBO
+    BindShadowRenderContextUBO,  // 绑定shadow渲染上下文UBO
+    BindLightSSBO,               // 绑定光源SSBO
+    BindShader,                  // 绑定着色器程序
+    UnbindShader,                // 解绑着色器程序
+    UploadShaderUniforms,        // 上传着色器Uniforms
+    BindTextures,                // 绑定纹理
+    BindMesh,                    // 绑定网格VAO
+    DrawMesh,                    // 绘制网格
 
     Custom  // 自定义命令
   };
@@ -94,6 +96,9 @@ class RenderCommand {
   virtual void BindCameraUBO(std::shared_ptr<CameraInstance> instance) = 0;
   virtual void BindMaterialUBO(std::shared_ptr<MaterialInstance> instance) = 0;
   virtual void BindModelUBO(std::shared_ptr<MeshInstance> instance) = 0;
+  virtual void BindShadowUBO(const ShadowUniformBuffer &shadowUBO) = 0;
+  virtual void BindShadowRenderContextUBO(
+      const ShadowRenderContextUniformBuffer &shadowRenderCtxUBO) = 0;
   virtual void BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance) = 0;
 
   /**
@@ -130,8 +135,7 @@ class RenderCommand {
    * @param layer 需要绑定的纹理层数
    * @param face 需要绑定的Cube面索引（CubeMapArray专用）
    */
-  virtual void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
-                                         uint32_t layer) = 0;
+  virtual void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo, uint32_t layer) = 0;
   virtual void BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
                                             uint32_t layer,
                                             uint32_t face) = 0;
