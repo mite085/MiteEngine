@@ -41,6 +41,7 @@ void LightManager::Destroy()
 
   // 清理光源列表
   m_Lights.clear();
+  m_LightTransformCache.clear();
 
   // 销毁SSBO
   if (m_LightSSBO) {
@@ -286,19 +287,40 @@ size_t LightManager::GetMaxLights() const
   return m_MaxLights;
 }
 
+Transform LightManager::GetLightTransform(Light *lightPtr) const
+{
+  // 检查light ptr合法性
+  if (!lightPtr) {
+    LOG_ERROR("LightManager invalid light ptr.");
+    return Transform();
+  }
+
+  // 获取light变换的缓存
+  if (m_LightTransformCache.find(lightPtr) == m_LightTransformCache.end()) {
+    LOG_ERROR("LightManager invalid light transform cache.");
+    return Transform();
+  }
+  else {
+    return m_LightTransformCache.at(lightPtr);
+  }
+}
+
 // ---- 内部方法实现 ----
 
 std::vector<GPULightData> LightManager::PrepareGPULightData(
     const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms) const
 {
   std::vector<GPULightData> gpuData;
-
   gpuData.reserve(worldTransforms.size());
+
+  // 清空变换缓存
+  m_LightTransformCache.clear();
 
   for (const auto &[light, transform] : worldTransforms) {
     try {
       GPULightData lightData = light->PrepareGPULightData(transform);
       gpuData.push_back(lightData);
+      m_LightTransformCache.insert({light.get(), transform});
     }
     catch (const std::exception &e) {
       LOG_ERROR("Failed to prepare GPU data for light: {}", e.what());

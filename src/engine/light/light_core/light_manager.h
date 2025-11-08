@@ -107,7 +107,7 @@ class LightManager {
   // * @param cameraProj 相机投影矩阵，用于级联阴影计算
   // * @return 阴影数据列表
   // */
-  //std::vector<ShadowMapData> CollectShadowData(
+  // std::vector<ShadowMapData> CollectShadowData(
   //    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms,
   //    const Transform &cameraView,
   //    const glm::mat4 &cameraProj = glm::mat4(1.0f)) const;
@@ -135,19 +135,10 @@ class LightManager {
    */
   size_t GetMaxLights() const;
 
-  // ---- 统计信息 ----
-
   /**
-   * @brief 获取总光源数量
-   * @return 光源总数
+   * @brief 基于每帧缓存获取光源变换
    */
-  size_t GetTotalLightCount() const;
-
-  /**
-   * @brief 获取启用的光源数量
-   * @return 启用光源数量
-   */
-  size_t GetEnabledLightCount() const;
+  Transform GetLightTransform(Light* lightPtr) const;
 
   /**
    * @brief 获取按类型统计的光源数量
@@ -172,10 +163,11 @@ class LightManager {
   bool CanAddLight(std::shared_ptr<Light> light) const;
 
   // ---- 成员变量 ----
-  std::vector<std::shared_ptr<Light>> m_Lights;          // 所有光源列表
-  std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;  // 光源统一的SSBO管理器
-  size_t m_MaxLights;                                    // 最大光源数量
-  bool m_IsInitialized = false;                          // 初始化状态标志
+  std::vector<std::shared_ptr<Light>> m_Lights;                          // 所有光源列表
+  mutable std::unordered_map<Light *, Transform> m_LightTransformCache;  // 光源变换缓存
+  std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;                  // 光源统一的SSBO管理器
+  size_t m_MaxLights;                                                    // 最大光源数量
+  bool m_IsInitialized = false;                                          // 初始化状态标志
 };
 }  // namespace mite
 

@@ -266,7 +266,7 @@ struct alignas(16) ShadowUniformBuffer {
   glm::ivec4 spotShadowIndices[MAX_SPOT_LIGHTS];  // 每个聚光灯在阴影图数组中的索引
 
   // 面光源阴影索引 (MAX_AREA_LIGHTS(8) * 16 = 128字节)（未启用）
-  glm::ivec4 spotShadowIndices[MAX_AREA_LIGHTS];  // 每个面光源在阴影图数组中的索引（未启用）
+  glm::ivec4 areaShadowIndices[MAX_AREA_LIGHTS];  // 每个面光源在阴影图数组中的索引（未启用）
 
   // 总大小: 64 + 2048 + 6144 + 2048 + 16 + 16 + 1024 = 11360字节
   // 11360字节 < 64KB(65536字节，OpenGL最低标准)，符合UBO大小限制
