@@ -56,10 +56,6 @@ class DeferredLightingStage : public RenderStage {
   // 配置参数
   bool m_Initialized = false;
   bool m_EnableShadows = false;
-
-  // 阴影相关
-  static constexpr uint32_t MAX_SHADOW_MAPS = 16;
-  uint32_t m_NextShadowTextureUnit = 8;
 };
 }  // namespace mite
 

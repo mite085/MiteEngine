@@ -119,6 +119,11 @@ void ShadowMapStage::Shutdown()
   m_PointShadowFBO = nullptr;
   m_SpotShadowFBO = nullptr;
 
+  // 清理阴影上下文UBO
+  m_DirectionallightUBOs.fill(nullptr);
+  m_PointlightUBOs.fill(nullptr);
+  m_SpotlightUBOs.fill(nullptr);
+
   m_Initialized = false;
   m_Logger->info("ShadowMapStage shutdown completed");
 }
@@ -249,6 +254,33 @@ void ShadowMapStage::CreateSpotShadowMap()
 
 void ShadowMapStage::CreateShadowRenderContextUniformBuffer() {
 
+  // 默认填充清空
+  m_DirectionallightUBOs.fill(nullptr);
+  m_PointlightUBOs.fill(nullptr);
+  m_SpotlightUBOs.fill(nullptr);
+
+  // 创建UBO，执行初始化
+  for (int i = 0; i < m_DirectionallightUBOs.size(); i++) {
+    m_DirectionallightUBOs.at(i) = std::make_shared<ShaderUBO>(
+        sizeof(ShadowRenderContextUniformBuffer),
+        BindingPointManager::Get().GetShadowRenderContextUBOBinding(),
+        GL_DYNAMIC_DRAW);
+    m_DirectionallightUBOs.at(i)->Initialize();
+  }
+  for (int i = 0; i < m_PointlightUBOs.size(); i++) {
+    m_PointlightUBOs.at(i) = std::make_shared<ShaderUBO>(
+        sizeof(ShadowRenderContextUniformBuffer),
+        BindingPointManager::Get().GetShadowRenderContextUBOBinding(),
+        GL_DYNAMIC_DRAW);
+    m_PointlightUBOs.at(i)->Initialize();
+  }
+  for (int i = 0; i < m_SpotlightUBOs.size(); i++) {
+    m_SpotlightUBOs.at(i) = std::make_shared<ShaderUBO>(
+        sizeof(ShadowRenderContextUniformBuffer),
+        BindingPointManager::Get().GetShadowRenderContextUBOBinding(),
+        GL_DYNAMIC_DRAW);
+    m_SpotlightUBOs.at(i)->Initialize();
+  }
 }
 
 void ShadowMapStage::RenderDirectionalShadowMap(
@@ -408,14 +440,34 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
                                              uint32_t faceIndex,
                                              uint32_t shadowMapType)
 {
-  // 实现ShadowRenderContextUBO的绑定
-
+  
+  // 创建UBO数据
   ShadowRenderContextUniformBuffer shadowContext;
   shadowContext.shadowRenderContext = glm::ivec4(
       lightIndex, cascadeIndex, faceIndex, shadowMapType);
   shadowContext.shadowRenderParams = glm::vec4(
       0.0f, static_cast<uint32_t>(m_ShadowQuality), 0.0f, 0.0f);
-  RenderCommand::Get().BindShadowRenderContextUBO(shadowContext);
+
+  // 获取UBO，执行Update操作
+  std::shared_ptr<ShaderUBO> ubo = nullptr;
+  switch (shadowMapType) {
+    case 0:
+      ubo = m_DirectionallightUBOs.at(lightIndex);
+      break;
+    case 1:
+      ubo = m_PointlightUBOs.at(lightIndex);
+      break;
+    case 2:
+      ubo = m_SpotlightUBOs.at(lightIndex);
+      break;
+    default:
+      m_Logger->critical("Invalid Shadow Map Type: {}", shadowMapType);
+      return;
+  }
+  ubo->UpdateData(&shadowContext, sizeof(ShadowRenderContextUniformBuffer));
+
+  // 实现ShadowRenderContextUBO的绑定
+  RenderCommand::Get().BindShadowRenderContextUBO(ubo);
 
   m_Logger->trace("Bound shadow render context: light={}, cascade={}, face={}, type={}",
                   lightIndex,
@@ -442,10 +494,11 @@ void ShadowMapStage::RenderSceneToShadowMap(RenderContext &context,
 
 void ShadowMapStage::StoreShadowMapsToContext(RenderContext &context)
 {
-  // ==================== 修改：使用ShadowMapType枚举存储 ====================
+  // ==================== 使用ShadowMapType枚举存储 ====================
+  // 
   // 存储方向光源阴影贴图（2D数组纹理）
   if (m_DirectionalShadowFBO) {
-    auto texture = m_DirectionalShadowFBO->GetDepthAttachment();
+    RuntimeTexturePtr texture = m_DirectionalShadowFBO->GetDepthAttachment();
     if (texture && texture->IsValid()) {
       context.SetShadowMapTexture(LightType::DIRECTIONAL, texture);
       m_Logger->trace("Stored directional shadow map array");
@@ -453,7 +506,7 @@ void ShadowMapStage::StoreShadowMapsToContext(RenderContext &context)
   }
   // 存储点光源阴影贴图（立方体贴图数组）
   if (m_PointShadowFBO) {
-    auto texture = m_PointShadowFBO->GetDepthAttachment();
+    RuntimeTexturePtr texture = m_PointShadowFBO->GetDepthAttachment();
     if (texture && texture->IsValid()) {
       context.SetShadowMapTexture(LightType::POINT, texture);
       m_Logger->trace("Stored point shadow cube map array");
@@ -461,7 +514,7 @@ void ShadowMapStage::StoreShadowMapsToContext(RenderContext &context)
   }
   // 存储聚光灯阴影贴图（2D数组纹理）
   if (m_SpotShadowFBO) {
-    auto texture = m_SpotShadowFBO->GetDepthAttachment();
+    RuntimeTexturePtr texture = m_SpotShadowFBO->GetDepthAttachment();
     if (texture && texture->IsValid()) {
       context.SetShadowMapTexture(LightType::SPOT, texture);
       m_Logger->trace("Stored spot shadow map array");
