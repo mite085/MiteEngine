@@ -47,6 +47,9 @@ class ShadowMapStage : public RenderStage {
   void CreatePointShadowMap();
   void CreateSpotShadowMap();
 
+  // ---- 阴影渲染上下文UBO创建方法 ----
+  void CreateShadowRenderContextUniformBuffer();
+
   // ---- 阴影渲染方法 ----
   void RenderDirectionalShadowMap(RenderContext &context,
                                   const std::vector<std::shared_ptr<Light>> &directionalLights);

@@ -56,6 +56,9 @@ void ShadowMapStage::Initialize()
   CreatePointShadowMap();
   CreateSpotShadowMap();
 
+  // 创建对应的ShadowRenderContextUBO对象
+  CreateShadowRenderContextUniformBuffer();
+
   m_Initialized = true;
   m_Logger->info("ShadowMapStage initialization completed");
 }
@@ -244,6 +247,10 @@ void ShadowMapStage::CreateSpotShadowMap()
   }
 }
 
+void ShadowMapStage::CreateShadowRenderContextUniformBuffer() {
+
+}
+
 void ShadowMapStage::RenderDirectionalShadowMap(
     RenderContext &context, const std::vector<std::shared_ptr<Light>> &directionalLights)
 {
@@ -265,11 +272,15 @@ void ShadowMapStage::RenderDirectionalShadowMap(
        lightIdx < directionalLights.size() && lightIdx < MAX_DIRECTIONAL_LIGHTS;
        lightIdx++)
   {
-    auto light = directionalLights[lightIdx];
+    std::shared_ptr<Light> light = directionalLights[lightIdx];
+
+    // 获取光源变换
+    Transform lightTransform = context.GetLightManager().GetLightTransform(light.get());
 
     // 获取阴影数据
-    ShadowMapData shadowData = light->PrepareShadowData(
-        Transform(), cameraInstance->GetCameraTransform(), cameraInstance->GetProjectionMatrix());
+    ShadowMapData shadowData = light->PrepareShadowData(lightTransform,
+                                                        cameraInstance->GetCameraTransform(),
+                                                        cameraInstance->GetProjectionMatrix());
 
     if (!shadowData.enabled || !shadowData.isValid) {
       continue;
@@ -296,17 +307,27 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
     m_Logger->warn("Point shadow FBO not available");
     return;
   }
+  auto cameraInstance = context.GetMainCameraInstance();
+  if (!cameraInstance) {
+    m_Logger->warn("No main camera available for directional shadow rendering");
+    return;
+  }
+
   // 绑定点光源阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_PointShadowFBO);
   RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
   for (uint32_t lightIdx = 0; lightIdx < pointLights.size() && lightIdx < MAX_POINT_LIGHTS;
        lightIdx++)
   {
-    auto light = pointLights[lightIdx];
+    std::shared_ptr<Light> light = pointLights[lightIdx];
+
+    // 获取光源变换
+    Transform lightTransform = context.GetLightManager().GetLightTransform(light.get());
 
     // 获取阴影数据
-    ShadowMapData shadowData = light->PrepareShadowData(
-        light->GetTransform(), Transform(), glm::mat4(1.0f));
+    ShadowMapData shadowData = light->PrepareShadowData(lightTransform,
+                                                        cameraInstance->GetCameraTransform(),
+                                                        cameraInstance->GetProjectionMatrix());
 
     if (!shadowData.enabled || !shadowData.isValid) {
       continue;
@@ -327,6 +348,11 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
     m_Logger->warn("Spot shadow FBO not available");
     return;
   }
+  auto cameraInstance = context.GetMainCameraInstance();
+  if (!cameraInstance) {
+    m_Logger->warn("No main camera available for directional shadow rendering");
+    return;
+  }
 
   // 绑定聚光灯阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_SpotShadowFBO);
@@ -334,11 +360,15 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
   for (uint32_t lightIdx = 0; lightIdx < spotLights.size() && lightIdx < MAX_SPOT_LIGHTS;
        lightIdx++)
   {
-    auto light = spotLights[lightIdx];
+    std::shared_ptr<Light> light = spotLights[lightIdx];
+
+    // 获取光源变换
+    Transform lightTransform = context.GetLightManager().GetLightTransform(light.get());
 
     // 获取阴影数据
-    ShadowMapData shadowData = light->PrepareShadowData(
-        light->GetTransform(), Transform(), glm::mat4(1.0f));
+    ShadowMapData shadowData = light->PrepareShadowData(lightTransform,
+                                                        cameraInstance->GetCameraTransform(),
+                                                        cameraInstance->GetProjectionMatrix());
 
     if (!shadowData.enabled || !shadowData.isValid) {
       continue;
@@ -378,13 +408,14 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
                                              uint32_t faceIndex,
                                              uint32_t shadowMapType)
 {
-  // TODO: 实现ShadowRenderContextUBO的绑定
-  // 需要更新u_ShadowContext UBO数据
-  // ShadowRenderContextUniformBuffer shadowContext;
-  // shadowContext.shadowRenderContext = glm::ivec4(lightIndex, cascadeIndex, faceIndex,
-  // shadowMapType); shadowContext.shadowRenderParams = glm::vec4(0.0f, m_ShadowMapSize, 0.0f,
-  // 0.0f); RenderCommand::Get().UpdateUBO(UBOResourceType::ShadowRenderContextUBO,
-  // &shadowContext);
+  // 实现ShadowRenderContextUBO的绑定
+
+  ShadowRenderContextUniformBuffer shadowContext;
+  shadowContext.shadowRenderContext = glm::ivec4(
+      lightIndex, cascadeIndex, faceIndex, shadowMapType);
+  shadowContext.shadowRenderParams = glm::vec4(
+      0.0f, static_cast<uint32_t>(m_ShadowQuality), 0.0f, 0.0f);
+  RenderCommand::Get().BindShadowRenderContextUBO(shadowContext);
 
   m_Logger->trace("Bound shadow render context: light={}, cascade={}, face={}, type={}",
                   lightIndex,
