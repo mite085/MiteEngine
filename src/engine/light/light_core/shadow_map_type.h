@@ -51,7 +51,7 @@ struct ShadowMapData {
 
     // 方向光阴影数据（级联阴影）
     struct {
-      int cascadeCount = 4;
+      unsigned int cascadeCount = 4;
       float splitLambda = 0.95f;
       std::array<float, 5> cascadeSplits;        // 级联分割距离
       std::array<glm::mat4, 4> cascadeMatrices;  // 级联VP矩阵

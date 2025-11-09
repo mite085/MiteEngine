@@ -59,10 +59,6 @@ void PointLight::CreateDefaultShadowMap()
   // 创建点光源阴影贴图数据
   ShadowMapData shadowData;
   shadowData.enabled = true;
-  shadowData.quality = ShadowQuality::MEDIUM;
-  shadowData.filter = ShadowFilter::PCF;
-  shadowData.bias = 0.005f;
-  shadowData.normalBias = 0.01f;
 
   // 设置点光源特定的阴影参数
   shadowData.specific.point.nearPlane = 0.1f;

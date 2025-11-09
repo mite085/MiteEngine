@@ -47,10 +47,6 @@ void DirectionalLight::CreateDefaultShadowMap()
   // 创建方向光阴影贴图数据
   ShadowMapData shadowData;
   shadowData.enabled = true;
-  shadowData.quality = ShadowQuality::MEDIUM;
-  shadowData.filter = ShadowFilter::PCF;
-  shadowData.bias = 0.005f;
-  shadowData.normalBias = 0.01f;
 
   // 设置方向光特定的阴影参数
   shadowData.specific.directional.cascadeCount = 4;
