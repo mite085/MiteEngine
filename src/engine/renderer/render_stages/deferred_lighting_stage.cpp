@@ -215,24 +215,37 @@ void DeferredLightingStage::BindLightSSBOData(RenderContext &context,
 
 void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
 {
-  uint32_t shadowTextureUnit = m_NextShadowTextureUnit;
-  uint32_t boundShadowCount = 0;
-
-  // 从上下文获取阴影贴图并绑定
-  for (uint32_t i = 0; i < MAX_SHADOW_MAPS && shadowTextureUnit < 32; ++i) {
-    auto shadowTexture = context.GetShadowMapTexture(0, i);
-    if (shadowTexture && shadowTexture->IsValid()) {
-      RenderCommand::Get().BindRuntimeTexture(
-          shadowTexture->GetType(), shadowTexture->GetHandle(), TextureTarget::TEXTURE_2D);
-
-      boundShadowCount++;
-      shadowTextureUnit++;
-    }
+  // 分别执行方向光、点光源、聚光灯的绑定操作
+  RuntimeTexturePtr directionalShadowTexture = context.GetShadowMapTexture(LightType::DIRECTIONAL);
+  if (directionalShadowTexture && directionalShadowTexture->IsValid()) {
+    RenderCommand::Get().BindRuntimeTexture(directionalShadowTexture->GetType(),
+                                            directionalShadowTexture->GetHandle(),
+                                            directionalShadowTexture->GetTarget());
+  }
+  else {
+    m_Logger->warn("No Directional Shadow Texture available");
   }
 
-  if (boundShadowCount > 0) {
-    m_Logger->debug("Bound {} shadow maps", boundShadowCount);
+  RuntimeTexturePtr pointShadowTexture = context.GetShadowMapTexture(LightType::POINT);
+  if (pointShadowTexture && pointShadowTexture->IsValid()) {
+    RenderCommand::Get().BindRuntimeTexture(pointShadowTexture->GetType(),
+                                            pointShadowTexture->GetHandle(),
+                                            pointShadowTexture->GetTarget());
   }
+  else {
+    m_Logger->warn("No Point Shadow Texture available");
+  }
+
+  RuntimeTexturePtr spotShadowTexture = context.GetShadowMapTexture(LightType::SPOT);
+  if (spotShadowTexture && spotShadowTexture->IsValid()) {
+    RenderCommand::Get().BindRuntimeTexture(spotShadowTexture->GetType(),
+                                            spotShadowTexture->GetHandle(),
+                                            spotShadowTexture->GetTarget());
+  }
+  else {
+    m_Logger->warn("No Spot Shadow Texture available");
+  }
+
 }
 
 
