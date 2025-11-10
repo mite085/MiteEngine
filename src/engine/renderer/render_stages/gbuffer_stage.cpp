@@ -126,7 +126,7 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
 
   // 检查GBuffer着色器情况
   auto gbufferShader = context.GetStageShader(m_Name);
-  if (gbufferShader) {
+  if (!gbufferShader) {
     m_Logger->error("No G-Buffer shader available");
   }
 
@@ -168,10 +168,9 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
 
   // 检查GBuffer着色器情况
   auto gbufferShader = context.GetStageShader(m_Name);
-  if (gbufferShader) {
+  if (!gbufferShader) {
     m_Logger->error("No G-Buffer shader available");
   }
-
 
   // 设置Alpha测试物体渲染状态
   RenderCommand::Get().SetRenderState(m_AlphaTestState);
