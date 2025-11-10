@@ -91,7 +91,6 @@ class OpenGLRenderCommand : public RenderCommand {
   void SetRenderState(const OpenGLRenderState &state);
 
  private:
-  OpenGLRenderState m_CurrentGLState;
   Logger m_Logger;
 
   // 辅助方法

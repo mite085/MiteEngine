@@ -3,6 +3,7 @@
 
 #include "../common/common.glsl"
 #include "../common/uniforms.glsl"
+#include "../common/lights_ssbo.glsl"
 
 // 顶点着色器输出
 in VS_OUT {

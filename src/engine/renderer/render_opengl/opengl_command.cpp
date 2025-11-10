@@ -14,13 +14,10 @@ void OpenGLRenderCommand::Init()
   // 创建Device
   m_Device = std::make_unique<OpenGLDevice>();
 
-  // 设置默认渲染状态（全部使用默认值）
-  m_CurrentGLState = OpenGLRenderState{};
-
   // 提交初始化命令（确保在渲染线程执行）
   m_CommandQueue.push({CommandType::SetRenderState,
                        [this] {
-                         ApplyOpenGLState(m_CurrentGLState);
+                         ApplyOpenGLState(OpenGLRenderState{});
                          // 设置默认的正面朝向
                          glFrontFace(GL_CCW);
                        },
@@ -88,7 +85,6 @@ void OpenGLRenderCommand::SetRenderState(const std::shared_ptr<RenderState> &sta
     return;
   }
   // 直接使用转换后的OpenGL状态
-  m_CurrentGLState = *glStatePtr;
   m_CommandQueue.push({CommandType::SetRenderState,
                        [this, glState = *glStatePtr] { ApplyOpenGLState(glState); },
                        "SetRenderState"});
@@ -307,7 +303,7 @@ void OpenGLRenderCommand::ClearQueue()
 void OpenGLRenderCommand::SetRenderState(const OpenGLRenderState &state)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CurrentGLState = state;
+
   m_CommandQueue.push({CommandType::SetRenderState,
                        [this, state] { ApplyOpenGLState(state); },
                        "SetRenderState(GL)"});

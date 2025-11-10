@@ -4,6 +4,7 @@
 #include "render_stages/forward_stage.h"
 #include "render_stages/deferred_lighting_stage.h"
 #include "render_stages/gbuffer_stage.h"
+#include "render_stages/shadow_map_stage.h"
 #include "filesystem/filesystem.h"
 
 namespace mite {
@@ -27,6 +28,12 @@ void OpenGLPipeline::Initialize()
 
   // 创建渲染上下文
   m_Context = std::make_unique<RenderContext>();
+
+  // 添加ShadowMap Stage
+  std::shared_ptr<OpenGLShader> shadowMapShader = ShaderCache::Get().GetOpenGLShader(
+      FileSystem::GetAssetPath("shaders/shadowmap/shadowmap.vert.glsl").string(),
+      FileSystem::GetAssetPath("shaders/shadowmap/shadowmap.frag.glsl").string());
+  AddStage(std::make_unique<ShadowMapStage>(), shadowMapShader);
 
   // 添加G-Buffer Stage
   std::shared_ptr<OpenGLShader> gBufferShader = ShaderCache::Get().GetOpenGLShader(

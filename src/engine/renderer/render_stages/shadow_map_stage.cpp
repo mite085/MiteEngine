@@ -86,7 +86,7 @@ void ShadowMapStage::Execute(RenderContext &context)
 
   // 验证输入
   ValidateShadowInputs(context);
-
+  
   // 设置阴影渲染状态
   RenderCommand::Get().SetRenderState(m_ShadowRenderState);
 
@@ -339,6 +339,7 @@ void ShadowMapStage::RenderDirectionalShadowMap(
                              context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
     }
   }
+  RenderCommand::Get().UnbindFrameBuffer();
 }
 void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
                                           const std::vector<std::shared_ptr<Light>> &pointLights)
@@ -380,6 +381,7 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
                              context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
     }
   }
+  RenderCommand::Get().UnbindFrameBuffer();
 }
 void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
                                          const std::vector<std::shared_ptr<Light>> &spotLights)
@@ -422,6 +424,7 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
     RenderSceneToShadowMap(context,
                            context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
   }
+  RenderCommand::Get().UnbindFrameBuffer();
   m_Logger->debug("Rendered spot shadow maps for {} lights", spotLights.size());
 }
 
@@ -434,7 +437,7 @@ void ShadowMapStage::SetupShadowRenderState()
   m_ShadowRenderState->depthWrite = true;
   m_ShadowRenderState->blend = false;
   m_ShadowRenderState->cullFace = true;
-  m_ShadowRenderState->colorWriteR = false;  // 阴影贴图通常只写深度
+  m_ShadowRenderState->colorWriteR = false;  // 阴影贴图只写深度
   m_ShadowRenderState->colorWriteG = false;
   m_ShadowRenderState->colorWriteB = false;
   m_ShadowRenderState->colorWriteA = false;
@@ -456,7 +459,7 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
   shadowContext.shadowRenderParams = glm::vec4(
       0.0f, static_cast<uint32_t>(m_ShadowQuality), 0.0f, 0.0f);
 
-  // 获取UBO，执行Update操作
+  // 获取UBO对象
   std::shared_ptr<ShaderUBO> ubo = nullptr;
   switch (shadowMapType) {
     case 0:
@@ -472,6 +475,8 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
       m_Logger->critical("Invalid Shadow Map Type: {}", shadowMapType);
       return;
   }
+
+  // 执行Update操作，更新UBO数据
   ubo->UpdateData(&shadowContext, sizeof(ShadowRenderContextUniformBuffer));
 
   // 实现ShadowRenderContextUBO的绑定
