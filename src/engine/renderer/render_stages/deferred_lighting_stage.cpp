@@ -70,7 +70,7 @@ void DeferredLightingStage::Execute(RenderContext &context)
       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 
   // 设置光照渲染状态
-  RenderCommand::Get().SetRenderState(m_LightingState);
+  //RenderCommand::Get().SetRenderState(m_LightingState); 
 
   // 绑定着色器
   RenderCommand::Get().BindShader(lightingShader);
@@ -82,7 +82,7 @@ void DeferredLightingStage::Execute(RenderContext &context)
   BindGBufferTextures(context, lightingShader);
 
   // 绑定光源SSBO数据
-  BindLightSSBOData(context, lightingShader);
+  BindLightSSBOData(context, lightingShader); 
 
   // 绑定阴影数据
   if (m_EnableShadows) {
@@ -100,7 +100,7 @@ void DeferredLightingStage::Execute(RenderContext &context)
   // 将光照输出纹理存储到上下文供后续阶段使用
   auto lightingTexture = GetLightingOutputTexture();
   if (lightingTexture && lightingTexture->IsValid()) {
-    context.SetRenderTarget("DeferredLightingOutput", lightingTexture);
+    context.SetRenderTarget("DeferredLightingOutput", lightingTexture); 
     // 发布纹理完成事件
     RenderCommand::Get().PublishEventRuntimeTextureFinished(lightingTexture, "DeferredLighting");
     //m_Logger->trace("Stored deferred lighting output to context");

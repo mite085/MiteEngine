@@ -265,7 +265,7 @@ void OpenGLRenderCommand::PublishEventRuntimeTextureFinished(RuntimeTexturePtr t
                                                              std::string identify)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push({CommandType::UnbindShader,
+  m_CommandQueue.push({CommandType::BindTextures,
                        [texture, identify] {
                          EventBus::Publish<RuntimeTextureFinishedEvent>(
                              RuntimeTextureFinishedEvent(texture, identify));

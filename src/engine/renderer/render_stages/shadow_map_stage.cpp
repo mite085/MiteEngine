@@ -71,7 +71,7 @@ void ShadowMapStage::Execute(RenderContext &context)
     m_Logger->warn("ShadowMapStage executed but not properly initialized");
     return;
   }
-
+  
   if (!context.IsValid()) {
     m_Logger->warn("ShadowMapStage executed with invalid context");
     return;
@@ -87,9 +87,6 @@ void ShadowMapStage::Execute(RenderContext &context)
   // 验证输入
   ValidateShadowInputs(context);
   
-  // 设置阴影渲染状态
-  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
-
   // 绑定阴影着色器
   RenderCommand::Get().BindShader(shadowShader);
 
@@ -308,6 +305,9 @@ void ShadowMapStage::RenderDirectionalShadowMap(
   RenderCommand::Get().BindFrameBuffer(m_DirectionalShadowFBO);
   RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
+  // 设置阴影渲染状态
+  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
+
   for (uint32_t lightIdx = 0;
        lightIdx < directionalLights.size() && lightIdx < MAX_DIRECTIONAL_LIGHTS;
        lightIdx++)
@@ -357,6 +357,10 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
   // 绑定点光源阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_PointShadowFBO);
   RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
+
+  // 设置阴影渲染状态
+  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
+
   for (uint32_t lightIdx = 0; lightIdx < pointLights.size() && lightIdx < MAX_POINT_LIGHTS;
        lightIdx++)
   {
@@ -399,6 +403,10 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
   // 绑定聚光灯阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_SpotShadowFBO);
   RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
+
+  // 设置阴影渲染状态
+  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
+
   for (uint32_t lightIdx = 0; lightIdx < spotLights.size() && lightIdx < MAX_SPOT_LIGHTS;
        lightIdx++)
   {
