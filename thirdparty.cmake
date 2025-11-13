@@ -47,6 +47,7 @@ file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_headers/"
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_tools/"
      DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-tools"
 )
+# 注意，shaderc、spirv_tools和glslang的构建均需要依赖Python的环境，所以编译之前需要确保电脑安装了Python3，并将Python3设定为环境变量
 add_subdirectory(thirdparty/shaderc)
 
 
