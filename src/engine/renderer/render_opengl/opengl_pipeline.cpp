@@ -37,7 +37,7 @@ void OpenGLPipeline::Initialize()
   std::shared_ptr<OpenGLShader> shadowMapShader = ShaderCache::Get().GetOpenGLShader(
       FileSystem::GetAssetPath("shaders/shadowmap/shadowmap.vert.glsl").string(),
       FileSystem::GetAssetPath("shaders/shadowmap/shadowmap.frag.glsl").string());
-  //AddStage(std::make_unique<ShadowMapStage>(), shadowMapShader);
+  AddStage(std::make_unique<ShadowMapStage>(), shadowMapShader);
 
   // 添加G-Buffer Stage
   std::shared_ptr<OpenGLShader> gBufferShader = ShaderCache::Get().GetOpenGLShader(

@@ -92,7 +92,7 @@ void MiteApplication::LoadDefaultScene()
 
   // 加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = AssetManager::Get().LoadGLTFModel(
-      FileSystem::GetAssetPath("models/car.glb").string(), true, true);
+      FileSystem::GetAssetPath("models/monkey.glb").string(), true, true);
   std::shared_ptr<ModelAsset> modelAsset = AssetManager::Get().GetModel(plane_model_asset_id);
 
   // 获取材质列表

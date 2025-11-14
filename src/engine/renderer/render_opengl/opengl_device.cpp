@@ -944,7 +944,7 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
     case TextureFormat::DEPTH_COMPONENT24:
       internalFormat = GL_DEPTH_COMPONENT24;
       format = GL_DEPTH_COMPONENT;
-      type = GL_UNSIGNED_INT;
+      type = GL_UNSIGNED_INT_24_8;
       break;
     case TextureFormat::DEPTH_COMPONENT32:
       internalFormat = GL_DEPTH_COMPONENT32;
