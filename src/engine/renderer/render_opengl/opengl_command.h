@@ -43,7 +43,7 @@ class OpenGLRenderCommand : public RenderCommand {
   void BindFrameBuffer(const std::shared_ptr<FrameBuffer> &framebuffer) override;
   void UnbindFrameBuffer() override;
   void SetViewport(int x, int y, int width, int height) override;
-  void SetRenderState(const std::shared_ptr<RenderState> &state) override;
+  void SetRenderState(std::shared_ptr<RenderState> state) override;
 
   // ---------------- 原子操作命令 ----------------
   void BindCameraUBO(std::shared_ptr<CameraInstance> instance) override;
@@ -87,14 +87,11 @@ class OpenGLRenderCommand : public RenderCommand {
   void Flush() override;
   void ClearQueue() override;
 
-  // OpenGL特定方法
-  void SetRenderState(const OpenGLRenderState &state);
-
  private:
   Logger m_Logger;
 
   // 辅助方法
-  void ApplyOpenGLState(const OpenGLRenderState &state);
+  static void ApplyOpenGLState(std::shared_ptr<RenderState> state);
 };
 }  // namespace mite
 

@@ -82,15 +82,15 @@ void GBufferStage::Execute(RenderContext &context)
   // 绑定相机UBO
   RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
-  // 设置G-Buffer渲染状态
-  SetupGBufferRenderState();
-
   // 渲染各个队列到G-Buffer
   RenderOpaqueQueue(context);
   RenderAlphaTestQueue(context);
 
   // 解绑G-Buffer
   RenderCommand::Get().UnbindFrameBuffer();
+
+  // 解绑着色器
+  RenderCommand::Get().UnbindShader(gbufferShader);
 
   // 存储渲染结果到上下文（并非渲染命令，这些纹理是提前创建好的，可以提前交给上下文管理）
   for (const auto &type : GBuffer::GetTextureTypes()) {

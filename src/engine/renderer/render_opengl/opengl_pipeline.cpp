@@ -1,4 +1,5 @@
 #include "opengl_pipeline.h"
+#include "opengl_command.h"
 #include "basic_shader/shader_binding_point_manager.h"
 #include "basic_shader/shader_cache.h"
 #include "render_stages/forward_stage.h"
@@ -11,6 +12,9 @@ namespace mite {
 OpenGLPipeline::OpenGLPipeline() : RenderPipeline()
 {
   m_Logger->info("OpenGL Pipeline created");
+
+  // 填充默认状态
+  SetupDefaultRenderState();
 
   // Viewport Resize事件订阅
   m_EventSubscriptions.SubscribeImmediate<ViewportResizeEvent>(BIND_DISPATCH_FN(OnViewPortResize));
@@ -81,6 +85,9 @@ void OpenGLPipeline::BeginFrame()
   // 清屏命令
   RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, m_ClearColor);
 
+  // 重置状态为默认值（避免上一帧最后stage的状态对当前帧造成状态污染）
+  RenderCommand::Get().SetRenderState(m_DefaultState);
+
   // 设置上下文视口尺寸
   if (m_ShouldResize) {
     m_Context->SetViewportSize(static_cast<uint32_t>(glm::max(m_PendingSize.x, 0.0f)),
@@ -98,9 +105,6 @@ void OpenGLPipeline::EndFrame()
 {
   // 结束场景渲染阶段
   m_IsRenderingScene = false;
-
-  // 解绑FrameBuffer
-  RenderCommand::Get().UnbindFrameBuffer();
 
   // 重置OpenGL状态
   RenderCommand::Get().PushCustomCommand(
@@ -162,6 +166,20 @@ void OpenGLPipeline::OnViewPortResize(ViewportResizeEvent &event)
   // 尺寸匹配，Resize无效
   event.SetResult(EventResult::Failed);
   return;
+}
+
+void OpenGLPipeline::SetupDefaultRenderState()
+{
+  // 默认OpenGL全局状态
+  m_DefaultState = std::make_shared<OpenGLRenderState>();
+  m_DefaultState->depthTest = true;
+  m_DefaultState->depthWrite = true;
+  m_DefaultState->blend = true;
+  m_DefaultState->cullFace = true;
+  m_DefaultState->colorWriteR = true;
+  m_DefaultState->colorWriteG = true;
+  m_DefaultState->colorWriteB = true;
+  m_DefaultState->colorWriteA = true;
 }
 
 // std::shared_ptr<FrameBuffer> OpenGLPipeline::GetMainFrameBuffer() const

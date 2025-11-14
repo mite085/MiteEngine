@@ -32,6 +32,7 @@ class OpenGLPipeline : public RenderPipeline {
 
   // ---- 状态设置 ----
   void SetClearColor(const glm::vec4 &color) override;
+  void SetupDefaultRenderState();
 
   //// ---- FBO接口（FBO由各个Stage管理，此处弃用） ----
   // std::shared_ptr<FrameBuffer> GetMainFrameBuffer() const override;
@@ -45,6 +46,7 @@ class OpenGLPipeline : public RenderPipeline {
 
   // ---- 成员变量 ----
   bool m_IsRenderingScene = false;
+  std::shared_ptr<RenderState> m_DefaultState;  // 默认渲染状态配置
   SubscriptionGroup m_EventSubscriptions;
 
   // ---- Size管理 ----

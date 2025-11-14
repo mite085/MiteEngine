@@ -70,7 +70,7 @@ void DeferredLightingStage::Execute(RenderContext &context)
       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 
   // 设置光照渲染状态
-  //RenderCommand::Get().SetRenderState(m_LightingState); 
+  RenderCommand::Get().SetRenderState(m_LightingState);
 
   // 绑定着色器
   RenderCommand::Get().BindShader(lightingShader);
@@ -131,8 +131,14 @@ void DeferredLightingStage::CreateLightingFramebuffer()
   colorSpec.type = RuntimeTextureType::Lighting_Combined;  // 仅考虑全部着色情况
   colorSpec.internalFormat = TextureFormat::RGBA16F;       // HDR输出
   colorSpec.generateMipmaps = false;
+  spec.attachments.push_back(colorSpec);
 
-  spec.attachments = {colorSpec};  // 单个颜色附件
+  // 创建深度附件（延迟光照应当无需深度附件）
+  FrameBufferAttachmentSpec depthAttachment;
+  depthAttachment.type = RuntimeTextureType::Depth;
+  depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
+  depthAttachment.generateMipmaps = false;
+  spec.attachments.push_back(depthAttachment);
 
   // 创建Framebuffer
   m_LightingFBO = std::make_shared<FrameBuffer>(spec);
@@ -157,7 +163,7 @@ void DeferredLightingStage::SetupLightingRenderState()
 {
   m_LightingState = std::make_shared<OpenGLRenderState>();
 
-  // 延迟光照阶段：不需要深度测试和写入，需要混合（多光源叠加）
+  // 延迟光照阶段：不需要深度测试，需要混合（多光源叠加）
   m_LightingState->depthTest = false;
   m_LightingState->depthWrite = false;
   m_LightingState->blend = true;

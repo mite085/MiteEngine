@@ -85,7 +85,7 @@ class RenderCommand {
   // 视口设置
   virtual void SetViewport(int x, int y, int width, int height) = 0;
   // 渲染状态设置
-  virtual void SetRenderState(const std::shared_ptr<RenderState> &state) = 0;
+  virtual void SetRenderState(std::shared_ptr<RenderState> state) = 0;
 
   // ---------------- 原子操作命令 ----------------
   /**

@@ -15,12 +15,8 @@ void OpenGLRenderCommand::Init()
   m_Device = std::make_unique<OpenGLDevice>();
 
   // 提交初始化命令（确保在渲染线程执行）
-  m_CommandQueue.push({CommandType::SetRenderState,
-                       [this] {
-                         ApplyOpenGLState(OpenGLRenderState{});
-                         // 设置默认的正面朝向
-                         glFrontFace(GL_CCW);
-                       },
+  m_CommandQueue.push({CommandType::Custom,
+                       [] {},
                        "InitRenderState"});
 
   m_Logger->info("RenderCommand initialized with default states");
@@ -74,20 +70,13 @@ void OpenGLRenderCommand::SetViewport(int x, int y, int width, int height)
       {CommandType::SetViewport, [=]() { glViewport(x, y, width, height); }, "SetViewport"});
 }
 
-void OpenGLRenderCommand::SetRenderState(const std::shared_ptr<RenderState> &state)
+void OpenGLRenderCommand::SetRenderState(std::shared_ptr<RenderState> state)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  // 尝试转换为OpenGLRenderState
-  auto glStatePtr = std::static_pointer_cast<OpenGLRenderState>(state);
-  if (!glStatePtr) {
-    LOG_ERROR("SetRenderState failed: cannot convert RenderState to OpenGLRenderState");
-    return;
-  }
-  // 直接使用转换后的OpenGL状态
   m_CommandQueue.push({CommandType::SetRenderState,
-                       [this, glState = *glStatePtr] { ApplyOpenGLState(glState); },
-                       "SetRenderState"});
+                       [=] { ApplyOpenGLState(state); },
+                       "SetRenderState(GL)"});
 }
 
 void OpenGLRenderCommand::BindCameraUBO(std::shared_ptr<CameraInstance> instance)
@@ -236,7 +225,9 @@ void OpenGLRenderCommand::DrawFullScreenQuad()
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::DrawIndexed,
-                       [=] { m_Device->DrawFullScreenQuad(); },
+                       [=] {
+                         m_Device->DrawFullScreenQuad();
+                       },
                        "Submit Full Screen Quad Draw Call"});
 }
 
@@ -265,7 +256,7 @@ void OpenGLRenderCommand::PublishEventRuntimeTextureFinished(RuntimeTexturePtr t
                                                              std::string identify)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push({CommandType::BindTextures,
+  m_CommandQueue.push({CommandType::Custom,
                        [texture, identify] {
                          EventBus::Publish<RuntimeTextureFinishedEvent>(
                              RuntimeTextureFinishedEvent(texture, identify));
@@ -300,55 +291,53 @@ void OpenGLRenderCommand::ClearQueue()
   }
 }
 
-void OpenGLRenderCommand::SetRenderState(const OpenGLRenderState &state)
+void OpenGLRenderCommand::ApplyOpenGLState(std::shared_ptr<RenderState> state)
 {
-  std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  m_CommandQueue.push({CommandType::SetRenderState,
-                       [this, state] { ApplyOpenGLState(state); },
-                       "SetRenderState(GL)"});
-}
+  std::shared_ptr<OpenGLRenderState> glStatePtr = std::static_pointer_cast<OpenGLRenderState>(state);
+  if (!glStatePtr) {
+    LOG_ERROR("Invalid OpenGL Render State!");
+    return;
+  }
 
-void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
-{
   // 深度测试设置
-  if (state.depthTest) {
+  if (glStatePtr->depthTest) {
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(state.depthFunc);
+    glDepthFunc(glStatePtr->depthFunc);
   }
   else {
     glDisable(GL_DEPTH_TEST);
   }
 
   // 深度写入控制
-  glDepthMask(state.depthWrite ? GL_TRUE : GL_FALSE);
+  glDepthMask(glStatePtr->depthWrite ? GL_TRUE : GL_FALSE);
 
   // 混合设置
-  if (state.blend) {
+  if (glStatePtr->blend) {
     glEnable(GL_BLEND);
-    glBlendFunc(state.blendSrc, state.blendDst);
+    glBlendFunc(glStatePtr->blendSrc, glStatePtr->blendDst);
   }
   else {
     glDisable(GL_BLEND);
   }
 
   // 面剔除设置
-  if (state.cullFace) {
+  if (glStatePtr->cullFace) {
     glEnable(GL_CULL_FACE);
-    glCullFace(state.cullFaceMode);
+    glCullFace(glStatePtr->cullFaceMode);
   }
   else {
     glDisable(GL_CULL_FACE);
   }
 
   // 颜色写入掩码
-  glColorMask(state.colorWriteR ? GL_TRUE : GL_FALSE,
-              state.colorWriteG ? GL_TRUE : GL_FALSE,
-              state.colorWriteB ? GL_TRUE : GL_FALSE,
-              state.colorWriteA ? GL_TRUE : GL_FALSE);
+  glColorMask(glStatePtr->colorWriteR ? GL_TRUE : GL_FALSE,
+              glStatePtr->colorWriteG ? GL_TRUE : GL_FALSE,
+              glStatePtr->colorWriteB ? GL_TRUE : GL_FALSE,
+              glStatePtr->colorWriteA ? GL_TRUE : GL_FALSE);
 
   // 多边形模式
-  if (state.wireframe) {
+  if (glStatePtr->wireframe) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   }
   else {
@@ -356,10 +345,12 @@ void OpenGLRenderCommand::ApplyOpenGLState(const OpenGLRenderState &state)
   }
 
   // 模板测试设置（基础支持，待后续扩展）
-  if (state.stencilTest) {
+  if (glStatePtr->stencilTest) {
     glEnable(GL_STENCIL_TEST);
-    glStencilFunc(state.stencilFunc, state.stencilRef, state.stencilMask);
-    glStencilOp(state.stencilFail, state.stencilPassDepthFail, state.stencilPassDepthPass);
+    glStencilFunc(glStatePtr->stencilFunc, glStatePtr->stencilRef, glStatePtr->stencilMask);
+    glStencilOp(glStatePtr->stencilFail,
+                glStatePtr->stencilPassDepthFail,
+                glStatePtr->stencilPassDepthPass);
   }
   else {
     glDisable(GL_STENCIL_TEST);
