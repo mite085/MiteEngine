@@ -106,6 +106,9 @@ void DeferredLightingStage::Execute(RenderContext &context)
     //m_Logger->trace("Stored deferred lighting output to context");
   }
 
+  // 调试专用：当前阶段提交完毕后直接执行。
+  RenderCommand::Get().Flush();
+
   //m_Logger->trace("Deferred lighting pass completed");
 }
 

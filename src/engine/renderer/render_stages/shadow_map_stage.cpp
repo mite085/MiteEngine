@@ -108,6 +108,9 @@ void ShadowMapStage::Execute(RenderContext &context)
   // 存储阴影贴图到上下文
   StoreShadowMapsToContext(context);
 
+  // 调试专用：当前阶段提交完毕后直接执行。
+  RenderCommand::Get().Flush();
+
   m_Logger->trace("ShadowMap stage completed");
 }
 
@@ -190,7 +193,7 @@ void ShadowMapStage::CreateDirectionalShadowMap()
 
   // 深度附件配置 - 2D数组纹理存储所有方向光源的所有级联
   FrameBufferAttachmentSpec depthSpec;
-  depthSpec.type = RuntimeTextureType::ShadowMap_Directional;
+  depthSpec.type = RuntimeTextureType::Depth;
   depthSpec.internalFormat = TextureFormat::DEPTH_COMPONENT32;
   depthSpec.generateMipmaps = false;
   depthSpec.internalTarget = TextureTarget::TEXTURE_2D_ARRAY;     // 2D数组纹理
@@ -198,7 +201,7 @@ void ShadowMapStage::CreateDirectionalShadowMap()
   spec.attachments.push_back(depthSpec);
   m_DirectionalShadowFBO = std::make_shared<FrameBuffer>(spec);
   if (m_DirectionalShadowFBO->IsComplete()) {
-    m_Logger->debug("Created directional shadow FBO with {} layers ({} lights × {} cascades)",
+    m_Logger->debug("Created directional shadow FBO with {} layers ({} lights with {} cascades)",
                     MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES,
                     MAX_DIRECTIONAL_LIGHTS,
                     MAX_CASCADES);
@@ -217,11 +220,11 @@ void ShadowMapStage::CreatePointShadowMap()
 
   // 深度附件配置 - 立方体贴图数组存储所有点光源
   FrameBufferAttachmentSpec depthSpec;
-  depthSpec.type = RuntimeTextureType::ShadowMap_Point;
+  depthSpec.type = RuntimeTextureType::Depth;
   depthSpec.internalFormat = TextureFormat::DEPTH_COMPONENT32;
   depthSpec.generateMipmaps = false;
   depthSpec.internalTarget = TextureTarget::TEXTURE_CUBE_MAP_ARRAY;
-  depthSpec.arrayLayers = MAX_POINT_LIGHTS;
+  depthSpec.arrayLayers = MAX_POINT_LIGHTS * 6;
   spec.attachments.push_back(depthSpec);
   m_PointShadowFBO = std::make_shared<FrameBuffer>(spec);
   if (m_PointShadowFBO->IsComplete()) {
@@ -241,7 +244,7 @@ void ShadowMapStage::CreateSpotShadowMap()
 
   // 深度附件配置 - 2D数组纹理存储所有聚光灯
   FrameBufferAttachmentSpec depthSpec;
-  depthSpec.type = RuntimeTextureType::ShadowMap_Spot;
+  depthSpec.type = RuntimeTextureType::Depth;
   depthSpec.internalFormat = TextureFormat::DEPTH_COMPONENT32;
   depthSpec.generateMipmaps = false;
   depthSpec.internalTarget = TextureTarget::TEXTURE_2D_ARRAY;

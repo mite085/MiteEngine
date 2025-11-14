@@ -150,6 +150,9 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
     renderedCount++;
   }
 
+  // 调试专用：当前阶段提交完毕后直接执行。
+  RenderCommand::Get().Flush();
+
   // m_Logger->trace(
   //     "Rendered {} opaque objects to G-Buffer, skipped {}", renderedCount, skippedCount);
 }
