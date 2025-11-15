@@ -89,7 +89,6 @@ void DeferredLightingStage::Execute(RenderContext &context)
     BindShadowMapTextures(context);
   }
 
-
   // 渲染全屏四边形
   RenderCommand::Get().DrawFullScreenQuad();
 
@@ -167,10 +166,13 @@ void DeferredLightingStage::SetupLightingRenderState()
   m_LightingState = std::make_shared<OpenGLRenderState>();
 
   // 延迟光照阶段：不需要深度测试，需要混合（多光源叠加）
+  // （TODO：OpenGL管线的不同stage之间出现了状态污染）
+  // （先设定的和后设定的状态会互相影响）
+  // （且暂未找出解决方案）
   m_LightingState->depthTest = false;
   m_LightingState->depthWrite = false;
   m_LightingState->blend = true;
-  m_LightingState->cullFace = false;  // 全屏四边形不需要背面剔除
+  m_LightingState->cullFace = false;
   m_LightingState->colorWriteR = true;
   m_LightingState->colorWriteG = true;
   m_LightingState->colorWriteB = true;
@@ -180,8 +182,6 @@ void DeferredLightingStage::SetupLightingRenderState()
   std::static_pointer_cast<OpenGLRenderState>(m_LightingState)->blendSrc = GL_ONE;
   std::static_pointer_cast<OpenGLRenderState>(m_LightingState)->blendDst = GL_ONE;
 }
-
-
 
 void DeferredLightingStage::BindGBufferTextures(RenderContext &context,
                                                 std::shared_ptr<OpenGLShader> lightingShader)
@@ -254,9 +254,7 @@ void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
   else {
     m_Logger->warn("No Spot Shadow Texture available");
   }
-
 }
-
 
 void DeferredLightingStage::ValidateInputs(RenderContext &context) const
 {

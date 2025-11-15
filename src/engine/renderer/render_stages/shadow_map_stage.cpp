@@ -71,7 +71,7 @@ void ShadowMapStage::Execute(RenderContext &context)
     m_Logger->warn("ShadowMapStage executed but not properly initialized");
     return;
   }
-  
+
   if (!context.IsValid()) {
     m_Logger->warn("ShadowMapStage executed with invalid context");
     return;
@@ -86,7 +86,7 @@ void ShadowMapStage::Execute(RenderContext &context)
 
   // 验证输入
   ValidateShadowInputs(context);
-  
+
   // 绑定阴影着色器
   RenderCommand::Get().BindShader(shadowShader);
 
@@ -260,8 +260,8 @@ void ShadowMapStage::CreateSpotShadowMap()
   }
 }
 
-void ShadowMapStage::CreateShadowRenderContextUniformBuffer() {
-
+void ShadowMapStage::CreateShadowRenderContextUniformBuffer()
+{
   // 默认填充清空
   m_DirectionallightUBOs.fill(nullptr);
   m_PointlightUBOs.fill(nullptr);
@@ -444,14 +444,17 @@ void ShadowMapStage::SetupShadowRenderState()
   m_ShadowRenderState = std::make_shared<OpenGLRenderState>();
 
   // 阴影渲染需要深度测试和写入，不需要颜色输出和混合
+  // （TODO：OpenGL管线的不同stage之间出现了状态污染）
+  // （先设定的和后设定的状态会互相影响）
+  // （且暂未找出解决方案）
   m_ShadowRenderState->depthTest = true;
   m_ShadowRenderState->depthWrite = true;
-  m_ShadowRenderState->blend = false;
+  m_ShadowRenderState->blend = true;
   m_ShadowRenderState->cullFace = true;
-  m_ShadowRenderState->colorWriteR = false;  // 阴影贴图只写深度
-  m_ShadowRenderState->colorWriteG = false;
-  m_ShadowRenderState->colorWriteB = false;
-  m_ShadowRenderState->colorWriteA = false;
+  m_ShadowRenderState->colorWriteR = true;
+  m_ShadowRenderState->colorWriteG = true;
+  m_ShadowRenderState->colorWriteB = true;
+  m_ShadowRenderState->colorWriteA = true;
 
   // 使用正面剔除减少阴影痤疮
   std::static_pointer_cast<OpenGLRenderState>(m_ShadowRenderState)->cullFaceMode = GL_FRONT;
@@ -462,7 +465,6 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
                                              uint32_t faceIndex,
                                              uint32_t shadowMapType)
 {
-  
   // 创建UBO数据
   ShadowRenderContextUniformBuffer shadowContext;
   shadowContext.shadowRenderContext = glm::ivec4(
@@ -519,7 +521,7 @@ void ShadowMapStage::RenderSceneToShadowMap(RenderContext &context,
 void ShadowMapStage::StoreShadowMapsToContext(RenderContext &context)
 {
   // ==================== 使用ShadowMapType枚举存储 ====================
-  // 
+  //
   // 存储方向光源阴影贴图（2D数组纹理）
   if (m_DirectionalShadowFBO) {
     RuntimeTexturePtr texture = m_DirectionalShadowFBO->GetDepthAttachment();

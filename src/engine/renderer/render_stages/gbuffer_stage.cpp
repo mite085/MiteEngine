@@ -201,6 +201,9 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
 void GBufferStage::SetupGBufferRenderState()
 {
   // G-Buffer阶段需要深度测试和写入，但不需要混合
+  // （TODO：OpenGL管线的不同stage之间出现了状态污染）
+  // （先设定的和后设定的状态会互相影响）
+  // （且暂未找出解决方案）
   m_OpaqueState = std::make_shared<OpenGLRenderState>();
   m_OpaqueState->depthTest = true;
   m_OpaqueState->depthWrite = true;
