@@ -16,6 +16,7 @@ layout(location = 0) out vec4 o_FinalColor;
 #include "../common/math.glsl"
 #include "../common/lights_ssbo.glsl"
 #include "../lighting/lighting_calculation.glsl"
+#include "../lighting/shadow_calculation.glsl"
 #include "../lighting/ambient_calculation.glsl"
 #include "../brdf/brdf_dispatcher.glsl"
 
@@ -106,7 +107,9 @@ BRDFLightInput prepareLightInput(uint lightIndex, BRDFInput brdfInput)
     lightInput.lightColor = CalculateLightColor(lightIndex);
     lightInput.lightDirection = CalculateLightDirection(lightIndex, brdfInput.worldPosition);
     lightInput.attenuation = CalculateLightAttenuation(lightIndex, brdfInput.worldPosition, brdfInput.normal);
-    lightInput.visibility = 1.0; // 暂时不考虑阴影
+
+    // 计算阴影可见性
+    lightInput.visibility = CalculateShadowVisibility(lightIndex, brdfInput.worldPosition, brdfInput.normal);
     
     // 光源类型特定数据
     lightInput.lightType = uint(light.type);
@@ -124,19 +127,24 @@ BRDFLightInput prepareLightInput(uint lightIndex, BRDFInput brdfInput)
  */
 vec3 calculateLightContribution(uint lightIndex, BRDFInput brdfInput)
 {
+    // 检查光源是否可见
+    if (!IsLightVisible(lightIndex, brdfInput.worldPosition, brdfInput.normal)) {
+        return vec3(0.0);
+    }
+
     // 准备光源输入
     BRDFLightInput lightInput = prepareLightInput(lightIndex, brdfInput);
     
-    // 检查光源是否可见
-    if (!IsLightVisible(lightIndex, brdfInput.worldPosition, brdfInput.normal)) {
+    // 如果完全在阴影中，跳过BRDF计算
+    if (lightInput.visibility <= 0.0) {
         return vec3(0.0);
     }
     
     // 使用BRDF分发器计算光照
     BRDFResult result = dispatchBRDF(brdfInput, lightInput);
     
-    // 返回总光照贡献
-    return result.diffuse + result.specular;
+    // 应用阴影到光照结果
+    return (result.diffuse + result.specular) * lightInput.visibility;
 }
 
 /**
