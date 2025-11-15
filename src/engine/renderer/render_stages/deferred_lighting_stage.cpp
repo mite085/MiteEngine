@@ -227,7 +227,7 @@ void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
   // 分别执行方向光、点光源、聚光灯的绑定操作
   RuntimeTexturePtr directionalShadowTexture = context.GetShadowMapTexture(LightType::DIRECTIONAL);
   if (directionalShadowTexture && directionalShadowTexture->IsValid()) {
-    RenderCommand::Get().BindRuntimeTexture(directionalShadowTexture->GetType(),
+    RenderCommand::Get().BindRuntimeTexture(RuntimeTextureType::ShadowMap_Directional,
                                             directionalShadowTexture->GetHandle(),
                                             directionalShadowTexture->GetTarget());
   }
@@ -237,7 +237,7 @@ void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
 
   RuntimeTexturePtr pointShadowTexture = context.GetShadowMapTexture(LightType::POINT);
   if (pointShadowTexture && pointShadowTexture->IsValid()) {
-    RenderCommand::Get().BindRuntimeTexture(pointShadowTexture->GetType(),
+    RenderCommand::Get().BindRuntimeTexture(RuntimeTextureType::ShadowMap_Point,
                                             pointShadowTexture->GetHandle(),
                                             pointShadowTexture->GetTarget());
   }
@@ -247,7 +247,7 @@ void DeferredLightingStage::BindShadowMapTextures(RenderContext &context)
 
   RuntimeTexturePtr spotShadowTexture = context.GetShadowMapTexture(LightType::SPOT);
   if (spotShadowTexture && spotShadowTexture->IsValid()) {
-    RenderCommand::Get().BindRuntimeTexture(spotShadowTexture->GetType(),
+    RenderCommand::Get().BindRuntimeTexture(RuntimeTextureType::ShadowMap_Spot,
                                             spotShadowTexture->GetHandle(),
                                             spotShadowTexture->GetTarget());
   }

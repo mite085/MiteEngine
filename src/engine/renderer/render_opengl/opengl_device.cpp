@@ -301,6 +301,8 @@ void OpenGLDevice::BindRuntimeTexture(RuntimeTextureType type,
     else {
       // 绑定默认纹理
       glBindTexture(GL_TEXTURE_2D, m_WhiteTexture);
+
+      LOG_WARN("Failed to bind runtime texture: invalid texture handle, bind to default texture");
     }
   }
   else {

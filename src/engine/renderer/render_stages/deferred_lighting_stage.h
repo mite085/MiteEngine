@@ -55,7 +55,7 @@ class DeferredLightingStage : public RenderStage {
 
   // 配置参数
   bool m_Initialized = false;
-  bool m_EnableShadows = false;
+  bool m_EnableShadows = true;
 };
 }  // namespace mite
 
