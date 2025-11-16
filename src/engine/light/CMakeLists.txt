@@ -13,6 +13,8 @@ set(LIGHT_CORE_SRCS
     light_core/shadow_map_type.h        # 阴影贴图类型定义
     light_core/shadow_map.h             # 阴影贴图基类，所有阴影贴图实现均应继承
     light_core/shadow_map.cpp
+    light_core/shadow_instance.h             # 阴影实例类，负责UBO的创建、更新和绑定
+    light_core/shadow_instance.cpp
 )
 source_group("light core" FILES ${LIGHT_CORE_SRCS})
 

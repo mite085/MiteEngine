@@ -249,11 +249,11 @@ struct alignas(16) ShadowUniformBuffer {
 
   // ---- 光源计数和配置 ----
   // x: directionalCount, y: pointLightCount, z: spotLightCount, w: cascadeCount (16字节)
-  glm::ivec4 shadowConfig;
+  glm::ivec4 shadowConfig = glm::ivec4(0, 0, 0, 0);
 
   // ---- 通用阴影参数 ----
   // x: shadowBias, y: normalBias, z: shadowFilterSize, w: shadowMapSize (16字节)
-  glm::vec4 shadowParams;
+  glm::vec4 shadowParams = glm::vec4(0.005f, 0.02f, 1.0f, 1024.0f);
 
   // ---- 光源特定阴影索引 ----
   // 方向光源阴影索引 (MAX_DIRECTIONAL_LIGHTS(8) * 16 = 128字节)
