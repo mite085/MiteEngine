@@ -86,6 +86,9 @@ void DeferredLightingStage::Execute(RenderContext &context)
 
   // 绑定阴影数据
   if (m_EnableShadows) {
+    LightManager &lightManager = context.GetLightManager();
+    RenderCommand::Get().BindShadowUBO(lightManager.GetShadowInstance());
+
     BindShadowMapTextures(context);
   }
 

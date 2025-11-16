@@ -231,8 +231,7 @@ void OpenGLRenderCommand::DrawFullScreenQuad()
                        "Submit Full Screen Quad Draw Call"});
 }
 
-void OpenGLRenderCommand::SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance,
-                                         std::shared_ptr<OpenGLShader> shader)
+void OpenGLRenderCommand::SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::DrawIndexed,

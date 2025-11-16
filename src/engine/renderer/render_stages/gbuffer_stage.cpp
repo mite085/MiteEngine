@@ -146,7 +146,7 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
 
     // 提交渲染
     RenderCommand::Get().BindMaterialUBO(item.material);
-    RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
+    RenderCommand::Get().SubmitDrawCall(item.mesh);
     renderedCount++;
   }
 
@@ -191,7 +191,7 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
 
     // 提交渲染
     RenderCommand::Get().BindMaterialUBO(item.material);
-    RenderCommand::Get().SubmitDrawCall(item.mesh, gbufferShader);
+    RenderCommand::Get().SubmitDrawCall(item.mesh);
     renderedCount++;
   }
   m_Logger->trace(

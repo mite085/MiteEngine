@@ -166,8 +166,7 @@ class RenderCommand {
    * @param meshInstance 网格实例
    * @param shader 着色器
    */
-  virtual void SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance,
-                              std::shared_ptr<OpenGLShader> gbufferShader) = 0;
+  virtual void SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance) = 0;
 
   // ---------------- 完成事件发布 ----------------
   /**

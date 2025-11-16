@@ -87,10 +87,7 @@ void ShadowMapStage::Execute(RenderContext &context)
   // 验证输入
   ValidateShadowInputs(context);
 
-  // 绑定阴影着色器
-  RenderCommand::Get().BindShader(shadowShader);
-
-  // 更新Shadow Map UBO并执行绑定操作
+  // 更新Shadow Map UBO
   LightManager &lightManager = context.GetLightManager();
   std::shared_ptr<CameraInstance> cameraInstance = context.GetMainCameraInstance();
   if (!cameraInstance) {
@@ -98,7 +95,13 @@ void ShadowMapStage::Execute(RenderContext &context)
     return;
   }
   lightManager.UpdateLightShadowUBO(cameraInstance);
+
+  // 绑定阴影着色器，上传UBO
+  RenderCommand::Get().BindShader(shadowShader);
   RenderCommand::Get().BindShadowUBO(lightManager.GetShadowInstance());
+
+  // 设置阴影渲染状态
+  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
 
   // 按照类型获取光源
   std::vector<std::shared_ptr<Light>> directionalLights = lightManager.GetLightsByType(
@@ -312,9 +315,6 @@ void ShadowMapStage::RenderDirectionalShadowMap(
   RenderCommand::Get().BindFrameBuffer(m_DirectionalShadowFBO);
   RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
-  // 设置阴影渲染状态
-  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
-
   for (uint32_t lightIdx = 0;
        lightIdx < directionalLights.size() && lightIdx < MAX_DIRECTIONAL_LIGHTS;
        lightIdx++)
@@ -349,9 +349,6 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
   RenderCommand::Get().BindFrameBuffer(m_PointShadowFBO);
   RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
-  // 设置阴影渲染状态
-  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
-
   for (uint32_t lightIdx = 0; lightIdx < pointLights.size() && lightIdx < MAX_POINT_LIGHTS;
        lightIdx++)
   {
@@ -378,9 +375,6 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
   // 绑定聚光灯阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_SpotShadowFBO);
   RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
-
-  // 设置阴影渲染状态
-  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
 
   for (uint32_t lightIdx = 0; lightIdx < spotLights.size() && lightIdx < MAX_SPOT_LIGHTS;
        lightIdx++)
@@ -471,11 +465,8 @@ void ShadowMapStage::RenderSceneToShadowMap(RenderContext &context,
       continue;
     }
 
-    // 绑定材质UBO（用于Alpha测试）
-    RenderCommand::Get().BindMaterialUBO(item.material);
-
     // 提交绘制调用
-    RenderCommand::Get().SubmitDrawCall(item.mesh, context.GetStageShader("ShadowMapStage"));
+    RenderCommand::Get().SubmitDrawCall(item.mesh);
   }
 }
 

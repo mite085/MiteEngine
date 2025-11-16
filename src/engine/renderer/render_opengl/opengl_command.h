@@ -76,8 +76,7 @@ class OpenGLRenderCommand : public RenderCommand {
   void DrawFullScreenQuad() override;
 
   // ---------------- 整合操作命令 ----------------
-  void SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance,
-                      std::shared_ptr<OpenGLShader> shader) override;
+  void SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance) override;
 
   // ---------------- 完成事件发布 ----------------
   void PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,

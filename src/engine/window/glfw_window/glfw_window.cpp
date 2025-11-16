@@ -681,6 +681,8 @@ void OpenGLWindow::openGLErrorCallback(GLenum source,
             id,
             severityStr,
             message);
+
+  return;
 }
 
 void OpenGLWindow::initializeOpenGLDebugging()
