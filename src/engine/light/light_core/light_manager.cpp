@@ -1,6 +1,8 @@
 #include "light_manager.h"
 #include "basic_event/instance_event.h"
+#include "light_data/directional_light.h"
 #include "light_data/point_light.h"
+#include "light_data/spot_light.h"
 #include "subscription_group.h"
 
 namespace mite {
@@ -24,6 +26,9 @@ bool LightManager::Initialize()
     EventBus::Publish<LightSSBOCreateEvent>(LightSSBOCreateEvent(m_LightSSBO));
 
     LOG_INFO("LightManager initialized successfully with {} max lights", m_MaxLights);
+
+    // 初始化shadowmap UBO
+    InitializeShadowInstance();
     m_IsInitialized = true;
     return true;
   }
@@ -269,6 +274,66 @@ std::vector<std::shared_ptr<Light>> LightManager::GetLightsByType(LightType type
 std::shared_ptr<LightShaderStorgeBuffer> LightManager::GetLightSSBO() const
 {
   return m_LightSSBO;
+}
+
+bool LightManager::InitializeShadowInstance()
+{
+  if (m_ShadowInstance && m_ShadowInstance->GetUBO() &&
+      m_ShadowInstance->GetUBO()->IsInitialized())
+  {
+    LOG_WARN("ShadowInstance already initialized");
+    return true;
+  }
+  try {
+    // 创建阴影实例
+    m_ShadowInstance = std::make_shared<ShadowInstance>();
+    bool success = m_ShadowInstance->InitializeUBO();
+
+    if (success) {
+      LOG_INFO("ShadowInstance initialized successfully");
+    }
+    else {
+      LOG_ERROR("Failed to initialize ShadowInstance UBO");
+      m_ShadowInstance.reset();
+    }
+
+    return success;
+  }
+  catch (const std::exception &e) {
+    LOG_ERROR("Failed to initialize ShadowInstance: {}", e.what());
+    m_ShadowInstance.reset();
+    return false;
+  }
+}
+
+bool LightManager::UpdateLightShadowUBO(std::shared_ptr<CameraInstance> cameraInstance)
+{
+  if (!m_ShadowInstance || !m_ShadowInstance->GetUBO() ||
+      !m_ShadowInstance->GetUBO()->IsInitialized())
+  {
+    LOG_ERROR("Cannot update light shadow: ShadowInstance not initialized");
+    return false;
+  }
+  if (!cameraInstance) {
+    LOG_ERROR("Cannot update light shadow: null camera instance");
+    return false;
+  }
+  if (m_LightTransformCache.empty()) {
+    LOG_WARN("No light transform cache available, call UpdateLightData first");
+    return false;
+  }
+  try {
+    // 获取所有启用的光源
+    auto enabledLights = GetEnabledLights();
+
+    LOG_TRACE("Updating shadow data for {} enabled lights", enabledLights.size());
+    // 传递光源列表和变换缓存给ShadowInstance
+    return m_ShadowInstance->UpdateUBO(enabledLights, m_LightTransformCache, cameraInstance);
+  }
+  catch (const std::exception &e) {
+    LOG_ERROR("Exception while updating light shadow: {}", e.what());
+    return false;
+  }
 }
 
 void LightManager::SetMaxLights(size_t maxLights)

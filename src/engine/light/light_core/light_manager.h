@@ -2,8 +2,7 @@
 #define MITE_LIGHT_MANAGER_H
 
 #include "basic_instance/light_ssbo.h"
-#include "light.h"
-#include "shadow_map_type.h"
+#include "shadow_instance.h"
 
 namespace mite {
 /**
@@ -100,25 +99,33 @@ class LightManager {
    */
   bool UpdateLightData(
       const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms);
-  ///**
-  // * @brief 收集所有阴影数据
-  // * @param worldTransforms 光源世界变换映射表
-  // * @param cameraView 相机视图矩阵，用于级联阴影计算
-  // * @param cameraProj 相机投影矩阵，用于级联阴影计算
-  // * @return 阴影数据列表
-  // */
-  // std::vector<ShadowMapData> CollectShadowData(
-  //    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms,
-  //    const Transform &cameraView,
-  //    const glm::mat4 &cameraProj = glm::mat4(1.0f)) const;
 
-  // ---- SSBO管理 ----
+  // ---- 光源SSBO管理 ----
 
   /**
    * @brief 获取LightSSBO实例
    * @return LightSSBO共享指针
    */
   std::shared_ptr<LightShaderStorgeBuffer> GetLightSSBO() const;
+
+  // ---- 阴影管理 ----
+  /**
+   * @brief 初始化阴影实例
+   * @return 是否初始化成功
+   */
+  bool InitializeShadowInstance();
+  /**
+   * @brief 更新光源阴影数据
+   * @param cameraInstance 相机实例，用于阴影计算
+   * @return 是否更新成功
+   * @note 使用UpdateLightData阶段缓存的光源变换数据
+   */
+  bool UpdateLightShadowUBO(std::shared_ptr<CameraInstance> cameraInstance);
+  /**
+   * @brief 获取阴影实例
+   * @return 阴影实例共享指针
+   */
+  std::shared_ptr<ShadowInstance> GetShadowInstance() const { return m_ShadowInstance; }
 
   // ---- 配置管理 ----
 
@@ -138,7 +145,7 @@ class LightManager {
   /**
    * @brief 基于每帧缓存获取光源变换
    */
-  Transform GetLightTransform(Light* lightPtr) const;
+  Transform GetLightTransform(Light *lightPtr) const;
 
   /**
    * @brief 获取按类型统计的光源数量
@@ -166,6 +173,7 @@ class LightManager {
   std::vector<std::shared_ptr<Light>> m_Lights;                          // 所有光源列表
   mutable std::unordered_map<Light *, Transform> m_LightTransformCache;  // 光源变换缓存
   std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;                  // 光源统一的SSBO管理器
+  std::shared_ptr<ShadowInstance> m_ShadowInstance;                      // 阴影实例
   size_t m_MaxLights;                                                    // 最大光源数量
   bool m_IsInitialized = false;                                          // 初始化状态标志
 };
