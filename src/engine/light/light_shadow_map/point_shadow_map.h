@@ -85,7 +85,7 @@ class PointShadowMap : public ShadowMap {
   float GetFarPlane() const;
 
  private:
-  glm::vec3 m_LastLightPosition;  ///< 上一次计算时的光源位置，用于检测移动
+  glm::vec3 m_LastLightPosition;  // 上一次计算时的光源位置，用于检测移动
 
   /**
    * @brief 计算立方体贴图六个面的视图投影矩阵
