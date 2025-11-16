@@ -90,8 +90,17 @@ void ShadowMapStage::Execute(RenderContext &context)
   // 绑定阴影着色器
   RenderCommand::Get().BindShader(shadowShader);
 
-  // 按照类型获取光源
+  // 更新Shadow Map UBO并执行绑定操作
   LightManager &lightManager = context.GetLightManager();
+  std::shared_ptr<CameraInstance> cameraInstance = context.GetMainCameraInstance();
+  if (!cameraInstance) {
+    m_Logger->warn("No main camera available for directional shadow rendering");
+    return;
+  }
+  lightManager.UpdateLightShadowUBO(cameraInstance);
+  RenderCommand::Get().BindShadowUBO(lightManager.GetShadowInstance());
+
+  // 按照类型获取光源
   std::vector<std::shared_ptr<Light>> directionalLights = lightManager.GetLightsByType(
       LightType::DIRECTIONAL);
   std::vector<std::shared_ptr<Light>> pointLights = lightManager.GetLightsByType(LightType::POINT);
@@ -298,11 +307,6 @@ void ShadowMapStage::RenderDirectionalShadowMap(
     m_Logger->warn("Directional shadow FBO not available");
     return;
   }
-  auto cameraInstance = context.GetMainCameraInstance();
-  if (!cameraInstance) {
-    m_Logger->warn("No main camera available for directional shadow rendering");
-    return;
-  }
 
   // 绑定方向光源阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_DirectionalShadowFBO);
@@ -317,19 +321,8 @@ void ShadowMapStage::RenderDirectionalShadowMap(
   {
     std::shared_ptr<Light> light = directionalLights[lightIdx];
 
-    // 获取光源变换
-    Transform lightTransform = context.GetLightManager().GetLightTransform(light.get());
-
-    // 获取阴影数据
-    ShadowMapData shadowData = light->PrepareShadowData(lightTransform,
-                                                        cameraInstance->GetCameraTransform(),
-                                                        cameraInstance->GetProjectionMatrix());
-
-    if (!shadowData.enabled || !shadowData.isValid) {
-      continue;
-    }
     // 为每个级联渲染
-    for (uint32_t cascadeIdx = 0; cascadeIdx < shadowData.specific.directional.cascadeCount;
+    for (uint32_t cascadeIdx = 0; cascadeIdx < MAX_CASCADES;
          cascadeIdx++)
     {
       // 使用分层渲染到数组纹理的特定层
@@ -351,11 +344,6 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
     m_Logger->warn("Point shadow FBO not available");
     return;
   }
-  auto cameraInstance = context.GetMainCameraInstance();
-  if (!cameraInstance) {
-    m_Logger->warn("No main camera available for directional shadow rendering");
-    return;
-  }
 
   // 绑定点光源阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_PointShadowFBO);
@@ -369,17 +357,6 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
   {
     std::shared_ptr<Light> light = pointLights[lightIdx];
 
-    // 获取光源变换
-    Transform lightTransform = context.GetLightManager().GetLightTransform(light.get());
-
-    // 获取阴影数据
-    ShadowMapData shadowData = light->PrepareShadowData(lightTransform,
-                                                        cameraInstance->GetCameraTransform(),
-                                                        cameraInstance->GetProjectionMatrix());
-
-    if (!shadowData.enabled || !shadowData.isValid) {
-      continue;
-    }
     // 为立方体贴图数组的6个面分别渲染
     for (uint32_t faceIdx = 0; faceIdx < 6; faceIdx++) {
       RenderCommand::Get().BindFramebufferDepthCubeFace(m_SpotShadowFBO, lightIdx, faceIdx);
@@ -397,11 +374,6 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
     m_Logger->warn("Spot shadow FBO not available");
     return;
   }
-  auto cameraInstance = context.GetMainCameraInstance();
-  if (!cameraInstance) {
-    m_Logger->warn("No main camera available for directional shadow rendering");
-    return;
-  }
 
   // 绑定聚光灯阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_SpotShadowFBO);
@@ -415,17 +387,6 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
   {
     std::shared_ptr<Light> light = spotLights[lightIdx];
 
-    // 获取光源变换
-    Transform lightTransform = context.GetLightManager().GetLightTransform(light.get());
-
-    // 获取阴影数据
-    ShadowMapData shadowData = light->PrepareShadowData(lightTransform,
-                                                        cameraInstance->GetCameraTransform(),
-                                                        cameraInstance->GetProjectionMatrix());
-
-    if (!shadowData.enabled || !shadowData.isValid) {
-      continue;
-    }
     // 使用分层渲染到数组纹理的特定层
     RenderCommand::Get().BindFrameBufferDepthLayer(m_SpotShadowFBO, lightIdx);
 
@@ -449,7 +410,7 @@ void ShadowMapStage::SetupShadowRenderState()
   // （且暂未找出解决方案）
   m_ShadowRenderState->depthTest = true;
   m_ShadowRenderState->depthWrite = true;
-  m_ShadowRenderState->blend = true;
+  m_ShadowRenderState->blend = false;
   m_ShadowRenderState->cullFace = true;
   m_ShadowRenderState->colorWriteR = true;
   m_ShadowRenderState->colorWriteG = true;
