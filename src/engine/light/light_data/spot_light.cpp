@@ -9,6 +9,8 @@ SpotLight::SpotLight() : Light(LightType::SPOT)
             m_Properties.specific.spot.innerAngle,
             m_Properties.specific.spot.outerAngle,
             m_Properties.specific.spot.range);
+
+    CreateDefaultShadowMap();
 }
 
 std::string SpotLight::GetLightTypeName() const

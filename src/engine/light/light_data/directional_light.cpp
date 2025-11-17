@@ -7,6 +7,8 @@ DirectionalLight::DirectionalLight() : Light(LightType::DIRECTIONAL)
   LOG_TRACE("DirectionalLight created with irradiance: {}, intensity: {}",
             m_Properties.specific.directional.irradiance,
             m_Properties.intensity);
+
+  CreateDefaultShadowMap();
 }
 
 std::string DirectionalLight::GetLightTypeName() const

@@ -8,6 +8,8 @@ PointLight::PointLight() : Light(LightType::POINT)
   LOG_TRACE("PointLight created with radius: {}, intensity: {}",
             m_Properties.specific.point.radius,
             m_Properties.intensity);
+
+    CreateDefaultShadowMap();
 }
 
 std::string PointLight::GetLightTypeName() const
