@@ -39,8 +39,8 @@ void SceneView::Initialize()
   TransformComponent &cameraTransform = m_SceneCore.GetRegistry().AddComponent<TransformComponent>(
       m_CameraEntity);
   cameraTransform.SetLocalTransform([](Transform &localtrans) {
-    localtrans.SetPosition(glm::vec3(5.0f, 5.0f, 5.0f));
-    localtrans.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+    localtrans.SetPosition(glm::vec3(3.2f, 1.2f, 0.0f));
+    localtrans.LookAt(glm::vec3(2.2f, 1.2f, 0.0f));
   });
 
   // 1.3. 主相机的可见性组件
