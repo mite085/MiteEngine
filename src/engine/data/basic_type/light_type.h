@@ -58,7 +58,7 @@ struct LightProperties {
   union {
     // 点光源
     struct {
-      float radius = 10.0f;                                       // 影响半径
+      float radius = 100.0f;                                      // 影响半径
       float falloff = 1.0f;                                       // 衰减系数
       LightAttenuation attenuation = LightAttenuation::PHYSICAL;  // 衰减模式
     } point;
@@ -68,7 +68,7 @@ struct LightProperties {
       float innerAngle = 30.0f;  // 内角（度）
       float outerAngle = 45.0f;  // 外角（度）
       float blend = 0.5f;        // 边缘柔化(0-1)
-      float range = 10.0f;       // 照射范围
+      float range = 100.0f;       // 照射范围
     } spot;
 
     // 方向光

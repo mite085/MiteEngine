@@ -73,53 +73,6 @@ struct ShadowMapData {
    * @brief 默认构造函数
    */
   ShadowMapData() : specific{} {}
-
-  /**
-   * @brief 获取阴影矩阵数量
-   */
-  size_t GetShadowMatrixCount() const
-  {
-    if (!enabled)
-      return 0;
-
-    // 根据配置推断光源类型
-    if (specific.directional.cascadeCount > 0) {
-      return specific.directional.cascadeCount;  // 方向光使用级联
-    }
-    else if (specific.point.farPlane > 0) {
-      return 6;  // 点光源使用立方体贴图
-    }
-    else {
-      return 1;  // 聚光灯和面光源使用单个矩阵
-    }
-  }
-
-  /**
-   * @brief 获取特定索引的阴影矩阵
-   */
-  glm::mat4 GetShadowMatrix(size_t index) const
-  {
-    if (!enabled || !isValid) {
-      return glm::mat4(1.0f);
-    }
-
-    // 根据配置推断光源类型
-    if (specific.directional.cascadeCount > 0 && index < 4) {
-      return specific.directional.cascadeMatrices[index];  // 方向光
-    }
-    else if (specific.point.farPlane > 0 && index < 6) {
-      return specific.point.faceViewProjMatrices[index];  // 点光源
-    }
-    else if (specific.spot.farPlane > 0 && index == 0) {
-      return specific.spot.projectionMatrix * specific.spot.viewMatrix;  // 聚光灯
-    }
-    else if (specific.area.farPlane > 0 && index == 0) {
-      return specific.area.projectionMatrix * specific.area.viewMatrix;  // 面光源
-    }
-
-    LOG_ERROR("Invalid shadow matrix index: {}", index);
-    return glm::mat4(1.0f);
-  }
 };
 }  // namespace mite
 
