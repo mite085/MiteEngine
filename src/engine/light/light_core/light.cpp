@@ -3,31 +3,6 @@
 namespace mite {
 Light::Light(LightType type) : m_Type(type)
 {
-  // 设置类型特定的默认值（仅光学属性）
-  switch (type) {
-    case LightType::POINT:
-      m_Properties.specific.point.radius = 10.0f;
-      m_Properties.specific.point.falloff = 1.0f;
-      break;
-    case LightType::SPOT:
-      m_Properties.specific.spot.innerAngle = 30.0f;
-      m_Properties.specific.spot.outerAngle = 45.0f;
-      m_Properties.specific.spot.blend = 0.5f;
-      m_Properties.specific.spot.range = 10.0f;
-      break;
-    case LightType::DIRECTIONAL:
-      m_Properties.specific.directional.irradiance = 1.0f;
-      break;
-    case LightType::AREA_RECT:
-    case LightType::AREA_ELLIPSE:
-      m_Properties.specific.area.size = glm::vec2(1.0f, 1.0f);
-      m_Properties.specific.area.power = 100.0f;
-      m_Properties.specific.area.shape = (type == LightType::AREA_RECT) ?
-                                             AreaLightShape::RECTANGLE :
-                                             AreaLightShape::ELLIPSE;
-      break;
-  }
-
   LOG_TRACE("Light created: type={}", static_cast<int>(type));
 }
 
@@ -85,12 +60,13 @@ bool Light::IsCastingShadows() const
 {
   return m_ShadowMap && m_ShadowMap->GetData().enabled;
 }
-ShadowMapData Light::PrepareShadowData(const Transform &worldTransform,
+ShadowMapData Light::PrepareShadowData(const uint32_t lightIndex,
+                                       const Transform &worldTransform,
                                        const Transform &cameraView,
                                        const glm::mat4 &cameraProj) const
 {
   if (m_ShadowMap && m_Properties.enabled) {
-    return m_ShadowMap->PrepareShadowData(worldTransform, cameraView, cameraProj);
+    return m_ShadowMap->PrepareShadowData(lightIndex, worldTransform, cameraView, cameraProj);
   }
   return ShadowMapData();
 }

@@ -1,7 +1,7 @@
 #include "shadow_instance.h"
 #include "basic_shader/shader_binding_point_manager.h"
-#include "light_data/point_light.h"
 #include "light_data/directional_light.h"
+#include "light_data/point_light.h"
 #include "light_data/spot_light.h"
 
 namespace mite {
@@ -132,27 +132,13 @@ bool ShadowInstance::UpdateUBO(const std::vector<std::shared_ptr<Light>> &lights
     // 更新阴影配置
     m_ShadowData.shadowConfig = glm::ivec4(directionalCount, pointCount, spotCount, 0);
 
-    // 设置级联数量（使用第一个有效方向光源的级联数量）
-    if (directionalCount > 0) {
-      for (const auto &light : lights) {
-        if (light && light->GetType() == LightType::DIRECTIONAL) {
-          auto transformIt = lightTransforms.find(light.get());
-          if (transformIt != lightTransforms.end()) {
-            ShadowMapData shadowData = light->PrepareShadowData(
-                transformIt->second,
-                cameraInstance->GetCameraTransform(),
-                cameraInstance->GetProjectionMatrix());
-            if (shadowData.enabled && shadowData.isValid) {
-              m_ShadowData.shadowConfig.w = shadowData.specific.directional.cascadeCount;
-              break;
-            }
-          }
-        }
-      }
-    }
+    // 设置级联数量（TODO: 使用正确的级联数量，此处默认使用最大值）
+    m_ShadowData.shadowConfig.w = MAX_CASCADES;
 
     // 设置通用阴影参数
-    // （TODO: ShadowMap分辨率在这里设置并不合适，应当作为输入参数传入。但着色器似乎也无需该参数执行计算）
+    // TODO:
+    // ShadowMap分辨率在这里设置并不合适，应当作为输入参数传入。
+    // 但着色器似乎也无需该参数执行计算）
     m_ShadowData.shadowParams = glm::vec4(0.005f, 0.02f, 1.0f, 1024.0f);
     // 更新UBO数据
     bool success = m_ShadowUBO->UpdateData(&m_ShadowData, sizeof(ShadowUniformBuffer));
@@ -199,8 +185,10 @@ bool ShadowInstance::ProcessDirectionalLight(std::shared_ptr<Light> light,
   }
 
   // 准备阴影数据
-  ShadowMapData shadowData = light->PrepareShadowData(
-      lightTransform, cameraInstance->GetCameraTransform(), cameraInstance->GetProjectionMatrix());
+  ShadowMapData shadowData = light->PrepareShadowData(lightIndex,
+                                                      lightTransform,
+                                                      cameraInstance->GetCameraTransform(),
+                                                      cameraInstance->GetProjectionMatrix());
   if (!shadowData.enabled || !shadowData.isValid) {
     return false;
   }
@@ -223,7 +211,8 @@ bool ShadowInstance::ProcessDirectionalLight(std::shared_ptr<Light> light,
        cascadeIdx++)
   {
     uint32_t matrixIndex = lightIndex * MAX_CASCADES + cascadeIdx;
-    m_ShadowData.directionalMatrices[matrixIndex] = shadowData.GetShadowMatrix(cascadeIdx);
+    m_ShadowData.directionalMatrices[matrixIndex] =
+        shadowData.specific.directional.cascadeMatrices[cascadeIdx];
   }
 
   return true;
@@ -241,8 +230,10 @@ bool ShadowInstance::ProcessPointLight(std::shared_ptr<Light> light,
   }
 
   // 准备阴影数据
-  ShadowMapData shadowData = light->PrepareShadowData(
-      lightTransform, cameraInstance->GetCameraTransform(), cameraInstance->GetProjectionMatrix());
+  ShadowMapData shadowData = light->PrepareShadowData(lightIndex,
+                                                      lightTransform,
+                                                      cameraInstance->GetCameraTransform(),
+                                                      cameraInstance->GetProjectionMatrix());
   if (!shadowData.enabled || !shadowData.isValid) {
     return false;
   }
@@ -252,7 +243,8 @@ bool ShadowInstance::ProcessPointLight(std::shared_ptr<Light> light,
   // 设置点光源立方体贴图矩阵（6个面）
   for (uint32_t faceIdx = 0; faceIdx < 6; faceIdx++) {
     uint32_t matrixIndex = lightIndex * 6 + faceIdx;
-    m_ShadowData.pointLightMatrices[matrixIndex] = shadowData.GetShadowMatrix(faceIdx);
+    m_ShadowData.pointLightMatrices[matrixIndex] =
+        shadowData.specific.point.faceViewProjMatrices[faceIdx];
   }
 
   return true;
@@ -270,8 +262,10 @@ bool ShadowInstance::ProcessSpotLight(std::shared_ptr<Light> light,
   }
 
   // 准备阴影数据
-  ShadowMapData shadowData = light->PrepareShadowData(
-      lightTransform, cameraInstance->GetCameraTransform(), cameraInstance->GetProjectionMatrix());
+  ShadowMapData shadowData = light->PrepareShadowData(lightIndex,
+                                                      lightTransform,
+                                                      cameraInstance->GetCameraTransform(),
+                                                      cameraInstance->GetProjectionMatrix());
   if (!shadowData.enabled || !shadowData.isValid) {
     return false;
   }
@@ -279,10 +273,9 @@ bool ShadowInstance::ProcessSpotLight(std::shared_ptr<Light> light,
   m_ShadowData.spotShadowIndices[lightIndex] = glm::ivec4(shadowData.shadowMapIndex, 0, 0, 0);
 
   // 设置聚光灯阴影矩阵
-  m_ShadowData.spotLightMatrices[lightIndex] = shadowData.GetShadowMatrix(0);
+  m_ShadowData.spotLightMatrices[lightIndex] = shadowData.specific.spot.projectionMatrix *
+                                               shadowData.specific.spot.viewMatrix;
 
   return true;
 }
-
-
 }  // namespace mite

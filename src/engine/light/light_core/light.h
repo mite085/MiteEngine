@@ -62,7 +62,8 @@ class Light {
    * @param cameraProj 相机投影矩阵
    * @return 阴影数据
    */
-  ShadowMapData PrepareShadowData(const Transform &worldTransform,
+  ShadowMapData PrepareShadowData(const uint32_t lightIndex,
+                                  const Transform &worldTransform,
                                   const Transform &cameraView,
                                   const glm::mat4 &cameraProj = glm::mat4(1.0f)) const;
   /**
