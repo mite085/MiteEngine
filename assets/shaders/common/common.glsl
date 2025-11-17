@@ -26,9 +26,9 @@ const uint AREA_LIGHT_SHAPE_RECTANGLE = 0u;
 const uint AREA_LIGHT_SHAPE_ELLIPSE = 1u;
 // 光源数量限制
 #define MAX_DIRECTIONAL_LIGHTS 8      // 8个方向光源（通常场景足够）
+#define MAX_CASCADES 4                // 4级级联（平衡质量和性能）
 #define MAX_POINT_LIGHTS 16           // 16个点光源（立方体贴图内存消耗大）
 #define MAX_SPOT_LIGHTS 32            // 32个聚光灯（2D纹理相对节省）
-#define MAX_CASCADES 4                // 4级级联（平衡质量和性能）
 #define MAX_AREA_LIGHTS 8             // 8个面光源（保留扩展）
 #define MAX_LIGHTS 128                // 最大光源数量（累加结果）
 
