@@ -14,7 +14,8 @@ PointShadowMap::PointShadowMap(const ShadowMapData &data)
             m_Data.specific.point.farPlane);
 }
 
-ShadowMapData PointShadowMap::PrepareShadowData(const Transform &lightWorldTransform,
+ShadowMapData PointShadowMap::PrepareShadowData(const uint32_t lightIndex,
+                                                const Transform &lightWorldTransform,
                                                 const Transform &cameraView,
                                                 const glm::mat4 &cameraProj)
 {
@@ -22,6 +23,9 @@ ShadowMapData PointShadowMap::PrepareShadowData(const Transform &lightWorldTrans
     LOG_TRACE("PointShadowMap is disabled, returning empty data");
     return ShadowMapData();
   }
+
+  // 传递序号
+  m_Data.shadowMapIndex = lightIndex;
 
   // 从世界变换矩阵提取光源位置
   glm::vec3 lightPosition = lightWorldTransform.GetPosition();
@@ -122,6 +126,7 @@ void PointShadowMap::CalculateCubeFaceMatrices(const glm::vec3 &lightPosition)
   };
 
   // 每个面对应的上方向向量
+  // 注意：这里使用-Y向上符合OpenGL立方体贴图约定
   const std::array<glm::vec3, 6> ups = {
       glm::vec3(0.0f, -1.0f, 0.0f),  // +X: -Y为上
       glm::vec3(0.0f, -1.0f, 0.0f),  // -X: -Y为上
@@ -131,19 +136,59 @@ void PointShadowMap::CalculateCubeFaceMatrices(const glm::vec3 &lightPosition)
       glm::vec3(0.0f, -1.0f, 0.0f)   // -Z: -Y为上
   };
 
+  // 首先输出投影矩阵信息
+  LOG_TRACE("=== PointShadowMap Projection Matrix ===");
+  LOG_TRACE("Near: {}, Far: {}", m_Data.specific.point.nearPlane, m_Data.specific.point.farPlane);
+  LOG_TRACE("Projection Matrix:");
+  for (int row = 0; row < 4; ++row) {
+    LOG_TRACE("  [{:8.4f}, {:8.4f}, {:8.4f}, {:8.4f}]",
+              shadowProj[0][row],
+              shadowProj[1][row],
+              shadowProj[2][row],
+              shadowProj[3][row]);
+  }
   // 计算每个面的视图投影矩阵
   for (size_t i = 0; i < 6; ++i) {
     glm::mat4 shadowView = glm::lookAt(lightPosition, lightPosition + targets[i], ups[i]);
-    // 存储视图投影矩阵
-    m_Data.specific.point.faceViewProjMatrices[i] = shadowProj * shadowView;
+    glm::mat4 shadowViewProj = shadowProj * shadowView;
 
-    LOG_TRACE("PointShadowMap face {} matrix calculated - target: ({}, {}, {})",
-              i,
+    // 存储视图投影矩阵
+    m_Data.specific.point.faceViewProjMatrices[i] = shadowViewProj;
+    // 详细的矩阵输出
+    LOG_TRACE("=== PointShadowMap Face {} ===", i);
+    LOG_TRACE("Target: ({}, {}, {}), Up: ({}, {}, {})",
               targets[i].x,
               targets[i].y,
-              targets[i].z);
-  }
+              targets[i].z,
+              ups[i].x,
+              ups[i].y,
+              ups[i].z);
 
+    LOG_TRACE("View Matrix:");
+    for (int row = 0; row < 4; ++row) {
+      LOG_TRACE("  [{:8.4f}, {:8.4f}, {:8.4f}, {:8.4f}]",
+                shadowView[0][row],
+                shadowView[1][row],
+                shadowView[2][row],
+                shadowView[3][row]);
+    }
+
+    LOG_TRACE("ViewProjection Matrix:");
+    for (int row = 0; row < 4; ++row) {
+      LOG_TRACE("  [{:8.4f}, {:8.4f}, {:8.4f}, {:8.4f}]",
+                shadowViewProj[0][row],
+                shadowViewProj[1][row],
+                shadowViewProj[2][row],
+                shadowViewProj[3][row]);
+    }
+
+    // 特别检查深度相关的行（第三行）
+    LOG_TRACE("Depth row (row 2): [{:8.4f}, {:8.4f}, {:8.4f}, {:8.4f}]",
+              shadowViewProj[0][2],
+              shadowViewProj[1][2],
+              shadowViewProj[2][2],
+              shadowViewProj[3][2]);
+  }
   LOG_DEBUG("PointShadowMap all 6 face matrices calculated successfully");
 }
 
