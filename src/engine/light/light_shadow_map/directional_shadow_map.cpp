@@ -21,7 +21,8 @@ DirectionalShadowMap::DirectionalShadowMap(const ShadowMapData &data)
             m_Data.specific.directional.splitLambda);
 }
 
-ShadowMapData DirectionalShadowMap::PrepareShadowData(const Transform &lightWorldTransform,
+ShadowMapData DirectionalShadowMap::PrepareShadowData(const uint32_t lightIndex,
+                                                      const Transform &lightWorldTransform,
                                                       const Transform &cameraView,
                                                       const glm::mat4 &cameraProj)
 {
@@ -29,6 +30,9 @@ ShadowMapData DirectionalShadowMap::PrepareShadowData(const Transform &lightWorl
     LOG_TRACE("DirectionalShadowMap is disabled, returning empty data");
     return ShadowMapData();
   }
+
+  // 传递序号
+  m_Data.shadowMapIndex = lightIndex;
 
   // 从世界变换矩阵提取光源方向
   glm::vec3 lightDirection = lightWorldTransform.GetForward();

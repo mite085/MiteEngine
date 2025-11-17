@@ -19,7 +19,8 @@ SpotShadowMap::SpotShadowMap(const ShadowMapData &data)
             m_Fov);
 }
 
-ShadowMapData SpotShadowMap::PrepareShadowData(const Transform &lightWorldTransform,
+ShadowMapData SpotShadowMap::PrepareShadowData(const uint32_t lightIndex,
+                                               const Transform &lightWorldTransform,
                                                const Transform &cameraView,
                                                const glm::mat4 &cameraProj)
 {
@@ -27,6 +28,8 @@ ShadowMapData SpotShadowMap::PrepareShadowData(const Transform &lightWorldTransf
     LOG_TRACE("SpotShadowMap is disabled, returning empty data");
     return ShadowMapData();
   }
+  // 传递序号
+  m_Data.shadowMapIndex = lightIndex;
 
   // 从世界变换矩阵提取光源位置和方向
   glm::vec3 lightPosition = lightWorldTransform.GetPosition();

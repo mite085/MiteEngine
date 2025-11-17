@@ -26,7 +26,8 @@ class DirectionalShadowMap : public ShadowMap {
    * @return 更新后的阴影数据
    * @note 方向光阴影基于相机视锥体和光源方向计算多个级联的阴影矩阵
    */
-  ShadowMapData PrepareShadowData(const Transform &lightWorldTransform,
+  ShadowMapData PrepareShadowData(const uint32_t lightIndex,
+                                  const Transform &lightWorldTransform,
                                   const Transform &cameraView,
                                   const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
 

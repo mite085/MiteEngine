@@ -26,7 +26,8 @@ class SpotShadowMap : public ShadowMap {
    * @return 更新后的阴影数据
    * @note 聚光灯阴影基于光源位置和方向计算单个透视投影矩阵
    */
-  ShadowMapData PrepareShadowData(const Transform &lightWorldTransform,
+  ShadowMapData PrepareShadowData(const uint32_t lightIndex,
+                                  const Transform &lightWorldTransform,
                                   const Transform &cameraView,
                                   const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
 
