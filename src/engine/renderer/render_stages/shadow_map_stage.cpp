@@ -96,12 +96,15 @@ void ShadowMapStage::Execute(RenderContext &context)
   }
   lightManager.UpdateLightShadowUBO(cameraInstance);
 
+  // 设置阴影渲染状态
+  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
+
   // 绑定阴影着色器，上传UBO
   RenderCommand::Get().BindShader(shadowShader);
   RenderCommand::Get().BindShadowUBO(lightManager.GetShadowInstance());
 
-  // 设置阴影渲染状态
-  RenderCommand::Get().SetRenderState(m_ShadowRenderState);
+  // 绑定相机UBO
+  RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
   // 按照类型获取光源
   std::vector<std::shared_ptr<Light>> directionalLights = lightManager.GetLightsByType(
@@ -322,9 +325,7 @@ void ShadowMapStage::RenderDirectionalShadowMap(
     std::shared_ptr<Light> light = directionalLights[lightIdx];
 
     // 为每个级联渲染
-    for (uint32_t cascadeIdx = 0; cascadeIdx < MAX_CASCADES;
-         cascadeIdx++)
-    {
+    for (uint32_t cascadeIdx = 0; cascadeIdx < MAX_CASCADES; cascadeIdx++) {
       // 使用分层渲染到数组纹理的特定层
       uint32_t layer = lightIdx * MAX_CASCADES + cascadeIdx;
       RenderCommand::Get().BindFrameBufferDepthLayer(m_DirectionalShadowFBO, layer);
@@ -354,9 +355,9 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
   {
     std::shared_ptr<Light> light = pointLights[lightIdx];
 
-    // 为立方体贴图数组的6个面分别渲染
+    // 为立方体贴图数组的6个面分别执行渲染
     for (uint32_t faceIdx = 0; faceIdx < 6; faceIdx++) {
-      RenderCommand::Get().BindFramebufferDepthCubeFace(m_SpotShadowFBO, lightIdx, faceIdx);
+      RenderCommand::Get().BindFramebufferDepthCubeFace(m_PointShadowFBO, lightIdx, faceIdx);
       BindShadowRenderContext(lightIdx, 0, faceIdx, 1);
       RenderSceneToShadowMap(context,
                              context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
