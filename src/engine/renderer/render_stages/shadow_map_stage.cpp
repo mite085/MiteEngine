@@ -316,7 +316,6 @@ void ShadowMapStage::RenderDirectionalShadowMap(
 
   // 绑定方向光源阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_DirectionalShadowFBO);
-  RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
   for (uint32_t lightIdx = 0;
        lightIdx < directionalLights.size() && lightIdx < MAX_DIRECTIONAL_LIGHTS;
@@ -329,6 +328,8 @@ void ShadowMapStage::RenderDirectionalShadowMap(
       // 使用分层渲染到数组纹理的特定层
       uint32_t layer = lightIdx * MAX_CASCADES + cascadeIdx;
       RenderCommand::Get().BindFrameBufferDepthLayer(m_DirectionalShadowFBO, layer);
+      RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
+
       // 绑定阴影渲染上下文
       BindShadowRenderContext(lightIdx, cascadeIdx, 0, 0);
       // 渲染场景到当前级联
@@ -348,7 +349,6 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
 
   // 绑定点光源阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_PointShadowFBO);
-  RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
   for (uint32_t lightIdx = 0; lightIdx < pointLights.size() && lightIdx < MAX_POINT_LIGHTS;
        lightIdx++)
@@ -358,6 +358,7 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
     // 为立方体贴图数组的6个面分别执行渲染
     for (uint32_t faceIdx = 0; faceIdx < 6; faceIdx++) {
       RenderCommand::Get().BindFramebufferDepthCubeFace(m_PointShadowFBO, lightIdx, faceIdx);
+      RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
       BindShadowRenderContext(lightIdx, 0, faceIdx, 1);
       RenderSceneToShadowMap(context,
                              context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
@@ -375,7 +376,6 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
 
   // 绑定聚光灯阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_SpotShadowFBO);
-  RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
   for (uint32_t lightIdx = 0; lightIdx < spotLights.size() && lightIdx < MAX_SPOT_LIGHTS;
        lightIdx++)
@@ -384,6 +384,7 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
 
     // 使用分层渲染到数组纹理的特定层
     RenderCommand::Get().BindFrameBufferDepthLayer(m_SpotShadowFBO, lightIdx);
+    RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
     // 绑定阴影渲染上下文
     BindShadowRenderContext(lightIdx, 0, 0, 2);  // 类型2=聚光灯
