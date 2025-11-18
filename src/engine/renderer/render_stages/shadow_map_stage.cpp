@@ -432,10 +432,10 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
   std::shared_ptr<ShaderUBO> ubo = nullptr;
   switch (shadowMapType) {
     case 0:
-      ubo = m_DirectionallightUBOs.at(lightIndex);
+      ubo = m_DirectionallightUBOs.at(lightIndex * MAX_CASCADES + cascadeIndex);
       break;
     case 1:
-      ubo = m_PointlightUBOs.at(lightIndex);
+      ubo = m_PointlightUBOs.at(lightIndex * 6 + faceIndex);
       break;
     case 2:
       ubo = m_SpotlightUBOs.at(lightIndex);
