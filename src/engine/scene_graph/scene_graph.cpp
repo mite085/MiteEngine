@@ -150,13 +150,13 @@ void SceneGraph::Update(SceneRegistry &registry)
   m_NodeManager->Update(registry);
 
   // 根据光照数据和新的世界变换组建光源数据
-  std::unordered_map<std::shared_ptr<Light>, Transform> lightTransforms;
+  std::unordered_map<Light *, Transform> lightTransforms;
   for (SceneNode *node : m_NodeManager->GetLightNodes()) {
     if (node && registry.HasComponent<LightComponent>(node->GetEntity())) {
       // 获取组件光源数据
       std::shared_ptr<Light> light =
           registry.GetComponent<LightComponent>(node->GetEntity()).GetLight();
-      lightTransforms.insert(std::make_pair(light, node->GetWorldTransform()));
+      lightTransforms.insert(std::make_pair(light.get(), node->GetWorldTransform()));
     }
   }
 

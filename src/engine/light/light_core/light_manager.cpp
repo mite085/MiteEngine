@@ -204,7 +204,7 @@ std::vector<std::shared_ptr<Light>> LightManager::GetEnabledLights() const
 }
 
 bool LightManager::UpdateLightData(
-    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms)
+    const std::unordered_map<Light *, Transform> &worldTransforms)
 {
   if (!m_IsInitialized || !m_LightSSBO) {
     LOG_ERROR("Cannot update light data: LightManager not initialized");
@@ -373,7 +373,7 @@ Transform LightManager::GetLightTransform(Light *lightPtr) const
 // ---- 内部方法实现 ----
 
 std::vector<GPULightData> LightManager::PrepareGPULightData(
-    const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms) const
+    const std::unordered_map<Light *, Transform> &worldTransforms) const
 {
   std::vector<GPULightData> gpuData;
   gpuData.reserve(worldTransforms.size());
@@ -381,8 +381,9 @@ std::vector<GPULightData> LightManager::PrepareGPULightData(
   // 清空变换缓存
   m_LightTransformCache.clear();
 
-  for (const auto &[light, transform] : worldTransforms) {
+  for (std::shared_ptr<Light> light : m_Lights) {
     try {
+      Transform transform = worldTransforms.at(light.get());
       GPULightData lightData = light->PrepareGPULightData(transform);
       gpuData.push_back(lightData);
       m_LightTransformCache.insert({light.get(), transform});
@@ -390,6 +391,10 @@ std::vector<GPULightData> LightManager::PrepareGPULightData(
     catch (const std::exception &e) {
       LOG_ERROR("Failed to prepare GPU data for light: {}", e.what());
     }
+  }
+
+  for (const auto &[light, transform] : worldTransforms) {
+    
   }
 
   return gpuData;

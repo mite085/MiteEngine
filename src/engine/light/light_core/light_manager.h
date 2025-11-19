@@ -97,8 +97,7 @@ class LightManager {
    * @return 是否更新成功
    * @note 需要提供光源的当前世界变换矩阵
    */
-  bool UpdateLightData(
-      const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms);
+  bool UpdateLightData(const std::unordered_map<Light *, Transform> &worldTransforms);
 
   // ---- 光源SSBO管理 ----
 
@@ -161,7 +160,7 @@ class LightManager {
    * @return GPU光源数据列表
    */
   std::vector<GPULightData> PrepareGPULightData(
-      const std::unordered_map<std::shared_ptr<Light>, Transform> &worldTransforms) const;
+      const std::unordered_map<Light *, Transform> &worldTransforms) const;
   /**
    * @brief 验证光源是否可以添加
    * @param light 要验证的光源
