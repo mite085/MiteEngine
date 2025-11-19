@@ -11,23 +11,24 @@
  */
 float CalculatePointLightShadow(uint lightIndex, vec3 worldPos)
 {
+    // 获取光源位置坐标
     vec3 lightPos = u_Lights.lights[lightIndex].position;
     vec3 lightToFrag = worldPos - lightPos;
     
     // 获取该点光源在CubeMapArray中的层索引
     int shadowIndex = u_Shadow.pointShadowIndices[lightIndex].x;
     
-    // 使用samplerCubeArray采样深度
+    // 使用samplerCubeArray采样深度（标准化的线性深度）
     float closestDepth = texture(u_ShadowMapPoint, vec4(lightToFrag, shadowIndex)).r;
-    
-    // 计算当前片段的深度（标准化到[0,1]）
-    float currentDepth = length(lightToFrag) / GetLightRange(lightIndex);
     
     // 添加阴影偏移避免自阴影
     float bias = u_Shadow.shadowParams.x;
+
+    // 计算当前片段的深度（标准化到[0,1]）
+    float currentDepth = length(lightToFrag - bias) / GetLightRange(lightIndex);
     
     // 检查是否在阴影中
-    return (currentDepth - bias) > closestDepth ? 0.0 : 1.0;
+    return currentDepth > closestDepth ? 0.0 : 1.0;
 }
 
 /**
