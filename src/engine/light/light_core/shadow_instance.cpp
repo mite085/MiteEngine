@@ -139,7 +139,7 @@ bool ShadowInstance::UpdateUBO(const std::vector<std::shared_ptr<Light>> &lights
     // TODO:
     // ShadowMap分辨率在这里设置并不合适，应当作为输入参数传入。
     // 但着色器似乎也无需该参数执行计算）
-    m_ShadowData.shadowParams = glm::vec4(0.005f, 0.02f, 1.0f, 1024.0f);
+    m_ShadowData.shadowParams = glm::vec4(0.001f, 0.02f, 1.0f, 1024.0f);
     // 更新UBO数据
     bool success = m_ShadowUBO->UpdateData(&m_ShadowData, sizeof(ShadowUniformBuffer));
     if (success) {
