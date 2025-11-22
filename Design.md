@@ -4,7 +4,7 @@
 ## 目录
 1. [MiteEngine模块设计文档](#miteengine模块设计文档)
    1. [目录](#目录)
-   2. [1. 系统架构总览](#1-系统架构总览)
+   2. [系统架构总览](#系统架构总览)
    3. [系统概述](#系统概述)
       1. [Main程序入口](#main程序入口)
       2. [Application主循环](#application主循环)
@@ -44,21 +44,59 @@
    8. [Runtime运行时](#runtime运行时)
 ---
 
-## 1. 系统架构总览
+## 系统架构总览
 ```mermaid
 graph TD
-  A[Main] --> B[Application]
-  B --> C[Editor]
-  B --> D[Runtime]
-  C --> E[Engine]
-  D --> E
-  E --> F[Renderer]
-  E --> G[Scene_Core]
-  E --> H[UI]
-  F --> I[OpenGL]
-  F -.-> J[Vulkan Future]
-  G --> K[Scene_Graph]
-  G --> L[Scene_Serialization]
+    %% 最底层模块
+    Core[Core模块]
+    Event[Event模块]
+    
+    %% 第二层：仅依赖最底层
+    Input[Input模块] --> Core
+    Input --> Event
+    Data[Data模块] --> Core
+    Data --> Event
+    
+    %% 第三层：依赖Data和最底层
+    Material[Material模块] --> Data
+    Light[Light模块] --> Data
+    
+    %% 第四层：依赖Material/Light和SceneCore
+    Asset[Asset模块] --> Data
+    Asset --> Material
+    SceneCore[SceneCore模块] --> Material
+    SceneCore --> Data
+    SceneCore --> Light
+    
+    %% 第五层：依赖SceneCore
+    SceneGraph[SceneGraph模块] --> SceneCore
+    SceneSerializer[SceneSerializer模块-未开发] --> SceneCore
+    
+    %% 第六层：依赖SceneGraph和SceneCore
+    SceneView[SceneView模块] --> SceneGraph
+    
+    %% 第七层：依赖SceneView
+    Renderer[Renderer模块] --> SceneView
+    
+    %% 第八层：依赖最底层和Input
+    Window[Window模块] --> Input
+    
+    %% 第九层：依赖Renderer和Window
+    UI[UI模块] --> Renderer
+    UI --> Window
+    
+    %% 最顶层：依赖所有功能模块
+    Application[Application模块] --> Asset
+    Application --> UI
+
+    %% 样式定义
+    classDef bottom fill:#000000
+    classDef middle fill:#000000
+    classDef top fill:#000000
+    
+    class Core,Event bottom
+    class Input,Data,Command,Material,Light,Asset,SceneCore,SceneGraph,SceneSerializer,SceneView,Renderer,Window middle
+    class UI,Application top
 ````
 ## 系统概述
 > 本系统xxx  
