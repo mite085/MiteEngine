@@ -43,9 +43,5 @@ target_link_libraries(${ENGINE_INPUT_LIB_NAME}
     glslang
     spdlog::spdlog
     MiteEngine_Engine_Core
-    MiteEngine_Engine_Data
     MiteEngine_Engine_Event
-    MiteEngine_Engine_Command
-    MiteEngine_Engine_Scene_Core
-    MiteEngine_Engine_Scene_Graph
 )

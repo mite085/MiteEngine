@@ -1,5 +1,4 @@
 #include "glfw_window.h"
-#include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
 // 静态成员初始化
@@ -84,9 +83,6 @@ void OpenGLWindow::Initialize(const WindowConfig &config)
     // 增加窗口计数
     s_GLFWWindowCount++;
     m_Initialized = true;
-
-    // OpenGL/GLFW/GLAD初始化之后，预分配UBO和SSBO绑定点资源
-    BindingPointManager::Get().PreallocateCommonResources();
 
     m_Logger->info("GLFW window created successfully");
   }

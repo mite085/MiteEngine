@@ -215,6 +215,9 @@ void MiteApplication::InitializeWindowWithOpenGL()
   m_Config = WindowConfig();
   m_Window = Window::Create();
   m_Window->Initialize(m_Config);
+
+  // OpenGL/GLFW/GLAD初始化之后，预分配UBO和SSBO绑定点资源
+  BindingPointManager::Get().PreallocateCommonResources();
 }
 
 void MiteApplication::InitializeRenderWithOpenGL()
