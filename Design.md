@@ -20,6 +20,14 @@
       3. [事件处理模式](#事件处理模式)
       4. [事件处理流程](#事件处理流程)
       5. [核心组件](#核心组件)
+   6. [Data数据模块](#data数据模块)
+      1. [Transform变换](#transform变换)
+      2. [Camera相机](#camera相机)
+      3. [Model模型/Mesh网格体](#model模型mesh网格体)
+      4. [Bounding Volume包围盒](#bounding-volume包围盒)
+      5. [Frustum视锥体](#frustum视锥体)
+      6. [Ray射线](#ray射线)
+      7. [RuntimeTexture运行时纹理对象](#runtimetexture运行时纹理对象)
 ---
 
 ## 整体架构概述
@@ -30,26 +38,26 @@
 
 ### 引擎设计理念
 
-模块化设计：确保了引擎架构的清晰性和可维护性，为后续的功能扩展奠定基础
+**模块化设计**：确保了引擎架构的清晰性和可维护性，为后续的功能扩展奠定基础
 
 - 单一职责原则：每个模块专注于特定功能域，确保清晰的接口边界和职责划分，避免功能重叠和交叉依赖。
 - 分层架构设计：Core、Data等作为底层依赖，Light、Material作为中层依赖, Application、UI等作为顶层依赖
 - 依赖方向控制：使用CMake的target_link_libraries实现模块之间的依赖方向控制。
 - 接口与实现分离：模块通过头文件暴露公共接口，内部实现细节完全封装。
 
-事件驱动架构：事件系统作为引擎最底层依赖，确保模块间松散耦合，提升系统灵活性和可维护性。
+**事件驱动架构**：事件系统作为引擎最底层依赖，确保模块间松散耦合，提升系统灵活性和可维护性。
 
 - 中心化事件总线：通过EventBus全局单例实现模块间解耦通信
 - 统一事件处理：支持同步、异步和延迟事件分发机制
 
 
-ECS场景管理：ECS架构实现场景对象的灵活组合与高效更新，为复杂场景管理提供清晰的数据组织方式。
+**ECS场景管理**：ECS架构实现场景对象的灵活组合与高效更新，为复杂场景管理提供清晰的数据组织方式。
 
 - 数据导向设计：Entity作为ID标识，Component存储数据，System处理逻辑
 - 组合优于继承：通过组合不同Component构建复杂实体行为
 - 缓存友好布局：同类型Component连续存储，提升内存访问效率
 
-渲染管线：采用混合渲染策略，兼顾性能与灵活性，为不同渲染需求提供统一执行框架。
+**渲染管线**：采用混合渲染策略，兼顾性能与灵活性，为不同渲染需求提供统一执行框架。
 
 - 多阶段渲染：ShadowMap → G-Buffer → 延迟光照 → 前向渲染
 - 数据驱动执行：通过RenderContext传递参数，RenderCommand队列管理绘制命令
@@ -134,7 +142,7 @@ graph TD
 ### Filesystem文件系统
 提供文件系统操作和路径管理功能
 
-功能描述：
+**功能描述**：
 - 管理可执行文件路径和资源根目录定位
 - 提供资源文件的路径解析和验证
 - 实现文件的读写操作和目录创建
@@ -143,7 +151,7 @@ graph TD
 ### Logger日志系统
 提供分级日志记录系统，支持多输出目标和模块化日志管理
 
-功能描述：
+**功能描述**：
 - 多级别日志输出（TRACE / DEBUG / INFO / WARN / ERROR / CRITICAL）
 - 控制台彩色输出和文件滚动存储
 - 模块专属日志器创建和管理
@@ -152,7 +160,7 @@ graph TD
 ### Thread线程池
 提供多线程任务调度和并行处理能力，优化计算密集型操作性能
 
-功能描述：
+**功能描述**：
 - 线程池管理器统一管理多个专用线程池
 - 并行处理工具支持容器元素的批量并行操作
 - 基于BS::thread_pool封装，提供类型安全的线程池管理
@@ -162,7 +170,7 @@ graph TD
 ### Time计时器
 提供高精度时间测量和帧率管理，支持帧率无关的动画和物理模拟
 
-功能描述：
+**功能描述**：
 - Time类使用静态类模式，管理全局帧时间和增量时间
 - Timer类使用实例模式，提供局部计时和性能分析功能
 - 支持秒和毫秒两种时间单位输出
@@ -171,7 +179,7 @@ graph TD
 ### UUID唯一标识
 提供全局唯一标识符生成和管理，支持对象标识和序列化
 
-功能描述：
+**功能描述**：
 - 生成完全随机UUID用于对象唯一标识
 - 支持基于索引和字符串的确定性UUID生成
 - 提供UUID与字符串之间的双向转换
@@ -226,14 +234,14 @@ flowchart TD
 ````
 
 ### 核心组件
-事件基类 (Event)：作为所有事件的基类，定义了统一的事件接口和传播控制机制。
+**事件基类** (Event)：作为所有事件的基类，定义了统一的事件接口和传播控制机制。
 
-关键特性：
+**关键特性**：
 - 事件传播控制：通过EventResult枚举控制事件传播行为
 - 类别系统：支持事件类别掩码，便于批量订阅
 - 克隆能力：支持事件对象深拷贝，用于异步处理
 
-事件总线 (EventBus)：系统的核心通信枢纽，管理所有事件的订阅和分发。
+**事件总线** (EventBus)：系统的核心通信枢纽，管理所有事件的订阅和分发。
 
 ```mermaid
 sequenceDiagram
@@ -256,27 +264,25 @@ sequenceDiagram
     end
 ````
 
-订阅组 (SubscriptionGroup)：提供RAII风格的事件订阅管理，简化订阅生命周期管理。
+**订阅组** (SubscriptionGroup)：提供RAII风格的事件订阅管理，简化订阅生命周期管理。
 
-基本事件订阅模式：
+**基本事件订阅模式**：
 
 ```cpp
 // 定义事件
 class WindowResizeEvent : public Event {
     EVENT_CLASS_CATEGORY(EventCategory::EVENT_CATEGORY_WINDOW)
 };
-
 // 订阅事件
 m_Subscriptions.SubscribeImmediate<WindowResizeEvent>(
     BIND_DISPATCH_FN(OnWindowResized)
 );
-
 // 发布事件
 WindowResizeEvent event(1920, 1080);
 EventBus::Publish(event);
 ````
 
-异步/延迟/类别事件订阅模式：
+**异步/延迟/类别事件订阅模式**：
 
 ```cpp
 // 异步处理计算密集型事件
@@ -284,16 +290,284 @@ m_Subscriptions.SubscribeAsync<MeshProcessingEvent>(
     BIND_DISPATCH_FN(ProcessMeshAsync),
     EventPriority::High
 );
-
 // 延迟处理帧末任务  
 m_Subscriptions.SubscribeDeferred<FrameEndEvent>(
     BIND_DISPATCH_FN(CleanupFrameResources)
 );
-
 // 类别订阅处理所有类别为“输入”的事件
 m_Subscriptions.SubscribeByCategoryImmediate(
     EventCategory::EVENT_CATEGORY_INPUT,
     [this](Event& e) { ProcessInputEvent(e); }
 );
 ````
+
+Event模块作为引擎最底层的基础设施，为整个系统提供了高效、灵活、安全的通信机制，是实现模块化架构和松耦合设计的关键支撑。
+
+## Data数据模块
+
+Data数据模块是MiteEngine的数据核心层，基于GLM数学库开发，负责管理所有渲染相关的数据类型、GPU资源和着色器基础设施。作为引擎的第二层基础模块，它为上层渲染系统提供统一的数据抽象和资源管理。
+
+### Transform变换
+Transform系统是MiteEngine的数学基础组件，提供统一的3D空间变换管理。作为纯数学工具类，为所有需要空间变换的组件提供底层支持。
+
+**设计理念**
+- 右手坐标系：遵循OpenGL标准，Y轴向上，Z轴向前
+- 双旋转表示：内部四元数存储，外部欧拉角接口
+- 惰性计算：矩阵缓存与脏标记优化
+- 相机友好：提供专用的视图矩阵和相机控制接口
+
+**符合OpenGL默认的坐标系规范**
+```cpp
+// OpenGL标准右手坐标系定义
+static const glm::vec3 s_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);      // +Y 向上
+static const glm::vec3 s_WorldForward = glm::vec3(0.0f, 0.0f, -1.0f); // -Z 向前
+````
+
+**变换属性管理**
+
+| 属性 | 内部存储 | 外部接口 | 默认值 |
+|------|----------|----------|--------|
+| **位置** | `glm::vec3` | 直接访问 | `(0,0,0)` |
+| **旋转** | 四元数 + 欧拉角 | 度制欧拉角 | 单位四元数 |
+| **缩放** | `glm::vec3` | 直接访问 | `(1,1,1)` |
+| **旋转顺序** | `EulerOrder` | 枚举选择 | `YXZ` |
+
+**矩阵缓存的惰性计算机制**
+```mermaid
+flowchart TD
+    subgraph TransformSet [设置操作 SET]
+        A1[Set Position/Rotation/Scale] --> A2[更新对应属性值]
+        A2 --> A3[标记脏标志<br/>m_MatrixDirty = true]
+        
+        B1[Set Rotation] --> B2[更新欧拉角]
+        B2 --> B3[立即更新四元数<br/>UpdateRotationFromEuler]
+        B3 --> A3
+        
+        C1[SetRotationQuat] --> C2[更新四元数]
+        C2 --> C3[标记旋转脏标志<br/>m_RotationDirty = true]
+        C3 --> A3
+    end
+    
+````
+```mermaid
+flowchart TD
+    subgraph TransformGet [获取操作 GET]
+        D1[Get Matrix/Position/Scale] --> D2{检查矩阵脏标志<br/>m_MatrixDirty?}
+        D2 -->|是| D3[更新局部矩阵<br/>UpdateLocalMatrix]
+        D3 --> D4[清除矩阵脏标志]
+        D4 --> D5[返回缓存值]
+        D2 -->|否| D5
+        
+        E1[Get Rotation] --> E2{检查旋转脏标志<br/>m_RotationDirty?}
+        E2 -->|是| E3[更新欧拉角<br/>UpdateEulerFromRotation]
+        E3 --> E4[清除旋转脏标志]
+        E4 --> E5[返回欧拉角]
+        E2 -->|否| E5
+    end
+````
+
+**双旋转表示**
+```cpp
+// 内部：四元数存储（计算高效，无万向节锁）
+mutable glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+// 外部：欧拉角接口（用户友好）
+mutable glm::vec3 m_RotationEuler = glm::vec3(0.0f);
+````
+
+**相机控制系统（防翻滚旋转）**：确保相机的Up朝向始终和WorldUp保持一致
+
+| 向量类型 | 计算方式 | 用途 |
+|----------|----------|------|
+| `GetConstrainedUp()` | `s_WorldUp(0,1,0)` | 朝上方向不变 |
+| `GetForward()` | 四元数旋转 `s_WorldForward(0,0,-1)` | 基础前向 |
+| `GetConstrainedRight()` | `cross(forward, constrained up)` | 防翻滚右向 |
+| `GetConstrainedForward()` | `cross(worldUp, constrained right)` | 约束前向 |
+
+
+### Camera相机
+
+Camera系统是MiteEngine的视图管理核心，基于GLM数学库开发，负责投影矩阵计算和相机参数管理。与Transform系统协同工作，共同完成的3D视图解算功能。
+
+**设计理念**
+- 投影与视图分离：Camera专注投影矩阵，Transform负责视图矩阵
+- 双投影支持：透视与正交投影模式
+- 惰性计算：投影矩阵缓存与脏标记优化
+
+**投影矩阵的惰性计算机制**
+```mermaid
+flowchart TD
+   subgraph CameraSet [设置操作 SET]
+        A[设置相机参数] --> B[标记投影脏标志]
+        B --> C[参数验证与钳制]
+    end
+    
+````
+```mermaid
+flowchart TD
+    subgraph CameraGet [获取操作 GET]
+        D[获取投影矩阵] --> E[检查脏标志]
+        E -->|干净| F[返回缓存矩阵]
+        E -->|脏| G{投影类型判断}
+        
+        G -->|透视| H[计算透视矩阵]
+        G -->|正交| I[计算正交矩阵]
+        
+        H --> J[短边FOV自适应]
+        I --> K[基于正交尺寸计算]
+        
+        J --> L[清除脏标志]
+        K --> L
+        L --> F
+    end
+````
+**相机控制接口**：统一的缩放控制接口Zoom()，自动适配投影类型：若为透视相机，则改变视场角；若为正交相机，则调整视口大小。
+
+**短边FOV自适应算法**：仿照Blender设计，确保视野范围始终充足的同时，适应各种屏幕比例
+
+当宽高比 $Aspect\geq1.0$ 时（宽屏），直接使用垂直的FOV进行计算（缓存的FOV为垂直FOV）：
+
+$$
+ProjectionMatrix = \text{perspective}\left( \text{radians}(FOV),\ Aspect,\ Near,\ Far \right)
+$$
+
+当宽高比 $Aspect<1.0$ 时（竖屏），先根据缓存的垂直FOV计算水平方向的视场角，再将其作为输入参数交给$\text{perspective}$函数：
+
+$$
+horizontalFOV = 2 \cdot \arctan\left( \frac{\tan\left( \frac{\text{radians}(FOV)}{2} \right)}{Aspect} \right)
+$$
+
+$$
+ProjectionMatrix = \text{perspective}\left( horizontalFOV,\ Aspect,\ Near,\ Far \right)
+$$
+其中GLM提供的 $\text{perspective}$ 函数使用垂直方向的视场角 $FOV$（以弧度为单位）。
+
+### Model模型/Mesh网格体
+Mesh和Model系统是MiteEngine的几何数据管理层，负责组织和管理3D模型的网格数据和材质关联。采用分层设计，支持多子网格和多LOD级别。
+
+**设计理念**
+- 资源引用模式：Mesh引用父Model的GPU资源
+- LOD链式管理：统一的基础LOD + 可选细节级别
+- 材质关联：网格与材质实例的自动绑定
+- 包围盒层次：模型级和网格级包围盒支持
+
+**层次结构关系**
+```mermaid
+graph TD
+    A[Model模型] --> B[Mesh子网格1]
+    A --> C[Mesh子网格2]
+    
+    B --> E[LOD链管理]
+    C --> F[LOD链管理]
+    
+    E --> H[基础LOD]
+    E --> I[LOD级别123…]
+    
+    A --> K[材质实例数组]
+    B --> L[材质索引引用]
+    C --> J[材质索引引用]
+````
+
+**安全访问机制**
+- 边界检查：所有索引访问都进行有效性验证
+- 异常处理：无效网格构造抛出标准异常
+- 无效LOD请求：返回基础级别数据
+
+### Bounding Volume包围盒
+包围盒系统是MiteEngine的空间计算核心，提供统一的几何体表示和高效的相交测试算法。该系统支持多种包围体类型，为空间查询、碰撞检测和视锥剔除提供数学基础。
+
+**设计理念**
+- 统一接口：多种包围体类型的统一抽象
+- 类型转换：支持包围体间的智能转换
+- 精确测试：基于分离轴定理的精确相交检测
+- 性能优化：近似算法与精确算法的平衡
+
+**包围体类型体系**
+```mermaid
+classDiagram
+    class BoundingVolume {
+        +GetType() BoundingVolumeType
+        +Transform(matrix) BoundingVolume
+        +Intersects(other) IntersectionType
+        +GetAABBApproximation() BoundingVolumeAABB
+        +ConvertTo(targetType) bool
+    }
+    
+    class BoundingVolumeAABB {
+        +min: vec3
+        +max: vec3
+        +GetCenter() vec3
+        +GetSize() vec3
+    }
+    
+    class BoundingVolumeSphere {
+        +center: vec3
+        +radius: float
+    }
+    
+    class BoundingVolumeOBB {
+        +center: vec3
+        +extents: vec3
+        +orientation: mat3
+    }
+    
+    class BoundingVolumePlane {
+        +normal: vec3
+        +distance: float
+    }
+    
+    BoundingVolume --> BoundingVolumeAABB
+    BoundingVolume --> BoundingVolumeSphere
+    BoundingVolume --> BoundingVolumeOBB
+    BoundingVolume --> BoundingVolumePlane
+````
+
+**OBB的分离轴定理** (SAT) ：OBB-OBB相交测试采用完整的分离轴定理，测试15个可能的分离轴：
+
+分离轴集合：6个面法线轴（每个OBB的3个轴向）9个边叉积轴（3×3组合）
+
+对于每个分离轴 $\vec{a}$，计算投影半径：
+$$r_A = \sum_{i=0}^{2} |\vec{a} \cdot \vec{u}A^i| \cdot e_A^i$$
+$$r_B = \sum{i=0}^{2} |\vec{a} \cdot \vec{u}_B^i| \cdot e_B^i$$
+
+其中 $\vec{u}_A^i$ 和 $\vec{u}_B^i$ 是OBB的轴向向量，$e_A^i$ 和 $e_B^i$ 是半长。
+
+时间复杂度： $O(1)$ 常数时间，但需要测试最多15个轴
+
+**Sphere的Welzl最小包围球算法**：采用随机化线性时间算法计算点集的最小包围球：
+1. 随机打乱点集顺序
+2. 递归构建支撑集（最多4个点）
+3. 基于支撑集大小计算最小球：1点：零半径球 2点：直径球 3点：外接圆球 4点：四面体外接球
+
+时间复杂度： 期望 $O(n)$
+
+**四态相交结果**：支持所有的相交检测情况描述
+```cpp
+enum class IntersectionType {
+    Outside,    // 完全不相交
+    Inside,     // 测试对象在主体内部
+    Intersect,  // 部分相交
+    Covered     // 测试对象完全包含主体
+};
+````
+
+**测试策略矩阵**
+
+| 主体类型 | AABB | Sphere | OBB | Plane |
+|---------|------|--------|-----|-------|
+| **AABB** | 轴对齐测试 | 距离平方比较 | SAT简化 | 投影范围测试 |
+| **Sphere** | 对称转换 | 中心距离比较 | 局部空间测试 | 符号距离测试 |
+| **OBB** | 对称转换 | 对称转换 | 完整SAT | 投影范围测试 |
+| **Plane** | 对称转换 | 对称转换 | 对称转换 | 无意义 |
+
+对称转换规则：
+- AABB转换：所有类型均可通过外接AABB近似
+- Sphere转换：通过外接球保持保守性
+- OBB转换：保持方向信息，精度最高
+- Plane转换：有限支持，主要用于特殊场景
+
+### Frustum视锥体
+
+### Ray射线
+
+### RuntimeTexture运行时纹理对象
 
