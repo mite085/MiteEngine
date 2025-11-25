@@ -117,9 +117,9 @@ graph TD
     Application --> UI
 
     %% 样式定义
-    classDef bottom fill:#0d47a1
-    classDef middle fill:#bf360c
-    classDef top fill:#9c27b0
+    classDef bottom fill: #bbdefb
+    classDef middle fill: #ffe0b2
+    classDef top fill: #e1bee7
     
     class Input,Data,Core,Event,Material,Light,Shader bottom
     class Asset,SceneCore,SceneGraph,SceneSerializer,SceneView,Renderer,Window middle
@@ -439,7 +439,7 @@ $$
 ProjectionMatrix = \text{perspective}\left( \text{radians}(FOV),\ Aspect,\ Near,\ Far \right)
 $$
 
-当宽高比 $Aspect<1.0$ 时（竖屏），先根据缓存的垂直FOV计算水平方向的视场角，再将其作为输入参数交给$\text{perspective}$函数：
+当宽高比 $Aspect<1.0$ 时（竖屏），先根据缓存的垂直FOV计算水平方向的视场角，再将其作为输入参数交给 $\text{perspective}$ 函数：
 
 $$
 horizontalFOV = 2\cdot\arctan\left(\frac{\tan\left(\frac{\text{radians}(FOV)}{2}\right)}{Aspect}\right)
@@ -595,12 +595,12 @@ BoundingVolumeIntersection::IntersectionType TestBoundingVolume(const BoundingVo
 - 近平面: $\text{row}_3 + \text{row}_2$
 - 远平面: $\text{row}_3 - \text{row}_2$
 
-标准化处理确保数值稳定性：
+标准化处理确保数值稳定性： 
 $$\vec{n} = \frac{\vec{coefficients}_{xyz}}{|\vec{coefficients}_{xyz}|}, \quad d = \frac{coefficient_w}{|\vec{coefficients}_{xyz}|}$$
 
 **球体测试算法**
 
-基于距离比较的快速判断，时间复杂度 $O(1)$：
+基于距离比较的快速判断，时间复杂度 $O(1)$ ：
 
 ```cpp
 for (each plane P) {
@@ -695,35 +695,40 @@ $$t_2 = \frac{\text{aabb.max}[i] - \text{origin}[i]}{\text{direction}[i]}$$
 
 **球体相交检测**：基于二次方程求解
 
-球方程：$|\vec{p} - \vec{c}|^2 = r^2$
+球方程： 
+$$|\vec{p} - \vec{c}|^2 = r^2$$
 
-射线方程：$\vec{p} = \vec{o} + t\vec{d}$
+射线方程： 
+$$\vec{p} = \vec{o} + t\vec{d}$$
 
-代入得二次方程：$at^2 + bt + c = 0$
+代入得二次方程： 
+$$at^2 + bt + c = 0$$
 
-其中：$a = \vec{d} \cdot \vec{d}$、$b = 2\vec{d} \cdot (\vec{o} - \vec{c})$、$c = (\vec{o} - \vec{c}) \cdot (\vec{o} - \vec{c}) - r^2$$
+其中： 
+$$a = \vec{d} \cdot \vec{d}$$
+$$b = 2\vec{d} \cdot (\vec{o} - \vec{c})$$
+$$c = (\vec{o} - \vec{c}) \cdot (\vec{o} - \vec{c}) - r^2$$
 
 **三角形相交检测**（Möller-Trumbore算法）：高效的单次相交测试
 
-算法核心：
+算法核心： 
 $$\begin{bmatrix}
-t \ u \ v
+t \\ u \\ v
 \end{bmatrix} = \frac{1}{\vec{d} \cdot (\vec{e_1} \times \vec{e_2})}
 \begin{bmatrix}
-\vec{q} \cdot \vec{e_2} \
-\vec{p} \cdot \vec{t} \
+\vec{q} \cdot \vec{e_2} \\
+\vec{p} \cdot \vec{t} \\
 \vec{q} \cdot \vec{d}
 \end{bmatrix}$$
 
-其中：
-
+其中： 
 $$\vec{e_1} = \vec{v_1} - \vec{v_0}$$
 $$\vec{e_2} = \vec{v_2} - \vec{v_0}$$
 $$\vec{p} = \vec{d} \times \vec{e_2}$$
 $$\vec{q} = \vec{t} \times \vec{e_1}$$
 $$\vec{t} = \vec{o} - \vec{v_0}$$
 
-其中：$\vec{v_0},\vec{v_1},\vec{v_2}$分别为三角形第一、二、三个顶点坐标 (Vertex 0,1,2)，$u,v$分别为相对于边$\vec{v_0}\rightarrow\vec{v_1}$和$\vec{v_0}\rightarrow\vec{v_2}$的重心坐标分量。$\vec{o}, t,\vec{d}$为射线$\vec{p} = \vec{o} + t\vec{d}$的三个分量
+其中： $\vec{v_0},\vec{v_1},\vec{v_2}$ 分别为三角形第一、二、三个顶点坐标 (Vertex 0,1,2)， $u,v$ 分别为相对于边 $\vec{v_0}\rightarrow\vec{v_1}$ 和 $\vec{v_0}\rightarrow\vec{v_2}$ 的重心坐标分量。 $\vec{o}, t,\vec{d}$ 为射线 $\vec{p} = \vec{o} + t\vec{d}$ 的三个分量
 
 若$u,v$其中任意一个值为负，则射线和三角形不会相交。否则判定为相交，返回射线
 
