@@ -28,6 +28,12 @@
       5. [Frustum视锥体](#frustum视锥体)
       6. [Ray射线](#ray射线)
       7. [RuntimeTexture运行时纹理对象](#runtimetexture运行时纹理对象)
+   7. [Shader着色器模块](#shader着色器模块)
+      1. [Framebuffer 帧缓冲 \& G-Buffer 几何缓冲](#framebuffer-帧缓冲--g-buffer-几何缓冲)
+      2. [Shader 着色器 \& Shader Cache 着色器缓存机制](#shader-着色器--shader-cache-着色器缓存机制)
+      3. [Unifrom Buffer 统一缓冲区](#unifrom-buffer-统一缓冲区)
+      4. [Shader Storage Buffer 存储缓冲区](#shader-storage-buffer-存储缓冲区)
+      5. [Binding Point Manager 绑定点管理系统](#binding-point-manager-绑定点管理系统)
 ---
 
 ## 整体架构概述
@@ -80,6 +86,7 @@ graph TD
     %% 第三层：依赖Data和最底层
     Material[Material材质] --> Data
     Light[Light光照] --> Data
+    Shader[Shader着色器] --> Data
     
     %% 第四层：依赖Material/Light和SceneCore
     Asset[Asset资产] --> Data
@@ -96,6 +103,7 @@ graph TD
     
     %% 第七层：依赖SceneView
     Renderer[Renderer渲染] --> SceneView
+    Renderer --> Shader
     
     %% 第八层：依赖最底层和Input
     Window[Window窗口] --> Input
@@ -113,8 +121,8 @@ graph TD
     classDef middle fill:#bf360c
     classDef top fill:#9c27b0
     
-    class Input,Data,Core,Event bottom
-    class Command,Material,Light,Asset,SceneCore,SceneGraph,SceneSerializer,SceneView,Renderer,Window middle
+    class Input,Data,Core,Event,Material,Light,Shader bottom
+    class Asset,SceneCore,SceneGraph,SceneSerializer,SceneView,Renderer,Window middle
     class UI,Application top
 ````
 
@@ -125,7 +133,8 @@ graph TD
 | **Application** | 应用生命周期管理 | C++ | 引擎启动/关闭，模块初始化，DEMO场景构建，主循环管理 |
 | **Asset** | 资源管理与缓存 | C++, stb_image, assimp, meshoptimizer | 模型/材质/纹理的加载、缓存、生命周期管理、LOD自动生成 |
 | **Core** | 基础工具库 | C++, spdlog, std::filesystem, stduuid | 文件系统、日志记录、多线程、计时器、UUID生成 |
-| **Data** | 数据封装与着色器管理 | C++, OpenGL, GLM, Shaderc | 几何数据(BV、Mesh)、着色器资源(UBO/SSBO)、实例封装 |
+| **Data** | 数据封装 | C++, GLM | 几何数据(BV、Mesh)、实例封装 |
+| **Shader** | 着色器管理 | C++, OpenGL, Shaderc | 着色器资源(FBO/UBO/SSBO)|
 | **Event** | 事件驱动架构核心 | C++, ThreadPool | 事件总线系统，同步/异步/延迟事件分发，模块解耦 |
 | **Input** | 输入系统管理 | C++ | 键盘/鼠标事件处理，输入栈管理，输入上下文抽象 |
 | **Light** | 光照系统 | C++ | 光源实现(点/方向/聚光)，ShadowMap，光源管理器 |
@@ -305,7 +314,7 @@ Event模块作为引擎最底层的基础设施，为整个系统提供了高效
 
 ## Data数据模块
 
-Data数据模块是MiteEngine的数据核心层，基于GLM数学库开发，负责管理所有渲染相关的数据类型、GPU资源和着色器基础设施。作为引擎的第二层基础模块，它为上层渲染系统提供统一的数据抽象和资源管理。
+Data数据模块是MiteEngine的数据核心层，基于GLM数学库开发，负责管理所有渲染相关的数据类型、GPU资源设施。作为引擎的第二层基础模块，它为上层渲染系统提供统一的数据抽象和资源管理。
 
 ### Transform变换
 Transform系统是MiteEngine的数学基础组件，提供统一的3D空间变换管理。作为纯数学工具类，为所有需要空间变换的组件提供底层支持。
@@ -433,12 +442,13 @@ $$
 当宽高比 $Aspect<1.0$ 时（竖屏），先根据缓存的垂直FOV计算水平方向的视场角，再将其作为输入参数交给$\text{perspective}$函数：
 
 $$
-horizontalFOV = 2 \cdot \arctan\left( \frac{\tan\left( \frac{\text{radians}(FOV)}{2} \right)}{Aspect} \right)
+horizontalFOV = 2\cdot\arctan\left(\frac{\tan\left(\frac{\text{radians}(FOV)}{2}\right)}{Aspect}\right)
 $$
 
 $$
-ProjectionMatrix = \text{perspective}\left( horizontalFOV,\ Aspect,\ Near,\ Far \right)
+ProjectionMatrix=\text{perspective}\left(horizontalFOV,Aspect,Near,Far\right)
 $$
+
 其中GLM提供的 $\text{perspective}$ 函数使用垂直方向的视场角 $FOV$（以弧度为单位）。
 
 ### Model模型/Mesh网格体
@@ -529,18 +539,19 @@ classDiagram
 $$r_A = \sum_{i=0}^{2} |\vec{a} \cdot \vec{u}A^i| \cdot e_A^i$$
 $$r_B = \sum{i=0}^{2} |\vec{a} \cdot \vec{u}_B^i| \cdot e_B^i$$
 
-其中 $\vec{u}_A^i$ 和 $\vec{u}_B^i$ 是OBB的轴向向量，$e_A^i$ 和 $e_B^i$ 是半长。
+其中 $\vec{u}_A^i$ 和 $\vec{u}_B^i$ 是OBB的轴向向量， $e_A^i$ 和 $e_B^i$ 是半长。
 
 时间复杂度： $O(1)$ 常数时间，但需要测试最多15个轴
 
 **Sphere的Welzl最小包围球算法**：采用随机化线性时间算法计算点集的最小包围球：
 1. 随机打乱点集顺序
 2. 递归构建支撑集（最多4个点）
-3. 基于支撑集大小计算最小球：1点：零半径球 2点：直径球 3点：外接圆球 4点：四面体外接球
+3. 基于支撑集大小计算最小球：1点：零半径球; 2点：直径球; 3点：外接圆球; 4点：四面体外接球
 
 时间复杂度： 期望 $O(n)$
 
 **四态相交结果**：支持所有的相交检测情况描述
+
 ```cpp
 enum class IntersectionType {
     Outside,    // 完全不相交
@@ -567,7 +578,177 @@ enum class IntersectionType {
 
 ### Frustum视锥体
 
+视锥体系统采用平面集合表示法，通过6个裁剪平面定义可视空间，为所有几何体类型提供统一的可见性判断接口：
+```cpp
+BoundingVolumeIntersection::IntersectionType TestBoundingVolume(const BoundingVolume& volume);
+````
+
+**平面提取算法**
+
+从视图投影矩阵中提取6个裁剪平面，采用行向量组合法：
+
+对于列主序矩阵 $M$，平面系数为：
+- 左平面: $\text{row}_3 + \text{row}_0$
+- 右平面: $\text{row}_3 - \text{row}_0$
+- 下平面: $\text{row}_3 + \text{row}_1$
+- 上平面: $\text{row}_3 - \text{row}_1$
+- 近平面: $\text{row}_3 + \text{row}_2$
+- 远平面: $\text{row}_3 - \text{row}_2$
+
+标准化处理确保数值稳定性：
+$$\vec{n} = \frac{\vec{coefficients}_{xyz}}{|\vec{coefficients}_{xyz}|}, \quad d = \frac{coefficient_w}{|\vec{coefficients}_{xyz}|}$$
+
+**球体测试算法**
+
+基于距离比较的快速判断，时间复杂度 $O(1)$：
+
+```cpp
+for (each plane P) {
+    float distance = P.DistanceToPoint(sphere.center);
+    if (distance < -sphere.radius) return Outside;  // 早期退出
+    if (distance < sphere.radius) intersects = true;
+}
+return intersects ? Intersect : Inside;
+````
+
+**AABB测试算法**
+
+采用极值点优化，避免测试所有8个顶点：
+
+对于平面法线 $\vec{n}$：
+- 正顶点：在 $\vec{n}$ 正方向上的AABB角点
+- 负顶点：在 $\vec{n}$ 负方向上的AABB角点
+
+测试逻辑：
+- 测试负顶点：若 $d_{\text{negative}} < 0$，可能完全在外
+- 验证完全在外：必要时测试8个顶点确认
+- 测试正顶点：若 $d_{\text{positive}} < 0$，标记为相交
+
+```mermaid
+graph LR
+    A[几何体输入] --> B{类型判断}
+    B -->|球体| C[快速距离测试]
+    B -->|AABB| D[极值点优化]
+    B -->|OBB| E[AABB近似]
+    
+    C --> G[早期退出]
+    D --> G
+    E --> G
+    
+    G --> H[结果输出]
+````
+
+**优化技术**
+- 早期退出：发现完全在外立即返回
+- 极值点计算：将AABB测试从 $O(48)$ 优化到 $O(12)$
+- 缓存友好：平面数据连续存储，提高缓存命中率
+- 分支预测：减少测试中的条件分支
+
+视锥体系统通过算法设计和多层优化策略，为实时渲染提供了高效的可见性判断基础，在复杂场景中可实现显著的性能提升。
+
 ### Ray射线
+
+射线系统是MiteEngine的空间查询工具，提供从屏幕到3D空间的射线投射和几何体相交检测功能。主要用于鼠标拾取、碰撞检测(暂未实现)等交互场景。
+
+**射线定义** $\vec{p} = \vec{o} + t\vec{d}$ 
+```cpp
+struct Ray {
+    glm::vec3 origin;     // 射线起点
+    glm::vec3 direction;  // 射线方向（单位向量）
+    float tMin;           // 有效范围最小值
+    float tMax;           // 有效范围最大值
+};
+````
+
+**屏幕射线生成**
+
+```mermaid
+graph LR
+    A[屏幕UV坐标] --> B[NDC坐标转换]
+    B --> C[视图空间变换]
+    C --> D[世界空间变换]
+    D --> E[射线方向计算]
+    E --> F[标准化射线]
+````
+
+- 屏幕UV(0,1) → NDC(1,1): $(2u-1, 1-2v, -1)$
+- 逆投影变换: $\text{viewPos} = P^{-1} \times \text{ndcPos}$
+- 逆视图变换: $\text{worldPos} = V^{-1} \times \text{viewPos}$
+
+**相交检测统一接口设计**
+
+通过提供统一的相交测试接口，支持所有包围体类型，通过类型分发自动选择最优算法，简化使用复杂度。
+```cpp
+bool Ray::Intersects(const BoundingVolume& volume, float& t) const;
+````
+
+**AABB相交检测**（SLAB方法）：基于分离轴定理的高效算法
+1. 对每个坐标轴计算相交区间
+2. 取所有区间的交集
+3. 检查交集是否在有效范围内
+
+对于每个轴 $i$：
+$$t_1 = \frac{\text{aabb.min}[i] - \text{origin}[i]}{\text{direction}[i]}$$
+$$t_2 = \frac{\text{aabb.max}[i] - \text{origin}[i]}{\text{direction}[i]}$$
+
+取 $t_{\text{min}} = \max(t_1, t_2)$ 和 $t_{\text{max}} = \min(t_1, t_2)$ 的区间交集。
+
+**球体相交检测**：基于二次方程求解
+
+球方程：$|\vec{p} - \vec{c}|^2 = r^2$
+
+射线方程：$\vec{p} = \vec{o} + t\vec{d}$
+
+代入得二次方程：$at^2 + bt + c = 0$
+
+其中：$a = \vec{d} \cdot \vec{d}$、$b = 2\vec{d} \cdot (\vec{o} - \vec{c})$、$c = (\vec{o} - \vec{c}) \cdot (\vec{o} - \vec{c}) - r^2$$
+
+**三角形相交检测**（Möller-Trumbore算法）：高效的单次相交测试
+
+算法核心：
+$$\begin{bmatrix}
+t \ u \ v
+\end{bmatrix} = \frac{1}{\vec{d} \cdot (\vec{e_1} \times \vec{e_2})}
+\begin{bmatrix}
+\vec{q} \cdot \vec{e_2} \
+\vec{p} \cdot \vec{t} \
+\vec{q} \cdot \vec{d}
+\end{bmatrix}$$
+
+其中：
+
+$$\vec{e_1} = \vec{v_1} - \vec{v_0}$$
+$$\vec{e_2} = \vec{v_2} - \vec{v_0}$$
+$$\vec{p} = \vec{d} \times \vec{e_2}$$
+$$\vec{q} = \vec{t} \times \vec{e_1}$$
+$$\vec{t} = \vec{o} - \vec{v_0}$$
+
+其中：$\vec{v_0},\vec{v_1},\vec{v_2}$分别为三角形第一、二、三个顶点坐标 (Vertex 0,1,2)，$u,v$分别为相对于边$\vec{v_0}\rightarrow\vec{v_1}$和$\vec{v_0}\rightarrow\vec{v_2}$的重心坐标分量。$\vec{o}, t,\vec{d}$为射线$\vec{p} = \vec{o} + t\vec{d}$的三个分量
+
+若$u,v$其中任意一个值为负，则射线和三角形不会相交。否则判定为相交，返回射线
 
 ### RuntimeTexture运行时纹理对象
 
+运行时纹理系统负责动态创建和管理渲染目标，包括G-Buffer、ShadowMap等非资产纹理。通过事件驱动架构与GPU资源管理解耦，支持实时调整尺寸和类型特定的参数配置。
+
+设计特点
+- 事件驱动创建：通过RuntimeTextureCreateEvent委托GPU设备创建纹理
+- 类型化配置：根据纹理用途（阴影贴图、G-Buffer、光照结果）自动设置过滤模式和环绕方式
+- 动态尺寸调整：支持运行时重设纹理尺寸，适应窗口变化
+- 资源生命周期：RAII模式管理，自动清理GPU资源
+
+## Shader着色器模块
+
+Shader着色器模块是MiteEngine的渲染基础层，基于OpenGL图形API开发，负责管理所有着色器资源和GPU缓冲区。（注意，在文件结构上与Data在同一文件夹下，后续应当考虑拆分）
+
+### Framebuffer 帧缓冲 & G-Buffer 几何缓冲
+
+### Shader 着色器 & Shader Cache 着色器缓存机制
+
+### Unifrom Buffer 统一缓冲区
+
+### Shader Storage Buffer 存储缓冲区
+
+### Binding Point Manager 绑定点管理系统
+
+Shader模块作为引擎的关键渲染基础设施，它为上层渲染管线提供统一的着色器编译、资源绑定和缓冲区管理能力，支撑渲染技术的实现。
