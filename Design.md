@@ -595,7 +595,8 @@ BoundingVolumeIntersection::IntersectionType TestBoundingVolume(const BoundingVo
 - 近平面: $\text{row}_3 + \text{row}_2$
 - 远平面: $\text{row}_3 - \text{row}_2$
 
-标准化处理确保数值稳定性： 
+标准化处理确保数值稳定性：
+
 $$\vec{n} = \frac{\vec{coefficients}_{xyz}}{|\vec{coefficients}_{xyz}|}, \quad d = \frac{coefficient_w}{|\vec{coefficients}_{xyz}|}$$
 
 **球体测试算法**
@@ -712,14 +713,8 @@ $$c = (\vec{o} - \vec{c}) \cdot (\vec{o} - \vec{c}) - r^2$$
 **三角形相交检测**（Möller-Trumbore算法）：高效的单次相交测试
 
 算法核心： 
-$$\begin{bmatrix}
-t \\ u \\ v
-\end{bmatrix} = \frac{1}{\vec{d} \cdot (\vec{e_1} \times \vec{e_2})}
-\begin{bmatrix}
-\vec{q} \cdot \vec{e_2} \\
-\vec{p} \cdot \vec{t} \\
-\vec{q} \cdot \vec{d}
-\end{bmatrix}$$
+
+$$\begin{bmatrix}t \\ u \\ v\end{bmatrix} = \frac{1}{\vec{d} \cdot (\vec{e_1} \times \vec{e_2})}\begin{bmatrix}\vec{q} \cdot \vec{e_2} \\\vec{p} \cdot \vec{t} \\\vec{q} \cdot \vec{d}\end{bmatrix}$$
 
 其中： 
 $$\vec{e_1} = \vec{v_1} - \vec{v_0}$$
