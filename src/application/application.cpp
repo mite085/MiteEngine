@@ -75,8 +75,8 @@ void MiteApplication::LoadDefaultScene()
   // 摆放位置，设定强度
   lightTransformComponent.SetLocalTransform(
       [=](Transform &localtrans) { localtrans.Translate(glm::vec3(3.0f, 5.0f, 1.0f)); });
-  lightComponent.SetIntensity(100); 
-  
+  lightComponent.SetIntensity(100);
+
   // 创建灯光2、实体与对应组件
   std::shared_ptr<Light> pointLight2 = LightManager::Get().CreateLight(LightType::POINT);
   Entity light2Entity = m_SceneCore->CreateEntity("pointLight2");
@@ -93,55 +93,8 @@ void MiteApplication::LoadDefaultScene()
       [=](Transform &localtrans) { localtrans.Translate(glm::vec3(0.0f, 1.5f, 3.0f)); });
   light2Component.SetIntensity(100);
 
-  // 加载模型（启用LOD，按照默认4层LOD参数生成）
-  ModelAssetID plane_model_asset_id = AssetManager::Get().LoadGLTFModel(
-      FileSystem::GetAssetPath("models/car.glb").string(), true, true);
-  std::shared_ptr<ModelAsset> modelAsset = AssetManager::Get().GetModel(plane_model_asset_id);
-
-  // 获取材质列表
-  std::vector<MaterialAssetID> modelMaterialIDs = modelAsset->materialRefs;
-  std::vector<std::shared_ptr<MaterialInstance>> modelMaterials;
-  for (const MaterialAssetID &id : modelMaterialIDs) {
-    std::shared_ptr<MaterialInstance> instance = AssetManager::Get().GetMaterial(id)->instance;
-    modelMaterials.push_back(instance);
-  }
-  Model planeModel(modelAsset->handle, modelAsset->subMeshSection, modelMaterials);
-
-  // 网格体组件与实体创建
-  for (size_t i = 0; i < planeModel.GetSubMeshCount(); ++i) {
-    // 1. 创建网格实体
-    Entity planeSubmesh = m_SceneCore->CreateEntity(planeModel.GetSubMesh(i).GetName());
-
-    // 2. 创建网格组件，设定组件数据
-    MeshComponent &planeMeshComponent = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
-        planeSubmesh);
-    planeMeshComponent.SetMesh(std::make_shared<Mesh>(planeModel.GetSubMesh(i)));
-
-    // 3. 获取材质
-    std::shared_ptr<MaterialInstance> planeMaterial = planeModel.GetSubMaterial(
-        planeModel.GetSubMesh(i).GetMaterialIndex());
-
-    // 4. 创建材质组件
-    MaterialComponent &planeMaterialComponent =
-        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(planeSubmesh);
-    planeMaterialComponent.SetMaterialInstance(planeMaterial);
-
-    // 5. 创建变换组件
-    TransformComponent &planeTransformComponent =
-        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(planeSubmesh);
-
-    // 6. 创建包围盒组件，使用Mesh的包围盒填充AABB包围盒数据
-    BoundingVolumeComponent &planeBoundingVolumeComponent =
-        m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(planeSubmesh);
-    const std::pair<glm::vec3, glm::vec3> boundingbox = planeModel.GetSubMesh(i).GetBoundingBox();
-    BoundingVolume planeBoundingVolume = BoundingVolume::CreateFromPoints(
-        BoundingVolumeType::AABB, {boundingbox.first, boundingbox.second});
-    planeBoundingVolumeComponent.SetVolume(planeBoundingVolume);
-
-    // 7. 创建可见性组件
-    VisibilityComponent &planeVisibilityComponent =
-        m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(planeSubmesh);
-  }
+  // 加载模型
+  LoadModelToScene("models/car.glb");
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
 
@@ -156,6 +109,73 @@ void MiteApplication::LoadDefaultScene()
       [](Transform &localtrans) { localtrans.LookAt(glm::vec3(110.0f, 120.0f, 120.0f)); });
   // 恢复快照
   transformSnap->Apply();
+}
+
+void MiteApplication::LoadModelToScene(const std::string &modelName)
+{
+  // 使用资产管理器加载模型（启用LOD，按照默认4层LOD参数生成）
+  ModelAssetID plane_model_asset_id = AssetManager::Get().LoadGLTFModel(
+      FileSystem::GetAssetPath(modelName).string(), true, true);
+  std::shared_ptr<ModelAsset> modelAsset = AssetManager::Get().GetModel(plane_model_asset_id);
+
+  // 获取材质列表
+  std::vector<MaterialAssetID> modelMaterialIDs = modelAsset->materialRefs;
+  std::vector<std::shared_ptr<MaterialInstance>> modelMaterials;
+  for (const MaterialAssetID &id : modelMaterialIDs) {
+    std::shared_ptr<MaterialInstance> instance = AssetManager::Get().GetMaterial(id)->instance;
+    modelMaterials.push_back(instance);
+  }
+  Model model(modelAsset->handle, modelAsset->subMeshSection, modelMaterials);
+
+  // 模型组件与实体创建
+  Entity modelEntity = m_SceneCore->CreateEntity(modelName);
+  // 创建变换组件
+  TransformComponent &planeTransformComponent =
+      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(modelEntity);
+  // 创建包围盒组件
+  BoundingVolumeComponent &modelBoundingVolumeComponent =
+      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(modelEntity);
+  const std::pair<glm::vec3, glm::vec3> modelBoundingbox = model.GetBoundingBox();
+  BoundingVolume modelBoundingVolume = BoundingVolume::CreateFromPoints(
+      BoundingVolumeType::AABB, {modelBoundingbox.first, modelBoundingbox.second});
+  modelBoundingVolumeComponent.SetVolume(modelBoundingVolume);
+
+  // 网格体组件与实体创建
+  for (size_t i = 0; i < model.GetSubMeshCount(); ++i) {
+    // 1. 创建网格实体，以模型节点作为父节点
+    Entity submeshEntity = m_SceneCore->CreateEntity(model.GetSubMesh(i).GetName(), modelEntity);
+
+    // 2. 创建网格组件，设定组件数据
+    MeshComponent &submeshMeshComponent = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
+        submeshEntity);
+    submeshMeshComponent.SetMesh(std::make_shared<Mesh>(model.GetSubMesh(i)));
+
+    // 3. 获取材质
+    std::shared_ptr<MaterialInstance> submeshMaterial = model.GetSubMaterial(
+        model.GetSubMesh(i).GetMaterialIndex());
+
+    // 4. 创建材质组件
+    MaterialComponent &submeshMaterialComponent =
+        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(submeshEntity);
+    submeshMaterialComponent.SetMaterialInstance(submeshMaterial);
+
+    // 5. 创建变换组件
+    TransformComponent &submeshTransformComponent =
+        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(submeshEntity);
+
+    // 6. 创建包围盒组件，使用Mesh的包围盒填充AABB包围盒数据
+    BoundingVolumeComponent &submeshBoundingVolumeComponent =
+        m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(submeshEntity);
+    const std::pair<glm::vec3, glm::vec3> submeshBoundingbox =
+        model.GetSubMesh(i).GetBoundingBox();
+    BoundingVolume submeshBoundingVolume = BoundingVolume::CreateFromPoints(
+        BoundingVolumeType::AABB, {submeshBoundingbox.first, submeshBoundingbox.second});
+    submeshBoundingVolumeComponent.SetVolume(submeshBoundingVolume);
+
+    // 7. 创建可见性组件
+    VisibilityComponent &submeshVisibilityComponent =
+        m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(submeshEntity);
+  }
 }
 
 void MiteApplication::Initialize()

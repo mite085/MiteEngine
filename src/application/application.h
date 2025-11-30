@@ -26,6 +26,7 @@ class MiteApplication {
   void LoadScene(const std::string &filepath);
   void SaveScene(const std::string &filepath);
   void LoadDefaultScene();
+  void LoadModelToScene(const std::string &filepath);
 
   // 获取子系统
   //Window* GetWindow() const { return m_Window.get(); }
