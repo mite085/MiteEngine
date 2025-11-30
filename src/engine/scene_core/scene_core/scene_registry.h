@@ -24,9 +24,10 @@ class SceneRegistry {
   /**
    * @brief 创建新实体
    * @param name 实体名称
+   * @param entity 目标实体的Parent实体，若为根节点则输入空实体，默认Parent为空实体
    * @return 新创建的实体
    */
-  Entity CreateEntity(const std::string &name = "");
+  Entity CreateEntity(const std::string &name = "", Entity parent = Entity{});
 
   /**
    * @brief 销毁实体及其所有组件

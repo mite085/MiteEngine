@@ -45,7 +45,7 @@ class SceneCore {
    * @param name 实体名称(可选)
    * @return 新创建的实体
    */
-  Entity CreateEntity(const std::string &name = "");
+  Entity CreateEntity(const std::string &name = "", Entity parent = Entity{});
 
   /**
    * @brief 销毁实体

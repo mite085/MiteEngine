@@ -39,9 +39,10 @@ class SceneNodeManager {
   /**
    * @brief 为实体创建场景节点
    * @param entity 目标实体
+   * @param entity 目标实体的Parent，若为根节点则输入空实体，默认Parent为空实体
    * @return 创建的场景节点指针，失败返回nullptr
    */
-  SceneNode *CreateNode(SceneRegistry &registry, Entity entity);
+  SceneNode *CreateNode(SceneRegistry &registry, Entity entity, Entity parent = Entity{});
   /**
    * @brief 销毁实体的场景节点
    * @param entity 目标实体

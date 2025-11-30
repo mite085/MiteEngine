@@ -36,10 +36,10 @@ void SceneGraph::CleanUp()
 }
 
 // ==================== 场景节点生命周期管理 ====================
-SceneNode *SceneGraph::CreateNode(SceneRegistry &registry, Entity entity)
+SceneNode *SceneGraph::CreateNode(SceneRegistry &registry, Entity entity, Entity parent)
 {
   // NodeManager->CreateNode()包含了SpatialPartition的Insert()
-  return m_NodeManager->CreateNode(registry, entity);
+  return m_NodeManager->CreateNode(registry, entity, parent);
 }
 bool SceneGraph::DestroyNode(SceneRegistry &registry, Entity entity)
 {
@@ -198,7 +198,7 @@ void SceneGraph::OnEntityCreated(EntityCreatedEvent &event)
 
   // 将实体加入待创建队列
   if (m_PendingCreateNodes.find(entity) == m_PendingCreateNodes.end()) {
-    m_PendingCreateNodes.insert({entity, {false, false}});
+    m_PendingCreateNodes.insert({entity, {false, false, event.GetParent()}});
   }
 
   // 标记已处理但允许传播（其他系统可能需要知道实体创建）
@@ -260,18 +260,53 @@ void SceneGraph::ProcessScheduledCreationsAndDestruction(SceneRegistry &registry
     m_PendingCreateNodes.erase(entity);
   }
 
-  // 2. 遍历待创建的实体队列
-  std::vector<Entity> toRemove;
-  for (auto [entity, hasComponents] : m_PendingCreateNodes) {
-    if (hasComponents.hasBoundingVolume && hasComponents.hasTransform) {
-      // 符合要求,创建Node并记录进待删除列表
-      CreateNode(registry, entity);
-      toRemove.push_back(entity);
+  // 2. 遍历待创建的实体队列，使用拓扑排序算法，
+  // 按照父子关系顺序创建，父节点的创建时间优先于子节点
+
+  std::unordered_map<Entity, int> inDegree;                  // 入度统计
+  std::unordered_map<Entity, std::vector<Entity>> childMap;  // 子节点映射
+  // 第一步：构建依赖图
+  for (const auto &[entity, props] : m_PendingCreateNodes) {
+    if (props.parent.IsValid() && m_PendingCreateNodes.find(props.parent) != m_PendingCreateNodes.end()) {
+      childMap[props.parent].push_back(entity);
+      inDegree[entity]++;
+    }
+    else {
+      inDegree[entity] = 0;  // 根节点或无父节点
     }
   }
-  // 遍历结束后统一删除
-  for (auto entity : toRemove) {
-    m_PendingCreateNodes.erase(entity);
+  // 第二步：拓扑排序创建
+  std::queue<Entity> createQueue;
+  // 初始化：入度为0的节点入队
+  for (const auto &[entity, props] : m_PendingCreateNodes) {
+    if (inDegree[entity] == 0 && props.hasBoundingVolume && props.hasTransform) {
+      createQueue.push(entity);
+    }
+  }
+  // 第三步：按拓扑顺序创建
+  while (!createQueue.empty()) {
+    Entity entity = createQueue.front();
+    createQueue.pop();
+
+    auto it = m_PendingCreateNodes.find(entity);
+    if (it != m_PendingCreateNodes.end()) {
+      const auto &props = it->second;
+      CreateNode(registry, entity, props.parent);
+      m_PendingCreateNodes.erase(it);
+
+      // 更新子节点的入度
+      for (Entity child : childMap[entity]) {
+        inDegree[child]--;
+        if (inDegree[child] == 0) {
+          auto childIt = m_PendingCreateNodes.find(child);
+          if (childIt != m_PendingCreateNodes.end() && childIt->second.hasBoundingVolume &&
+              childIt->second.hasTransform)
+          {
+            createQueue.push(child);
+          }
+        }
+      }
+    }
   }
 }
 }  // namespace mite

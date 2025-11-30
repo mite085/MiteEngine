@@ -97,9 +97,9 @@ void SceneCore::Clear(bool keepSystems)
   }
 }
 
-Entity SceneCore::CreateEntity(const std::string &name)
+Entity SceneCore::CreateEntity(const std::string &name, Entity parent)
 {
-  auto entity = m_Registry.CreateEntity(name);
+  auto entity = m_Registry.CreateEntity(name, parent);
   ++m_EntityCounter;
 
   return entity;

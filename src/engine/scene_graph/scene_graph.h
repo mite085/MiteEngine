@@ -39,9 +39,10 @@ class SceneGraph {
   /**
    * @brief 为实体创建场景节点
    * @param entity 目标实体
+   * @param entity 目标实体的Parent实体，若为根节点则输入空实体，默认Parent为空实体
    * @return 创建的场景节点指针，失败返回nullptr
    */
-  SceneNode *CreateNode(SceneRegistry &registry, Entity entity);
+  SceneNode *CreateNode(SceneRegistry &registry, Entity entity, Entity parent = Entity{});
   /**
    * @brief 销毁实体的场景节点
    * @param entity 目标实体
@@ -199,11 +200,12 @@ class SceneGraph {
   std::unique_ptr<SpatialPartition> m_SpatialPartition;
 
   
-  struct EntityComponents {
+  struct EntityProperties {
     bool hasTransform = false;
     bool hasBoundingVolume = false;
+    Entity parent = Entity{};
   };
-  std::unordered_map<Entity, EntityComponents> m_PendingCreateNodes;  // 待创建的实体队列
+  std::unordered_map<Entity, EntityProperties> m_PendingCreateNodes;  // 待创建的实体队列
   std::unordered_set<Entity> m_PendingDestroyNodes;                   // 待销毁的实体队列
 
   // 事件订阅

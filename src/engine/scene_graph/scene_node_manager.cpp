@@ -39,7 +39,7 @@ void SceneNodeManager::Clear()
   m_PathCacheDirty = false;
 }
 // ==================== 场景节点生命周期管理 ====================
-SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
+SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity, Entity parent)
 {
   if (!entity.IsValid()) {
     m_Logger->warn("Attempted to create node for invalid entity");
@@ -60,6 +60,11 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity)
 
     // 添加到映射表
     m_EntityToNodeMap[entity] = std::move(node);
+
+    // 若节点存在Parent，则直接处理父子关系
+    if (parent.IsValid() && m_EntityToNodeMap.find(parent) != m_EntityToNodeMap.end()) {
+      SetParent(nodePtr, m_EntityToNodeMap.at(parent).get());
+    }
 
     // 立即更新节点的世界变换和包围盒
     nodePtr->Update(registry, true);  // force update
@@ -276,7 +281,6 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
     m_Logger->warn("Invalid parenting operation: cyclic reference detected");
     return false;
   }
-  std::lock_guard<std::mutex> lock(m_Mutex);
 
   // 从原父节点移除
   SceneNode *oldParent = node->GetParent();

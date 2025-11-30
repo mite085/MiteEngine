@@ -62,13 +62,18 @@ class EntityEvent : public Event {
  */
 class EntityCreatedEvent : public EntityEvent {
  public:
-  EntityCreatedEvent(Entity entity) : EntityEvent(entity) {}
+  EntityCreatedEvent(Entity entity, Entity parent = Entity{}) : EntityEvent(entity), m_Parent(parent) {}
+
+  Entity GetParent() const { return m_Parent; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new EntityCreatedEvent(entity);
+    return new EntityCreatedEvent(entity, m_Parent);
   }
+
+ private:
+  Entity m_Parent;
 };
 /**
  * @class EntityPreDestroyedEvent

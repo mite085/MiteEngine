@@ -17,7 +17,7 @@ ComponentEventPublisher &SceneRegistry::GetEventPublisher()
 
 // 1. 实体管理 ===================================================
 
-Entity SceneRegistry::CreateEntity(const std::string& name)
+Entity SceneRegistry::CreateEntity(const std::string &name, Entity parent)
 {
   // 创建实体
   Entity entity = Entity::CreateEntity(name);
@@ -29,8 +29,8 @@ Entity SceneRegistry::CreateEntity(const std::string& name)
   auto &tag = AddComponent<TagComponent>(entity);
   tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
 
-  // 创建事件并发布
-  EntityCreatedEvent event(entity);
+  // 创建事件并发布（此处不检查Parent的可用性，空实体对应无Parent的根节点语义）
+  EntityCreatedEvent event(entity, parent);
   EventBus::Publish<EntityCreatedEvent>(event);
 
   return entity;
