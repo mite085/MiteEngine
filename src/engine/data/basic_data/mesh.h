@@ -66,9 +66,12 @@ class Mesh {
    * @brief 获取名称
    */
   std::string GetName() const;
+  /**
+   * @brief 获取变换
+   */
+  glm::mat4 GetTransform() const;
 
  private:
-  std::string m_Name;
   ModelGPUHandle m_ModelGPUHandle;  // 父模型资源
   MeshSectionLODChain m_LODChain;  // 包含网格体Section的LODChain对象，可从中提取到Offset信息
 };

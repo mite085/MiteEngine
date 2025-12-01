@@ -9,6 +9,31 @@
 #include <assimp/scene.h>
 
 namespace mite {
+// 辅助函数：将Assimp矩阵转换为glm矩阵
+glm::mat4 AssimpToGlmMatrix(const aiMatrix4x4 &from)
+{
+  glm::mat4 to;
+  // 由于glm是列主序，Assimp也是列主序，可以直接复制
+  to[0][0] = from.a1;
+  to[1][0] = from.a2;
+  to[2][0] = from.a3;
+  to[3][0] = from.a4;
+  to[0][1] = from.b1;
+  to[1][1] = from.b2;
+  to[2][1] = from.b3;
+  to[3][1] = from.b4;
+  to[0][2] = from.c1;
+  to[1][2] = from.c2;
+  to[2][2] = from.c3;
+  to[3][2] = from.c4;
+  to[0][3] = from.d1;
+  to[1][3] = from.d2;
+  to[2][3] = from.d3;
+  to[3][3] = from.d4;
+  return to;
+}
+
+
 ModelAssetID ModelLoader::LoadGLTFModel(ModelCache &modelCache,
                                         MaterialCache &materialCache,
                                         TextureCache &textureCache,
@@ -99,22 +124,56 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
       materialCache, textureCache, scene, path);
   // 2. 处理所有子网格
   std::vector<MeshDataLODChain> subMeshData;
-  for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-    MeshDataLODChain subMeshLodChain{
-        scene->mMeshes[i]->mName.C_Str(), ProcessMesh(scene->mMeshes[i], scene), {}};
-    // 生成多级LOD
-    if (generateLODs) {
-      // lodLevels = {1.0f, 0.5f, 0.25f, 0.1f}，
-      // lodLevels[0] = 1.0f 为原始等级，不执行Simplify处理。
-      // 故此处从1开始计数
-      for (size_t lodLevel = 1; lodLevel < lodLevels.size(); lodLevel++) {
-        MeshData simplifiedMesh = SimplifyMesh(subMeshLodChain.baseSection, lodLevels[lodLevel]);
-        simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel);
-        subMeshLodChain.lodSections.push_back(simplifiedMesh);
+
+  // 创建一个函数来递归遍历场景图
+  std::function<void(aiNode *, glm::mat4)> processNode;
+  processNode = [&](aiNode *node, glm::mat4 parentTransform) {
+    // 计算当前节点的全局变换
+    glm::mat4 nodeTransform = parentTransform * AssimpToGlmMatrix(node->mTransformation);
+
+    // 处理当前节点的所有网格
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+      // 获取正确的网格索引
+      unsigned int meshIndex = node->mMeshes[i];
+      const aiMesh *aiMesh = scene->mMeshes[meshIndex];
+
+      // 创建LOD链，填充属性
+      MeshDataLODChain subMeshLodChain;
+      // 名称
+      subMeshLodChain.name = aiMesh->mName.C_Str();
+      // 变换信息
+      subMeshLodChain.transform = nodeTransform;
+      // 顶点布局
+      subMeshLodChain.layout = GenerateVertexLayout(aiMesh);
+      // 关联材质索引
+      subMeshLodChain.materialIndex = aiMesh->mMaterialIndex;
+
+      // 生成零级LOD
+      subMeshLodChain.baseSection = ProcessMesh(aiMesh, scene, subMeshLodChain.layout);
+
+      // 生成多级LOD
+      if (generateLODs) {
+        // lodLevels = {1.0f, 0.5f, 0.25f, 0.1f}，
+        // 其中1.0已完成生成，跳过（从lodLevel = 1开始计数）
+        for (size_t lodLevel = 1; lodLevel < lodLevels.size(); lodLevel++) {
+          MeshData simplifiedMesh = SimplifyMesh(
+              subMeshLodChain.baseSection, lodLevels[lodLevel], subMeshLodChain.layout);
+          simplifiedMesh.lodLevel = static_cast<uint32_t>(lodLevel);
+          subMeshLodChain.lodSections.push_back(simplifiedMesh);
+        }
       }
+      subMeshData.push_back(subMeshLodChain);
     }
-    subMeshData.push_back(subMeshLodChain);
-  }
+
+    // 递归处理子节点
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+      processNode(node->mChildren[i], nodeTransform);
+    }
+  };
+
+  // 从根节点开始遍历
+  processNode(scene->mRootNode, glm::mat4(1.0f));
+
   // 3. 创建模型资产
   auto modelAsset = std::make_shared<ModelAsset>();
   modelAsset->id = ModelAssetID{UUIDGenerator::Generate(path.c_str())};
@@ -145,13 +204,12 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
   }
 }
 
-MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)
+MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene, VertexLayout layout)
 {
   MeshData subMesh;
-  subMesh.layout = GenerateVertexLayout(aiMesh);
 
   // 1. 计算顶点数据总大小
-  const uint32_t vertexSize = subMesh.layout.stride;
+  const uint32_t vertexSize = layout.stride;
   const uint32_t vertexDataSize = aiMesh->mNumVertices * vertexSize;
   subMesh.vertexData.resize(vertexDataSize);
 
@@ -199,14 +257,11 @@ MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene)
     }
   }
 
-  // 4. 关联材质索引
-  subMesh.materialIndex = aiMesh->mMaterialIndex;
-
-  // 5. 计算子网格包围盒
+  // 4. 计算子网格包围盒
   subMesh.boundingBoxMin = glm::vec3(FLT_MAX);
   subMesh.boundingBoxMax = glm::vec3(-FLT_MAX);
   const uint8_t *vPtr = subMesh.vertexData.data();
-  for (size_t i = 0; i < subMesh.vertexData.size(); i += subMesh.layout.stride) {
+  for (size_t i = 0; i < subMesh.vertexData.size(); i += layout.stride) {
     glm::vec3 position;
     memcpy(&position, vPtr + i, sizeof(glm::vec3));
     subMesh.boundingBoxMin = glm::min(subMesh.boundingBoxMin, position);
@@ -264,7 +319,9 @@ VertexLayout ModelLoader::GenerateVertexLayout(const aiMesh *aiMesh)
   return layout;
 }
 
-MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRatio)
+MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh,
+                                   float targetRatio,
+                                   VertexLayout layout)
 {
   MeshData simplifiedMesh = originalMesh;
 
@@ -273,7 +330,7 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
   }
   // 准备meshoptimizer输入数据
   const size_t indexCount = originalMesh.indices.size();
-  const size_t vertexCount = originalMesh.vertexData.size() / originalMesh.layout.stride;
+  const size_t vertexCount = originalMesh.vertexData.size() / layout.stride;
 
   std::vector<unsigned int> indices = originalMesh.indices;
 
@@ -291,7 +348,7 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
       indexCount,
       reinterpret_cast<const float *>(originalMesh.vertexData.data()),
       vertexCount,
-      originalMesh.layout.stride,
+      layout.stride,
       targetIndexCount,
       1);  // Sloppy无target_error输入
 
@@ -304,11 +361,11 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
       remap.data(), simplifiedIndices.data(), simplifiedIndexCount, vertexCount);
 
   // 应用顶点重映射
-  std::vector<uint8_t> simplifiedVertexData(uniqueVertexCount * originalMesh.layout.stride);
+  std::vector<uint8_t> simplifiedVertexData(uniqueVertexCount * layout.stride);
   meshopt_remapVertexBuffer(simplifiedVertexData.data(),
                             originalMesh.vertexData.data(),
                             vertexCount,
-                            originalMesh.layout.stride,
+                            layout.stride,
                             remap.data());
 
   // 重映射索引（相对于自己的顶点数据的相对偏移）
@@ -323,7 +380,7 @@ MeshData ModelLoader::SimplifyMesh(const MeshData &originalMesh, float targetRat
   simplifiedMesh.boundingBoxMin = glm::vec3(FLT_MAX);
   simplifiedMesh.boundingBoxMax = glm::vec3(-FLT_MAX);
   const uint8_t *vPtr = simplifiedMesh.vertexData.data();
-  for (size_t i = 0; i < simplifiedMesh.vertexData.size(); i += simplifiedMesh.layout.stride) {
+  for (size_t i = 0; i < simplifiedMesh.vertexData.size(); i += layout.stride) {
     glm::vec3 position;
     memcpy(&position, vPtr + i, sizeof(glm::vec3));
     simplifiedMesh.boundingBoxMin = glm::min(simplifiedMesh.boundingBoxMin, position);
@@ -363,7 +420,7 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
 
   // 获取layout类型
   if (!subMeshData.empty()) {
-    sourceData->layout = subMeshData[0].baseSection.layout;
+    sourceData->layout = subMeshData[0].layout;
   }
 
   // 2. 合并顶点和索引数据
@@ -415,11 +472,10 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
     MeshSection meshSection = MeshSection{
         vertexOffset,  // 顶点偏移（以顶点计数为单位）
         indexOffset,   // 索引偏移（以索引计数为单位）
-        static_cast<uint32_t>(meshData.vertexData.size() / meshData.layout.stride),
+        static_cast<uint32_t>(meshData.vertexData.size() / sourceData->layout.stride),
         static_cast<uint32_t>(meshData.indices.size()),
         meshData.boundingBoxMin,
         meshData.boundingBoxMax,
-        meshData.materialIndex,
         meshData.lodLevel};
 
     // 更新偏移量
@@ -435,6 +491,12 @@ std::shared_ptr<ModelSourceData> ModelLoader::CreateModelSourceData(
 
     // 传递Name
     sectionLODChain.name = meshLODChain.name;
+
+    // 传递变换参数
+    sectionLODChain.transform = meshLODChain.transform;
+
+    // 传递材质索引
+    sectionLODChain.materialIndex = meshLODChain.materialIndex;
 
     // 处理基础 LOD
     sectionLODChain.baseSection = MergeMeshDataToSourceData(meshLODChain.baseSection);
@@ -479,4 +541,6 @@ ModelAssetID ModelLoader::FindModelByPath(ModelCache &cache, const std::string &
   auto model = cache.Get(searchId);
   return model ? searchId : ModelAssetID{};
 }
+
+
 };  // namespace mite

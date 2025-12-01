@@ -1,8 +1,7 @@
 #include "mesh.h"
 
 namespace mite {
-Mesh::Mesh(ModelGPUHandle modelHandle,
-           const MeshSectionLODChain &lodChain)
+Mesh::Mesh(ModelGPUHandle modelHandle, const MeshSectionLODChain &lodChain)
     : m_ModelGPUHandle(modelHandle), m_LODChain(lodChain)
 {
   // 检查是否为空Mesh
@@ -89,11 +88,16 @@ const std::pair<glm::vec3, glm::vec3> Mesh::GetBoundingBox(uint32_t lodLevel) co
 
 uint32_t Mesh::GetMaterialIndex() const
 {
-  return m_LODChain.baseSection.materialIndex;
+  return m_LODChain.materialIndex;
 }
 
 std::string Mesh::GetName() const
 {
   return m_LODChain.name;
+}
+
+glm::mat4 Mesh::GetTransform() const
+{
+  return m_LODChain.transform;
 }
 };  // namespace mite

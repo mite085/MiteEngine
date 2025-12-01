@@ -75,7 +75,7 @@ void MiteApplication::LoadDefaultScene()
   // 摆放位置，设定强度
   lightTransformComponent.SetLocalTransform(
       [=](Transform &localtrans) { localtrans.Translate(glm::vec3(3.0f, 5.0f, 1.0f)); });
-  lightComponent.SetIntensity(100);
+  lightComponent.SetIntensity(100); 
 
   // 创建灯光2、实体与对应组件
   std::shared_ptr<Light> pointLight2 = LightManager::Get().CreateLight(LightType::POINT);
@@ -94,7 +94,7 @@ void MiteApplication::LoadDefaultScene()
   light2Component.SetIntensity(100);
 
   // 加载模型
-  LoadModelToScene("models/car.glb");
+  LoadModelToScene("models/Chess.glb");
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
 
@@ -161,7 +161,8 @@ void MiteApplication::LoadModelToScene(const std::string &modelName)
 
     // 5. 创建变换组件
     TransformComponent &submeshTransformComponent =
-        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(submeshEntity);
+        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(submeshEntity,
+                                                                    model.GetSubMesh(i).GetTransform());
 
     // 6. 创建包围盒组件，使用Mesh的包围盒填充AABB包围盒数据
     BoundingVolumeComponent &submeshBoundingVolumeComponent =

@@ -43,7 +43,7 @@ class Model {
   /**
    * @brief 根据材质序号查询材质实例
    */
-  std::shared_ptr<MaterialInstance> Model::GetSubMaterial(size_t index) const;
+  std::shared_ptr<MaterialInstance> GetSubMaterial(size_t index) const;
 
   /**
    * 获取模型级包围盒

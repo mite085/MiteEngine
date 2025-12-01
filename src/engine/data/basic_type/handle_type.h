@@ -121,15 +121,17 @@ struct MeshSection {
   uint32_t indexCount;    // Mesh的索引数量
   glm::vec3 bboxMin;      // 网格级包围盒
   glm::vec3 bboxMax;
-  uint32_t materialIndex;  // 材质索引
-  uint32_t lodLevel;       // LOD级别，0表示原始LOD
+
+  uint32_t lodLevel;  // LOD级别，0表示原始LOD
 };
 
 // 子网格 LOD 链结构
 struct MeshSectionLODChain {
-  std::string name;                      // Mesh名称
-  MeshSection baseSection;               // 基础 LOD (level 0)
-  std::vector<MeshSection> lodSections;  // 其他 LOD 级别 (level 1+)
+  std::string name;                       // 网格体名称
+  glm::mat4 transform = glm::mat4(1.0f);  // 变换矩阵
+  uint32_t materialIndex;                 // 材质索引
+  MeshSection baseSection;                // 基础 LOD (level 0)
+  std::vector<MeshSection> lodSections;   // 其他 LOD 级别 (level 1+)
 };
 
 // ------------------------ 模型相关 ------------------------

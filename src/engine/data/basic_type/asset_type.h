@@ -62,16 +62,9 @@ struct TextureAsset {
 
   // Cache所必须的设定
   using AssetIDType = TextureAssetID;
-  TextureAssetID GetID() const
-  {
-    return id;
-  }
-  void SetID(const TextureAssetID &newId)
-  {
-    id = newId;
-  }
+  TextureAssetID GetID() const { return id; }
+  void SetID(const TextureAssetID &newId) { id = newId; }
 };
-
 
 // ------------------------ 模型/网格相关 ------------------------
 
@@ -79,8 +72,6 @@ struct TextureAsset {
 struct MeshData {
   std::vector<uint8_t> vertexData;  // 原始顶点字节流
   std::vector<uint32_t> indices;    // 索引数据
-  VertexLayout layout;              // 顶点结构描述
-  uint32_t materialIndex = 0;       // 关联的材质索引
 
   glm::vec3 boundingBoxMin = glm::vec3(FLT_MAX);  // 子网格局部包围盒
   glm::vec3 boundingBoxMax = glm::vec3(-FLT_MAX);
@@ -88,9 +79,15 @@ struct MeshData {
   uint32_t lodLevel = 0;  // 0表示原始LOD
 };
 
-// 子网格 LOD 链结构
+// 子网格 LOD 链结构，包含了不同LOD级别的公共属性
 struct MeshDataLODChain {
-  std::string name;
+  std::string name;  // 网格体名称
+
+  glm::mat4 transform = glm::mat4(1.0f);  // 变换矩阵
+
+  VertexLayout layout;         // 顶点结构描述
+  uint32_t materialIndex = 0;  // 关联的材质索引
+
   MeshData baseSection;               // 基础 LOD (level 0)
   std::vector<MeshData> lodSections;  // 其他 LOD 级别 (level 1+)
 };
@@ -121,14 +118,8 @@ struct ModelAsset {
 
   // Cache所必须的设定
   using AssetIDType = ModelAssetID;
-  ModelAssetID GetID() const
-  {
-    return id;
-  }
-  void SetID(const ModelAssetID &newId)
-  {
-    id = newId;
-  }
+  ModelAssetID GetID() const { return id; }
+  void SetID(const ModelAssetID &newId) { id = newId; }
 };
 };  // namespace mite
 

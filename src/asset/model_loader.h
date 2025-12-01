@@ -79,13 +79,15 @@ class ModelLoader {
                                         const std::vector<float> &lodLevels);
 
   // 处理Assimp的Mesh数据
-  static MeshData ProcessMesh(const aiMesh *aiMesh, const aiScene *scene);
+  static MeshData ProcessMesh(const aiMesh *aiMesh, const aiScene *scene, VertexLayout layout);
 
   // 处理顶点布局描述（供Renderer模块使用）
   static VertexLayout GenerateVertexLayout(const aiMesh *aiMesh);
 
   // 使用meshoptimizer简化网格
-  static MeshData SimplifyMesh(const MeshData &originalMesh, float targetRatio);
+  static MeshData SimplifyMesh(const MeshData &originalMesh,
+                               float targetRatio,
+                               VertexLayout layout);
 
   // 计算模型的包围盒
   static void CalculateBoundingBox(const std::vector<MeshDataLODChain> &subMeshes,
