@@ -86,12 +86,6 @@ void GizmoOverlay::Render(OverlayContext &context)
   context.cameraTransform.SetLocalMatrix(glm::inverse(viewMatrix));
   context.modelTransform.SetLocalMatrix(modelMatrix);
 
-  // 发布选中物体变换事件（注意，这里是没有Dirty检测的，也就是每帧都会执行更新操作，向SceneGraph塞入Dirty节点）
-  if (context.isModelSelected) {
-    EventBus::Publish<ViewportPickedUpdateEvent>(
-        ViewportPickedUpdateEvent(context.modelTransform));
-  }
-
   // 若鼠标处于viewManipulate区域内，也认为是使用中。
   if (context.mousePos.x > viewManipulatePosition.x &&
       context.mousePos.y > viewManipulatePosition.y &&
@@ -103,6 +97,12 @@ void GizmoOverlay::Render(OverlayContext &context)
   else {
     // 否则交给Imguizmo判断
     m_IsUsing = ImGuizmo::IsUsing();
+  }
+
+  // 若处于using状态，则发布选中物体变换事件
+  if (m_IsUsing) {
+    EventBus::Publish<ViewportPickedUpdateEvent>(
+        ViewportPickedUpdateEvent(context.modelTransform));
   }
 
   // Over逻辑完全由Imguizmo判断

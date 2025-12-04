@@ -59,7 +59,6 @@ void RenderQueue::SortQueue(QueueType queueType)
   }
   // 否则按照排序策略执行
   else {
-
     switch (queue.sortStrategy) {
       case SortStrategy::None:
         // 不排序
