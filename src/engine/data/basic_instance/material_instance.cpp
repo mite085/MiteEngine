@@ -156,14 +156,17 @@ void MaterialInstance::SetOcclusionTexParams(const glm::vec4 &params)
 // ---- 渲染属性设置 ----
 void MaterialInstance::SetAlphaCutoff(float cutoff)
 {
+  m_MaterialAlphaCutoff = cutoff;
   m_MaterialData.renderProperties.x = cutoff;
 }
 void MaterialInstance::SetDoubleSided(bool doubleSided)
 {
+  m_MaterialDoubleSided = doubleSided;
   m_MaterialData.renderProperties.y = doubleSided ? 1.0f : 0.0f;
 }
-void MaterialInstance::SetAlphaMode(int mode)
+void MaterialInstance::SetAlphaMode(AlphaMode mode)
 {
+  m_MaterialAlphaMode = mode;
   m_MaterialData.renderProperties.z = static_cast<float>(mode);
 }
 // ===================== 纹理绑定 =====================

@@ -1,7 +1,6 @@
 #include "render_queue.h"
 
 namespace mite {
-
 RenderQueue::RenderQueue()
 {
   // 设置默认排序策略
@@ -17,19 +16,21 @@ RenderQueue::~RenderQueue()
   ClearAll();
 }
 
-void RenderQueue::AddItem(const RenderableItem &item, QueueType queueType)
+void RenderQueue::AddItem(const RenderableItem &item)
 {
-  QueueData &queue = GetQueueData(queueType);
+  // 确定添加的队列之后添加
+  QueueData &queue = GetQueueData(item.itemType);
   queue.items.push_back(item);
 }
 
-void RenderQueue::AddItems(const std::vector<RenderableItem> &items, QueueType queueType)
+void RenderQueue::AddItems(const std::vector<RenderableItem> &items)
 {
-  QueueData &queue = GetQueueData(queueType);
-  queue.items.insert(queue.items.end(), items.begin(), items.end());
+  for (auto &item : items) {
+    AddItem(item);
+  }
 }
 
-void RenderQueue::ClearQueue(QueueType queueType)
+void RenderQueue::ClearQueue(RenderableItemType queueType)
 {
   QueueData &queue = GetQueueData(queueType);
   queue.items.clear();
@@ -43,13 +44,13 @@ void RenderQueue::ClearAll()
   m_CustomQueue.items.clear();
 }
 
-void RenderQueue::SetSortStrategy(QueueType queueType, SortStrategy strategy)
+void RenderQueue::SetSortStrategy(RenderableItemType queueType, SortStrategy strategy)
 {
   QueueData &queue = GetQueueData(queueType);
   queue.sortStrategy = strategy;
 }
 
-void RenderQueue::SortQueue(QueueType queueType)
+void RenderQueue::SortQueue(RenderableItemType queueType)
 {
   QueueData &queue = GetQueueData(queueType);
 
@@ -96,72 +97,71 @@ void RenderQueue::SortQueue(QueueType queueType)
 
 void RenderQueue::SortAll()
 {
-  SortQueue(QueueType::Opaque);
-  SortQueue(QueueType::Transparent);
-  SortQueue(QueueType::AlphaTest);
-  SortQueue(QueueType::Custom);
+  SortQueue(RenderableItemType::Opaque);
+  SortQueue(RenderableItemType::Transparent);
+  SortQueue(RenderableItemType::AlphaTest);
+  SortQueue(RenderableItemType::Custom);
 }
 
-const std::vector<RenderableItem> &RenderQueue::GetItems(QueueType queueType) const
+const std::vector<RenderableItem> &RenderQueue::GetItems(RenderableItemType queueType) const
 {
   return GetQueueData(queueType).items;
 }
 
-size_t RenderQueue::GetItemCount(QueueType queueType) const
+size_t RenderQueue::GetItemCount(RenderableItemType queueType) const
 {
   return GetQueueData(queueType).items.size();
 }
 
 size_t RenderQueue::GetTotalItemCount() const
 {
-  return m_OpaqueQueue.items.size() + m_TransparentQueue.items.size() + m_AlphaTestQueue.items.size() +
-         m_CustomQueue.items.size();
+  return m_OpaqueQueue.items.size() + m_TransparentQueue.items.size() +
+         m_AlphaTestQueue.items.size() + m_CustomQueue.items.size();
 }
 
 void RenderQueue::SetCustomSortFunction(
-    QueueType queueType,
+    RenderableItemType queueType,
     std::function<bool(const RenderableItem &, const RenderableItem &)> sortFunc)
 {
   QueueData &queue = GetQueueData(queueType);
   queue.customSortFunc = sortFunc;
 }
 
-void RenderQueue::SetQueueVisibility(QueueType queueType, bool visible)
+void RenderQueue::SetQueueVisibility(RenderableItemType queueType, bool visible)
 {
   QueueData &queue = GetQueueData(queueType);
   queue.isVisible = visible;
 }
 
-RenderQueue::QueueData &RenderQueue::GetQueueData(QueueType queueType)
+RenderQueue::QueueData &RenderQueue::GetQueueData(RenderableItemType queueType)
 {
   switch (queueType) {
-    case QueueType::Opaque:
+    case RenderableItemType::Opaque:
       return m_OpaqueQueue;
-    case QueueType::Transparent:
+    case RenderableItemType::Transparent:
       return m_TransparentQueue;
-    case QueueType::AlphaTest:
+    case RenderableItemType::AlphaTest:
       return m_AlphaTestQueue;
-    case QueueType::Custom:
+    case RenderableItemType::Custom:
       return m_CustomQueue;
     default:
       return m_OpaqueQueue;
   }
 }
 
-const RenderQueue::QueueData &RenderQueue::GetQueueData(QueueType queueType) const
+const RenderQueue::QueueData &RenderQueue::GetQueueData(RenderableItemType queueType) const
 {
   switch (queueType) {
-    case QueueType::Opaque:
+    case RenderableItemType::Opaque:
       return m_OpaqueQueue;
-    case QueueType::Transparent:
+    case RenderableItemType::Transparent:
       return m_TransparentQueue;
-    case QueueType::AlphaTest:
+    case RenderableItemType::AlphaTest:
       return m_AlphaTestQueue;
-    case QueueType::Custom:
+    case RenderableItemType::Custom:
       return m_CustomQueue;
     default:
       return m_OpaqueQueue;
   }
 }
-
 }  // namespace mite

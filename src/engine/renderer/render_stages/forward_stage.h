@@ -53,7 +53,7 @@ class ForwardStage : public RenderStage {
   /**
    * @brief 设置渲染状态（根据队列类型）
    */
-  void SetupRenderStateForQueue(RenderQueue::QueueType queueType);
+  void SetupRenderStateForQueue(RenderableItemType queueType);
 
   // ---- 成员变量 ----
   std::shared_ptr<FrameBuffer> m_ForwardFrameBuffer;

@@ -12,15 +12,7 @@ namespace mite {
  */
 class RenderQueue {
  public:
-  /**
-   * @brief 渲染队列类型枚举
-   */
-  enum class QueueType {
-    Opaque,       // 不透明物体队列
-    Transparent,  // 透明物体队列
-    AlphaTest,    // Alpha测试物体队列
-    Custom        // 自定义队列（预留）
-  };
+
 
   /**
    * @brief 排序策略枚举
@@ -48,20 +40,20 @@ class RenderQueue {
    * @param item 渲染项
    * @param queueType 队列类型
    */
-  void AddItem(const RenderableItem &item, QueueType queueType = QueueType::Opaque);
+  void AddItem(const RenderableItem &item);
 
   /**
    * @brief 批量添加渲染项
    * @param items 渲染项列表
    * @param queueType 队列类型
    */
-  void AddItems(const std::vector<RenderableItem> &items, QueueType queueType = QueueType::Opaque);
+  void AddItems(const std::vector<RenderableItem> &items);
 
   /**
    * @brief 清空指定队列
    * @param queueType 队列类型
    */
-  void ClearQueue(QueueType queueType);
+  void ClearQueue(RenderableItemType queueType);
 
   /**
    * @brief 清空所有队列
@@ -74,13 +66,13 @@ class RenderQueue {
    * @param queueType 队列类型
    * @param strategy 排序策略
    */
-  void SetSortStrategy(QueueType queueType, SortStrategy strategy);
+  void SetSortStrategy(RenderableItemType queueType, SortStrategy strategy);
 
   /**
    * @brief 对指定队列进行排序
    * @param queueType 队列类型
    */
-  void SortQueue(QueueType queueType);
+  void SortQueue(RenderableItemType queueType);
 
   /**
    * @brief 对所有队列进行排序
@@ -93,14 +85,14 @@ class RenderQueue {
    * @param queueType 队列类型
    * @return 渲染项列表的常量引用
    */
-  const std::vector<RenderableItem> &GetItems(QueueType queueType) const;
+  const std::vector<RenderableItem> &GetItems(RenderableItemType queueType) const;
 
   /**
    * @brief 获取指定队列的渲染项数量
    * @param queueType 队列类型
    * @return 队列中的项数
    */
-  size_t GetItemCount(QueueType queueType) const;
+  size_t GetItemCount(RenderableItemType queueType) const;
 
   /**
    * @brief 获取所有队列的总渲染项数量
@@ -115,7 +107,7 @@ class RenderQueue {
    * @param sortFunc 自定义排序函数
    */
   void SetCustomSortFunction(
-      QueueType queueType,
+      RenderableItemType queueType,
       std::function<bool(const RenderableItem &, const RenderableItem &)> sortFunc);
 
   /**
@@ -123,7 +115,7 @@ class RenderQueue {
    * @param queueType 队列类型
    * @param visible 是否可见
    */
-  void SetQueueVisibility(QueueType queueType, bool visible);
+  void SetQueueVisibility(RenderableItemType queueType, bool visible);
 
  private:
   /**
@@ -149,14 +141,14 @@ class RenderQueue {
    * @param queueType 队列类型
    * @return 队列数据的引用
    */
-  QueueData &GetQueueData(QueueType queueType);
+  QueueData &GetQueueData(RenderableItemType queueType);
 
   /**
    * @brief 根据队列类型获取对应的队列数据（常量版本）
    * @param queueType 队列类型
    * @return 队列数据的常量引用
    */
-  const QueueData &GetQueueData(QueueType queueType) const;
+  const QueueData &GetQueueData(RenderableItemType queueType) const;
 };
 
 }  // namespace mite

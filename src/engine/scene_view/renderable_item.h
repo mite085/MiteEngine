@@ -8,6 +8,16 @@
 
 namespace mite {
 /**
+ * @brief 可渲染项类型枚举（主要用于RenderQueue分类）
+ */
+enum class RenderableItemType {
+  Opaque,       // 不透明物体队列
+  Transparent,  // 透明物体队列
+  AlphaTest,    // Alpha测试物体队列
+  Custom        // 自定义队列（预留）
+};
+
+/**
  * 可渲染实体的数据结构，用于SceneView向Renderer传递渲染数据
  * 注：仅包含渲染所需的最小字段，未来可扩展（如LOD、骨骼动画等）
  */
@@ -18,14 +28,19 @@ struct RenderableItem {
   std::shared_ptr<MaterialInstance> material;  // 材质实例
 
   // 渲染排序相关字段
-  float distanceToCamera;  // 与摄像机的距离（用于透明物体排序）
-  uint32_t renderLayer;    // 渲染层级（用于自定义渲染顺序）
+  float distanceToCamera;       // 与摄像机的距离（用于透明物体排序）
+  uint32_t renderLayer;         // 渲染层级（用于自定义渲染顺序）
+  RenderableItemType itemType;  // 可渲染项类型（用于区分前向渲染/延迟光照）
 
   /**
    * @brief 默认构造函数
    */
   RenderableItem()
-      : entity(Entity()), worldTransform(Transform()), distanceToCamera(0.0f), renderLayer(0)
+      : entity(Entity()),
+        worldTransform(Transform()),
+        distanceToCamera(0.0f),
+        renderLayer(0),
+        itemType(RenderableItemType::Opaque)
   {
   }
   /**
@@ -34,13 +49,15 @@ struct RenderableItem {
   RenderableItem(Entity ent,
                  const Transform &transform,
                  std::shared_ptr<MeshInstance> mesh,
-                 std::shared_ptr<MaterialInstance> material)
+                 std::shared_ptr<MaterialInstance> material,
+                 RenderableItemType itemType)
       : entity(ent),
         worldTransform(transform),
         mesh(mesh),
         material(material),
         distanceToCamera(0.0f),
-        renderLayer(0)
+        renderLayer(0),
+        itemType(itemType)
   {
   }
 };

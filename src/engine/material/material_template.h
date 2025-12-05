@@ -134,7 +134,7 @@ class MaterialTemplate {
   virtual float GetDefaultNormalScale() const { return 1.0f; }
   virtual float GetDefaultAlphaCutoff() const { return 0.5f; }
   virtual bool GetDefaultDoubleSided() const { return false; }
-  virtual int GetDefaultAlphaMode() const { return 0; }  // ALPHA_MODE_OPAQUE
+  virtual AlphaMode GetDefaultAlphaMode() const { return AlphaMode::OPAQUE; }  // ALPHA_MODE_OPAQUE
 
  protected:
   std::string m_Name = "Unnamed_Material";  // 材质名称（用于调试和UI显示）

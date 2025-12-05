@@ -102,8 +102,8 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     glm::vec3 closestPoint = glm::clamp(camera->GetCameraTransform().GetPosition(),
                                         meshInstance->GetWorldBoundingBox().first,
                                         meshInstance->GetWorldBoundingBox().second);
-    float distanceToCamera = glm::distance(camera->GetCameraTransform().GetPosition()
-                                               ,closestPoint);
+    float distanceToCamera = glm::distance(camera->GetCameraTransform().GetPosition(),
+                                           closestPoint);
 
     // 3. 构建RenderableItem
     RenderableItem item;
@@ -112,6 +112,20 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     item.mesh = meshInstance;
     item.material = material;
     item.distanceToCamera = distanceToCamera;
+
+    // 基于材质参数的透明性判断
+    if (material->GetAlphaMode() == AlphaMode::OPAQUE) {
+      item.itemType = RenderableItemType::Opaque;
+    }
+    else if (material->GetAlphaMode() == AlphaMode::MASK) {
+      item.itemType = RenderableItemType::AlphaTest;
+    }
+    else if (material->GetAlphaMode() == AlphaMode::BLEND) {
+      item.itemType = RenderableItemType::Transparent;
+    }
+    else {
+      item.itemType = RenderableItemType::Opaque; // 默认按照不透明来进行
+    }
 
     // m_Logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
     return item;

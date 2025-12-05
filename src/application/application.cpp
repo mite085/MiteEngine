@@ -94,7 +94,7 @@ void MiteApplication::LoadDefaultScene()
   light2Component.SetIntensity(100);
 
   // 加载模型
-  LoadModelToScene("models/Chess.glb");
+  LoadModelToScene("models/car.glb");
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
 

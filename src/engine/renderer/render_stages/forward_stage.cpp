@@ -124,7 +124,7 @@ void ForwardStage::Shutdown()
 void ForwardStage::RenderOpaqueQueue(RenderContext &context)
 {
   auto renderQueue = context.GetRenderQueue();
-  const auto &items = renderQueue->GetItems(RenderQueue::QueueType::Opaque);
+  const auto &items = renderQueue->GetItems(RenderableItemType::Opaque);
 
   if (items.empty()) {
     m_LastFrameOpaqueCount = 0;
@@ -132,7 +132,7 @@ void ForwardStage::RenderOpaqueQueue(RenderContext &context)
   }
 
   // 设置不透明物体渲染状态
-  SetupRenderStateForQueue(RenderQueue::QueueType::Opaque);
+  SetupRenderStateForQueue(RenderableItemType::Opaque);
 
   // 渲染所有不透明物体
   size_t renderedCount = 0;
@@ -151,7 +151,7 @@ void ForwardStage::RenderOpaqueQueue(RenderContext &context)
 void ForwardStage::RenderAlphaTestQueue(RenderContext &context)
 {
   auto renderQueue = context.GetRenderQueue();
-  const auto &items = renderQueue->GetItems(RenderQueue::QueueType::AlphaTest);
+  const auto &items = renderQueue->GetItems(RenderableItemType::AlphaTest);
 
   if (items.empty()) {
     m_LastFrameAlphaTestCount = 0;
@@ -159,7 +159,7 @@ void ForwardStage::RenderAlphaTestQueue(RenderContext &context)
   }
 
   // 设置Alpha测试物体渲染状态
-  SetupRenderStateForQueue(RenderQueue::QueueType::AlphaTest);
+  SetupRenderStateForQueue(RenderableItemType::AlphaTest);
 
   // 渲染所有Alpha测试物体
   size_t renderedCount = 0;
@@ -178,7 +178,7 @@ void ForwardStage::RenderAlphaTestQueue(RenderContext &context)
 void ForwardStage::RenderTransparentQueue(RenderContext &context)
 {
   auto renderQueue = context.GetRenderQueue();
-  const auto &items = renderQueue->GetItems(RenderQueue::QueueType::Transparent);
+  const auto &items = renderQueue->GetItems(RenderableItemType::Transparent);
 
   if (items.empty()) {
     m_LastFrameTransparentCount = 0;
@@ -186,7 +186,7 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
   }
 
   // 设置透明物体渲染状态
-  SetupRenderStateForQueue(RenderQueue::QueueType::Transparent);
+  SetupRenderStateForQueue(RenderableItemType::Transparent);
 
   // 渲染所有透明物体（可按距离排序优化）
   size_t renderedCount = 0;
@@ -205,7 +205,7 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
 void ForwardStage::RenderCustomQueue(RenderContext &context)
 {
   auto renderQueue = context.GetRenderQueue();
-  const auto &items = renderQueue->GetItems(RenderQueue::QueueType::Custom);
+  const auto &items = renderQueue->GetItems(RenderableItemType::Custom);
 
   if (items.empty()) {
     m_LastFrameCustomCount = 0;
@@ -213,7 +213,7 @@ void ForwardStage::RenderCustomQueue(RenderContext &context)
   }
 
   // 设置自定义物体渲染状态
-  SetupRenderStateForQueue(RenderQueue::QueueType::Custom);
+  SetupRenderStateForQueue(RenderableItemType::Custom);
 
   // 渲染所有自定义物体
   size_t renderedCount = 0;
@@ -246,20 +246,20 @@ bool ForwardStage::ValidateRenderableItem(const RenderableItem &item) const
   return true;
 }
 
-void ForwardStage::SetupRenderStateForQueue(RenderQueue::QueueType queueType)
+void ForwardStage::SetupRenderStateForQueue(RenderableItemType queueType)
 {
   // 根据队列类型设置渲染状态
   switch (queueType) {
-    case RenderQueue::QueueType::Opaque:
+    case RenderableItemType::Opaque:
       RenderCommand::Get().SetRenderState(m_OpaqueState);
       break;
-    case RenderQueue::QueueType::AlphaTest:
+    case RenderableItemType::AlphaTest:
       RenderCommand::Get().SetRenderState(m_AlphaTestState);
       break;
-    case RenderQueue::QueueType::Transparent:
+    case RenderableItemType::Transparent:
       RenderCommand::Get().SetRenderState(m_TransparentState);
       break;
-    case RenderQueue::QueueType::Custom:
+    case RenderableItemType::Custom:
       RenderCommand::Get().SetRenderState(m_CustomState);
       break;
     default:

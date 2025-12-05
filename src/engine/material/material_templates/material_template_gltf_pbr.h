@@ -41,7 +41,7 @@ class GLTFPBRMaterialTemplate : public MaterialTemplate {
   float GetDefaultNormalScale() const override { return m_DefaultNormalScale; }
   float GetDefaultAlphaCutoff() const override { return m_DefaultAlphaCutoff; }
   bool GetDefaultDoubleSided() const override { return m_DefaultDoubleSided; }
-  int GetDefaultAlphaMode() const override { return static_cast<int>(m_DefaultAlphaMode); }
+  AlphaMode GetDefaultAlphaMode() const override { return m_DefaultAlphaMode; }
 
  private:
   // ---- GLTF特定默认参数 ----

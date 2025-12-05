@@ -334,7 +334,7 @@ void ShadowMapStage::RenderDirectionalShadowMap(
       BindShadowRenderContext(lightIdx, cascadeIdx, 0, 0);
       // 渲染场景到当前级联
       RenderSceneToShadowMap(context,
-                             context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
+                             context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
@@ -361,7 +361,7 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
       RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
       BindShadowRenderContext(lightIdx, 0, faceIdx, 1);
       RenderSceneToShadowMap(context,
-                             context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
+                             context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
@@ -390,7 +390,7 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
     BindShadowRenderContext(lightIdx, 0, 0, 2);  // 类型2=聚光灯
     // 渲染场景几何体
     RenderSceneToShadowMap(context,
-                           context.GetRenderQueue()->GetItems(RenderQueue::QueueType::Opaque));
+                           context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
   }
   RenderCommand::Get().UnbindFrameBuffer();
   m_Logger->debug("Rendered spot shadow maps for {} lights", spotLights.size());

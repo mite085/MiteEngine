@@ -119,7 +119,7 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
     return;
   }
 
-  const auto &items = renderQueue->GetItems(RenderQueue::QueueType::Opaque);
+  const auto &items = renderQueue->GetItems(RenderableItemType::Opaque);
   if (items.empty()) {
     return;
   }
@@ -164,7 +164,7 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
     return;
   }
 
-  const auto &items = renderQueue->GetItems(RenderQueue::QueueType::AlphaTest);
+  const auto &items = renderQueue->GetItems(RenderableItemType::AlphaTest);
   if (items.empty()) {
     return;
   }

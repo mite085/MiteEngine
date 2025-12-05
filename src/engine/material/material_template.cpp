@@ -205,6 +205,11 @@ void MaterialTemplate::InitializeMaterialInstance(std::shared_ptr<MaterialInstan
   MaterialUniformBuffer materialData;
   FillMaterialDataFromSource(materialData, sourceData);
 
+  // 填充渲染属性
+  instance->SetAlphaCutoff(sourceData.alphaCutoff);
+  instance->SetAlphaMode(sourceData.alphaMode);
+  instance->SetDoubleSided(sourceData.doubleSided);
+
   // 获取材质数据引用并更新
   MaterialUniformBuffer &instanceData = instance->GetMaterialData();
   instanceData = materialData;

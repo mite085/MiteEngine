@@ -25,7 +25,7 @@ using ExternalTextureBindFunc = std::function<void(ExternalTextureType, TextureG
  */
 class MaterialInstance {
  public:
-  explicit MaterialInstance() = default;
+  MaterialInstance() = default;
   ~MaterialInstance() = default;
 
   // ===================== UBO管理 =====================
@@ -133,11 +133,11 @@ class MaterialInstance {
 
   // ---- 渲染属性设置 ----
   void SetAlphaCutoff(float cutoff);
-  float GetAlphaCutoff() const { return m_MaterialData.renderProperties.x; }
+  float GetAlphaCutoff() const { return m_MaterialAlphaCutoff; }
   void SetDoubleSided(bool doubleSided);
-  bool IsDoubleSided() const { return m_MaterialData.renderProperties.y > 0.0f; }
-  void SetAlphaMode(int mode);  // ALPHA_MODE_OPAQUE, ALPHA_MODE_MASK, ALPHA_MODE_BLEND
-  int GetAlphaMode() const { return static_cast<int>(m_MaterialData.renderProperties.z); }
+  bool IsDoubleSided() const { return m_MaterialDoubleSided; }
+  void SetAlphaMode(AlphaMode mode);  // 不透明OPAQUE = 0, 遮罩ALPHA_MODE_MASK = 1, 混合ALPHA_MODE_BLEND = 2
+  AlphaMode GetAlphaMode() const { return m_MaterialAlphaMode; }
 
   // ===================== 纹理绑定 =====================
   /**
@@ -166,6 +166,10 @@ class MaterialInstance {
   std::string m_Name = "";
   std::shared_ptr<ShaderUBO> m_UBO;      // 关联的UBO对象
   MaterialUniformBuffer m_MaterialData;  // 材质参数数据
+
+  AlphaMode m_MaterialAlphaMode = AlphaMode::OPAQUE; // 渲染属性
+  float m_MaterialAlphaCutoff = 0.5f;
+  bool m_MaterialDoubleSided = false;
 
   // 纹理存储（使用预定义的绑定点）
   // 注意：仅外部纹理，ShadowMap和Gbuffer等内部纹理不使用此接口
