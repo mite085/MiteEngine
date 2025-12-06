@@ -332,9 +332,11 @@ void ShadowMapStage::RenderDirectionalShadowMap(
 
       // 绑定阴影渲染上下文
       BindShadowRenderContext(lightIdx, cascadeIdx, 0, 0);
-      // 渲染场景到当前级联
+      // 渲染场景到当前级联（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
       RenderSceneToShadowMap(context,
                              context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
+      RenderSceneToShadowMap(context,
+                             context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
@@ -360,8 +362,11 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
       RenderCommand::Get().BindFramebufferDepthCubeFace(m_PointShadowFBO, lightIdx, faceIdx);
       RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
       BindShadowRenderContext(lightIdx, 0, faceIdx, 1);
+      // 渲染场景到当前立方体贴图的面（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
       RenderSceneToShadowMap(context,
                              context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
+      RenderSceneToShadowMap(context,
+                             context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
@@ -388,9 +393,11 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
 
     // 绑定阴影渲染上下文
     BindShadowRenderContext(lightIdx, 0, 0, 2);  // 类型2=聚光灯
-    // 渲染场景几何体
+    // 渲染场景几何体（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
     RenderSceneToShadowMap(context,
                            context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
+    RenderSceneToShadowMap(context,
+                           context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
   }
   RenderCommand::Get().UnbindFrameBuffer();
   m_Logger->debug("Rendered spot shadow maps for {} lights", spotLights.size());

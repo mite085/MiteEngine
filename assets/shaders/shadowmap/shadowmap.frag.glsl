@@ -4,13 +4,56 @@
 // 输入从顶点着色器传递的数据
 in VS_OUT {
     layout(location = 0) vec4 worldPosition;          // 世界坐标
+    layout(location = 1) vec2 texCoord;         // 纹理坐标
 } fs_in;
 
 #include "../common/uniforms.glsl"
 #include "../common/lights_ssbo.glsl"
 
+
+// Alpha Test函数 - 返回true表示通过，false表示丢弃
+bool performAlphaTest() {
+    // 获取Alpha模式
+    uint alphaMode = uint(u_Material.renderProperties.z);
+    
+    // OPAQUE模式：总是通过
+    if (alphaMode == ALPHA_MODE_OPAQUE) {
+        return true;
+    }
+    
+    // BLEND模式：完全丢弃（返回false）
+    if (alphaMode == ALPHA_MODE_BLEND) {
+        return false;
+    }
+    
+    // MASK模式：进行Alpha Test
+    if (alphaMode == ALPHA_MODE_MASK) {
+        // 采样基础色
+        vec4 baseColor = u_Material.baseColor;
+        
+        // 如果有纹理，采样纹理
+        if (u_Material.textureCNMROFlags.x > 0.5) {
+            vec2 uv = fs_in.texCoord * u_Material.baseColorTexParams.xy 
+                    + u_Material.baseColorTexParams.zw;
+            baseColor *= texture(u_BaseColorTexture, uv);
+        }
+        
+        // Alpha Test：小于阈值则丢弃
+        float alphaCutoff = u_Material.renderProperties.x;
+        return baseColor.a >= alphaCutoff;
+    }
+    
+    // 默认通过
+    return true;
+}
+
 void main()
 {
+    // 执行Alpha Test
+    if (!performAlphaTest()) {
+        discard;
+    }
+
     // 光源类型
     int shadowMapType = u_ShadowContext.shadowRenderContext.w;
     int lightIndex = u_ShadowContext.shadowRenderContext.x;
