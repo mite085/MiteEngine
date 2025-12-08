@@ -709,8 +709,9 @@ void OpenGLDevice::OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEv
 
 void OpenGLDevice::InitializeDefaultTextures()
 {
-  // 创建1x1白色纹理作为通用默认纹理
-  m_WhiteTexture = CreateDefaultTexture();
+  // 创建1x1白色/黑色纹理作为通用默认纹理
+  m_WhiteTexture = CreateWhite1x1Texture();
+  m_BlackTexture = CreateBlack1x1Texture();
 
   m_Logger->info("Initialized default textures");
 }
@@ -720,9 +721,13 @@ void OpenGLDevice::CleanupDefaultTextures()
     glDeleteTextures(1, &m_WhiteTexture);
     m_WhiteTexture = 0;
   }
+  if (m_BlackTexture != 0) {
+    glDeleteTextures(1, &m_BlackTexture);
+    m_BlackTexture = 0;
+  }
   m_Logger->debug("Cleaned up default textures");
 }
-GLuint OpenGLDevice::CreateDefaultTexture()
+GLuint OpenGLDevice::CreateWhite1x1Texture()
 {
   GLuint textureId;
   glGenTextures(1, &textureId);
@@ -731,6 +736,27 @@ GLuint OpenGLDevice::CreateDefaultTexture()
   // 1x1 白色像素
   unsigned char whitePixel[] = {255, 255, 255, 255};
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whitePixel);
+
+  // 设置合理的默认参数
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return textureId;
+}
+
+GLuint OpenGLDevice::CreateBlack1x1Texture()
+{
+  GLuint textureId;
+  glGenTextures(1, &textureId);
+  glBindTexture(GL_TEXTURE_2D, textureId);
+
+  // 1x1 白色像素
+  unsigned char blackPixel[] = {0, 0, 0, 255};
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, blackPixel);
 
   // 设置合理的默认参数
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

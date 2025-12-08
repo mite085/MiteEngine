@@ -72,7 +72,8 @@ class OpenGLDevice : public RenderDevice {
   // ---- 默认纹理管理 ----
   void InitializeDefaultTextures();
   void CleanupDefaultTextures();
-  GLuint CreateDefaultTexture();
+  GLuint CreateWhite1x1Texture();
+  GLuint CreateBlack1x1Texture();
 
   // ---- 辅助方法 ----
   void SetVertexAttributes(const VertexLayout &layout);
@@ -97,6 +98,7 @@ class OpenGLDevice : public RenderDevice {
 
   // 默认纹理
   GLuint m_WhiteTexture = 0;  // 1x1 白色纹理
+  GLuint m_BlackTexture = 0;  // 1x1 黑色纹理
 
   // 日志系统
   Logger m_Logger;
