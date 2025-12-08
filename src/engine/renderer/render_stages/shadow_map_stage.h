@@ -23,7 +23,7 @@ class ShadowMapStage : public RenderStage {
   ~ShadowMapStage() override;
 
   // ---- 生命周期管理 ----
-  void Initialize() override;
+  void Initialize(RenderContext &context) override;
   void Execute(RenderContext &context) override;
   void Shutdown() override;
 

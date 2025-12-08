@@ -17,14 +17,20 @@ ShadowMapStage::~ShadowMapStage()
 
 void ShadowMapStage::SetShadowQuality(ShadowQuality quality)
 {
-  if (m_ShadowQuality != quality) {
+  if (m_ShadowQuality != quality && m_Initialized) {
+    
+    // 清理已创建资源
+    Shutdown();
+
     m_ShadowQuality = quality;
 
-    // 重新创建阴影贴图
-    if (m_Initialized) {
-      Shutdown();
-      Initialize();
-    }
+    // 重新创建光源的阴影贴图
+    CreateDirectionalShadowMap();
+    CreatePointShadowMap();
+    CreateSpotShadowMap();
+
+    // 创建对应的ShadowRenderContextUBO对象
+    CreateShadowRenderContextUniformBuffer();
 
     m_Logger->info("Shadow quality set to {}", static_cast<int>(quality));
   }
@@ -43,7 +49,7 @@ void ShadowMapStage::SetShadowBias(float bias, float normalBias)
   m_Logger->info("Shadow bias set to {}, normal bias: {}", bias, normalBias);
 }
 
-void ShadowMapStage::Initialize()
+void ShadowMapStage::Initialize(RenderContext &context)
 {
   if (m_Initialized) {
     m_Logger->warn("ShadowMapStage already initialized");
@@ -141,13 +147,8 @@ void ShadowMapStage::Shutdown()
   m_PointlightUBOs.fill(nullptr);
   m_SpotlightUBOs.fill(nullptr);
 
-  // 清理其他状态为默认值
-  m_ShadowRenderState = nullptr;
+  // 标记为未初始化
   m_Initialized = false;
-  m_ShadowQuality = ShadowQuality::MEDIUM;
-  m_ShadowFilter = ShadowFilter::PCF;
-  m_ShadowBias = 0.005f;
-  m_NormalBias = 0.01f;
   m_Logger->info("ShadowMapStage shutdown completed");
 }
 

@@ -20,7 +20,7 @@ class RenderStage {
   virtual ~RenderStage() = default;
 
   // ---- 生命周期管理 ----
-  virtual void Initialize() = 0;
+  virtual void Initialize(RenderContext& context) = 0;
   virtual void Execute(RenderContext &context) = 0;
   virtual void Shutdown() = 0;
 
