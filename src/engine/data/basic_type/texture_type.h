@@ -96,11 +96,15 @@ enum class RuntimeTextureType {
   ShadowMap_Spot,         // 聚光灯(单面阴影贴图)
   ShadowMap_Area,         // 面光源(平面阴影贴图)
 
-  // 光照着色相关
+  // 延迟光照着色相关（仅包含不透明物体和AlphaMask遮罩测试物体）
   Lighting_Diffuse,   // 漫反射着色结果(暂未启用)
   Lighting_Specular,  // 镜面反射着色结果(暂未启用)
   Lighting_Ambient,   // 环境光结果(暂未启用)
   Lighting_Combined,  // 综合光照结果
+
+  // 前向渲染相关（在Lighting_Combined基础上，添加了半透明的Blend物体）
+  Forward_Transparent,	// 仅包含透明物体的结果
+  Forward_Blend,		// 混合之后的结果
 
   // 后期处理相关(暂未启用)
   // PostProcess_Bloom,

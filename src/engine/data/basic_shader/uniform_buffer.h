@@ -36,6 +36,8 @@ struct ShaderBufferResourceNames {
   static constexpr const char *LIGHTING_SPECULAR = "u_LightingSpecular";
   static constexpr const char *LIGHTING_COMBINED = "u_LightingCombined";
   static constexpr const char *LIGHTING_AMBIENT = "u_LightingAmbient";
+  static constexpr const char *FORWARD_TRANSPARENT = "u_ForwardTransparent";
+  static constexpr const char *FORWARD_BLEND = "u_ForwardBlend";
   // static constexpr const char *POSTPROCESS_BLOOM = "u_PostProcessBloom";
   // static constexpr const char *POSTPROCESS_TONE_MAPPED = "u_PostProcessToneMapped";
   // static constexpr const char *POSTPROCESS_FINAL = "u_PostProcessFinal";
