@@ -1,4 +1,4 @@
-// 前向渲染片段着色器 - 用于透明物体和特殊渲染
+// 前向渲染片段着色器 - 专用于半透明物体渲染
 #version 460 core
 
 // 输入从顶点着色器传递的数据
@@ -8,11 +8,11 @@ in VS_OUT {
     layout(location = 2) vec3 tangent;           // 世界空间切线
     layout(location = 3) vec3 bitangent;         // 世界空间副切线
     layout(location = 4) vec2 texCoord;          // 纹理坐标
-    layout(location = 5) vec4 clipPos;           // 裁剪空间位置
+    // layout(location = 5) vec4 clipPos;           // 半透明物体不写入深度，无需传递裁剪空间位置
 } fs_in;
 
-// 最终输出颜色
-layout(location = 0) out vec4 o_FinalColor;
+// 最终输出颜色（用于Alpha混合）
+layout(location = 0) out vec4 o_ForwardColor;
 
 // 包含必要的头文件
 #include "../common/common.glsl"
@@ -20,6 +20,7 @@ layout(location = 0) out vec4 o_FinalColor;
 #include "../common/lights_ssbo.glsl"
 #include "../common/math.glsl"
 #include "../lighting/lighting_calculation.glsl"
+#include "../lighting/shadow_calculation.glsl"
 #include "../lighting/ambient_calculation.glsl"
 #include "../brdf/brdf_dispatcher.glsl"
 
@@ -86,7 +87,7 @@ vec3 calculateNormal(vec2 texCoord)
         }
     }
     
-    // 双面渲染处理
+    // 双面渲染处理（半透明物体通常需要双面渲染）
     if (u_Material.renderProperties.y > 0.5) {
         vec3 viewDir = normalize(u_Camera.cameraPosition - fs_in.worldPos);
         if (dot(normal, viewDir) < 0.0) {
@@ -179,117 +180,92 @@ BRDFInput prepareBRDFInput()
     brdfInput.occlusion = sampleOcclusion(fs_in.texCoord);
     brdfInput.emission = sampleEmission(fs_in.texCoord);
     
-    // 材质类型（前向渲染主要使用PBR）
-    brdfInput.materialType = MATERIAL_TYPE_PBR;
+    // 材质类型（复用GBuffer的材质类型定义）
+    brdfInput.materialType = uint(round(u_Material.materialInfo.x));
     
     return brdfInput;
 }
 
 /**
- * @brief 计算单个光源的贡献
- * @param lightIndex 光源索引
- * @param brdfInput BRDF输入参数
- * @return 光照贡献
+ * @brief 准备光源输入参数（复用deferred_lighting的逻辑）
  */
-vec3 calculateLightContribution(uint lightIndex, BRDFInput brdfInput)
+BRDFLightInput prepareLightInput(uint lightIndex, BRDFInput brdfInput)
 {
-    // 准备光源输入
     BRDFLightInput lightInput;
     
+    // 获取光源数据
     GPULightData light = u_Lights.lights[lightIndex];
+    
+    // 基础光源属性（复用deferred_lighting的函数）
     lightInput.lightColor = CalculateLightColor(lightIndex);
     lightInput.lightDirection = CalculateLightDirection(lightIndex, brdfInput.worldPosition);
     lightInput.attenuation = CalculateLightAttenuation(lightIndex, brdfInput.worldPosition, brdfInput.normal);
-    lightInput.visibility = 1.0; // 前向渲染暂时不考虑阴影
+    
+    // 阴影可见性（半透明物体接收阴影）
+    lightInput.visibility = CalculateShadowVisibility(lightIndex, brdfInput.worldPosition, brdfInput.normal);
+    
+    // 光源类型特定数据
     lightInput.lightType = uint(light.type);
     lightInput.lightPosition = light.position;
     lightInput.lightRange = GetLightRange(lightIndex);
     
-    // 检查光源是否可见
-    if (!IsLightVisible(lightIndex, brdfInput.worldPosition, brdfInput.normal)) {
-        return vec3(0.0);
-    }
-    
-    // 计算PBR光照
-    BRDFResult result = dispatchBRDF(brdfInput, lightInput);
-    
-    return result.diffuse + result.specular;
+    return lightInput;
 }
 
 /**
- * @brief Alpha测试
- * @param alpha 透明度值
+ * @brief 计算单个光源的贡献（复用deferred_lighting的逻辑）
  */
-// void performAlphaTest(float alpha)
-// {
-//     if (u_AlphaMode == ALPHA_MODE_MASK && alpha < u_AlphaCutoff) {
-//         discard;
-//     }
-// }
+vec3 calculateLightContribution(uint lightIndex, BRDFInput brdfInput)
+{
+    // 检查光源是否可见（复用deferred_lighting的函数）
+    if (!IsLightVisible(lightIndex, brdfInput.worldPosition, brdfInput.normal)) {
+        return vec3(0.0);
+    }
+    // 准备光源输入
+    BRDFLightInput lightInput = prepareLightInput(lightIndex, brdfInput);
+    
+    // 如果完全在阴影中，跳过BRDF计算
+    if (lightInput.visibility <= 0.0) {
+        return vec3(0.0);
+    }
+    
+    // 使用BRDF分发器计算光照（完全复用deferred_lighting）
+    BRDFResult result = dispatchBRDF(brdfInput, lightInput);
+    
+    // 应用阴影到光照结果
+    return (result.diffuse + result.specular) * lightInput.visibility;
+}
 
 /**
- * @brief 调试显示函数
- * @param brdfInput BRDF输入参数
- * @return 调试颜色
+ * @brief 计算环境光照贡献（复用deferred_lighting的逻辑）
  */
-// vec3 debugDisplay(BRDFInput brdfInput)
-// {
-//     switch (u_DebugMode) {
-//         case 1: // 显示世界位置
-//             return brdfInput.worldPosition * 0.1 + 0.5;
-            
-//         case 2: // 显示法线
-//             return brdfInput.normal * 0.5 + 0.5;
-            
-//         case 3: // 显示基础颜色
-//             return brdfInput.baseColor;
-            
-//         case 4: // 显示金属度
-//             return vec3(brdfInput.metallic);
-            
-//         case 5: // 显示粗糙度
-//             return vec3(brdfInput.roughness);
-            
-//         case 6: // 显示AO
-//             return vec3(brdfInput.occlusion);
-            
-//         case 7: // 显示自发光
-//             return brdfInput.emission;
-            
-//         case 8: // 显示切线
-//             return fs_in.tangent * 0.5 + 0.5;
-            
-//         case 9: // 显示纹理坐标
-//             return vec3(fs_in.texCoord, 0.0);
-            
-//         default:
-//             return vec3(0.0);
-//     }
-// }
+vec3 calculateAmbientContribution(BRDFInput brdfInput)
+{
+    // 准备环境光照输入
+    BRDFAmbientInput ambientInput = prepareAmbientInputApprox(brdfInput, u_EnvironmentMap);
+    
+    // 使用BRDF分发器计算环境光照
+    BRDFResult result = dispatchAmbientBRDF(brdfInput, ambientInput);
+    
+    // 返回环境光照贡献
+    return result.diffuse + result.specular;
+}
 
 void main()
 {
+    // 采样基础颜色
+    vec4 baseColor = sampleBaseColor(fs_in.texCoord);
+    float alpha = baseColor.a;
+    
     // 准备BRDF输入参数
     BRDFInput brdfInput = prepareBRDFInput();
-    
-    // Alpha测试
-    vec4 baseColor = sampleBaseColor(fs_in.texCoord);
-    // performAlphaTest(baseColor.a);
-    
-    // 调试模式显示
-    // if (u_DebugMode > 0) {
-    //     vec3 debugColor = debugDisplay(brdfInput);
-    //     o_FinalColor = vec4(debugColor, baseColor.a);
-    //     return;
-    // }
     
     // 初始化最终颜色
     vec3 finalColor = vec3(0.0);
     
-    // 计算环境光照
-    BRDFAmbientInput ambientInput = prepareAmbientInputApprox(brdfInput, u_EnvironmentMap);
-    BRDFResult ambientResult = dispatchAmbientBRDF(brdfInput, ambientInput);
-    finalColor += ambientResult.diffuse + ambientResult.specular;
+    // 计算环境光照贡献
+    vec3 ambient = calculateAmbientContribution(brdfInput);
+    finalColor += ambient;
     
     // 计算所有直接光源贡献
     for (uint i = 0u; i < u_Lights.header.lightCount; i++) {
@@ -300,12 +276,10 @@ void main()
     // 添加自发光
     finalColor += brdfInput.emission;
     
-    // 应用色调映射（简单Reinhard）
+    // 应用色调映射（与deferred_lighting保持一致）
     finalColor = finalColor / (finalColor + vec3(1.0));
     
-    // 伽马校正
-    finalColor = pow(finalColor, vec3(1.0/2.2));
-    
-    // 输出最终颜色（支持透明度）
-    o_FinalColor = vec4(finalColor, baseColor.a);
+    // 输出预乘Alpha的颜色
+    // 关键修改：颜色值乘以alpha，实现预乘Alpha
+    o_ForwardColor = vec4(finalColor * alpha, alpha);
 }
