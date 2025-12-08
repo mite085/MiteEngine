@@ -4,37 +4,14 @@
 namespace mite {
 ForwardStage::ForwardStage() : RenderStage("ForwardStage")
 {
-  // 不透明物体状态
-  m_OpaqueState = std::make_shared<OpenGLRenderState>();
-  m_OpaqueState->depthTest = true;
-  m_OpaqueState->depthWrite = true;
-  m_OpaqueState->blend = false;
-  m_OpaqueState->cullFace = true;
-  m_OpaqueState->wireframe = false;
-
-  // Alpha测试物体状态
-  m_AlphaTestState = std::make_shared<OpenGLRenderState>();
-  m_AlphaTestState->depthTest = true;
-  m_AlphaTestState->depthWrite = true;
-  m_AlphaTestState->blend = false;
-  m_AlphaTestState->cullFace = true;
-  m_AlphaTestState->wireframe = false;
-
   // 透明物体状态
   m_TransparentState = std::make_shared<OpenGLRenderState>();
-  m_TransparentState->depthTest = true;
-  m_TransparentState->depthWrite = false;  // 透明物体不写入深度
+  m_TransparentState->depthTest = true;    // 启用深度测试
+  m_TransparentState->depthWrite = false;  // 但不写入深度
   m_TransparentState->blend = true;        // 启用混合
   m_TransparentState->cullFace = true;
   m_TransparentState->wireframe = false;
 
-  // 自定义物体状态（默认与不透明相同）
-  m_CustomState = std::make_shared<OpenGLRenderState>();
-  m_CustomState->depthTest = true;
-  m_CustomState->depthWrite = true;
-  m_CustomState->blend = false;
-  m_CustomState->cullFace = true;
-  m_CustomState->wireframe = false;
   m_Logger->info("ForwardStage initialized with complete render state configurations");
 }
 
@@ -43,13 +20,26 @@ ForwardStage::~ForwardStage()
   m_Logger->info("ForwardStage destroyed");
 }
 
-void ForwardStage::Initialize()
+void ForwardStage::Initialize(RenderContext &context)
 {
   // 创建FrameBuffer规格
   FrameBufferSpec spec;
-  spec.attachments = {
-      {RuntimeTextureType::RenderTarget, TextureFormat::RGBA8},  // 颜色附件
-      {RuntimeTextureType::Depth, TextureFormat::DEPTH_COMPONENT24}};  // 深度附件
+  spec.samples = 1;
+
+  // 颜色附件配置 - 使用HDR格式存储光照结果
+  FrameBufferAttachmentSpec colorSpec;
+  colorSpec.type = RuntimeTextureType::Forward_Transparent;  // 透明物体渲染结果
+  colorSpec.internalFormat = TextureFormat::RGBA16F;       // HDR输出
+  colorSpec.generateMipmaps = false;
+  spec.attachments.push_back(colorSpec);
+
+  // Forward不创建深度附件，而是直接绑定GBuffer的深度附件
+  // 这样才能确保半透明物体的正常绘制
+  //FrameBufferAttachmentSpec depthAttachment;
+  //depthAttachment.type = RuntimeTextureType::Depth;
+  //depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
+  //depthAttachment.generateMipmaps = false;
+  //spec.attachments.push_back(depthAttachment);
 
   // 创建FrameBuffer用于存储数据
   m_ForwardFrameBuffer = std::make_shared<FrameBuffer>(spec);
@@ -97,8 +87,25 @@ void ForwardStage::Execute(RenderContext &context)
                                  static_cast<uint32_t>(glm::max(viewportSize.y, 0.0f)));
   }
 
+  // 绑定G-Buffer的深度附件
+  // （由于FBO的Resize操作会重新Invalidate，且不知道何时Resize，所以需要每帧重新绑定）
+  // （这一步开销应当不是很大，在容忍范围内）
+  // （待后续FBO的Resize操作无需重建全部纹理时，再将这一步放在初始化阶段）
+  auto gbufferDepthTexture = context.GetRenderTarget("GBuffer_DepthAttachment");
+  if (gbufferDepthTexture && gbufferDepthTexture->IsValid()) {
+    m_ForwardFrameBuffer->AttachExternalDepthTexture(gbufferDepthTexture);
+  }
+  else {
+    m_Logger->error("Failed to get GBuffer depth texture for Forward stage");
+    return;
+  }
+
   // 绑定前向渲染的FrameBuffer
   RenderCommand::Get().BindFrameBuffer(m_ForwardFrameBuffer);
+
+  // 清除输出目标（深度附件为复用的GBuffer的，不清理深度Buffer）
+  RenderCommand::Get().Clear(
+      GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
   // 绑定着色器
   RenderCommand::Get().BindShader(forwardShader);
@@ -107,72 +114,29 @@ void ForwardStage::Execute(RenderContext &context)
   RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
   // 按顺序渲染各个队列
-  RenderOpaqueQueue(context);
-  RenderAlphaTestQueue(context);
   RenderTransparentQueue(context);
-  RenderCustomQueue(context);
 
   // 解绑FrameBuffer，恢复默认
   RenderCommand::Get().UnbindFrameBuffer();
+
+  // 将光照输出纹理存储到上下文供后续阶段使用
+  RuntimeTexturePtr forwardTexture = m_ForwardFrameBuffer->GetColorAttachment(0);
+  if (forwardTexture && forwardTexture->IsValid()) {
+    context.SetRenderTarget("Forward_Transparent", forwardTexture);
+    // 发布纹理完成事件
+    RenderCommand::Get().PublishEventRuntimeTextureFinished(forwardTexture, "Forward_Transparent");
+    // m_Logger->trace("Stored deferred lighting output to context");
+  }
+
+  m_Logger->trace("Forward pass completed");
+
+  // 调试专用：当前阶段提交完毕后直接执行
+  RenderCommand::Get().Flush();
 }
 
 void ForwardStage::Shutdown()
 {
   m_Logger->info("ForwardStage shutdown completed");
-}
-
-void ForwardStage::RenderOpaqueQueue(RenderContext &context)
-{
-  auto renderQueue = context.GetRenderQueue();
-  const auto &items = renderQueue->GetItems(RenderableItemType::Opaque);
-
-  if (items.empty()) {
-    m_LastFrameOpaqueCount = 0;
-    return;
-  }
-
-  // 设置不透明物体渲染状态
-  SetupRenderStateForQueue(RenderableItemType::Opaque);
-
-  // 渲染所有不透明物体
-  size_t renderedCount = 0;
-  for (const auto &item : items) {
-    if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().BindMaterialUBO(item.material);
-      RenderCommand::Get().SubmitDrawCall(item.mesh);
-      renderedCount++;
-    }
-  }
-
-  m_LastFrameOpaqueCount = renderedCount;
-  // m_Logger->trace("Rendered {} opaque objects", renderedCount);
-}
-
-void ForwardStage::RenderAlphaTestQueue(RenderContext &context)
-{
-  auto renderQueue = context.GetRenderQueue();
-  const auto &items = renderQueue->GetItems(RenderableItemType::AlphaTest);
-
-  if (items.empty()) {
-    m_LastFrameAlphaTestCount = 0;
-    return;
-  }
-
-  // 设置Alpha测试物体渲染状态
-  SetupRenderStateForQueue(RenderableItemType::AlphaTest);
-
-  // 渲染所有Alpha测试物体
-  size_t renderedCount = 0;
-  for (const auto &item : items) {
-    if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().BindMaterialUBO(item.material);
-      RenderCommand::Get().SubmitDrawCall(item.mesh);
-      renderedCount++;
-    }
-  }
-
-  m_LastFrameAlphaTestCount = renderedCount;
-  m_Logger->trace("Rendered {} alpha-test objects", renderedCount);
 }
 
 void ForwardStage::RenderTransparentQueue(RenderContext &context)
@@ -186,7 +150,7 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
   }
 
   // 设置透明物体渲染状态
-  SetupRenderStateForQueue(RenderableItemType::Transparent);
+  RenderCommand::Get().SetRenderState(m_TransparentState);
 
   // 渲染所有透明物体（可按距离排序优化）
   size_t renderedCount = 0;
@@ -200,33 +164,6 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
 
   m_LastFrameTransparentCount = renderedCount;
   m_Logger->trace("Rendered {} transparent objects", renderedCount);
-}
-
-void ForwardStage::RenderCustomQueue(RenderContext &context)
-{
-  auto renderQueue = context.GetRenderQueue();
-  const auto &items = renderQueue->GetItems(RenderableItemType::Custom);
-
-  if (items.empty()) {
-    m_LastFrameCustomCount = 0;
-    return;
-  }
-
-  // 设置自定义物体渲染状态
-  SetupRenderStateForQueue(RenderableItemType::Custom);
-
-  // 渲染所有自定义物体
-  size_t renderedCount = 0;
-  for (const auto &item : items) {
-    if (ValidateRenderableItem(item)) {
-      RenderCommand::Get().BindMaterialUBO(item.material);
-      RenderCommand::Get().SubmitDrawCall(item.mesh);
-      renderedCount++;
-    }
-  }
-
-  m_LastFrameCustomCount = renderedCount;
-  m_Logger->trace("Rendered {} custom objects", renderedCount);
 }
 
 bool ForwardStage::ValidateRenderableItem(const RenderableItem &item) const
@@ -244,28 +181,5 @@ bool ForwardStage::ValidateRenderableItem(const RenderableItem &item) const
   }
 
   return true;
-}
-
-void ForwardStage::SetupRenderStateForQueue(RenderableItemType queueType)
-{
-  // 根据队列类型设置渲染状态
-  switch (queueType) {
-    case RenderableItemType::Opaque:
-      RenderCommand::Get().SetRenderState(m_OpaqueState);
-      break;
-    case RenderableItemType::AlphaTest:
-      RenderCommand::Get().SetRenderState(m_AlphaTestState);
-      break;
-    case RenderableItemType::Transparent:
-      RenderCommand::Get().SetRenderState(m_TransparentState);
-      break;
-    case RenderableItemType::Custom:
-      RenderCommand::Get().SetRenderState(m_CustomState);
-      break;
-    default:
-      m_Logger->warn("Unknown queue type for render state setup");
-      RenderCommand::Get().SetRenderState(m_OpaqueState);
-      break;
-  }
 }
 }  // namespace mite

@@ -19,56 +19,30 @@ class ForwardStage : public RenderStage {
   ~ForwardStage() override;
 
   // ---- 生命周期管理 ----
-  void Initialize() override;
+  void Initialize(RenderContext &context) override;
   void Execute(RenderContext &context) override;
   void Shutdown() override;
 
  private:
   // ---- 私有方法（接管原OpenGLRenderer的渲染逻辑）----
   /**
-   * @brief 渲染不透明物体队列
-   */
-  void RenderOpaqueQueue(RenderContext &context);
-
-  /**
-   * @brief 渲染Alpha测试物体队列
-   */
-  void RenderAlphaTestQueue(RenderContext &context);
-
-  /**
    * @brief 渲染透明物体队列
    */
   void RenderTransparentQueue(RenderContext &context);
-
-  /**
-   * @brief 渲染自定义物体队列
-   */
-  void RenderCustomQueue(RenderContext &context);
 
   /**
    * @brief 验证渲染项的有效性
    */
   bool ValidateRenderableItem(const RenderableItem &item) const;
 
-  /**
-   * @brief 设置渲染状态（根据队列类型）
-   */
-  void SetupRenderStateForQueue(RenderableItemType queueType);
-
   // ---- 成员变量 ----
   std::shared_ptr<FrameBuffer> m_ForwardFrameBuffer;
 
   // ---- 渲染状态配置 ----
-  std::shared_ptr<RenderState> m_OpaqueState;
-  std::shared_ptr<RenderState> m_AlphaTestState;
   std::shared_ptr<RenderState> m_TransparentState;
-  std::shared_ptr<RenderState> m_CustomState;
 
   // ---- 性能统计 ----
-  size_t m_LastFrameOpaqueCount = 0;
-  size_t m_LastFrameAlphaTestCount = 0;
   size_t m_LastFrameTransparentCount = 0;
-  size_t m_LastFrameCustomCount = 0;
 };
 
 }  // namespace mite
