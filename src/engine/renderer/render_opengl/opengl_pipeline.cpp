@@ -6,6 +6,7 @@
 #include "render_stages/deferred_lighting_stage.h"
 #include "render_stages/gbuffer_stage.h"
 #include "render_stages/shadow_map_stage.h"
+#include "render_stages/blend_stage.h"
 #include "filesystem/filesystem.h"
 
 namespace mite {
@@ -55,12 +56,18 @@ void OpenGLPipeline::Initialize()
   std::shared_ptr<OpenGLShader> forwardShader = ShaderCache::Get().GetOpenGLShader(
       FileSystem::GetAssetPath("shaders/forward/forward.vert.glsl").string(),
       FileSystem::GetAssetPath("shaders/forward/forward.frag.glsl").string());
-  //AddStage(std::make_unique<ForwardStage>(), forwardShader);
+  AddStage(std::make_unique<ForwardStage>(), forwardShader);
+
+  // 添加Blend Render Stage
+  std::shared_ptr<OpenGLShader> blendShader = ShaderCache::Get().GetOpenGLShader(
+      FileSystem::GetAssetPath("shaders/blend/blend.vert.glsl").string(),
+      FileSystem::GetAssetPath("shaders/blend/blend.frag.glsl").string());
+  AddStage(std::make_unique<BlendStage>(), blendShader);
 
   // 初始化所有阶段
   for (auto &stage : m_Stages) {
     if (stage->IsEnabled()) {
-      stage->Initialize(); 
+      stage->Initialize(*m_Context); 
     }
   }
 

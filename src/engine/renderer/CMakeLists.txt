@@ -30,6 +30,8 @@ set(RENDERER_STAGES_SRCS
     render_stages/render_stage.h        # 渲染阶段基类，目前规划顺序为shadow map->gbuffer->deffered lighting->forward
     render_stages/render_stage.cpp
 
+    render_stages/blend_stage.h               # 结果混合阶段
+    render_stages/blend_stage.cpp
     render_stages/deferred_lighting_stage.h     # 延迟光照计算阶段
     render_stages/deferred_lighting_stage.cpp
     render_stages/forward_stage.h               # 前向渲染阶段
