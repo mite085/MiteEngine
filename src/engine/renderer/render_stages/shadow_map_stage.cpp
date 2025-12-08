@@ -476,6 +476,7 @@ void ShadowMapStage::RenderSceneToShadowMap(RenderContext &context,
     }
 
     // 提交绘制调用
+    RenderCommand::Get().BindMaterialUBO(item.material);
     RenderCommand::Get().SubmitDrawCall(item.mesh);
   }
 }

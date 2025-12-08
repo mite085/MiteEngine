@@ -95,7 +95,7 @@ void MiteApplication::LoadDefaultScene()
 
   // 加载模型
   LoadModelToScene("models/car.glb");
-  LoadModelToScene("models/ground.glb"); 
+  LoadModelToScene("models/Room.glb");
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
 
