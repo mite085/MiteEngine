@@ -127,8 +127,8 @@ layout(binding = 10) uniform sampler2DArray u_ShadowMapArea;
 // 光照纹理绑定
 layout(binding = 11) uniform sampler2D u_LightingDiffuse;
 layout(binding = 12) uniform sampler2D u_LightingSpecular;
-layout(binding = 13) uniform sampler2D u_LightingCombined;
-layout(binding = 14) uniform sampler2D u_LightingAmbient;
+layout(binding = 13) uniform sampler2D u_LightingAmbient;
+layout(binding = 14) uniform sampler2D u_LightingCombined;
 
 // 渲染目标绑定
 layout(binding = 15) uniform sampler2D u_RenderTarget;
@@ -142,6 +142,5 @@ layout(binding = 20) uniform sampler2D u_MetallicRoughnessTexture;
 layout(binding = 21) uniform sampler2D u_EmissiveTexture;
 layout(binding = 22) uniform sampler2D u_OcclusionTexture;
 layout(binding = 23) uniform sampler2D u_EnvironmentMap;
-
 
 #endif

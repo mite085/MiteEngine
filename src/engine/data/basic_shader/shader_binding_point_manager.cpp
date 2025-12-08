@@ -233,12 +233,12 @@ void BindingPointManager::PreallocateCommonResources()
   // Lighting_Specular----layout(location = 12)
   m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Specular] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_SPECULAR);
-  // Lighting_Combined----layout(location = 13)
-  m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Combined] = AllocateTextureBinding(
-      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_COMBINED);
-  // Lighting_Ambient----layout(location = 14)
+  // Lighting_Ambient----layout(location = 13)
   m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Ambient] = AllocateTextureBinding(
       TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_AMBIENT);
+  // Lighting_Combined----layout(location = 14)
+  m_RuntimeTextureBindings[RuntimeTextureType::Lighting_Combined] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::LIGHTING_COMBINED);
 
   // m_RuntimeTextureBindings[RuntimeTextureType::PostProcess_Bloom] = AllocateTextureBinding(
   //     TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::POSTPROCESS_BLOOM);
@@ -282,6 +282,13 @@ void BindingPointManager::PreallocateCommonResources()
   // EnvironmentMap----layout(location = 23)
   m_ExternalTextureBindings[ExternalTextureType::EnvironmentMap] = AllocateTextureBinding(
       TextureResourceType::ExternalTexture, ShaderBufferResourceNames::ENVIRONMENT_MAP);
+
+  // Forward_Transparent----layout(location = 24)(后补部分，仅供blend.frag.glsl使用，不在Uniform中定义)
+  m_RuntimeTextureBindings[RuntimeTextureType::Forward_Transparent] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::FORWARD_TRANSPARENT);
+  // Forward_Blend----layout(location = 25)(后补部分，仅供blend.frag.glsl使用，不在Uniform中定义)
+  m_RuntimeTextureBindings[RuntimeTextureType::Forward_Blend] = AllocateTextureBinding(
+      TextureResourceType::RuntimeTexture, ShaderBufferResourceNames::FORWARD_BLEND);
 
   // m_ExternalTextureBindings[ExternalTextureType::BRDFLUT] = AllocateTextureBinding(
   //     TextureResourceType::ExternalTexture, ShaderBufferResourceNames::BRDF_LUT);
