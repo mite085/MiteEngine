@@ -233,6 +233,35 @@ RuntimeTexturePtr FrameBuffer::GetStencilAttachment() const
   return m_StencilAttachment;
 }
 
+void FrameBuffer::AttachExternalDepthTexture(RuntimeTexturePtr externalDepthTexture)
+{
+  // 纹理存在性检查
+  if (!externalDepthTexture) {
+    LOG_ERROR("Cannot attach null external depth texture");
+    return;
+  }
+
+  // 设定该纹理为深度附件
+  m_DepthAttachment = externalDepthTexture;
+
+  // 绑定外部深度纹理
+  glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+  glFramebufferTexture2D(GL_FRAMEBUFFER,
+                         GL_DEPTH_ATTACHMENT,
+                         static_cast<GLenum>(m_DepthAttachment->GetTarget()),
+                         static_cast<GLuint>(m_DepthAttachment->GetHandle().apiHandle),
+                         0);
+
+  // 检查完整性
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    LOG_ERROR("Framebuffer incomplete after attaching external depth texture");
+  }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  LOG_DEBUG("Attached external depth texture to framebuffer {}", m_RendererID);
+}
+
 bool FrameBuffer::IsComplete() const
 {
   glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);

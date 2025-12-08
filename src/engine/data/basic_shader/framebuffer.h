@@ -77,6 +77,14 @@ class FrameBuffer {
     return m_ColorAttachments;
   }
 
+  // ==================== 绑定外部来源的深度附件纹理 ====================
+   /**
+   * @brief 绑定外部深度纹理作为深度附件（目前作为ForwardStage复用GBufferStage深度结果的专用函数）
+   * @param externalDepthTexture 外部深度纹理
+   * @note 调用此方法后，本FBO将使用外部深度纹理，但不会管理其生命周期
+   */
+  void AttachExternalDepthTexture(RuntimeTexturePtr externalDepthTexture);
+
   // ==================== 完整性检查 ====================
   /**
    * @brief 获取帧缓冲规格
