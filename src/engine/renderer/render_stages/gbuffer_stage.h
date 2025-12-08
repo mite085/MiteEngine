@@ -21,12 +21,9 @@ class GBufferStage : public RenderStage {
   ~GBufferStage() override;
 
   // ---- 生命周期管理 ----
-  void Initialize() override;
+  void Initialize(RenderContext& context) override;
   void Execute(RenderContext &context) override;
   void Shutdown() override;
-
-  // ---- G-Buffer访问 ----
-  GBufferPtr GetGBuffer() const { return m_GBuffer; }
 
  private:
   // ---- 私有渲染方法 ----

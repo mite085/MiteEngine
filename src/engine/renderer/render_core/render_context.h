@@ -58,10 +58,6 @@ class RenderContext {
 
   // ---- 分层纹理管理 ----
 
-  // GBuffer纹理管理（固定数量）
-  void SetGBufferTexture(RuntimeTexturePtr texture);
-  RuntimeTexturePtr GetGBufferTexture(RuntimeTextureType type) const;
-
   // ShadowMap纹理管理（动态数量，按类型存储）
   void SetShadowMapTexture(LightType type, RuntimeTexturePtr texture);
   RuntimeTexturePtr GetShadowMapTexture(LightType type) const;
@@ -81,44 +77,12 @@ class RenderContext {
   std::shared_ptr<CameraInstance> GetMainCameraInstance() const { return m_MainCameraInstance; }
   LightManager &GetLightManager() const { return LightManager::Get(); }
 
-  // ---- 临时资源管理（现阶段尽量所有资源明确定义，待后续启用临时资源） ----
-  // template<typename T>
-  // void SetTemporaryResource(const std::string &name, std::shared_ptr<T> resource);
-  // template<typename T> std::shared_ptr<T> GetTemporaryResource(const std::string &name) const;
-  // void ClearTemporaryResources();
-
   // ---- 上下文状态 ----
   bool IsValid() const;
   void Validate() const;
-  void DebugTextureInfo() const;
 
  private:
   // ---- 私有方法 ----
-  /**
-   * @brief 消费事件，注册相机/网格/材质实例（设置所有现有着色器的UBO绑定）
-   * (使用固定的绑定点执行显示绑定，无需手动管理)
-   */
-  // void OnCameraInstanceCreated(CameraInstanceCreateEvent &event);
-  // void OnMeshInstanceCreated(MeshInstanceCreateEvent &event);
-  // void OnMaterialInstanceCreated(MaterialInstanceCreateEvent &event);
-  // void OnLightSSBOCreated(LightSSBOCreateEvent &event);
-  ///**
-  // * @brief 为新着色器设置所有已注册实例的UBO绑定
-  // (使用固定的绑定点执行显示绑定，无需手动管理)
-  // */
-  // void SetupShaderBindingsForNewShader(const std::string &stageName,
-  //                                     std::shared_ptr<OpenGLShader> shader);
-  ///**
-  // * @brief 为新实例设置所有已注册着色器的UBO绑定
-  // (使用固定的绑定点执行显示绑定，无需手动管理)
-  // */
-  // template<typename T> void SetupShaderBindingsForNewInstance(std::shared_ptr<T> instance)
-  //{
-  //  for (auto &[stageName, shader] : m_StageShaders) {
-  //    instance->SetupShaderBinding(shader);
-  //    m_Logger->debug("Setting up shader binding for instance in stage: {}", stageName);
-  //  }
-  //}
 
   // ---- 场景数据 ----
   std::shared_ptr<RenderQueue> m_RenderQueue;
@@ -138,53 +102,18 @@ class RenderContext {
   // ---- 窗口尺寸 ----
   glm::vec2 m_ViewportSize = {1280, 720};  // 默认尺寸
 
+  // ---- GBuffer存储 ----
+  std::shared_ptr<GBuffer> m_GBuffer = nullptr;
+
   // ---- 分层纹理存储 ----
-  std::array<RuntimeTexturePtr, GBuffer::TEXTURE_COUNT> m_GBufferTextures;
   std::unordered_map<LightType, RuntimeTexturePtr> m_ShadowMapTextures;
   std::unordered_map<std::string, RuntimeTexturePtr> m_RenderTargets;
-
-  // ---- 临时资源存储（现阶段尽量所有资源明确定义，待后续启用临时资源） ----
-  // std::unordered_map<std::string, std::shared_ptr<void>> m_TemporaryResources;
 
   Logger m_Logger;
   SubscriptionGroup m_EventSubscription;
 };
 
-//// 临时资源管理模板实现（现阶段尽量所有资源明确定义，待后续启用临时资源）
-// template<typename T>
-// void RenderContext::SetTemporaryResource(const std::string &name, std::shared_ptr<T> resource)
-//{
-//   if (name.empty()) {
-//     m_Logger->warn("Attempted to set temporary resource with empty name");
-//     return;
-//   }
-//
-//   // 转换为void指针存储，但保持类型安全通过模板管理
-//   std::shared_ptr<void> voidResource = std::static_pointer_cast<void>(resource);
-//   m_TemporaryResources[name] = voidResource;
-//
-//   // m_Logger->debug("Set temporary resource: {}", name);
-// }
-//
-// template<typename T>
-// std::shared_ptr<T> RenderContext::GetTemporaryResource(const std::string &name) const
-//{
-//   auto it = m_TemporaryResources.find(name);
-//   if (it == m_TemporaryResources.end()) {
-//     m_Logger->debug("Temporary resource not found: {}", name);
-//     return nullptr;
-//   }
-//
-//   try {
-//     // 尝试转换回原始类型
-//     std::shared_ptr<T> typedResource = std::static_pointer_cast<T>(it->second);
-//     return typedResource;
-//   }
-//   catch (const std::bad_cast &e) {
-//     m_Logger->error("Failed to cast temporary resource '{}': {}", name, e.what());
-//     return nullptr;
-//   }
-// }
+
 }  // namespace mite
 
 #endif

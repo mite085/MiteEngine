@@ -19,7 +19,7 @@ GBufferStage::~GBufferStage()
   m_Logger->info("GBufferStage destroyed");
 }
 
-void GBufferStage::Initialize()
+void GBufferStage::Initialize(RenderContext &context)
 {
   if (m_Initialized) {
     m_Logger->warn("GBufferStage already initialized");
@@ -92,14 +92,22 @@ void GBufferStage::Execute(RenderContext &context)
   // 解绑着色器
   RenderCommand::Get().UnbindShader(gbufferShader);
 
-  // 存储渲染结果到上下文（并非渲染命令，这些纹理是提前创建好的，可以提前交给上下文管理）
+  // 存储渲染结果到上下文（使用统一的RenderTarget接口）
   for (const auto &type : GBuffer::GetTextureTypes()) {
-    context.SetGBufferTexture(m_GBuffer->GetTexture(type));
-  }
+    auto texture = m_GBuffer->GetTexture(type);
+    if (texture && texture->IsValid()) {
+      // 使用统一的命名约定存储GBuffer纹理
+      std::string targetName = "GBuffer_" + std::string(GBuffer::GetTextureTypeName(type));
+      context.SetRenderTarget(targetName, texture);
 
-  // 发布绘制完成事件
-  for (const auto &type : GBuffer::GetTextureTypes()) {
-    RenderCommand::Get().PublishEventRuntimeTextureFinished(m_GBuffer->GetTexture(type));
+      // 发布绘制完成事件
+      RenderCommand::Get().PublishEventRuntimeTextureFinished(m_GBuffer->GetTexture(type));
+    }
+  }
+  // 特别存储深度纹理（Forward阶段需要）
+  auto depthTexture = m_GBuffer->GetFramebuffer()->GetDepthAttachment();
+  if (depthTexture && depthTexture->IsValid()) {
+    context.SetRenderTarget("GBuffer_DepthAttachment", depthTexture);
   }
 }
 void GBufferStage::Shutdown()
