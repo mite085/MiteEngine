@@ -72,24 +72,24 @@ std::shared_ptr<Light> LightManager::CreatePointLight()
   }
   return nullptr;
 }
-// std::shared_ptr<Light> LightManager::CreateSpotLight()
-//{
-//   auto light = std::make_shared<SpotLight>();
-//   if (AddLight(light)) {
-//     LOG_TRACE("Spot light created and added to manager");
-//     return light;
-//   }
-//   return nullptr;
-// }
-// std::shared_ptr<Light> LightManager::CreateDirectionalLight()
-//{
-//   auto light = std::make_shared<DirectionalLight>();
-//   if (AddLight(light)) {
-//     LOG_TRACE("Directional light created and added to manager");
-//     return light;
-//   }
-//   return nullptr;
-// }
+std::shared_ptr<Light> LightManager::CreateSpotLight()
+{
+  auto light = std::make_shared<SpotLight>();
+  if (AddLight(light)) {
+    LOG_TRACE("Spot light created and added to manager");
+    return light;
+  }
+  return nullptr;
+}
+std::shared_ptr<Light> LightManager::CreateDirectionalLight()
+{
+  auto light = std::make_shared<DirectionalLight>();
+  if (AddLight(light)) {
+    LOG_TRACE("Directional light created and added to manager");
+    return light;
+  }
+  return nullptr;
+}
 // std::shared_ptr<Light> LightManager::CreateAreaRectLight()
 //{
 //   auto light = std::make_shared<AreaRectLight>();
@@ -114,10 +114,10 @@ std::shared_ptr<Light> LightManager::CreateLight(LightType type)
   switch (type) {
     case LightType::POINT:
       return CreatePointLight();
-    // case LightType::SPOT:
-    //   return CreateSpotLight();
-    // case LightType::DIRECTIONAL:
-    //   return CreateDirectionalLight();
+    case LightType::SPOT:
+      return CreateSpotLight();
+    case LightType::DIRECTIONAL:
+      return CreateDirectionalLight();
     // case LightType::AREA_RECT:
     //   return CreateAreaRectLight();
     // case LightType::AREA_ELLIPSE:
@@ -306,7 +306,8 @@ bool LightManager::InitializeShadowInstance()
   }
 }
 
-bool LightManager::UpdateLightShadowUBO(std::shared_ptr<CameraInstance> cameraInstance)
+bool LightManager::UpdateLightShadowUBO(std::shared_ptr<CameraInstance> cameraInstance,
+                                        glm::vec4 shadowParams)
 {
   if (!m_ShadowInstance || !m_ShadowInstance->GetUBO() ||
       !m_ShadowInstance->GetUBO()->IsInitialized())
@@ -328,7 +329,8 @@ bool LightManager::UpdateLightShadowUBO(std::shared_ptr<CameraInstance> cameraIn
 
     LOG_TRACE("Updating shadow data for {} enabled lights", enabledLights.size());
     // 传递光源列表和变换缓存给ShadowInstance
-    return m_ShadowInstance->UpdateUBO(enabledLights, m_LightTransformCache, cameraInstance);
+    return m_ShadowInstance->UpdateUBO(
+        enabledLights, m_LightTransformCache, cameraInstance, shadowParams);
   }
   catch (const std::exception &e) {
     LOG_ERROR("Exception while updating light shadow: {}", e.what());

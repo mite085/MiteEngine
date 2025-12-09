@@ -52,8 +52,8 @@ class LightManager {
    * @return 光源共享指针
    */
   std::shared_ptr<Light> CreatePointLight();
-  // std::shared_ptr<Light> CreateSpotLight();
-  // std::shared_ptr<Light> CreateDirectionalLight();
+  std::shared_ptr<Light> CreateSpotLight();
+  std::shared_ptr<Light> CreateDirectionalLight();
   // std::shared_ptr<Light> CreateAreaRectLight();
   // std::shared_ptr<Light> CreateAreaEllipseLight();
   /**
@@ -119,7 +119,8 @@ class LightManager {
    * @return 是否更新成功
    * @note 使用UpdateLightData阶段缓存的光源变换数据
    */
-  bool UpdateLightShadowUBO(std::shared_ptr<CameraInstance> cameraInstance);
+  bool UpdateLightShadowUBO(std::shared_ptr<CameraInstance> cameraInstance,
+                            glm::vec4 shadowParams);
   /**
    * @brief 获取阴影实例
    * @return 阴影实例共享指针
