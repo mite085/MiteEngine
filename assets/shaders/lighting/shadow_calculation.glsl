@@ -25,7 +25,7 @@ float CalculatePointLightShadow(uint lightIndex, vec3 worldPos)
     float bias = u_Shadow.shadowParams.x;
 
     // 计算当前片段的深度（标准化到[0,1]）
-    float currentDepth = length(lightToFrag - bias) / GetLightRange(lightIndex);
+    float currentDepth = length(lightToFrag + bias) / GetLightRange(lightIndex);
     
     // 检查是否在阴影中
     return currentDepth > closestDepth ? 0.0 : 1.0;
