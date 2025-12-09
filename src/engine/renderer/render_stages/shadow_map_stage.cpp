@@ -100,7 +100,8 @@ void ShadowMapStage::Execute(RenderContext &context)
     m_Logger->warn("No main camera available for directional shadow rendering");
     return;
   }
-  lightManager.UpdateLightShadowUBO(cameraInstance);
+
+  lightManager.UpdateLightShadowUBO(cameraInstance, glm::vec4(m_ShadowBias, m_NormalBias, m_ShadowFilter, m_ShadowQuality));
 
   // 设置阴影渲染状态
   RenderCommand::Get().SetRenderState(m_ShadowRenderState);

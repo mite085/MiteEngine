@@ -91,8 +91,8 @@ class ShadowMapStage : public RenderStage {
   bool m_Initialized = false;
   ShadowQuality m_ShadowQuality = ShadowQuality::MEDIUM;
   ShadowFilter m_ShadowFilter = ShadowFilter::PCF;
-  float m_ShadowBias = 0.005f;
-  float m_NormalBias = 0.01f;
+  float m_ShadowBias = 0.001f;
+  float m_NormalBias = 0.001f;
 };
 }  // namespace mite
 

@@ -37,7 +37,8 @@ class ShadowInstance {
    */
   bool UpdateUBO(const std::vector<std::shared_ptr<Light>> &lights,
                  const std::unordered_map<Light *, Transform> &lightTransforms,
-                 std::shared_ptr<CameraInstance> cameraInstance);
+                 std::shared_ptr<CameraInstance> cameraInstance,
+                 glm::vec4 shadowParams);
   /**
    * @brief 绑定阴影UBO到当前渲染状态
    */
