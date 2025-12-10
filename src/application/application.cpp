@@ -63,7 +63,7 @@ void MiteApplication::LoadDefaultScene()
 
   // 创建灯光、实体与对应组件
   std::shared_ptr<Light> pointLight = LightManager::Get().CreateLight(LightType::POINT);
-  Entity lightEntity = m_SceneCore->CreateEntity("pointLight");
+  Entity lightEntity = m_SceneCore->CreateEntity("Point Light");
   TransformComponent &lightTransformComponent =
       m_SceneCore->GetRegistry().AddComponent<TransformComponent>(lightEntity);
   LightComponent &lightComponent = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
@@ -78,24 +78,24 @@ void MiteApplication::LoadDefaultScene()
   lightComponent.SetIntensity(100); 
 
   // 创建灯光2、实体与对应组件
-  std::shared_ptr<Light> pointLight2 = LightManager::Get().CreateLight(LightType::POINT);
-  Entity light2Entity = m_SceneCore->CreateEntity("pointLight2");
-  TransformComponent &light2TransformComponent =
-      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(light2Entity);
-  LightComponent &light2Component = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
-      light2Entity);
-  light2Component.SetLight(pointLight2);
-  BoundingVolumeComponent &light2BoundingVolumeComponent =
-      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(light2Entity);
+  std::shared_ptr<Light> directionalLight = LightManager::Get().CreateLight(LightType::DIRECTIONAL);
+  Entity directionalLightEntity = m_SceneCore->CreateEntity("Directional Light");
+  TransformComponent &directionalLightTransformComponent =
+      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(directionalLightEntity);
+  LightComponent &directionalLightComponent = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
+      directionalLightEntity);
+  directionalLightComponent.SetLight(directionalLight);
+  BoundingVolumeComponent &directionalLightBoundingVolumeComponent =
+      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(directionalLightEntity);
 
   // 摆放位置，设定强度
-  light2TransformComponent.SetLocalTransform(
+  directionalLightTransformComponent.SetLocalTransform(
       [=](Transform &localtrans) { localtrans.Translate(glm::vec3(0.0f, 1.5f, 3.0f)); });
-  light2Component.SetIntensity(100);
+  directionalLightComponent.SetIntensity(100);
 
   // 加载模型
   LoadModelToScene("models/car.glb");
-  LoadModelToScene("models/Room.glb");
+  LoadModelToScene("models/room.glb");
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
 
