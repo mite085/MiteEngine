@@ -225,7 +225,7 @@ void OpenGLWindow::PollEvents()
   }
 
   // 可记录性能调试信息
-  // m_Logger->debug("Polling GLFW events for window: {}", m_WindowData.title);
+  m_Logger->debug("Polling GLFW events for window: {}", m_WindowData.title);
 
   // 处理所有挂起的事件
   glfwPollEvents();
@@ -244,7 +244,7 @@ void OpenGLWindow::WaitEvents()
   }
 
   // 可记录性能调试信息
-  // m_Logger->debug("Waiting for GLFW events for window: {}", m_WindowData.title);
+  m_Logger->debug("Waiting for GLFW events for window: {}", m_WindowData.title);
 
   // 阻塞直到有新事件到达
   glfwWaitEvents();
@@ -316,7 +316,7 @@ void OpenGLWindow::SwapBuffers()
   }
 
   // 可记录性能调试信息
-  // m_Logger->debug("Swapping buffers for window: {}", m_WindowData.title);
+  m_Logger->debug("Swapping buffers for window: {}", m_WindowData.title);
   glfwSwapBuffers(m_Window);
 
   // 检查OpenGL错误

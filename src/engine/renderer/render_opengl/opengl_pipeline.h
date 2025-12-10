@@ -34,12 +34,6 @@ class OpenGLPipeline : public RenderPipeline {
   void SetClearColor(const glm::vec4 &color) override;
   void SetupDefaultRenderState();
 
-  //// ---- FBO接口（FBO由各个Stage管理，此处弃用） ----
-  // std::shared_ptr<FrameBuffer> GetMainFrameBuffer() const override;
-  // std::shared_ptr<FrameBuffer> GetDisplayFrameBuffer() const override;
-  // void CreateDefaultFrameBuffer();
-  // void SwapFrameBuffers();
-
  private:
   // ---- 事件处理 ----
   void OnViewPortResize(ViewportResizeEvent &event);  // 消费Viewport尺寸变化事件

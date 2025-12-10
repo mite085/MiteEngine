@@ -2,8 +2,7 @@
 #include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
-CameraInstance::CameraInstance(std::shared_ptr<Camera> camera)
-    : m_Camera(std::move(camera))
+CameraInstance::CameraInstance(std::shared_ptr<Camera> camera) : m_Camera(std::move(camera))
 {
   if (!m_Camera) {
     LOG_ERROR("CameraInstance created with null camera!");
@@ -30,8 +29,9 @@ bool CameraInstance::InitializeUBO()
 
   try {
     // 创建UBO对象
-    m_CameraUBO = std::make_shared<ShaderUBO>(
-        sizeof(CameraUniformBuffer), BindingPointManager::Get().GetCameraUBOBinding(), GL_DYNAMIC_DRAW);
+    m_CameraUBO = std::make_shared<ShaderUBO>(sizeof(CameraUniformBuffer),
+                                              BindingPointManager::Get().GetCameraUBOBinding(),
+                                              GL_DYNAMIC_DRAW);
     m_CameraUBO->Initialize();
 
     LOG_DEBUG("CameraInstance UBO initialized successfully");
@@ -44,11 +44,11 @@ bool CameraInstance::InitializeUBO()
   }
 }
 
-//void CameraInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
+// void CameraInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
 //{
-//  // 设置着色器绑定
-//  m_CameraUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::CAMERA_UBO);
-//}
+//   // 设置着色器绑定
+//   m_CameraUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::CAMERA_UBO);
+// }
 
 bool CameraInstance::UpdateUBO(const Transform cameraTransform)
 {
@@ -73,7 +73,7 @@ bool CameraInstance::UpdateUBO(const Transform cameraTransform)
     m_CameraTransform = cameraTransform;
 
     if (success) {
-      // LOG_TRACE("CameraInstance UBO updated successfully");
+      LOG_TRACE("CameraInstance UBO updated successfully");
     }
     else {
       LOG_ERROR("Failed to update CameraInstance UBO data");
@@ -97,6 +97,6 @@ void CameraInstance::BindUBO() const
   // 绑定UBO
   m_CameraUBO->Bind();
 
-  // LOG_TRACE("CameraInstance UBO");
+  LOG_TRACE("CameraInstance UBO");
 }
 }  // namespace mite

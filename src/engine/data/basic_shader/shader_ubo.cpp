@@ -1,11 +1,8 @@
 #include "shader_ubo.h"
 
 namespace mite {
-
 ShaderUBO::ShaderUBO(size_t size, uint32_t bindingPoint, GLenum usage)
-    : m_Size(size),
-      m_Usage(usage),
-      m_BindingPoint(bindingPoint)
+    : m_Size(size), m_Usage(usage), m_BindingPoint(bindingPoint)
 {
   // 验证大小合理性
   if (size == 0) {
@@ -17,9 +14,8 @@ ShaderUBO::ShaderUBO(size_t size, uint32_t bindingPoint, GLenum usage)
     LOG_WARN("ShaderUBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
     m_Usage = GL_DYNAMIC_DRAW;
   }
-  LOG_DEBUG("ShaderUBO created with fixed binding - Size: {} bytes, Binding: {}",
-            size,
-            m_BindingPoint);
+  LOG_DEBUG(
+      "ShaderUBO created with fixed binding - Size: {} bytes, Binding: {}", size, m_BindingPoint);
 }
 
 ShaderUBO::~ShaderUBO()
@@ -52,7 +48,7 @@ void ShaderUBO::Destroy()
     m_UBOId = 0;
     m_IsInitialized = false;
 
-    //LOG_DEBUG("ShaderUBO destroyed");
+    LOG_DEBUG("ShaderUBO destroyed");
   }
 }
 
@@ -111,7 +107,7 @@ bool ShaderUBO::UpdateData(const void *data, size_t size, size_t offset)
     return false;
   }
 
-  // LOG_TRACE("UBO data updated - ID: {}, Offset: {}, Size: {} bytes", m_UBOId, offset, size);
+  LOG_TRACE("UBO data updated - ID: {}, Offset: {}, Size: {} bytes", m_UBOId, offset, size);
   return true;
 }
 
@@ -152,7 +148,7 @@ void ShaderUBO::Bind() const
         "Failed to bind UBO {} to point {}: OpenGL error 0x{:X}", m_UBOId, m_BindingPoint, error);
   }
   else {
-    //LOG_TRACE("UBO bound to point: {}", m_BindingPoint);
+    LOG_TRACE("UBO bound to point: {}", m_BindingPoint);
   }
 }
 void ShaderUBO::Unbind() const
@@ -162,24 +158,24 @@ void ShaderUBO::Unbind() const
   }
 }
 
-//void ShaderUBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-//                                   const std::string &uniformBlockName) const
+// void ShaderUBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+//                                    const std::string &uniformBlockName) const
 //{
-//  if (!shader) {
-//    LOG_ERROR("Cannot setup shader binding: null shader");
-//    return;
-//  }
-//  if (!m_IsInitialized) {
-//    LOG_ERROR("Cannot setup shader binding: UBO not initialized");
-//    return;
-//  }
-//  if (m_BindingPoint == UINT32_MAX) {
-//    LOG_ERROR("Cannot setup shader binding: UBO has no binding point");
-//    return;
-//  }
-//  // 设置着色器的Uniform块绑定点
-//  shader->SetUniformBlockBinding(uniformBlockName, m_BindingPoint);
-//  LOG_DEBUG("Shader UBO binding setup - Block: '{}', Point: {}", uniformBlockName, m_BindingPoint);
-//}
-
+//   if (!shader) {
+//     LOG_ERROR("Cannot setup shader binding: null shader");
+//     return;
+//   }
+//   if (!m_IsInitialized) {
+//     LOG_ERROR("Cannot setup shader binding: UBO not initialized");
+//     return;
+//   }
+//   if (m_BindingPoint == UINT32_MAX) {
+//     LOG_ERROR("Cannot setup shader binding: UBO has no binding point");
+//     return;
+//   }
+//   // 设置着色器的Uniform块绑定点
+//   shader->SetUniformBlockBinding(uniformBlockName, m_BindingPoint);
+//   LOG_DEBUG("Shader UBO binding setup - Block: '{}', Point: {}", uniformBlockName,
+//   m_BindingPoint);
+// }
 }  // namespace mite

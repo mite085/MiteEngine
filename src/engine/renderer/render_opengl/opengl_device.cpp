@@ -331,7 +331,7 @@ void OpenGLDevice::BindExternalTexture(ExternalTextureType type,
 }
 
 void OpenGLDevice::BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
-                                        uint32_t layer) const
+                                             uint32_t layer) const
 {
   if (!fbo)
     return;
@@ -348,8 +348,8 @@ void OpenGLDevice::BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
   glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0, layer);
 }
 void OpenGLDevice::BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
-                                           uint32_t layer,
-                                           uint32_t face) const
+                                                uint32_t layer,
+                                                uint32_t face) const
 {
   if (!fbo)
     return;
@@ -512,12 +512,12 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   // m_CurrentModelHandle = modelHandle;
 
   // 6. 调试信息
-  // m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
-  //                vao,
-  //                modelHandle->vertexBuffer,
-  //                modelHandle->indexBuffer,
-  //                meshSection.indexOffset,
-  //                meshSection.vertexOffset);
+  m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
+                  vao,
+                  modelHandle.vertexBuffer,
+                  modelHandle.indexBuffer,
+                  meshSection.indexOffset,
+                  meshSection.vertexOffset);
 }
 
 void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const
@@ -537,8 +537,9 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
 {
   // 1. 参数验证
   if (indexCount == 0) {
-    // index count = 0时无需warn，直接返回即可。仅检测，不执行draw call，基本无资源消耗
-    // m_Logger->warn("Attempted to draw with indexCount = 0");
+    // index count = 0时，直接返回即可。仅检测，不执行draw call，
+    // 基本无资源消耗。但绑定材质可能存在消耗
+    m_Logger->trace("Attempted to draw with indexCount = 0");
     return;
   }
 

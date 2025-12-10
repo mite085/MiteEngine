@@ -2,9 +2,7 @@
 #include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
-
-MeshInstance::MeshInstance(std::shared_ptr<Mesh> mesh)
-    : m_Mesh(std::move(mesh))
+MeshInstance::MeshInstance(std::shared_ptr<Mesh> mesh) : m_Mesh(std::move(mesh))
 {
   if (!m_Mesh) {
     LOG_ERROR("MeshInstance created with null mesh!");
@@ -30,8 +28,9 @@ bool MeshInstance::InitializeUBO()
 
   try {
     // 创建模型UBO对象
-    m_ModelUBO = std::make_shared<ShaderUBO>(
-        sizeof(ModelUniformBuffer), BindingPointManager::Get().GetModelUBOBinding(), GL_DYNAMIC_DRAW);
+    m_ModelUBO = std::make_shared<ShaderUBO>(sizeof(ModelUniformBuffer),
+                                             BindingPointManager::Get().GetModelUBOBinding(),
+                                             GL_DYNAMIC_DRAW);
     m_ModelUBO->Initialize();
 
     LOG_DEBUG("MeshInstance Model UBO initialized successfully");
@@ -43,11 +42,11 @@ bool MeshInstance::InitializeUBO()
     return false;
   }
 }
-//void MeshInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
+// void MeshInstance::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader)
 //{
-//  // 设置着色器绑定
-//  m_ModelUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MODEL_UBO);
-//}
+//   // 设置着色器绑定
+//   m_ModelUBO->SetupShaderBinding(shader, ShaderBufferResourceNames::MODEL_UBO);
+// }
 
 void MeshInstance::UpdateUBO(const Transform &worldTransform)
 {
@@ -64,7 +63,8 @@ void MeshInstance::UpdateUBO(const Transform &worldTransform)
   try {
     // 构建模型UBO数据
     ModelUniformBuffer uboData;
-    uboData.model = worldTransform.GetLocalMatrix(); // world transform的local matrix即为world matrix
+    uboData.model =
+        worldTransform.GetLocalMatrix();  // world transform的local matrix即为world matrix
     uboData.normalMatrix = glm::transpose(glm::inverse(glm::mat3(uboData.model)));
 
     // 更新UBO数据
@@ -74,7 +74,7 @@ void MeshInstance::UpdateUBO(const Transform &worldTransform)
     m_WorldTransform = worldTransform;
 
     if (success) {
-      // LOG_TRACE("MeshInstance '{}' Model UBO updated successfully", m_Name);
+      LOG_TRACE("MeshInstance Model UBO updated successfully");
     }
     else {
       LOG_ERROR("Failed to update MeshInstance Model UBO data");
@@ -117,5 +117,4 @@ std::pair<glm::vec3, glm::vec3> MeshInstance::GetWorldBoundingBox() const
 
   return {worldMin, worldMax};
 }
-
 }  // namespace mite

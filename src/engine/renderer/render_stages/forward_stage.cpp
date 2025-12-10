@@ -29,17 +29,17 @@ void ForwardStage::Initialize(RenderContext &context)
   // 颜色附件配置 - 使用HDR格式存储光照结果
   FrameBufferAttachmentSpec colorSpec;
   colorSpec.type = RuntimeTextureType::Forward_Transparent;  // 透明物体渲染结果
-  colorSpec.internalFormat = TextureFormat::RGBA16F;       // HDR输出
+  colorSpec.internalFormat = TextureFormat::RGBA16F;         // HDR输出
   colorSpec.generateMipmaps = false;
   spec.attachments.push_back(colorSpec);
 
   // Forward不创建深度附件，而是直接绑定GBuffer的深度附件
   // 这样才能确保半透明物体的正常绘制
-  //FrameBufferAttachmentSpec depthAttachment;
-  //depthAttachment.type = RuntimeTextureType::Depth;
-  //depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
-  //depthAttachment.generateMipmaps = false;
-  //spec.attachments.push_back(depthAttachment);
+  // FrameBufferAttachmentSpec depthAttachment;
+  // depthAttachment.type = RuntimeTextureType::Depth;
+  // depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
+  // depthAttachment.generateMipmaps = false;
+  // spec.attachments.push_back(depthAttachment);
 
   // 创建FrameBuffer用于存储数据
   m_ForwardFrameBuffer = std::make_shared<FrameBuffer>(spec);
@@ -104,8 +104,7 @@ void ForwardStage::Execute(RenderContext &context)
   RenderCommand::Get().BindFrameBuffer(m_ForwardFrameBuffer);
 
   // 清除输出目标（深度附件为复用的GBuffer的，不清理深度Buffer）
-  RenderCommand::Get().Clear(
-      GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
+  RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
   // 绑定着色器
   RenderCommand::Get().BindShader(forwardShader);
@@ -125,7 +124,7 @@ void ForwardStage::Execute(RenderContext &context)
     context.SetRenderTarget("Forward_Transparent", forwardTexture);
     // 发布纹理完成事件
     RenderCommand::Get().PublishEventRuntimeTextureFinished(forwardTexture, "Forward_Transparent");
-    // m_Logger->trace("Stored deferred lighting output to context");
+    m_Logger->trace("Stored deferred lighting output to context");
   }
 
   m_Logger->trace("Forward pass completed");

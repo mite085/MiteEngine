@@ -1,9 +1,9 @@
 #include "thread_pool_manager.h"
 #include <thread>
+#include "logger/logger.h"
 
 namespace mite {
-
-// ¾²Ì¬³ÉÔ±³õÊ¼»¯
+// é™æ€æˆå‘˜åˆå§‹åŒ–
 std::mutex ThreadPoolManager::s_Mutex;
 
 BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &ThreadPoolManager::GetDefaultPool()
@@ -13,51 +13,51 @@ BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &ThreadPoolManager::GetDefaultP
 
 size_t ThreadPoolManager::GetRecommendedThreadCount()
 {
-  // »ñÈ¡Ó²¼ş²¢·¢Ïß³ÌÊı
+  // è·å–ç¡¬ä»¶å¹¶å‘çº¿ç¨‹æ•°
   size_t hardware_threads = std::thread::hardware_concurrency();
 
-  // Èç¹ûÎŞ·¨¼ì²âµ½Ó²¼ş²¢·¢Êı£¬Ê¹ÓÃ±£ÊØµÄÄ¬ÈÏÖµ
+  // å¦‚æœæ— æ³•æ£€æµ‹åˆ°ç¡¬ä»¶å¹¶å‘æ•°ï¼Œä½¿ç”¨ä¿å®ˆçš„é»˜è®¤å€¼
   if (hardware_threads == 0) {
-    // ¸ù¾İ³£¼ûCPUºËĞÄÊıÉèÖÃºÏÀíµÄÄ¬ÈÏÖµ
-    // ±ÜÃâ´´½¨¹ı¶àÏß³Ìµ¼ÖÂÉÏÏÂÎÄÇĞ»»¿ªÏú
-    return 4;  // Ä¬ÈÏ4¸öÏß³Ì
+    // æ ¹æ®å¸¸è§CPUæ ¸å¿ƒæ•°è®¾ç½®åˆç†çš„é»˜è®¤å€¼
+    // é¿å…åˆ›å»ºè¿‡å¤šçº¿ç¨‹å¯¼è‡´ä¸Šä¸‹æ–‡åˆ‡æ¢å¼€é”€
+    return 4;  // é»˜è®¤4ä¸ªçº¿ç¨‹
   }
 
-  // Ô¤ÁôÒ»¸öÏß³Ì¸øÖ÷Ïß³Ì»òÆäËûÏµÍ³ÈÎÎñ
-  // ±ÜÃâËùÓĞºËĞÄ¶¼±»Ïß³Ì³ØÕ¼ÓÃµ¼ÖÂÏµÍ³ÏìÓ¦±äÂı
+  // é¢„ç•™ä¸€ä¸ªçº¿ç¨‹ç»™ä¸»çº¿ç¨‹æˆ–å…¶ä»–ç³»ç»Ÿä»»åŠ¡
+  // é¿å…æ‰€æœ‰æ ¸å¿ƒéƒ½è¢«çº¿ç¨‹æ± å ç”¨å¯¼è‡´ç³»ç»Ÿå“åº”å˜æ…¢
   return std::max<size_t>(1, hardware_threads - 1);
 }
 
 void ThreadPoolManager::Initialize()
 {
-  // Ô¤³õÊ¼»¯Ä¬ÈÏÏß³Ì³Ø£¬±ÜÃâÊ×´ÎÊ¹ÓÃÊ±µÄ´´½¨ÑÓ³Ù
+  // é¢„åˆå§‹åŒ–é»˜è®¤çº¿ç¨‹æ± ï¼Œé¿å…é¦–æ¬¡ä½¿ç”¨æ—¶çš„åˆ›å»ºå»¶è¿Ÿ
   GetDefaultPool();
 
-  // ¿ÉÑ¡£ºÔ¤³õÊ¼»¯ÆäËû³£ÓÃÏß³Ì³Ø
+  // å¯é€‰ï¼šé¢„åˆå§‹åŒ–å…¶ä»–å¸¸ç”¨çº¿ç¨‹æ± 
   // GetPool<ThreadPoolConfig::HIGH_PERFORMANCE_FLAGS>();
   // GetNamedPool(ThreadPoolConfig::PoolNames::RENDER, 2);
   // GetNamedPool(ThreadPoolConfig::PoolNames::IO, 2);
 
-  // ÈÕÖ¾¼ÇÂ¼³õÊ¼»¯Íê³É
-  // m_Logger->info("ThreadPoolManager initialized with recommended thread count: {}",
-  //               GetRecommendedThreadCount());
+  // æ—¥å¿—è®°å½•åˆå§‹åŒ–å®Œæˆ
+  LOG_INFO("ThreadPoolManager initialized with recommended thread count: {}",
+                 GetRecommendedThreadCount());
 }
 
 void ThreadPoolManager::Shutdown()
 {
   std::lock_guard<std::mutex> lock(s_Mutex);
 
-  // ¹Ø±ÕËùÓĞÄ¬ÈÏÅäÖÃµÄÃüÃûÏß³Ì³Ø
+  // å…³é—­æ‰€æœ‰é»˜è®¤é…ç½®çš„å‘½åçº¿ç¨‹æ± 
   auto &default_pools = NamedPoolStorage<ThreadPoolConfig::DEFAULT_FLAGS>::pools;
   for (auto &[name, pool] : default_pools) {
     if (pool) {
-      pool->wait();  // µÈ´ıËùÓĞÈÎÎñÍê³É
-                     // m_Logger->debug("Waiting for thread pool {} to complete tasks", name);
+      pool->wait();  // ç­‰å¾…æ‰€æœ‰ä»»åŠ¡å®Œæˆ
+      LOG_DEBUG("Waiting for thread pool {} to complete tasks", name);
     }
   }
   default_pools.clear();
 
-  // ¹Ø±Õ¸ßĞÔÄÜÅäÖÃµÄÃüÃûÏß³Ì³Ø
+  // å…³é—­é«˜æ€§èƒ½é…ç½®çš„å‘½åçº¿ç¨‹æ± 
   auto &high_perf_pools = NamedPoolStorage<ThreadPoolConfig::HIGH_PERFORMANCE_FLAGS>::pools;
   for (auto &[name, pool] : high_perf_pools) {
     if (pool) {
@@ -66,7 +66,7 @@ void ThreadPoolManager::Shutdown()
   }
   high_perf_pools.clear();
 
-  // ¹Ø±Õ°²È«ÓÅÏÈÅäÖÃµÄÃüÃûÏß³Ì³Ø
+  // å…³é—­å®‰å…¨ä¼˜å…ˆé…ç½®çš„å‘½åçº¿ç¨‹æ± 
   auto &safety_pools = NamedPoolStorage<ThreadPoolConfig::SAFETY_FIRST_FLAGS>::pools;
   for (auto &[name, pool] : safety_pools) {
     if (pool) {
@@ -75,7 +75,7 @@ void ThreadPoolManager::Shutdown()
   }
   safety_pools.clear();
 
-  // ¹Ø±Õ¼òµ¥ÅäÖÃµÄÃüÃûÏß³Ì³Ø
+  // å…³é—­ç®€å•é…ç½®çš„å‘½åçº¿ç¨‹æ± 
   auto &simple_pools = NamedPoolStorage<ThreadPoolConfig::SIMPLE_FLAGS>::pools;
   for (auto &[name, pool] : simple_pools) {
     if (pool) {
@@ -84,8 +84,7 @@ void ThreadPoolManager::Shutdown()
   }
   simple_pools.clear();
 
-  // ÈÕÖ¾¼ÇÂ¼¹Ø±ÕÍê³É
-  // m_Logger->info("ThreadPoolManager shutdown completed");
+  // æ—¥å¿—è®°å½•å…³é—­å®Œæˆ
+  LOG_INFO("ThreadPoolManager shutdown completed");
 }
-
 }  // namespace mite

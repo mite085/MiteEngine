@@ -51,10 +51,10 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
   }
 
   // 日志记录
-  // m_Logger->trace("Built {} renderable items ({} cached, {} created)",
-  //                items.size(),
-  //                cachedCount,
-  //                createdCount);
+  m_Logger->trace("Built {} renderable items ({} cached, {} created)",
+                  items.size(),
+                  cachedCount,
+                  createdCount);
 
   return items;
 }
@@ -124,10 +124,10 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
       item.itemType = RenderableItemType::Transparent;
     }
     else {
-      item.itemType = RenderableItemType::Opaque; // 默认按照不透明来进行
+      item.itemType = RenderableItemType::Opaque;  // 默认按照不透明来进行
     }
 
-    // m_Logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
+    m_Logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
     return item;
   }
   catch (const std::exception &e) {

@@ -81,11 +81,6 @@ void SceneView::Update()
 
   // 4. 处理可见节点，构建RenderQueue
   ProcessVisibility(visibleNodes);
-
-  // m_Logger->debug("SceneView updated in {:.3f}ms, visible nodes: {}, render items: {}",
-  //                m_lastUpdateTime,
-  //                m_lastVisibleNodeCount,
-  //                m_lastRenderItemCount);
 }
 
 std::shared_ptr<RenderQueue> SceneView::GetRenderQueue() const

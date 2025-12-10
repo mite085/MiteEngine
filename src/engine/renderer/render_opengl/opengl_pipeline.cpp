@@ -1,13 +1,13 @@
 #include "opengl_pipeline.h"
-#include "opengl_command.h"
 #include "basic_shader/shader_binding_point_manager.h"
 #include "basic_shader/shader_cache.h"
-#include "render_stages/forward_stage.h"
+#include "filesystem/filesystem.h"
+#include "opengl_command.h"
+#include "render_stages/blend_stage.h"
 #include "render_stages/deferred_lighting_stage.h"
+#include "render_stages/forward_stage.h"
 #include "render_stages/gbuffer_stage.h"
 #include "render_stages/shadow_map_stage.h"
-#include "render_stages/blend_stage.h"
-#include "filesystem/filesystem.h"
 
 namespace mite {
 OpenGLPipeline::OpenGLPipeline() : RenderPipeline()
@@ -67,7 +67,7 @@ void OpenGLPipeline::Initialize()
   // 初始化所有阶段
   for (auto &stage : m_Stages) {
     if (stage->IsEnabled()) {
-      stage->Initialize(*m_Context); 
+      stage->Initialize(*m_Context);
     }
   }
 
@@ -103,9 +103,12 @@ void OpenGLPipeline::BeginFrame()
   }
 
   // 使用PendingSize作为当前视口尺寸（每帧仅需一次设定）
-  RenderCommand::Get().SetViewport(0, 0, static_cast<uint32_t>(glm::max(m_PendingSize.x, 0.0f)), static_cast<uint32_t>(glm::max(m_PendingSize.y, 0.0f)));
+  RenderCommand::Get().SetViewport(0,
+                                   0,
+                                   static_cast<uint32_t>(glm::max(m_PendingSize.x, 0.0f)),
+                                   static_cast<uint32_t>(glm::max(m_PendingSize.y, 0.0f)));
 
-  // m_Logger->debug("Pipeline BeginFrame completed");
+  m_Logger->debug("Pipeline BeginFrame completed");
 }
 
 void OpenGLPipeline::EndFrame()
@@ -125,7 +128,7 @@ void OpenGLPipeline::EndFrame()
   // 执行所有命令
   RenderCommand::Get().Flush();
 
-  // m_Logger->debug("Pipeline EndFrame completed");
+   m_Logger->debug("Pipeline EndFrame completed");
 }
 
 void OpenGLPipeline::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
@@ -152,7 +155,7 @@ void OpenGLPipeline::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
     }
   }
 
-  // m_Logger->debug("Pipeline RenderScene completed");
+   m_Logger->debug("Pipeline RenderScene completed");
 }
 
 void OpenGLPipeline::SetClearColor(const glm::vec4 &color)
@@ -188,51 +191,4 @@ void OpenGLPipeline::SetupDefaultRenderState()
   m_DefaultState->colorWriteB = true;
   m_DefaultState->colorWriteA = true;
 }
-
-// std::shared_ptr<FrameBuffer> OpenGLPipeline::GetMainFrameBuffer() const
-//{
-//   return m_MainFrameBuffer;
-// }
-//
-// std::shared_ptr<FrameBuffer> OpenGLPipeline::GetDisplayFrameBuffer() const
-//{
-//   return m_DisplayFrameBuffer;
-// }
-
-// void OpenGLPipeline::CreateDefaultFrameBuffer()
-//{
-//   // 创建FrameBuffer规格
-//   FrameBufferSpec spec;
-//   spec.attachments = {
-//       {FrameBufferAttachmentType::Color, TextureFormat::RGBA8},               // 颜色附件
-//       {FrameBufferAttachmentType::Depth, TextureFormat::DEPTH_COMPONENT24}};  // 深度附件
-//
-//   // 创建两个相同的FrameBuffer用于双缓冲
-//   m_MainFrameBuffer = std::make_shared<FrameBuffer>(spec);
-//   m_DisplayFrameBuffer = std::make_shared<FrameBuffer>(spec);
-//
-//   if (!m_MainFrameBuffer->IsComplete() || !m_DisplayFrameBuffer->IsComplete()) {
-//     m_Logger->error("Failed to create complete framebuffers for double buffering");
-//     throw std::runtime_error("Framebuffers are incomplete");
-//   }
-//
-//   m_Logger->info("Created default framebuffer");
-// }
-//
-// void OpenGLPipeline::SwapFrameBuffers()
-//{
-//   // 直接交换指针
-//   std::swap(m_MainFrameBuffer, m_DisplayFrameBuffer);
-//
-//   // 处理尺寸同步事件
-//   if (m_ShouldResize) {
-//     // 此时已经进入下一帧，displayBuffer为上一帧准备好的mainBuffer，
-//     // 之前准备过程中已经将当前display的size调整过了，仅需调整下一帧的main即可
-//     m_MainFrameBuffer->Resize(m_DisplayFrameBuffer->GetSize().x,
-//                               m_DisplayFrameBuffer->GetSize().y);
-//     m_ShouldResize = false;
-//   }
-//
-//   // m_Logger->debug("Pipeline swapped buffers");
-// }
 }  // namespace mite

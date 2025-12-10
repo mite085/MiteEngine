@@ -168,7 +168,7 @@ void ShadowInstance::BindUBO()
   // 绑定阴影UBO
   m_ShadowUBO->Bind();
 
-  // LOG_TRACE("ShadowInstance UBO bound");
+  LOG_TRACE("ShadowInstance UBO bound");
 }
 
 bool ShadowInstance::ProcessDirectionalLight(std::shared_ptr<Light> light,

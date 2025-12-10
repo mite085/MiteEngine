@@ -11,141 +11,141 @@
 namespace mite {
 
 /**
- * @brief Ïß³Ì³Ø¹ÜÀíÆ÷ - ºËĞÄÀà
+ * @brief çº¿ç¨‹æ± ç®¡ç†å™¨ - æ ¸å¿ƒç±»
  *
- * ¸ºÔğÍ³Ò»¹ÜÀíÏµÍ³ÖĞËùÓĞµÄÏß³Ì³Ø×ÊÔ´£¬±ÜÃâÖØ¸´´´½¨ºÍ×ÊÔ´ÀË·Ñ
- * Ö§³Ö¶àÖÖÅäÖÃµÄÏß³Ì³ØºÍÃüÃûÏß³Ì³Ø£¬Ìá¹©Í³Ò»µÄ×ÊÔ´¹ÜÀí½Ó¿Ú
+ * è´Ÿè´£ç»Ÿä¸€ç®¡ç†ç³»ç»Ÿä¸­æ‰€æœ‰çš„çº¿ç¨‹æ± èµ„æºï¼Œé¿å…é‡å¤åˆ›å»ºå’Œèµ„æºæµªè´¹
+ * æ”¯æŒå¤šç§é…ç½®çš„çº¿ç¨‹æ± å’Œå‘½åçº¿ç¨‹æ± ï¼Œæä¾›ç»Ÿä¸€çš„èµ„æºç®¡ç†æ¥å£
  *
- * Éè¼ÆÄ¿±ê£º
- * 1. Í³Ò»¹ÜÀíËùÓĞÏß³Ì³Ø×ÊÔ´
- * 2. ±ÜÃâÏß³Ì³ØÖØ¸´´´½¨
- * 3. Ö§³Ö¶àÖÖÅäÖÃÑ¡Ïî
- * 4. Ìá¹©Ïß³Ì°²È«µÄ·ÃÎÊ½Ó¿Ú
- * 5. Ö§³ÖÉúÃüÖÜÆÚ¹ÜÀí
+ * è®¾è®¡ç›®æ ‡ï¼š
+ * 1. ç»Ÿä¸€ç®¡ç†æ‰€æœ‰çº¿ç¨‹æ± èµ„æº
+ * 2. é¿å…çº¿ç¨‹æ± é‡å¤åˆ›å»º
+ * 3. æ”¯æŒå¤šç§é…ç½®é€‰é¡¹
+ * 4. æä¾›çº¿ç¨‹å®‰å…¨çš„è®¿é—®æ¥å£
+ * 5. æ”¯æŒç”Ÿå‘½å‘¨æœŸç®¡ç†
  *
- * Ê¹ÓÃÊ¾Àı£º
+ * ä½¿ç”¨ç¤ºä¾‹ï¼š
  *
- * // »ñÈ¡Ä¬ÈÏÏß³Ì³Ø
+ * // è·å–é»˜è®¤çº¿ç¨‹æ± 
  * auto& default_pool = ThreadPoolManager::GetDefaultPool();
  *
- * // »ñÈ¡Ö¸¶¨ÅäÖÃµÄÏß³Ì³Ø
+ * // è·å–æŒ‡å®šé…ç½®çš„çº¿ç¨‹æ± 
  * auto& high_perf_pool = ThreadPoolManager::GetPool<ThreadPoolConfig::HIGH_PERFORMANCE_FLAGS>();
  *
- * // »ñÈ¡ÃüÃû×¨ÓÃÏß³Ì³Ø
+ * // è·å–å‘½åä¸“ç”¨çº¿ç¨‹æ± 
  * auto& render_pool = ThreadPoolManager::GetNamedPool("render", 2);
  */
 class ThreadPoolManager {
  public:
-  // É¾³ı¿½±´¹¹Ôìº¯ÊıºÍ¸³ÖµÔËËã·û
+  // åˆ é™¤æ‹·è´æ„é€ å‡½æ•°å’Œèµ‹å€¼è¿ç®—ç¬¦
   ThreadPoolManager(const ThreadPoolManager &) = delete;
   ThreadPoolManager &operator=(const ThreadPoolManager &) = delete;
 
   /**
-   * @brief »ñÈ¡Ä¬ÈÏÈ«¾ÖÏß³Ì³Ø£¨Ê¹ÓÃÄ¬ÈÏÅäÖÃ£©
-   * @return Ä¬ÈÏÏß³Ì³ØµÄÒıÓÃ
+   * @brief è·å–é»˜è®¤å…¨å±€çº¿ç¨‹æ± ï¼ˆä½¿ç”¨é»˜è®¤é…ç½®ï¼‰
+   * @return é»˜è®¤çº¿ç¨‹æ± çš„å¼•ç”¨
    */
   static BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &GetDefaultPool();
 
   /**
-   * @brief »ñÈ¡Ö¸¶¨ÅäÖÃµÄÏß³Ì³Ø
-   * @tparam OptFlags Ïß³Ì³ØÅäÖÃ±êÖ¾
-   * @return Ö¸¶¨ÅäÖÃÏß³Ì³ØµÄÒıÓÃ
+   * @brief è·å–æŒ‡å®šé…ç½®çš„çº¿ç¨‹æ± 
+   * @tparam OptFlags çº¿ç¨‹æ± é…ç½®æ ‡å¿—
+   * @return æŒ‡å®šé…ç½®çº¿ç¨‹æ± çš„å¼•ç”¨
    */
   template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
   static BS::thread_pool<OptFlags> &GetPool();
 
   /**
-   * @brief »ñÈ¡Ö¸¶¨Ãû³ÆµÄ×¨ÓÃÏß³Ì³Ø
-   * @tparam OptFlags Ïß³Ì³ØÅäÖÃ±êÖ¾
-   * @param name Ïß³Ì³ØÃû³Æ
-   * @param thread_count Ïß³ÌÊıÁ¿£¬0±íÊ¾×Ô¶¯¼ì²â
-   * @return ÃüÃûÏß³Ì³ØµÄÒıÓÃ
+   * @brief è·å–æŒ‡å®šåç§°çš„ä¸“ç”¨çº¿ç¨‹æ± 
+   * @tparam OptFlags çº¿ç¨‹æ± é…ç½®æ ‡å¿—
+   * @param name çº¿ç¨‹æ± åç§°
+   * @param thread_count çº¿ç¨‹æ•°é‡ï¼Œ0è¡¨ç¤ºè‡ªåŠ¨æ£€æµ‹
+   * @return å‘½åçº¿ç¨‹æ± çš„å¼•ç”¨
    */
   template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
   static BS::thread_pool<OptFlags> &GetNamedPool(
       const std::string &name, size_t thread_count = ThreadPoolConfig::ThreadCounts::AUTO);
 
   /**
-   * @brief ³õÊ¼»¯ËùÓĞÏß³Ì³Ø
+   * @brief åˆå§‹åŒ–æ‰€æœ‰çº¿ç¨‹æ± 
    *
-   * ¿ÉÑ¡µ÷ÓÃ£¬ÓÃÓÚÔ¤³õÊ¼»¯³£ÓÃÏß³Ì³Ø
+   * å¯é€‰è°ƒç”¨ï¼Œç”¨äºé¢„åˆå§‹åŒ–å¸¸ç”¨çº¿ç¨‹æ± 
    */
   static void Initialize();
 
   /**
-   * @brief ¹Ø±ÕËùÓĞÏß³Ì³Ø
+   * @brief å…³é—­æ‰€æœ‰çº¿ç¨‹æ± 
    *
-   * ³ÌĞòÍË³öÊ±µ÷ÓÃ£¬È·±£ËùÓĞÏß³ÌÕıÈ·ÍË³ö
+   * ç¨‹åºé€€å‡ºæ—¶è°ƒç”¨ï¼Œç¡®ä¿æ‰€æœ‰çº¿ç¨‹æ­£ç¡®é€€å‡º
    */
   static void Shutdown();
 
   /**
-   * @brief »ñÈ¡ÏµÍ³½¨ÒéµÄÏß³ÌÊıÁ¿
-   * @return ÍÆ¼öµÄÏß³ÌÊıÁ¿
+   * @brief è·å–ç³»ç»Ÿå»ºè®®çš„çº¿ç¨‹æ•°é‡
+   * @return æ¨èçš„çº¿ç¨‹æ•°é‡
    */
   static size_t GetRecommendedThreadCount();
 
   /**
-   * @brief ¼ì²éÖ¸¶¨Ãû³ÆµÄÏß³Ì³ØÊÇ·ñ´æÔÚ
-   * @tparam OptFlags Ïß³Ì³ØÅäÖÃ±êÖ¾
-   * @param name Ïß³Ì³ØÃû³Æ
-   * @return ÊÇ·ñ´æÔÚ
+   * @brief æ£€æŸ¥æŒ‡å®šåç§°çš„çº¿ç¨‹æ± æ˜¯å¦å­˜åœ¨
+   * @tparam OptFlags çº¿ç¨‹æ± é…ç½®æ ‡å¿—
+   * @param name çº¿ç¨‹æ± åç§°
+   * @return æ˜¯å¦å­˜åœ¨
    */
   template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
   static bool HasNamedPool(const std::string &name);
 
   /**
-   * @brief ÒÆ³ıÖ¸¶¨Ãû³ÆµÄÏß³Ì³Ø
-   * @tparam OptFlags Ïß³Ì³ØÅäÖÃ±êÖ¾
-   * @param name Ïß³Ì³ØÃû³Æ
+   * @brief ç§»é™¤æŒ‡å®šåç§°çš„çº¿ç¨‹æ± 
+   * @tparam OptFlags çº¿ç¨‹æ± é…ç½®æ ‡å¿—
+   * @param name çº¿ç¨‹æ± åç§°
    */
   template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
   static void RemoveNamedPool(const std::string &name);
 
   /**
-   * @brief »ñÈ¡ËùÓĞÃüÃûÏß³Ì³ØµÄÊıÁ¿
-   * @tparam OptFlags Ïß³Ì³ØÅäÖÃ±êÖ¾
-   * @return Ïß³Ì³ØÊıÁ¿
+   * @brief è·å–æ‰€æœ‰å‘½åçº¿ç¨‹æ± çš„æ•°é‡
+   * @tparam OptFlags çº¿ç¨‹æ± é…ç½®æ ‡å¿—
+   * @return çº¿ç¨‹æ± æ•°é‡
    */
   template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS> static size_t GetNamedPoolCount();
 
  private:
   /**
-   * @brief Ë½ÓĞ¹¹Ôìº¯Êı£¬È·±£µ¥ÀıÄ£Ê½
+   * @brief ç§æœ‰æ„é€ å‡½æ•°ï¼Œç¡®ä¿å•ä¾‹æ¨¡å¼
    */
   ThreadPoolManager() = default;
 
   /**
-   * @brief Ä¬ÈÏÏß³Ì³ØÊµÏÖ
-   * @tparam OptFlags Ïß³Ì³ØÅäÖÃ±êÖ¾
+   * @brief é»˜è®¤çº¿ç¨‹æ± å®ç°
+   * @tparam OptFlags çº¿ç¨‹æ± é…ç½®æ ‡å¿—
    */
   template<BS::tp OptFlags> static BS::thread_pool<OptFlags> &GetDefaultPoolImpl();
 
   /**
-   * @brief ÃüÃûÏß³Ì³ØÊµÏÖ
-   * @tparam OptFlags Ïß³Ì³ØÅäÖÃ±êÖ¾
+   * @brief å‘½åçº¿ç¨‹æ± å®ç°
+   * @tparam OptFlags çº¿ç¨‹æ± é…ç½®æ ‡å¿—
    */
   template<BS::tp OptFlags>
   static BS::thread_pool<OptFlags> &GetNamedPoolImpl(const std::string &name, size_t thread_count);
 
-  // Ïß³Ì°²È«»¥³âËø
+  // çº¿ç¨‹å®‰å…¨äº’æ–¥é”
   static std::mutex s_Mutex;
 
   /**
-   * @brief ÃüÃûÏß³Ì³Ø´æ´¢Ä£°å
-   * @tparam OptFlags Ïß³Ì³ØÅäÖÃ±êÖ¾
+   * @brief å‘½åçº¿ç¨‹æ± å­˜å‚¨æ¨¡æ¿
+   * @tparam OptFlags çº¿ç¨‹æ± é…ç½®æ ‡å¿—
    */
   template<BS::tp OptFlags> struct NamedPoolStorage {
     static std::unordered_map<std::string, std::unique_ptr<BS::thread_pool<OptFlags>>> pools;
   };
 };
 
-// Ä£°å¾²Ì¬³ÉÔ±¶¨Òå
+// æ¨¡æ¿é™æ€æˆå‘˜å®šä¹‰
 template<BS::tp OptFlags>
 std::unordered_map<std::string, std::unique_ptr<BS::thread_pool<OptFlags>>>
     ThreadPoolManager::NamedPoolStorage<OptFlags>::pools;
 
-// Ä£°å·½·¨ÊµÏÖ
+// æ¨¡æ¿æ–¹æ³•å®ç°
 template<BS::tp OptFlags> BS::thread_pool<OptFlags> &ThreadPoolManager::GetPool()
 {
   return GetDefaultPoolImpl<OptFlags>();
@@ -179,8 +179,8 @@ BS::thread_pool<OptFlags> &ThreadPoolManager::GetNamedPoolImpl(const std::string
     auto result = pools.emplace(name, std::move(pool));
     it = result.first;
 
-    // ÈÕÖ¾¼ÇÂ¼Ïß³Ì³Ø´´½¨
-    // m_Logger->info("Created named thread pool: {} with {} threads", name, actual_thread_count);
+    // æ—¥å¿—è®°å½•çº¿ç¨‹æ± åˆ›å»º
+    LOG_INFO("Created named thread pool: {} with {} threads", name, actual_thread_count);
   }
 
   return *it->second;
@@ -199,8 +199,8 @@ template<BS::tp OptFlags> void ThreadPoolManager::RemoveNamedPool(const std::str
   auto &pools = NamedPoolStorage<OptFlags>::pools;
   pools.erase(name);
 
-  // ÈÕÖ¾¼ÇÂ¼Ïß³Ì³ØÒÆ³ı
-  // m_Logger->info("Removed named thread pool: {}", name);
+  // æ—¥å¿—è®°å½•çº¿ç¨‹æ± ç§»é™¤
+  LOG_INFO("Removed named thread pool: {}", name);
 }
 
 template<BS::tp OptFlags> size_t ThreadPoolManager::GetNamedPoolCount()

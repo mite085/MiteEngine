@@ -1,11 +1,10 @@
 #include "deferred_lighting_stage.h"
 #include "basic_shader/gbuffer.h"
-#include "basic_shader/shader_cache.h"
 #include "basic_shader/shader_binding_point_manager.h"
+#include "basic_shader/shader_cache.h"
 #include "render_opengl/opengl_command.h"
 
 namespace mite {
-
 DeferredLightingStage::DeferredLightingStage() : RenderStage("DeferredLightingStage")
 {
   SetupLightingRenderState();
@@ -47,7 +46,8 @@ void DeferredLightingStage::Execute(RenderContext &context)
   auto lightingShader = context.GetStageShader("DeferredLightingStage");
   if (!lightingShader) {
     m_Logger->error(
-        "DeferredLightingStage: No lightingShader found in context for stage 'DeferredLightingStage'");
+        "DeferredLightingStage: No lightingShader found in context for stage "
+        "'DeferredLightingStage'");
     return;
   }
   if (lightingShader->GetProgramId() == 0) {
@@ -62,7 +62,7 @@ void DeferredLightingStage::Execute(RenderContext &context)
   auto viewportSize = context.GetViewportSize();
   ValidateLightingFramebuffer(viewportSize);
 
-  // 绑定光照Framebuffer 
+  // 绑定光照Framebuffer
   RenderCommand::Get().BindFrameBuffer(m_LightingFBO);
 
   // 清除输出目标
@@ -82,7 +82,7 @@ void DeferredLightingStage::Execute(RenderContext &context)
   BindGBufferTextures(context, lightingShader);
 
   // 绑定光源SSBO数据
-  BindLightSSBOData(context, lightingShader); 
+  BindLightSSBOData(context, lightingShader);
 
   // 绑定阴影数据
   if (m_EnableShadows) {
@@ -102,10 +102,11 @@ void DeferredLightingStage::Execute(RenderContext &context)
   // 将光照输出纹理存储到上下文供后续阶段使用
   auto lightingTexture = GetLightingOutputTexture();
   if (lightingTexture && lightingTexture->IsValid()) {
-    context.SetRenderTarget("Deferred_Lighting_Combined", lightingTexture); 
+    context.SetRenderTarget("Deferred_Lighting_Combined", lightingTexture);
     // 发布纹理完成事件
-    RenderCommand::Get().PublishEventRuntimeTextureFinished(lightingTexture, "Deferred_Lighting_Combined");
-    //m_Logger->trace("Stored deferred lighting output to context");
+    RenderCommand::Get().PublishEventRuntimeTextureFinished(lightingTexture,
+                                                            "Deferred_Lighting_Combined");
+    m_Logger->trace("Stored deferred lighting output to context");
   }
 
   m_Logger->trace("Deferred lighting pass completed");
@@ -194,14 +195,14 @@ void DeferredLightingStage::BindGBufferTextures(RenderContext &context,
     // 构建RenderTarget名称：GBuffer_ + 类型名
     std::string targetName = "GBuffer_" + std::string(GBuffer::GetTextureTypeName(type));
 
-    auto texture = context.GetRenderTarget(targetName); 
+    auto texture = context.GetRenderTarget(targetName);
     if (texture && texture->IsValid()) {
       // 发布绑定命令
       RenderCommand::Get().BindRuntimeTexture(
           type, texture->GetHandle(), TextureTarget::TEXTURE_2D);
-      // m_Logger->trace("Bound G-Buffer texture: {} to unit {}",
-      //                 GBuffer::GetTextureTypeName(type),
-      //                 static_cast<int>(type));
+      m_Logger->trace("Bound G-Buffer texture: {} to unit {}",
+                      GBuffer::GetTextureTypeName(type),
+                      static_cast<int>(type));
     }
     else {
       m_Logger->warn("Missing G-Buffer texture: {}", GBuffer::GetTextureTypeName(type));
@@ -216,7 +217,6 @@ void DeferredLightingStage::BindLightSSBOData(RenderContext &context,
   auto lightManager = context.GetLightManager();
 
   if (lightManager.IsInitialized()) {
-
     // 绑定光源SSBO到着色器
     RenderCommand::Get().BindLightSSBO(lightManager.GetLightSSBO());
 
@@ -303,5 +303,4 @@ void DeferredLightingStage::ValidateLightingFramebuffer(const glm::vec2 &viewpor
     }
   }
 }
-
 }  // namespace mite

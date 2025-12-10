@@ -19,11 +19,11 @@ void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
   m_RenderQueue = renderQueue;
   m_MainCameraInstance = cameraInstance;
 
-  // m_Logger->debug("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
-  //                 m_RenderQueue ? "valid" : "null",
-  //                 m_CameraPosition.x,
-  //                 m_CameraPosition.y,
-  //                 m_CameraPosition.z);
+  m_Logger->debug("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
+                  m_RenderQueue ? "valid" : "null",
+                  cameraInstance->GetCameraTransform().GetPosition().x,
+                  cameraInstance->GetCameraTransform().GetPosition().y,
+                  cameraInstance->GetCameraTransform().GetPosition().z);
 }
 
 // ---- 着色器阶段管理实现 ----
@@ -88,7 +88,7 @@ void RenderContext::SetRenderTarget(const std::string &name, RuntimeTexturePtr t
     return;
   }
   m_RenderTargets[name] = texture;
-  // m_Logger->debug("Set RenderTarget: {}", name);
+  m_Logger->debug("Set RenderTarget: {}", name);
 }
 RuntimeTexturePtr RenderContext::GetRenderTarget(const std::string &name) const
 {
