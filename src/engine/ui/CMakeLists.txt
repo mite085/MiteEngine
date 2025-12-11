@@ -35,6 +35,8 @@ source_group("ui core" FILES ${UI_CORE_SRCS})
 set(UI_PANEL_SRCS
     ui_panel/ui_menu.h        # 菜单栏（原则上仅Editor顶部应当存在）
     ui_panel/ui_menu.cpp
+    ui_panel/ui_menu_item.h   # 菜单栏Item
+    ui_panel/ui_menu_item.cpp
     ui_panel/ui_panel.h       # 面板基类（事件订阅管理）
     ui_panel/ui_panel.cpp
     ui_panel/ui_overlay.h     # 覆盖层基类
