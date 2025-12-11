@@ -75,15 +75,16 @@ void MiteApplication::LoadDefaultScene()
   // 摆放位置，设定强度
   lightTransformComponent.SetLocalTransform(
       [=](Transform &localtrans) { localtrans.Translate(glm::vec3(3.0f, 5.0f, 1.0f)); });
-  lightComponent.SetIntensity(100); 
+  lightComponent.SetIntensity(100);
 
   // 创建灯光2、实体与对应组件
-  std::shared_ptr<Light> directionalLight = LightManager::Get().CreateLight(LightType::DIRECTIONAL);
+  std::shared_ptr<Light> directionalLight = LightManager::Get().CreateLight(
+      LightType::DIRECTIONAL);
   Entity directionalLightEntity = m_SceneCore->CreateEntity("Directional Light");
   TransformComponent &directionalLightTransformComponent =
       m_SceneCore->GetRegistry().AddComponent<TransformComponent>(directionalLightEntity);
-  LightComponent &directionalLightComponent = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
-      directionalLightEntity);
+  LightComponent &directionalLightComponent =
+      m_SceneCore->GetRegistry().AddComponent<LightComponent>(directionalLightEntity);
   directionalLightComponent.SetLight(directionalLight);
   BoundingVolumeComponent &directionalLightBoundingVolumeComponent =
       m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(directionalLightEntity);
@@ -162,8 +163,8 @@ void MiteApplication::LoadModelToScene(const std::string &modelName)
 
     // 5. 创建变换组件
     TransformComponent &submeshTransformComponent =
-        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(submeshEntity,
-                                                                    model.GetSubMesh(i).GetTransform());
+        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(
+            submeshEntity, model.GetSubMesh(i).GetTransform());
 
     // 6. 创建包围盒组件，使用Mesh的包围盒填充AABB包围盒数据
     BoundingVolumeComponent &submeshBoundingVolumeComponent =
@@ -271,6 +272,9 @@ void MiteApplication::InitializeUI()
   m_UISystem->RegisterPanel(viewportPanel);
   m_UISystem->RegisterPanel(scenetreePanel);
   m_UISystem->RegisterPanel(propertyPanel);
+
+  // 创建菜单栏
+  CreateMenuBar();
 }
 
 void MiteApplication::InitializeAssertManager()
@@ -401,6 +405,47 @@ void MiteApplication::Render()
 
   // 渲染器渲染场景
   m_Renderer->RenderScene(renderQueue, m_SceneView->GetCameraInstance());  // 渲染场景
+}
+
+static bool Sub0003Checked = false;
+
+void MiteApplication::CreateMenuBar()
+{
+  // 获取菜单栏
+  UIMenu &menu = m_UISystem->GetMenu();
+
+  // 添加Scene菜单，控制场景
+  UIMenuItemSubmenu *sceneMenu = menu.AddMenu("Scene");
+
+  // 添加Layer菜单，控制显示内容
+  UIMenuItemSubmenu *layerMenu = menu.AddMenu("Layer");
+
+
+  // 添加Test测试菜单，测试功能
+  UIMenuItemSubmenu *testMenu = menu.AddMenu("Test");
+  // Test -> Sub01 -> Sub001 (三级菜单)
+  UIMenuItemSubmenu *newSubmenu = testMenu->AddSubmenu("Sub01");
+  newSubmenu->AddItem("Sub001", []() {
+    // 点击Sub001的响应
+    LOG_INFO("Sub001 Menu Item Triggered");
+  });
+  // Test -> Sub02 (二级菜单)
+  testMenu->AddItem("Sub02", []() {
+    // 点击Sub02的响应
+    LOG_INFO("Sub02 Menu Item Triggered");
+  });
+  // Test -> 分隔符
+  testMenu->AddSeparator();
+  // Test -> Sub03 -> Sub003 -> Sub0003 (四级菜单，复选框)
+  UIMenuItemSubmenu *settingsMenu = testMenu->AddSubmenu("Sub03");
+  UIMenuItemSubmenu *graphicsMenu = settingsMenu->AddSubmenu("Sub003");
+
+  graphicsMenu->AddCheckbox("Sub0003", Sub0003Checked, [&](bool enabled) {
+    // 点击Sub0003的响应
+    LOG_INFO("Sub0003 Menu Item Triggered");
+    // 反选Sub0003
+    Sub0003Checked = enabled;
+  });
 }
 
 void MiteApplication::RenderUI()

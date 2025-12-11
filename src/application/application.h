@@ -65,7 +65,8 @@ class MiteApplication {
   void Update();
   void Render();
 
-  // 渲染相关
+  // 界面相关
+  void CreateMenuBar();
   void RenderUI();
 
   // 事件处理
