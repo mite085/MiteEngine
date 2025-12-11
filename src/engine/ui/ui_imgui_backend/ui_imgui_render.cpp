@@ -4,6 +4,69 @@
 #include "misc/cpp/imgui_stdlib.h"
 
 namespace mite {
+// ==================== 菜单渲染实现 ====================
+bool ImGuiUIRender::BeginMenuBar(const MenuBarProps &props)
+{
+  if (!props.visible) {
+    return false;
+  }
+
+  // 开始菜单栏渲染
+  return ImGui::BeginMenuBar();
+}
+void ImGuiUIRender::EndMenuBar()
+{
+  ImGui::EndMenuBar();
+}
+bool ImGuiUIRender::RenderMenuItem(MenuItemProps &props)
+{
+  if (!props.visible) {
+    return false;
+  }
+
+  std::string displayText = GetTranslatedText(props);
+
+  // 如果有快捷键，添加到显示文本中
+  std::string menuItemText = displayText;
+  if (!props.shortcut.empty()) {
+    menuItemText += "\t" + props.shortcut;
+  }
+
+  bool clicked = false;
+
+  if (props.isSeparator) {
+    // 渲染分隔符
+    ImGui::Separator();
+  }
+  else if (props.hasSubmenu) {
+    // 枝干节点：有子菜单的项
+    if (ImGui::BeginMenu(menuItemText.c_str(), props.enabled)) {
+      // 执行子菜单内容渲染回调
+      if (props.submenuRenderCallback) {
+        props.submenuRenderCallback();
+      }
+      ImGui::EndMenu();
+    }
+  }
+  else {
+    // 叶子节点：普通菜单项或复选框菜单项
+    if (props.isChecked) {
+      // 复选框菜单项
+      clicked = ImGui::MenuItem(menuItemText.c_str(), nullptr, true, props.enabled);
+    }
+    else {
+      // 普通菜单项
+      clicked = ImGui::MenuItem(menuItemText.c_str(), nullptr, false, props.enabled);
+    }
+
+    // 如果被点击且启用了回调，执行回调
+    if (clicked && props.callback) {
+      props.callback();
+    }
+  }
+
+  return clicked;
+}
 // ==================== 面板管理接口实现 ====================
 bool ImGuiUIRender::BeginPanel(PanelProps &props)
 {

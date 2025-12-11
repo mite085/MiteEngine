@@ -33,7 +33,7 @@ class ImGuiBackend : public UIBackend {
   // ==================== UIBackend接口实现 ====================
   bool Initialize(void *window) override;
   void Shutdown() override;
-  void BeginFrame() override;
+  void BeginFrame(std::function<void()> menuBarCallback) override;
   void EndFrame() override;
   void SetMouseCaptured(bool captured) override;
   bool IsMouseCaptured() const override;

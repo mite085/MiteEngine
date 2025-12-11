@@ -27,6 +27,30 @@ struct TextRenderProps : public BaseRenderProps {
   // 此结构主要用于类型标识
 };
 
+// ==================== 菜单控件属性 ====================
+/**
+ * @brief 菜单项属性
+ * 用于渲染菜单项的基础属性
+ */
+struct MenuItemProps : public TextRenderProps {
+  bool hasSubmenu = false;         // 是否有子菜单（枝干节点）
+  bool isChecked = false;          // 是否被选中（用于复选框菜单项）
+  bool isSeparator = false;        // 是否为分隔符
+  std::string shortcut;            // 快捷键显示文本
+  std::function<void()> callback;  // 点击回调（仅叶子节点有效）
+
+  // 子菜单渲染回调（仅当hasSubmenu为true时有效）
+  std::function<void()> submenuRenderCallback;
+};
+/**
+ * @brief 菜单栏属性
+ * 用于渲染菜单栏的基础属性
+ */
+struct MenuBarProps : public BaseRenderProps {
+  // 菜单栏不需要额外属性，继承基础属性即可
+  // 菜单栏内容由UIMenu直接渲染，不需要回调
+};
+
 // ==================== 基础控件属性 ====================
 
 /**

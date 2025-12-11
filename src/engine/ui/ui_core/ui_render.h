@@ -14,6 +14,27 @@ class UIRender {
 
   // 单例访问
   static UIRender &Get();
+  // ==================== 菜单渲染接口 ====================
+  /**
+   * @brief 开始菜单栏渲染
+   * @param props 菜单栏属性
+   * @return 是否成功开始渲染
+   */
+  virtual bool BeginMenuBar(const MenuBarProps &props) = 0;
+  /**
+   * @brief 结束菜单栏渲染
+   */
+  virtual void EndMenuBar() = 0;
+  /**
+   * @brief 渲染菜单项（完整操作）
+   * 对于枝干节点：包含BeginMenu、子菜单内容渲染、EndMenu
+   * 对于叶子节点：直接渲染MenuItem
+   * 对于分隔符：渲染Separator
+   * @param props 菜单项属性
+   * @return 是否被点击（仅叶子节点有效）
+   */
+  virtual bool RenderMenuItem(MenuItemProps &props) = 0;
+
   // ==================== 面板管理接口 ====================
   /**
    * @brief 开始面板渲染

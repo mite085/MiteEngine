@@ -86,7 +86,7 @@ void ImGuiBackend::Shutdown()
   m_Logger->info("ImGuiBackend shutdown completed");
 }
 
-void ImGuiBackend::BeginFrame()
+void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback)
 {
   // 开始ImGui帧
   ImGui_ImplOpenGL3_NewFrame();
@@ -122,20 +122,23 @@ void ImGuiBackend::BeginFrame()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
   ImGui::Begin("Mite DockSpace", nullptr, window_flags);
   ImGui::PopStyleVar();
-  // 菜单栏
-  if (ImGui::BeginMenuBar()) {
-    if (ImGui::BeginMenu("Options")) {
-      ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
-      ImGui::MenuItem("Padding", NULL, &opt_padding);
-      ImGui::Separator();
-      if (ImGui::MenuItem(
-              "Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
-      {
-      }
-      ImGui::EndMenu();
-    }
-    ImGui::EndMenuBar();
-  }
+  // 菜单栏绘制
+  //if (ImGui::BeginMenuBar()) {
+  //  if (ImGui::BeginMenu("Options")) {
+  //    ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
+  //    ImGui::MenuItem("Padding", NULL, &opt_padding);
+  //    ImGui::Separator();
+  //    if (ImGui::MenuItem(
+  //            "Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
+  //    {
+  //    }
+  //    ImGui::EndMenu();
+  //  }
+  //  ImGui::EndMenuBar();
+  //}
+
+  menuBarCallback();
+
   // 停靠空间
   ImGuiID dockspace_id = ImGui::DockSpace(
       ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), dockspace_flags);

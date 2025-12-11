@@ -13,6 +13,10 @@ class ImGuiUIRender : public UIRender {
  public:
   ImGuiUIRender() = default;
   ~ImGuiUIRender() override = default;
+  // ==================== 菜单渲染接口实现 ====================
+  bool BeginMenuBar(const MenuBarProps &props) override;
+  void EndMenuBar() override;
+  bool RenderMenuItem(MenuItemProps &props) override;
   // ==================== 面板管理接口实现 ====================
   bool BeginPanel(PanelProps &props) override;
   void EndPanel() override;
