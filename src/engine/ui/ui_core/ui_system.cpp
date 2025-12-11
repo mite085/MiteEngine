@@ -56,7 +56,7 @@ void UISystem::Update(float deltaTime)
 void UISystem::BeginFrame()
 {
   if (m_Backend) {
-    m_Backend->BeginFrame();
+    m_Backend->BeginFrame([this]() { m_Menu->RenderMenuBar(); });
   }
 }
 

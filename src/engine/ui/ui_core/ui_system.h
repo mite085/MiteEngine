@@ -8,6 +8,7 @@
 #include "ui_localization.h"
 #include "ui_style_manager.h"
 #include "ui_panel/ui_panel.h"
+#include "ui_panel/ui_menu.h"
 
 namespace mite {
 /**
@@ -75,6 +76,7 @@ class UISystem {
   // 核心依赖
   std::unique_ptr<UIBackend> m_Backend;
   std::unique_ptr<UIStyleManager> m_StyleManager;
+  std::unique_ptr<UIMenu> m_Menu;
 
   // 管理对象
   std::unordered_set<std::shared_ptr<UIPanel>> m_Panels;

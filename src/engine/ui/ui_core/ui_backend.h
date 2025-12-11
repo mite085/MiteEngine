@@ -22,8 +22,11 @@ class UIBackend {
   // ==================== 渲染接口与事件处理 ====================
   /**
    * @brief 开始UI帧
+   * @param menuBarCallback 菜单栏绘制的回调函数
+   * @note 由于Imgui的限制，菜单栏绘制必须在DockSpace创建之前完成，
+   * 而DockSpace的创建**应当**是作为BeginFrame的一部分，所以只能以回调函数输入来处理
    */
-  virtual void BeginFrame() = 0;
+  virtual void BeginFrame(std::function<void()> menuBarCallback) = 0;
 
   /**
    * @brief 结束UI帧

@@ -539,6 +539,7 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
   if (indexCount == 0) {
     // index count = 0时，直接返回即可。仅检测，不执行draw call，
     // 基本无资源消耗。但绑定材质可能存在消耗
+    // 所以仅记录trace，不记录warn
     m_Logger->trace("Attempted to draw with indexCount = 0");
     return;
   }
