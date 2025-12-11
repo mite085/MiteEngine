@@ -95,8 +95,6 @@ class MiteApplication {
   SubscriptionGroup m_EventSubscriptions;
 };
 
-
-
 }  // namespace mite
 
 #endif

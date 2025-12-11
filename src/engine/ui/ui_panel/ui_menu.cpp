@@ -66,6 +66,13 @@ void UIMenu::SetMenuEnabled(const std::string &menuLabel, bool enabled)
   }
 }
 
+void UIMenu::SetMenuItemSelected(const std::string &path, bool selected)
+{
+  auto item = FindMenuItem(path);
+  if (item && item->IsCheckable()) {  // 只对可勾选的菜单项生效
+    item->SetSelected(selected);
+  }
+}
 void UIMenu::SetMenuItemEnabled(const std::string &path, bool enabled)
 {
   auto item = FindMenuItem(path);
@@ -73,20 +80,11 @@ void UIMenu::SetMenuItemEnabled(const std::string &path, bool enabled)
     item->SetEnabled(enabled);
   }
 }
-
 void UIMenu::SetMenuItemVisible(const std::string &path, bool visible)
 {
   auto item = FindMenuItem(path);
   if (item) {
     item->SetVisible(visible);
-  }
-}
-
-void UIMenu::SetMenuItemChecked(const std::string &path, bool checked)
-{
-  auto item = FindMenuItem(path);
-  if (item && item->GetType() == MenuItemType::CHECKBOX) {
-    item->SetChecked(checked);
   }
 }
 
@@ -102,7 +100,7 @@ void UIMenu::Render()
     }
   }
 }
-// 添加新的RenderMenuBar方法
+
 void UIMenu::RenderMenuBar()
 {
   // 获取渲染器

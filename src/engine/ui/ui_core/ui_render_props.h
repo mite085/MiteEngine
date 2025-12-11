@@ -33,14 +33,24 @@ struct TextRenderProps : public BaseRenderProps {
  * 用于渲染菜单项的基础属性
  */
 struct MenuItemProps : public TextRenderProps {
-  bool hasSubmenu = false;         // 是否有子菜单（枝干节点）
-  bool isChecked = false;          // 是否被选中（用于复选框菜单项）
-  bool isSeparator = false;        // 是否为分隔符
-  std::string shortcut;            // 快捷键显示文本
-  std::function<void()> callback;  // 点击回调（仅叶子节点有效）
+  bool hasSubmenu = false;   // 是否有子菜单
+  bool isCheckable = false;  // 是否可勾选
+  bool selected = false;     // 选中状态
+  bool isSeparator = false;  // 是否为分隔符
 
-  // 子菜单渲染回调（仅当hasSubmenu为true时有效）
+  // 统一的回调函数
+  std::function<void(bool)> callback;
+
+  // 子菜单渲染回调
   std::function<void()> submenuRenderCallback;
+
+  // 更新选中状态的方法
+  void UpdateSelected(bool newSelected)
+  {
+    if (isCheckable) {
+      selected = newSelected;
+    }
+  }
 };
 /**
  * @brief 菜单栏属性

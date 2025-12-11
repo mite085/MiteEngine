@@ -14,7 +14,7 @@ namespace mite {
  * 设计原则：
  * 1. 支持任意深度的树状结构
  * 2. 枝干节点（SUBMENU）只负责展开子项，不响应点击
- * 3. 叶子节点（NORMAL/CHECKBOX）响应具体操作
+ * 3. 叶子节点（ITEM）可以显示为普通项或复选框
  * 4. 保持简单，避免过度设计
  */
 class UIMenu {
@@ -75,11 +75,11 @@ class UIMenu {
   void SetMenuItemVisible(const std::string &path, bool visible);
 
   /**
-   * @brief 设置复选框菜单项选中状态
+   * @brief 设置菜单项选中状态
    * @param path 菜单路径
-   * @param checked 是否选中
+   * @param selected 是否选中（显示勾选标记）
    */
-  void SetMenuItemChecked(const std::string &path, bool checked);
+  void SetMenuItemSelected(const std::string &path, bool selected);
 
   // ==================== 渲染接口 ====================
 
