@@ -108,7 +108,7 @@ void OpenGLPipeline::BeginFrame()
                                    static_cast<uint32_t>(glm::max(m_PendingSize.x, 0.0f)),
                                    static_cast<uint32_t>(glm::max(m_PendingSize.y, 0.0f)));
 
-  m_Logger->debug("Pipeline BeginFrame completed");
+  m_Logger->trace("Pipeline BeginFrame completed");
 }
 
 void OpenGLPipeline::EndFrame()
@@ -128,7 +128,7 @@ void OpenGLPipeline::EndFrame()
   // 执行所有命令
   RenderCommand::Get().Flush();
 
-   m_Logger->debug("Pipeline EndFrame completed");
+   m_Logger->trace("Pipeline EndFrame completed");
 }
 
 void OpenGLPipeline::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
@@ -155,7 +155,7 @@ void OpenGLPipeline::RenderScene(std::shared_ptr<RenderQueue> renderQueue,
     }
   }
 
-   m_Logger->debug("Pipeline RenderScene completed");
+   m_Logger->trace("Pipeline RenderScene completed");
 }
 
 void OpenGLPipeline::SetClearColor(const glm::vec4 &color)

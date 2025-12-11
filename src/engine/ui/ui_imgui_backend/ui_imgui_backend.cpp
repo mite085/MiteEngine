@@ -123,20 +123,6 @@ void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback)
   ImGui::Begin("Mite DockSpace", nullptr, window_flags);
   ImGui::PopStyleVar();
   // 菜单栏绘制
-  //if (ImGui::BeginMenuBar()) {
-  //  if (ImGui::BeginMenu("Options")) {
-  //    ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
-  //    ImGui::MenuItem("Padding", NULL, &opt_padding);
-  //    ImGui::Separator();
-  //    if (ImGui::MenuItem(
-  //            "Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
-  //    {
-  //    }
-  //    ImGui::EndMenu();
-  //  }
-  //  ImGui::EndMenuBar();
-  //}
-
   menuBarCallback();
 
   // 停靠空间

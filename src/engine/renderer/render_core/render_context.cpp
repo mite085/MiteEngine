@@ -19,7 +19,7 @@ void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
   m_RenderQueue = renderQueue;
   m_MainCameraInstance = cameraInstance;
 
-  m_Logger->debug("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
+  m_Logger->trace("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
                   m_RenderQueue ? "valid" : "null",
                   cameraInstance->GetCameraTransform().GetPosition().x,
                   cameraInstance->GetCameraTransform().GetPosition().y,
@@ -60,7 +60,7 @@ void RenderContext::SetShadowMapTexture(LightType type, RuntimeTexturePtr textur
 {
   if (texture && texture->IsValid()) {
     m_ShadowMapTextures[type] = texture;
-    m_Logger->debug("Set shadow map texture for type: {}", static_cast<int>(type));
+    m_Logger->trace("Set shadow map texture for type: {}", static_cast<int>(type));
   }
   else {
     m_Logger->warn("Attempted to set invalid shadow map texture for type: {}",
@@ -88,7 +88,7 @@ void RenderContext::SetRenderTarget(const std::string &name, RuntimeTexturePtr t
     return;
   }
   m_RenderTargets[name] = texture;
-  m_Logger->debug("Set RenderTarget: {}", name);
+  m_Logger->trace("Set RenderTarget: {}", name);
 }
 RuntimeTexturePtr RenderContext::GetRenderTarget(const std::string &name) const
 {

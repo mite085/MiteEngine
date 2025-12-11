@@ -253,7 +253,7 @@ std::string UILocalizationJson::Translate(const std::string &key) const
     }
   }
 
-  m_Logger->debug("Translation key not found: {}", key);
+  m_Logger->trace("Translation key not found: {}", key);
   return key;  // 无翻译，返回键名作为默认值
 }
 

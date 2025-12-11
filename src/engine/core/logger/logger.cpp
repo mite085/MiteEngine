@@ -27,9 +27,9 @@ void LoggerSystem::Initialize()
   // 设置默认格式: [时间] [级别] [logger名] 消息
   spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%n] %v");
 
-  // 默认级别
+  // 默认级别（Debug模式下Trace暂不显示，量太大）
 #ifdef _DEBUG
-  s_CoreLogger->set_level(spdlog::level::trace);
+  s_CoreLogger->set_level(spdlog::level::debug);
 #else
   s_CoreLogger->set_level(spdlog::level::info);
 #endif

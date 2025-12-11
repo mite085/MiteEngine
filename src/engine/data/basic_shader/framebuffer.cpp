@@ -259,7 +259,7 @@ void FrameBuffer::AttachExternalDepthTexture(RuntimeTexturePtr externalDepthText
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  LOG_DEBUG("Attached external depth texture to framebuffer {}", m_RendererID);
+  LOG_TRACE("Attached external depth texture to framebuffer {}", m_RendererID);
 }
 
 bool FrameBuffer::IsComplete() const

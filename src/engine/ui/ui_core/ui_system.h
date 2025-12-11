@@ -69,6 +69,11 @@ class UISystem {
    */
   void DestroyPanel(std::shared_ptr<UIPanel> panel);
 
+  /**
+   * @brief 获取菜单栏对象，用于新增菜单项
+   */
+  UIMenu &GetMenu() { return *m_Menu; }
+
  private:
   // 使用窗口句柄初始化后端
   bool InitializeBackend(void *nativeWindow);

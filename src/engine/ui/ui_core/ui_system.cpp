@@ -4,7 +4,6 @@
 #include "window.h"
 
 namespace mite {
-
 UISystem::UISystem()
 {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI System");
@@ -12,8 +11,8 @@ UISystem::UISystem()
 }
 
 void UISystem::Initialize(void *nativeWindow)
-{  
-    // 初始化后端
+{
+  // 初始化后端
   if (!InitializeBackend(nativeWindow)) {
     m_Logger->error("UI Backend Initialize FAILED!");
   }
@@ -22,12 +21,15 @@ void UISystem::Initialize(void *nativeWindow)
   m_StyleManager = std::make_unique<UIStyleManager>();
   m_StyleManager->Initialize();
 
+  // 初始化Menu菜单
+  m_Menu = std::make_unique<UIMenu>();
+
   // 发布初始化完成事件
   EventBus::Publish<UISystemInitializedEvent>(UISystemInitializedEvent());
 }
 
 void UISystem::Shutdown()
-{ 
+{
   // 发布关闭事件
   EventBus::Publish<UISystemShutdownEvent>(UISystemShutdownEvent());
 
@@ -82,16 +84,14 @@ void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
 {
   // 需要检查UI的ID
   if (m_Panels.find(panel) != m_Panels.end()) {
-    m_Logger->error("Cannot Register Existing Panel: name = {}",
-                    panel->GetName());
+    m_Logger->error("Cannot Register Existing Panel: name = {}", panel->GetName());
   }
 
   // 注册进哈希表
   m_Panels.insert(panel);
 
   // 发布面板创建事件
-  EventBus::Publish<PanelOpenedEvent>(
-      PanelOpenedEvent(panel));
+  EventBus::Publish<PanelOpenedEvent>(PanelOpenedEvent(panel));
 }
 
 void UISystem::DestroyPanel(std::shared_ptr<UIPanel> panel)
@@ -116,6 +116,4 @@ bool UISystem::InitializeBackend(void *nativeWindow)
   m_Logger->info("ImGui Backend Initialize Successed");
   return true;
 }
-
-
 }  // namespace mite

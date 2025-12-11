@@ -512,7 +512,7 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   // m_CurrentModelHandle = modelHandle;
 
   // 6. 调试信息
-  m_Logger->debug("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
+  m_Logger->trace("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
                   vao,
                   modelHandle.vertexBuffer,
                   modelHandle.indexBuffer,

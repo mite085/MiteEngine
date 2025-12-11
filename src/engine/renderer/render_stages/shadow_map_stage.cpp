@@ -342,6 +342,7 @@ void ShadowMapStage::RenderDirectionalShadowMap(
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
+  m_Logger->trace("Rendered directional shadow maps for {} lights", directionalLights.size());
 }
 void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
                                           const std::vector<std::shared_ptr<Light>> &pointLights)
@@ -372,6 +373,7 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
+  m_Logger->trace("Rendered point shadow maps for {} lights", pointLights.size());
 }
 void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
                                          const std::vector<std::shared_ptr<Light>> &spotLights)
@@ -402,7 +404,7 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
                            context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
   }
   RenderCommand::Get().UnbindFrameBuffer();
-  m_Logger->debug("Rendered spot shadow maps for {} lights", spotLights.size());
+  m_Logger->trace("Rendered spot shadow maps for {} lights", spotLights.size());
 }
 
 void ShadowMapStage::SetupShadowRenderState()

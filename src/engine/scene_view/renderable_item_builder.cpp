@@ -127,7 +127,7 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
       item.itemType = RenderableItemType::Opaque;  // 默认按照不透明来进行
     }
 
-    m_Logger->debug("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
+    m_Logger->trace("Successfully built RenderableItem for Entity {}", entity.GetUUIDString());
     return item;
   }
   catch (const std::exception &e) {
