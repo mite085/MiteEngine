@@ -72,7 +72,7 @@ float CalculateDirectionalLightAttenuation()
     return 1.0;
 }
 
-// 面光源衰减计算（简化版）
+// 面光源衰减计算
 float CalculateAreaLightAttenuation(vec3 lightPosition, vec3 lightNormal, vec3 surfacePosition, 
                                    float power, vec2 size, float shape)
 {
@@ -158,7 +158,7 @@ vec3 CalculateLightDirection(uint lightIndex, vec3 surfacePosition)
     }
 }
 
-// 计算光源颜色（包含强度）
+// 计算光源颜色（仅涉及强度控制，暂未实现辐照度/辐射出射度/功率的控制，待后续添加）
 vec3 CalculateLightColor(uint lightIndex)
 {
     GPULightData light = u_Lights.lights[lightIndex];

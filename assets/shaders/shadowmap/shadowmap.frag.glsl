@@ -73,10 +73,10 @@ void main()
     }
     else if (shadowMapType == 0) {
         // 方向光源：使用默认的非线性深度（保持原有逻辑）
-        // gl_FragDepth = gl_FragCoord.z;
+        gl_FragDepth = gl_FragCoord.z;
     }
     else if (shadowMapType == 2) {
         // 聚光灯：使用默认的非线性深度（保持原有逻辑）
-        // gl_FragDepth = gl_FragCoord.z;
+        gl_FragDepth = gl_FragCoord.z;
     }
 }
