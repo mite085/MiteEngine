@@ -79,6 +79,7 @@
     "visibility_mask_all": "完全可见",
 
     "light":  "光源",
+    "light_type": "光源类型",
     "light_enable": "是否启用",
     "light_color": "光源颜色",
     "light_intensity": "光源强度",
@@ -87,6 +88,7 @@
     "light_point_falloff": "点光源衰减系数",
     "light_spot": "聚光灯",
     "light_directional": "方向光",
+    "light_directional_irradius": "方向光辐照度",
     "light_area_rect": "矩形面光源",
     "light_area_ellipse": "椭圆面光源",
 
