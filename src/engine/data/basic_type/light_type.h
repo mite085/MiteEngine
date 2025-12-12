@@ -15,6 +15,7 @@ namespace mite {
 #define MAX_POINT_LIGHTS 16       // 16个点光源（立方体贴图内存消耗大）
 #define MAX_SPOT_LIGHTS 32        // 32个聚光灯（2D纹理相对节省）
 #define MAX_AREA_LIGHTS 8         // 8个面光源（保留扩展）
+#define MAX_LIGHTS 64             // 总光源最大数量64（8方向光+16点光源+32聚光灯+8面光源）
 
 // ----------------- 光源类型和基础参数 -------------------
 /**
@@ -104,7 +105,7 @@ struct alignas(16) GPULightData {
 
   // 类型特定属性 - 使用union节省空间
   union {
-    // 点光源和聚光灯共享属性
+    // 点光源和聚光灯共享属性（缺少物理量控制，如功率/W，待后续添加，目前仅强度控制）
     struct {
       float range;        // 范围/半径
       float innerAngle;   // 内角（聚光灯，度）
@@ -116,14 +117,14 @@ struct alignas(16) GPULightData {
 
     // 方向光
     struct {
-      float irradiance;   // 辐照度
+      float irradiance;   // 辐照度（暂未启用，仅使用最简单的强度控制，待后续考虑物理量）
       float padding3[3];  // 填充以确保union大小为16字节倍数
     } directional;
 
     // 面光源
     struct {
       glm::vec2 size;  // 尺寸
-      float power;     // 功率（W）
+      float power;     // 功率（W）（暂未启用，仅使用最简单的强度控制，待后续考虑物理量）
       float shape;     // AreaLightShape转换为float
     } area;
   } specific;

@@ -253,28 +253,45 @@ std::array<glm::vec3, 8> DirectionalShadowMap::CalculateFrustumCorners(
     const glm::mat4 &cameraView,
     const glm::mat4 &cameraProj) const
 {
-  // 计算视图投影矩阵的逆矩阵
-  glm::mat4 invViewProj = glm::inverse(cameraProj * cameraView);
+  // 方法：直接计算视锥体角点，不依赖NDC转换
+
+  // 获取相机参数
+  glm::vec3 cameraPos = glm::vec3(glm::inverse(cameraView)[3]);
+  glm::vec3 cameraForward = glm::vec3(cameraView[0][2], cameraView[1][2], cameraView[2][2]);
+  glm::vec3 cameraUp = glm::vec3(cameraView[0][1], cameraView[1][1], cameraView[2][1]);
+  glm::vec3 cameraRight = glm::vec3(cameraView[0][0], cameraView[1][0], cameraView[2][0]);
+
+  // 从投影矩阵提取FOV和宽高比（假设透视投影）
+  float fovY = 2.0f * atan(1.0f / cameraProj[1][1]);
+  float aspect = cameraProj[1][1] / cameraProj[0][0];
+
+  // 计算近平面和远平面的尺寸
+  float tanHalfFovY = tan(fovY * 0.5f);
+
+  float nearHeight = 2.0f * tanHalfFovY * nearPlane;
+  float nearWidth = nearHeight * aspect;
+
+  float farHeight = 2.0f * tanHalfFovY * farPlane;
+  float farWidth = farHeight * aspect;
+
+  // 计算近平面中心点
+  glm::vec3 nearCenter = cameraPos + cameraForward * nearPlane;
+  // 计算远平面中心点
+  glm::vec3 farCenter = cameraPos + cameraForward * farPlane;
 
   std::array<glm::vec3, 8> corners;
 
-  // 定义NDC空间的8个角点
-  const std::array<glm::vec4, 8> ndcCorners = {// 近平面
-                                               glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-                                               glm::vec4(1.0f, -1.0f, -1.0f, 1.0f),
-                                               glm::vec4(1.0f, 1.0f, -1.0f, 1.0f),
-                                               glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f),
-                                               // 远平面
-                                               glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f),
-                                               glm::vec4(1.0f, -1.0f, 1.0f, 1.0f),
-                                               glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                               glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f)};
+  // 近平面4个角点
+  corners[0] = nearCenter - cameraUp * (nearHeight * 0.5f) - cameraRight * (nearWidth * 0.5f);
+  corners[1] = nearCenter - cameraUp * (nearHeight * 0.5f) + cameraRight * (nearWidth * 0.5f);
+  corners[2] = nearCenter + cameraUp * (nearHeight * 0.5f) + cameraRight * (nearWidth * 0.5f);
+  corners[3] = nearCenter + cameraUp * (nearHeight * 0.5f) - cameraRight * (nearWidth * 0.5f);
 
-  // 将NDC坐标转换到世界空间
-  for (size_t i = 0; i < 8; ++i) {
-    glm::vec4 worldPos = invViewProj * ndcCorners[i];
-    corners[i] = glm::vec3(worldPos) / worldPos.w;
-  }
+  // 远平面4个角点
+  corners[4] = farCenter - cameraUp * (farHeight * 0.5f) - cameraRight * (farWidth * 0.5f);
+  corners[5] = farCenter - cameraUp * (farHeight * 0.5f) + cameraRight * (farWidth * 0.5f);
+  corners[6] = farCenter + cameraUp * (farHeight * 0.5f) + cameraRight * (farWidth * 0.5f);
+  corners[7] = farCenter + cameraUp * (farHeight * 0.5f) - cameraRight * (farWidth * 0.5f);
 
   return corners;
 }
