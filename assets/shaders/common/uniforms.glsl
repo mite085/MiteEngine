@@ -87,17 +87,17 @@ layout(std140, binding = 3) uniform ShadowUBO {
     vec4 shadowParams;   // x: shadowBias, y: normalBias, z: shadowFilterSize, w: shadowMapSize
     
     // ---- 光源特定阴影索引 ----
-    // 方向光源阴影索引 (MAX_DIRECTIONAL_LIGHTS * 16 = 128字节)
-    ivec4 directionalShadowIndices[MAX_DIRECTIONAL_LIGHTS];  // 每个光源的阴影图起始索引
+    // 方向光源阴影索引 (MAX_LIGHTS * 16 = 1024字节)
+    ivec4 directionalShadowIndices[MAX_LIGHTS];  // 每个光源的阴影图起始索引
     
-    // 点光源阴影索引 (MAX_POINT_LIGHTS * 16 = 256字节)
-    ivec4 pointShadowIndices[MAX_POINT_LIGHTS];  // 每个点光源在立方体贴图数组中的索引
+    // 点光源阴影索引 (MAX_LIGHTS * 16 = 1024字节)
+    ivec4 pointShadowIndices[MAX_LIGHTS];  // 每个点光源在立方体贴图数组中的索引
     
-    // 聚光灯阴影索引 (MAX_SPOT_LIGHTS * 16 = 512字节)
-    ivec4 spotShadowIndices[MAX_SPOT_LIGHTS];  // 每个聚光灯在阴影图数组中的索引
+    // 聚光灯阴影索引 (MAX_LIGHTS * 16 = 1024字节)
+    ivec4 spotShadowIndices[MAX_LIGHTS];  // 每个聚光灯在阴影图数组中的索引
     
-    // 面光源阴影索引 (MAX_AREA_LIGHTS * 16 = 128字节) - (暂未启用，保留扩展)
-    ivec4 areaShadowIndices[MAX_AREA_LIGHTS];
+    // 面光源阴影索引 (MAX_LIGHTS * 16 = 1024字节) - (暂未启用，保留扩展)
+    ivec4 areaShadowIndices[MAX_LIGHTS];
 } u_Shadow;
 
 // 阴影渲染上下文UBO - 绑定点 4

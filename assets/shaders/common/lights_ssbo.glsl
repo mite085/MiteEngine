@@ -56,11 +56,11 @@ float GetLightIrradiance(uint lightIndex) {
     return u_Lights.lights[lightIndex].specificData[0];
 }
 
+// 光源特定数据访问辅助函数--面光源专用
 float GetAreaLightPower(uint lightIndex) {
     return u_Lights.lights[lightIndex].specificData[0];
 }
 
-// 光源特定数据访问辅助函数--面光源专用
 vec2 GetAreaLightSize(uint lightIndex) {
     return vec2(
         u_Lights.lights[lightIndex].specificData[1],
