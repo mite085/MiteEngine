@@ -93,7 +93,7 @@ void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render)
         pointLight->SetRadius(m_PointLightRadiusProps.value);
       }
     });
-    // 影响半径编辑
+    // 衰减系数编辑
     FloatEditProps m_PointLightFallOffProps;
     m_PointLightFallOffProps.value = pointLight->GetFalloff();
     m_PointLightFallOffProps.minValue = 0.0f;  // 最小值限制在0.0
@@ -104,8 +104,53 @@ void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render)
     });
   }
 }
-void PropertyTable<LightComponent>::RenderSpotLightProperty(UIRender &render) {}
-void PropertyTable<LightComponent>::RenderDirectionalLightProperty(UIRender &render) {}
-void PropertyTable<LightComponent>::RenderAreaRectLightProperty(UIRender &render) {}
-void PropertyTable<LightComponent>::RenderAreaEllipseLightProperty(UIRender &render) {}
+
+void PropertyTable<LightComponent>::RenderDirectionalLightProperty(UIRender &render)
+{  // 运行时动态检测
+  std::shared_ptr<DirectionalLight> directionalLight = std::dynamic_pointer_cast<DirectionalLight>(
+      m_Component.GetLight());
+  // 确保是方向光对象
+  if (directionalLight) {
+    // 是否启用
+    CheckboxProps m_DirectionalEnableProps;
+    m_DirectionalEnableProps.checked = directionalLight->IsEnabled();
+    RenderLabelItemRow(render, "editor.light_enable", [&]() {
+      if (render.RenderCheckbox(m_DirectionalEnableProps)) {
+        directionalLight->SetEnabled(m_DirectionalEnableProps.checked);
+      }
+    });
+    // 颜色编辑
+    ColorEditProps m_DirectionalColorProps;
+    m_DirectionalColorProps.showAlpha = false;
+    m_DirectionalColorProps.color = {directionalLight->GetColor(), 1.0f};
+    RenderLabelItemRow(render, "editor.light_color", [&]() {
+      if (render.RenderColorEdit(m_DirectionalColorProps)) {
+        directionalLight->SetColor(glm::vec3(m_DirectionalColorProps.color.x,
+                                             m_DirectionalColorProps.color.y,
+                                             m_DirectionalColorProps.color.z));
+      }
+    });
+    // 强度编辑
+    FloatEditProps m_DirectionalLightIntensityProps;
+    m_DirectionalLightIntensityProps.value = directionalLight->GetIntensity();
+    m_DirectionalLightIntensityProps.minValue = 0.0f;  // 最小值限制在0.0
+    RenderLabelItemRow(render, "editor.light_intensity", [&]() {
+      if (render.RenderDragFloat(m_DirectionalLightIntensityProps)) {
+        directionalLight->SetIntensity(m_DirectionalLightIntensityProps.value);
+      }
+    });
+    // 辐照度编辑（方向光特有属性）（暂未启用，仅使用最简单的强度控制，待后续考虑物理量）
+    //FloatEditProps m_DirectionalIrradiusProps;
+    //m_DirectionalIrradiusProps.value = directionalLight->GetIrradius();
+    //m_DirectionalIrradiusProps.minValue = 0.0f;  // 最小值限制在0.0
+    //RenderLabelItemRow(render, "editor.light_directional_irradius", [&]() {
+    //  if (render.RenderDragFloat(m_DirectionalIrradiusProps)) {
+    //    directionalLight->SetIrradius(m_DirectionalIrradiusProps.value);
+    //  }
+    //});
+  }
+}
+  void PropertyTable<LightComponent>::RenderSpotLightProperty(UIRender & render) {}
+  void PropertyTable<LightComponent>::RenderAreaRectLightProperty(UIRender & render) {}
+  void PropertyTable<LightComponent>::RenderAreaEllipseLightProperty(UIRender & render) {}
 }  // namespace mite
