@@ -112,6 +112,9 @@ void ForwardStage::Execute(RenderContext &context)
   // 绑定相机UBO
   RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
+  // 绑定默认纯黑的环境光纹理，避免Layout绑定点悬空
+  RenderCommand::Get().BindDefaultEnvironmentMap();
+
   // 按顺序渲染各个队列
   RenderTransparentQueue(context);
 

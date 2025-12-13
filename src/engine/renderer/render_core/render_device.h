@@ -46,6 +46,8 @@ class RenderDevice {
   virtual void BindExternalTexture(ExternalTextureType type,
                                    TextureGPUHandle textureHandle,
                                    TextureTarget target = TextureTarget::TEXTURE_2D) const = 0;
+  // 使用纯黑图像作为默认环境贴图
+  virtual void BindDefaultEnvironmentMap() const = 0;
 
   // ShadowMap的FrameBuffer深度数组纹理附件绑定的便捷方法（2D_ARRAY和CUBE_MAP_ARRAY专用）
   virtual void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,

@@ -84,6 +84,9 @@ void DeferredLightingStage::Execute(RenderContext &context)
   // 绑定光源SSBO数据
   BindLightSSBOData(context, lightingShader);
 
+  // 绑定默认纯黑的环境光纹理，避免Layout绑定点悬空
+  RenderCommand::Get().BindDefaultEnvironmentMap();
+
   // 绑定阴影数据
   if (m_EnableShadows) {
     LightManager &lightManager = context.GetLightManager();

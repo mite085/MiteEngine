@@ -130,6 +130,11 @@ class RenderCommand {
                                    TextureGPUHandle textureHandle,
                                    TextureTarget target = TextureTarget::TEXTURE_2D) = 0;
   /**
+   * @brief 绑定默认纯黑图像作为环境贴图，防止着色器Layout绑定点悬空
+   */
+  virtual void BindDefaultEnvironmentMap() = 0;
+
+  /**
    * @brief ShadowMap的FrameBuffer深度数组纹理附件绑定的便捷方法（2D_ARRAY和CUBE_MAP_ARRAY专用）
    * @param fbo ShadowMap帧缓冲
    * @param layer 需要绑定的纹理层数

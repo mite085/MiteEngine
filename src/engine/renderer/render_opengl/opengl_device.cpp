@@ -369,6 +369,14 @@ void OpenGLDevice::BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo
   glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0, arrayLayer);
 }
 
+void OpenGLDevice::BindDefaultEnvironmentMap() const
+{
+  // 选定背景图类型，使用纯黑图像填充Handle，使用外部纹理绑定方法执行绑定
+  ExternalTextureType environmentType = ExternalTextureType::EnvironmentMap;
+  TextureGPUHandle environmentHandle = TextureGPUHandle{m_BlackTexture};
+  BindExternalTexture(environmentType, environmentHandle);
+}
+
 // ------------------------ 模型操作 ------------------------
 ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
 {
