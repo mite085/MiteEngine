@@ -106,7 +106,7 @@ void SimpleBVH::Rebuild()
   m_NeedsRebuild = false;
   ClearDirtyFlags();
 
-  LOG_INFO("BVH rebuilt with {} nodes, depth: {}", m_NodeCount, GetDepth());
+  LOG_DEBUG("BVH rebuilt with {} nodes, depth: {}", m_NodeCount, GetDepth());
 }
 
 // ==================== 空间结构外部查询接口 ====================

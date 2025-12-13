@@ -38,7 +38,7 @@ void ShaderUBO::Initialize()
   // 创建UBO
   CreateUBO();
   m_IsInitialized = true;
-  LOG_INFO("ShaderUBO initialized - ID: {}, Binding: {}", m_UBOId, m_BindingPoint);
+  LOG_DEBUG("ShaderUBO initialized - ID: {}, Binding: {}", m_UBOId, m_BindingPoint);
 }
 
 void ShaderUBO::Destroy()
