@@ -258,20 +258,20 @@ struct alignas(16) ShadowUniformBuffer {
   glm::vec4 shadowParams = glm::vec4(0.001f, 0.02f, 1.0f, 1024.0f);
 
   // ---- 光源特定阴影索引 ----
-  // 方向光源阴影索引 (MAX_LIGHTS(64) * 16 = 1024字节)
-  glm::ivec4 directionalShadowIndices[MAX_LIGHTS];  // 每个光源的阴影图起始索引
+  // 方向光源阴影索引 (MAX_DIRECTIONAL_LIGHTS(8) * 16 = 128字节)
+  glm::ivec4 directionalShadowIndices[MAX_DIRECTIONAL_LIGHTS];  // 每个光源的阴影图起始索引
 
-  // 点光源阴影索引 (MAX_LIGHTS(64) * 16 = 1024字节)
-  glm::ivec4 pointShadowIndices[MAX_LIGHTS];  // 每个点光源在立方体贴图数组中的索引
+  // 点光源阴影索引 (MAX_POINT_LIGHTS(16) * 16 = 256字节)
+  glm::ivec4 pointShadowIndices[MAX_POINT_LIGHTS];  // 每个点光源在立方体贴图数组中的索引
 
-  // 聚光灯阴影索引 (MAX_LIGHTS(64) * 16 = 1024字节)
-  glm::ivec4 spotShadowIndices[MAX_LIGHTS];  // 每个聚光灯在阴影图数组中的索引
+  // 聚光灯阴影索引 (MAX_SPOT_LIGHTS(32) * 16 = 512字节)
+  glm::ivec4 spotShadowIndices[MAX_SPOT_LIGHTS];  // 每个聚光灯在阴影图数组中的索引
 
-  // 面光源阴影索引 (MAX_LIGHTS(64) * 16 = 1024字节)（未启用）
-  glm::ivec4 areaShadowIndices[MAX_LIGHTS];  // 每个面光源在阴影图数组中的索引（未启用）
+  // 面光源阴影索引 (MAX_AREA_LIGHTS(8) * 16 = 128字节)（未启用）
+  glm::ivec4 areaShadowIndices[MAX_AREA_LIGHTS];  // 每个面光源在阴影图数组中的索引（未启用）
 
-  // 总大小: 64 + 2048 + 6144 + 2048 + 16 + 16 + 1024 * 4 = 14432字节
-  // 14432字节 < 64KB(65536字节，OpenGL最低标准)，符合UBO大小限制
+  // 总大小: 64 + 2048 + 6144 + 2048 + 16 + 16 + 1024 = 11360字节
+  // 11360字节 < 64KB(65536字节，OpenGL最低标准)，符合UBO大小限制
 };
 
 /**

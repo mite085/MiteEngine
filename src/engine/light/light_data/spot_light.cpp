@@ -18,14 +18,15 @@ std::string SpotLight::GetLightTypeName() const
   return "SpotLight";
 }
 
-GPULightData SpotLight::PrepareGPULightData(const Transform &worldTransform) const
+GPULightData SpotLight::PrepareGPULightData(const Transform &worldTransform,
+                                            int typeLocalIndex) const
 {
   if (!m_Properties.enabled) {
     LOG_WARN("Preparing GPU data for disabled spot light");
   }
 
   // 使用基类的GPULightData构造函数，传入聚光灯类型
-  GPULightData gpuData(m_Properties, worldTransform, LightType::SPOT);
+  GPULightData gpuData(m_Properties, worldTransform, LightType::SPOT, typeLocalIndex);
 
   LOG_TRACE(
       "SpotLight GPU data prepared - position: ({}, {}, {}), direction: ({}, {}, {}), range: {}",

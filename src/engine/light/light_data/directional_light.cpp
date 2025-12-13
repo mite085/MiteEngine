@@ -16,14 +16,15 @@ std::string DirectionalLight::GetLightTypeName() const
   return "DirectionalLight";
 }
 
-GPULightData DirectionalLight::PrepareGPULightData(const Transform &worldTransform) const
+GPULightData DirectionalLight::PrepareGPULightData(const Transform &worldTransform,
+                                                   int typeLocalIndex) const
 {
   if (!m_Properties.enabled) {
     LOG_WARN("Preparing GPU data for disabled direction light");
   }
 
   // 使用基类的GPULightData构造函数，传入方向光类型
-  GPULightData gpuData(m_Properties, worldTransform, LightType::DIRECTIONAL);
+  GPULightData gpuData(m_Properties, worldTransform, LightType::DIRECTIONAL, typeLocalIndex);
 
   LOG_TRACE("DirectionalLight GPU data prepared - position: ({}, {}, {}), irradiance: {}",
             gpuData.position.x,

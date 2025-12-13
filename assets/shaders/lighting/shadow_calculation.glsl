@@ -7,6 +7,55 @@
 #include "../common/lights_ssbo.glsl"
 
 /**
+ * @brief 获取光源的类型内局部索引
+ */
+uint GetLightTypeLocalIndex(uint lightIndex) {
+    return uint(u_Lights.lights[lightIndex].typeLocalIndex);
+}
+/**
+ * @brief 获取方向光源阴影矩阵索引
+ */
+int GetDirectionalShadowMatrixIndex(uint lightIndex) {
+    uint localIndex = GetLightTypeLocalIndex(lightIndex);
+    return int(localIndex * u_Shadow.shadowConfig.w); // 乘以级联数量
+}
+/**
+ * @brief 获取点光源阴影矩阵索引
+ */
+int GetPointShadowMatrixIndex(uint lightIndex) {
+    uint localIndex = GetLightTypeLocalIndex(lightIndex);
+    return int(localIndex * 6); // 每个点光源6个面
+}
+/**
+ * @brief 获取聚光灯阴影矩阵索引
+ */
+int GetSpotShadowMatrixIndex(uint lightIndex) {
+    uint localIndex = GetLightTypeLocalIndex(lightIndex);
+    return int(localIndex);
+}
+
+/**
+ * @brief 检查光源是否有阴影
+ */
+bool HasShadow(uint lightIndex) {
+    GPULightData light = u_Lights.lights[lightIndex];
+    uint lightType = uint(light.type);
+    uint localIndex = GetLightTypeLocalIndex(lightIndex);
+    
+    // 检查是否在有效范围内
+    switch (lightType) {
+        case LIGHT_TYPE_DIRECTIONAL:
+            return localIndex < uint(u_Shadow.shadowConfig.x);
+        case LIGHT_TYPE_POINT:
+            return localIndex < uint(u_Shadow.shadowConfig.y);
+        case LIGHT_TYPE_SPOT:
+            return localIndex < uint(u_Shadow.shadowConfig.z);
+        default:
+            return false;
+    }
+}
+
+/**
  * @brief 计算点光源阴影可见性（基于分辨率的PCF）
  */
 float CalculatePointLightShadow(uint lightIndex, vec3 worldPos)
@@ -15,7 +64,11 @@ float CalculatePointLightShadow(uint lightIndex, vec3 worldPos)
     vec3 lightToFrag = worldPos - lightPos;
     float distance = length(lightToFrag);
     
-    int shadowIndex = u_Shadow.pointShadowIndices[lightIndex].x;
+    // 使用类型内索引获取阴影索引
+    uint localIndex = GetLightTypeLocalIndex(lightIndex);
+    int shadowIndex = u_Shadow.pointShadowIndices[localIndex].x;
+
+    // 计算当前深度值
     float bias = u_Shadow.shadowParams.x;
     float currentDepth = (distance + bias) / GetLightRange(lightIndex);
     
@@ -57,23 +110,34 @@ float CalculatePointLightShadow(uint lightIndex, vec3 worldPos)
  */
 float CalculateDirectionalShadow(uint lightIndex, vec3 worldPos, vec3 normal)
 {
-    // 极简版本：假设所有数据都已正确设置
+    uint localIndex = GetLightTypeLocalIndex(lightIndex);
+    uint cascadeCount = uint(u_Shadow.shadowConfig.w);
     
-    // 1. 使用第0个阴影矩阵
-    vec4 shadowPos = u_Shadow.directionalMatrices[lightIndex] * vec4(worldPos, 1.0);
+    // 确定使用哪个级联
+    uint cascadeIndex = 0;
+    float depth = length(worldPos - u_Camera.cameraPosition);
     
-    // 2. 转换到纹理空间
+    for (uint i = 0; i < cascadeCount - 1; ++i) {
+        if (depth < u_Shadow.cascadeSplits[i].x) {
+            cascadeIndex = i;
+            break;
+        }
+    }
+    
+    // 计算矩阵索引
+    int matrixIndex = GetDirectionalShadowMatrixIndex(lightIndex) + int(cascadeIndex);
+    
+    vec4 shadowPos = u_Shadow.directionalMatrices[matrixIndex] * vec4(worldPos, 1.0);
     shadowPos.xyz /= shadowPos.w;
     vec3 projCoords = shadowPos.xyz * 0.5 + 0.5;
     
-    // 3. 简单范围检查
     if (projCoords.z > 1.0) return 1.0;
     
-    // 4. 采样并比较
-    float closestDepth = texture(u_ShadowMapDirectional, vec3(projCoords.xy, lightIndex)).r;
+    // 使用类型内索引获取阴影层
+    int shadowLayer = u_Shadow.directionalShadowIndices[localIndex].x + int(cascadeIndex);
+    float closestDepth = texture(u_ShadowMapDirectional, vec3(projCoords.xy, shadowLayer)).r;
     float currentDepth = projCoords.z;
     
-    // 5. 硬阴影
     return currentDepth > closestDepth ? 0.0 : 1.0;
 }
 
@@ -82,8 +146,10 @@ float CalculateDirectionalShadow(uint lightIndex, vec3 worldPos, vec3 normal)
  */
 float CalculateSpotLightShadow(uint lightIndex, vec3 worldPos)
 {
-    vec4 shadowPos = u_Shadow.spotLightMatrices[lightIndex] * vec4(worldPos, 1.0);
+    uint localIndex = GetLightTypeLocalIndex(lightIndex);
+    int matrixIndex = GetSpotShadowMatrixIndex(lightIndex);
     
+    vec4 shadowPos = u_Shadow.spotLightMatrices[matrixIndex] * vec4(worldPos, 1.0);
     vec3 projCoords = shadowPos.xyz / shadowPos.w;
     projCoords = projCoords * 0.5 + 0.5;
     
@@ -105,44 +171,13 @@ float CalculateSpotLightShadow(uint lightIndex, vec3 worldPos)
  */
 float CalculateShadowVisibility(uint lightIndex, vec3 worldPos, vec3 normal)
 {
-    GPULightData light = u_Lights.lights[lightIndex];
-    uint lightType = uint(light.type);
-    
-    // 检查该光源是否有阴影
-    bool hasShadow = false;
-    int shadowMapIndex = -1;
-
-    switch (lightType) {
-        case LIGHT_TYPE_POINT:
-            // 添加边界检查
-            if (lightIndex < MAX_LIGHTS) {
-                shadowMapIndex = u_Shadow.pointShadowIndices[lightIndex].x;
-                hasShadow = (shadowMapIndex >= 0);
-            }
-            break;
-        case LIGHT_TYPE_DIRECTIONAL:
-            // 添加边界检查
-            if (lightIndex < MAX_LIGHTS) {
-                shadowMapIndex = u_Shadow.directionalShadowIndices[lightIndex].x;
-                hasShadow = (shadowMapIndex >= 0);
-            }
-            break;
-        case LIGHT_TYPE_SPOT:
-            // 添加边界检查
-            if (lightIndex < MAX_LIGHTS) {
-                shadowMapIndex = u_Shadow.spotShadowIndices[lightIndex].x;
-                hasShadow = (shadowMapIndex >= 0);
-            }
-            break;
-        default:
-            hasShadow = false;
-    }
-    
-    if (!hasShadow) {
+    if (!HasShadow(lightIndex)) {
         return 1.0; // 无阴影，完全可见
     }
     
-    // 根据光源类型调用对应的阴影计算
+    GPULightData light = u_Lights.lights[lightIndex];
+    uint lightType = uint(light.type);
+    
     switch (lightType) {
         case LIGHT_TYPE_POINT:
             return CalculatePointLightShadow(lightIndex, worldPos);

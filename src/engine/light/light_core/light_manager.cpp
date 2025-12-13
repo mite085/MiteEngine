@@ -203,8 +203,7 @@ std::vector<std::shared_ptr<Light>> LightManager::GetEnabledLights() const
   return enabledLights;
 }
 
-bool LightManager::UpdateLightData(
-    const std::unordered_map<Light *, Transform> &worldTransforms)
+bool LightManager::UpdateLightData(const std::unordered_map<Light *, Transform> &worldTransforms)
 {
   if (!m_IsInitialized || !m_LightSSBO) {
     LOG_ERROR("Cannot update light data: LightManager not initialized");
@@ -383,22 +382,66 @@ std::vector<GPULightData> LightManager::PrepareGPULightData(
   // 清空变换缓存
   m_LightTransformCache.clear();
 
+  // 为每种光源类型维护计数器
+  std::unordered_map<LightType, int> typeCounters = {{LightType::POINT, 0},
+                                                     {LightType::SPOT, 0},
+                                                     {LightType::DIRECTIONAL, 0},
+                                                     {LightType::AREA_RECT, 0},
+                                                     {LightType::AREA_ELLIPSE, 0}};
+
+  // 第一遍：计算每个光源的类型内索引
+  std::unordered_map<Light *, int> lightTypeIndices;
+
   for (std::shared_ptr<Light> light : m_Lights) {
+    if (!light || !light->IsEnabled()) {
+      continue;
+    }
+    LightType lightType = light->GetType();
+    int typeLocalIndex = typeCounters[lightType];
+    lightTypeIndices[light.get()] = typeLocalIndex;
+    typeCounters[lightType]++;
+  }
+
+  // 第二遍：准备GPU数据
+  for (std::shared_ptr<Light> light : m_Lights) {
+    if (!light || !light->IsEnabled()) {
+      continue;
+    }
     try {
-      Transform transform = worldTransforms.at(light.get());
-      GPULightData lightData = light->PrepareGPULightData(transform);
+      // 获取光源的世界变换
+      auto it = worldTransforms.find(light.get());
+      if (it == worldTransforms.end()) {
+        LOG_WARN("Light transform not found for light: {}", light->GetLightTypeName());
+        continue;
+      }
+      Transform transform = it->second;
+
+      // 获取类型内索引
+      int typeLocalIndex = lightTypeIndices[light.get()];
+
+      // 调用光源的PrepareGPULightData函数，传递类型内索引
+      GPULightData lightData = light->PrepareGPULightData(transform, typeLocalIndex);
+
       gpuData.push_back(lightData);
       m_LightTransformCache.insert({light.get(), transform});
+
+      LOG_TRACE("Prepared GPU data for {} light, typeLocalIndex: {}",
+                light->GetLightTypeName(),
+                typeLocalIndex);
     }
     catch (const std::exception &e) {
       LOG_ERROR("Failed to prepare GPU data for light: {}", e.what());
     }
   }
-
-  for (const auto &[light, transform] : worldTransforms) {
-    
-  }
-
+  // 记录统计信息
+  LOG_TRACE(
+      "Light type statistics - Point: {}, Spot: {}, Directional: {}, AreaRect: {}, AreaEllipse: "
+      "{}",
+      typeCounters[LightType::POINT],
+      typeCounters[LightType::SPOT],
+      typeCounters[LightType::DIRECTIONAL],
+      typeCounters[LightType::AREA_RECT],
+      typeCounters[LightType::AREA_ELLIPSE]);
   return gpuData;
 }
 

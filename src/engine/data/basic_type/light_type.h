@@ -4,11 +4,10 @@
 #include "basic_data/transform.h"
 
 namespace mite {
-
 // ----------------- 光源最大数量定义 -------------------
-//方向光源：8个 × 4级联 = 32个阴影图
-//点光源：16个 × 1个立方体贴图 = 16个立方体贴图
-//聚光灯：32个 × 1个阴影图 = 32个阴影图
+// 方向光源：8个 × 4级联 = 32个阴影图
+// 点光源：16个 × 1个立方体贴图 = 16个立方体贴图
+// 聚光灯：32个 × 1个阴影图 = 32个阴影图
 
 #define MAX_DIRECTIONAL_LIGHTS 8  // 8个方向光源（通常场景足够）
 #define MAX_CASCADES 4            // 每个方向光光源4级级联（平衡质量和性能）
@@ -69,7 +68,7 @@ struct LightProperties {
       float innerAngle = 30.0f;  // 内角（度）
       float outerAngle = 45.0f;  // 外角（度）
       float blend = 0.5f;        // 边缘柔化(0-1)
-      float range = 100.0f;       // 照射范围
+      float range = 100.0f;      // 照射范围
     } spot;
 
     // 方向光
@@ -98,10 +97,10 @@ struct alignas(16) GPULightData {
   // 基础属性 - 16字节对齐 (每组vec3+float为16字节)
   glm::vec3 color;
   float intensity;
-  glm::vec3 position;  // 世界坐标（从变换组件获取WorldPosition）
-  float type;          // LightType转换为float
-  glm::vec3 direction;  // 方向（从变换组件获取WorldFront，面光源以WorldUp法线为方向）
-  float padding1;  // 填充以确保16字节对齐
+  glm::vec3 position;    // 世界坐标（从变换组件获取WorldPosition）
+  float type;            // LightType转换为float
+  glm::vec3 direction;   // 方向（从变换组件获取WorldFront，面光源以WorldUp法线为方向）
+  float typeLocalIndex;  // 类型内局部索引（若此光源是点光源，这个参数则用于指示这是第几个点光源，主要用于ShadowUBO的Matrix索引）
 
   // 类型特定属性 - 使用union节省空间
   union {
@@ -134,11 +133,11 @@ struct alignas(16) GPULightData {
    * @param props 光源属性
    * @param lightType 光源类型
    */
-  GPULightData(const LightProperties &props, const Transform &worldTransform, LightType lightType)
+  GPULightData(const LightProperties &props, const Transform &worldTransform, LightType lightType, int typeLocalIndex)
       : color(props.color),
         intensity(props.intensity),
         type(static_cast<float>(lightType)),
-        padding1(0.0f),
+        typeLocalIndex(static_cast<float>(typeLocalIndex)),
         specific{}  // 使用值初始化确保union被清零
   {
     // 从世界变换提取位置和方向

@@ -90,13 +90,15 @@ void MiteApplication::LoadDefaultScene()
       m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(directionalLightEntity);
 
   // 摆放位置，设定强度
-  directionalLightTransformComponent.SetLocalTransform(
-      [=](Transform &localtrans) { localtrans.Translate(glm::vec3(0.0f, 1.5f, 3.0f)); });
-  directionalLightComponent.SetIntensity(100);
+  directionalLightTransformComponent.SetLocalTransform([=](Transform &localtrans) {
+    localtrans.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
+    localtrans.LookAt(glm::vec3(-1.0f, -1.0f, -1.0f));
+  });
+  directionalLightComponent.SetIntensity(10);
 
   // 加载模型
-  LoadModelToScene("models/car.glb");
-  LoadModelToScene("models/room.glb");
+  LoadModelToScene("models/oak.glb"); 
+  LoadModelToScene("models/ground.glb");
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
 
@@ -420,7 +422,6 @@ void MiteApplication::CreateMenuBar()
 
   // 添加Layer菜单，控制显示内容
   UIMenuItemSubmenu *layerMenu = menu.AddMenu("Layer");
-
 
   // 添加Test测试菜单，测试功能
   UIMenuItemSubmenu *testMenu = menu.AddMenu("Test");

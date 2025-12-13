@@ -52,9 +52,11 @@ class Light {
   /**
    * @brief 准备光源数据用于SSBO传输
    * @param worldTransform 光源世界变换（从场景图获取）
+   * @param typeLocalIndex 光源在类型内的局部索引
    * @return 构造好的GPU光源数据
    */
-  virtual GPULightData PrepareGPULightData(const Transform &worldTransform) const = 0;
+  virtual GPULightData PrepareGPULightData(const Transform &worldTransform,
+                                           int typeLocalIndex) const = 0;
   /**
    * @brief 准备阴影数据
    * @param worldTransform 光源世界变换（从场景图获取）

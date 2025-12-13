@@ -17,14 +17,15 @@ std::string PointLight::GetLightTypeName() const
   return "PointLight";
 }
 
-GPULightData PointLight::PrepareGPULightData(const Transform &worldTransform) const
+GPULightData PointLight::PrepareGPULightData(const Transform &worldTransform,
+                                             int typeLocalIndex) const
 {
   if (!m_Properties.enabled) {
     LOG_WARN("Preparing GPU data for disabled point light");
   }
 
   // 使用基类的GPULightData构造函数，传入点光源类型
-  GPULightData gpuData(m_Properties, worldTransform, LightType::POINT);
+  GPULightData gpuData(m_Properties, worldTransform, LightType::POINT, typeLocalIndex);
 
   LOG_TRACE("PointLight GPU data prepared - position: ({}, {}, {}), radius: {}",
             gpuData.position.x,

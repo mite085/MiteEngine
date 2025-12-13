@@ -18,7 +18,7 @@ struct GPULightData {
     vec3 position;          // 世界坐标位置
     float type;             // 光源类型 (LightType转换为float)
     vec3 direction;         // 光源方向/法线
-    float padding1;         // 填充
+    float typeLocalIndex;   // 类型内局部索引（若此光源是点光源，这个参数则用于指示这是第几个点光源，主要用于ShadowUBO的Matrix索引）
     
     // 类型特定属性 - 使用数组避免union
     float specificData[8];  // 统一存储所有类型特定数据

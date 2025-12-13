@@ -16,7 +16,8 @@ class PointLight : public Light {
 
   // ---- 基类方法重写 ----
   std::string GetLightTypeName() const override;
-  GPULightData PrepareGPULightData(const Transform &worldTransform) const override;
+  GPULightData PrepareGPULightData(const Transform &worldTransform,
+                                   int typeLocalIndex) const override;
   float CalculateInfluenceRadius() const override;
   void CreateDefaultShadowMap() override;
   bool Validate() const override;
