@@ -83,13 +83,6 @@ void ShadowMapStage::Execute(RenderContext &context)
     return;
   }
 
-  // 从上下文获取ShadowMap着色器
-  auto shadowShader = context.GetStageShader("ShadowMapStage");
-  if (!shadowShader) {
-    m_Logger->error("ShadowMapStage: No shadow shader found in context");
-    return;
-  }
-
   // 验证输入
   ValidateShadowInputs(context);
 
@@ -106,8 +99,7 @@ void ShadowMapStage::Execute(RenderContext &context)
   // 设置阴影渲染状态
   RenderCommand::Get().SetRenderState(m_ShadowRenderState);
 
-  // 绑定阴影着色器，上传UBO
-  RenderCommand::Get().BindShader(shadowShader);
+  // 绑定阴影UBO
   RenderCommand::Get().BindShadowUBO(lightManager.GetShadowInstance());
 
   // 绑定相机UBO
@@ -123,9 +115,6 @@ void ShadowMapStage::Execute(RenderContext &context)
   RenderDirectionalShadowMap(context, directionalLights);
   RenderPointShadowMap(context, pointLights);
   RenderSpotShadowMap(context, spotLights);
-
-  // 解绑着色器
-  RenderCommand::Get().UnbindShader(shadowShader);
 
   // 存储阴影贴图到上下文
   StoreShadowMapsToContext(context);
@@ -316,6 +305,13 @@ void ShadowMapStage::RenderDirectionalShadowMap(
     return;
   }
 
+  // 从上下文获取ShadowMap着色器
+  auto shadowShader = context.GetStageShader("ShadowMapStage");
+  if (!shadowShader) {
+    m_Logger->error("ShadowMapStage: No shadow shader found in context");
+    return;
+  }
+
   // 绑定方向光源阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_DirectionalShadowFBO);
 
@@ -332,6 +328,9 @@ void ShadowMapStage::RenderDirectionalShadowMap(
       RenderCommand::Get().BindFrameBufferDepthLayer(m_DirectionalShadowFBO, layer);
       RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
+      // 绑定阴影着色器
+      RenderCommand::Get().BindShader(shadowShader);
+
       // 绑定阴影渲染上下文
       BindShadowRenderContext(lightIdx, cascadeIdx, 0, 0);
       // 渲染场景到当前级联（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
@@ -339,6 +338,10 @@ void ShadowMapStage::RenderDirectionalShadowMap(
                              context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
       RenderSceneToShadowMap(context,
                              context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
+
+      // 解绑着色器
+      RenderCommand::Get().UnbindShader(shadowShader);
+
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
@@ -349,6 +352,13 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
 {
   if (!m_PointShadowFBO) {
     m_Logger->warn("Point shadow FBO not available");
+    return;
+  }
+
+  // 从上下文获取ShadowMap着色器
+  auto shadowShader = context.GetStageShader("ShadowMapStage");
+  if (!shadowShader) {
+    m_Logger->error("ShadowMapStage: No shadow shader found in context");
     return;
   }
 
@@ -364,12 +374,19 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
     for (uint32_t faceIdx = 0; faceIdx < 6; faceIdx++) {
       RenderCommand::Get().BindFramebufferDepthCubeFace(m_PointShadowFBO, lightIdx, faceIdx);
       RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
+
+      // 绑定阴影着色器
+      RenderCommand::Get().BindShader(shadowShader);
+
       BindShadowRenderContext(lightIdx, 0, faceIdx, 1);
       // 渲染场景到当前立方体贴图的面（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
       RenderSceneToShadowMap(context,
                              context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
       RenderSceneToShadowMap(context,
                              context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
+
+      // 解绑着色器
+      RenderCommand::Get().UnbindShader(shadowShader);
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
@@ -380,6 +397,13 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
 {
   if (!m_SpotShadowFBO) {
     m_Logger->warn("Spot shadow FBO not available");
+    return;
+  }
+
+  // 从上下文获取ShadowMap着色器
+  auto shadowShader = context.GetStageShader("ShadowMapStage");
+  if (!shadowShader) {
+    m_Logger->error("ShadowMapStage: No shadow shader found in context");
     return;
   }
 
@@ -395,6 +419,9 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
     RenderCommand::Get().BindFrameBufferDepthLayer(m_SpotShadowFBO, lightIdx);
     RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
+    // 绑定阴影着色器
+    RenderCommand::Get().BindShader(shadowShader);
+
     // 绑定阴影渲染上下文
     BindShadowRenderContext(lightIdx, 0, 0, 2);  // 类型2=聚光灯
     // 渲染场景几何体（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
@@ -402,6 +429,9 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
                            context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
     RenderSceneToShadowMap(context,
                            context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
+
+    // 解绑着色器
+    RenderCommand::Get().UnbindShader(shadowShader);
   }
   RenderCommand::Get().UnbindFrameBuffer();
   m_Logger->trace("Rendered spot shadow maps for {} lights", spotLights.size());
