@@ -7,6 +7,8 @@ ViewportPanel::ViewportPanel(SceneView &sceneView, const std::string &name)
 {
   m_EventSubscriptions.SubscribeImmediate<RuntimeTextureFinishedEvent>(
       BIND_DISPATCH_FN(OnRenderFinished));
+  m_EventSubscriptions.SubscribeImmediate<DisplayTextureTypeChangedEvent>(
+      BIND_DISPATCH_FN(OnDisplayTextureTypeChanged)); 
 
   // 初始化面板属性
   InitializePanelProps();
@@ -105,22 +107,6 @@ void ViewportPanel::UpdatePanelBorder(const glm::vec2 &newPos, const glm::vec2 &
     LOG_DEBUG("ViewportPanel size changed to {}x{}", newSize.x, newSize.y);
   }
 }
-void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
-{
-  // 首先匹配纹理类型
-  if (event.GetTextureType() != m_DisplayTextureType)
-    return;
-
-  // 然后匹配纹理标识符（若m_Identify为空则不执行匹配）
-  if (!m_DisplayTextureIdentify.empty() && m_DisplayTextureIdentify != event.GetIdentify())
-    return;
-
-  // 执行更新操作
-  m_DisplayTexture = event.GetTexture();
-
-  // 已处理，继续传播
-  event.SetResult(EventResult::Handled);
-}
 void ViewportPanel::UpdateOverlayContext()
 {
   m_GizmoOverlayContext.mousePos = m_Renderer.GetMousePos();
@@ -158,4 +144,32 @@ void ViewportPanel::UpdateInputContext(float deltatime, bool gizmoUsing)
   // 更新输入上下文
   m_InputContext->Update(deltatime, gizmoUsing);
 }
+void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
+{
+  // 首先匹配纹理类型
+  if (event.GetTextureType() != m_DisplayTextureType)
+    return;
+
+  // 然后匹配纹理标识符（若m_Identify为空则不执行匹配）
+  if (!m_DisplayTextureIdentify.empty() && m_DisplayTextureIdentify != event.GetIdentify())
+    return;
+
+  // 执行更新操作
+  m_DisplayTexture = event.GetTexture();
+
+  // 已处理，继续传播
+  event.SetResult(EventResult::Handled);
+}
+
+void ViewportPanel::OnDisplayTextureTypeChanged(DisplayTextureTypeChangedEvent &event) 
+{
+  if (event.GetDisplayTextureType() != m_DisplayTextureType) {
+    // 执行更新操作
+    m_DisplayTextureType = event.GetDisplayTextureType();
+
+    // 已处理，继续传播
+    event.SetResult(EventResult::Handled);
+  }
+}
+
 }  // namespace mite

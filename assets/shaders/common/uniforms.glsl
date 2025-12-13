@@ -128,7 +128,7 @@ layout(binding = 10) uniform sampler2DArray u_ShadowMapArea;
 layout(binding = 11) uniform sampler2D u_LightingDiffuse;
 layout(binding = 12) uniform sampler2D u_LightingSpecular;
 layout(binding = 13) uniform sampler2D u_LightingAmbient;
-layout(binding = 14) uniform sampler2D u_LightingCombined;
+layout(binding = 14) uniform sampler2D u_LightingCombined;  // Deferred Lighting结果
 
 // 渲染目标绑定
 layout(binding = 15) uniform sampler2D u_RenderTarget;
@@ -142,5 +142,8 @@ layout(binding = 20) uniform sampler2D u_MetallicRoughnessTexture;
 layout(binding = 21) uniform sampler2D u_EmissiveTexture;
 layout(binding = 22) uniform sampler2D u_OcclusionTexture;
 layout(binding = 23) uniform sampler2D u_EnvironmentMap;
+
+// Forward半透明绘制结果（Blend阶段专用）
+layout(binding = 24) uniform sampler2D u_ForwardTransparent;
 
 #endif

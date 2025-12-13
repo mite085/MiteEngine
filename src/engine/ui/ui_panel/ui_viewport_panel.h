@@ -3,11 +3,13 @@
 
 #include "scene_view.h"
 #include "ui_core/ui_render_props.h"
-#include "ui_panel.h"
 #include "ui_gizmo_overlay.h"
+#include "ui_panel.h"
 #include "ui_viewport_input_context.h"
 
 namespace mite {
+// 前向声明
+class DisplayTextureTypeChangedEvent;
 /**
  * @brief 视口面板 - 仅负责显示和调整FrameBuffer尺寸
  *
@@ -19,7 +21,7 @@ namespace mite {
  */
 class ViewportPanel : public UIPanel {
  public:
-  explicit ViewportPanel(SceneView& sceneView, const std::string &name);
+  explicit ViewportPanel(SceneView &sceneView, const std::string &name);
   virtual ~ViewportPanel() = default;
 
   // ==================== UIPanel接口 ====================
@@ -30,16 +32,20 @@ class ViewportPanel : public UIPanel {
   // ==================== 私有方法 ====================
   void InitializePanelProps();
   void UpdatePanelBorder(const glm::vec2 &newPos, const glm::vec2 &newSize);
-  void OnRenderFinished(RuntimeTextureFinishedEvent &event);
+
   void UpdateOverlayContext();
   void UpdateImageProps();
   void UpdateInputContext(float deltatime, bool gizmoUsing);
+
+  // ==================== 事件消费 ====================
+  void OnRenderFinished(RuntimeTextureFinishedEvent &event);
+  void OnDisplayTextureTypeChanged(DisplayTextureTypeChangedEvent &event);
 
   // ==================== ViewPort输入上下文 ====================
   std::shared_ptr<ViewportInputContext> m_InputContext;
 
   // ==================== SceneView依赖注入 ====================
-  SceneView &m_SceneView; // 显示逻辑紧耦合，业务逻辑松耦合
+  SceneView &m_SceneView;  // 显示逻辑紧耦合，业务逻辑松耦合
 
   // ==================== OverLay显示 ====================
   std::unique_ptr<GizmoOverlay> m_GizmoOverlay;
@@ -47,14 +53,35 @@ class ViewportPanel : public UIPanel {
 
   // ==================== 纹理显示 ====================
   RuntimeTexturePtr m_DisplayTexture = nullptr;
-  RuntimeTextureType m_DisplayTextureType = RuntimeTextureType::Lighting_Combined;
+  RuntimeTextureType m_DisplayTextureType = RuntimeTextureType::Forward_Blend;
   std::string m_DisplayTextureIdentify = "";
 
   // ==================== 状态管理 ====================
-  ImageProps m_ImageProps;     // 图像渲染属性
-  glm::vec2 m_PanelPos;	   // 当前面板位置（左上角像素坐标）
-  glm::vec2 m_PanelSize;     // 当前面板尺寸（像素尺寸）
+  ImageProps m_ImageProps;  // 图像渲染属性
+  glm::vec2 m_PanelPos;     // 当前面板位置（左上角像素坐标）
+  glm::vec2 m_PanelSize;    // 当前面板尺寸（像素尺寸）
   SubscriptionGroup m_EventSubscriptions;
+};
+
+/**
+ * @brief 绘制结果显示修改事件
+ */
+class DisplayTextureTypeChangedEvent : public Event {
+ public:
+  explicit DisplayTextureTypeChangedEvent(RuntimeTextureType displayTextureType)
+      : m_DisplayTextureType(displayTextureType)
+  {
+  }
+
+  RuntimeTextureType GetDisplayTextureType() const { return m_DisplayTextureType; }
+  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LAYOUT)
+  Event *Clone() const override
+  {
+    return new DisplayTextureTypeChangedEvent(m_DisplayTextureType);
+  }
+
+ private:
+  RuntimeTextureType m_DisplayTextureType;
 };
 }  // namespace mite
 

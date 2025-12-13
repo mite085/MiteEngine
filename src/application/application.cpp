@@ -421,7 +421,29 @@ void MiteApplication::CreateMenuBar()
   UIMenuItemSubmenu *sceneMenu = menu.AddMenu("Scene");
 
   // 添加Layer菜单，控制显示内容
-  UIMenuItemSubmenu *layerMenu = menu.AddMenu("Layer");
+  UIMenuItemSubmenu *layerMenu = menu.AddMenu("common.Layer_Select");
+  // 显示GBuffer的世界坐标和深度（深度作为Alpha通道）
+  layerMenu->AddItem("common.GBuffer_WorldPosDepth", []() {
+    DisplayTextureTypeChangedEvent e(RuntimeTextureType::GBuffer_WorldPosDepth);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+  });
+  layerMenu->AddItem("common.GBuffer_NormalScale", []() {
+    DisplayTextureTypeChangedEvent e(RuntimeTextureType::GBuffer_NormalScale);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+  });
+  layerMenu->AddItem("common.Deferred_Lighting", []() {
+    DisplayTextureTypeChangedEvent e(RuntimeTextureType::Lighting_Combined);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+  });
+  layerMenu->AddItem("common.Forward_Rendering", []() {
+    DisplayTextureTypeChangedEvent e(RuntimeTextureType::Forward_Transparent);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+  });
+  layerMenu->AddItem("common.Blend_Result", []() {
+    DisplayTextureTypeChangedEvent e(RuntimeTextureType::Forward_Blend);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+  });
+
 
   // 添加Test测试菜单，测试功能
   UIMenuItemSubmenu *testMenu = menu.AddMenu("Test");

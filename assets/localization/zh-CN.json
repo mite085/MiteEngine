@@ -9,7 +9,13 @@
     "menu_file": "文件",
     "menu_edit": "编辑",
     "button_ok": "确定",
-    "button_cancel": "取消"
+    "button_cancel": "取消",
+    "Layer_Select": "视图层选择",
+    "GBuffer_WorldPosDepth": "世界坐标/深度 通道",
+    "GBuffer_NormalScale": "法线/缩放 通道",
+    "Deferred_Lighting": "延迟光照 结果",
+    "Forward_Rendering": "前向渲染 结果",
+    "Blend_Result": "混合 结果"
   },
   "math":{
     "meter": "米",
