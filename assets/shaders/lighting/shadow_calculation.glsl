@@ -70,7 +70,7 @@ float CalculatePointLightShadow(uint lightIndex, vec3 worldPos)
 
     // 计算当前深度值
     float bias = u_Shadow.shadowParams.x;
-    float currentDepth = (distance + bias) / GetLightRange(lightIndex);
+    float currentDepth = (distance - bias) / GetLightRange(lightIndex);
     
     // 基于阴影贴图分辨率计算PCF半径
     // 假设阴影贴图分辨率为1024，每个纹素的角度大约为1/1024 rad
@@ -106,7 +106,7 @@ float CalculatePointLightShadow(uint lightIndex, vec3 worldPos)
 }
 
 /**
- * @brief 计算方向光源阴影可见性
+ * @brief 计算方向光源阴影可见性（基于分辨率的PCF）
  */
 float CalculateDirectionalShadow(uint lightIndex, vec3 worldPos, vec3 normal)
 {
@@ -135,10 +135,29 @@ float CalculateDirectionalShadow(uint lightIndex, vec3 worldPos, vec3 normal)
     
     // 使用类型内索引获取阴影层
     int shadowLayer = u_Shadow.directionalShadowIndices[localIndex].x + int(cascadeIndex);
-    float closestDepth = texture(u_ShadowMapDirectional, vec3(projCoords.xy, shadowLayer)).r;
-    float currentDepth = projCoords.z;
     
-    return currentDepth > closestDepth ? 0.0 : 1.0;
+    // 计算基于阴影贴图分辨率的PCF偏移
+    float texelSize = 1.0 / u_Shadow.shadowParams.w; // 阴影贴图尺寸
+    
+    // 3x3 PCF采样
+    float shadow = 0.0;
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            vec2 offset = vec2(float(x), float(y)) * texelSize;
+            vec2 sampleCoords = projCoords.xy + offset;
+            
+            float closestDepth = texture(u_ShadowMapDirectional, vec3(sampleCoords, shadowLayer)).r;
+            float currentDepth = projCoords.z;
+            
+            // 添加偏移以减少阴影痤疮
+            float bias = u_Shadow.shadowParams.x;
+            shadow += (currentDepth - bias) > closestDepth ? 0.0 : 1.0;
+        }
+    }
+    
+    shadow /= 9.0;
+    
+    return shadow;
 }
 
 /**
