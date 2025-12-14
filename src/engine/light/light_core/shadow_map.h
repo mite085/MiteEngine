@@ -15,7 +15,7 @@ class ShadowMap {
   // ---- 核心接口 ----
   virtual ShadowMapData PrepareShadowData(const uint32_t lightIndex,
                                           const Transform &lightWorldTransform,
-                                          const Transform &cameraView,
+                                          const Transform &cameraTransform,
                                           const glm::mat4 &cameraProj = glm::mat4(1.0f)) = 0;
   virtual size_t GetShadowMatrixCount() const = 0;
   virtual glm::mat4 GetShadowMatrix(size_t index) const = 0;

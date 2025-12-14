@@ -2,6 +2,7 @@
 #define MITE_SHADOW_CONFIG_H
 
 #include "headers/headers.h"
+#include "basic_type/light_type.h"
 
 namespace mite {
 /**
@@ -51,10 +52,10 @@ struct ShadowMapData {
 
     // 方向光阴影数据（级联阴影）
     struct {
-      unsigned int cascadeCount = 4;
+      unsigned int cascadeCount = MAX_CASCADES;
       float splitLambda = 0.95f;
-      std::array<float, 5> cascadeSplits;        // 级联分割距离
-      std::array<glm::mat4, 4> cascadeMatrices;  // 级联VP矩阵
+      std::array<float, MAX_CASCADES> cascadeSplits;        // 级联分割距离
+      std::array<glm::mat4, MAX_CASCADES> cascadeMatrices;  // 级联VP矩阵
     } directional;
 
     // 面光源阴影数据

@@ -4,7 +4,6 @@
 #include "light_core/shadow_map.h"
 
 namespace mite {
-
 /**
  * @brief 方向光阴影贴图类
  * @note 方向光使用级联阴影映射技术(CSM)，将视锥体分割为多个级联
@@ -21,14 +20,14 @@ class DirectionalShadowMap : public ShadowMap {
   /**
    * @brief 准备阴影数据
    * @param lightWorldTransform 光源的世界变换矩阵
-   * @param cameraView 相机视图矩阵
+   * @param cameraTransform 相机世界变换
    * @param cameraProj 相机投影矩阵
    * @return 更新后的阴影数据
    * @note 方向光阴影基于相机视锥体和光源方向计算多个级联的阴影矩阵
    */
   ShadowMapData PrepareShadowData(const uint32_t lightIndex,
                                   const Transform &lightWorldTransform,
-                                  const Transform &cameraView,
+                                  const Transform &cameraTransform,
                                   const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
 
   /**
@@ -76,7 +75,7 @@ class DirectionalShadowMap : public ShadowMap {
    * @param splits 分割距离数组
    * @note 分割距离应该按升序排列，表示每个级联的远平面距离
    */
-  void SetCascadeSplits(const std::array<float, 5> &splits);
+  void SetCascadeSplits(const std::array<float, MAX_CASCADES> &splits);
 
   /**
    * @brief 获取级联数量
@@ -94,7 +93,7 @@ class DirectionalShadowMap : public ShadowMap {
    * @brief 获取级联分割距离
    * @return 分割距离数组
    */
-  const std::array<float, 5> &GetCascadeSplits() const;
+  const std::array<float, MAX_CASCADES> &GetCascadeSplits() const;
 
  private:
   glm::vec3 m_LastLightDirection;  ///< 上一次计算时的光源方向
@@ -111,13 +110,28 @@ class DirectionalShadowMap : public ShadowMap {
   /**
    * @brief 计算级联的阴影矩阵
    * @param lightDirection 光源方向
-   * @param cameraView 相机视图矩阵
+   * @param cameraWorldTransform 相机世界变换
    * @param cameraProj 相机投影矩阵
    * @note 为每个级联计算正交投影的阴影矩阵
    */
   void CalculateCascadeMatrices(const glm::vec3 &lightDirection,
-                                const glm::mat4 &cameraView,
+                                const Transform &cameraWorldTransform,
                                 const glm::mat4 &cameraProj);
+  /**
+   * @brief 基于纹素对齐的方向光ShadowMap稳定化
+   */
+  glm::mat4 StabilizeShadowMatrix(const glm::mat4 &shadowMatrix, float shadowMapResolution);
+
+  /**
+   * @brief 验证级联阴影矩阵计算结果的合理性
+   */
+  void ValidateCascadeMatrix(unsigned int cascadeIndex,
+                             const glm::vec3 &cameraPos,
+                             const glm::vec3 &cameraForward,
+                             float nearSplit,
+                             float farSplit,
+                             const glm::mat4 &cameraProj,
+                             const glm::mat4 &shadowMatrix) const;
 
   /**
    * @brief 计算特定级联的视锥体角点
@@ -127,10 +141,13 @@ class DirectionalShadowMap : public ShadowMap {
    * @param cameraProj 相机投影矩阵
    * @return 视锥体8个角点的世界坐标
    */
-  std::array<glm::vec3, 8> CalculateFrustumCorners(float nearPlane,
-                                                   float farPlane,
-                                                   const glm::mat4 &cameraView,
-                                                   const glm::mat4 &cameraProj) const;
+  std::array<glm::vec3, 8> CalculateFrustumCornersGeometric(float nearPlane,
+                                                            float farPlane,
+                                                            const glm::vec3 &cameraPos,
+                                                            const glm::vec3 &cameraForward,
+                                                            const glm::vec3 &cameraUp,
+                                                            const glm::vec3 &cameraRight,
+                                                            const glm::mat4 &cameraProj) const;
 
   /**
    * @brief 检查是否需要更新阴影数据
@@ -143,7 +160,6 @@ class DirectionalShadowMap : public ShadowMap {
                            const glm::mat4 &newCameraView,
                            const glm::mat4 &newCameraProj) const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_DIRECTIONAL_SHADOW_MAP_H

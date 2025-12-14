@@ -14,7 +14,7 @@ DirectionalShadowMap::DirectionalShadowMap(const ShadowMapData &data)
   }
 
   // 初始化级联分割距离
-  m_Data.specific.directional.cascadeSplits = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+  m_Data.specific.directional.cascadeSplits = {0.0f, 0.0f, 0.0f, 0.0f};
 
   LOG_TRACE("DirectionalShadowMap created - cascadeCount: {}, splitLambda: {}",
             m_Data.specific.directional.cascadeCount,
@@ -23,7 +23,7 @@ DirectionalShadowMap::DirectionalShadowMap(const ShadowMapData &data)
 
 ShadowMapData DirectionalShadowMap::PrepareShadowData(const uint32_t lightIndex,
                                                       const Transform &lightWorldTransform,
-                                                      const Transform &cameraView,
+                                                      const Transform &cameraWorldTransform,
                                                       const glm::mat4 &cameraProj)
 {
   if (!m_Data.enabled) {
@@ -38,7 +38,7 @@ ShadowMapData DirectionalShadowMap::PrepareShadowData(const uint32_t lightIndex,
   glm::vec3 lightDirection = lightWorldTransform.GetForward();
 
   // 获取相机视图和投影矩阵
-  glm::mat4 cameraViewMatrix = cameraView.GetLocalMatrix();
+  glm::mat4 cameraViewMatrix = cameraWorldTransform.GetViewMatrix();
   glm::mat4 cameraProjMatrix = cameraProj;
 
   // 检查是否需要更新阴影矩阵
@@ -47,7 +47,7 @@ ShadowMapData DirectionalShadowMap::PrepareShadowData(const uint32_t lightIndex,
     CalculateCascadeSplits(cameraProjMatrix);
 
     // 计算级联阴影矩阵
-    CalculateCascadeMatrices(lightDirection, cameraViewMatrix, cameraProjMatrix);
+    CalculateCascadeMatrices(lightDirection, cameraWorldTransform, cameraProjMatrix);
 
     m_LastLightDirection = lightDirection;
     m_LastCameraView = cameraViewMatrix;
@@ -122,7 +122,7 @@ void DirectionalShadowMap::SetCascadeParams(unsigned int cascadeCount, float spl
             splitLambda);
 }
 
-void DirectionalShadowMap::SetCascadeSplits(const std::array<float, 5> &splits)
+void DirectionalShadowMap::SetCascadeSplits(const std::array<float, MAX_CASCADES> &splits)
 {
   m_Data.specific.directional.cascadeSplits = splits;
   m_NeedsUpdate = true;
@@ -140,7 +140,7 @@ float DirectionalShadowMap::GetSplitLambda() const
   return m_Data.specific.directional.splitLambda;
 }
 
-const std::array<float, 5> &DirectionalShadowMap::GetCascadeSplits() const
+const std::array<float, MAX_CASCADES> &DirectionalShadowMap::GetCascadeSplits() const
 {
   return m_Data.specific.directional.cascadeSplits;
 }
@@ -162,136 +162,305 @@ void DirectionalShadowMap::CalculateCascadeSplits(const glm::mat4 &cameraProj)
   float splitLambda = m_Data.specific.directional.splitLambda;
 
   // 计算级联分割距离（使用对数分割策略）
-  for (unsigned int i = 0; i <= cascadeCount; ++i) {
+  // 索引从1开始（i = 0时，计算结果为0级级联的近平面）
+  for (unsigned int i = 1; i <= cascadeCount; ++i) {
     float fraction = static_cast<float>(i) / cascadeCount;
     float logSplit = nearPlane * std::pow(farPlane / nearPlane, fraction);
     float uniformSplit = nearPlane + (farPlane - nearPlane) * fraction;
 
-    // 混合对数和均匀分割
-    m_Data.specific.directional.cascadeSplits[i] = splitLambda * logSplit +
+    // 混合对数和均匀分割（仅记录每个级联的远平面距离）
+    m_Data.specific.directional.cascadeSplits[i - 1] = splitLambda * logSplit +
                                                    (1.0f - splitLambda) * uniformSplit;
   }
 
   LOG_TRACE(
       "DirectionalShadowMap cascade splits calculated - near: {}, far: {}, splits: [{}, {}, {}, "
-      "{}, {}]",
+      "{}]",
       nearPlane,
       farPlane,
       m_Data.specific.directional.cascadeSplits[0],
       m_Data.specific.directional.cascadeSplits[1],
       m_Data.specific.directional.cascadeSplits[2],
-      m_Data.specific.directional.cascadeSplits[3],
-      m_Data.specific.directional.cascadeSplits[4]);
+      m_Data.specific.directional.cascadeSplits[3]);
 }
 
 void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirection,
-                                                    const glm::mat4 &cameraView,
+                                                    const Transform &cameraWorldTransform,
                                                     const glm::mat4 &cameraProj)
 {
   unsigned int cascadeCount = m_Data.specific.directional.cascadeCount;
 
+  // 从投影矩阵提取相机近远平面
+  float cameraNearPlane = 0.1f;
+  float cameraFarPlane = 1000.0f;
+  if (cameraProj[3][3] == 0.0f) {  // 透视投影
+    cameraNearPlane = cameraProj[3][2] / (cameraProj[2][2] - 1.0f);
+    cameraFarPlane = cameraProj[3][2] / (cameraProj[2][2] + 1.0f);
+  }
+
+  // 从Transform获取相机参数
+  glm::vec3 cameraPos = cameraWorldTransform.GetPosition();
+  glm::vec3 cameraForward = cameraWorldTransform.GetForward();  // 相机看向的方向
+
+  // 调试信息：相机和光源基本信息
+  LOG_TRACE("DirectionalShadowMap: Calculating {} cascades", cascadeCount);
+  LOG_TRACE("Camera: pos=({:.1f},{:.1f},{:.1f}), forward=({:.3f},{:.3f},{:.3f})",
+            cameraPos.x,
+            cameraPos.y,
+            cameraPos.z,
+            cameraForward.x,
+            cameraForward.y,
+            cameraForward.z);
+  LOG_TRACE("Light direction: ({:.3f},{:.3f},{:.3f})",
+            lightDirection.x,
+            lightDirection.y,
+            lightDirection.z);
+
   for (unsigned int i = 0; i < cascadeCount; ++i) {
-    float nearSplit = m_Data.specific.directional.cascadeSplits[i];
-    float farSplit = m_Data.specific.directional.cascadeSplits[i + 1];
+    // 获取当前级联的近远平面
+    float nearSplit = (i == 0) ? cameraNearPlane :
+                                 m_Data.specific.directional.cascadeSplits[i - 1];
+    float farSplit = m_Data.specific.directional.cascadeSplits[i];
 
-    // 计算当前级联的视锥体角点
-    auto frustumCorners = CalculateFrustumCorners(nearSplit, farSplit, cameraView, cameraProj);
+    LOG_TRACE("Cascade {}: near={:.1f}, far={:.1f}", i, nearSplit, farSplit);
 
-    // 计算视锥体包围盒的中心
-    glm::vec3 center(0.0f);
-    for (const auto &corner : frustumCorners) {
-      center += corner;
+    // 1. 计算级联中心点（在相机视线上）
+    // 使用级联的中间深度作为中心点深度
+    float centerDepth = (nearSplit + farSplit) * 0.5f;
+    glm::vec3 cascadeCenter = cameraPos + cameraForward * centerDepth;
+
+    LOG_TRACE("  Center depth: {:.1f}, world center: ({:.1f},{:.1f},{:.1f})",
+              centerDepth,
+              cascadeCenter.x,
+              cascadeCenter.y,
+              cascadeCenter.z);
+
+    // 2. 计算正交投影的大小
+    // 基于级联的深度范围确定正交投影大小
+    float cascadeDepth = farSplit - nearSplit;
+
+    // 使用级联深度的倍数作为正交投影大小
+    // 这个倍数需要根据场景调整，2.0是一个合理的起始值
+    float orthoSize = cascadeDepth * 2.0f;
+
+    // 确保最小尺寸，避免数值问题
+    orthoSize = glm::max(orthoSize, 5.0f);
+
+    LOG_TRACE("  Cascade depth: {:.1f}, ortho size: {:.1f}", cascadeDepth, orthoSize);
+
+    // 3. 选择光源视图的上向量
+    // 避免上向量与光源方向平行（会导致视图矩阵无效）
+    glm::vec3 up = Transform::GetWorldUp();  // 默认使用世界向上方向
+
+    // 检查光源方向是否与上向量接近平行
+    float dotWithUp = glm::abs(glm::dot(lightDirection, up));
+    if (dotWithUp > 0.9f) {
+      // 如果接近平行，使用替代的上向量（Z轴）
+      up = glm::vec3(0.0f, 0.0f, 1.0f);
+      LOG_TRACE("  Using alternative up vector: (0,0,1)");
     }
-    center /= 8.0f;
 
-    // 创建光源视图矩阵
-    glm::mat4 lightView = glm::lookAt(
-        center - lightDirection, center, glm::vec3(0.0f, 1.0f, 0.0f));
+    // 4. 确定光源位置
+    // 光源应该在级联中心的后方，看向级联中心
+    // 使用正交投影大小的倍数作为光源距离
+    float lightDistance = orthoSize * 2.0f;
+    glm::vec3 lightPosition = cascadeCenter - lightDirection * lightDistance;
 
-    // 计算视锥体角点在光源空间中的包围盒
-    float minX = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::lowest();
-    float minY = std::numeric_limits<float>::max();
-    float maxY = std::numeric_limits<float>::lowest();
-    float minZ = std::numeric_limits<float>::max();
-    float maxZ = std::numeric_limits<float>::lowest();
+    LOG_TRACE("  Light position: ({:.1f},{:.1f},{:.1f}), distance: {:.1f}",
+              lightPosition.x,
+              lightPosition.y,
+              lightPosition.z,
+              lightDistance);
 
-    for (const auto &corner : frustumCorners) {
-      glm::vec4 trf = lightView * glm::vec4(corner, 1.0f);
-      minX = std::min(minX, trf.x);
-      maxX = std::max(maxX, trf.x);
-      minY = std::min(minY, trf.y);
-      maxY = std::max(maxY, trf.y);
-      minZ = std::min(minZ, trf.z);
-      maxZ = std::max(maxZ, trf.z);
+    // 5. 创建光源视图矩阵
+    // 光源从lightPosition看向cascadeCenter，使用up作为上方向
+    glm::mat4 lightView = glm::lookAt(lightPosition, cascadeCenter, up);
+
+    // 6. 设置正交投影参数
+    // 使用以级联中心为中心的正交投影
+    float halfSize = orthoSize * 0.5f;
+
+    // 设置Z范围（到光源的距离）
+    // zNear: 最近裁剪平面距离（正值）
+    // zFar: 最远裁剪平面距离（正值）
+    // 对于方向光阴影，我们需要包含从光源位置到级联中心及其后方的所有几何体
+    float zNear = 0.1f;                 // 最小距离
+    float zFar = lightDistance * 2.0f;  // 最大距离（包含级联中心后方的几何体）
+
+    // 确保zFar > zNear
+    if (zFar <= zNear) {
+      zFar = zNear + 100.0f;
     }
 
-    // 创建光源投影矩阵（正交投影）
-    glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+    LOG_TRACE("  Ortho bounds: X=[{:.1f},{:.1f}], Y=[{:.1f},{:.1f}], Z=[{:.1f},{:.1f}]",
+              -halfSize,
+              halfSize,
+              -halfSize,
+              halfSize,
+              zNear,
+              zFar);
 
-    // 存储级联矩阵
-    m_Data.specific.directional.cascadeMatrices[i] = lightProjection * lightView;
+    // 7. 创建正交投影矩阵
+    glm::mat4 lightProjection = glm::ortho(-halfSize,
+                                           halfSize,  // X范围
+                                           -halfSize,
+                                           halfSize,  // Y范围
+                                           zNear,
+                                           zFar  // Z范围（到光源的距离）
+    );
 
-    LOG_TRACE(
-        "DirectionalShadowMap cascade {} matrix calculated - near: {}, far: {}, bounds: [{}, "
-        "{}]x[{}, {}]x[{}, {}]",
-        i,
-        nearSplit,
-        farSplit,
-        minX,
-        maxX,
-        minY,
-        maxY,
-        minZ,
-        maxZ);
+    // 8. 应用阴影贴图稳定化
+    glm::mat4 shadowMatrix = lightProjection * lightView;
+    shadowMatrix = StabilizeShadowMatrix(shadowMatrix, static_cast<float>(ShadowQuality::MEDIUM));
+
+    // 9. 存储稳定化后的矩阵
+    m_Data.specific.directional.cascadeMatrices[i] = shadowMatrix;
+
+    // 10. 验证矩阵（调试用）
+    ValidateCascadeMatrix(i,
+                          cameraPos,
+                          cameraForward,
+                          nearSplit,
+                          farSplit,
+                          cameraProj,
+                          m_Data.specific.directional.cascadeMatrices[i]);
+
+    LOG_TRACE("  Cascade {} matrix calculated successfully", i);
+  }
+
+  LOG_TRACE("DirectionalShadowMap: All cascade matrices calculated");
+}
+
+glm::mat4 DirectionalShadowMap::StabilizeShadowMatrix(const glm::mat4 &shadowMatrix,
+                                                      float shadowMapResolution)
+{
+  // 将世界空间点转换到阴影贴图空间
+  glm::vec4 shadowOrigin = shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  shadowOrigin *= shadowMapResolution / 2.0f;
+
+  // 计算纹素对齐的偏移
+  glm::vec2 roundedOrigin = glm::round(glm::vec2(shadowOrigin.x, shadowOrigin.y));
+  glm::vec2 roundOffset = roundedOrigin - glm::vec2(shadowOrigin.x, shadowOrigin.y);
+  roundOffset /= (shadowMapResolution / 2.0f);
+
+  // 创建偏移矩阵
+  glm::mat4 offsetMatrix = glm::translate(glm::mat4(1.0f),
+                                          glm::vec3(roundOffset.x, roundOffset.y, 0.0f));
+
+  // 返回稳定化后的矩阵
+  return offsetMatrix * shadowMatrix;
+}
+
+void DirectionalShadowMap::ValidateCascadeMatrix(unsigned int cascadeIndex,
+                                                 const glm::vec3 &cameraPos,
+                                                 const glm::vec3 &cameraForward,
+                                                 float nearSplit,
+                                                 float farSplit,
+                                                 const glm::mat4 &cameraProj,
+                                                 const glm::mat4 &shadowMatrix) const
+{
+  // 简单验证：检查几个关键点是否在阴影投影范围内
+
+  // 计算视锥体中心线上的几个点
+  std::vector<glm::vec3> testPoints;
+
+  // 近平面中心点
+  testPoints.push_back(cameraPos + cameraForward * nearSplit);
+  // 中间点
+  testPoints.push_back(cameraPos + cameraForward * ((nearSplit + farSplit) * 0.5f));
+  // 远平面中心点
+  testPoints.push_back(cameraPos + cameraForward * farSplit);
+
+  int outOfBounds = 0;
+  for (size_t i = 0; i < testPoints.size(); ++i) {
+    glm::vec4 projPoint = shadowMatrix * glm::vec4(testPoints[i], 1.0f);
+    projPoint /= projPoint.w;
+
+    // 检查是否在标准设备坐标范围内[-1, 1]
+    if (projPoint.x < -1.01f || projPoint.x > 1.01f || projPoint.y < -1.01f ||
+        projPoint.y > 1.01f || projPoint.z < -1.01f || projPoint.z > 1.01f)
+    {
+      outOfBounds++;
+      LOG_WARN("Cascade {} test point {} out of bounds: ({:.2f},{:.2f},{:.2f})",
+               cascadeIndex,
+               i,
+               projPoint.x,
+               projPoint.y,
+               projPoint.z);
+    }
+  }
+
+  if (outOfBounds == 0) {
+    LOG_TRACE("Cascade {} validation passed: all test points in bounds", cascadeIndex);
+  }
+  else {
+    LOG_WARN("Cascade {} validation: {}/{} points out of bounds",
+             cascadeIndex,
+             outOfBounds,
+             testPoints.size());
   }
 }
 
-std::array<glm::vec3, 8> DirectionalShadowMap::CalculateFrustumCorners(
+
+std::array<glm::vec3, 8> DirectionalShadowMap::CalculateFrustumCornersGeometric(
     float nearPlane,
     float farPlane,
-    const glm::mat4 &cameraView,
+    const glm::vec3 &cameraPos,
+    const glm::vec3 &cameraForward,
+    const glm::vec3 &cameraUp,
+    const glm::vec3 &cameraRight,
     const glm::mat4 &cameraProj) const
 {
-  // 方法：直接计算视锥体角点，不依赖NDC转换
+  // 从投影矩阵提取FOV和宽高比
+  float fovY, aspect;
 
-  // 获取相机参数
-  glm::vec3 cameraPos = glm::vec3(glm::inverse(cameraView)[3]);
-  glm::vec3 cameraForward = glm::vec3(cameraView[0][2], cameraView[1][2], cameraView[2][2]);
-  glm::vec3 cameraUp = glm::vec3(cameraView[0][1], cameraView[1][1], cameraView[2][1]);
-  glm::vec3 cameraRight = glm::vec3(cameraView[0][0], cameraView[1][0], cameraView[2][0]);
+  if (cameraProj[3][3] == 0.0f) {  // 透视投影
+    fovY = 2.0f * atan(1.0f / cameraProj[1][1]);
+    aspect = cameraProj[1][1] / cameraProj[0][0];
+  }
+  else {                         // 正交投影
+    fovY = glm::radians(60.0f);  // 默认值
+    aspect = 1.0f;
+  }
 
-  // 从投影矩阵提取FOV和宽高比（假设透视投影）
-  float fovY = 2.0f * atan(1.0f / cameraProj[1][1]);
-  float aspect = cameraProj[1][1] / cameraProj[0][0];
-
-  // 计算近平面和远平面的尺寸
+  // 计算近平面和远平面的半高、半宽
   float tanHalfFovY = tan(fovY * 0.5f);
 
-  float nearHeight = 2.0f * tanHalfFovY * nearPlane;
-  float nearWidth = nearHeight * aspect;
+  float nearHalfHeight = tanHalfFovY * nearPlane;
+  float nearHalfWidth = nearHalfHeight * aspect;
 
-  float farHeight = 2.0f * tanHalfFovY * farPlane;
-  float farWidth = farHeight * aspect;
+  float farHalfHeight = tanHalfFovY * farPlane;
+  float farHalfWidth = farHalfHeight * aspect;
 
-  // 计算近平面中心点
-  glm::vec3 nearCenter = cameraPos + cameraForward * nearPlane;
-  // 计算远平面中心点
-  glm::vec3 farCenter = cameraPos + cameraForward * farPlane;
-
+  // 计算角点
   std::array<glm::vec3, 8> corners;
 
-  // 近平面4个角点
-  corners[0] = nearCenter - cameraUp * (nearHeight * 0.5f) - cameraRight * (nearWidth * 0.5f);
-  corners[1] = nearCenter - cameraUp * (nearHeight * 0.5f) + cameraRight * (nearWidth * 0.5f);
-  corners[2] = nearCenter + cameraUp * (nearHeight * 0.5f) + cameraRight * (nearWidth * 0.5f);
-  corners[3] = nearCenter + cameraUp * (nearHeight * 0.5f) - cameraRight * (nearWidth * 0.5f);
+  // 近平面角点
+  corners[0] = cameraPos + cameraForward * nearPlane - cameraUp * nearHalfHeight -
+               cameraRight * nearHalfWidth;
+  corners[1] = cameraPos + cameraForward * nearPlane - cameraUp * nearHalfHeight +
+               cameraRight * nearHalfWidth;
+  corners[2] = cameraPos + cameraForward * nearPlane + cameraUp * nearHalfHeight +
+               cameraRight * nearHalfWidth;
+  corners[3] = cameraPos + cameraForward * nearPlane + cameraUp * nearHalfHeight -
+               cameraRight * nearHalfWidth;
 
-  // 远平面4个角点
-  corners[4] = farCenter - cameraUp * (farHeight * 0.5f) - cameraRight * (farWidth * 0.5f);
-  corners[5] = farCenter - cameraUp * (farHeight * 0.5f) + cameraRight * (farWidth * 0.5f);
-  corners[6] = farCenter + cameraUp * (farHeight * 0.5f) + cameraRight * (farWidth * 0.5f);
-  corners[7] = farCenter + cameraUp * (farHeight * 0.5f) - cameraRight * (farWidth * 0.5f);
+  // 远平面角点
+  corners[4] = cameraPos + cameraForward * farPlane - cameraUp * farHalfHeight -
+               cameraRight * farHalfWidth;
+  corners[5] = cameraPos + cameraForward * farPlane - cameraUp * farHalfHeight +
+               cameraRight * farHalfWidth;
+  corners[6] = cameraPos + cameraForward * farPlane + cameraUp * farHalfHeight +
+               cameraRight * farHalfWidth;
+  corners[7] = cameraPos + cameraForward * farPlane + cameraUp * farHalfHeight -
+               cameraRight * farHalfWidth;
+
+  // 调试输出
+  LOG_DEBUG("Frustum corners for near={:.1f}, far={:.1f}:", nearPlane, farPlane);
+  for (int i = 0; i < 8; ++i) {
+    LOG_DEBUG(
+        "  Corner {}: ({:.1f}, {:.1f}, {:.1f})", i, corners[i].x, corners[i].y, corners[i].z);
+  }
 
   return corners;
 }
