@@ -67,7 +67,7 @@ void BlendStage::Execute(RenderContext &context)
 
   // 清除输出目标
   RenderCommand::Get().Clear(
-      GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f), 1.0f);
+      GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
   // 设置混合渲染状态
   RenderCommand::Get().SetRenderState(m_BlendState);
@@ -126,12 +126,12 @@ void BlendStage::CreateBlendFramebuffer()
   colorSpec.generateMipmaps = false;
   spec.attachments.push_back(colorSpec);
 
-  // 创建深度附件（延迟光照应当无需深度附件）
-  FrameBufferAttachmentSpec depthAttachment;
-  depthAttachment.type = RuntimeTextureType::Depth;
-  depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
-  depthAttachment.generateMipmaps = false;
-  spec.attachments.push_back(depthAttachment);
+  //// 创建深度附件（延迟光照应当无需深度附件）
+  //FrameBufferAttachmentSpec depthAttachment;
+  //depthAttachment.type = RuntimeTextureType::Depth;
+  //depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
+  //depthAttachment.generateMipmaps = false;
+  //spec.attachments.push_back(depthAttachment);
 
   // 创建Framebuffer
   m_BlendFBO = std::make_shared<FrameBuffer>(spec);
