@@ -75,7 +75,7 @@ void MiteApplication::LoadDefaultScene()
   // 摆放位置，设定强度
   lightTransformComponent.SetLocalTransform(
       [=](Transform &localtrans) { localtrans.Translate(glm::vec3(3.0f, 5.0f, 1.0f)); });
-  lightComponent.SetIntensity(100);
+  lightComponent.SetIntensity(300);
 
   // 创建灯光2、实体与对应组件
   std::shared_ptr<Light> directionalLight = LightManager::Get().CreateLight(
@@ -94,11 +94,11 @@ void MiteApplication::LoadDefaultScene()
     localtrans.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
     localtrans.LookAt(glm::vec3(-1.0f, -1.0f, -1.0f));
   });
-  directionalLightComponent.SetIntensity(10);
+  directionalLightComponent.SetIntensity(20);
 
   // 加载模型
-  LoadModelToScene("models/oak.glb"); 
-  LoadModelToScene("models/ground.glb");
+  LoadModelToScene("models/room.glb");
+  LoadModelToScene("models/car.glb"); 
 
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
 

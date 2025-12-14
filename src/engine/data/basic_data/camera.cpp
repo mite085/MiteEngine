@@ -5,7 +5,7 @@ namespace mite {
 
 Camera::Camera()
 {
-  SetPerspective(45.0f, 0.1f, 1000.0f);
+  SetPerspective(45.0f, 0.1f, 300.0f);
   SetAspectRatio(16.0f / 9.0f);
 }
 
