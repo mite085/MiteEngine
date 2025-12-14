@@ -60,13 +60,13 @@ class Light {
   /**
    * @brief 准备阴影数据
    * @param worldTransform 光源世界变换（从场景图获取）
-   * @param cameraView 相机视图矩阵（用于级联计算）
+   * @param cameraWorldTransform 相机世界变换矩阵（用于级联计算）
    * @param cameraProj 相机投影矩阵
    * @return 阴影数据
    */
   ShadowMapData PrepareShadowData(const uint32_t lightIndex,
                                   const Transform &worldTransform,
-                                  const Transform &cameraView,
+                                  const Transform &cameraWorldTransform,
                                   const glm::mat4 &cameraProj = glm::mat4(1.0f)) const;
   /**
    * @brief 计算光源的影响半径（用于粗略剔除）

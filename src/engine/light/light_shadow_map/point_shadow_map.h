@@ -21,14 +21,14 @@ class PointShadowMap : public ShadowMap {
   /**
    * @brief 准备阴影数据
    * @param lightWorldTransform 光源的世界变换矩阵
-   * @param cameraView 相机视图矩阵（点光源不使用）
+   * @param cameraTransform 相机变换矩阵（点光源不使用）
    * @param cameraProj 相机投影矩阵（点光源不使用）
    * @return 更新后的阴影数据
    * @note 点光源阴影基于光源位置计算六个面的立方体贴图矩阵
    */
   ShadowMapData PrepareShadowData(const uint32_t lightIndex,
                                   const Transform &lightWorldTransform,
-                                  const Transform &cameraView,
+                                  const Transform &cameraTransform,
                                   const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
 
   /**
