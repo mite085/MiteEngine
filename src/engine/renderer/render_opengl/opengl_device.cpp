@@ -108,9 +108,6 @@ TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> 
     glGenerateMipmap(static_cast<GLenum>(data->target));
   }
 
-  // 解除纹理绑定
-  glBindTexture(static_cast<GLenum>(data->target), 0);
-
   // 检查GLError
   CheckGLError();
 
@@ -257,9 +254,6 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
     glGenerateMipmap(static_cast<GLenum>(createInfo->target));
   }
 
-  // 解除绑定
-  glBindTexture(static_cast<GLenum>(createInfo->target), 0);
-
   // 记录活动纹理
   m_ActiveTextures.insert(textureId);
 
@@ -299,7 +293,7 @@ void OpenGLDevice::BindRuntimeTexture(RuntimeTextureType type,
       glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
     }
     else {
-      // 绑定默认纹理
+      // 绑定默认纹理（白色，表示纹理绑定失败的语义）
       glBindTexture(GL_TEXTURE_2D, m_WhiteTexture);
 
       LOG_WARN("Failed to bind runtime texture: invalid texture handle, bind to default texture");
@@ -321,12 +315,22 @@ void OpenGLDevice::BindExternalTexture(ExternalTextureType type,
       glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
     }
     else {
-      // 绑定默认纹理
+      // 绑定默认纹理（白色，表示纹理绑定失败的语义）
       glBindTexture(GL_TEXTURE_2D, m_WhiteTexture);
     }
   }
   else {
     LOG_ERROR("Failed to bind external texture: binding point not allocated");
+  }
+}
+
+void OpenGLDevice::BindDefaultTexture(uint32_t textureUnit) const
+{
+  // 使用纯黑图像填充textureUnit
+  if (textureUnit != UINT32_MAX) {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+    // 绑定默认纹理（黑色，表示纹理槽位存在的占位符语义）
+    glBindTexture(GL_TEXTURE_2D, m_BlackTexture);
   }
 }
 
@@ -367,14 +371,6 @@ void OpenGLDevice::BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo
   // 注意：立方体贴图数组的层索引计算为 layer * 6 + face
   uint32_t arrayLayer = layer * 6 + face;
   glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0, arrayLayer);
-}
-
-void OpenGLDevice::BindDefaultEnvironmentMap() const
-{
-  // 选定背景图类型，使用纯黑图像填充Handle，使用外部纹理绑定方法执行绑定
-  ExternalTextureType environmentType = ExternalTextureType::EnvironmentMap;
-  TextureGPUHandle environmentHandle = TextureGPUHandle{m_BlackTexture};
-  BindExternalTexture(environmentType, environmentHandle);
 }
 
 // ------------------------ 模型操作 ------------------------
@@ -753,8 +749,6 @@ GLuint OpenGLDevice::CreateWhite1x1Texture()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  glBindTexture(GL_TEXTURE_2D, 0);
-
   return textureId;
 }
 
@@ -773,8 +767,6 @@ GLuint OpenGLDevice::CreateBlack1x1Texture()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
 
   return textureId;
 }

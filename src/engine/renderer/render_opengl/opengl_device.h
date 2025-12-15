@@ -27,7 +27,7 @@ class OpenGLDevice : public RenderDevice {
   void BindExternalTexture(ExternalTextureType type,
                            TextureGPUHandle textureHandle,
                            TextureTarget target = TextureTarget::TEXTURE_2D) const override;
-  void BindDefaultEnvironmentMap() const override;
+  void BindDefaultTexture(uint32_t textureUnit) const override;
 
   void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
                                  uint32_t layer) const override;
