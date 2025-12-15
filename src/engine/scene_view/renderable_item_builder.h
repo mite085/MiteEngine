@@ -57,7 +57,7 @@ class RenderableItemBuilder {
    */
   std::vector<RenderableItem> BuildFromSceneNodes(SceneRegistry &registry,
                                                   std::shared_ptr<CameraInstance> camera,
-                                                  const std::vector<SceneNode *> &sceneNodes);
+                                                  const std::vector<std::shared_ptr<SceneNode> > &sceneNodes);
 
   // ==================== 核心构建接口 ====================
   /**
@@ -67,7 +67,7 @@ class RenderableItemBuilder {
    */
   RenderableItem BuildFromSceneNode(SceneRegistry &registry,
                                     std::shared_ptr<CameraInstance> camera,
-                                    SceneNode *sceneNode);
+                                    std::shared_ptr<SceneNode> sceneNode);
 
   // ==================== 缓存管理接口 ====================
   /**
@@ -86,7 +86,7 @@ class RenderableItemBuilder {
    * @param sceneNode 场景节点
    * @return 是否包含渲染所需的组件
    */
-  bool IsRenderable(SceneRegistry &registry, SceneNode *sceneNode) const;
+  bool IsRenderable(SceneRegistry &registry, std::shared_ptr<SceneNode> sceneNode) const;
   /**
    * @brief 检查Entity是否可渲染
    * @param entity ECS实体

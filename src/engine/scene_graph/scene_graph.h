@@ -42,7 +42,7 @@ class SceneGraph {
    * @param entity 目标实体的Parent实体，若为根节点则输入空实体，默认Parent为空实体
    * @return 创建的场景节点指针，失败返回nullptr
    */
-  SceneNode *CreateNode(SceneRegistry &registry, Entity entity, Entity parent = Entity{});
+  std::shared_ptr<SceneNode> CreateNode(SceneRegistry &registry, Entity entity, Entity parent = Entity{});
   /**
    * @brief 销毁实体的场景节点
    * @param entity 目标实体
@@ -60,7 +60,7 @@ class SceneGraph {
    * @param entity 实体句柄
    * @return 场景节点指针，不存在时返回nullptr
    */
-  SceneNode *GetNode(Entity entity) const;
+  std::shared_ptr<SceneNode> GetNode(Entity entity) const;
   /**
    * @brief 检查实体是否有对应的场景节点
    * @param entity 实体句柄
@@ -72,17 +72,17 @@ class SceneGraph {
    * @param path 节点路径
    * @return 场景节点指针
    */
-  SceneNode *FindNodeByPath(const std::string &path) const;
+  std::shared_ptr<SceneNode> FindNodeByPath(const std::string &path) const;
   /**
    * @brief 获取根节点列表（没有父节点的节点）
    * @return 根节点指针列表
    */
-  std::vector<SceneNode *> GetRootNodes() const;
+  std::vector<std::shared_ptr<SceneNode> > GetRootNodes() const;
   /**
    * @brief 获取所有场景节点
    * @return 所有场景节点指针列表
    */
-  std::vector<SceneNode *> GetAllNodes() const;
+  std::vector<std::shared_ptr<SceneNode> > GetAllNodes() const;
 
   // ==================== 空间查询接口 ====================
   /**
@@ -91,26 +91,26 @@ class SceneGraph {
    * @param visibleMask 可见性掩码（用于分层渲染）
    * @return 可见节点列表
    */
-  std::vector<SceneNode *> FrustumCull(const Frustum &frustum, const uint32_t visibleMask) const;
+  std::vector<std::shared_ptr<SceneNode> > FrustumCull(const Frustum &frustum, const uint32_t visibleMask) const;
   /**
    * @brief 射线检测查询/单次查询
    * @param ray 检测射线
    * @return 相交节点列表
    */
-  std::vector<SceneNode *> Raycast(const Ray &ray) const;
-  SceneNode *RaycastFirst(const Ray &ray) const;
+  std::vector<std::shared_ptr<SceneNode> > Raycast(const Ray &ray) const;
+  std::shared_ptr<SceneNode> RaycastFirst(const Ray &ray) const;
   /**
    * @brief 体积查询
    * @param volume 查询体积
    * @return 包含节点列表
    */
-  std::vector<SceneNode *> VolumeQuery(const BoundingVolume &volume) const;
+  std::vector<std::shared_ptr<SceneNode> > VolumeQuery(const BoundingVolume &volume) const;
   /**
    * @brief 点查询
    * @param point 查询点
    * @return 包含节点列表
    */
-  std::vector<SceneNode *> PointQuery(const glm::vec3 &point) const;
+  std::vector<std::shared_ptr<SceneNode> > PointQuery(const glm::vec3 &point) const;
 
   // ==================== 场景图遍历接口 ====================
   /**
@@ -118,7 +118,7 @@ class SceneGraph {
    * @param callback 回调函数
    * @param type 遍历类型
    */
-  void Traverse(std::function<bool(SceneNode *)> callback,
+  void Traverse(std::function<bool(std::shared_ptr<SceneNode> )> callback,
                 SceneNodeManager::TraversalType type =
                     SceneNodeManager::TraversalType::DepthFirstPreOrder) const;
   /**
@@ -126,7 +126,7 @@ class SceneGraph {
    * @param callback 回调函数
    * @param type 遍历类型
    */
-  void TraverseVisible(std::function<bool(SceneNode *)> callback,
+  void TraverseVisible(std::function<bool(std::shared_ptr<SceneNode> )> callback,
                        SceneNodeManager::TraversalType type =
                            SceneNodeManager::TraversalType::DepthFirstPreOrder) const;
 

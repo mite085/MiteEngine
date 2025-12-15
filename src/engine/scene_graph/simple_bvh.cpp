@@ -19,12 +19,12 @@ SimpleBVH::~SimpleBVH()
 {
   Clear();
 }
-bool SimpleBVH::Contains(SceneNode *node) const
+bool SimpleBVH::Contains(std::shared_ptr<SceneNode> node) const
 {
   return m_AllNodes.find(node) != m_AllNodes.end();
 }
 // ==================== 空间划分生命周期管理 ====================
-void SimpleBVH::Insert(SceneNode *node)
+void SimpleBVH::Insert(std::shared_ptr<SceneNode> node)
 {
   if (!node)
     return;
@@ -37,7 +37,7 @@ void SimpleBVH::Insert(SceneNode *node)
   m_AllNodes.insert(node);
   m_NeedsRebuild = true;
 }
-void SimpleBVH::Remove(SceneNode *node)
+void SimpleBVH::Remove(std::shared_ptr<SceneNode> node)
 {
   if (!node)
     return;
@@ -47,7 +47,7 @@ void SimpleBVH::Remove(SceneNode *node)
     m_NeedsRebuild = true;
   }
 }
-void SimpleBVH::Update(SceneNode *node)
+void SimpleBVH::Update(std::shared_ptr<SceneNode> node)
 {
   if (!node)
     return;
@@ -101,7 +101,7 @@ void SimpleBVH::Rebuild()
   }
 
   // 构建新树
-  std::vector<SceneNode *> nodesToBuild(m_AllNodes.begin(), m_AllNodes.end());
+  std::vector<std::shared_ptr<SceneNode> > nodesToBuild(m_AllNodes.begin(), m_AllNodes.end());
   m_Root = BuildTree(nodesToBuild, 0, static_cast<int>(nodesToBuild.size()), 0);
   m_NeedsRebuild = false;
   ClearDirtyFlags();
@@ -110,7 +110,7 @@ void SimpleBVH::Rebuild()
 }
 
 // ==================== 空间结构外部查询接口 ====================
-bool SimpleBVH::Raycast(const Ray &ray, std::vector<SceneNode *> &results)
+bool SimpleBVH::Raycast(const Ray &ray, std::vector<std::shared_ptr<SceneNode> > &results)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -125,7 +125,7 @@ bool SimpleBVH::Raycast(const Ray &ray, std::vector<SceneNode *> &results)
   RaycastBestFirst(m_Root, ray, results);
   return !results.empty();
 }
-bool SimpleBVH::RaycastFirst(const Ray &ray, SceneNode *&result, float &distance)
+bool SimpleBVH::RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result, float &distance)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -143,7 +143,7 @@ bool SimpleBVH::RaycastFirst(const Ray &ray, SceneNode *&result, float &distance
 }
 size_t SimpleBVH::FrustumCull(const Frustum &frustum,
                               const uint32_t visibleMask,
-                              std::vector<SceneNode *> &results)
+                              std::vector<std::shared_ptr<SceneNode> > &results)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -158,7 +158,7 @@ size_t SimpleBVH::FrustumCull(const Frustum &frustum,
   FrustumCullBFS(m_Root, frustum, visibleMask, results);
   return results.size();
 }
-size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results)
+size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<std::shared_ptr<SceneNode> > &results)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -173,7 +173,7 @@ size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<SceneNod
   VolumeQueryBFS(m_Root, volume, results);
   return results.size();
 }
-size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results)
+size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<std::shared_ptr<SceneNode> > &results)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -187,7 +187,7 @@ size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &r
                                                               {point});  // 创建零大小的AABB
   return VolumeQuery(pointAABB, results);
 }
-bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, float maxDistance)
+bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, std::shared_ptr<SceneNode> &result, float maxDistance)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -224,7 +224,7 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, floa
 
     if (current.node->IsLeaf()) {
       // 遍历叶子节点中的所有场景节点
-      for (SceneNode *sceneNode : current.node->sceneNodes) {
+      for (std::shared_ptr<SceneNode> sceneNode : current.node->sceneNodes) {
         float distSq = glm::distance2(point, sceneNode->GetWorldBounds().GetCenter());
         if (distSq < bestDistanceSq) {
           bestDistanceSq = distSq;
@@ -253,7 +253,7 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, SceneNode *&result, floa
 }
 
 // ==================== 空间结构内部查询接口 ====================
-void SimpleBVH::ForEachNode(std::function<bool(SceneNode *)> callback)
+void SimpleBVH::ForEachNode(std::function<bool(std::shared_ptr<SceneNode> )> callback)
 {
   // 检查是否需要更新
   if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
@@ -318,7 +318,7 @@ void SimpleBVH::DebugDraw(std::function<void(const BoundingVolumeAABB &, int dep
 
 // ==================== 私有方法：BVH树构建 ====================
 
-BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int end, int depth)
+BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int depth)
 {
   if (start >= end)
     return nullptr;
@@ -378,7 +378,7 @@ BVHNode *SimpleBVH::BuildTree(std::vector<SceneNode *> &nodes, int start, int en
 }
 
 bool SimpleBVH::FindBestSplit(
-    const std::vector<SceneNode *> &nodes, int start, int end, int &axis, float &splitPos) const
+    const std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int &axis, float &splitPos) const
 {
   const int count = end - start;
   if (count <= 1)
@@ -419,7 +419,7 @@ bool SimpleBVH::FindBestSplit(
 }
 
 int SimpleBVH::PartitionNodes(
-    std::vector<SceneNode *> &nodes, int start, int end, int axis, float splitPos) const
+    std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int axis, float splitPos) const
 {
   int left = start;
   int right = end - 1;
@@ -524,7 +524,7 @@ void SimpleBVH::RefitNode(BVHNode *node)
   if (node->IsLeaf()) {
     // 叶子节点：重新计算所有场景节点的合并包围盒
     BoundingVolumeAABB newBounds;
-    for (SceneNode *sceneNode : node->sceneNodes) {
+    for (std::shared_ptr<SceneNode> sceneNode : node->sceneNodes) {
       BoundingVolumeAABB nodeBounds = sceneNode->GetWorldBounds().GetAABBApproximation();
       newBounds.Expand(nodeBounds);
     }
@@ -546,7 +546,7 @@ bool SimpleBVH::NeedsRefit(BVHNode *node) const
 {
   if (node->IsLeaf()) {
     // 检查叶子节点中的场景节点是否为脏节点
-    for (SceneNode *sceneNode : node->sceneNodes) {
+    for (std::shared_ptr<SceneNode> sceneNode : node->sceneNodes) {
       if (m_DirtyNodes.find(sceneNode) != m_DirtyNodes.end()) {
         // 若为脏节点，则返回True
         return true;
@@ -570,7 +570,7 @@ void SimpleBVH::FindDirtyBVHNodes(BVHNode *node)
     return;
   if (node->IsLeaf()) {
     // 检查叶子节点是否包含脏场景节点
-    for (SceneNode *sceneNode : node->sceneNodes) {
+    for (std::shared_ptr<SceneNode> sceneNode : node->sceneNodes) {
       if (m_DirtyNodes.find(sceneNode) != m_DirtyNodes.end()) {
         m_DirtyBVHNodes.insert(node);
         break;
@@ -606,7 +606,7 @@ void SimpleBVH::ClearDirtyFlags()
 // ==================== 私有方法：BVH树递归查询 ====================
 void SimpleBVH::RaycastBestFirst(BVHNode *root,
                                  const Ray &ray,
-                                 std::vector<SceneNode *> &results) const
+                                 std::vector<std::shared_ptr<SceneNode> > &results) const
 {
   struct NodeWithDistance {
     BVHNode *node;
@@ -632,7 +632,7 @@ void SimpleBVH::RaycastBestFirst(BVHNode *root,
 
     if (current.node->IsLeaf()) {
       // 处理叶子节点
-      for (SceneNode *sceneNode : current.node->sceneNodes) {
+      for (std::shared_ptr<SceneNode> sceneNode : current.node->sceneNodes) {
         float hitDistance;
         if (ray.Intersects(sceneNode->GetWorldBounds(), hitDistance)) {
           results.push_back(sceneNode);
@@ -659,7 +659,7 @@ void SimpleBVH::RaycastBestFirst(BVHNode *root,
 
 void SimpleBVH::RaycastFirstBestFirst(BVHNode *root,
                                       const Ray &ray,
-                                      SceneNode *&bestNode,
+                                      std::shared_ptr<SceneNode> &bestNode,
                                       float &bestDistance) const
 {
   struct NodeWithDistance {
@@ -688,7 +688,7 @@ void SimpleBVH::RaycastFirstBestFirst(BVHNode *root,
     }
 
     if (current.node->IsLeaf()) {
-      for (SceneNode *sceneNode : current.node->sceneNodes) {
+      for (std::shared_ptr<SceneNode> sceneNode : current.node->sceneNodes) {
         float nodeDistance;
         if (ray.Intersects(sceneNode->GetWorldBounds(), nodeDistance) &&
             nodeDistance < bestDistance)
@@ -716,7 +716,7 @@ void SimpleBVH::RaycastFirstBestFirst(BVHNode *root,
 void SimpleBVH::FrustumCullBFS(BVHNode *root,
                                const Frustum &frustum,
                                const uint32_t visibleMask,
-                               std::vector<SceneNode *> &results) const
+                               std::vector<std::shared_ptr<SceneNode> > &results) const
 {
   std::queue<BVHNode *> queue;
   queue.push(root);
@@ -735,7 +735,7 @@ void SimpleBVH::FrustumCullBFS(BVHNode *root,
 
     // 有SceneNode的BVHNode就是叶子节点
     if (current->IsLeaf()) {
-      for (SceneNode *sceneNode : current->sceneNodes) {
+      for (std::shared_ptr<SceneNode> sceneNode : current->sceneNodes) {
         // 当前BVHNode不在视锥体外（相交或者在内），或者SceneNode不在视锥体外（相交或者在内）
         if (intersection != BoundingVolumeIntersection::IntersectionType::Outside||
                 frustum.TestBoundingVolume(sceneNode->GetWorldBounds()) !=
@@ -757,7 +757,7 @@ void SimpleBVH::FrustumCullBFS(BVHNode *root,
 }
 void SimpleBVH::VolumeQueryBFS(BVHNode *root,
                                const BoundingVolume &volume,
-                               std::vector<SceneNode *> &results) const
+                               std::vector<std::shared_ptr<SceneNode> > &results) const
 {
   std::queue<BVHNode *> queue;
   queue.push(root);
@@ -776,7 +776,7 @@ void SimpleBVH::VolumeQueryBFS(BVHNode *root,
 
     if (current->IsLeaf()) {
       // 有SceneNode的BVHNode就是叶子节点
-      for (SceneNode *sceneNode : current->sceneNodes) {
+      for (std::shared_ptr<SceneNode> sceneNode : current->sceneNodes) {
         // 当前SceneNode不在volume外（相交或者在内）
         if (sceneNode->GetWorldBounds().Intersects(volume) !=
             BoundingVolumeIntersection::IntersectionType::Outside)
@@ -795,13 +795,13 @@ void SimpleBVH::VolumeQueryBFS(BVHNode *root,
 }
 
 bool SimpleBVH::TraverseDFS(BVHNode *node,
-                                     std::function<bool(SceneNode *)> callback) const
+                                     std::function<bool(std::shared_ptr<SceneNode> )> callback) const
 {
   if (!node)
     return true;
 
   if (node->IsLeaf()) {
-    for (SceneNode *sceneNode : node->sceneNodes) {
+    for (std::shared_ptr<SceneNode> sceneNode : node->sceneNodes) {
       if (!callback(sceneNode)) {
         return false;
       }

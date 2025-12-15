@@ -14,7 +14,7 @@ namespace mite {
  * 基于ECS组件的场景节点，从TransformComponent和BoundingVolumeComponent
  * 获取局部Transform数据与局部空间包围盒，计算并缓存世界空间状态
  */
-class SceneNode {
+class SceneNode : public std::enable_shared_from_this<SceneNode> {
  public:
   /**
    * @brief 构造函数
@@ -37,32 +37,32 @@ class SceneNode {
    * @brief 设置父节点
    * @param parent 父节点指针
    */
-  void SetParent(SceneNode *parent);
+  void SetParent(std::shared_ptr<SceneNode> parent);
   /**
    * @brief 获取父节点
    * @return 父节点指针（可能为nullptr）
    */
-  SceneNode *GetParent() const;
+  std::shared_ptr<SceneNode> GetParent() const;
   /**
    * @brief 添加子节点
    * @param child 子节点指针
    */
-  void AddChild(SceneNode *child);
+  void AddChild(std::shared_ptr<SceneNode> child);
   /**
    * @brief 移除子节点
    * @param child 要移除的子节点指针
    * @return 是否成功移除
    */
-  bool RemoveChild(SceneNode *child);
+  bool RemoveChild(std::shared_ptr<SceneNode> child);
   /**
    * @brief 递归判断child是否为当前节点的第n代子节点
    */
-  bool IsChild(SceneNode *child);
+  bool IsChild(std::shared_ptr<SceneNode> child);
   /**
    * @brief 获取所有子节点
    * @return 子节点指针列表
    */
-  const std::vector<SceneNode *> &GetChildren() const;
+  const std::vector<std::shared_ptr<SceneNode> > &GetChildren() const;
 
   // ==================== 状态查询 ====================
   /**
@@ -84,7 +84,7 @@ class SceneNode {
    * @brief 获取节点的完整路径（用于调试）
    * @return 节点路径字符串
    */
-  std::string GetPath() const;
+  std::string GetPath();
 
   // ==================== 变换相关 ====================
   /**
@@ -162,8 +162,8 @@ class SceneNode {
 
  private:
   Entity m_Entity;                      // 关联的ECS实体
-  SceneNode *m_Parent = nullptr;        // 父节点指针
-  std::vector<SceneNode *> m_Children;  // 子节点列表
+  std::shared_ptr<SceneNode> m_Parent = nullptr;        // 父节点指针
+  std::vector<std::shared_ptr<SceneNode> > m_Children;  // 子节点列表
 
   // 世界空间缓存
   Transform m_WorldTransform;    // 世界变换矩阵
@@ -187,29 +187,29 @@ class SceneNode {
  */
 class SceneNodeSelectedEvent : public Event {
  public:
-  explicit SceneNodeSelectedEvent(SceneNode *node) : m_node(node) {}
-  SceneNode *GetSceneNode() const { return m_node; }
+  explicit SceneNodeSelectedEvent(std::shared_ptr<SceneNode> node) : m_node(node) {}
+  std::shared_ptr<SceneNode> GetSceneNode() const { return m_node; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
   Event *Clone() const override { return new SceneNodeSelectedEvent(m_node); }
 
  private:
-  SceneNode *m_node;
+  std::shared_ptr<SceneNode> m_node;
 };
 
 class SceneNodeParentChangeEvent : public Event {
  public:
-  explicit SceneNodeParentChangeEvent(SceneNode *node, SceneNode *newParent)
+  explicit SceneNodeParentChangeEvent(std::shared_ptr<SceneNode> node, std::shared_ptr<SceneNode> newParent)
       : m_node(node), m_newParent(newParent)
   {
   }
-  SceneNode *GetSceneNode() const { return m_node; }
-  SceneNode *GetNewParent() const { return m_newParent; }
+  std::shared_ptr<SceneNode> GetSceneNode() const { return m_node; }
+  std::shared_ptr<SceneNode> GetNewParent() const { return m_newParent; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
   Event *Clone() const override { return new SceneNodeParentChangeEvent(m_node, m_newParent); }
 
  private:
-  SceneNode *m_node;
-  SceneNode *m_newParent;
+  std::shared_ptr<SceneNode> m_node;
+  std::shared_ptr<SceneNode> m_newParent;
 };
 
 }  // namespace mite

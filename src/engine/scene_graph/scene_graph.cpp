@@ -36,7 +36,7 @@ void SceneGraph::Clear()
 }
 
 // ==================== 场景节点生命周期管理 ====================
-SceneNode *SceneGraph::CreateNode(SceneRegistry &registry, Entity entity, Entity parent)
+std::shared_ptr<SceneNode> SceneGraph::CreateNode(SceneRegistry &registry, Entity entity, Entity parent)
 {
   // NodeManager->CreateNode()包含了SpatialPartition的Insert()
   return m_NodeManager->CreateNode(registry, entity, parent);
@@ -52,12 +52,12 @@ void SceneGraph::RebuildSpatialPartition()
 
   // 重新插入所有节点
   auto allNodes = m_NodeManager->GetAllNodes();
-  for (SceneNode *node : allNodes) {
+  for (std::shared_ptr<SceneNode> node : allNodes) {
     m_SpatialPartition->Insert(node);
   }
 }
 // ==================== 场景节点查询接口 ====================
-SceneNode *SceneGraph::GetNode(Entity entity) const
+std::shared_ptr<SceneNode> SceneGraph::GetNode(Entity entity) const
 {
   return m_NodeManager->GetNode(entity);
 }
@@ -65,63 +65,63 @@ bool SceneGraph::HasNode(Entity entity) const
 {
   return m_NodeManager->HasNode(entity);
 }
-SceneNode *SceneGraph::FindNodeByPath(const std::string &path) const
+std::shared_ptr<SceneNode> SceneGraph::FindNodeByPath(const std::string &path) const
 {
   return m_NodeManager->FindNodeByPath(path);
 }
-std::vector<SceneNode *> SceneGraph::GetRootNodes() const
+std::vector<std::shared_ptr<SceneNode> > SceneGraph::GetRootNodes() const
 {
   return m_NodeManager->GetRootNodes();
 }
-std::vector<SceneNode *> SceneGraph::GetAllNodes() const
+std::vector<std::shared_ptr<SceneNode> > SceneGraph::GetAllNodes() const
 {
   return m_NodeManager->GetAllNodes();
 }
 
 // ==================== 空间查询接口 ====================
-std::vector<SceneNode *> SceneGraph::FrustumCull(const Frustum &frustum,
+std::vector<std::shared_ptr<SceneNode> > SceneGraph::FrustumCull(const Frustum &frustum,
                                                  const uint32_t visibleMask) const
 {
-  std::vector<SceneNode *> results;
+  std::vector<std::shared_ptr<SceneNode> > results;
   m_SpatialPartition->FrustumCull(frustum, visibleMask, results);
   return results;
 }
-std::vector<SceneNode *> SceneGraph::Raycast(const Ray &ray) const
+std::vector<std::shared_ptr<SceneNode> > SceneGraph::Raycast(const Ray &ray) const
 {
-  std::vector<SceneNode *> results;
+  std::vector<std::shared_ptr<SceneNode> > results;
   m_SpatialPartition->Raycast(ray, results);
   return results;
 }
-SceneNode *SceneGraph::RaycastFirst(const Ray &ray) const
+std::shared_ptr<SceneNode> SceneGraph::RaycastFirst(const Ray &ray) const
 {
-  SceneNode *result;
+  std::shared_ptr<SceneNode> result;
   float distance;
   m_SpatialPartition->RaycastFirst(ray, result, distance);
   return result;
 }
-std::vector<SceneNode *> SceneGraph::VolumeQuery(const BoundingVolume &volume) const
+std::vector<std::shared_ptr<SceneNode> > SceneGraph::VolumeQuery(const BoundingVolume &volume) const
 {
-  std::vector<SceneNode *> results;
+  std::vector<std::shared_ptr<SceneNode> > results;
   m_SpatialPartition->VolumeQuery(volume, results);
   return results;
 }
-std::vector<SceneNode *> SceneGraph::PointQuery(const glm::vec3 &point) const
+std::vector<std::shared_ptr<SceneNode> > SceneGraph::PointQuery(const glm::vec3 &point) const
 {
-  std::vector<SceneNode *> results;
+  std::vector<std::shared_ptr<SceneNode> > results;
   m_SpatialPartition->PointQuery(point, results);
   return results;
 }
 // ==================== 场景图遍历接口 ====================
-void SceneGraph::Traverse(std::function<bool(SceneNode *)> callback,
+void SceneGraph::Traverse(std::function<bool(std::shared_ptr<SceneNode> )> callback,
                           SceneNodeManager::TraversalType type) const
 {
   m_NodeManager->TraverseTree(callback, type);
 }
-void SceneGraph::TraverseVisible(std::function<bool(SceneNode *)> callback,
+void SceneGraph::TraverseVisible(std::function<bool(std::shared_ptr<SceneNode> )> callback,
                                  SceneNodeManager::TraversalType type) const
 {
   // callback的再包装，添加WorldVisible判断
-  auto visibleFilter = [callback](SceneNode *node) {
+  auto visibleFilter = [callback](std::shared_ptr<SceneNode> node) {
     if (node->IsWorldVisible()) {
       return callback(node);
     }
@@ -151,7 +151,7 @@ void SceneGraph::Update(SceneRegistry &registry)
 
   // 根据光照数据和新的世界变换组建光源数据
   std::unordered_map<Light *, Transform> lightTransforms;
-  for (SceneNode *node : m_NodeManager->GetLightNodes()) {
+  for (std::shared_ptr<SceneNode> node : m_NodeManager->GetLightNodes()) {
     if (node && registry.HasComponent<LightComponent>(node->GetEntity())) {
       // 获取组件光源数据
       std::shared_ptr<Light> light =

@@ -29,12 +29,12 @@ class SceneTreePanel : public UIPanel {
    * @brief 递归渲染节点树
    * @param node 当前节点
    */
-  void RenderNodeTreeRecursive(SceneNode *node);
+  void RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node);
   /**
    * @brief 重命名节点(由属性页执行该功能，SceneTree不承担)
    * @param node 要重命名的节点
    */
-  void RenameNode(SceneNode *node, const std::string &name);
+  void RenameNode(std::shared_ptr<SceneNode> node, const std::string &name);
   /**
    * @brief 消费节点选中事件，更新当前选中的节点
    */
@@ -42,7 +42,7 @@ class SceneTreePanel : public UIPanel {
 
  private:
   SceneGraph &m_SceneGraph;             // 场景图引用
-  SceneNode *m_SelectedNode = nullptr;  // 当前选中的节点
+  std::shared_ptr<SceneNode> m_SelectedNode = nullptr;  // 当前选中的节点
   SubscriptionGroup m_EventSubscriptions; // 事件订阅
 };
 

@@ -24,22 +24,22 @@ class SpatialPartition {
    * @brief 更新场景节点在空间结构中的位置
    * @param node 要更新的场景节点
    */
-  virtual bool Contains(SceneNode *node) const = 0;
+  virtual bool Contains(std::shared_ptr<SceneNode> node) const = 0;
   /**
    * @brief 插入场景节点到空间结构中
    * @param node 要插入的场景节点
    */
-  virtual void Insert(SceneNode *node) = 0;
+  virtual void Insert(std::shared_ptr<SceneNode> node) = 0;
   /**
    * @brief 从空间结构中移除场景节点
    * @param node 要移除的场景节点
    */
-  virtual void Remove(SceneNode *node) = 0;
+  virtual void Remove(std::shared_ptr<SceneNode> node) = 0;
   /**
    * @brief 更新场景节点在空间结构中的位置
    * @param node 要更新的场景节点
    */
-  virtual void Update(SceneNode *node) = 0;
+  virtual void Update(std::shared_ptr<SceneNode> node) = 0;
   /**
    * @brief 清空整个空间结构
    */
@@ -56,7 +56,7 @@ class SpatialPartition {
    * @param results 相交结果列表（输出参数）
    * @return 是否找到相交节点
    */
-  virtual bool Raycast(const Ray &ray, std::vector<SceneNode *> &results) = 0;
+  virtual bool Raycast(const Ray &ray, std::vector<std::shared_ptr<SceneNode> > &results) = 0;
   /**
    * @brief 射线检测，返回第一个相交的场景节点
    * @param ray 检测射线
@@ -66,7 +66,7 @@ class SpatialPartition {
    * 
    * 作用场景：鼠标点击场景交互操作
    */
-  virtual bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) = 0;
+  virtual bool RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result, float &distance) = 0;
   /**
    * @brief 视锥体裁剪，返回视锥体内的所有场景节点
    * @param frustum 视锥体
@@ -78,7 +78,7 @@ class SpatialPartition {
    */
   virtual size_t FrustumCull(const Frustum &frustum,
                              const uint32_t visibleMask,
-                             std::vector<SceneNode *> &results) = 0;
+                             std::vector<std::shared_ptr<SceneNode> > &results) = 0;
   /**
    * @brief 通用包围体查询，返回包围体内的所有场景节点
    * @param volume 查询包围体
@@ -87,14 +87,14 @@ class SpatialPartition {
    * 
    * 作用场景：鼠标框选场景操作
    */
-  virtual size_t VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results) = 0;
+  virtual size_t VolumeQuery(const BoundingVolume &volume, std::vector<std::shared_ptr<SceneNode> > &results) = 0;
   /**
    * @brief 点查询，返回包含点的所有场景节点
    * @param point 查询点
    * @param results 结果节点列表（输出参数）
    * @return 结果节点数量
    */
-  virtual size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) = 0;
+  virtual size_t PointQuery(const glm::vec3 &point, std::vector<std::shared_ptr<SceneNode> > &results) = 0;
   /**
    * @brief 最近邻查询，返回距离点最近的场景节点
    * @param point 查询点
@@ -105,7 +105,7 @@ class SpatialPartition {
    * 作用场景：Runtime游戏交互操作
    */
   virtual bool NearestNeighbor(const glm::vec3 &point,
-                               SceneNode *&result,
+                               std::shared_ptr<SceneNode> &result,
                                float maxDistance = FLT_MAX) = 0;
 
   // ==================== 空间结构内部查询接口 ====================
@@ -113,7 +113,7 @@ class SpatialPartition {
    * @brief 遍历所有场景节点执行回调函数
    * @param callback 回调函数，返回false可中断遍历
    */
-  virtual void ForEachNode(std::function<bool(SceneNode *)> callback) = 0;
+  virtual void ForEachNode(std::function<bool(std::shared_ptr<SceneNode> )> callback) = 0;
   /**
    * @brief 获取空间结构中节点的总数
    * @return 节点数量

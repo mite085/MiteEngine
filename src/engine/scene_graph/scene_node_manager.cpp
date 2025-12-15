@@ -39,7 +39,7 @@ void SceneNodeManager::Clear()
   m_PathCacheDirty = false;
 }
 // ==================== 场景节点生命周期管理 ====================
-SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity, Entity parent)
+std::shared_ptr<SceneNode> SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity, Entity parent)
 {
   if (!entity.IsValid()) {
     m_Logger->warn("Attempted to create node for invalid entity");
@@ -50,20 +50,20 @@ SceneNode *SceneNodeManager::CreateNode(SceneRegistry &registry, Entity entity, 
   // 检查是否已存在节点
   if (m_EntityToNodeMap.find(entity) != m_EntityToNodeMap.end()) {
     m_Logger->warn("Scene node already exists for entity {}", entity.GetUUIDString());
-    return m_EntityToNodeMap[entity].get();
+    return m_EntityToNodeMap[entity];
   }
 
   try {
     // 创建新的场景节点
-    auto node = std::make_unique<SceneNode>(entity);
-    SceneNode *nodePtr = node.get();
+    auto node = std::make_shared<SceneNode>(entity);
+    std::shared_ptr<SceneNode> nodePtr = node;
 
     // 添加到映射表
     m_EntityToNodeMap[entity] = std::move(node);
 
     // 若节点存在Parent，则直接处理父子关系
     if (parent.IsValid() && m_EntityToNodeMap.find(parent) != m_EntityToNodeMap.end()) {
-      SetParent(nodePtr, m_EntityToNodeMap.at(parent).get());
+      SetParent(nodePtr, m_EntityToNodeMap.at(parent));
     }
 
     // 立即更新节点的世界变换和包围盒
@@ -101,14 +101,14 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
     m_Logger->warn("Scene node not found for entity {}", entity.GetUUIDString());
     return false;
   }
-  SceneNode *node = it->second.get();
+  std::shared_ptr<SceneNode> node = it->second;
 
   // 从空间划分结构中移除（无论是否可见）
   m_SpatialPartition.Remove(node);
 
   // 处理父子关系：将所有子节点提升为根节点
   auto children = node->GetChildren();
-  for (SceneNode *child : children) {
+  for (std::shared_ptr<SceneNode> child : children) {
     SetParent(child, nullptr);
   }
 
@@ -136,10 +136,10 @@ bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
 }
 
 // ==================== 场景节点查询接口 ====================
-SceneNode *SceneNodeManager::GetNode(Entity entity) const
+std::shared_ptr<SceneNode> SceneNodeManager::GetNode(Entity entity) const
 {
   auto it = m_EntityToNodeMap.find(entity);
-  return it != m_EntityToNodeMap.end() ? it->second.get() : nullptr;
+  return it != m_EntityToNodeMap.end() ? it->second : nullptr;
 }
 
 bool SceneNodeManager::HasNode(Entity entity) const
@@ -147,34 +147,34 @@ bool SceneNodeManager::HasNode(Entity entity) const
   return m_EntityToNodeMap.find(entity) != m_EntityToNodeMap.end();
 }
 
-std::vector<SceneNode *> SceneNodeManager::GetRootNodes() const
+std::vector<std::shared_ptr<SceneNode> > SceneNodeManager::GetRootNodes() const
 {
-  std::vector<SceneNode *> rootNodes;
+  std::vector<std::shared_ptr<SceneNode> > rootNodes;
 
   // 执行遍历操作，检查Root
   for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (node->IsRoot()) {
-      rootNodes.push_back(node.get());
+      rootNodes.push_back(node);
     }
   }
   return rootNodes;
 }
 
-std::vector<SceneNode *> SceneNodeManager::GetAllNodes() const
+std::vector<std::shared_ptr<SceneNode> > SceneNodeManager::GetAllNodes() const
 {
-  std::vector<SceneNode *> nodes;
+  std::vector<std::shared_ptr<SceneNode> > nodes;
   nodes.reserve(m_EntityToNodeMap.size());
 
   // 遍历赋值
   for (const auto &[entity, node] : m_EntityToNodeMap) {
-    nodes.push_back(node.get());
+    nodes.push_back(node);
   }
   return nodes;
 }
 
-std::vector<SceneNode *> SceneNodeManager::GetLightNodes() const
+std::vector<std::shared_ptr<SceneNode> > SceneNodeManager::GetLightNodes() const
 {
-  std::vector<SceneNode *> nodes;
+  std::vector<std::shared_ptr<SceneNode> > nodes;
   nodes.reserve(m_LightNodes.size());
 
   // 遍历赋值
@@ -189,14 +189,14 @@ size_t SceneNodeManager::GetNodeCount() const
   return m_EntityToNodeMap.size();
 }
 
-std::string SceneNodeManager::GetNodePath(SceneNode *node) const
+std::string SceneNodeManager::GetNodePath(std::shared_ptr<SceneNode> node) const
 {
   if (!node) {
     return "Invalid";
   }
 
   std::vector<std::string> pathSegments;
-  SceneNode *current = node;
+  std::shared_ptr<SceneNode> current = node;
 
   // 向上遍历构建路径
   while (current) {
@@ -220,20 +220,20 @@ std::string SceneNodeManager::GetNodePath(SceneNode *node) const
   return path;
 }
 
-SceneNode *SceneNodeManager::FindNodeByPath(const std::string &path) const
+std::shared_ptr<SceneNode> SceneNodeManager::FindNodeByPath(const std::string &path) const
 {
 
   // 简单的路径查找实现（可根据需要优化）
   for (const auto &[entity, node] : m_EntityToNodeMap) {
-    if (GetNodePath(node.get()) == path) {
-      return node.get();
+    if (GetNodePath(node) == path) {
+      return node;
     }
   }
 
   return nullptr;
 }
 
-void SceneNodeManager::TraverseTree(std::function<bool(SceneNode *)> callback,
+void SceneNodeManager::TraverseTree(std::function<bool(std::shared_ptr<SceneNode> )> callback,
                                     TraversalType traversalType) const
 {
   for (const auto &[entity, node] : m_EntityToNodeMap) {
@@ -242,16 +242,16 @@ void SceneNodeManager::TraverseTree(std::function<bool(SceneNode *)> callback,
 
       switch (traversalType) {
         case TraversalType::DepthFirstPreOrder:
-          shouldContinue = TraverseDepthFirstPreOrder(node.get(), callback);
+          shouldContinue = TraverseDepthFirstPreOrder(node, callback);
           break;
         case TraversalType::DepthFirstPostOrder:
-          shouldContinue = TraverseDepthFirstPostOrder(node.get(), callback);
+          shouldContinue = TraverseDepthFirstPostOrder(node, callback);
           break;
         case TraversalType::BreadthFirst:
-          shouldContinue = TraverseBreadthFirst(node.get(), callback);
+          shouldContinue = TraverseBreadthFirst(node, callback);
           break;
         case TraversalType::ReverseBreadthFirst:
-          shouldContinue = TraverseReverseBreadthFirst(node.get(), callback);
+          shouldContinue = TraverseReverseBreadthFirst(node, callback);
           break;
       }
 
@@ -269,7 +269,7 @@ bool SceneNodeManager::IsEmpty() const
 }
 
 // ==================== 节点更新接口 ====================
-bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
+bool SceneNodeManager::SetParent(std::shared_ptr<SceneNode> node, std::shared_ptr<SceneNode> newParent)
 {
   if (!node) {
     m_Logger->warn("Attempted to set parent for null node");
@@ -283,7 +283,7 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
   }
 
   // 从原父节点移除
-  SceneNode *oldParent = node->GetParent();
+  std::shared_ptr<SceneNode> oldParent = node->GetParent();
   if (oldParent) {
     oldParent->RemoveChild(node);
   }
@@ -304,7 +304,7 @@ bool SceneNodeManager::SetParent(SceneNode *node, SceneNode *newParent)
   return true;
 }
 
-void SceneNodeManager::MarkNodeDirty(SceneNode *node)
+void SceneNodeManager::MarkNodeDirty(std::shared_ptr<SceneNode> node)
 {
   if (!node)
     return;
@@ -314,14 +314,14 @@ void SceneNodeManager::MarkNodeDirty(SceneNode *node)
     m_DirtyNodes.insert(node);
   }
 }
-void SceneNodeManager::MarkNodeDirtyRecursive(SceneNode *node)
+void SceneNodeManager::MarkNodeDirtyRecursive(std::shared_ptr<SceneNode> node)
 {
   // 标记当前节点
   MarkNodeDirty(node);
 
   // 创建递归函数
-  std::function<void(SceneNode *)> markChildren = [&](SceneNode *currentNode) {
-    for (SceneNode *child : currentNode->GetChildren()) {
+  std::function<void(std::shared_ptr<SceneNode> )> markChildren = [&](std::shared_ptr<SceneNode> currentNode) {
+    for (std::shared_ptr<SceneNode> child : currentNode->GetChildren()) {
       MarkNodeDirty(child);
       markChildren(child);
     }
@@ -344,7 +344,7 @@ void SceneNodeManager::Update(SceneRegistry &registry)
   sortedDirtyNodes.reserve(m_DirtyNodes.size());
 
   // 收集脏节点及其深度
-  for (SceneNode *dirtyNode : m_DirtyNodes) {
+  for (std::shared_ptr<SceneNode> dirtyNode : m_DirtyNodes) {
     if (dirtyNode) {
       int depth = dirtyNode->GetDepth();
       sortedDirtyNodes.emplace_back(dirtyNode->GetEntity(), depth);
@@ -366,16 +366,16 @@ void SceneNodeManager::Update(SceneRegistry &registry)
       // 根据可见性状态更新空间划分结构
       if (it->second->IsWorldVisible()) {
         // 可见节点：插入或更新到空间划分结构
-        if (!m_SpatialPartition.Contains(it->second.get())) {
-          m_SpatialPartition.Insert(it->second.get());
+        if (!m_SpatialPartition.Contains(it->second)) {
+          m_SpatialPartition.Insert(it->second);
         }
         else {
-          m_SpatialPartition.Update(it->second.get());
+          m_SpatialPartition.Update(it->second);
         }
       }
       else {
         // 不可见节点：从空间划分结构中移除
-        m_SpatialPartition.Remove(it->second.get());
+        m_SpatialPartition.Remove(it->second);
       }
     }
   }
@@ -384,8 +384,8 @@ void SceneNodeManager::Update(SceneRegistry &registry)
   m_DirtyNodes.clear();
 }
 // ==================== 私有工具方法 ====================
-bool SceneNodeManager::TraverseDepthFirstPreOrder(SceneNode *node,
-                                                  std::function<bool(SceneNode *)> callback) const
+bool SceneNodeManager::TraverseDepthFirstPreOrder(std::shared_ptr<SceneNode> node,
+                                                  std::function<bool(std::shared_ptr<SceneNode> )> callback) const
 {
   if (!node || !callback) {
     return true;
@@ -395,21 +395,21 @@ bool SceneNodeManager::TraverseDepthFirstPreOrder(SceneNode *node,
     return false;
   }
   // 递归处理所有子节点
-  for (SceneNode *child : node->GetChildren()) {
+  for (std::shared_ptr<SceneNode> child : node->GetChildren()) {
     if (!TraverseDepthFirstPreOrder(child, callback)) {
       return false;
     }
   }
   return true;
 }
-bool SceneNodeManager::TraverseDepthFirstPostOrder(SceneNode *node,
-                                                   std::function<bool(SceneNode *)> callback) const
+bool SceneNodeManager::TraverseDepthFirstPostOrder(std::shared_ptr<SceneNode> node,
+                                                   std::function<bool(std::shared_ptr<SceneNode> )> callback) const
 {
   if (!node || !callback) {
     return true;
   }
   // 先递归处理所有子节点
-  for (SceneNode *child : node->GetChildren()) {
+  for (std::shared_ptr<SceneNode> child : node->GetChildren()) {
     if (!TraverseDepthFirstPostOrder(child, callback)) {
       return false;
     }
@@ -420,44 +420,44 @@ bool SceneNodeManager::TraverseDepthFirstPostOrder(SceneNode *node,
   }
   return true;
 }
-bool SceneNodeManager::TraverseBreadthFirst(SceneNode *node,
-                                            std::function<bool(SceneNode *)> callback) const
+bool SceneNodeManager::TraverseBreadthFirst(std::shared_ptr<SceneNode> node,
+                                            std::function<bool(std::shared_ptr<SceneNode> )> callback) const
 {
   if (!node || !callback) {
     return true;
   }
-  std::queue<SceneNode *> nodeQueue;
+  std::queue<std::shared_ptr<SceneNode> > nodeQueue;
   nodeQueue.push(node);
   while (!nodeQueue.empty()) {
-    SceneNode *currentNode = nodeQueue.front();
+    std::shared_ptr<SceneNode> currentNode = nodeQueue.front();
     nodeQueue.pop();
     // 处理当前节点
     if (!callback(currentNode)) {
       return false;
     }
     // 将子节点加入队列
-    for (SceneNode *child : currentNode->GetChildren()) {
+    for (std::shared_ptr<SceneNode> child : currentNode->GetChildren()) {
       nodeQueue.push(child);
     }
   }
   return true;
 }
-bool SceneNodeManager::TraverseReverseBreadthFirst(SceneNode *node,
-                                                   std::function<bool(SceneNode *)> callback) const
+bool SceneNodeManager::TraverseReverseBreadthFirst(std::shared_ptr<SceneNode> node,
+                                                   std::function<bool(std::shared_ptr<SceneNode> )> callback) const
 {
   if (!node || !callback) {
     return true;
   }
-  std::vector<SceneNode *> nodes;
-  std::queue<SceneNode *> nodeQueue;
+  std::vector<std::shared_ptr<SceneNode> > nodes;
+  std::queue<std::shared_ptr<SceneNode> > nodeQueue;
   nodeQueue.push(node);
   // 先收集所有节点（广度优先顺序）
   while (!nodeQueue.empty()) {
-    SceneNode *currentNode = nodeQueue.front();
+    std::shared_ptr<SceneNode> currentNode = nodeQueue.front();
     nodeQueue.pop();
 
     nodes.push_back(currentNode);
-    for (SceneNode *child : currentNode->GetChildren()) {
+    for (std::shared_ptr<SceneNode> child : currentNode->GetChildren()) {
       nodeQueue.push(child);
     }
   }
@@ -470,14 +470,14 @@ bool SceneNodeManager::TraverseReverseBreadthFirst(SceneNode *node,
   return true;
 }
 
-bool SceneNodeManager::ValidateParenting(SceneNode *node, SceneNode *newParent) const
+bool SceneNodeManager::ValidateParenting(std::shared_ptr<SceneNode> node, std::shared_ptr<SceneNode> newParent) const
 {
   if (!node || node == newParent) {
     return false;  // 不能设置自己为父节点
   }
 
   // 检查循环引用：确保newParent不是node的子孙
-  SceneNode *current = newParent;
+  std::shared_ptr<SceneNode> current = newParent;
   while (current) {
     if (current == node) {
       return false;  // 循环引用检测
@@ -494,22 +494,22 @@ void SceneNodeManager::BuildPathCache() const
   }
   m_PathToNodeCache.clear();
   // 使用BFS构建路径缓存，避免递归深度过大
-  std::queue<SceneNode *> nodeQueue;
+  std::queue<std::shared_ptr<SceneNode> > nodeQueue;
 
   // 将所有根节点加入队列
   for (const auto &[entity, node] : m_EntityToNodeMap) {
     if (node->IsRoot()) {
-      nodeQueue.push(node.get());
+      nodeQueue.push(node);
     }
   }
   while (!nodeQueue.empty()) {
-    SceneNode *current = nodeQueue.front();
+    std::shared_ptr<SceneNode> current = nodeQueue.front();
     nodeQueue.pop();
     // 计算当前节点路径并加入缓存
     std::string path = CalculateNodePath(current);
     m_PathToNodeCache[path] = current;
     // 将子节点加入队列
-    for (SceneNode *child : current->GetChildren()) {
+    for (std::shared_ptr<SceneNode> child : current->GetChildren()) {
       nodeQueue.push(child);
     }
   }
@@ -518,13 +518,13 @@ void SceneNodeManager::BuildPathCache() const
   m_Logger->debug("Built path cache with {} entries", m_PathToNodeCache.size());
 }
 
-std::string SceneNodeManager::CalculateNodePath(SceneNode *node) const
+std::string SceneNodeManager::CalculateNodePath(std::shared_ptr<SceneNode> node) const
 {
   if (!node) {
     return "Invalid";
   }
   std::vector<std::string> pathSegments;
-  SceneNode *current = node;
+  std::shared_ptr<SceneNode> current = node;
   // 向上遍历构建路径段
   while (current) {
     pathSegments.push_back("Entity_" + current->GetEntity().GetUUIDString());
@@ -545,7 +545,7 @@ std::string SceneNodeManager::CalculateNodePath(SceneNode *node) const
 void SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
 {
   // 获取Node并检查可用性
-  SceneNode *node = GetNode(e.GetEntity());
+  std::shared_ptr<SceneNode> node = GetNode(e.GetEntity());
   if (!node)
     return;
 
@@ -563,7 +563,7 @@ void SceneNodeManager::OnTransformComponentUpdated(TransformUpdatedEvent &e)
 void SceneNodeManager::OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEvent &e)
 {
   // 获取Node并检查可用性
-  SceneNode *node = GetNode(e.GetEntity());
+  std::shared_ptr<SceneNode> node = GetNode(e.GetEntity());
   if (!node)
     return;
 
@@ -580,7 +580,7 @@ void SceneNodeManager::OnBoundingVolumeComponentUpdated(BoundingVolumeChangedEve
 void SceneNodeManager::OnVisibilityComponentUpdated(VisibilityChangedEvent &e)
 {
   // 获取Node并检查可用性
-  SceneNode *node = GetNode(e.GetEntity());
+  std::shared_ptr<SceneNode> node = GetNode(e.GetEntity());
   if (!node)
     return;
 

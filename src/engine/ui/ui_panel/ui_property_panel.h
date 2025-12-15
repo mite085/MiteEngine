@@ -56,7 +56,7 @@ class PropertyPanel : public UIPanel {
 
   // ==================== 成员变量 ====================
   SceneRegistry &m_SceneRegistry;
-  SceneNode *m_SelectedNode = nullptr;  // 当前选中的节点
+  std::shared_ptr<SceneNode> m_SelectedNode = nullptr;  // 当前选中的节点
 
   SubscriptionGroup m_EventSubscriptions;  // 事件订阅
 };

@@ -12,7 +12,7 @@ struct BVHNode {
   BoundingVolumeAABB bounds;            // 节点包围盒
   BVHNode *left = nullptr;              // 左子节点
   BVHNode *right = nullptr;             // 右子节点
-  std::vector<SceneNode *> sceneNodes;  // 关联的场景节点（叶子节点）
+  std::vector<std::shared_ptr<SceneNode> > sceneNodes;  // 关联的场景节点（叶子节点）
   int depth = 0;                        // 节点深度
 
   /**
@@ -64,33 +64,33 @@ class SimpleBVH : public SpatialPartition {
   ~SimpleBVH() override;
 
   // ==================== 空间划分生命周期管理 ====================
-  bool Contains(SceneNode *node) const override;
-  void Insert(SceneNode *node) override;
-  void Remove(SceneNode *node) override;
+  bool Contains(std::shared_ptr<SceneNode> node) const override;
+  void Insert(std::shared_ptr<SceneNode> node) override;
+  void Remove(std::shared_ptr<SceneNode> node) override;
   /**
    * @brief 更新场景节点在空间结构中的位置
    * @param node
    *
    * 当SceneNode的Parent、Tranform或者BoundingBolume改变时，触发该函数
    */
-  void Update(SceneNode *node) override;
+  void Update(std::shared_ptr<SceneNode> node) override;
   void Clear() override;
   void Rebuild() override;
 
   // ==================== 空间结构外部查询接口 ====================
-  bool Raycast(const Ray &ray, std::vector<SceneNode *> &results) override;
-  bool RaycastFirst(const Ray &ray, SceneNode *&result, float &distance) override;
+  bool Raycast(const Ray &ray, std::vector<std::shared_ptr<SceneNode> > &results) override;
+  bool RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result, float &distance) override;
   size_t FrustumCull(const Frustum &frustum,
                      const uint32_t visibleMask,
-                     std::vector<SceneNode *> &results) override;
-  size_t VolumeQuery(const BoundingVolume &volume, std::vector<SceneNode *> &results) override;
-  size_t PointQuery(const glm::vec3 &point, std::vector<SceneNode *> &results) override;
+                     std::vector<std::shared_ptr<SceneNode> > &results) override;
+  size_t VolumeQuery(const BoundingVolume &volume, std::vector<std::shared_ptr<SceneNode> > &results) override;
+  size_t PointQuery(const glm::vec3 &point, std::vector<std::shared_ptr<SceneNode> > &results) override;
   bool NearestNeighbor(const glm::vec3 &point,
-                       SceneNode *&result,
+                       std::shared_ptr<SceneNode> &result,
                        float maxDistance = FLT_MAX) override;
 
   // ==================== 空间结构内部查询接口 ====================
-  void ForEachNode(std::function<bool(SceneNode *)> callback) override;
+  void ForEachNode(std::function<bool(std::shared_ptr<SceneNode> )> callback) override;
   size_t GetNodeCount() const override;
   bool IsEmpty() const override;
   int GetDepth() const override;
@@ -108,7 +108,7 @@ class SimpleBVH : public SpatialPartition {
    * @param depth 当前深度
    * @return 构建的BVH节点
    */
-  BVHNode *BuildTree(std::vector<SceneNode *> &nodes, int start, int end, int depth);
+  BVHNode *BuildTree(std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int depth);
   /**
    * @brief 选择最佳分割轴和位置
    * @param nodes 节点列表
@@ -119,7 +119,7 @@ class SimpleBVH : public SpatialPartition {
    * @return 是否找到有效分割
    */
   bool FindBestSplit(
-      const std::vector<SceneNode *> &nodes, int start, int end, int &axis, float &splitPos) const;
+      const std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int &axis, float &splitPos) const;
   /**
    * @brief 按指定轴和位置分割节点列表
    * @param nodes 节点列表
@@ -130,7 +130,7 @@ class SimpleBVH : public SpatialPartition {
    * @return 分割点索引
    */
   int PartitionNodes(
-      std::vector<SceneNode *> &nodes, int start, int end, int axis, float splitPos) const;
+      std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int axis, float splitPos) const;
   /**
    * @brief 递归释放BVH节点
    * @param node 要释放的节点
@@ -186,7 +186,7 @@ class SimpleBVH : public SpatialPartition {
    * 1. 尽早找到最近交点，提前终止
    * 2. 减少不必要的子树遍历
    */
-  void RaycastBestFirst(BVHNode *root, const Ray &ray, std::vector<SceneNode *> &results) const;
+  void RaycastBestFirst(BVHNode *root, const Ray &ray, std::vector<std::shared_ptr<SceneNode> > &results) const;
   /**
    * @brief 递归寻找第一个射线相交（使用最佳优先的遍历策略）
    * @param node 当前节点
@@ -196,7 +196,7 @@ class SimpleBVH : public SpatialPartition {
    */
   void RaycastFirstBestFirst(BVHNode *root,
                              const Ray &ray,
-                             SceneNode *&bestNode,
+                             std::shared_ptr<SceneNode> &bestNode,
                              float &bestDistance) const;
   /**
    * @brief 递归视锥体裁剪（使用广度优先的遍历策略）
@@ -211,7 +211,7 @@ class SimpleBVH : public SpatialPartition {
   void FrustumCullBFS(BVHNode *node,
                       const Frustum &frustum,
                       const uint32_t visibleMask,
-                      std::vector<SceneNode *> &results) const;
+                      std::vector<std::shared_ptr<SceneNode> > &results) const;
   /**
    * @brief 递归包围盒查询（使用广度优先的遍历策略）
    * @param node 当前节点
@@ -220,14 +220,14 @@ class SimpleBVH : public SpatialPartition {
    */
   void VolumeQueryBFS(BVHNode *node,
                       const BoundingVolume &sphere,
-                      std::vector<SceneNode *> &results) const;
+                      std::vector<std::shared_ptr<SceneNode> > &results) const;
   /**
    * @brief 递归遍历所有节点（深度优先遍历）
    * @param node 当前节点
    * @param callback 回调函数
    * @return 是否继续遍历
    */
-  bool TraverseDFS(BVHNode *node, std::function<bool(SceneNode *)> callback) const;
+  bool TraverseDFS(BVHNode *node, std::function<bool(std::shared_ptr<SceneNode> )> callback) const;
   /**
    * @brief 递归调试绘制
    * @param node 当前节点
@@ -255,14 +255,14 @@ class SimpleBVH : public SpatialPartition {
  private:
   // BVH基本属性
   BVHNode *m_Root = nullptr;                   // BVH根节点
-  std::unordered_set<SceneNode *> m_AllNodes;  // 所有场景节点列表（用于快速重建）
+  std::unordered_set<std::shared_ptr<SceneNode> > m_AllNodes;  // 所有场景节点列表（用于快速重建）
   int m_MaxDepth;                              // 最大构建深度
   int m_MinLeafSize;                           // 叶子节点最小对象数
   bool m_NeedsRebuild = false;                 // 需要重建标记
   size_t m_NodeCount = 0;                      // 总节点数统计
 
   // BVH增量更新
-  std::unordered_set<SceneNode *> m_DirtyNodes;   // 脏节点集合
+  std::unordered_set<std::shared_ptr<SceneNode> > m_DirtyNodes;   // 脏节点集合
   std::unordered_set<BVHNode *> m_DirtyBVHNodes;  // 脏BVH节点集合
 
   // 性能统计

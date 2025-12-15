@@ -15,7 +15,7 @@ SceneNode::~SceneNode()
 {
   // 从父节点中移除自己
   if (m_Parent) {
-    m_Parent->RemoveChild(this);
+    m_Parent->RemoveChild(shared_from_this());
   }
 
   // 清空子节点（子节点会自动设置父节点为nullptr）
@@ -30,7 +30,7 @@ Entity SceneNode::GetEntity()
     return m_Entity;
 }
 
-void SceneNode::SetParent(SceneNode *parent)
+void SceneNode::SetParent(std::shared_ptr<SceneNode> parent)
 {
   if (m_Parent == parent)
     return;
@@ -44,7 +44,7 @@ void SceneNode::SetParent(SceneNode *parent)
   Transform oldParentWorldTransform;
   if (m_Parent) {
     oldParentWorldTransform = m_Parent->GetWorldTransform();
-    m_Parent->RemoveChild(this);
+    m_Parent->RemoveChild(shared_from_this());
   }
 
   // 记录新父节点的变换，添加到新父节点
@@ -52,7 +52,7 @@ void SceneNode::SetParent(SceneNode *parent)
   Transform newParentWorldTransform;
   if (m_Parent) {
     newParentWorldTransform = m_Parent->GetWorldTransform();
-    m_Parent->AddChild(this);
+    m_Parent->AddChild(shared_from_this());
   }
 
   // 确保world不变，计算bias偏差
@@ -65,13 +65,13 @@ void SceneNode::SetParent(SceneNode *parent)
   MarkBoundsDirty();
   MarkVisibilityDirty();
 }
-SceneNode *SceneNode::GetParent() const
+std::shared_ptr<SceneNode> SceneNode::GetParent() const
 {
   return m_Parent;
 }
-void SceneNode::AddChild(SceneNode *child)
+void SceneNode::AddChild(std::shared_ptr<SceneNode> child)
 {
-  if (child == nullptr || child == this)
+  if (child == nullptr || child == shared_from_this())
     return;
 
   // 检查是否已经是子节点
@@ -81,9 +81,9 @@ void SceneNode::AddChild(SceneNode *child)
 
   // 添加子节点
   m_Children.push_back(child);
-  child->m_Parent = this;
+  child->m_Parent = shared_from_this();
 }
-bool SceneNode::RemoveChild(SceneNode *child)
+bool SceneNode::RemoveChild(std::shared_ptr<SceneNode> child)
 {
   if (child == nullptr)
     return false;
@@ -99,10 +99,10 @@ bool SceneNode::RemoveChild(SceneNode *child)
 
   return false;
 }
-bool SceneNode::IsChild(SceneNode *child)
+bool SceneNode::IsChild(std::shared_ptr<SceneNode> child)
 {
   // 遍历children
-  for (SceneNode *node : GetChildren()) {
+  for (std::shared_ptr<SceneNode> node : GetChildren()) {
     // 仅当node有效时
     if (node) {
       if (child == node)
@@ -114,7 +114,7 @@ bool SceneNode::IsChild(SceneNode *child)
   // 不存在指定child节点，可以作为新的child，不会循环依赖
   return false;
 }
-const std::vector<SceneNode *> &SceneNode::GetChildren() const
+const std::vector<std::shared_ptr<SceneNode> > &SceneNode::GetChildren() const
 {
   return m_Children;
 }
@@ -132,7 +132,7 @@ int SceneNode::GetDepth() const
 {
   // 向上追溯的同时计数
   int depth = 0;
-  SceneNode *current = m_Parent;
+  std::shared_ptr<SceneNode> current = m_Parent;
   while (current != nullptr) {
     depth++;
     current = current->m_Parent;
@@ -140,11 +140,11 @@ int SceneNode::GetDepth() const
   return depth;
 }
 
-std::string SceneNode::GetPath() const
+std::string SceneNode::GetPath()
 {
   // 向上追溯的同时，累积pathParts
   std::vector<std::string> pathParts;
-  SceneNode *current = const_cast<SceneNode *>(this);
+  std::shared_ptr<SceneNode> current = shared_from_this();
 
   while (current != nullptr) {
     pathParts.push_back("Entity_" + current->GetEntity().GetUUIDString());

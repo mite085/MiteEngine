@@ -76,7 +76,7 @@ void SceneView::Update()
   uint32_t cameraVisibilityMask = m_SceneCore.GetRegistry()
                                       .GetComponent<VisibilityComponent>(m_CameraEntity)
                                       .GetVisibilityMask();
-  std::vector<SceneNode *> visibleNodes = m_SceneGraph.FrustumCull(cameraFrustum,
+  std::vector<std::shared_ptr<SceneNode> > visibleNodes = m_SceneGraph.FrustumCull(cameraFrustum,
                                                                    cameraVisibilityMask);
 
   // 4. 处理可见节点，构建RenderQueue
@@ -101,7 +101,7 @@ bool SceneView::Pick(glm::vec2 screenPosUV)
   Ray ray = Ray::GenerateRayFromScreenUV(screenPosUV, cameraView, cameraProjection);
 
   // 执行RayCast
-  SceneNode *node = m_SceneGraph.RaycastFirst(ray);
+  std::shared_ptr<SceneNode> node = m_SceneGraph.RaycastFirst(ray);
   if (node) {
     // 查询到节点，发布SceneNodeSelected事件
     EventBus::Publish<SceneNodeSelectedEvent>(SceneNodeSelectedEvent(node));
@@ -125,7 +125,7 @@ void SceneView::SetPickedWorldTransform(const Transform &worldTransform)
       m_SceneCore.GetRegistry().GetComponent<TransformComponent>(m_PickedEntity);
 
   // 通过SceneGraph获取Picked的Parent
-  SceneNode *pickedParent = m_SceneGraph.GetNode(m_PickedEntity)->GetParent();
+  std::shared_ptr<SceneNode> pickedParent = m_SceneGraph.GetNode(m_PickedEntity)->GetParent();
   if (pickedParent) {
     // 若Parent存在，则根据Parent的WorldTransform更新picked本地坐标
     // World = Parent * Local，可知Local = inv(Parent) * World（等式两边均左乘inv(Parent)）
@@ -144,7 +144,7 @@ Transform SceneView::GetPickedWorldTransform() const
   if (!m_PickedEntity.IsValid() || !m_SceneGraph.GetNode(m_PickedEntity))
     return Transform(1.0f);
 
-  SceneNode *pickedNode = m_SceneGraph.GetNode(m_PickedEntity);
+  std::shared_ptr<SceneNode> pickedNode = m_SceneGraph.GetNode(m_PickedEntity);
 
   return pickedNode->GetWorldTransform();
 }
@@ -159,7 +159,7 @@ void SceneView::SetCameraWorldTransform(const Transform &worldTransform)
       m_SceneCore.GetRegistry().GetComponent<TransformComponent>(m_CameraEntity);
 
   // 通过SceneGraph获取相机的Parent
-  SceneNode *cameraParent = m_SceneGraph.GetNode(m_CameraEntity)->GetParent();
+  std::shared_ptr<SceneNode> cameraParent = m_SceneGraph.GetNode(m_CameraEntity)->GetParent();
   if (cameraParent) {
     // 若Parent存在，则根据Parent的WorldTransform更新相机本地坐标
     // World = Parent * Local，可知Local = inv(Parent) * World（等式两边均左乘inv(Parent)）
@@ -195,7 +195,7 @@ size_t SceneView::GetRenderItemCount() const
 {
   return m_LastRenderItemCount;
 }
-void SceneView::ProcessVisibility(std::vector<SceneNode *> visibleNodes)
+void SceneView::ProcessVisibility(std::vector<std::shared_ptr<SceneNode> > visibleNodes)
 {
   // 1. 构建渲染项（使用相机实例辅助选择LOD）
   std::vector<RenderableItem> renderItems = m_Builder->BuildFromSceneNodes(

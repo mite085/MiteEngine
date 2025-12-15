@@ -2,6 +2,7 @@
 #define MITE_UI_RENDER_PROPS_H
 
 #include "headers/headers.h"
+#include "scene_node.h"
 
 namespace mite {
 // ==================== 基础属性结构 ====================
@@ -238,7 +239,7 @@ struct GroupProps : public TextRenderProps {
  * 用于构建树状结构的节点控件
  */
 struct TreeNodeProps : public TextRenderProps {
-  void *nodePtr = nullptr;  // 节点指针
+  std::shared_ptr<SceneNode> nodePtr = nullptr;  // 节点指针
   bool isSelect = false;    // 节点是否被选中
   bool isLeaf = false;      // 是否为叶子节点
   int depth = 0;            // 节点深度

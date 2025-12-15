@@ -67,7 +67,7 @@ class SceneView {
  private:
   // ==================== 内部方法 ====================
   // 执行渲染Item构建
-  void ProcessVisibility(std::vector<SceneNode *> visibleNodes);
+  void ProcessVisibility(std::vector<std::shared_ptr<SceneNode> > visibleNodes);
 
   // 事件订阅
   void OnViewportResize(ViewportResizeEvent &event);               // 修改Camera的宽高比

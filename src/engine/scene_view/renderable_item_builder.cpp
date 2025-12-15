@@ -23,7 +23,7 @@ RenderableItemBuilder::~RenderableItemBuilder()
 std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
     SceneRegistry &registry,
     std::shared_ptr<CameraInstance> camera,
-    const std::vector<SceneNode *> &sceneNodes)
+    const std::vector<std::shared_ptr<SceneNode> > &sceneNodes)
 {
   std::vector<RenderableItem> items;
   items.reserve(sceneNodes.size());
@@ -32,7 +32,7 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
   size_t cachedCount = 0;
   size_t createdCount = 0;
 
-  for (SceneNode *node : sceneNodes) {
+  for (std::shared_ptr<SceneNode> node : sceneNodes) {
     // 判断是否为可渲染对象
     if (IsRenderable(registry, node->GetEntity())) {
       RenderableItem item = BuildFromSceneNode(registry, camera, node);
@@ -61,7 +61,7 @@ std::vector<RenderableItem> RenderableItemBuilder::BuildFromSceneNodes(
 
 RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry,
                                                          std::shared_ptr<CameraInstance> camera,
-                                                         SceneNode *sceneNode)
+                                                         std::shared_ptr<SceneNode> sceneNode)
 {
   if (!sceneNode) {
     m_Logger->warn("Attempted to build from null SceneNode");
@@ -136,7 +136,7 @@ RenderableItem RenderableItemBuilder::BuildFromSceneNode(SceneRegistry &registry
     return RenderableItem();
   }
 }
-bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, SceneNode *sceneNode) const
+bool RenderableItemBuilder::IsRenderable(SceneRegistry &registry, std::shared_ptr<SceneNode> sceneNode) const
 {
   if (!sceneNode)
     return false;

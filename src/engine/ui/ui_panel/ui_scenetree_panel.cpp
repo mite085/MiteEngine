@@ -24,14 +24,14 @@ void SceneTreePanel::Render()
 {
   // 获取根节点并递归渲染
   auto rootNodes = m_SceneGraph.GetRootNodes();
-  for (auto *rootNode : rootNodes) {
+  for (auto rootNode : rootNodes) {
     RenderNodeTreeRecursive(rootNode);
   }
 
   // 渲染空白区域用于接收拖拽行为
   auto dragDropTargetContent = [this](void *dropTargetData) {
     TreeNodeProps *props = static_cast<TreeNodeProps *>(dropTargetData);
-    SceneNode *dropNode = static_cast<SceneNode *>(props->nodePtr);
+    std::shared_ptr<SceneNode> dropNode = static_cast<std::shared_ptr<SceneNode> >(props->nodePtr);
     if (dropNode) {
       EventBus::Publish<SceneNodeParentChangeEvent>(SceneNodeParentChangeEvent(dropNode, nullptr));
     }
@@ -46,7 +46,7 @@ void SceneTreePanel::Render()
   }
 }
 
-void SceneTreePanel::RenderNodeTreeRecursive(SceneNode *node)
+void SceneTreePanel::RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node)
 {
   if (!node)
     return;
@@ -61,7 +61,7 @@ void SceneTreePanel::RenderNodeTreeRecursive(SceneNode *node)
   // 当作为拖拽的目标节点时，发布事件
   auto dragDropTargetContent = [this, node](void *dropTargetData) {
     TreeNodeProps *props = static_cast<TreeNodeProps *>(dropTargetData);
-    SceneNode *dropNode = static_cast<SceneNode *>(props->nodePtr);
+    std::shared_ptr<SceneNode> dropNode = props->nodePtr;
     if (dropNode) {
       EventBus::Publish<SceneNodeParentChangeEvent>(SceneNodeParentChangeEvent(dropNode, node));
     }
@@ -79,7 +79,7 @@ void SceneTreePanel::RenderNodeTreeRecursive(SceneNode *node)
   auto subitemRenderContent = [this, node]() {
     if (!node->IsLeaf()) {
       auto children = node->GetChildren();
-      for (auto *child : children) {
+      for (auto child : children) {
         RenderNodeTreeRecursive(child);
       }
     }
@@ -89,7 +89,7 @@ void SceneTreePanel::RenderNodeTreeRecursive(SceneNode *node)
   m_Renderer.RenderTreeNode(treeNodeProps,itemSelectedContent, dragDropTargetContent, subitemRenderContent);
 }
 
-void SceneTreePanel::RenameNode(SceneNode *node, const std::string &name)
+void SceneTreePanel::RenameNode(std::shared_ptr<SceneNode> node, const std::string &name)
 {
   if (!node)
     return;
