@@ -167,6 +167,11 @@ class ComponentSystemManager {
   void UpdateDirtyComponentSystems(float deltaTime);
 
   /**
+   * @brief 清理所有系统
+   */
+  void ClearAll();
+
+  /**
    * @brief 销毁所有系统
    */
   void ShutdownAll();

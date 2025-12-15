@@ -34,6 +34,14 @@ void ComponentSystemManager::UpdateDirtyComponentSystems(float deltaTime)
   }
 }
 
+void ComponentSystemManager::ClearAll() 
+{
+  // 逆序清理
+  for (auto it = m_Systems.rbegin(); it != m_Systems.rend(); ++it) {
+    (*it)->Clear();
+  }
+}
+
 void ComponentSystemManager::ShutdownAll()
 {
   // 逆序销毁

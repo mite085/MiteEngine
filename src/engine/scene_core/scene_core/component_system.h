@@ -39,6 +39,11 @@ class IComponentSystem {
   virtual void Shutdown() = 0;
 
   /**
+   * @brief 系统清理（场景重新加载时调用）
+   */
+  virtual void Clear() = 0;
+
+  /**
    * @brief 系统更新（每帧执行，不强制子类实现）
    */
   virtual void Update(float deltaTime, SceneRegistry &registry) {}
@@ -119,34 +124,20 @@ template<typename T> class ComponentSystem : public IComponentSystem {
     m_EventSubscriptions.UnsubscribeAll();
     m_AllComponents.clear();
   }
+  virtual void Clear() override { m_AllComponents.clear(); }
 
-  std::vector<std::type_index> GetComponentTypes() const override
-  {
-    return {typeid(T)};
-  }
-  virtual std::vector<std::type_index> GetSystemDependencies() const override
-  {
-    return {};
-  }
-  virtual Component::Family GetExecutionOrder() const override
-  {
-    return T::family;
-  }
+  std::vector<std::type_index> GetComponentTypes() const override { return {typeid(T)}; }
+  virtual std::vector<std::type_index> GetSystemDependencies() const override { return {}; }
+  virtual Component::Family GetExecutionOrder() const override { return T::family; }
 
   /**
    * @brief 获取所有管理的组件
    */
-  const std::vector<T *> &GetAllComponents() const
-  {
-    return m_AllComponents;
-  }
+  const std::vector<T *> &GetAllComponents() const { return m_AllComponents; }
   /**
    * @brief 获取组件数量
    */
-  size_t GetComponentCount() const
-  {
-    return m_AllComponents.size();
-  }
+  size_t GetComponentCount() const { return m_AllComponents.size(); }
 
  protected:
   /**
@@ -187,27 +178,27 @@ template<typename T> class ComponentSystem : public IComponentSystem {
 
 /**
  * @brief 支持快照的组件系统模板类
- * 
+ *
  * 主要负责消费ApplySnapshotEvent事件，将改动同步到Component上
  */
-template<typename T>
-class SnapshotComponentSystem : public ComponentSystem<T>{
+template<typename T> class SnapshotComponentSystem : public ComponentSystem<T> {
   // 限制模板T必须继承自Component类型
-  static_assert(std::is_base_of<SnapshotComponent, T>::value, "T must inherit from Snapshot Component");
+  static_assert(std::is_base_of<SnapshotComponent, T>::value,
+                "T must inherit from Snapshot Component");
   // 添加自描述类型别名
   using TraitsDataType = typename T::SnapshotDataType;
   static constexpr Component::Family FamilyID = T::family;
+
  public:
-  SnapshotComponentSystem() : ComponentSystem<T>(){};
+  SnapshotComponentSystem() : ComponentSystem<T>() {};
   virtual ~SnapshotComponentSystem() = default;
   virtual void Initialize() override
   {
     // 订阅组件添加/移除事件
     // Immediate同步模式
-    ComponentSystem::m_EventSubscriptions
-        .SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
+    ComponentSystem::m_EventSubscriptions.SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
         BIND_DISPATCH_FN(OnSnapshotApplied), EventPriority::High);
-    
+
     ComponentSystem::Initialize();
   }
 
@@ -215,7 +206,7 @@ class SnapshotComponentSystem : public ComponentSystem<T>{
   void OnSnapshotApplied(ApplySnapshotEvent<TraitsDataType> &e)
   {
     Entity entity = e.GetEntity();
-      // 确保存在组件
+    // 确保存在组件
     if (m_AllComponents.find(entity) != m_AllComponents.end())
       if (auto snapComponent = static_cast<SnapshotComponentTraits<TraitsDataType, FamilyID> *>(
               m_AllComponents.at(entity)))
@@ -225,12 +216,13 @@ class SnapshotComponentSystem : public ComponentSystem<T>{
   }
 };
 
-
 // 非模板的基类
 class DirtyComponentSystemBase : public IComponentSystem {
  public:
   virtual ~DirtyComponentSystemBase() = default;
-  virtual void Update(float deltaTime, SceneRegistry &registry) = 0; // 系统更新（每帧执行，需要强制子类实现，处理脏标记）
+  virtual void Update(
+      float deltaTime,
+      SceneRegistry &registry) = 0;  // 系统更新（每帧执行，需要强制子类实现，处理脏标记）
   virtual size_t GetDirtyComponentCount() const = 0;
 };
 
@@ -251,10 +243,22 @@ template<typename T>
 class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSystemBase {
   // 限制模板T必须继承自Component类型
   static_assert(std::is_base_of<DirtyComponent, T>::value, "T must inherit from Dirty Component");
+
  public:
-  DirtyComponentSystem() : ComponentSystem<T>(){};
+  DirtyComponentSystem() : ComponentSystem<T>() {};
   virtual ~DirtyComponentSystem() = default;
-   /**
+  virtual void Shutdown() override
+  {
+    m_EventSubscriptions.UnsubscribeAll();
+    m_AllComponents.clear();
+    m_DirtyComponents.clear();
+  }
+  void Clear() override
+  {
+    m_AllComponents.clear();
+    m_DirtyComponents.clear();
+  }
+  /**
    * @brief 系统更新（每帧调用）
    * @param deltaTime 帧间隔时间(秒)
    * @param registry 注册表
@@ -270,10 +274,7 @@ class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSys
   /**
    * @brief 获取脏组件数量
    */
-  size_t GetDirtyComponentCount() const override
-  {
-    return m_DirtyComponents.size();
-  }
+  size_t GetDirtyComponentCount() const override { return m_DirtyComponents.size(); }
 
   /**
    * @brief 强制标记所有组件为脏（用于特殊情况）
@@ -285,6 +286,7 @@ class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSys
       comp->MarkDirty();
     }
   }
+
  protected:
   /**
    * @brief 获取脏组件列表

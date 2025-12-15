@@ -31,6 +31,30 @@ void MiteApplication::run()
     m_Window->PollEvents();
     EventBus::Get().ProcessQueue();
 
+    // 1.1. 检查重加载标志
+    if (m_ShouldReloadScene.load()) {
+      // 重置标志位
+      m_ShouldReloadScene.store(false);
+      m_IsReloading.store(true);
+
+      // 重置场景系统
+      m_SceneCore->Clear();
+      m_SceneGraph->Clear();
+      LightManager::Get().ClearAllLights();
+      m_SceneView->Initialize();
+
+      // 加载新场景
+      LoadDemoScene(m_ReloadSceneIndex);
+      m_IsReloading.store(false);
+    }
+
+    // 1.2. 如果正在重加载，跳过渲染
+    // （目前主循环负责场景重加载，所以此标志位无效）
+    // （待后续将场景加载移到子线程，不阻塞主线程的话，可以考虑启用）
+    if (m_IsReloading.load()) {
+      continue;
+    }
+
     // 2. 更新场景
     Update();
 
@@ -53,15 +77,59 @@ void MiteApplication::run()
   CleanUp();
 }
 
+void MiteApplication::SnapShotTest()
+{
+  // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
+  // 获取相机变换
+  TransformComponent &mainCameraTransform =
+      m_SceneCore->GetRegistry().GetComponent<TransformComponent>(m_SceneView->GetCameraEntity());
+  // 添加快照测试
+  std::unique_ptr<ComponentSnapshot<Transform>> transformSnap =
+      mainCameraTransform.CreateSnapshot();
+  // 相机看向远处点，不再看向原点
+  mainCameraTransform.SetLocalTransform(
+      [](Transform &localtrans) { localtrans.LookAt(glm::vec3(110.0f, 120.0f, 120.0f)); });
+  // 恢复快照
+  transformSnap->Apply();
+}
+
 void MiteApplication::LoadScene(const std::string &filepath) {}
 
 void MiteApplication::SaveScene(const std::string &filepath) {}
 
-void MiteApplication::LoadDefaultScene()
+void MiteApplication::LoadDemoScene(int index)
 {
-  m_Logger->info("Loading default scene");
+  if (index == 0) {
+    m_Logger->info("Loading empty scene");
 
-  // 创建灯光、实体与对应组件
+    CreatePointLight();
+    CreateDirectionalLight();
+  }
+  else if (index == 1) {
+    m_Logger->info("Loading tree demo scene");
+
+    CreatePointLight();
+    CreateDirectionalLight();
+
+    // 加载Ground-Tree模型
+    LoadModelToScene("models/ground.glb");
+    LoadModelToScene("models/oak.glb");
+  }
+  else if (index == 2) {
+    m_Logger->info("Loading car demo scene");
+
+    CreatePointLight();
+    CreateDirectionalLight();
+
+    // 加载Car-Room模型
+    LoadModelToScene("models/room.glb");
+    LoadModelToScene("models/car.glb");
+  }
+}
+
+void MiteApplication::CreatePointLight()
+{
+  // 创建点光源、实体与对应组件
   std::shared_ptr<Light> pointLight = LightManager::Get().CreateLight(LightType::POINT);
   Entity lightEntity = m_SceneCore->CreateEntity("Point Light");
   TransformComponent &lightTransformComponent =
@@ -76,8 +144,11 @@ void MiteApplication::LoadDefaultScene()
   lightTransformComponent.SetLocalTransform(
       [=](Transform &localtrans) { localtrans.Translate(glm::vec3(3.0f, 5.0f, 1.0f)); });
   lightComponent.SetIntensity(300);
+}
 
-  // 创建灯光2、实体与对应组件
+void MiteApplication::CreateDirectionalLight()
+{
+  // 创建方向光、实体与对应组件
   std::shared_ptr<Light> directionalLight = LightManager::Get().CreateLight(
       LightType::DIRECTIONAL);
   Entity directionalLightEntity = m_SceneCore->CreateEntity("Directional Light");
@@ -95,24 +166,6 @@ void MiteApplication::LoadDefaultScene()
     localtrans.LookAt(glm::vec3(-1.0f, -1.0f, -1.0f));
   });
   directionalLightComponent.SetIntensity(20);
-
-  // 加载模型
-  LoadModelToScene("models/room.glb");
-  LoadModelToScene("models/car.glb"); 
-
-  // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
-
-  // 获取相机变换
-  TransformComponent &mainCameraTransform =
-      m_SceneCore->GetRegistry().GetComponent<TransformComponent>(m_SceneView->GetCameraEntity());
-  // 添加快照测试
-  std::unique_ptr<ComponentSnapshot<Transform>> transformSnap =
-      mainCameraTransform.CreateSnapshot();
-  // 相机看向远处点，不再看向原点
-  mainCameraTransform.SetLocalTransform(
-      [](Transform &localtrans) { localtrans.LookAt(glm::vec3(110.0f, 120.0f, 120.0f)); });
-  // 恢复快照
-  transformSnap->Apply();
 }
 
 void MiteApplication::LoadModelToScene(const std::string &modelName)
@@ -193,6 +246,12 @@ void MiteApplication::Initialize()
       EventPriority::Highest  // 最高优先级确保及时处理
   );
 
+  // 订阅场景加载事件（延迟订阅确保当前帧正常绘制结束）
+  m_EventSubscriptions.SubscribeDeferred<SceneReloadCalling>(
+      BIND_DISPATCH_FN(OnSceneReloadCalling),
+      EventPriority::Highest  // 最高优先级确保及时处理
+  );
+
   // 按照依赖关系，先初始化底层模块，后初始化顶层模块
   InitializeInputSystem();
   InitializeAssertManager();
@@ -206,7 +265,7 @@ void MiteApplication::Initialize()
   InitializeUI();                // 必须在Window创建GL上下文后执行
 
   // 加载默认场景
-  LoadDefaultScene();
+  LoadDemoScene(1);
 }
 
 void MiteApplication::CleanUp()
@@ -249,7 +308,7 @@ void MiteApplication::InitializeRenderWithOpenGL()
 {
   m_Logger->info("Initializing renderer with OpenGL mode");
 
-  // 初始化OpenGL渲染管线  
+  // 初始化OpenGL渲染管线
   m_Renderer = std::make_unique<OpenGLPipeline>();
   m_Renderer->Initialize();
 }
@@ -381,7 +440,7 @@ void MiteApplication::InitializeSceneGraph()
 void MiteApplication::CleanUpSceneGraph()
 {
   m_Logger->info("Cleaning up scene graph");
-  m_SceneGraph->CleanUp();
+  m_SceneGraph->Clear();
 }
 
 void MiteApplication::CleanUpSceneView() {}
@@ -418,7 +477,19 @@ void MiteApplication::CreateMenuBar()
   UIMenu &menu = m_UISystem->GetMenu();
 
   // 添加Scene菜单，控制场景
-  UIMenuItemSubmenu *sceneMenu = menu.AddMenu("Scene");
+  UIMenuItemSubmenu *sceneMenu = menu.AddMenu("common.Scene");
+  sceneMenu->AddItem("common.Empty_Scene", [&]() {
+    SceneReloadCalling e(0);
+    EventBus::Publish<SceneReloadCalling>(e);
+  });
+  sceneMenu->AddItem("common.Tree_Demo_Scene", [&]() {
+    SceneReloadCalling e(1);
+    EventBus::Publish<SceneReloadCalling>(e);
+  });
+  sceneMenu->AddItem("common.Car_Demo_Scene", [&]() {
+    SceneReloadCalling e(2);
+    EventBus::Publish<SceneReloadCalling>(e);
+  });
 
   // 添加Layer菜单，控制显示内容
   UIMenuItemSubmenu *layerMenu = menu.AddMenu("common.Layer_Select");
@@ -443,7 +514,6 @@ void MiteApplication::CreateMenuBar()
     DisplayTextureTypeChangedEvent e(RuntimeTextureType::Forward_Blend);
     EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
   });
-
 
   // 添加Test测试菜单，测试功能
   UIMenuItemSubmenu *testMenu = menu.AddMenu("Test");
@@ -498,6 +568,15 @@ void MiteApplication::OnWindowClose(WindowCloseEvent &e)
   m_ShouldClose = true;
 
   // 标记事件已处理，阻断传播
+  e.SetResult(EventResult::Consumed);
+}
+void MiteApplication::OnSceneReloadCalling(SceneReloadCalling &e) {
+  m_Logger->info("Scene Reload Calling.");
+
+  m_ShouldReloadScene.store(true);
+  m_ReloadSceneIndex = e.GetSceneIndex();
+
+   // 标记事件已处理，阻断传播
   e.SetResult(EventResult::Consumed);
 }
 }  // namespace mite

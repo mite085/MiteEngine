@@ -9,34 +9,7 @@
 namespace mite {
 // 1. 场景事件	=====================================================
 
-/**
- * @class SceneLoadedEvent
- * @brief 场景加载事件
- */
-class SceneLoadedEvent : public Event {
- public:
-  SceneLoadedEvent() {}
 
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new SceneLoadedEvent();
-  }
-};
-/**
- * @class SceneLoadedEvent
- * @brief 场景清空事件
- */
-class SceneClearedEvent : public Event {
- public:
-  SceneClearedEvent() {}
-
-  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
-    return new SceneClearedEvent();
-  }
-};
 
 // 2. 实体事件	=====================================================
 

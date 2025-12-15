@@ -79,21 +79,22 @@ void SceneCore::OnRenderPrepare()
 
 void SceneCore::Clear(bool keepSystems)
 {
-  // 1. 销毁所有实体（不触发单独销毁事件，直接批量清除）
-  m_Registry.Clear();
+  // 1. 延迟销毁所有实体
+  for (auto entity : m_Registry.GetAllEntities()) {
+    m_Registry.AddComponent<DestroyComponent>(entity);
+  }
 
   // 2. 重置实体ID计数器
   m_EntityCounter = 0;
 
-  // 3. TODO: 重置主相机
+  // 3. 重置主相机（由SceneView的Initialize实现）
 
-  // 6. 根据参数决定是否重置系统
+  // 4. 重置系统
+  m_SystemManager.ClearAll();
+
+  // 7. 根据参数决定是否卸载系统
   if (!keepSystems) {
     UnregisterComponentSystems();
-  }
-
-  // 7. TODO: 系统保留则重新创建默认环境实体（避免与析构函数的Clear冲突）
-  if (keepSystems) {
   }
 }
 

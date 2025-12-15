@@ -28,7 +28,7 @@ void SceneGraph::Initialize()
   m_NodeManager = std::make_unique<SceneNodeManager>(*m_SpatialPartition);
 }
 
-void SceneGraph::CleanUp()
+void SceneGraph::Clear()
 {
   // 按照依赖倒序清理
   m_NodeManager->Clear();

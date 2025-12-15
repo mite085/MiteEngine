@@ -33,7 +33,7 @@ class SceneGraph {
 
   // 初始化与清理
   void Initialize();
-  void CleanUp();
+  void Clear();
 
   // ==================== 场景节点生命周期管理 ====================
   /**
