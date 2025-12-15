@@ -249,7 +249,7 @@ void MiteApplication::InitializeRenderWithOpenGL()
 {
   m_Logger->info("Initializing renderer with OpenGL mode");
 
-  // 初始化OpenGL渲染管线
+  // 初始化OpenGL渲染管线  
   m_Renderer = std::make_unique<OpenGLPipeline>();
   m_Renderer->Initialize();
 }

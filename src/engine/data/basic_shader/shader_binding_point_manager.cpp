@@ -107,6 +107,25 @@ uint32_t BindingPointManager::GetExternalTextureBinding(ExternalTextureType type
   return it != m_ExternalTextureBindings.end() ? it->second : UINT32_MAX;
 }
 
+std::vector<uint32_t> BindingPointManager::GetAllocatedTextureBindings() const
+{
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  std::vector<uint32_t> allocatedBindings;
+
+  // 遍历所有可能的纹理单元
+  uint32_t maxTextureUnits = BindingRanges::GetMaxTextureUnits();
+  allocatedBindings.reserve(maxTextureUnits);  // 预分配空间
+
+  for (uint32_t i = 0; i < maxTextureUnits; ++i) {
+    if (m_AllocatedTextures.test(i)) {
+      allocatedBindings.push_back(i);
+    }
+  }
+
+  LOG_DEBUG("Retrieved {} allocated texture bindings", allocatedBindings.size());
+  return allocatedBindings;
+}
+
 void BindingPointManager::Reset()
 {
   std::lock_guard<std::mutex> lock(m_Mutex);

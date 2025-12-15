@@ -8,9 +8,8 @@ in VS_OUT {
 // 最终输出颜色
 layout(location = 0) out vec4 o_FinalColor;
 
-#include "../common/common.glsl"
-#include "../common/uniforms.glsl"
-
+layout(binding = 14) uniform sampler2D u_LightingCombined;  // Deferred Lighting结果
+layout(binding = 24) uniform sampler2D u_ForwardTransparent;
 
 void main()
 {
@@ -28,6 +27,13 @@ void main()
     // 输出最终颜色（Alpha始终为1.0，因为混合后不透明）
     o_FinalColor = vec4(blendedColor, 1.0);
 }
+
+// 以下为ShadowMap调试专用代码
+// 启用之后应当将u_LightingCombined和u_ForwardTransparent的采样代码注释掉
+// 转为使用uniform中的绑定点定义
+
+// #include "../common/common.glsl"
+// #include "../common/uniforms.glsl"
 
 // void main()
 // {

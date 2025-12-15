@@ -67,7 +67,7 @@ void DeferredLightingStage::Execute(RenderContext &context)
 
   // 清除输出目标
   RenderCommand::Get().Clear(
-      GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
+      GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
   // 设置光照渲染状态
   RenderCommand::Get().SetRenderState(m_LightingState);
@@ -83,9 +83,6 @@ void DeferredLightingStage::Execute(RenderContext &context)
 
   // 绑定光源SSBO数据
   BindLightSSBOData(context, lightingShader);
-
-  // 绑定默认纯黑的环境光纹理，避免Layout绑定点悬空
-  RenderCommand::Get().BindDefaultEnvironmentMap();
 
   // 绑定阴影数据
   if (m_EnableShadows) {

@@ -62,12 +62,9 @@ void BlendStage::Execute(RenderContext &context)
   // 绑定最终Framebuffer
   RenderCommand::Get().BindFrameBuffer(m_BlendFBO);
 
-  // 绑定默认纯黑的环境光纹理，避免Layout绑定点悬空
-  RenderCommand::Get().BindDefaultEnvironmentMap();
-
   // 清除输出目标
   RenderCommand::Get().Clear(
-      GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
+      GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
   // 设置混合渲染状态
   RenderCommand::Get().SetRenderState(m_BlendState);

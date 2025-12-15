@@ -31,6 +31,11 @@ void OpenGLPipeline::Initialize()
   // 初始化RenderCommand
   RenderCommand::Get().Init();
 
+  // 使用默认纹理绑定所有分配的纹理槽位，避免使用阶段可能出现的纹理槽位悬空问题
+  for (auto bindPoint : BindingPointManager::Get().GetAllocatedTextureBindings()) {
+    RenderCommand::Get().BindDefaultTexture(bindPoint);
+  }
+
   // 创建渲染上下文
   m_Context = std::make_unique<RenderContext>();
 

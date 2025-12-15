@@ -41,6 +41,13 @@ class BindingPointManager {
   uint32_t GetRuntimeTextureBinding(RuntimeTextureType type) const;
   uint32_t GetExternalTextureBinding(ExternalTextureType type) const;
 
+  /**
+   * @brief 获取所有已分配的纹理绑定点的数组
+   * @return 包含所有已分配纹理绑定点的vector
+   * @note 用于在渲染前绑定占位符纹理，避免OpenGL报错
+   */
+  std::vector<uint32_t> GetAllocatedTextureBindings() const;
+
   // ---- 查询接口 ----
   bool IsUBOBindingAllocated(uint32_t bindingPoint) const;
   bool IsSSBOBindingAllocated(uint32_t bindingPoint) const;

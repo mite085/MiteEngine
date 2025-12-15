@@ -106,9 +106,6 @@ void ForwardStage::Execute(RenderContext &context)
   // 清除输出目标（深度附件为复用的GBuffer的，不清理深度Buffer）
   RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
-  // 绑定默认纯黑的环境光纹理，避免Layout绑定点悬空
-  RenderCommand::Get().BindDefaultEnvironmentMap();
-
   // 绑定着色器
   RenderCommand::Get().BindShader(forwardShader);
 

@@ -182,14 +182,14 @@ void OpenGLRenderCommand::BindExternalTexture(ExternalTextureType type,
                        "BindExternalTexture"});
 }
 
-void OpenGLRenderCommand::BindDefaultEnvironmentMap()
+void OpenGLRenderCommand::BindDefaultTexture(uint32_t textureUnit)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::BindTextures,
-                       [this] {
-                         m_Device->BindDefaultEnvironmentMap();
+                       [this, textureUnit] {
+                         m_Device->BindDefaultTexture(textureUnit);
                        },
-                       "BindDefaultEnvironmentMap"});
+                       "BindDefaultTexture"});
 }
 
 void OpenGLRenderCommand::BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,

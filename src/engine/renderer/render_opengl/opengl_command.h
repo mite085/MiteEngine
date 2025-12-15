@@ -62,7 +62,7 @@ class OpenGLRenderCommand : public RenderCommand {
   void BindExternalTexture(ExternalTextureType type,
                            TextureGPUHandle textureHandle,
                            TextureTarget target = TextureTarget::TEXTURE_2D) override;
-  void BindDefaultEnvironmentMap() override;
+  void BindDefaultTexture(uint32_t textureUnit) override;
   void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
                                  uint32_t layer) override;
   void BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
