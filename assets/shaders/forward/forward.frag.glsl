@@ -8,7 +8,6 @@ in VS_OUT {
     layout(location = 2) vec3 tangent;           // 世界空间切线
     layout(location = 3) vec3 bitangent;         // 世界空间副切线
     layout(location = 4) vec2 texCoord;          // 纹理坐标
-    // layout(location = 5) vec4 clipPos;           // 半透明物体不写入深度，无需传递裁剪空间位置
 } fs_in;
 
 // 最终输出颜色（用于Alpha混合）

@@ -16,7 +16,8 @@ namespace mite {
 // 前向声明
 class SceneReloadCalling; 
 class ModelLoadCalling;
-    /**
+
+/**
  * @brief MiteApplication为应用程序统筹管理者
  * @note 负责引擎启动/关闭，模块初始化，DEMO场景构建，主循环管理
  * 

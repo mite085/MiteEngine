@@ -25,10 +25,11 @@ SceneNode::~SceneNode()
   m_Children.clear();
 }
 // ==================== 实体和关系操作 ====================
-Entity SceneNode::GetEntity() const
+Entity SceneNode::GetEntity()
 {
-  return m_Entity;
+    return m_Entity;
 }
+
 void SceneNode::SetParent(SceneNode *parent)
 {
   if (m_Parent == parent)

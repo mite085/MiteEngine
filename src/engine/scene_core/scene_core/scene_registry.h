@@ -36,11 +36,6 @@ class SceneRegistry {
   void DestroyEntity(Entity entity);
 
   /**
-   * @brief 检查实体是否有效
-   */
-  bool IsValid(Entity entity) const;
-
-  /**
    * @brief 清空注册表
    */
   void Clear();
@@ -53,7 +48,7 @@ class SceneRegistry {
   template<typename T, typename... Args> T &AddComponent(Entity entity, Args &&...args)
   {
     // 先检查实体有效性（不需要锁）
-    if (!IsValid(entity)) {
+    if (!entity.IsValid()) {
       throw std::runtime_error("Cannot add component to invalid entity");
     }
 
@@ -123,8 +118,11 @@ class SceneRegistry {
   {
     std::shared_lock lock(m_ComponentMutex);
 
-    auto it = m_Components.find(typeid(T));
-    return it != m_Components.end() && it->second.find(entity) != it->second.end();
+    if (entity.IsValid()) {
+      auto it = m_Components.find(typeid(T));
+      return it != m_Components.end() && it->second.find(entity) != it->second.end();
+    }
+    return false;
   }
 
   /**
@@ -140,7 +138,7 @@ class SceneRegistry {
     std::shared_lock lock(m_ComponentMutex);
 
     // 检查实体有效性
-    if (!IsValid(entity)) {
+    if (!entity.IsValid()) {
       return false;
     }
 
@@ -238,7 +236,7 @@ class SceneRegistry {
     auto it = m_Components.find(typeid(T));
     if (it != m_Components.end()) {
       for (const auto &pair : it->second) {
-        if (IsValid(pair.first)) {
+        if (pair.first.IsValid()) {
           entities.push_back(pair.first);
         }
       }
@@ -278,7 +276,7 @@ class SceneRegistry {
     // 检查每个实体是否拥有所有指定组件
     for (const auto &pair : firstIt->second) {
       Entity entity = pair.first;
-      if (!IsValid(entity)) {
+      if (!entity.IsValid()) {
         continue;
       }
 

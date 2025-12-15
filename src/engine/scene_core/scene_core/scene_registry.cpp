@@ -38,7 +38,7 @@ Entity SceneRegistry::CreateEntity(const std::string &name, Entity parent)
 
 void SceneRegistry::DestroyEntity(Entity entity)
 {
-  if (!IsValid(entity)) {
+  if (!entity.IsValid()) {
     return;
   }
 
@@ -50,11 +50,6 @@ void SceneRegistry::DestroyEntity(Entity entity)
 
   // 标记实体为无效
   entity.Destroy();
-}
-
-bool SceneRegistry::IsValid(Entity entity) const
-{
-  return entity.IsValid();
 }
 
 void SceneRegistry::Clear()
@@ -74,7 +69,7 @@ std::vector<Entity> SceneRegistry::GetAllEntities()
     entities.reserve(firstComponentMap.size());
 
     for (const auto &pair : firstComponentMap) {
-      if (IsValid(pair.first)) {
+      if (pair.first.IsValid()) {
         entities.push_back(pair.first);
       }
     }

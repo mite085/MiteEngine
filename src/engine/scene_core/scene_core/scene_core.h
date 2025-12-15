@@ -53,11 +53,6 @@ class SceneCore {
    */
   void DestroyEntity(Entity entity);
 
-  /**
-   * @brief 检查实体是否有效
-   */
-  bool IsValid(Entity entity) const;
-
   // ------------------------ 场景状态 ------------------------
   const std::string &GetName() const { return m_Name; }
   void SetName(const std::string &name) { m_Name = name; }

@@ -46,26 +46,26 @@ void OpenGLDevice::CleanupResources()
   }
   // 清理缓冲区对象
   if (!m_ActiveVAOs.empty()) {
-    m_Logger->warn("{} VAOs not released on shutdown", m_ActiveVAOs.size());
+    m_Logger->info("{} VAOs not released on shutdown, cleaning", m_ActiveVAOs.size());
     for (GLuint vao : m_ActiveVAOs) {
       glDeleteVertexArrays(1, &vao);
     }
   }
   if (!m_ActiveVBOs.empty()) {
-    m_Logger->warn("{} VBOs not released on shutdown", m_ActiveVBOs.size());
+    m_Logger->info("{} VBOs not released on shutdown, cleaning", m_ActiveVBOs.size());
     for (GLuint vbo : m_ActiveVBOs) {
       glDeleteBuffers(1, &vbo);
     }
   }
   if (!m_ActiveEBOs.empty()) {
-    m_Logger->warn("{} EBOs not released on shutdown", m_ActiveEBOs.size());
+    m_Logger->info("{} EBOs not released on shutdown, cleaning", m_ActiveEBOs.size());
     for (GLuint ebo : m_ActiveEBOs) {
       glDeleteBuffers(1, &ebo);
     }
   }
   // 清理FrameBuffer对象
   if (!m_ActiveFBOs.empty()) {
-    m_Logger->warn("{} FBOs not released on shutdown", m_ActiveFBOs.size());
+    m_Logger->info("{} FBOs not released on shutdown, cleaning", m_ActiveFBOs.size());
     for (GLuint fbo : m_ActiveFBOs) {
       glDeleteFramebuffers(1, &fbo);
     }
@@ -622,7 +622,7 @@ void OpenGLDevice::DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer)
 void OpenGLDevice::CreateFullScreenQuad()
 {
   // 全屏四边形顶点数据 (位置, UV)
-  float quadVertices[] = {// 位置          // UV
+  float quadVertices[] = {
                           -1.0f, 1.0f,  0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
                           1.0f,  -1.0f, 1.0f, 0.0f, -1.0f, 1.0f,  0.0f, 1.0f,
                           1.0f,  -1.0f, 1.0f, 0.0f, 1.0f,  1.0f,  1.0f, 1.0f};

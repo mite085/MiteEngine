@@ -6,7 +6,7 @@ set(ENGINE_SCENE_VIEW_LIB_NAME MiteEngine_Engine_Scene_View)
 # 创建源代码组(筛选器)
 set(SCENE_VIEW_INTERFACE_SRCS
     renderable_item.h           # Renderer模块接收的基础数据结构
-    renderable_item_builder.h   # RenderableItem构建器，将SceneNode*转换为渲染所需格式
+    renderable_item_builder.h   # RenderableItem构建器，将SceneNode *转换为渲染所需格式
     renderable_item_builder.cpp
     render_queue.h              # Renderer模块接收的核心数据结构
     render_queue.cpp

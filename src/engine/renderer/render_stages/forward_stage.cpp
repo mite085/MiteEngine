@@ -106,6 +106,9 @@ void ForwardStage::Execute(RenderContext &context)
   // 清除输出目标（深度附件为复用的GBuffer的，不清理深度Buffer）
   RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
+  // 设置透明物体渲染状态
+  RenderCommand::Get().SetRenderState(m_TransparentState);
+
   // 绑定着色器
   RenderCommand::Get().BindShader(forwardShader);
 
@@ -147,9 +150,6 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
     m_LastFrameTransparentCount = 0;
     return;
   }
-
-  // 设置透明物体渲染状态
-  RenderCommand::Get().SetRenderState(m_TransparentState);
 
   // 渲染所有透明物体（可按距离排序优化）
   size_t renderedCount = 0;

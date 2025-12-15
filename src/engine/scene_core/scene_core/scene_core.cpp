@@ -108,7 +108,7 @@ Entity SceneCore::CreateEntity(const std::string &name, Entity parent)
 
 void SceneCore::DestroyEntity(Entity entity)
 {
-  if (!IsValid(entity)) {
+  if (!entity.IsValid()) {
     return;
   }
 
@@ -116,10 +116,6 @@ void SceneCore::DestroyEntity(Entity entity)
   m_Registry.AddComponent<DestroyComponent>(entity);
 }
 
-bool SceneCore::IsValid(Entity entity) const
-{
-  return entity && m_Registry.IsValid(entity);
-}
 //
 // Entity SceneCore::GetMainCamera() const
 //{

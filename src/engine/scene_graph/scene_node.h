@@ -32,7 +32,7 @@ class SceneNode {
    * @brief 获取关联的ECS实体
    * @return ECS实体引用
    */
-  Entity GetEntity() const;
+  Entity GetEntity();
   /**
    * @brief 设置父节点
    * @param parent 父节点指针

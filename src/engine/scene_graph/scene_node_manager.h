@@ -174,7 +174,7 @@ class SceneNodeManager {
   std::unordered_set<SceneNode *> m_LightNodes;
 
   // 需要更新的脏节点列表
-  std::unordered_set<SceneNode*> m_DirtyNodes;
+  std::unordered_set<SceneNode *> m_DirtyNodes;
 
   // 空间划分结构
   SpatialPartition& m_SpatialPartition;
