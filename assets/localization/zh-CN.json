@@ -12,14 +12,16 @@
     "button_cancel": "取消",
     "Scene": "场景",
     "Empty_Scene": "空场景",
-    "Tree_Demo_Scene": "树木Demo场景",
-    "Car_Demo_Scene": "汽车Demo场景",
+    "Chess_Scene(Material Test)": "棋盘场景(材质测试)",
+    "Sponza_Scene(Shadow Map Test)": "Sponza场景(阴影贴图测试)",
+    "Tree_Scene(Alpha Test)": "树木场景(Alpha测试)",
+    "Car_Scene(Blend Test)": "汽车场景(混合测试)",
     "Layer_Select": "视图层选择",
-    "GBuffer_WorldPosDepth": "世界坐标/深度 通道",
-    "GBuffer_NormalScale": "法线/缩放 通道",
-    "Deferred_Lighting": "延迟光照 结果",
-    "Forward_Rendering": "前向渲染 结果",
-    "Blend_Result": "混合 结果"
+    "GBuffer_WorldPosDepth": "世界坐标/深度",
+    "GBuffer_NormalScale": "法线/缩放",
+    "Deferred_Lighting": "延迟光照",
+    "Forward_Rendering": "前向渲染",
+    "Blend_Result": "混合"
   },
   "math":{
     "meter": "米",

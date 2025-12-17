@@ -99,30 +99,34 @@ void MiteApplication::SaveScene(const std::string &filepath) {}
 
 void MiteApplication::LoadDemoScene(int index)
 {
+  CreatePointLight();
+  CreateDirectionalLight();
   if (index == 0) {
     m_Logger->info("Loading empty scene");
-
-    CreatePointLight();
-    CreateDirectionalLight();
   }
   else if (index == 1) {
-    m_Logger->info("Loading tree demo scene");
+    m_Logger->info("Loading chess demo scene");
 
-    CreatePointLight();
-    CreateDirectionalLight();
+    // 加载Chess模型
+    LoadModelToScene("models/chess.glb");
+  }
+  else if (index == 2) {
+    m_Logger->info("Loading sponza demo scene");
+
+    // 加载Sponza场景模型
+    LoadModelToScene("models/sponza.glb");
+  }
+  else if (index == 3) {
+    m_Logger->info("Loading tree demo scene");
 
     // 加载Ground-Tree模型
     LoadModelToScene("models/ground.glb");
     LoadModelToScene("models/oak.glb");
   }
-  else if (index == 2) {
+  else if (index == 4) {
     m_Logger->info("Loading car demo scene");
 
-    CreatePointLight();
-    CreateDirectionalLight();
-
-    // 加载Car-Room模型
-    LoadModelToScene("models/room.glb");
+    // 加载Car模型
     LoadModelToScene("models/car.glb");
   }
 }
@@ -482,12 +486,20 @@ void MiteApplication::CreateMenuBar()
     SceneReloadCalling e(0);
     EventBus::Publish<SceneReloadCalling>(e);
   });
-  sceneMenu->AddItem("common.Tree_Demo_Scene", [&]() {
+  sceneMenu->AddItem("common.Chess_Scene(Material Test)", [&]() {
     SceneReloadCalling e(1);
     EventBus::Publish<SceneReloadCalling>(e);
   });
-  sceneMenu->AddItem("common.Car_Demo_Scene", [&]() {
+  sceneMenu->AddItem("common.Sponza_Scene(Shadow Map Test)", [&]() {
     SceneReloadCalling e(2);
+    EventBus::Publish<SceneReloadCalling>(e);
+  });
+  sceneMenu->AddItem("common.Tree_Scene(Alpha Test)", [&]() {
+    SceneReloadCalling e(3);
+    EventBus::Publish<SceneReloadCalling>(e);
+  });
+  sceneMenu->AddItem("common.Car_Scene(Blend Test)", [&]() {
+    SceneReloadCalling e(4);
     EventBus::Publish<SceneReloadCalling>(e);
   });
 
