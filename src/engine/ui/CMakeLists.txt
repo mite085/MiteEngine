@@ -135,6 +135,7 @@ target_link_libraries(${ENGINE_UI_LIB_NAME}
     spdlog::spdlog
     Imgui
     ImGuizmo
+    ImGuiFileDialog
     
     # 强依赖
     MiteEngine_Engine_Core

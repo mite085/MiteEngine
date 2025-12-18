@@ -32,9 +32,10 @@ include_directories(thirdparty/json/single_include)
 include_directories(thirdparty/threadpool/include)
 
 # imgui和imguizmo无cmakelist，为避免污染依赖库，此处手动添加
+# imguifuledialog通过find_package寻找imgui，故手动实现，不依赖其自带的cmake文件
 include(imgui.cmake)
 include(imguizmo.cmake)
-
+include(imguifiledialog.cmake)
 
 # shaderc需要依赖spirv_tools等其他第三方库
 # spirv_tools又需要手动将spirv_headers放到指定目录
@@ -73,6 +74,9 @@ if(TARGET Imgui)
 endif()
 if(TARGET ImGuizmo)
     set_target_properties(ImGuizmo PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
+endif()
+if(TARGET ImGuiFileDialog)
+    set_target_properties(ImGuiFileDialog PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
 endif()
 if(TARGET meshoptimizer)
     set_target_properties(meshoptimizer PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
