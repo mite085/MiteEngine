@@ -52,3 +52,6 @@
 [submodule "thirdparty/glslang"]
 	path = thirdparty/glslang
 	url = https://github.com/KhronosGroup/glslang.git
+[submodule "thirdparty/imguifiledialog"]
+	path = thirdparty/imguifiledialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git
