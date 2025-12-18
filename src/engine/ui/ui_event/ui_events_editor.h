@@ -180,7 +180,39 @@ class GizmoOperationEvent : public Event {
   glm::vec3 m_Delta;
 };
 
+/**
+ * @brief 模态文件对话框选择文件事件
+ */
+class FileSelectedEvent : public Event {
+ public:
+  explicit FileSelectedEvent(const std::string &filePathName,
+                             const std::string &fileName,
+                             const std::string &filePath)
+      : m_FilePathName(filePathName), m_FileName(fileName), m_FilePath(filePath)
+  {
+  }
 
+  // 支持完整文件路径+文件名、文件名、文件路径三种读取模式
+  const std::string &GetFilePathName() const { return m_FilePathName; }
+  const std::string &GetFileName() const { return m_FileName; }
+  const std::string &GetFilePath() const { return m_FilePath; }
+
+  std::string ToString() const override
+  {
+    return "FileSelectedEvent: " + m_FilePathName;
+  }
+
+  Event *Clone() const override
+  {
+    return new FileSelectedEvent(m_FilePathName, m_FileName, m_FilePath);
+  }
+
+  EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
+
+ private:
+  Entity m_Entity;
+  std::string m_FilePathName, m_FileName, m_FilePath;
+};
 
 }  // namespace mite
 

@@ -53,6 +53,9 @@ void UISystem::Update(float deltaTime)
       panel->Update(deltaTime);
     }
   }
+
+  // 更新文件对话框（非阻塞）
+  UIRender::Get().UpdateFileDialogs();
 }
 
 void UISystem::BeginFrame()
@@ -103,6 +106,7 @@ void UISystem::DestroyPanel(std::shared_ptr<UIPanel> panel)
     m_Panels.erase(it);
   }
 }
+
 bool UISystem::InitializeBackend(void *nativeWindow)
 {
   // 目前只实现ImGui后端

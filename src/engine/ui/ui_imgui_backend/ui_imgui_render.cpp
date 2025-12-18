@@ -1,7 +1,9 @@
 #include "ui_imgui_render.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "ImGuiFileDialog.h"
 #include "misc/cpp/imgui_stdlib.h"
+#include "ui_event/ui_events_editor.h"
 
 namespace mite {
 // ==================== 菜单渲染实现 ====================
@@ -973,11 +975,83 @@ glm::vec2 ImGuiUIRender::GetMousePos()
   ImVec2 pos = ImGui::GetMousePos();
   return glm::vec2(pos.x, pos.y);
 }
+// ==================== 模态文件选择对话框绘制 ====================
+
+void ImGuiUIRender::OpenFileDialog(const std::string &dialogKey,
+                                   const std::string &title,
+                                   const std::string &filters,
+                                   const std::string &defaultPath,
+                                   std::function<void(const std::string &)> callback)
+{
+  // 配置对话框
+  IGFD::FileDialogConfig config;
+  config.path = defaultPath;
+
+  // 打开对话框
+  ImGuiFileDialog::Instance()->OpenDialog(dialogKey,  GetTranslatedText(title), filters.c_str(), config);
+
+  // 存储回调信息
+  m_FileDialogs[dialogKey] = {callback, true};
+
+  LOG_INFO("Opening File Dialog: {} - {}", dialogKey, title);
+}
+
+bool ImGuiUIRender::IsFileDialogOpen(const std::string &dialogKey) const
+{
+  auto it = m_FileDialogs.find(dialogKey);
+  return it != m_FileDialogs.end() && it->second.isOpen;
+}
+
+void ImGuiUIRender::UpdateFileDialogs()
+{
+  // 遍历所有文件对话框
+  for (auto it = m_FileDialogs.begin(); it != m_FileDialogs.end();) {
+    const std::string &dialogKey = it->first;
+    FileDialogInfo &info = it->second;
+
+    // 检查对话框是否显示
+    if (ImGuiFileDialog::Instance()->Display(dialogKey)) {
+      if (ImGuiFileDialog::Instance()->IsOk()) {
+        // 获取选择的文件路径
+        std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+        std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+        LOG_INFO("File selection: {} -> {}", dialogKey, filePathName);
+
+        // 执行回调
+        if (info.callback) {
+          info.callback(filePathName);
+        }
+
+        // 发布事件
+        EventBus::Publish<FileSelectedEvent>(FileSelectedEvent{
+            filePathName, ImGuiFileDialog::Instance()->GetCurrentFileName(), filePath});
+      }
+      else {
+        // 用户取消
+        LOG_INFO("Cancel file selection: {}", dialogKey);
+      }
+
+      // 关闭对话框
+      ImGuiFileDialog::Instance()->Close();
+      it = m_FileDialogs.erase(it);
+    }
+    else {
+      ++it;
+    }
+  }
+}
+
 // ==================== 翻译辅助函数 ====================
 
 std::string ImGuiUIRender::GetTranslatedText(const BaseRenderProps &props)
 {
   return UILocalization::Get().Translate(props.translationKey.c_str());
+}
+
+std::string ImGuiUIRender::GetTranslatedText(const std::string &translationKey)
+{
+  return UILocalization::Get().Translate(translationKey.c_str());
 }
 
 std::string ImGuiUIRender::GetTranslatedHint(const TextInputProps &props)

@@ -93,9 +93,34 @@ class ImGuiUIRender : public UIRender {
   glm::vec2 CalcTextSize(const std::string &text) override;
   glm::vec2 GetMousePos() override;
 
+  // ==================== 模态文件对话框 ====================
+  /**
+   * @brief 打开文件选择对话框（非阻塞）
+   * @param dialogKey 对话框唯一标识
+   * @param title 对话框标题
+   * @param filters 文件过滤器，例如：".cpp,.h,.hpp" 或 "图片文件 (*.png;*.jpg){.png,.jpg},.*"
+   * @param defaultPath 默认路径
+   * @param callback 选择完成后的回调函数
+   */
+  void OpenFileDialog(const std::string &dialogKey,
+                      const std::string &title,
+                      const std::string &filters = ".*",
+                      const std::string &defaultPath = ".",
+                      std::function<void(const std::string &)> callback = nullptr) override;
+  /**
+   * @brief 检查指定对话框是否正在显示
+   */
+  bool IsFileDialogOpen(const std::string &dialogKey) const override;
+
+  /**
+   * @brief 处理文件对话框更新（每帧更新）
+   */
+  void UpdateFileDialogs() override;
+
  private:
   // ==================== 翻译辅助函数 ====================
   std::string GetTranslatedText(const BaseRenderProps &props);  // 获取翻译后的文本内容
+  std::string GetTranslatedText(const std::string &translationKey);
   std::string GetTranslatedHint(const TextInputProps &props);  // 获取输入框提示文本的翻译
   std::string GetTranslatedOverlay(const ProgressBarProps &props);  // 获取进度条覆盖文本的翻译
   std::string GetTranslatedItem(const std::vector<std::string> &translationKeys,
@@ -104,6 +129,15 @@ class ImGuiUIRender : public UIRender {
 
   // ==================== 私有辅助函数 ====================
   void SetItemTooltip(std::string tooltip);
+
+  // 文件对话框支持
+  struct FileDialogInfo {
+    std::function<void(const std::string &)> callback;
+    bool isOpen = false;
+  };
+  std::unordered_map<std::string, FileDialogInfo> m_FileDialogs;
+
+
 };
 }  // namespace mite
 

@@ -79,12 +79,12 @@ class UIRender {
   // ==================== 基础控件渲染 ====================
   void RenderLabel(const std::string &translateKey);
   void RenderLabelSprator(const std::string &translateKey);
-  virtual void RenderLabel(const LabelProps &props) = 0;    // 文本显示
+  virtual void RenderLabel(const LabelProps &props) = 0;         // 文本显示
   virtual void RenderLabelSprator(const LabelProps &props) = 0;  // 文本分隔符显示
-  virtual bool RenderButton(const ButtonProps &props) = 0;  // 按键
-  virtual bool RenderCheckbox(CheckboxProps &props) = 0;    // 复选框（是否选中）
-  virtual bool RenderTextInput(TextInputProps &props) = 0;  // 文本输入
-  virtual bool RenderTextArea(TextAreaProps &props) = 0;    // 多行文本输入
+  virtual bool RenderButton(const ButtonProps &props) = 0;       // 按键
+  virtual bool RenderCheckbox(CheckboxProps &props) = 0;         // 复选框（是否选中）
+  virtual bool RenderTextInput(TextInputProps &props) = 0;       // 文本输入
+  virtual bool RenderTextArea(TextAreaProps &props) = 0;         // 多行文本输入
 
   // ==================== 选择器控件渲染 ====================
   virtual bool RenderCombobox(ComboboxProps &props) = 0;  // 下拉选择框
@@ -102,12 +102,11 @@ class UIRender {
   virtual bool RenderSliderFloat2(Float2EditProps &props) = 0;
   virtual bool RenderSliderFloat3(Float3EditProps &props) = 0;
   virtual bool RenderSliderFloat4(Float4EditProps &props) = 0;
-  virtual bool RenderDragInt(IntEditProps &props) = 0; 
+  virtual bool RenderDragInt(IntEditProps &props) = 0;
   virtual bool RenderDragFloat(FloatEditProps &props) = 0;
   virtual bool RenderDragFloat2(Float2EditProps &props) = 0;
   virtual bool RenderDragFloat3(Float3EditProps &props) = 0;
   virtual bool RenderDragFloat4(Float4EditProps &props) = 0;
-
 
   // ==================== 特殊控件渲染 ====================
   virtual void RenderProgressBar(const ProgressBarProps &props) = 0;  // 进度条
@@ -129,7 +128,7 @@ class UIRender {
                               const std::function<void()> &subitemRenderContent) = 0;
   /**
    * @brief 确保Tree的空白部位也能响应Drop
-   * @param dragDropTargetContent 
+   * @param dragDropTargetContent
    */
   virtual void RenderTreeVoid(const std::function<void(void *)> &dragDropTargetContent) = 0;
   virtual bool RenderPopup(
@@ -145,18 +144,41 @@ class UIRender {
   virtual void RenderSpacer(const SpacerProps &props) = 0;  // 布局spacing的空白间隔
   virtual void SetSameLine(float offset = 0.0f,
                            float spacing = -1.0f) = 0;  // 让下一个控件在同一行显示，而不是换行显示
-  virtual void SetNewLine() = 0;  // 显式换行，确保下一个控件在新的一行显示
+  virtual void SetNewLine() = 0;                        // 显式换行，确保下一个控件在新的一行显示
 
   // ==================== 状态管理 ====================
   // Imgui的立即模式与上下文系统支持Begin和End的便利性接口
   virtual bool BeginDisabled(bool disabled = true) = 0;  // 启用Disable区域，区域内控件均不允许编辑
-  virtual void EndDisabled() = 0;  // 终止Disable区域，后续的控件允许编辑
+  virtual void EndDisabled() = 0;                        // 终止Disable区域，后续的控件允许编辑
 
   // ==================== 工具函数 ====================
-  virtual glm::vec2 GetCursorPos() = 0;                 // 获取当前窗口左上角位置
-  virtual void SetCursorPos(const glm::vec2 &pos) = 0;  // 设置窗口位置
+  virtual glm::vec2 GetCursorPos() = 0;                         // 获取当前窗口左上角位置
+  virtual void SetCursorPos(const glm::vec2 &pos) = 0;          // 设置窗口位置
   virtual glm::vec2 CalcTextSize(const std::string &text) = 0;  // 计算文本在当前字体下的渲染尺寸
   virtual glm::vec2 GetMousePos() = 0;
+
+  /**
+   * @brief 打开文件选择对话框（非阻塞）
+   * @param dialogKey 对话框唯一标识
+   * @param title 对话框标题
+   * @param filters 文件过滤器，例如：".cpp,.h,.hpp" 或 "图片文件 (*.png;*.jpg){.png,.jpg},.*"
+   * @param defaultPath 默认路径
+   * @param callback 选择完成后的回调函数
+   */
+  virtual void OpenFileDialog(const std::string &dialogKey,
+                              const std::string &title,
+                              const std::string &filters = ".*",
+                              const std::string &defaultPath = ".",
+                              std::function<void(const std::string &)> callback = nullptr) = 0;
+  /**
+   * @brief 检查指定对话框是否正在显示
+   */
+  virtual bool IsFileDialogOpen(const std::string &dialogKey) const = 0;
+
+  /**
+   * @brief 处理文件对话框更新（每帧更新）
+   */
+  virtual void UpdateFileDialogs() = 0;
 };
 }  // namespace mite
 

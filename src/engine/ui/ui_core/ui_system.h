@@ -74,6 +74,18 @@ class UISystem {
    */
   UIMenu &GetMenu() { return *m_Menu; }
 
+  /**
+   * @brief UIRender文件选择对话框的接口封装
+   */
+  void OpenFileDialog(const std::string &dialogKey,
+                      const std::string &title,
+                      const std::string &filters = ".*",
+                      const std::string &defaultPath = ".",
+                      std::function<void(const std::string &)> callback = nullptr)
+  {
+    UIRender::Get().OpenFileDialog(dialogKey, title, filters, defaultPath, callback);
+  }
+
  private:
   // 使用窗口句柄初始化后端
   bool InitializeBackend(void *nativeWindow);
