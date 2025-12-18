@@ -481,7 +481,8 @@ void MiteApplication::CreateMenuBar()
   UIMenu &menu = m_UISystem->GetMenu();
 
   // 添加Scene菜单，控制场景
-  UIMenuItemSubmenu *sceneMenu = menu.AddMenu("common.Scene");
+  UIMenuItemSubmenu *fileMenu = menu.AddMenu("common.File");
+  UIMenuItemSubmenu *sceneMenu = fileMenu->AddSubmenu("common.Scene");
   sceneMenu->AddItem("common.Empty_Scene", [&]() {
     SceneReloadCalling e(0);
     EventBus::Publish<SceneReloadCalling>(e);
@@ -501,6 +502,15 @@ void MiteApplication::CreateMenuBar()
   sceneMenu->AddItem("common.Car_Scene(Blend Test)", [&]() {
     SceneReloadCalling e(4);
     EventBus::Publish<SceneReloadCalling>(e);
+  });
+
+  fileMenu->AddItem("common.Load_Model", [&]() {
+    m_UISystem->OpenFileDialog(
+        "ChooseModelFile",
+        "common.Choose_Model_File",
+        ".glb,.gltf",
+        FileSystem::GetAssetsRoot().string() + "/models",
+        [this](const std::string &filePath) { LoadModelToScene(filePath); });
   });
 
   // 添加Layer菜单，控制显示内容
@@ -582,13 +592,14 @@ void MiteApplication::OnWindowClose(WindowCloseEvent &e)
   // 标记事件已处理，阻断传播
   e.SetResult(EventResult::Consumed);
 }
-void MiteApplication::OnSceneReloadCalling(SceneReloadCalling &e) {
+void MiteApplication::OnSceneReloadCalling(SceneReloadCalling &e)
+{
   m_Logger->info("Scene Reload Calling.");
 
   m_ShouldReloadScene.store(true);
   m_ReloadSceneIndex = e.GetSceneIndex();
 
-   // 标记事件已处理，阻断传播
+  // 标记事件已处理，阻断传播
   e.SetResult(EventResult::Consumed);
 }
 }  // namespace mite
