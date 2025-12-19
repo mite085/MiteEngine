@@ -48,10 +48,31 @@ target_link_libraries(${PROJECT_NAME}
     MiteEngine_Engine_Ui
 )
 
+
 # 添加自定义目标来复制assets文件夹到可执行文件目录（用于开发时方便）
+
+# 创建过滤复制脚本
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/copy_filtered_assets.cmake "
+file(GLOB_RECURSE ASSET_FILES 
+    LIST_DIRECTORIES false
+    RELATIVE \${SOURCE_DIR}
+    \${SOURCE_DIR}/*)
+# 过滤掉不需要的文件后缀(主要是blend模型工程文件)
+list(FILTER ASSET_FILES EXCLUDE REGEX \"\\\\.(tmp|bak|log|blend|blend1)$\")
+# 确保目标目录存在
+file(MAKE_DIRECTORY \${DEST_DIR})
+# 复制文件
+foreach(ASSET_FILE \${ASSET_FILES})
+    get_filename_component(DEST_SUBDIR \${DEST_DIR}/\${ASSET_FILE} DIRECTORY)
+    file(MAKE_DIRECTORY \${DEST_SUBDIR})
+    file(COPY \${SOURCE_DIR}/\${ASSET_FILE}
+          DESTINATION \${DEST_SUBDIR})
+endforeach()
+")
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/assets
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
-    COMMENT "Copying assets to executable directory"
+    COMMAND ${CMAKE_COMMAND} 
+        -D "SOURCE_DIR=${CMAKE_SOURCE_DIR}/assets"
+        -D "DEST_DIR=$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+        -P "${CMAKE_CURRENT_BINARY_DIR}/copy_filtered_assets.cmake"
+    COMMENT "Copying filtered assets to executable directory"
 )
