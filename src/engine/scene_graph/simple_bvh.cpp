@@ -28,24 +28,77 @@ void SimpleBVH::Insert(std::shared_ptr<SceneNode> node)
 {
   if (!node)
     return;
-
   // 检查是否已存在
   if (m_AllNodes.find(node) != m_AllNodes.end()) {
     return;
   }
-
+  // 添加到总节点集合
   m_AllNodes.insert(node);
-  m_NeedsRebuild = true;
+
+  // 如果是第一个节点，或者树为空，直接重建
+  if (!m_Root || m_AllNodes.size() == 1) {
+    m_ForceRebuild = true;  // 标记需要重建
+    return;
+  }
+
+  // 如果有现有的BVH树，尝试增量插入
+  if (m_Root && !m_NodeToBVHNodeMap.empty()) {
+    // 尝试增量插入到现有树中
+    if (TryInsertIntoExistingTree(node)) {
+      // 插入成功，标记为脏以便更新包围盒
+      m_DirtyNodes.insert(node);
+      return;
+    }
+  }
+
+  // 增量插入失败或没有现有树，添加到待插入集合
+  // 这些节点会在下次 UpdateTree 时批量处理
+  m_NewNodes.insert(node);
+
+  LOG_DEBUG("Node added to pending insert list, total pending: {}", m_NewNodes.size());
 }
 void SimpleBVH::Remove(std::shared_ptr<SceneNode> node)
 {
   if (!node)
     return;
-
-  if (m_AllNodes.find(node) != m_AllNodes.end()) {
-    m_AllNodes.erase(node);
-    m_NeedsRebuild = true;
+  // 从总节点集合中移除
+  auto allIt = m_AllNodes.find(node);
+  if (allIt == m_AllNodes.end()) {
+    return;
   }
+  m_AllNodes.erase(allIt);
+
+  // 从待插入集合中移除（如果存在）
+  m_NewNodes.erase(node);
+
+  // 从脏节点集合中移除
+  m_DirtyNodes.erase(node);
+
+  // 如果节点已经在BVH树中，需要从树中移除
+  auto mapIt = m_NodeToBVHNodeMap.find(node);
+  if (mapIt != m_NodeToBVHNodeMap.end()) {
+    BVHNode *leafNode = mapIt->second;
+
+    // 从叶子节点的场景节点列表中移除
+    auto &sceneNodes = leafNode->sceneNodes;
+    auto vecIt = std::find(sceneNodes.begin(), sceneNodes.end(), node);
+    if (vecIt != sceneNodes.end()) {
+      sceneNodes.erase(vecIt);
+
+      // 标记叶子节点为脏（包围盒可能需要更新）
+      MarkDirty(leafNode);
+
+      // 如果叶子节点变空了，标记为待清理
+      if (sceneNodes.empty()) {
+        m_EmptyLeaves.insert(leafNode);
+      }
+    }
+
+    // 从映射中移除
+    m_NodeToBVHNodeMap.erase(mapIt);
+  }
+
+  LOG_DEBUG("Node removed from BVH");
 }
 void SimpleBVH::Update(std::shared_ptr<SceneNode> node)
 {
@@ -56,18 +109,14 @@ void SimpleBVH::Update(std::shared_ptr<SceneNode> node)
   if (m_AllNodes.find(node) == m_AllNodes.end()) {
     return;
   }
-
-  // 标记节点为脏
-  m_DirtyNodes.insert(node);
-
-  // 如果脏节点数量超过阈值，或者这是第一个脏节点，设置需要更新标志
-  if (m_DirtyNodes.size() > m_AllNodes.size() / 4) {
-    // 脏节点太多，直接标记需要完全重建
-    m_NeedsRebuild = true;
+  // 检查节点是否已经在BVH树中（通过映射）
+  if (m_NodeToBVHNodeMap.find(node) != m_NodeToBVHNodeMap.end()) {
+    // 节点在树中，标记为脏以便增量更新
+    m_DirtyNodes.insert(node);
   }
   else {
-    // 标记需要增量更新
-    m_NeedsRebuild = false;
+    // 节点不在树中（可能是新增节点），添加到待插入集合
+    m_NewNodes.insert(node);
   }
 }
 void SimpleBVH::Clear()
@@ -79,8 +128,11 @@ void SimpleBVH::Clear()
   m_AllNodes.clear();
   m_DirtyNodes.clear();
   m_DirtyBVHNodes.clear();
+  m_NodeToBVHNodeMap.clear();  // 清空映射
+  m_NewNodes.clear();          // 清空待插入节点
+  m_EmptyLeaves.clear();       // 清空空叶子节点
   m_NodeCount = 0;
-  m_NeedsRebuild = false;
+  m_ForceRebuild = false;
 }
 void SimpleBVH::Rebuild()
 {
@@ -90,22 +142,30 @@ void SimpleBVH::Rebuild()
       m_Root = nullptr;
     }
     m_NodeCount = 0;
-    m_NeedsRebuild = false;
+    m_ForceRebuild = false;
     ClearDirtyFlags();
+    m_NodeToBVHNodeMap.clear();
+    m_NewNodes.clear();
+    m_EmptyLeaves.clear();
     return;
   }
-
   // 释放旧树
   if (m_Root) {
     FreeNode(m_Root);
   }
-
   // 构建新树
-  std::vector<std::shared_ptr<SceneNode> > nodesToBuild(m_AllNodes.begin(), m_AllNodes.end());
+  std::vector<std::shared_ptr<SceneNode>> nodesToBuild(m_AllNodes.begin(), m_AllNodes.end());
   m_Root = BuildTree(nodesToBuild, 0, static_cast<int>(nodesToBuild.size()), 0);
-  m_NeedsRebuild = false;
-  ClearDirtyFlags();
 
+  // 重建映射
+  m_NodeToBVHNodeMap.clear();
+  BuildNodeMapping(m_Root);
+
+  // 清除所有状态
+  m_ForceRebuild = false;
+  m_NewNodes.clear();
+  m_EmptyLeaves.clear();
+  ClearDirtyFlags();
   LOG_DEBUG("BVH rebuilt with {} nodes, depth: {}", m_NodeCount, GetDepth());
 }
 
@@ -113,8 +173,8 @@ void SimpleBVH::Rebuild()
 bool SimpleBVH::Raycast(const Ray &ray, std::vector<std::shared_ptr<SceneNode> > &results)
 {
   // 检查是否需要更新
-  if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
-    UpdateTree(m_NeedsRebuild);
+  if (m_ForceRebuild || !m_DirtyNodes.empty()) {
+    UpdateTree(m_ForceRebuild);
   }
   if (!m_Root)
     return false;
@@ -128,8 +188,8 @@ bool SimpleBVH::Raycast(const Ray &ray, std::vector<std::shared_ptr<SceneNode> >
 bool SimpleBVH::RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result, float &distance)
 {
   // 检查是否需要更新
-  if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
-    UpdateTree(m_NeedsRebuild);
+  if (m_ForceRebuild || !m_DirtyNodes.empty()) {
+    UpdateTree(m_ForceRebuild);
   }
   if (!m_Root)
     return false;
@@ -146,8 +206,8 @@ size_t SimpleBVH::FrustumCull(const Frustum &frustum,
                               std::vector<std::shared_ptr<SceneNode> > &results)
 {
   // 检查是否需要更新
-  if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
-    UpdateTree(m_NeedsRebuild);
+  if (m_ForceRebuild || !m_DirtyNodes.empty()) {
+    UpdateTree(m_ForceRebuild);
   }
   if (!m_Root)
     return 0;
@@ -161,8 +221,8 @@ size_t SimpleBVH::FrustumCull(const Frustum &frustum,
 size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<std::shared_ptr<SceneNode> > &results)
 {
   // 检查是否需要更新
-  if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
-    UpdateTree(m_NeedsRebuild);
+  if (m_ForceRebuild || !m_DirtyNodes.empty()) {
+    UpdateTree(m_ForceRebuild);
   }
   if (!m_Root)
     return 0;
@@ -176,8 +236,8 @@ size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<std::sha
 size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<std::shared_ptr<SceneNode> > &results)
 {
   // 检查是否需要更新
-  if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
-    UpdateTree(m_NeedsRebuild);
+  if (m_ForceRebuild || !m_DirtyNodes.empty()) {
+    UpdateTree(m_ForceRebuild);
   }
   if (!m_Root)
     return 0;
@@ -190,8 +250,8 @@ size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<std::shared_ptr
 bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, std::shared_ptr<SceneNode> &result, float maxDistance)
 {
   // 检查是否需要更新
-  if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
-    UpdateTree(m_NeedsRebuild);
+  if (m_ForceRebuild || !m_DirtyNodes.empty()) {
+    UpdateTree(m_ForceRebuild);
   }
   if (!m_Root)
     return false;
@@ -256,8 +316,8 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, std::shared_ptr<SceneNod
 void SimpleBVH::ForEachNode(std::function<bool(std::shared_ptr<SceneNode> )> callback)
 {
   // 检查是否需要更新
-  if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
-    UpdateTree(m_NeedsRebuild);
+  if (m_ForceRebuild || !m_DirtyNodes.empty()) {
+    UpdateTree(m_ForceRebuild);
   }
   if (!m_Root)
     return;
@@ -306,8 +366,8 @@ std::string SimpleBVH::GetStats() const
 void SimpleBVH::DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
 {
   // 检查是否需要更新
-  if (m_NeedsRebuild || !m_DirtyNodes.empty()) {
-    UpdateTree(m_NeedsRebuild);
+  if (m_ForceRebuild || !m_DirtyNodes.empty()) {
+    UpdateTree(m_ForceRebuild);
   }
   if (!m_Root)
     return;
@@ -449,39 +509,55 @@ void SimpleBVH::FreeNode(BVHNode *node)
   if (!node)
     return;
 
+  // 如果是叶子节点，从映射中移除所有关联的场景节点
+  if (node->IsLeaf()) {
+    for (auto &sceneNode : node->sceneNodes) {
+      m_NodeToBVHNodeMap.erase(sceneNode);
+    }
+  }
   FreeNode(node->left);
   FreeNode(node->right);
 
   // 释放 sceneNodes 向量（不需要释放 SceneNode 对象本身，它们由场景管理）
   node->sceneNodes.clear();
-
   delete node;
   m_NodeCount--;
+
 }
 
 // ==================== 私有方法：BVH树增量更新 ====================
 void SimpleBVH::UpdateTree(bool forceFullRebuild)
 {
-  if (forceFullRebuild) {
+  // 检查是否需要完全重建
+  if (forceFullRebuild || m_ForceRebuild || ShouldRebuildCompletely()) {
     Rebuild();
     return;
   }
-  if (m_DirtyNodes.empty()) {
-    return;  // 没有脏节点，不需要更新
-  }
-  // 首先找到所有包含脏节点的BVH节点
-  FindDirtyBVHNodes(m_Root);
 
-  // 递归更新所有脏节点
-  bool needsFullRebuild = UpdateNodeRecursive(m_Root);
-  if (needsFullRebuild) {
-    // 如果更新过程中发现需要完全重建
+  // 第一步：处理结构变化（新增/删除节点）
+  ProcessStructuralChanges();
+
+  // 第二步：如果处理结构变化后标记了需要重建，则重建
+  if (m_ForceRebuild) {
     Rebuild();
+    return;
   }
-  else {
-    // 清除脏标记
-    ClearDirtyFlags();
+
+  // 第三步：处理位置变化（增量更新）
+  if (!m_DirtyNodes.empty()) {
+    // 原有的增量更新逻辑
+    FindDirtyBVHNodes(m_Root);
+    bool needsFullRebuild = UpdateNodeRecursive(m_Root);
+    if (needsFullRebuild) {
+      // 增量更新过程中发现问题，需要完全重建
+      m_ForceRebuild = true;
+      Rebuild();
+      return;
+    }
   }
+
+  // 第四步：清理状态
+  ClearDirtyFlags();
 }
 bool SimpleBVH::UpdateNodeRecursive(BVHNode *node)
 {
@@ -861,4 +937,173 @@ float SimpleBVH::CalculatePointAABBDistanceSq(const glm::vec3 &point,
 {
   return aabb.DistanceToPointSq(point);
 }
+
+bool SimpleBVH::ShouldRebuildCompletely() const
+{
+  // 启发式判断是否需要完全重建
+
+  // 0. 强制重建标志
+  if (m_ForceRebuild) {
+    return true;
+  }
+
+  // 1. 如果树为空，但有待插入节点或者有效节点，需要重建
+  if (!m_Root && (!m_NewNodes.empty() || !m_AllNodes.empty())) {
+    return true;
+  }
+
+  // 2. 如果待插入节点太多（超过总节点的30%），重建更高效
+  if (!m_NewNodes.empty() && m_NewNodes.size() > m_AllNodes.size() * 0.3f) {
+    LOG_DEBUG("Too many new nodes ({} > 30%), triggering rebuild", m_NewNodes.size());
+    return true;
+  }
+
+  // 3. 如果空叶子节点太多（超过总节点的20%），重建以优化结构
+  if (!m_EmptyLeaves.empty() && m_EmptyLeaves.size() > m_NodeCount * 0.2f) {
+    LOG_DEBUG("Too many empty leaves ({} > 20%), triggering rebuild", m_EmptyLeaves.size());
+    return true;
+  }
+
+  // 4. 如果脏节点太多（超过总节点的40%），重建可能更高效
+  if (!m_DirtyNodes.empty() && m_DirtyNodes.size() > m_AllNodes.size() * 0.4f) {
+    LOG_DEBUG("Too many dirty nodes ({} > 40%), triggering rebuild", m_DirtyNodes.size());
+    return true;
+  }
+
+  return false;
+}
+
+void SimpleBVH::ProcessStructuralChanges()
+{
+  // 处理空叶子节点
+  if (!m_EmptyLeaves.empty()) {
+    RemoveEmptyLeaves();
+  }
+
+  // 处理新增节点
+  if (!m_NewNodes.empty()) {
+    // 尝试批量插入新增节点
+    if (!BatchInsertNodes(m_NewNodes)) {
+      // 批量插入失败，标记需要重建
+      m_ForceRebuild = true;
+      return;
+    }
+    m_NewNodes.clear();
+  }
+}
+
+bool SimpleBVH::BatchInsertNodes(const std::unordered_set<std::shared_ptr<SceneNode>> &nodes)
+{
+  if (!m_Root || nodes.empty()) {
+    return false;
+  }
+
+  LOG_DEBUG("Batch inserting {} nodes into existing BVH", nodes.size());
+
+  int successCount = 0;
+  for (auto &node : nodes) {
+    if (TryInsertIntoExistingTree(node)) {
+      successCount++;
+    }
+    else {
+      // 插入失败，返回false
+      LOG_DEBUG("Batch insert failed after {} successful insertions", successCount);
+      return false;
+    }
+  }
+
+  LOG_DEBUG("Batch insert successful: {} nodes inserted", successCount);
+  return true;
+}
+
+bool SimpleBVH::TryInsertIntoExistingTree(std::shared_ptr<SceneNode> node)
+{
+  if (!m_Root || !node) {
+    return false;
+  }
+
+  // 简单的插入策略：找到最适合的叶子节点插入
+  // 使用简单的启发式：选择插入后包围盒扩展最小的叶子节点
+
+  BVHNode *bestLeaf = nullptr;
+  float bestCost = std::numeric_limits<float>::max();
+
+  // 递归查找最佳叶子节点
+  std::function<void(BVHNode *)> findBestLeaf = [&](BVHNode *currentNode) {
+    if (!currentNode)
+      return;
+
+    if (currentNode->IsLeaf()) {
+      // 计算插入到这个叶子节点的成本
+      BoundingVolumeAABB expandedBounds = currentNode->bounds;
+      expandedBounds.Expand(node->GetWorldBounds().GetAABBApproximation());
+
+      // 简单成本计算：扩展后的表面积 * 节点数量
+      float cost = expandedBounds.GetSurfaceArea() * (currentNode->sceneNodes.size() + 1);
+
+      if (cost < bestCost && currentNode->sceneNodes.size() < m_MinLeafSize * 2) {
+        bestCost = cost;
+        bestLeaf = currentNode;
+      }
+    }
+    else {
+      // 内部节点：递归检查子节点
+      findBestLeaf(currentNode->left);
+      findBestLeaf(currentNode->right);
+    }
+  };
+
+  findBestLeaf(m_Root);
+
+  if (bestLeaf) {
+    // 插入到最佳叶子节点
+    bestLeaf->sceneNodes.push_back(node);
+
+    // 更新映射
+    m_NodeToBVHNodeMap[node] = bestLeaf;
+
+    // 标记叶子节点为脏（包围盒需要更新）
+    MarkDirty(bestLeaf);
+
+    return true;
+  }
+
+  // 没有找到合适的叶子节点，插入失败
+  return false;
+}
+
+void SimpleBVH::RemoveEmptyLeaves()
+{
+  if (m_EmptyLeaves.empty()) {
+    return;
+  }
+
+  LOG_DEBUG("Removing {} empty leaves", m_EmptyLeaves.size());
+
+  // 简单的处理：标记需要重建
+  // 更复杂的实现可以尝试合并空叶子节点，
+  // 但重建通常更简单
+  m_ForceRebuild = true;
+  m_EmptyLeaves.clear();
+}
+
+void SimpleBVH::BuildNodeMapping(BVHNode *node)
+{
+  if (!node)
+    return;
+
+  if (node->IsLeaf()) {
+    // 叶子节点：为每个SceneNode建立映射
+    for (auto &sceneNode : node->sceneNodes) {
+      m_NodeToBVHNodeMap[sceneNode] = node;
+    }
+  }
+  else {
+    // 内部节点：递归处理子节点
+    BuildNodeMapping(node->left);
+    BuildNodeMapping(node->right);
+  }
+}
+
+
 }  // namespace mite
