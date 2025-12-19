@@ -269,7 +269,7 @@ void MiteApplication::Initialize()
   InitializeUI();                // 必须在Window创建GL上下文后执行
 
   // 加载默认场景
-  LoadDemoScene(1);
+  LoadDemoScene(0);
 }
 
 void MiteApplication::CleanUp()
@@ -520,7 +520,11 @@ void MiteApplication::CreateMenuBar()
     DisplayTextureTypeChangedEvent e(RuntimeTextureType::GBuffer_WorldPosDepth);
     EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
   });
-  layerMenu->AddItem("common.GBuffer_NormalScale", []() {
+  layerMenu->AddItem("common.GBuffer_BaseColor", []() {
+    DisplayTextureTypeChangedEvent e(RuntimeTextureType::GBuffer_BaseColorMatType);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+  });
+  layerMenu->AddItem("common.GBuffer_Normal", []() {
     DisplayTextureTypeChangedEvent e(RuntimeTextureType::GBuffer_NormalScale);
     EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
   });

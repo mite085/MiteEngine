@@ -21,7 +21,8 @@
     "Car_Scene(Blend Test)": "汽车场景(混合测试)",
     "Layer_Select": "视图层选择",
     "GBuffer_WorldPosDepth": "世界坐标/深度",
-    "GBuffer_NormalScale": "法线/缩放",
+    "GBuffer_BaseColor": "基础色",
+    "GBuffer_Normal": "法线",
     "Deferred_Lighting": "延迟光照",
     "Forward_Rendering": "前向渲染",
     "Blend_Result": "混合"
