@@ -4252,7 +4252,7 @@ flowchart TD
     end
 ````
 
-纹理绑定策略：
+纹理绑定：
 ```mermaid
 graph TD
     subgraph "GBuffer纹理绑定"
@@ -4292,4 +4292,159 @@ sequenceDiagram
 
 ### Forward Stage前向渲染阶段
 
+ForwardStage采用混合渲染策略处理透明物体和特殊材质，通过深度复用和预乘Alpha混合，为延迟渲染管线提供完整的透明物体渲染支持
+```mermaid
+classDiagram
+    direction LR
+    
+    class ForwardStage {
+        +Initialize() void
+        +Execute() void
+        +Shutdown() void
+        +RenderTransparentQueue() void
+    }
+    
+    class ForwardFramebuffer {
+        +颜色附件: RGBA16F
+        +外部深度附件: GBuffer深度
+        +IsComplete() bool
+    }
+    
+    class GBufferDepth {
+        +复用深度缓冲
+        +避免深度冲突
+    }
+    
+    class TransparentQueue {
+        +按距离排序
+        +Alpha混合渲染
+    }
+    
+    ForwardStage --> ForwardFramebuffer : 管理
+    ForwardStage --> GBufferDepth : 复用
+    ForwardStage --> TransparentQueue : 渲染
+````
+
+深度复用：GBuffer深度共享策略
+```mermaid
+graph TD
+    subgraph "深度缓冲复用架构"
+        A[GBuffer阶段] --> B[生成深度缓冲]
+        B --> C[深度纹理: DEPTH_COMPONENT16]
+        C --> D[Forward阶段复用]
+        D --> E[避免深度冲突]
+        E --> F[正确深度排序]
+    end
+````
+```mermaid
+graph TD
+    subgraph "深度绑定流程"
+        G[每帧执行] --> H[获取GBuffer深度纹理]
+        H --> I[绑定到Forward FBO]
+        I --> J[验证绑定成功]
+        J --> K[开始透明渲染]
+    end
+````
+
+深度复用优势:
+- 内存节省: 避免重复深度缓冲分配
+- 深度一致性: 确保透明/不透明物体正确遮挡
+- 性能优化: 减少深度缓冲清除开销
+
+混合渲染策略：
+| 渲染类型 | 处理策略 | 混合方式 |
+|---------|----------|----------|
+| **不透明物体** | GBuffer阶段处理 | 无混合 |
+| **Alpha测试物体** | GBuffer阶段处理 | 丢弃片段 |
+| **透明物体** | Forward阶段处理 | Alpha混合 |
+| **特殊效果** | Forward阶段处理 | 自定义混合 |
+
+该前向渲染阶段通过深度复用和优化的透明物体处理策略，为混合渲染管线提供了完整的透明物体支持，同时保持与延迟渲染的高度一致性和良好的性能特性。
+
+###Blend Stage混合阶段
+
+BlendStage采用全屏后处理技术实现最终图像合成，通过预乘Alpha混合算法将延迟光照结果与前向透明结果合并，输出最终渲染图像
+```mermaid
+classDiagram
+    direction LR
+    
+    class BlendStage {
+        +Initialize() void
+        +Execute() void
+        +Shutdown() void
+        +GetBlendFramebuffer() FrameBufferPtr
+    }
+    
+    class BlendFramebuffer {
+        +颜色附件: RGBA16F
+        +最终输出缓冲
+        +IsComplete() bool
+    }
+    
+    class InputTextures {
+        +Deferred Lighting纹理
+        +Forward透明纹理
+    }
+    
+    class BlendShader {
+        +预乘Alpha混合
+        +最终色调映射
+    }
+    
+    BlendStage --> BlendFramebuffer : 管理
+    BlendStage --> InputTextures : 采样
+    BlendStage --> BlendShader : 执行
+````
+
+混合算法：预乘Alpha混合
+```mermaid
+graph TB
+    subgraph "混合算法原理"
+        A[延迟光照结果] --> B[RGB: 完整光照]
+        B --> C[Alpha: 1.0]
+        
+        D[前向透明结果] --> E[RGB: 预乘颜色]
+        E --> F[Alpha: 透明度]
+        
+        G[混合公式] --> H["$$C_{final} = C_{forward} + C_{deferred} \times (1 - \alpha)$$"]
+        H --> I[最终Alpha: 1.0]
+    end
+````
+
+```mermaid
+graph TB
+    subgraph "着色器实现"
+        J[采样延迟纹理] --> K[采样前向纹理]
+        K --> L[应用混合公式]
+        L --> M[输出最终颜色]
+    end
+````
+
+混合公式:
+- $C_{forward}$: 前向透明颜色（已预乘Alpha）
+- $C_{deferred}$: 延迟光照颜色（不透明）
+- $\alpha$: 前向纹理的Alpha通道
+- 结果: 正确叠加的最终颜色，Alpha固定为1.0
+
+调试支持：阴影贴图可视化
+（通过修改[blend.glsl](./assets/shaders/blend/blend.frag.glsl)的主函数实现，在单独启用ShadowMap Preview Stage之前，仅支持手动修改着色器）
+
+```mermaid
+graph TB
+    subgraph "调试模式切换"
+        A[正常混合模式] --> B[输出最终图像]
+        
+        C[阴影调试模式] --> D[显示方向光级联]
+        C --> E[显示点光源立方体贴图]
+        C --> F[显示聚光灯阴影]
+    end
+    
+    subgraph "可视化布局"
+        G[方向光级联] --> H[2×2网格布局]
+        I[点光源立方体贴图] --> J[3×4网格布局]
+        K[聚光灯阴影] --> L[单纹理显示]
+    end
+````
+
 Render模块通过清晰的分层架构和灵活的渲染阶段设计，为MiteEngine提供了高性能、可扩展的渲染能力，支持现代渲染管线。
+
