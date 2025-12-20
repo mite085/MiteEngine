@@ -541,7 +541,19 @@ void MiteApplication::CreateMenuBar()
     EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
   });
 
-  // 添加Test测试菜单，测试功能
+  // 添加Setting菜单，控制显示内容
+  UIMenuItemSubmenu *settingMenu = menu.AddMenu("common.Setting");
+  // 添加Style选择按键
+  UIMenuItemSubmenu *styleSubmenu = settingMenu->AddSubmenu("common.Style_Select");
+
+  for (auto styleName : m_UISystem->GetStyleManager().GetAllStyleNames()) {
+    styleSubmenu->AddItem(styleName, [this, styleName]() {
+      m_UISystem->GetStyleManager().SetCurrentStyle(styleName);
+    });
+  }
+
+#ifdef DEBUG
+  // Debug模式下，添加Test测试菜单，测试菜单栏功能
   UIMenuItemSubmenu *testMenu = menu.AddMenu("Test");
 
   // Test -> Sub01 -> Sub001 (三级菜单)
@@ -569,6 +581,8 @@ void MiteApplication::CreateMenuBar()
     // 反选Sub0003
     Sub0003Checked = enabled;
   });
+
+#endif  // DEBUG
 }
 
 void MiteApplication::RenderUI()

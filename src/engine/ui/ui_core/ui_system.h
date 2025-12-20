@@ -70,9 +70,10 @@ class UISystem {
   void DestroyPanel(std::shared_ptr<UIPanel> panel);
 
   /**
-   * @brief 获取菜单栏对象，用于新增菜单项
+   * @brief 获取成员对象
    */
   UIMenu &GetMenu() { return *m_Menu; }
+  UIStyleManager &GetStyleManager() { return *m_StyleManager; }
 
   /**
    * @brief UIRender文件选择对话框的接口封装

@@ -66,7 +66,7 @@ class ImGuiStyleAdapter {
   std::unordered_map<std::string, ImGuiCol> m_ColorMappings;
   std::unordered_map<std::string, std::function<void(ImGuiDir)>> m_EnumMappings;
   std::unordered_map<std::string, std::function<void(float)>> m_SizeMappings;
-  std::unordered_map<std::string, std::function<void(float)>> m_BorderMappings;
+  std::unordered_map<std::string, std::function<void(bool)>> m_BorderMappings;
   std::unordered_map<std::string, std::function<void(float)>> m_SpacingMappings;
 
   // 事件订阅

@@ -159,6 +159,7 @@ constexpr const char *COLOR_TITLE_BG = "color.title_bg";
 constexpr const char *COLOR_TITLE_BG_ACTIVE = "color.title_bg_active";
 constexpr const char *COLOR_TITLE_BG_COLLAPSED = "color.title_bg_collapsed";
 constexpr const char *COLOR_MENU_BAR_BG = "color.menu_bar_bg";
+constexpr const char *COLOR_POPUP_BG = "color.popup_bg";
 constexpr const char *COLOR_SCROLLBAR_BG = "color.scrollbar_bg";
 constexpr const char *COLOR_SCROLLBAR_GRAB = "color.scrollbar_grab";
 constexpr const char *COLOR_SCROLLBAR_GRAB_HOVER = "color.scrollbar_grab_hover";

@@ -139,7 +139,7 @@ void ImGuiStyleAdapter::MapBorderProperties(const std::shared_ptr<UIStyle> &uiSt
   for (const auto &[propertyName, setter] : m_BorderMappings) {
     if (uiStyle->HasProperty(propertyName)) {
       try {
-        float value = uiStyle->GetProperty<float>(propertyName);
+        float value = uiStyle->GetProperty<bool>(propertyName);
         setter(value);
       }
       catch (const std::exception &e) {
@@ -190,6 +190,7 @@ void ImGuiStyleAdapter::CreateDefaultStyleMappings()
       {StyleProperties::COLOR_TITLE_BG, ImGuiCol_TitleBg},
       {StyleProperties::COLOR_TITLE_BG_ACTIVE, ImGuiCol_TitleBgActive},
       {StyleProperties::COLOR_TITLE_BG_COLLAPSED, ImGuiCol_TitleBgCollapsed},
+      {StyleProperties::COLOR_POPUP_BG, ImGuiCol_PopupBg},
       {StyleProperties::COLOR_MENU_BAR_BG, ImGuiCol_MenuBarBg},
       {StyleProperties::COLOR_SCROLLBAR_BG, ImGuiCol_ScrollbarBg},
       {StyleProperties::COLOR_SCROLLBAR_GRAB, ImGuiCol_ScrollbarGrab},
