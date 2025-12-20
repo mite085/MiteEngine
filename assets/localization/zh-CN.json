@@ -25,7 +25,9 @@
     "GBuffer_Normal": "法线",
     "Deferred_Lighting": "延迟光照",
     "Forward_Rendering": "前向渲染",
-    "Blend_Result": "混合"
+    "Blend_Result": "混合",
+    "Setting": "设置",
+    "Style_Select": "界面风格选择"
   },
   "math":{
     "meter": "米",
