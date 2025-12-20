@@ -472,9 +472,6 @@ void MiteApplication::Render()
   m_Renderer->RenderScene(renderQueue, m_SceneView->GetCameraInstance());  // 渲染场景
 }
 
-// 测试用静态局部变量
-static bool Sub0003Checked = true;
-
 void MiteApplication::CreateMenuBar()
 {
   // 获取菜单栏
@@ -552,7 +549,7 @@ void MiteApplication::CreateMenuBar()
     });
   }
 
-#ifdef DEBUG
+#ifdef _DEBUG
   // Debug模式下，添加Test测试菜单，测试菜单栏功能
   UIMenuItemSubmenu *testMenu = menu.AddMenu("Test");
 
@@ -575,11 +572,11 @@ void MiteApplication::CreateMenuBar()
   // Test -> Sub03 -> Sub003 -> Sub0003 (四级菜单，复选框)
   UIMenuItemSubmenu *sub03Menu = testMenu->AddSubmenu("Sub03");
   UIMenuItemSubmenu *sub003Menu = sub03Menu->AddSubmenu("Sub003");
-  sub003Menu->AddCheckbox("Sub0003", Sub0003Checked, [this](bool enabled) {
+  // 注意第二个参数为初始化时的选择状态。
+  // 再次点击这个按键之后才会更新状态，并使用新的状态更新回调函数
+  sub003Menu->AddCheckbox("Sub0003", false, [this](bool enabled) {
     // 点击Sub0003的响应
     LOG_INFO("Sub0003 Menu Item Triggered");
-    // 反选Sub0003
-    Sub0003Checked = enabled;
   });
 
 #endif  // DEBUG
