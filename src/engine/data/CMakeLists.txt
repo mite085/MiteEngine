@@ -101,6 +101,9 @@ target_include_directories(${ENGINE_DATA_LIB_NAME}
 
 target_link_libraries(${ENGINE_DATA_LIB_NAME}
     PRIVATE 
+    # 第三方头文件接口库
+    mite_engine_thirdparty_headers
+    # 第三方库依赖
     glfw
     shaderc
     glslang

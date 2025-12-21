@@ -16,6 +16,9 @@ add_executable(${ENGINE_CORE_TEST_NAME} ${CORE_TEST_SRCS})
 
 target_link_libraries(${ENGINE_CORE_TEST_NAME}
     PRIVATE
+    # 第三方头文件接口库
+    mite_engine_thirdparty_headers
+    # 第三方库依赖
     glfw
     gtest_main
     gmock

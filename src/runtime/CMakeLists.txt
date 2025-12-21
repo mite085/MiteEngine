@@ -24,7 +24,8 @@ target_include_directories(${RUNTIME_LIB_NAME}
 # 链接核心库
 target_link_libraries(${RUNTIME_LIB_NAME}
     PRIVATE 
-    
+    # 第三方头文件接口库
+    mite_engine_thirdparty_headers
     # 第三方库依赖
     OpenGL::GL
     glfw
