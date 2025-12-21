@@ -20,7 +20,6 @@ add_subdirectory(thirdparty/spdlog)
 add_subdirectory(thirdparty/assimp)
 add_subdirectory(thirdparty/meshoptimizer)
 add_subdirectory(thirdparty/googletest)
-# add_subdirectory(thirdparty/materialx)  # 项目无需依赖MaterialX，移除
 
 include_directories(thirdparty/glm)
 include_directories(thirdparty/glad)
@@ -37,22 +36,77 @@ include(imgui.cmake)
 include(imguizmo.cmake)
 include(imguifiledialog.cmake)
 
-# shaderc需要依赖spirv_tools等其他第三方库
-# spirv_tools又需要手动将spirv_headers放到指定目录
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glslang/"
-     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/glslang"
-)
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_headers/"
-     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-headers"
-)
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spirv_tools/"
-     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/spirv-tools"
-)
-# 注意，shaderc、spirv_tools和glslang的构建均需要依赖Python的环境，所以编译之前需要确保电脑安装了Python3，并将Python3设定为环境变量
-add_subdirectory(thirdparty/shaderc)
+# ============================================
+# Shaderc 依赖自动同步
+# ============================================
+set(SHADERC_DEPS_SYNCED FALSE)
+# 检查是否需要同步依赖
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/glslang/CMakeLists.txt")
+    message(STATUS "Shaderc dependencies already exist, skipping sync")
+    set(SHADERC_DEPS_SYNCED TRUE)
+else()
+    message(STATUS "Shaderc dependencies not found, will sync automatically")
+endif()
+# 如果依赖不存在，自动同步
+if(NOT SHADERC_DEPS_SYNCED)
+    # 查找 Python3
+    find_package(Python3 COMPONENTS Interpreter)
+    
+    if(Python3_Interpreter_FOUND)
+        message(STATUS "Found Python3: ${Python3_EXECUTABLE}")
+        
+        # 获取 shaderc 目录
+        set(SHADERC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc")
+        
+        # 检查 git-sync-deps 脚本是否存在
+        if(EXISTS "${SHADERC_DIR}/utils/git-sync-deps")
+            message(STATUS "Running git-sync-deps for Shaderc...")
+            
+            # 执行同步命令
+            execute_process(
+                COMMAND ${Python3_EXECUTABLE} utils/git-sync-deps
+                WORKING_DIRECTORY ${SHADERC_DIR}
+                RESULT_VARIABLE SYNC_RESULT
+                OUTPUT_VARIABLE SYNC_OUTPUT
+                ERROR_VARIABLE SYNC_ERROR
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_STRIP_TRAILING_WHITESPACE
+            )
+            
+            if(SYNC_RESULT EQUAL 0)
+                message(STATUS "Shaderc dependencies synced successfully")
+                message(STATUS "Output: ${SYNC_OUTPUT}")
+                set(SHADERC_DEPS_SYNCED TRUE)
+            else()
+                message(WARNING "Failed to sync Shaderc dependencies")
+                message(WARNING "Error: ${SYNC_ERROR}")
+                message(WARNING "You may need to manually run: cd thirdparty/shaderc && python3 utils/git-sync-deps")
+            endif()
+        else()
+            message(WARNING "git-sync-deps script not found at ${SHADERC_DIR}/utils/git-sync-deps")
+            message(WARNING "Please ensure you have the full Shaderc repository")
+        endif()
+    else()
+        message(WARNING "Python3 not found! Cannot auto-sync Shaderc dependencies")
+        message(WARNING "Please install Python3 and ensure it's in PATH, or manually run:")
+        message(WARNING "  cd thirdparty/shaderc && python3 utils/git-sync-deps")
+    endif()
+endif()
+# 检查依赖是否就绪，然后添加 shaderc
+if(SHADERC_DEPS_SYNCED OR EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/shaderc/third_party/glslang/CMakeLists.txt")
+    message(STATUS "Adding Shaderc to build...")
+    add_subdirectory(thirdparty/shaderc)
+else()
+    message(WARNING "Shaderc dependencies not available, skipping Shaderc build")
+    message(WARNING "You can manually sync dependencies with:")
+    message(WARNING "  cd thirdparty/shaderc && python3 utils/git-sync-deps")
+    message(WARNING "Then reconfigure CMake")
+endif()
 
 
+# ============================================
 # 为第三方库设置文件夹属性
+# ============================================
 set(THIRDPARTY_FOLDER "ThirdParty")
 if(TARGET spdlog)
     set_target_properties(spdlog PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
@@ -92,42 +146,6 @@ if(TARGET gtest)
 endif()
 if(TARGET gtest_main)
     set_target_properties(gtest_main PROPERTIES FOLDER ${THIRDPARTY_FOLDER})
-endif()
-
-# MaterialX
-set(MATERIALX_FOLDER "MaterialX")
-if(TARGET MaterialXCore)
-    set_target_properties(MaterialXCore PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXFormat)
-    set_target_properties(MaterialXFormat PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXGenGlsl)
-    set_target_properties(MaterialXGenGlsl PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXGenMdl)
-    set_target_properties(MaterialXGenMdl PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXGenMsl)
-    set_target_properties(MaterialXGenMsl PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXGenOsl)
-    set_target_properties(MaterialXGenOsl PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXGenShader)
-    set_target_properties(MaterialXGenShader PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXRender)
-    set_target_properties(MaterialXRender PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXRenderGlsl)
-    set_target_properties(MaterialXRenderGlsl PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXRenderHw)
-    set_target_properties(MaterialXRenderHw PROPERTIES FOLDER ${MATERIALX_FOLDER})
-endif()
-if(TARGET MaterialXRenderOsl)
-    set_target_properties(MaterialXRenderOsl PROPERTIES FOLDER ${MATERIALX_FOLDER})
 endif()
 
 # ShaderC
