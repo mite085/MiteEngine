@@ -12,32 +12,23 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
     
     - name: Setup clang-format
-      uses: jidicula/clang-format-action@v4
+      uses: DoozyX/clang-format-lint-action@v0.17
       with:
-        clang-format-version: '14'
-        check-path: 'src'
+        source: 'src'
+        clangFormatVersion: 14
         style: 'file'  # 使用项目中的 .clang-format 文件
+        inplace: false  # 只检查，不修改
     
-    - name: Check formatting
+    - name: Show formatting issues
+      if: failure()
       run: |
-        # 显示格式化差异
-        echo "=== Formatting differences ==="
-        git diff --color=always
-        
-        # 检查是否有未提交的更改
-        if git diff --quiet; then
-          echo "✅ Code formatting is correct"
-        else
-          echo "❌ Code formatting issues found"
-          echo ""
-          echo "To fix locally, run:"
-          echo "  find src -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format-14 -i"
-          echo ""
-          echo "Or use the provided script:"
-          echo "  ./scripts/format.sh"
-          exit 1
-        fi
+        echo "Formatting issues found. To fix locally:"
+        echo ""
+        echo "On Linux/macOS:"
+        echo "  find src -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format-14 -i"
+        echo ""
+        echo "On Windows:"
+        echo "  Get-ChildItem src -Recurse -Include *.cpp,*.hpp,*.h | ForEach-Object { clang-format -i $_ }"
