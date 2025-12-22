@@ -1,10 +1,10 @@
 #include "ui_scenetree_panel.h"
+
 #include "scene_core/scene_registry.h"
 
 namespace mite {
 SceneTreePanel::SceneTreePanel(SceneGraph &sceneGraph, const std::string &name)
-    : UIPanel(name), m_SceneGraph(sceneGraph)
-{
+    : UIPanel(name), m_SceneGraph(sceneGraph) {
   // 初始化面板属性
   m_PanelProps.visible = true;
   m_PanelProps.enabled = true;
@@ -20,8 +20,7 @@ SceneTreePanel::SceneTreePanel(SceneGraph &sceneGraph, const std::string &name)
 
 void SceneTreePanel::Update([[maybe_unused]] float deltaTime) {}
 
-void SceneTreePanel::Render()
-{
+void SceneTreePanel::Render() {
   // 获取根节点并递归渲染
   auto rootNodes = m_SceneGraph.GetRootNodes();
   for (auto rootNode : rootNodes) {
@@ -31,7 +30,8 @@ void SceneTreePanel::Render()
   // 渲染空白区域用于接收拖拽行为
   auto dragDropTargetContent = [this](void *dropTargetData) {
     TreeNodeProps *props = static_cast<TreeNodeProps *>(dropTargetData);
-    std::shared_ptr<SceneNode> dropNode = static_cast<std::shared_ptr<SceneNode> >(props->nodePtr);
+    std::shared_ptr<SceneNode> dropNode =
+        static_cast<std::shared_ptr<SceneNode> >(props->nodePtr);
     if (dropNode) {
       EventBus::Publish<SceneNodeParentChangeEvent>(dropNode, nullptr);
     }
@@ -46,10 +46,8 @@ void SceneTreePanel::Render()
   }
 }
 
-void SceneTreePanel::RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node)
-{
-  if (!node)
-    return;
+void SceneTreePanel::RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node) {
+  if (!node) return;
 
   // 准备树节点属性
   TreeNodeProps treeNodeProps;
@@ -64,8 +62,7 @@ void SceneTreePanel::RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node)
     std::shared_ptr<SceneNode> dropNode = props->nodePtr;
     if (dropNode) {
       EventBus::Publish<SceneNodeParentChangeEvent>(dropNode, node);
-    }
-    else {
+    } else {
       EventBus::Publish<SceneNodeParentChangeEvent>(dropNode, nullptr);
     }
   };
@@ -86,17 +83,16 @@ void SceneTreePanel::RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node)
   };
 
   // 渲染此节点（内部更新treeNodeProps.isSelect）
-  m_Renderer.RenderTreeNode(treeNodeProps,itemSelectedContent, dragDropTargetContent, subitemRenderContent);
+  m_Renderer.RenderTreeNode(treeNodeProps, itemSelectedContent,
+                            dragDropTargetContent, subitemRenderContent);
 }
 
-void SceneTreePanel::RenameNode(std::shared_ptr<SceneNode> node, const std::string &name)
-{
-  if (!node)
-    return;
+void SceneTreePanel::RenameNode(std::shared_ptr<SceneNode> node,
+                                const std::string &name) {
+  if (!node) return;
   node->GetEntity().Rename(name);
 }
-void SceneTreePanel::OnSceneNodeSelected(SceneNodeSelectedEvent &event)
-{
+void SceneTreePanel::OnSceneNodeSelected(SceneNodeSelectedEvent &event) {
   if (event.GetSceneNode()) {
     // 节点可用，更新m_SelectedNode
     m_SelectedNode = event.GetSceneNode();

@@ -7,7 +7,7 @@
 namespace mite {
 /**
  * @brief 相机用途标签
- * 
+ *
  * 目前仅用于区分主相机和闲置相机，后续可以添加：
  * Player1View,  // 分屏玩家1
  * ShadowMap,    // 阴影贴图
@@ -16,28 +16,30 @@ namespace mite {
  * MainView,     // 主相机
  * FreeView,     // 闲置相机
  */
-//enum class CameraUsage {
-//  
-//};
+// enum class CameraUsage {
+//
+// };
 
 /**
  * @brief 摄像机组件，将Camera与ECS集成
  *
  * 定位：场景中的摄像机实体表示
- * 
+ *
  * 职责：
  * 1. 关联TransformComponent实现世界空间摄像机
  * 2. 管理主摄像机标记（可扩展摄像机用途标签）
  * 3. 处理视口适配事件
  * 4. 基于相机可见性掩码实现分层渲染
- * 
+ *
  * 协作关系：
  * - 必须与TransformComponent共存
  * - SceneView通过此组件获取渲染用摄像机
  */
-class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family::Render> {
+class CameraComponent
+    : public SnapshotComponentTraits<Camera, Component::Family::Render> {
  public:
-  CameraComponent(CameraProjectionType type = CameraProjectionType::PERSPECTIVE);
+  CameraComponent(
+      CameraProjectionType type = CameraProjectionType::PERSPECTIVE);
 
   // ==================== 投影参数控制 ====================
   void SetPerspective(float fov, float near, float far);
@@ -47,8 +49,8 @@ class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family
   void Zoom(float amount);
 
   // ==================== 主摄像机与摄像机标记 ====================
-  //CameraUsage GetUsage() const;
-  //void SetUsage(CameraUsage usage);
+  // CameraUsage GetUsage() const;
+  // void SetUsage(CameraUsage usage);
 
   // ==================== 参数/对象获取 ====================
   glm::mat4 GetProjectionMatrix() const;
@@ -67,7 +69,7 @@ class CameraComponent : public SnapshotComponentTraits<Camera, Component::Family
   void SetSnapshotData(const Camera &data) override;
 
   std::shared_ptr<Camera> m_Camera;  // 摄像机
-  //CameraUsage m_Usage = CameraUsage::FreeView;
+  // CameraUsage m_Usage = CameraUsage::FreeView;
 };
 
 // 摄像机组件系统
@@ -77,18 +79,17 @@ class CameraComponentSystem : public SnapshotComponentSystem<CameraComponent> {
   std::vector<std::type_index> GetSystemDependencies() const override;
 };
 
-  //// 获取Main相机实体
-  //Entity GetMainCameraEntity() const;
+//// 获取Main相机实体
+// Entity GetMainCameraEntity() const;
 
-  //// 设置主相机实体（确保唯一性）
-  //void SetMainCameraEntity(Entity mainCamera);
-
+//// 设置主相机实体（确保唯一性）
+// void SetMainCameraEntity(Entity mainCamera);
 
 ///**
 // * @class MainCameraChangedEvent
 // * @brief 主摄像机修改事件（暂未启用）
 // */
-//class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
+// class MainCameraChangedEvent : public ComponentEvent<CameraComponent> {
 // public:
 //  MainCameraChangedEvent(Entity entity, CameraComponent &newMainCamera)
 //      : ComponentEvent<CameraComponent>(entity, component)
@@ -108,13 +109,10 @@ class CameraComponentSystem : public SnapshotComponentSystem<CameraComponent> {
 class CameraChangedEvent : public ComponentEvent<CameraComponent> {
  public:
   CameraChangedEvent(Entity entity, CameraComponent &component)
-      : ComponentEvent<CameraComponent>(entity, component)
-  {
-  }
+      : ComponentEvent<CameraComponent>(entity, component) {}
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new CameraChangedEvent(this->m_Entity, this->m_Component);
   }
 };

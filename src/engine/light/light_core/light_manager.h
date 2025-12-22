@@ -16,8 +16,7 @@ namespace mite {
  */
 class LightManager {
  public:
-  static LightManager &Get()
-  {
+  static LightManager &Get() {
     static LightManager manager;
     return manager;
   }
@@ -97,7 +96,8 @@ class LightManager {
    * @return 是否更新成功
    * @note 需要提供光源的当前世界变换矩阵
    */
-  bool UpdateLightData(const std::unordered_map<Light *, Transform> &worldTransforms);
+  bool UpdateLightData(
+      const std::unordered_map<Light *, Transform> &worldTransforms);
 
   // ---- 光源SSBO管理 ----
 
@@ -125,7 +125,9 @@ class LightManager {
    * @brief 获取阴影实例
    * @return 阴影实例共享指针
    */
-  std::shared_ptr<ShadowInstance> GetShadowInstance() const { return m_ShadowInstance; }
+  std::shared_ptr<ShadowInstance> GetShadowInstance() const {
+    return m_ShadowInstance;
+  }
 
   // ---- 配置管理 ----
 
@@ -170,12 +172,13 @@ class LightManager {
   bool CanAddLight(std::shared_ptr<Light> light) const;
 
   // ---- 成员变量 ----
-  std::vector<std::shared_ptr<Light>> m_Lights;                          // 所有光源列表
-  mutable std::unordered_map<Light *, Transform> m_LightTransformCache;  // 光源变换缓存
-  std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;                  // 光源统一的SSBO管理器
-  std::shared_ptr<ShadowInstance> m_ShadowInstance;                      // 阴影实例
-  size_t m_MaxLights;                                                    // 最大光源数量
-  bool m_IsInitialized = false;                                          // 初始化状态标志
+  std::vector<std::shared_ptr<Light>> m_Lights;  // 所有光源列表
+  mutable std::unordered_map<Light *, Transform>
+      m_LightTransformCache;                             // 光源变换缓存
+  std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;  // 光源统一的SSBO管理器
+  std::shared_ptr<ShadowInstance> m_ShadowInstance;      // 阴影实例
+  size_t m_MaxLights;                                    // 最大光源数量
+  bool m_IsInitialized = false;                          // 初始化状态标志
 };
 }  // namespace mite
 

@@ -4,7 +4,6 @@
 #include "command_core/command.h"
 
 namespace mite {
-
 /**
  * @brief 命令重做栈
  *
@@ -72,7 +71,6 @@ class CommandRedoStack {
   std::stack<CommandHandle> m_Stack;
   size_t m_MaxSize;
 };
-
 }  // namespace mite
 
 #endif  // MITE_ENGINE_COMMAND_CORE_COMMAND_REDO_STACK

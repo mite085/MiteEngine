@@ -12,22 +12,23 @@ struct TextureMetadata {
   std::string sourcePath;  // 原始文件路径或资源标识
 
   // 基础属性（用于重新生成TextureSourceData）
-  TextureFormat sourceFormat = TextureFormat::RGBA8;  // 数据格式（RGB8/RGBA8等）
-  uint32_t originalWidth = 0;                         // 原始图片宽度
-  uint32_t originalHeight = 0;                        // 原始图片高度
+  TextureFormat sourceFormat =
+      TextureFormat::RGBA8;     // 数据格式（RGB8/RGBA8等）
+  uint32_t originalWidth = 0;   // 原始图片宽度
+  uint32_t originalHeight = 0;  // 原始图片高度
 
   // 采样配置（序列化需要）
   TextureWrapMode wrapModeS = TextureWrapMode::Repeat;  // 分离S/T方向包装模式
   TextureWrapMode wrapModeT = TextureWrapMode::Repeat;
-  TextureFilterMode minFilter = TextureFilterMode::LinearMipmapLinear;  // 分离缩小/放大过滤
+  TextureFilterMode minFilter =
+      TextureFilterMode::LinearMipmapLinear;  // 分离缩小/放大过滤
   TextureFilterMode magFilter = TextureFilterMode::LinearMipmapLinear;
   bool generateMipmaps = true;  // 是否生成Mipmap
 
   // 资源信息
   TextureTarget target = TextureTarget::TEXTURE_2D;  // 纹理目标类型
 
-  TextureSourceData generateSourceData(std::vector<uint8_t> &&pixelData) const
-  {
+  TextureSourceData generateSourceData(std::vector<uint8_t> &&pixelData) const {
     TextureSourceData sourceData;
 
     // 设置核心数据

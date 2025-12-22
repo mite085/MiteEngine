@@ -4,7 +4,6 @@
 #include "renderable_item.h"
 
 namespace mite {
-
 /**
  * @brief 渲染队列管理器
  * @note 职责：管理渲染项的收集、排序和提交，为Renderer提供标准化的渲染数据接口
@@ -12,8 +11,6 @@ namespace mite {
  */
 class RenderQueue {
  public:
-
-
   /**
    * @brief 排序策略枚举
    */
@@ -85,7 +82,8 @@ class RenderQueue {
    * @param queueType 队列类型
    * @return 渲染项列表的常量引用
    */
-  const std::vector<RenderableItem> &GetItems(RenderableItemType queueType) const;
+  const std::vector<RenderableItem> &GetItems(
+      RenderableItemType queueType) const;
 
   /**
    * @brief 获取指定队列的渲染项数量
@@ -108,7 +106,8 @@ class RenderQueue {
    */
   void SetCustomSortFunction(
       RenderableItemType queueType,
-      std::function<bool(const RenderableItem &, const RenderableItem &)> sortFunc);
+      std::function<bool(const RenderableItem &, const RenderableItem &)>
+          sortFunc);
 
   /**
    * @brief 设置队列可见性（预留多视口支持）
@@ -150,7 +149,6 @@ class RenderQueue {
    */
   const QueueData &GetQueueData(RenderableItemType queueType) const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_RENDER_QUEUE_H

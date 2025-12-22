@@ -46,9 +46,8 @@ class IComponentSystem {
   /**
    * @brief 系统更新（每帧执行，不强制子类实现）
    */
-  virtual void Update([[maybe_unused]] float deltaTime, [[maybe_unused]] SceneRegistry &registry)
-  {
-  }
+  virtual void Update([[maybe_unused]] float deltaTime,
+                      [[maybe_unused]] SceneRegistry &registry) {}
 
   /**
    * @brief 获取该系统管理的组件类型列表
@@ -77,16 +76,12 @@ class IComponentSystem {
 /**
  * @brief 组件系统辅助宏，简化系统定义
  */
-#define DECLARE_COMPONENT_SYSTEM(system_name) \
- public: \
-  std::type_index GetSystemType() const override \
-  { \
-    return typeid(system_name); \
-  } \
-  static std::type_index GetStaticType() \
-  { \
-    return typeid(system_name); \
-  }
+#define DECLARE_COMPONENT_SYSTEM(system_name)      \
+ public:                                           \
+  std::type_index GetSystemType() const override { \
+    return typeid(system_name);                    \
+  }                                                \
+  static std::type_index GetStaticType() { return typeid(system_name); }
 
 /**
  * @brief 基础组件系统模板类，负责组件管理和事件处理
@@ -97,22 +92,22 @@ class IComponentSystem {
  * 3. 维护所有组件列表
  * 4. Update方法为空，由子类实现具体更新逻辑
  */
-template<typename T> class ComponentSystem : public IComponentSystem {
+template <typename T>
+class ComponentSystem : public IComponentSystem {
   // 限制模板T必须继承自Component类型
-  static_assert(std::is_base_of<Component, T>::value, "T must inherit from Component");
+  static_assert(std::is_base_of<Component, T>::value,
+                "T must inherit from Component");
 
  public:
   // 暴露组件类型
   using ComponentType = T;
 
-  ComponentSystem() : IComponentSystem()
-  {
-    m_Logger = mite::LoggerSystem::CreateModuleLogger("Component System: {" + type_name<T>() +
-                                                      "}");
+  ComponentSystem() : IComponentSystem() {
+    m_Logger = mite::LoggerSystem::CreateModuleLogger("Component System: {" +
+                                                      type_name<T>() + "}");
     m_Logger->trace("Created base component system: {}", type_name<T>());
   }
-  virtual void Initialize() override
-  {
+  virtual void Initialize() override {
     // 订阅组件添加/移除事件
     // Immediate同步模式：
     // 组件添加/移除是ECS核心操作，需要立即响应以确保系统状态一致性，避免异步导致的时序问题
@@ -121,16 +116,21 @@ template<typename T> class ComponentSystem : public IComponentSystem {
     m_EventSubscriptions.SubscribeImmediate<ComponentRemovedEvent<T>>(
         BIND_DISPATCH_FN(OnComponentRemoved), EventPriority::High);
   }
-  virtual void Shutdown() override
-  {
+  virtual void Shutdown() override {
     m_EventSubscriptions.UnsubscribeAll();
     m_AllComponents.clear();
   }
   virtual void Clear() override { m_AllComponents.clear(); }
 
-  std::vector<std::type_index> GetComponentTypes() const override { return {typeid(T)}; }
-  virtual std::vector<std::type_index> GetSystemDependencies() const override { return {}; }
-  virtual Component::Family GetExecutionOrder() const override { return T::family; }
+  std::vector<std::type_index> GetComponentTypes() const override {
+    return {typeid(T)};
+  }
+  virtual std::vector<std::type_index> GetSystemDependencies() const override {
+    return {};
+  }
+  virtual Component::Family GetExecutionOrder() const override {
+    return T::family;
+  }
 
   /**
    * @brief 获取所有管理的组件
@@ -145,32 +145,28 @@ template<typename T> class ComponentSystem : public IComponentSystem {
   /**
    * @brief 处理组件添加事件
    */
-  virtual void OnComponentAdded(ComponentAddedEvent<T> &e)
-  {
+  virtual void OnComponentAdded(ComponentAddedEvent<T> &e) {
     Register(e.GetEntity(), &e.GetComponent());
     e.SetResult(EventResult::Handled);
   }
   /**
    * @brief 处理组件移除事件
    */
-  virtual void OnComponentRemoved(ComponentRemovedEvent<T> &e)
-  {
+  virtual void OnComponentRemoved(ComponentRemovedEvent<T> &e) {
     Unregister(e.GetEntity());
     e.SetResult(EventResult::Handled);
   }
   /**
    * @brief 注册组件
    */
-  void Register(Entity entity, T *component)
-  {
+  void Register(Entity entity, T *component) {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_AllComponents.emplace(entity, component);
   }
   /**
    * @brief 注销组件
    */
-  void Unregister(Entity entity)
-  {
+  void Unregister(Entity entity) {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_AllComponents.erase(m_AllComponents.find(entity));
   }
@@ -183,7 +179,8 @@ template<typename T> class ComponentSystem : public IComponentSystem {
  *
  * 主要负责消费ApplySnapshotEvent事件，将改动同步到Component上
  */
-template<typename T> class SnapshotComponentSystem : public ComponentSystem<T> {
+template <typename T>
+class SnapshotComponentSystem : public ComponentSystem<T> {
   // 限制模板T必须继承自Component类型
   static_assert(std::is_base_of<SnapshotComponent, T>::value,
                 "T must inherit from Snapshot Component");
@@ -194,24 +191,24 @@ template<typename T> class SnapshotComponentSystem : public ComponentSystem<T> {
  public:
   SnapshotComponentSystem() : ComponentSystem<T>() {};
   virtual ~SnapshotComponentSystem() = default;
-  virtual void Initialize() override
-  {
+  virtual void Initialize() override {
     // 订阅组件添加/移除事件
     // Immediate同步模式
-    ComponentSystem<T>::m_EventSubscriptions.SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
-        BIND_DISPATCH_FN(OnSnapshotApplied), EventPriority::High);
+    ComponentSystem<T>::m_EventSubscriptions
+        .SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
+            BIND_DISPATCH_FN(OnSnapshotApplied), EventPriority::High);
 
     ComponentSystem<T>::Initialize();
   }
 
  private:
-  void OnSnapshotApplied(ApplySnapshotEvent<TraitsDataType> &e)
-  {
+  void OnSnapshotApplied(ApplySnapshotEvent<TraitsDataType> &e) {
     Entity entity = e.GetEntity();
     // 确保存在组件
     if (this->m_AllComponents.find(entity) != this->m_AllComponents.end())
-      if (auto snapComponent = static_cast<SnapshotComponentTraits<TraitsDataType, FamilyID> *>(
-              this->m_AllComponents.at(entity)))
+      if (auto snapComponent =
+              static_cast<SnapshotComponentTraits<TraitsDataType, FamilyID> *>(
+                  this->m_AllComponents.at(entity)))
         snapComponent->ApplySnapshot(e.GetData());
 
     e.SetResult(EventResult::Handled);
@@ -224,7 +221,8 @@ class DirtyComponentSystemBase : public IComponentSystem {
   virtual ~DirtyComponentSystemBase() = default;
   virtual void Update(
       float deltaTime,
-      SceneRegistry &registry) = 0;  // 系统更新（每帧执行，需要强制子类实现，处理脏标记）
+      SceneRegistry
+          &registry) = 0;  // 系统更新（每帧执行，需要强制子类实现，处理脏标记）
   virtual size_t GetDirtyComponentCount() const = 0;
 };
 
@@ -241,22 +239,22 @@ class DirtyComponentSystemBase : public IComponentSystem {
  * 2. 处理脏状态：在适当的时机（如每帧更新时）检查并处理脏状态
  * 3. 清除脏标记：处理完成后将 m_Dirty 设为 false
  */
-template<typename T>
-class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSystemBase {
+template <typename T>
+class DirtyComponentSystem : public ComponentSystem<T>,
+                             public DirtyComponentSystemBase {
   // 限制模板T必须继承自Component类型
-  static_assert(std::is_base_of<DirtyComponent, T>::value, "T must inherit from Dirty Component");
+  static_assert(std::is_base_of<DirtyComponent, T>::value,
+                "T must inherit from Dirty Component");
 
  public:
   DirtyComponentSystem() : ComponentSystem<T>() {};
   virtual ~DirtyComponentSystem() = default;
-  virtual void Shutdown() override
-  {
+  virtual void Shutdown() override {
     m_EventSubscriptions.UnsubscribeAll();
     this->m_AllComponents.clear();
     m_DirtyComponents.clear();
   }
-  void Clear() override
-  {
+  void Clear() override {
     this->m_AllComponents.clear();
     m_DirtyComponents.clear();
   }
@@ -265,8 +263,7 @@ class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSys
    * @param deltaTime 帧间隔时间(秒)
    * @param registry 注册表
    */
-  virtual void Update(float deltaTime, SceneRegistry &registry) override
-  {
+  virtual void Update(float deltaTime, SceneRegistry &registry) override {
     // 阶段1：收集脏组件
     CollectDirtyComponents();
 
@@ -276,13 +273,14 @@ class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSys
   /**
    * @brief 获取脏组件数量
    */
-  size_t GetDirtyComponentCount() const override { return m_DirtyComponents.size(); }
+  size_t GetDirtyComponentCount() const override {
+    return m_DirtyComponents.size();
+  }
 
   /**
    * @brief 强制标记所有组件为脏（用于特殊情况）
    */
-  void MarkAllComponentsDirty()
-  {
+  void MarkAllComponentsDirty() {
     std::lock_guard<std::mutex> lock(this->m_Mutex);
     for (auto comp : this->m_AllComponents) {
       comp->MarkDirty();
@@ -293,33 +291,31 @@ class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSys
   /**
    * @brief 获取脏组件列表
    */
-  void CollectDirtyComponents()
-  {
+  void CollectDirtyComponents() {
     m_DirtyComponents.clear();
 
     // 并行收集优化
     std::vector<T *> localDirtyComponents;
     std::mutex mutex;
-    std::for_each(std::execution::par,
-                  this->m_AllComponents.begin(),
-                  this->m_AllComponents.end(),
-                  [&](T *comp) {
-          if (comp->IsDirty()) {
-            std::lock_guard<std::mutex> lock(mutex);
-            localDirtyComponents.push_back(comp);
-          }
-        });
+    std::for_each(std::execution::par, this->m_AllComponents.begin(),
+                  this->m_AllComponents.end(), [&](T *comp) {
+                    if (comp->IsDirty()) {
+                      std::lock_guard<std::mutex> lock(mutex);
+                      localDirtyComponents.push_back(comp);
+                    }
+                  });
 
     // 合并结果
-    m_DirtyComponents.insert(
-        m_DirtyComponents.end(), localDirtyComponents.begin(), localDirtyComponents.end());
+    m_DirtyComponents.insert(m_DirtyComponents.end(),
+                             localDirtyComponents.begin(),
+                             localDirtyComponents.end());
   }
 
   /**
    * @brief 并行执行脏组件的Update
    */
-  virtual void ProcessDirtyComponents(float deltaTime, SceneRegistry &registry)
-  {
+  virtual void ProcessDirtyComponents(float deltaTime,
+                                      SceneRegistry &registry) {
     // 并行处理优化
     ParallelUtils::ForEach(m_DirtyComponents, [deltaTime, &registry](T *comp) {
       if (comp) {

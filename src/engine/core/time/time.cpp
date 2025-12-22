@@ -9,8 +9,7 @@ size_t Time::s_CurrentTimeMS = 0;
 Time::Clock::time_point Time::s_StartTime = Time::Clock::now();
 Time::Clock::time_point Time::s_LastFrameTime = Time::s_StartTime;
 
-void Time::Reset()
-{
+void Time::Reset() {
   // 重置静态成员变量
   s_DeltaTime = 0.0f;
   s_DeltaTimeMS = 0;
@@ -19,13 +18,13 @@ void Time::Reset()
   s_StartTime = Time::Clock::now();
   s_LastFrameTime = Time::s_StartTime;
 }
-void Time::Update()
-{
+void Time::Update() {
   // 获取当前时间点
   auto currentTime = Clock::now();
 
   // 使用微秒精度计算时间差（避免精度损失）
-  auto deltaMicro = std::chrono::duration_cast<Microseconds>(currentTime - s_LastFrameTime);
+  auto deltaMicro =
+      std::chrono::duration_cast<Microseconds>(currentTime - s_LastFrameTime);
 
   // 转换为毫秒和秒（保持高精度）
   size_t deltaMicroCount = deltaMicro.count();
@@ -42,20 +41,8 @@ void Time::Update()
 
   s_LastFrameTime = currentTime;
 }
-float Time::DeltaTime()
-{
-  return s_DeltaTime;
-}
-size_t Time::DeltaTimeMS()
-{
-  return s_DeltaTimeMS;
-}
-float Time::CurrentTime()
-{
-  return s_CurrentTime;
-}
-size_t Time::CurrentTimeMS()
-{
-  return s_CurrentTimeMS;
-}
+float Time::DeltaTime() { return s_DeltaTime; }
+size_t Time::DeltaTimeMS() { return s_DeltaTimeMS; }
+float Time::CurrentTime() { return s_CurrentTime; }
+size_t Time::CurrentTimeMS() { return s_CurrentTimeMS; }
 };  // namespace mite

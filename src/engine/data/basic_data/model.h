@@ -59,11 +59,11 @@ class Model {
   bool HasLOD() const;
 
  private:
-  std::string m_Path;                                          // 模型加载路径（用于调试）
-  std::vector<Mesh> m_SubMeshes;                               // 子网格集合
+  std::string m_Path;             // 模型加载路径（用于调试）
+  std::vector<Mesh> m_SubMeshes;  // 子网格集合
   std::vector<std::shared_ptr<MaterialInstance>> m_Materials;  // 材质实例几何
-  std::pair<glm::vec3, glm::vec3> m_BoundingBox;               // 模型级包围盒(min, max)
-  bool m_HasLOD = false;                                       // 是否包含LOD
+  std::pair<glm::vec3, glm::vec3> m_BoundingBox;  // 模型级包围盒(min, max)
+  bool m_HasLOD = false;                          // 是否包含LOD
 };
 };  // namespace mite
 

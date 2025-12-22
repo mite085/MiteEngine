@@ -25,9 +25,9 @@ class CoreFunctions {
    * @param pattern 包含通配符的字符串(支持 * 以及 ? 符号)
    * @return		匹配成功则返回ture，否则false
    */
-  static bool StringMatchWildcard(const std::string &str, const std::string &pattern);
+  static bool StringMatchWildcard(const std::string &str,
+                                  const std::string &pattern);
 };
-
 }  // namespace mite
 
 #endif

@@ -1,24 +1,20 @@
 #include "scene_registry.h"
+
 #include "scene_core_components/id_component.h"
 #include "scene_core_components/tag_component.h"
 
 namespace mite {
 SceneRegistry::SceneRegistry() : m_ComponentEventPublisher() {}
 
-SceneRegistry::~SceneRegistry()
-{
-  Clear();
-}
+SceneRegistry::~SceneRegistry() { Clear(); }
 
-ComponentEventPublisher &SceneRegistry::GetEventPublisher()
-{
+ComponentEventPublisher &SceneRegistry::GetEventPublisher() {
   return m_ComponentEventPublisher;
 }
 
 // 1. 实体管理 ===================================================
 
-Entity SceneRegistry::CreateEntity(const std::string &name, Entity parent)
-{
+Entity SceneRegistry::CreateEntity(const std::string &name, Entity parent) {
   // 创建实体
   Entity entity = Entity::CreateEntity(name);
 
@@ -35,8 +31,7 @@ Entity SceneRegistry::CreateEntity(const std::string &name, Entity parent)
   return entity;
 }
 
-void SceneRegistry::DestroyEntity(Entity entity)
-{
+void SceneRegistry::DestroyEntity(Entity entity) {
   if (!entity.IsValid()) {
     return;
   }
@@ -51,14 +46,12 @@ void SceneRegistry::DestroyEntity(Entity entity)
   entity.Destroy();
 }
 
-void SceneRegistry::Clear()
-{
+void SceneRegistry::Clear() {
   std::unique_lock lock(m_ComponentMutex);
   m_Components.clear();
 }
 
-std::vector<Entity> SceneRegistry::GetAllEntities()
-{
+std::vector<Entity> SceneRegistry::GetAllEntities() {
   std::shared_lock lock(m_ComponentMutex);
 
   std::vector<Entity> entities;
@@ -75,6 +68,4 @@ std::vector<Entity> SceneRegistry::GetAllEntities()
   }
   return entities;
 }
-
-
 };  // namespace mite

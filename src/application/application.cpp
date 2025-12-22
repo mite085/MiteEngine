@@ -1,4 +1,5 @@
 #include "application.h"
+
 #include "basic_shader/shader_binding_point_manager.h"
 #include "light_data/point_light.h"
 #include "material_templates/material_template_pure_color.h"
@@ -10,8 +11,7 @@
 #include "ui_panel/ui_viewport_panel.h"
 
 namespace mite {
-MiteApplication::MiteApplication()
-{
+MiteApplication::MiteApplication() {
   // 初始化LOGGER
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Application");
   m_Logger->info("Create logger for application");
@@ -19,8 +19,7 @@ MiteApplication::MiteApplication()
 
 MiteApplication::~MiteApplication() {}
 
-void MiteApplication::run()
-{
+void MiteApplication::run() {
   Initialize();
 
   while (!m_ShouldClose) {
@@ -77,53 +76,49 @@ void MiteApplication::run()
   CleanUp();
 }
 
-void MiteApplication::SnapShotTest()
-{
+void MiteApplication::SnapShotTest() {
   // ------------- 以下为快照系统使用流程测试专用代码，可删除 -------------
   // 获取相机变换
   TransformComponent &mainCameraTransform =
-      m_SceneCore->GetRegistry().GetComponent<TransformComponent>(m_SceneView->GetCameraEntity());
+      m_SceneCore->GetRegistry().GetComponent<TransformComponent>(
+          m_SceneView->GetCameraEntity());
   // 添加快照测试
   std::unique_ptr<ComponentSnapshot<Transform>> transformSnap =
       mainCameraTransform.CreateSnapshot();
   // 相机看向远处点，不再看向原点
-  mainCameraTransform.SetLocalTransform(
-      [](Transform &localtrans) { localtrans.LookAt(glm::vec3(110.0f, 120.0f, 120.0f)); });
+  mainCameraTransform.SetLocalTransform([](Transform &localtrans) {
+    localtrans.LookAt(glm::vec3(110.0f, 120.0f, 120.0f));
+  });
   // 恢复快照
   transformSnap->Apply();
 }
 
-void MiteApplication::LoadScene([[maybe_unused]]const std::string &filepath) {}
+void MiteApplication::LoadScene([[maybe_unused]] const std::string &filepath) {}
 
 void MiteApplication::SaveScene([[maybe_unused]] const std::string &filepath) {}
 
-void MiteApplication::LoadDemoScene(int index)
-{
+void MiteApplication::LoadDemoScene(int index) {
   CreatePointLight();
   CreateDirectionalLight();
   if (index == 0) {
     m_Logger->info("Loading empty scene");
-  }
-  else if (index == 1) {
+  } else if (index == 1) {
     m_Logger->info("Loading chess demo scene");
 
     // 加载Chess模型
     LoadModelToScene("models/chess.glb");
-  }
-  else if (index == 2) {
+  } else if (index == 2) {
     m_Logger->info("Loading sponza demo scene");
 
     // 加载Sponza场景模型
     LoadModelToScene("models/sponza.glb");
-  }
-  else if (index == 3) {
+  } else if (index == 3) {
     m_Logger->info("Loading tree demo scene");
 
     // 加载Ground-Tree模型
     LoadModelToScene("models/ground.glb");
     LoadModelToScene("models/oak.glb");
-  }
-  else if (index == 4) {
+  } else if (index == 4) {
     m_Logger->info("Loading car demo scene");
 
     // 加载Car模型
@@ -131,57 +126,63 @@ void MiteApplication::LoadDemoScene(int index)
   }
 }
 
-void MiteApplication::CreatePointLight()
-{
+void MiteApplication::CreatePointLight() {
   // 创建点光源、实体与对应组件
-  std::shared_ptr<Light> pointLight = LightManager::Get().CreateLight(LightType::POINT);
+  std::shared_ptr<Light> pointLight =
+      LightManager::Get().CreateLight(LightType::POINT);
   Entity lightEntity = m_SceneCore->CreateEntity("Point Light");
   TransformComponent &lightTransformComponent =
       m_SceneCore->GetRegistry().AddComponent<TransformComponent>(lightEntity);
-  LightComponent &lightComponent = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
-      lightEntity);
+  LightComponent &lightComponent =
+      m_SceneCore->GetRegistry().AddComponent<LightComponent>(lightEntity);
   lightComponent.SetLight(pointLight);
   m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(lightEntity);
 
   // 摆放位置，设定强度
-  lightTransformComponent.SetLocalTransform(
-      [=](Transform &localtrans) { localtrans.Translate(glm::vec3(3.0f, 5.0f, 1.0f)); });
+  lightTransformComponent.SetLocalTransform([=](Transform &localtrans) {
+    localtrans.Translate(glm::vec3(3.0f, 5.0f, 1.0f));
+  });
   lightComponent.SetIntensity(300);
 }
 
-void MiteApplication::CreateDirectionalLight()
-{
+void MiteApplication::CreateDirectionalLight() {
   // 创建方向光、实体与对应组件
-  std::shared_ptr<Light> directionalLight = LightManager::Get().CreateLight(
-      LightType::DIRECTIONAL);
-  Entity directionalLightEntity = m_SceneCore->CreateEntity("Directional Light");
+  std::shared_ptr<Light> directionalLight =
+      LightManager::Get().CreateLight(LightType::DIRECTIONAL);
+  Entity directionalLightEntity =
+      m_SceneCore->CreateEntity("Directional Light");
   TransformComponent &directionalLightTransformComponent =
-      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(directionalLightEntity);
+      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(
+          directionalLightEntity);
   LightComponent &directionalLightComponent =
-      m_SceneCore->GetRegistry().AddComponent<LightComponent>(directionalLightEntity);
+      m_SceneCore->GetRegistry().AddComponent<LightComponent>(
+          directionalLightEntity);
   directionalLightComponent.SetLight(directionalLight);
-  m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(directionalLightEntity);
+  m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(
+      directionalLightEntity);
 
   // 摆放位置，设定强度
-  directionalLightTransformComponent.SetLocalTransform([=](Transform &localtrans) {
-    localtrans.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
-    localtrans.LookAt(glm::vec3(-1.0f, -1.0f, -1.0f));
-  });
+  directionalLightTransformComponent.SetLocalTransform(
+      [=](Transform &localtrans) {
+        localtrans.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
+        localtrans.LookAt(glm::vec3(-1.0f, -1.0f, -1.0f));
+      });
   directionalLightComponent.SetIntensity(20);
 }
 
-void MiteApplication::LoadModelToScene(const std::string &modelName)
-{
+void MiteApplication::LoadModelToScene(const std::string &modelName) {
   // 使用资产管理器加载模型（启用LOD，按照默认4层LOD参数生成）
   ModelAssetID plane_model_asset_id = AssetManager::Get().LoadGLTFModel(
       FileSystem::GetAssetPath(modelName).string(), true, true);
-  std::shared_ptr<ModelAsset> modelAsset = AssetManager::Get().GetModel(plane_model_asset_id);
+  std::shared_ptr<ModelAsset> modelAsset =
+      AssetManager::Get().GetModel(plane_model_asset_id);
 
   // 获取材质列表
   std::vector<MaterialAssetID> modelMaterialIDs = modelAsset->materialRefs;
   std::vector<std::shared_ptr<MaterialInstance>> modelMaterials;
   for (const MaterialAssetID &id : modelMaterialIDs) {
-    std::shared_ptr<MaterialInstance> instance = AssetManager::Get().GetMaterial(id)->instance;
+    std::shared_ptr<MaterialInstance> instance =
+        AssetManager::Get().GetMaterial(id)->instance;
     modelMaterials.push_back(instance);
   }
   Model model(modelAsset->handle, modelAsset->subMeshSection, modelMaterials);
@@ -192,42 +193,49 @@ void MiteApplication::LoadModelToScene(const std::string &modelName)
   m_SceneCore->GetRegistry().AddComponent<TransformComponent>(modelEntity);
   // 创建包围盒组件
   BoundingVolumeComponent &modelBoundingVolumeComponent =
-      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(modelEntity);
-  const std::pair<glm::vec3, glm::vec3> modelBoundingbox = model.GetBoundingBox();
+      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(
+          modelEntity);
+  const std::pair<glm::vec3, glm::vec3> modelBoundingbox =
+      model.GetBoundingBox();
   BoundingVolume modelBoundingVolume = BoundingVolume::CreateFromPoints(
-      BoundingVolumeType::AABB, {modelBoundingbox.first, modelBoundingbox.second});
+      BoundingVolumeType::AABB,
+      {modelBoundingbox.first, modelBoundingbox.second});
   modelBoundingVolumeComponent.SetVolume(modelBoundingVolume);
 
   // 网格体组件与实体创建
   for (size_t i = 0; i < model.GetSubMeshCount(); ++i) {
     // 1. 创建网格实体，以模型节点作为父节点
-    Entity submeshEntity = m_SceneCore->CreateEntity(model.GetSubMesh(i).GetName(), modelEntity);
+    Entity submeshEntity =
+        m_SceneCore->CreateEntity(model.GetSubMesh(i).GetName(), modelEntity);
 
     // 2. 创建网格组件，设定组件数据
-    MeshComponent &submeshMeshComponent = m_SceneCore->GetRegistry().AddComponent<MeshComponent>(
-        submeshEntity);
+    MeshComponent &submeshMeshComponent =
+        m_SceneCore->GetRegistry().AddComponent<MeshComponent>(submeshEntity);
     submeshMeshComponent.SetMesh(std::make_shared<Mesh>(model.GetSubMesh(i)));
 
     // 3. 获取材质
-    std::shared_ptr<MaterialInstance> submeshMaterial = model.GetSubMaterial(
-        model.GetSubMesh(i).GetMaterialIndex());
+    std::shared_ptr<MaterialInstance> submeshMaterial =
+        model.GetSubMaterial(model.GetSubMesh(i).GetMaterialIndex());
 
     // 4. 创建材质组件
     MaterialComponent &submeshMaterialComponent =
-        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(submeshEntity);
+        m_SceneCore->GetRegistry().AddComponent<MaterialComponent>(
+            submeshEntity);
     submeshMaterialComponent.SetMaterialInstance(submeshMaterial);
 
     // 5. 创建变换组件
     m_SceneCore->GetRegistry().AddComponent<TransformComponent>(
-            submeshEntity, model.GetSubMesh(i).GetTransform());
+        submeshEntity, model.GetSubMesh(i).GetTransform());
 
     // 6. 创建包围盒组件，使用Mesh的包围盒填充AABB包围盒数据
     BoundingVolumeComponent &submeshBoundingVolumeComponent =
-        m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(submeshEntity);
+        m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(
+            submeshEntity);
     const std::pair<glm::vec3, glm::vec3> submeshBoundingbox =
         model.GetSubMesh(i).GetBoundingBox();
     BoundingVolume submeshBoundingVolume = BoundingVolume::CreateFromPoints(
-        BoundingVolumeType::AABB, {submeshBoundingbox.first, submeshBoundingbox.second});
+        BoundingVolumeType::AABB,
+        {submeshBoundingbox.first, submeshBoundingbox.second});
     submeshBoundingVolumeComponent.SetVolume(submeshBoundingVolume);
 
     // 7. 创建可见性组件
@@ -235,8 +243,7 @@ void MiteApplication::LoadModelToScene(const std::string &modelName)
   }
 }
 
-void MiteApplication::Initialize()
-{
+void MiteApplication::Initialize() {
   m_Logger->info("Initialize application");
 
   // 订阅窗口关闭事件
@@ -255,20 +262,20 @@ void MiteApplication::Initialize()
   InitializeInputSystem();
   InitializeAssertManager();
   InitializeWindowWithOpenGL();
-  InitializeMaterialSystem();    // Material模块初始化不涉及UBO创建和绑定，无依赖
-  InitializeSceneCore();         // 无依赖
-  InitializeSceneGraph();        // 依赖SceneCore
-  InitializeSceneView();         // 依赖SceneCore和SceneGraph
-  InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行 & 依赖SceneView
-  InitializeLightSystem();       // Light模块初始化时同步创建LightSSBO，依赖Render绑定
-  InitializeUI();                // 必须在Window创建GL上下文后执行
+  InitializeMaterialSystem();  // Material模块初始化不涉及UBO创建和绑定，无依赖
+  InitializeSceneCore();       // 无依赖
+  InitializeSceneGraph();      // 依赖SceneCore
+  InitializeSceneView();       // 依赖SceneCore和SceneGraph
+  InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行 &
+                                 // 依赖SceneView
+  InitializeLightSystem();  // Light模块初始化时同步创建LightSSBO，依赖Render绑定
+  InitializeUI();           // 必须在Window创建GL上下文后执行
 
   // 加载默认场景
   LoadDemoScene(0);
 }
 
-void MiteApplication::CleanUp()
-{
+void MiteApplication::CleanUp() {
   m_Logger->info("Cleaning up application");
 
   // 取消事件订阅
@@ -290,8 +297,7 @@ void MiteApplication::CleanUp()
   CleanUpInputSystem();
 }
 
-void MiteApplication::InitializeWindowWithOpenGL()
-{
+void MiteApplication::InitializeWindowWithOpenGL() {
   m_Logger->info("Initializing window with OpenGL mode");
 
   // 初始化OpenGL窗口
@@ -303,8 +309,7 @@ void MiteApplication::InitializeWindowWithOpenGL()
   BindingPointManager::Get().PreallocateCommonResources();
 }
 
-void MiteApplication::InitializeRenderWithOpenGL()
-{
+void MiteApplication::InitializeRenderWithOpenGL() {
   m_Logger->info("Initializing renderer with OpenGL mode");
 
   // 初始化OpenGL渲染管线
@@ -312,8 +317,7 @@ void MiteApplication::InitializeRenderWithOpenGL()
   m_Renderer->Initialize();
 }
 
-void MiteApplication::InitializeUI()
-{
+void MiteApplication::InitializeUI() {
   m_Logger->info("Initializing user interface");
 
   // 初始化UI系统，依赖Window
@@ -321,12 +325,12 @@ void MiteApplication::InitializeUI()
   m_UISystem->Initialize(m_Window->GetNativeWindow());
 
   // 创建ViewportPanel（必须在SceneView创建之后创建）
-  std::shared_ptr<ViewportPanel> viewportPanel = std::make_shared<ViewportPanel>(*m_SceneView,
-                                                                                 "viewport");
-  std::shared_ptr<SceneTreePanel> scenetreePanel = std::make_shared<SceneTreePanel>(*m_SceneGraph,
-                                                                                    "scenetree");
-  std::shared_ptr<PropertyPanel> propertyPanel = std::make_shared<PropertyPanel>(
-      m_SceneCore->GetRegistry(), "properties");
+  std::shared_ptr<ViewportPanel> viewportPanel =
+      std::make_shared<ViewportPanel>(*m_SceneView, "viewport");
+  std::shared_ptr<SceneTreePanel> scenetreePanel =
+      std::make_shared<SceneTreePanel>(*m_SceneGraph, "scenetree");
+  std::shared_ptr<PropertyPanel> propertyPanel =
+      std::make_shared<PropertyPanel>(m_SceneCore->GetRegistry(), "properties");
 
   // 注册面板到UI系统
   m_UISystem->RegisterPanel(viewportPanel);
@@ -337,16 +341,14 @@ void MiteApplication::InitializeUI()
   CreateMenuBar();
 }
 
-void MiteApplication::InitializeAssertManager()
-{
+void MiteApplication::InitializeAssertManager() {
   m_Logger->info("Initializing asset manager");
 
   // 初始化资产管理器
   // m_AssetManager = std::make_unique<AssetManager>();
 }
 
-void MiteApplication::InitializeSceneCore()
-{
+void MiteApplication::InitializeSceneCore() {
   m_Logger->info("Initializing scene core");
 
   // 初始化ECS场景核心
@@ -354,38 +356,34 @@ void MiteApplication::InitializeSceneCore()
   m_SceneCore->InitializeComponentSystems();
 }
 
-void MiteApplication::InitializeSceneView()
-{
+void MiteApplication::InitializeSceneView() {
   m_Logger->info("Initializing SceneView");
 
   if (m_SceneCore && m_SceneGraph) {
     // 初始化场景视图（具备SceneCore和SceneView的依赖注入，必须在这两个初始化之后进行）
     m_SceneView = std::make_unique<SceneView>(*m_SceneCore, *m_SceneGraph);
     m_SceneView->Initialize();
-  }
-  else {
-    m_Logger->error("Invalid SceneCore or SceneGraph, SceneView initialize FAILED!");
+  } else {
+    m_Logger->error(
+        "Invalid SceneCore or SceneGraph, SceneView initialize FAILED!");
   }
 }
 
-void MiteApplication::InitializeMaterialSystem()
-{
+void MiteApplication::InitializeMaterialSystem() {
   m_Logger->info("Initializing material system");
 
   // 初始化材质系统
   MaterialFactory::Get().Initialize();
 }
 
-void MiteApplication::InitializeLightSystem()
-{
+void MiteApplication::InitializeLightSystem() {
   m_Logger->info("Initializing material system");
 
   // 初始化材质系统
   LightManager::Get().Initialize();
 }
 
-void MiteApplication::InitializeInputSystem()
-{
+void MiteApplication::InitializeInputSystem() {
   m_Logger->info("Initializing input system");
 
   // 创建并初始化输入系统（单例）
@@ -393,20 +391,13 @@ void MiteApplication::InitializeInputSystem()
   InputManager::Get().Init();
 }
 
-void MiteApplication::CleanUpInputSystem()
-{
-  InputManager::Get().Shutdown();
-}
+void MiteApplication::CleanUpInputSystem() { InputManager::Get().Shutdown(); }
 
-void MiteApplication::CleanUpWindow()
-{
-  m_Window->Shutdown();
-}
+void MiteApplication::CleanUpWindow() { m_Window->Shutdown(); }
 
 void MiteApplication::CleanUpRenderWithOpenGL() {}
 
-void MiteApplication::CleanUpUI()
-{
+void MiteApplication::CleanUpUI() {
   m_Logger->info("Cleaning up UI");
 
   m_UISystem->Shutdown();
@@ -416,19 +407,14 @@ void MiteApplication::CleanUpAssertManager() {}
 
 void MiteApplication::CleanUpMaterialSystem() {}
 
-void MiteApplication::CleanUpLightSystem()
-{
+void MiteApplication::CleanUpLightSystem() {
   m_Logger->info("Cleaning up light system");
   LightManager::Get().Destroy();
 }
 
-void MiteApplication::CleanUpSceneCore()
-{
-  m_SceneCore->Clear();
-}
+void MiteApplication::CleanUpSceneCore() { m_SceneCore->Clear(); }
 
-void MiteApplication::InitializeSceneGraph()
-{
+void MiteApplication::InitializeSceneGraph() {
   m_Logger->info("Initializing scene graph");
 
   // 初始化场景图
@@ -436,16 +422,14 @@ void MiteApplication::InitializeSceneGraph()
   m_SceneGraph->Initialize();
 }
 
-void MiteApplication::CleanUpSceneGraph()
-{
+void MiteApplication::CleanUpSceneGraph() {
   m_Logger->info("Cleaning up scene graph");
   m_SceneGraph->Clear();
 }
 
 void MiteApplication::CleanUpSceneView() {}
 
-void MiteApplication::Update()
-{
+void MiteApplication::Update() {
   // 1. 更新场景状态(ECS系统更新)
   m_SceneCore->OnUpdate(Time::DeltaTime());
 
@@ -458,17 +442,16 @@ void MiteApplication::Update()
   m_SceneView->Update();
 }
 
-void MiteApplication::Render()
-{
+void MiteApplication::Render() {
   // 获取渲染队列
   std::shared_ptr<RenderQueue> renderQueue = m_SceneView->GetRenderQueue();
 
   // 渲染器渲染场景
-  m_Renderer->RenderScene(renderQueue, m_SceneView->GetCameraInstance());  // 渲染场景
+  m_Renderer->RenderScene(renderQueue,
+                          m_SceneView->GetCameraInstance());  // 渲染场景
 }
 
-void MiteApplication::CreateMenuBar()
-{
+void MiteApplication::CreateMenuBar() {
   // 获取菜单栏
   UIMenu &menu = m_UISystem->GetMenu();
 
@@ -494,9 +477,7 @@ void MiteApplication::CreateMenuBar()
 
   fileMenu->AddItem("common.Load_Model", [&]() {
     m_UISystem->OpenFileDialog(
-        "ChooseModelFile",
-        "common.Choose_Model_File",
-        ".glb,.gltf",
+        "ChooseModelFile", "common.Choose_Model_File", ".glb,.gltf",
         FileSystem::GetAssetsRoot().string() + "/models",
         [this](const std::string &filePath) { LoadModelToScene(filePath); });
   });
@@ -505,29 +486,35 @@ void MiteApplication::CreateMenuBar()
   UIMenuItemSubmenu *layerMenu = menu.AddMenu("common.Layer_Select");
   // 显示GBuffer的世界坐标和深度（深度作为Alpha通道）
   layerMenu->AddItem("common.GBuffer_WorldPosDepth", []() {
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::GBuffer_WorldPosDepth);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(
+        RuntimeTextureType::GBuffer_WorldPosDepth);
   });
   layerMenu->AddItem("common.GBuffer_BaseColor", []() {
     EventBus::Publish<DisplayTextureTypeChangedEvent>(
         RuntimeTextureType::GBuffer_BaseColorMatType);
   });
   layerMenu->AddItem("common.GBuffer_Normal", []() {
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::GBuffer_NormalScale);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(
+        RuntimeTextureType::GBuffer_NormalScale);
   });
   layerMenu->AddItem("common.Deferred_Lighting", []() {
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::Lighting_Combined);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(
+        RuntimeTextureType::Lighting_Combined);
   });
   layerMenu->AddItem("common.Forward_Rendering", []() {
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::Forward_Transparent);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(
+        RuntimeTextureType::Forward_Transparent);
   });
   layerMenu->AddItem("common.Blend_Result", []() {
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::Forward_Blend);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(
+        RuntimeTextureType::Forward_Blend);
   });
 
   // 添加Setting菜单，控制显示内容
   UIMenuItemSubmenu *settingMenu = menu.AddMenu("common.Setting");
   // 添加Style选择按键
-  UIMenuItemSubmenu *styleSubmenu = settingMenu->AddSubmenu("common.Style_Select");
+  UIMenuItemSubmenu *styleSubmenu =
+      settingMenu->AddSubmenu("common.Style_Select");
 
   for (auto styleName : m_UISystem->GetStyleManager().GetAllStyleNames()) {
     styleSubmenu->AddItem(styleName, [this, styleName]() {
@@ -562,14 +549,14 @@ void MiteApplication::CreateMenuBar()
   // 再次点击这个按键之后才会更新状态，并使用新的状态更新回调函数
   sub003Menu->AddCheckbox("Sub0003", false, [this](bool enabled) {
     // 点击Sub0003的响应
-    LOG_INFO("Sub0003 Menu Item Triggered to {}", enabled ? "enabled" : "disabled");
+    LOG_INFO("Sub0003 Menu Item Triggered to {}",
+             enabled ? "enabled" : "disabled");
   });
 
 #endif  // DEBUG
 }
 
-void MiteApplication::RenderUI()
-{
+void MiteApplication::RenderUI() {
   // 开始UI帧
   m_UISystem->BeginFrame();
 
@@ -584,20 +571,16 @@ void MiteApplication::RenderUI()
 }
 
 void MiteApplication::OnWindowResize([[maybe_unused]] uint32_t width,
-                                     [[maybe_unused]] uint32_t height)
-{
-}
+                                     [[maybe_unused]] uint32_t height) {}
 
-void MiteApplication::OnWindowClose(WindowCloseEvent &e)
-{
+void MiteApplication::OnWindowClose(WindowCloseEvent &e) {
   m_Logger->info("Window close event triggered.");
   m_ShouldClose = true;
 
   // 标记事件已处理，阻断传播
   e.SetResult(EventResult::Consumed);
 }
-void MiteApplication::OnSceneReloadCalling(SceneReloadCalling &e)
-{
+void MiteApplication::OnSceneReloadCalling(SceneReloadCalling &e) {
   m_Logger->info("Scene Reload Calling.");
 
   m_ShouldReloadScene.store(true);

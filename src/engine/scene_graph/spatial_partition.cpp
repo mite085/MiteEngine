@@ -1,10 +1,10 @@
-#include "simple_bvh.h"
 #include "spatial_partition.h"
 
-namespace mite {
+#include "simple_bvh.h"
 
-std::unique_ptr<SpatialPartition> CreateSpatialPartition(SpatialPartitionType type)
-{
+namespace mite {
+std::unique_ptr<SpatialPartition> CreateSpatialPartition(
+    SpatialPartitionType type) {
   switch (type) {
     case SpatialPartitionType::BVH:
       return std::make_unique<SimpleBVH>();
@@ -19,8 +19,7 @@ std::unique_ptr<SpatialPartition> CreateSpatialPartition(SpatialPartitionType ty
   }
 }
 
-const char *GetSpatialPartitionTypeName(SpatialPartitionType type)
-{
+const char *GetSpatialPartitionTypeName(SpatialPartitionType type) {
   switch (type) {
     case SpatialPartitionType::BVH:
       return "BVH";
@@ -36,5 +35,4 @@ const char *GetSpatialPartitionTypeName(SpatialPartitionType type)
       return "Unknown";
   }
 }
-
 }  // namespace mite

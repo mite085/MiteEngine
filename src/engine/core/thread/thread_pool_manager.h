@@ -1,16 +1,16 @@
 #ifndef MITE_CORE_THREAD_POOL_MANAGER_H
 #define MITE_CORE_THREAD_POOL_MANAGER_H
 
-#include "thread_pool_config.h"
-#include "logger/logger.h"
 #include <memory>
 #include <mutex>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
 
-namespace mite {
+#include "logger/logger.h"
+#include "thread_pool_config.h"
 
+namespace mite {
 /**
  * @brief 线程池管理器 - 核心类
  *
@@ -30,7 +30,8 @@ namespace mite {
  * auto& default_pool = ThreadPoolManager::GetDefaultPool();
  *
  * // 获取指定配置的线程池
- * auto& high_perf_pool = ThreadPoolManager::GetPool<ThreadPoolConfig::HIGH_PERFORMANCE_FLAGS>();
+ * auto& high_perf_pool =
+ * ThreadPoolManager::GetPool<ThreadPoolConfig::HIGH_PERFORMANCE_FLAGS>();
  *
  * // 获取命名专用线程池
  * auto& render_pool = ThreadPoolManager::GetNamedPool("render", 2);
@@ -52,7 +53,7 @@ class ThreadPoolManager {
    * @tparam OptFlags 线程池配置标志
    * @return 指定配置线程池的引用
    */
-  template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
+  template <BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
   static BS::thread_pool<OptFlags> &GetPool();
 
   /**
@@ -62,9 +63,10 @@ class ThreadPoolManager {
    * @param thread_count 线程数量，0表示自动检测
    * @return 命名线程池的引用
    */
-  template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
+  template <BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
   static BS::thread_pool<OptFlags> &GetNamedPool(
-      const std::string &name, size_t thread_count = ThreadPoolConfig::ThreadCounts::AUTO);
+      const std::string &name,
+      size_t thread_count = ThreadPoolConfig::ThreadCounts::AUTO);
 
   /**
    * @brief 初始化所有线程池
@@ -92,7 +94,7 @@ class ThreadPoolManager {
    * @param name 线程池名称
    * @return 是否存在
    */
-  template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
+  template <BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
   static bool HasNamedPool(const std::string &name);
 
   /**
@@ -100,7 +102,7 @@ class ThreadPoolManager {
    * @tparam OptFlags 线程池配置标志
    * @param name 线程池名称
    */
-  template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
+  template <BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
   static void RemoveNamedPool(const std::string &name);
 
   /**
@@ -108,7 +110,8 @@ class ThreadPoolManager {
    * @tparam OptFlags 线程池配置标志
    * @return 线程池数量
    */
-  template<BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS> static size_t GetNamedPoolCount();
+  template <BS::tp OptFlags = ThreadPoolConfig::DEFAULT_FLAGS>
+  static size_t GetNamedPoolCount();
 
  private:
   /**
@@ -120,14 +123,16 @@ class ThreadPoolManager {
    * @brief 默认线程池实现
    * @tparam OptFlags 线程池配置标志
    */
-  template<BS::tp OptFlags> static BS::thread_pool<OptFlags> &GetDefaultPoolImpl();
+  template <BS::tp OptFlags>
+  static BS::thread_pool<OptFlags> &GetDefaultPoolImpl();
 
   /**
    * @brief 命名线程池实现
    * @tparam OptFlags 线程池配置标志
    */
-  template<BS::tp OptFlags>
-  static BS::thread_pool<OptFlags> &GetNamedPoolImpl(const std::string &name, size_t thread_count);
+  template <BS::tp OptFlags>
+  static BS::thread_pool<OptFlags> &GetNamedPoolImpl(const std::string &name,
+                                                     size_t thread_count);
 
   // 线程安全互斥锁
   static std::mutex s_Mutex;
@@ -136,66 +141,70 @@ class ThreadPoolManager {
    * @brief 命名线程池存储模板
    * @tparam OptFlags 线程池配置标志
    */
-  template<BS::tp OptFlags> struct NamedPoolStorage {
-    static std::unordered_map<std::string, std::unique_ptr<BS::thread_pool<OptFlags>>> pools;
+  template <BS::tp OptFlags>
+  struct NamedPoolStorage {
+    static std::unordered_map<std::string,
+                              std::unique_ptr<BS::thread_pool<OptFlags>>>
+        pools;
   };
 };
 
 // 模板静态成员定义
-template<BS::tp OptFlags>
+template <BS::tp OptFlags>
 std::unordered_map<std::string, std::unique_ptr<BS::thread_pool<OptFlags>>>
     ThreadPoolManager::NamedPoolStorage<OptFlags>::pools;
 
 // 模板方法实现
-template<BS::tp OptFlags> BS::thread_pool<OptFlags> &ThreadPoolManager::GetPool()
-{
+template <BS::tp OptFlags>
+BS::thread_pool<OptFlags> &ThreadPoolManager::GetPool() {
   return GetDefaultPoolImpl<OptFlags>();
 }
 
-template<BS::tp OptFlags>
-BS::thread_pool<OptFlags> &ThreadPoolManager::GetNamedPool(const std::string &name,
-                                                           size_t thread_count)
-{
+template <BS::tp OptFlags>
+BS::thread_pool<OptFlags> &ThreadPoolManager::GetNamedPool(
+    const std::string &name, size_t thread_count) {
   return GetNamedPoolImpl<OptFlags>(name, thread_count);
 }
 
-template<BS::tp OptFlags> BS::thread_pool<OptFlags> &ThreadPoolManager::GetDefaultPoolImpl()
-{
+template <BS::tp OptFlags>
+BS::thread_pool<OptFlags> &ThreadPoolManager::GetDefaultPoolImpl() {
   static BS::thread_pool<OptFlags> default_pool(GetRecommendedThreadCount());
   return default_pool;
 }
 
-template<BS::tp OptFlags>
-BS::thread_pool<OptFlags> &ThreadPoolManager::GetNamedPoolImpl(const std::string &name,
-                                                               size_t thread_count)
-{
+template <BS::tp OptFlags>
+BS::thread_pool<OptFlags> &ThreadPoolManager::GetNamedPoolImpl(
+    const std::string &name, size_t thread_count) {
   std::lock_guard<std::mutex> lock(s_Mutex);
 
   auto &pools = NamedPoolStorage<OptFlags>::pools;
   auto it = pools.find(name);
 
   if (it == pools.end()) {
-    size_t actual_thread_count = thread_count > 0 ? thread_count : GetRecommendedThreadCount();
-    auto pool = std::make_unique<BS::thread_pool<OptFlags>>(actual_thread_count);
+    size_t actual_thread_count =
+        thread_count > 0 ? thread_count : GetRecommendedThreadCount();
+    auto pool =
+        std::make_unique<BS::thread_pool<OptFlags>>(actual_thread_count);
     auto result = pools.emplace(name, std::move(pool));
     it = result.first;
 
     // 日志记录线程池创建
-    LOG_INFO("Created named thread pool: {} with {} threads", name, actual_thread_count);
+    LOG_INFO("Created named thread pool: {} with {} threads", name,
+             actual_thread_count);
   }
 
   return *it->second;
 }
 
-template<BS::tp OptFlags> bool ThreadPoolManager::HasNamedPool(const std::string &name)
-{
+template <BS::tp OptFlags>
+bool ThreadPoolManager::HasNamedPool(const std::string &name) {
   std::lock_guard<std::mutex> lock(s_Mutex);
   auto &pools = NamedPoolStorage<OptFlags>::pools;
   return pools.find(name) != pools.end();
 }
 
-template<BS::tp OptFlags> void ThreadPoolManager::RemoveNamedPool(const std::string &name)
-{
+template <BS::tp OptFlags>
+void ThreadPoolManager::RemoveNamedPool(const std::string &name) {
   std::lock_guard<std::mutex> lock(s_Mutex);
   auto &pools = NamedPoolStorage<OptFlags>::pools;
   pools.erase(name);
@@ -204,13 +213,12 @@ template<BS::tp OptFlags> void ThreadPoolManager::RemoveNamedPool(const std::str
   LOG_INFO("Removed named thread pool: {}", name);
 }
 
-template<BS::tp OptFlags> size_t ThreadPoolManager::GetNamedPoolCount()
-{
+template <BS::tp OptFlags>
+size_t ThreadPoolManager::GetNamedPoolCount() {
   std::lock_guard<std::mutex> lock(s_Mutex);
   auto &pools = NamedPoolStorage<OptFlags>::pools;
   return pools.size();
 }
-
 }  // namespace mite
 
 #endif  // MITE_CORE_THREAD_POOL_MANAGER_H

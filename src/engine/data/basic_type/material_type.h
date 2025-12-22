@@ -11,22 +11,21 @@ namespace mite {
 
 // 材质纹理槽位定义（GLTF PBR标准）
 struct MaterialTextureSlot {
-  TextureAssetID textureAssetId;                            // 纹理资产ID
-  TextureTarget textureTarget = TextureTarget::TEXTURE_2D;  // 纹理类型（默认2D纹理）
-  glm::vec2 scale = glm::vec2(1.0f);                        // 纹理缩放
-  glm::vec2 offset = glm::vec2(0.0f);                       // 纹理偏移
+  TextureAssetID textureAssetId;  // 纹理资产ID
+  TextureTarget textureTarget =
+      TextureTarget::TEXTURE_2D;       // 纹理类型（默认2D纹理）
+  glm::vec2 scale = glm::vec2(1.0f);   // 纹理缩放
+  glm::vec2 offset = glm::vec2(0.0f);  // 纹理偏移
 
   MaterialTextureSlot() = default;
   explicit MaterialTextureSlot(TextureAssetID id, TextureTarget target)
-      : textureAssetId(id), textureTarget(target)
-  {
-  }
+      : textureAssetId(id), textureTarget(target) {}
 };
 
 // 材质数据来源（MaterialSystem专用的过渡型数据格式）
 struct MaterialSourceData {
   // 核心标识信息
-  std::string name;   // 材质名称
+  std::string name;                       // 材质名称
   MaterialType type = MaterialType::PBR;  // 对应Type
 
   // 通用参数存储
@@ -41,7 +40,8 @@ struct MaterialSourceData {
   bool doubleSided = false;                 // 是否双面渲染
 };
 
-// 材质元数据 - 基于UniformVariant的通用参数存储（目前支持GLTF，后续扩展MaterialX）
+// 材质元数据 -
+// 基于UniformVariant的通用参数存储（目前支持GLTF，后续扩展MaterialX）
 struct MaterialMetadata {
   std::string sourcePath;  // 源文件路径
 
@@ -75,12 +75,13 @@ struct MaterialMetadata {
   MaterialMetadata() {}
   /**
    * @brief 生成材质源数据，过滤掉与渲染无关的信息
-   * @param textureResolver 纹理解析回调函数，用于将TextureAssetID转换为TextureGPUHandle
+   * @param textureResolver
+   * 纹理解析回调函数，用于将TextureAssetID转换为TextureGPUHandle
    * @return 包含所有用于创建材质实例信息的MaterialSourceData
    */
   MaterialSourceData generateSourceData(
-      std::function<TextureInstance(const TextureAssetID &)> textureResolver) const
-  {
+      std::function<TextureInstance(const TextureAssetID &)> textureResolver)
+      const {
     MaterialSourceData sourceData;
 
     // 复制核心标识信息
@@ -94,13 +95,13 @@ struct MaterialMetadata {
     for (const auto &[slotName, textureSlot] : textureSlots) {
       if (textureSlot.textureAssetId.IsValid()) {
         // 使用回调函数解析纹理资产ID为纹理实例
-        TextureInstance textureInstance = textureResolver(textureSlot.textureAssetId);
+        TextureInstance textureInstance =
+            textureResolver(textureSlot.textureAssetId);
 
         // 创建运行时纹理槽位
-        sourceData.textureSlots[slotName] = TextureGPUSlot(textureInstance.gpuHandle,
-                                                           textureInstance.target,
-                                                           textureSlot.scale,
-                                                           textureSlot.offset);
+        sourceData.textureSlots[slotName] =
+            TextureGPUSlot(textureInstance.gpuHandle, textureInstance.target,
+                           textureSlot.scale, textureSlot.offset);
       }
     }
 
@@ -115,9 +116,10 @@ struct MaterialMetadata {
 
 // 材质资产
 struct MaterialAsset {
-  MaterialAssetID id;                          // 资产ID（由Asset管理）
-  MaterialMetadata metadata;                   // 材质元数据（包含纹理ID引用）
-  std::shared_ptr<MaterialInstance> instance;  // 材质实例（包含纹理实例SharedPtr）
+  MaterialAssetID id;         // 资产ID（由Asset管理）
+  MaterialMetadata metadata;  // 材质元数据（包含纹理ID引用）
+  std::shared_ptr<MaterialInstance>
+      instance;  // 材质实例（包含纹理实例SharedPtr）
 
   // 默认构造函数（无效ID）
   MaterialAsset() : id(MaterialAssetID{}), metadata(), instance(nullptr) {}

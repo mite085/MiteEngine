@@ -65,7 +65,8 @@ class Transform {
    * @param matrix 变换矩阵
    * @param order 欧拉角顺序
    */
-  explicit Transform(const glm::mat4 &matrix, EulerOrder order = EulerOrder::XYZ);
+  explicit Transform(const glm::mat4 &matrix,
+                     EulerOrder order = EulerOrder::XYZ);
 
   // ==================== 位置相关方法 ====================
   const glm::vec3 &GetPosition() const;
@@ -77,7 +78,8 @@ class Transform {
    * @param vertical 竖直方向增量（向上为正）
    * @param worldUp 世界的向上方向
    */
-  void PanCamera(float horizontal, float vertical, const glm::vec3 &worldUp = s_WorldUp);
+  void PanCamera(float horizontal, float vertical,
+                 const glm::vec3 &worldUp = s_WorldUp);
 
   // ==================== 旋转相关方法 ====================
   // 旋转顺序控制
@@ -106,7 +108,8 @@ class Transform {
   void RotateLocalZ(float angleDegrees);
 
   // 绕点旋转
-  void RotateAround(const glm::vec3 &point, const glm::vec3 &axis, float angleDegrees);
+  void RotateAround(const glm::vec3 &point, const glm::vec3 &axis,
+                    float angleDegrees);
 
   /**
    * @brief 基于相机语义的旋转接口（和组合接口）
@@ -119,23 +122,26 @@ class Transform {
    *
    * 假设 WorldUp为 +Z方向，相机执行旋转分以下三步：
    * 1. 首先应当绕着世界 Z轴“左右”旋转yaw，确定 Right方向（世界空间）
-   * 2. 随后应当绕着 Right方向所在的轴“上下”旋转pitch，确定 Forward方向（世界空间）
+   * 2. 随后应当绕着 Right方向所在的轴“上下”旋转pitch，确定
+   * Forward方向（世界空间）
    * 3. 最后应当绕着 Forward方向“顺/逆时针”旋转roll，完成整个旋转过程
    *
    * 注意：
-   * 最终旋转结果与EulerOrder无关，因为对于给定的worldUp，经过yaw - pitch - roll三次
-   * 计算相机的Up、Right、Forward之后，结果都会是固定的。而这一组yaw - pitch - roll
+   * 最终旋转结果与EulerOrder无关，因为对于给定的worldUp，经过yaw - pitch -
+   * roll三次 计算相机的Up、Right、Forward之后，结果都会是固定的。而这一组yaw -
+   * pitch - roll
    * 也不是相机的欧拉角。相机的欧拉角应当是根据当前四元数与EulerOrder解算出的“结果”
    *
    * 若 WorldUp为 +Z方向
-   * 1. Yaw表示绕着Z轴逆时针旋转（从Z轴正方向向下看，RotateYaw(30.0f) → 相机向左转30度）
-   * 2. Pitch表示绕着Right轴逆时针旋转（从Right轴正方向向下看，RotatePitch(20.0f) →
+   * 1. Yaw表示绕着Z轴逆时针旋转（从Z轴正方向向下看，RotateYaw(30.0f) →
+   * 相机向左转30度）
+   * 2.
+   * Pitch表示绕着Right轴逆时针旋转（从Right轴正方向向下看，RotatePitch(20.0f) →
    * 相机向上抬头20度）
-   * 3. Roll表示将画面顺时针旋转（从Forward轴负方向向上看，RotateRoll(15.0f) → 相机向右倾斜15度）
+   * 3. Roll表示将画面顺时针旋转（从Forward轴负方向向上看，RotateRoll(15.0f) →
+   * 相机向右倾斜15度）
    */
-  void RotateCamera(float yaw,
-                    float pitch,
-                    float roll = 0.0f,
+  void RotateCamera(float yaw, float pitch, float roll = 0.0f,
                     const glm::vec3 &worldUp = s_WorldUp);
   void RotateYaw(float degrees, const glm::vec3 &worldUp = s_WorldUp);
   void RotatePitch(float degrees, const glm::vec3 &worldUp = s_WorldUp);
@@ -164,9 +170,9 @@ class Transform {
    *
    * GLM的mat4使用了列主序，如:
    * 对于：m_ViewMatrix = GetViewMatrix();
-   * 此时：m_ViewMatrix[0]              表示第一列[right.x,  up.x,  -forward.x,  0]
-   *       glm::column(m_ViewMatrix,0)  表示第一列（同上）
-   *       glm::row(m_ViewMatrix,0)     表示第一行[ right.x  right.y  right.z  -dot(right, eye)]
+   * 此时：m_ViewMatrix[0]              表示第一列[right.x,  up.x,  -forward.x,
+   * 0] glm::column(m_ViewMatrix,0)  表示第一列（同上） glm::row(m_ViewMatrix,0)
+   * 表示第一行[ right.x  right.y  right.z  -dot(right, eye)]
    */
   const glm::mat4 GetViewMatrix() const;
   bool IsViewMatrixValid() const;
@@ -178,8 +184,10 @@ class Transform {
 
   // 获取防翻滚（固定Up方向）后的方向向量，与RotateWithUpConstraint配合使用
   const glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = s_WorldUp) const;
-  const glm::vec3 GetConstrainedRight(const glm::vec3 &worldUp = s_WorldUp) const;
-  const glm::vec3 GetConstrainedForward(const glm::vec3 &worldUp = s_WorldUp) const;
+  const glm::vec3 GetConstrainedRight(
+      const glm::vec3 &worldUp = s_WorldUp) const;
+  const glm::vec3 GetConstrainedForward(
+      const glm::vec3 &worldUp = s_WorldUp) const;
 
   // ==================== 辅助方法 ====================
   /**
@@ -231,7 +239,8 @@ class Transform {
 
   // 旋转顺序相关的欧拉角转换
   glm::vec3 QuatToEulerByOrder(const glm::quat &quat, EulerOrder order) const;
-  glm::quat EulerToQuatByOrder(const glm::vec3 &eulerDegrees, EulerOrder order) const;
+  glm::quat EulerToQuatByOrder(const glm::vec3 &eulerDegrees,
+                               EulerOrder order) const;
 
  private:
   // 脏标记
@@ -244,8 +253,10 @@ class Transform {
 
   // 变换属性
   mutable glm::vec3 m_Position = glm::vec3(0.0f);
-  mutable glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);  // 四元数，仅用于变换计算
-  mutable glm::vec3 m_RotationEuler = glm::vec3(0.0f);  // 欧拉角（度），仅用于对外接口
+  mutable glm::quat m_Rotation =
+      glm::quat(1.0f, 0.0f, 0.0f, 0.0f);  // 四元数，仅用于变换计算
+  mutable glm::vec3 m_RotationEuler =
+      glm::vec3(0.0f);  // 欧拉角（度），仅用于对外接口
   mutable glm::vec3 m_Scale = glm::vec3(1.0f);
   mutable EulerOrder m_RotationOrder = EulerOrder::XYZ;
 

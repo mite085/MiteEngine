@@ -3,56 +3,42 @@
 namespace mite {
 // ==================== AABB成员函数实现 ====================
 
-BoundingVolumeAABB::BoundingVolumeAABB(const glm::vec3 &center, float halfExtent)
-{
+BoundingVolumeAABB::BoundingVolumeAABB(const glm::vec3 &center,
+                                       float halfExtent) {
   min = center - glm::vec3(halfExtent);
   max = center + glm::vec3(halfExtent);
 }
 
-bool BoundingVolumeAABB::IsValid() const
-{
+bool BoundingVolumeAABB::IsValid() const {
   return min.x <= max.x && min.y <= max.y && min.z <= max.z;
 }
-glm::vec3 BoundingVolumeAABB::GetCenter() const
-{
-  return (min + max) * 0.5f;
-}
-glm::vec3 BoundingVolumeAABB::GetSize() const
-{
-  return max - min;
-}
-glm::vec3 BoundingVolumeAABB::GetHalfExtents() const
-{
+glm::vec3 BoundingVolumeAABB::GetCenter() const { return (min + max) * 0.5f; }
+glm::vec3 BoundingVolumeAABB::GetSize() const { return max - min; }
+glm::vec3 BoundingVolumeAABB::GetHalfExtents() const {
   return GetSize() * 0.5f;
 }
 
-BoundingVolumeAABB BoundingVolumeAABB::Expand(const glm::vec3 &point)
-{
+BoundingVolumeAABB BoundingVolumeAABB::Expand(const glm::vec3 &point) {
   min = glm::min(min, point);
   max = glm::max(max, point);
 
   return *this;
 }
 
-BoundingVolumeAABB BoundingVolumeAABB::Expand(const BoundingVolumeAABB &other)
-{
+BoundingVolumeAABB BoundingVolumeAABB::Expand(const BoundingVolumeAABB &other) {
   min = glm::min(min, other.min);
   max = glm::max(max, other.max);
 
   return *this;
 }
 
-BoundingVolumeAABB BoundingVolumeAABB::Transform(const glm::mat4 &matrix) const
-{
+BoundingVolumeAABB BoundingVolumeAABB::Transform(
+    const glm::mat4 &matrix) const {
   // 变换AABB的8个顶点并重新计算包围盒
-  glm::vec3 vertices[8] = {{min.x, min.y, min.z},
-                           {min.x, min.y, max.z},
-                           {min.x, max.y, min.z},
-                           {min.x, max.y, max.z},
-                           {max.x, min.y, min.z},
-                           {max.x, min.y, max.z},
-                           {max.x, max.y, min.z},
-                           {max.x, max.y, max.z}};
+  glm::vec3 vertices[8] = {{min.x, min.y, min.z}, {min.x, min.y, max.z},
+                           {min.x, max.y, min.z}, {min.x, max.y, max.z},
+                           {max.x, min.y, min.z}, {max.x, min.y, max.z},
+                           {max.x, max.y, min.z}, {max.x, max.y, max.z}};
 
   BoundingVolumeAABB result;
   for (int i = 0; i < 8; ++i) {
@@ -62,38 +48,32 @@ BoundingVolumeAABB BoundingVolumeAABB::Transform(const glm::mat4 &matrix) const
   return result;
 }
 
-float BoundingVolumeAABB::GetSurfaceArea() const
-{
+float BoundingVolumeAABB::GetSurfaceArea() const {
   glm::vec3 size = max - min;
   return 2.0f * (size.x * size.y + size.x * size.z + size.y * size.z);
 }
 
-float BoundingVolumeAABB::GetVolume() const
-{
+float BoundingVolumeAABB::GetVolume() const {
   glm::vec3 size = max - min;
   return size.x * size.y * size.z;
 }
 
-bool BoundingVolumeAABB::Intersects(const BoundingVolumeAABB &other) const
-{
+bool BoundingVolumeAABB::Intersects(const BoundingVolumeAABB &other) const {
   return (min.x <= other.max.x && max.x >= other.min.x) &&
          (min.y <= other.max.y && max.y >= other.min.y) &&
          (min.z <= other.max.z && max.z >= other.min.z);
 }
 
-bool BoundingVolumeAABB::Contains(const glm::vec3 &point) const
-{
-  return point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y &&
-         point.z >= min.z && point.z <= max.z;
+bool BoundingVolumeAABB::Contains(const glm::vec3 &point) const {
+  return point.x >= min.x && point.x <= max.x && point.y >= min.y &&
+         point.y <= max.y && point.z >= min.z && point.z <= max.z;
 }
 
-bool BoundingVolumeAABB::Contains(const BoundingVolumeAABB &other) const
-{
+bool BoundingVolumeAABB::Contains(const BoundingVolumeAABB &other) const {
   return Contains(other.min) && Contains(other.max);
 }
 
-float BoundingVolumeAABB::DistanceToPointSq(const glm::vec3 &point) const
-{
+float BoundingVolumeAABB::DistanceToPointSq(const glm::vec3 &point) const {
   float sqDist = 0.0f;
 
   // 分别计算三个轴上的距离分量
@@ -114,12 +94,10 @@ float BoundingVolumeAABB::DistanceToPointSq(const glm::vec3 &point) const
   return sqDist;
 }
 
-BoundingVolumeAABB BoundingVolumeAABB::CreateAABBFromPoints(const glm::vec3 *points,
-                                                            uint32_t count)
-{
+BoundingVolumeAABB BoundingVolumeAABB::CreateAABBFromPoints(
+    const glm::vec3 *points, uint32_t count) {
   BoundingVolumeAABB result;
-  if (count == 0)
-    return result;
+  if (count == 0) return result;
 
   glm::vec3 minPoint = points[0];
   glm::vec3 maxPoint = points[0];
@@ -135,8 +113,8 @@ BoundingVolumeAABB BoundingVolumeAABB::CreateAABBFromPoints(const glm::vec3 *poi
 }
 
 // ==================== Sphere成员函数实现 ====================
-BoundingVolumeSphere BoundingVolumeSphere::FromAABB(const BoundingVolumeAABB &aabb)
-{
+BoundingVolumeSphere BoundingVolumeSphere::FromAABB(
+    const BoundingVolumeAABB &aabb) {
   glm::vec3 center = aabb.GetCenter();
 
   // 获取三个轴向的半轴长glm::vec3 GetHalfExtents()，
@@ -145,22 +123,19 @@ BoundingVolumeSphere BoundingVolumeSphere::FromAABB(const BoundingVolumeAABB &aa
   return BoundingVolumeSphere(center, radius);
 }
 
-bool BoundingVolumeSphere::Intersects(const BoundingVolumeSphere &other) const
-{
+bool BoundingVolumeSphere::Intersects(const BoundingVolumeSphere &other) const {
   float dist = glm::distance(center, other.center);
   return dist <= (radius + other.radius);
 }
-bool BoundingVolumeSphere::Contains(const glm::vec3 &point) const
-{
-  return (glm::distance(center, point) * glm::distance(center, point)) <= (radius * radius);
+bool BoundingVolumeSphere::Contains(const glm::vec3 &point) const {
+  return (glm::distance(center, point) * glm::distance(center, point)) <=
+         (radius * radius);
 }
-bool BoundingVolumeSphere::Contains(const BoundingVolumeSphere &other) const
-{
+bool BoundingVolumeSphere::Contains(const BoundingVolumeSphere &other) const {
   float dist = glm::distance(center, other.center);
   return dist + other.radius <= radius;
 }
-BoundingVolumeSphere BoundingVolumeSphere::Expand(const glm::vec3 &point)
-{
+BoundingVolumeSphere BoundingVolumeSphere::Expand(const glm::vec3 &point) {
   float dist = glm::distance(center, point);
   if (dist > radius) {
     // 需要扩展球体
@@ -172,8 +147,8 @@ BoundingVolumeSphere BoundingVolumeSphere::Expand(const glm::vec3 &point)
 
   return *this;
 }
-BoundingVolumeSphere BoundingVolumeSphere::Expand(const BoundingVolumeSphere &other)
-{
+BoundingVolumeSphere BoundingVolumeSphere::Expand(
+    const BoundingVolumeSphere &other) {
   float dist = glm::distance(center, other.center);
 
   if (dist + other.radius <= radius) {
@@ -197,8 +172,8 @@ BoundingVolumeSphere BoundingVolumeSphere::Expand(const BoundingVolumeSphere &ot
   return *this;
 }
 
-BoundingVolumeSphere BoundingVolumeSphere::Transform(const glm::mat4 &matrix) const
-{
+BoundingVolumeSphere BoundingVolumeSphere::Transform(
+    const glm::mat4 &matrix) const {
   // 提取平移和均匀缩放
   glm::vec3 newCenter = glm::vec3(matrix * glm::vec4(center, 1.0f));
 
@@ -212,12 +187,9 @@ BoundingVolumeSphere BoundingVolumeSphere::Transform(const glm::mat4 &matrix) co
   return BoundingVolumeSphere(newCenter, newRadius);
 }
 // Welzl算法辅助函数
-void WelzlAlgorithm(std::vector<glm::vec3> &points,
-                    int numPoints,
-                    std::vector<glm::vec3> &support,
-                    int numSupport,
-                    BoundingVolumeSphere &result)
-{
+void WelzlAlgorithm(std::vector<glm::vec3> &points, int numPoints,
+                    std::vector<glm::vec3> &support, int numSupport,
+                    BoundingVolumeSphere &result) {
   if (numPoints == 0 || numSupport == 4) {
     switch (numSupport) {
       case 0:
@@ -255,12 +227,12 @@ void WelzlAlgorithm(std::vector<glm::vec3> &points,
           glm::vec3 center = (p1 + p2) * 0.5f;
           float radius = maxDist * 0.5f;
           result = BoundingVolumeSphere(center, radius);
-        }
-        else {
+        } else {
           // 计算外接球中心
-          glm::vec3 toCircumcircle = glm::cross(glm::dot(ab, ab) * ac - glm::dot(ac, ac) * ab,
-                                                glm::cross(ab, ac)) /
-                                     (2.0f * glm::dot(glm::cross(ab, ac), glm::cross(ab, ac)));
+          glm::vec3 toCircumcircle =
+              glm::cross(glm::dot(ab, ab) * ac - glm::dot(ac, ac) * ab,
+                         glm::cross(ab, ac)) /
+              (2.0f * glm::dot(glm::cross(ab, ac), glm::cross(ab, ac)));
 
           glm::vec3 center = a + toCircumcircle;
           float radius = glm::distance(center, a);
@@ -270,31 +242,34 @@ void WelzlAlgorithm(std::vector<glm::vec3> &points,
       }
       case 4: {
         // 四点确定球（四面体外接球）
-        glm::vec3 a = support[0], b = support[1], c = support[2], d = support[3];
+        glm::vec3 a = support[0], b = support[1], c = support[2],
+                  d = support[3];
 
         glm::vec3 ab = b - a, ac = c - a, ad = d - a;
-        glm::mat3 mat(
-            glm::vec3(ab.x, ac.x, ad.x), glm::vec3(ab.y, ac.y, ad.y), glm::vec3(ab.z, ac.z, ad.z));
+        glm::mat3 mat(glm::vec3(ab.x, ac.x, ad.x), glm::vec3(ab.y, ac.y, ad.y),
+                      glm::vec3(ab.z, ac.z, ad.z));
 
         float det = glm::determinant(mat);
         if (std::abs(det) < 1e-6f) {
           // 退化情况，使用前三点
-          std::vector<glm::vec3> tempSupport(support.begin(), support.begin() + 3);
+          std::vector<glm::vec3> tempSupport(support.begin(),
+                                             support.begin() + 3);
           WelzlAlgorithm(points, 0, tempSupport, 3, result);
           return;
         }
 
-        glm::vec3 rhs = glm::vec3(
-            glm::dot(ab, ab) * 0.5f, glm::dot(ac, ac) * 0.5f, glm::dot(ad, ad) * 0.5f);
+        glm::vec3 rhs =
+            glm::vec3(glm::dot(ab, ab) * 0.5f, glm::dot(ac, ac) * 0.5f,
+                      glm::dot(ad, ad) * 0.5f);
 
         glm::vec3 solution = glm::inverse(mat) * rhs;
-        glm::vec3 center = a + solution.x * ab + solution.y * ac + solution.z * ad;
+        glm::vec3 center =
+            a + solution.x * ab + solution.y * ac + solution.z * ad;
 
         float maxRadius = 0.0f;
         for (int i = 0; i < 4; ++i) {
           float dist = glm::distance(center, support[i]);
-          if (dist > maxRadius)
-            maxRadius = dist;
+          if (dist > maxRadius) maxRadius = dist;
         }
         result = BoundingVolumeSphere(center, maxRadius);
         break;
@@ -317,8 +292,7 @@ void WelzlAlgorithm(std::vector<glm::vec3> &points,
   }
 }
 BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPoints(
-    const std::vector<glm::vec3> &points)
-{
+    const std::vector<glm::vec3> &points) {
   if (points.empty()) {
     return BoundingVolumeSphere();
   }
@@ -336,13 +310,13 @@ BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPoints(
   static std::mt19937 g(std::random_device{}());
   std::shuffle(mutablePoints.begin(), mutablePoints.end(), g);
 
-  WelzlAlgorithm(mutablePoints, static_cast<int>(mutablePoints.size()), support, 0, result);
+  WelzlAlgorithm(mutablePoints, static_cast<int>(mutablePoints.size()), support,
+                 0, result);
 
   return result;
 }
 BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPointsRitter(
-    const std::vector<glm::vec3> &points)
-{
+    const std::vector<glm::vec3> &points) {
   if (points.empty()) {
     return BoundingVolumeSphere();
   }
@@ -383,8 +357,7 @@ BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPointsRitter(
   return sphere;
 }
 BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPointsFast(
-    const std::vector<glm::vec3> &points)
-{
+    const std::vector<glm::vec3> &points) {
   if (points.empty()) {
     return BoundingVolumeSphere();
   }
@@ -409,17 +382,15 @@ BoundingVolumeSphere BoundingVolumeSphere::CreateSphereFromPointsFast(
 }
 // ==================== OBB成员函数实现 ====================
 
-BoundingVolumeOBB BoundingVolumeOBB::FromAABB(const BoundingVolumeAABB &aabb)
-{
+BoundingVolumeOBB BoundingVolumeOBB::FromAABB(const BoundingVolumeAABB &aabb) {
   glm::vec3 center = aabb.GetCenter();
   glm::vec3 extents = aabb.GetHalfExtents();
   return BoundingVolumeOBB(center, extents, glm::mat3(1.0f));
 }
 
-void BoundingVolumeOBB::GetVertices(glm::vec3 vertices[8]) const
-{
-  glm::vec3 axes[3] = {
-      orientation[0] * extents.x, orientation[1] * extents.y, orientation[2] * extents.z};
+void BoundingVolumeOBB::GetVertices(glm::vec3 vertices[8]) const {
+  glm::vec3 axes[3] = {orientation[0] * extents.x, orientation[1] * extents.y,
+                       orientation[2] * extents.z};
 
   vertices[0] = center - axes[0] - axes[1] - axes[2];
   vertices[1] = center - axes[0] - axes[1] + axes[2];
@@ -431,15 +402,13 @@ void BoundingVolumeOBB::GetVertices(glm::vec3 vertices[8]) const
   vertices[7] = center + axes[0] + axes[1] + axes[2];
 }
 
-BoundingVolumeAABB BoundingVolumeOBB::GetAABB() const
-{
+BoundingVolumeAABB BoundingVolumeOBB::GetAABB() const {
   glm::vec3 vertices[8];
   GetVertices(vertices);
   return BoundingVolumeAABB::CreateAABBFromPoints(vertices, 8);
 }
 
-BoundingVolumeOBB BoundingVolumeOBB::Transform(const glm::mat4 &matrix) const
-{
+BoundingVolumeOBB BoundingVolumeOBB::Transform(const glm::mat4 &matrix) const {
   glm::vec3 newCenter = glm::vec3(matrix * glm::vec4(center, 1.0f));
   glm::mat3 newOrientation = glm::mat3(matrix) * orientation;
 
@@ -452,15 +421,14 @@ BoundingVolumeOBB BoundingVolumeOBB::Transform(const glm::mat4 &matrix) const
   return BoundingVolumeOBB(newCenter, newExtents, newOrientation);
 }
 
-bool BoundingVolumeOBB::Contains(const glm::vec3 &point) const
-{
+bool BoundingVolumeOBB::Contains(const glm::vec3 &point) const {
   // 将点转换到OBB局部空间
   glm::vec3 localPoint = glm::transpose(orientation) * (point - center);
-  return std::abs(localPoint.x) <= extents.x && std::abs(localPoint.y) <= extents.y &&
+  return std::abs(localPoint.x) <= extents.x &&
+         std::abs(localPoint.y) <= extents.y &&
          std::abs(localPoint.z) <= extents.z;
 }
-BoundingVolumeOBB BoundingVolumeOBB::Expand(const glm::vec3 &point)
-{
+BoundingVolumeOBB BoundingVolumeOBB::Expand(const glm::vec3 &point) {
   // 将点转换到OBB局部空间
   glm::vec3 localPoint = glm::transpose(orientation) * (point - center);
 
@@ -481,8 +449,7 @@ BoundingVolumeOBB BoundingVolumeOBB::Expand(const glm::vec3 &point)
 
   return *this;
 }
-BoundingVolumeOBB BoundingVolumeOBB::Expand(const BoundingVolumeOBB &other)
-{
+BoundingVolumeOBB BoundingVolumeOBB::Expand(const BoundingVolumeOBB &other) {
   // 获取两个OBB的所有顶点
   glm::vec3 thisVertices[8];
   glm::vec3 otherVertices[8];
@@ -516,10 +483,10 @@ BoundingVolumeOBB BoundingVolumeOBB::Expand(const BoundingVolumeOBB &other)
     // 计算AABB半长在该轴向上的最大投影
     float maxProjection = 0.0f;
     for (int j = 0; j < 3; ++j) {
-      float projection = std::abs(glm::dot(axis,
-                                           glm::vec3(j == 0 ? tempExtents.x : 0.0f,
-                                                     j == 1 ? tempExtents.y : 0.0f,
-                                                     j == 2 ? tempExtents.z : 0.0f)));
+      float projection =
+          std::abs(glm::dot(axis, glm::vec3(j == 0 ? tempExtents.x : 0.0f,
+                                            j == 1 ? tempExtents.y : 0.0f,
+                                            j == 2 ? tempExtents.z : 0.0f)));
       maxProjection = glm::max(maxProjection, projection);
     }
     extents[i] = maxProjection;
@@ -529,26 +496,22 @@ BoundingVolumeOBB BoundingVolumeOBB::Expand(const BoundingVolumeOBB &other)
 }
 // ==================== Plane成员函数实现 ====================
 
-BoundingVolumePlane::BoundingVolumePlane(const glm::vec3 &point, const glm::vec3 &normal)
-    : normal(glm::normalize(normal)), distance(-glm::dot(normal, point))
-{
+BoundingVolumePlane::BoundingVolumePlane(const glm::vec3 &point,
+                                         const glm::vec3 &normal)
+    : normal(glm::normalize(normal)), distance(-glm::dot(normal, point)) {
   // 因为平面方程是 normal·point + distance = 0，所以 distance = -normal·point
 }
 
-float BoundingVolumePlane::DistanceToPoint(const glm::vec3 &point) const
-{
+float BoundingVolumePlane::DistanceToPoint(const glm::vec3 &point) const {
   // 右手系平面方程：normal.x*x + normal.y*y + normal.z*z + distance = 0
   // 所以点到平面的距离 = normal·point + distance
   return glm::dot(normal, point) + distance;
 }
 
-int BoundingVolumePlane::GetSide(const glm::vec3 &point) const
-{
+int BoundingVolumePlane::GetSide(const glm::vec3 &point) const {
   float dist = DistanceToPoint(point);
-  if (dist > 0.0f)
-    return 1;  // 正面
-  if (dist < 0.0f)
-    return -1;  // 背面
-  return 0;     // 在平面上
+  if (dist > 0.0f) return 1;   // 正面
+  if (dist < 0.0f) return -1;  // 背面
+  return 0;                    // 在平面上
 }
 }  // namespace mite

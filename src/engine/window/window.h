@@ -31,7 +31,7 @@ class Window {
 
   /**
    * @brief 用于主循环,检测Window关闭标志
-   * @return 
+   * @return
    */
   virtual const bool WindowShouldClose() = 0;
 
@@ -64,7 +64,7 @@ class Window {
   virtual void *GetNativeWindow() const = 0;
   /**
    * @brief 检测垂直同步
-   * @return 
+   * @return
    */
   virtual bool IsVSync() const = 0;
 
@@ -76,7 +76,7 @@ class Window {
   /**
    * @brief 设置窗口标题.
    */
-  virtual void SetTitle(const std::string &title) = 0; 
+  virtual void SetTitle(const std::string &title) = 0;
   /**
    * @brief 调整窗口大小
    */
@@ -104,7 +104,7 @@ class Window {
    */
   virtual void PollEvents() = 0;
   /**
-   * @brief 
+   * @brief
    */
   virtual void WaitEvents() = 0;
 
@@ -123,10 +123,11 @@ class Window {
   // 回调设置
   // TODO: 按照事件总线重新规划EventCallbackFn相关实现
   using EventCallbackFn = std::function<void(void *)>;
-  //virtual void SetEventCallback(const EventCallbackFn &callback) = 0;
+  // virtual void SetEventCallback(const EventCallbackFn &callback) = 0;
 
   // 工厂方法 - 创建特定类型的窗口
-  static std::unique_ptr<Window> Create(const WindowConfig &config = WindowConfig());
+  static std::unique_ptr<Window> Create(
+      const WindowConfig &config = WindowConfig());
 
  protected:
   WindowConfig m_Config;
@@ -138,7 +139,6 @@ class Window {
   // 日志系统
   Logger m_Logger;
 };
-
 }  // namespace mite
 
 #endif

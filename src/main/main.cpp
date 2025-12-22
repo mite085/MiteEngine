@@ -4,8 +4,7 @@
 #include <crtdbg.h>
 #endif
 
-int main()
-{
+int main() {
 #ifdef _DEBUG
   // 在Windows平台上启用内存泄漏检测
   // 调试模式下检查内存泄漏
@@ -13,7 +12,7 @@ int main()
   // 调适界面出现内存泄露时，使用该宏，按照泄漏分配号填写参数
   // 例如出现 {694} normal block at 0x00……,则填写694
   // 这会在分配这块内存时触发断点
-  // 
+  //
   // _CrtSetBreakAlloc(694);
 #endif
 
@@ -29,8 +28,7 @@ int main()
   try {
     auto app = std::make_unique<mite::MiteApplication>();
     app->run();
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     LOG_CRITICAL("Application crashed: {}", e.what());
     return EXIT_FAILURE;
   }

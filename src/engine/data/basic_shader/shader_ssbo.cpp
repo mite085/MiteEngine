@@ -1,26 +1,27 @@
 #include "shader_ssbo.h"
+
 #include "shader_binding_point_manager.h"
 
 namespace mite {
 ShaderSSBO::ShaderSSBO(size_t size, uint32_t bindingPoint, GLenum usage)
-    : m_Size(size), m_Usage(usage), m_BindingPoint(bindingPoint)
-{
+    : m_Size(size), m_Usage(usage), m_BindingPoint(bindingPoint) {
   if (size == 0) {
     LOG_ERROR("ShaderSSBO: Invalid size 0");
     throw std::invalid_argument("SSBO size cannot be 0");
   }
   // 验证使用模式
-  if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW && usage != GL_STREAM_DRAW &&
-      usage != GL_DYNAMIC_COPY && usage != GL_DYNAMIC_READ)
-  {
-    LOG_WARN("ShaderSSBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
+  if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW &&
+      usage != GL_STREAM_DRAW && usage != GL_DYNAMIC_COPY &&
+      usage != GL_DYNAMIC_READ) {
+    LOG_WARN("ShaderSSBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW",
+             usage);
     m_Usage = GL_DYNAMIC_DRAW;
   }
   LOG_DEBUG(
-      "ShaderSSBO created with fixed binding - Size: {} bytes, Binding: {}", size, m_BindingPoint);
+      "ShaderSSBO created with fixed binding - Size: {} bytes, Binding: {}",
+      size, m_BindingPoint);
 }
-ShaderSSBO::~ShaderSSBO()
-{
+ShaderSSBO::~ShaderSSBO() {
   // 确保在销毁前解映射
   if (m_IsMapped) {
     LOG_WARN("ShaderSSBO destroyed while still mapped, forcing unmap");
@@ -29,8 +30,7 @@ ShaderSSBO::~ShaderSSBO()
   Destroy();
 }
 
-void ShaderSSBO::Initialize()
-{
+void ShaderSSBO::Initialize() {
   if (m_IsInitialized) {
     LOG_WARN("ShaderSSBO already initialized");
     return;
@@ -41,11 +41,11 @@ void ShaderSSBO::Initialize()
   }
   CreateSSBO();
   m_IsInitialized = true;
-  LOG_INFO("ShaderSSBO initialized - ID: {}, Binding: {}", m_SSBOId, m_BindingPoint);
+  LOG_INFO("ShaderSSBO initialized - ID: {}, Binding: {}", m_SSBOId,
+           m_BindingPoint);
 }
 
-void ShaderSSBO::Destroy()
-{
+void ShaderSSBO::Destroy() {
   if (m_IsInitialized && m_SSBOId != 0) {
     // 确保在销毁前解映射
     if (m_IsMapped) {
@@ -61,8 +61,7 @@ void ShaderSSBO::Destroy()
   }
 }
 
-void ShaderSSBO::CreateSSBO()
-{
+void ShaderSSBO::CreateSSBO() {
   // 生成SSBO
   glGenBuffers(1, &m_SSBOId);
 
@@ -88,8 +87,7 @@ void ShaderSSBO::CreateSSBO()
   LOG_TRACE("SSBO created - ID: {}, Size: {} bytes", m_SSBOId, m_Size);
 }
 
-bool ShaderSSBO::UpdateData(const void *data, size_t size, size_t offset)
-{
+bool ShaderSSBO::UpdateData(const void *data, size_t size, size_t offset) {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot update SSBO data: not initialized");
     return false;
@@ -121,12 +119,12 @@ bool ShaderSSBO::UpdateData(const void *data, size_t size, size_t offset)
     return false;
   }
 
-  LOG_TRACE("SSBO data updated - ID: {}, Offset: {}, Size: {} bytes", m_SSBOId, offset, size);
+  LOG_TRACE("SSBO data updated - ID: {}, Offset: {}, Size: {} bytes", m_SSBOId,
+            offset, size);
   return true;
 }
 
-bool ShaderSSBO::ReadData(void *data, size_t size, size_t offset) const
-{
+bool ShaderSSBO::ReadData(void *data, size_t size, size_t offset) const {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot read SSBO data: not initialized");
     return false;
@@ -158,12 +156,12 @@ bool ShaderSSBO::ReadData(void *data, size_t size, size_t offset) const
     return false;
   }
 
-  LOG_TRACE("SSBO data read - ID: {}, Offset: {}, Size: {} bytes", m_SSBOId, offset, size);
+  LOG_TRACE("SSBO data read - ID: {}, Offset: {}, Size: {} bytes", m_SSBOId,
+            offset, size);
   return true;
 }
 
-void *ShaderSSBO::MapBuffer(GLenum access)
-{
+void *ShaderSSBO::MapBuffer(GLenum access) {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot map SSBO: not initialized");
     return nullptr;
@@ -175,7 +173,8 @@ void *ShaderSSBO::MapBuffer(GLenum access)
   }
 
   // 验证访问模式
-  if (access != GL_READ_ONLY && access != GL_WRITE_ONLY && access != GL_READ_WRITE) {
+  if (access != GL_READ_ONLY && access != GL_WRITE_ONLY &&
+      access != GL_READ_WRITE) {
     LOG_ERROR("Invalid buffer mapping access mode: 0x{:X}", access);
     return nullptr;
   }
@@ -192,15 +191,12 @@ void *ShaderSSBO::MapBuffer(GLenum access)
 
   m_IsMapped = true;
   LOG_DEBUG("SSBO mapped successfully - ID: {}, Access: 0x{:X}, Pointer: {}",
-            m_SSBOId,
-            access,
-            reinterpret_cast<uintptr_t>(mappedPtr));
+            m_SSBOId, access, reinterpret_cast<uintptr_t>(mappedPtr));
 
   return mappedPtr;
 }
 
-bool ShaderSSBO::UnmapBuffer()
-{
+bool ShaderSSBO::UnmapBuffer() {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot unmap SSBO: not initialized");
     return false;
@@ -227,8 +223,7 @@ bool ShaderSSBO::UnmapBuffer()
   return true;
 }
 
-void ShaderSSBO::Bind() const
-{
+void ShaderSSBO::Bind() const {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot bind SSBO: not initialized");
     return;
@@ -244,47 +239,47 @@ void ShaderSSBO::Bind() const
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_BindingPoint, m_SSBOId);
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
-    LOG_ERROR("Failed to bind SSBO to point {}: OpenGL error 0x{:X}", m_BindingPoint, error);
-  }
-  else {
+    LOG_ERROR("Failed to bind SSBO to point {}: OpenGL error 0x{:X}",
+              m_BindingPoint, error);
+  } else {
     LOG_TRACE("SSBO bound to binding point: {}", m_BindingPoint);
   }
 }
 
-void ShaderSSBO::Unbind() const
-{
+void ShaderSSBO::Unbind() const {
   if (m_BindingPoint != UINT32_MAX) {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_BindingPoint, 0);
   }
 }
 
-//void ShaderSSBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
-//                                    const std::string &storageBlockName) const
+// void ShaderSSBO::SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+//                                     const std::string &storageBlockName)
+//                                     const
 //{
-//  if (!shader) {
-//    LOG_ERROR("Cannot setup shader binding: null shader");
-//    return;
-//  }
-//  if (!m_IsInitialized) {
-//    LOG_ERROR("Cannot setup shader binding: SSBO not initialized");
-//    return;
-//  }
-//  if (m_IsMapped) {
-//    LOG_ERROR("Cannot setup shader binding: SSBO is currently mapped");
-//    return;
-//  }
-//  if (m_BindingPoint == UINT32_MAX) {
-//    LOG_ERROR("Cannot setup shader binding: SSBO has no binding point");
-//    return;
-//  }
-//  // 设置着色器的存储块绑定点
-//  shader->SetShaderStorageBlockBinding(storageBlockName, m_BindingPoint);
-//  LOG_DEBUG(
-//      "Shader SSBO binding setup - Block: '{}', Point: {}", storageBlockName, m_BindingPoint);
-//}
+//   if (!shader) {
+//     LOG_ERROR("Cannot setup shader binding: null shader");
+//     return;
+//   }
+//   if (!m_IsInitialized) {
+//     LOG_ERROR("Cannot setup shader binding: SSBO not initialized");
+//     return;
+//   }
+//   if (m_IsMapped) {
+//     LOG_ERROR("Cannot setup shader binding: SSBO is currently mapped");
+//     return;
+//   }
+//   if (m_BindingPoint == UINT32_MAX) {
+//     LOG_ERROR("Cannot setup shader binding: SSBO has no binding point");
+//     return;
+//   }
+//   // 设置着色器的存储块绑定点
+//   shader->SetShaderStorageBlockBinding(storageBlockName, m_BindingPoint);
+//   LOG_DEBUG(
+//       "Shader SSBO binding setup - Block: '{}', Point: {}", storageBlockName,
+//       m_BindingPoint);
+// }
 
-bool ShaderSSBO::ClearData(uint32_t clearValue, size_t offset, size_t size)
-{
+bool ShaderSSBO::ClearData(uint32_t clearValue, size_t offset, size_t size) {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot clear SSBO data: not initialized");
     return false;
@@ -324,32 +319,29 @@ bool ShaderSSBO::ClearData(uint32_t clearValue, size_t offset, size_t size)
     return false;
   }
 
-  LOG_DEBUG("SSBO data cleared - ID: {}, Offset: {}, Size: {} bytes, Value: 0x{:X}",
-            m_SSBOId,
-            offset,
-            size,
-            clearValue);
+  LOG_DEBUG(
+      "SSBO data cleared - ID: {}, Offset: {}, Size: {} bytes, Value: 0x{:X}",
+      m_SSBOId, offset, size, clearValue);
 
   return true;
 }
 
-bool ShaderSSBO::ValidateDataSize(size_t size, size_t offset) const
-{
+bool ShaderSSBO::ValidateDataSize(size_t size, size_t offset) const {
   if (offset >= m_Size) {
     LOG_ERROR("SSBO operation offset {} exceeds SSBO size {}", offset, m_Size);
     return false;
   }
 
   if (offset + size > m_Size) {
-    LOG_ERROR("SSBO operation range [{}, {}) exceeds SSBO size {}", offset, offset + size, m_Size);
+    LOG_ERROR("SSBO operation range [{}, {}) exceeds SSBO size {}", offset,
+              offset + size, m_Size);
     return false;
   }
 
   return true;
 }
 
-bool ShaderSSBO::ValidateAccess() const
-{
+bool ShaderSSBO::ValidateAccess() const {
   if (m_IsMapped) {
     LOG_ERROR("SSBO operation not allowed: buffer is currently mapped");
     return false;

@@ -5,8 +5,7 @@ EventBus::HandlerID EventBus::SubscribeByCategory(EventCategory category,
                                                   EventHandler handler,
                                                   EventPriority priority,
                                                   SubscriptionFlags flags,
-                                                  const std::string &group)
-{
+                                                  const std::string &group) {
   std::lock_guard<std::mutex> lock(m_Mutex);
   HandlerID id = m_NextHandlerID++;
 
@@ -29,13 +28,9 @@ EventBus::HandlerID EventBus::SubscribeByCategory(EventCategory category,
   return id;
 }
 
-void EventBus::ProcessQueue()
-{
-  ProcessDeferredEvents();
-}
+void EventBus::ProcessQueue() { ProcessDeferredEvents(); }
 
-void EventBus::Clear()
-{
+void EventBus::Clear() {
   std::lock_guard<std::mutex> lock(m_Mutex);
   m_Subscribers.clear();
   m_CategorySubscribers.clear();
@@ -51,23 +46,18 @@ void EventBus::Clear()
   m_NextHandlerID = 1;
 }
 
-EventBus::~EventBus()
-{
-  Clear();
-}
+EventBus::~EventBus() { Clear(); }
 
 void EventBus::EnsureSubscribersSorted(std::type_index typeIndex,
-                                       std::vector<Subscription> &subscribers)
-{
+                                       std::vector<Subscription> &subscribers) {
   std::lock_guard<std::mutex> lock(m_Mutex);  // 加锁保护排序操作
   if (m_NeedsSorting[typeIndex]) {
     std::sort(subscribers.begin(), subscribers.end());
     m_NeedsSorting[typeIndex] = false;
   }
 }
-void EventBus::EnsureCategorySubscribersSorted(EventCategory category,
-                                               std::vector<Subscription> &subscribers)
-{
+void EventBus::EnsureCategorySubscribersSorted(
+    EventCategory category, std::vector<Subscription> &subscribers) {
   std::lock_guard<std::mutex> lock(m_Mutex);  // 加锁保护排序操作
   if (m_CategoryNeedsSorting[category]) {
     std::sort(subscribers.begin(), subscribers.end());

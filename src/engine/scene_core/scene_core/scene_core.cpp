@@ -1,10 +1,10 @@
 #include "scene_core.h"
+
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
 SceneCore::SceneCore(const std::string &name)
-    : m_Name(name), m_Registry(), m_SystemManager(m_Registry)
-{
+    : m_Name(name), m_Registry(), m_SystemManager(m_Registry) {
   // 初始化核心系统
   RegisterComponentSystems();
 
@@ -13,25 +13,19 @@ SceneCore::SceneCore(const std::string &name)
   // env.AddComponent<EnvironmentComponent>();
 }
 
-SceneCore::~SceneCore()
-{
-  Clear(false);
-}
+SceneCore::~SceneCore() { Clear(false); }
 
-void SceneCore::InitializeComponentSystems()
-{
+void SceneCore::InitializeComponentSystems() {
   // 初始化所有组件系统
   m_SystemManager.InitializeAll();
 }
 
-void SceneCore::ShutdownComponentSystems()
-{
+void SceneCore::ShutdownComponentSystems() {
   // 关闭所有组件系统
   m_SystemManager.ShutdownAll();
 }
 
-void SceneCore::RegisterComponentSystems()
-{
+void SceneCore::RegisterComponentSystems() {
   // 逐个注册组件系统
   m_SystemManager.RegisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.RegisterSystem<CameraComponentSystem>();
@@ -45,8 +39,7 @@ void SceneCore::RegisterComponentSystems()
   m_SystemManager.RegisterSystem<VisibilityComponentSystem>();
 }
 
-void SceneCore::UnregisterComponentSystems()
-{
+void SceneCore::UnregisterComponentSystems() {
   // 逐个注销组件系统
   m_SystemManager.UnregisterSystem<BoundingVolumeComponentSystem>();
   m_SystemManager.UnregisterSystem<CameraComponentSystem>();
@@ -59,8 +52,7 @@ void SceneCore::UnregisterComponentSystems()
   m_SystemManager.UnregisterSystem<VisibilityComponentSystem>();
 }
 
-void SceneCore::OnUpdate(float timestep)
-{
+void SceneCore::OnUpdate(float timestep) {
   // 更新所有注册的带脏标记的组件系统
   m_SystemManager.UpdateDirtyComponentSystems(timestep);
 
@@ -71,14 +63,12 @@ void SceneCore::OnUpdate(float timestep)
   }
 }
 
-void SceneCore::OnRenderPrepare()
-{
+void SceneCore::OnRenderPrepare() {
   // 准备场景图渲染状态
   // m_SceneGraph->OnRenderPrepare();
 }
 
-void SceneCore::Clear(bool keepSystems)
-{
+void SceneCore::Clear(bool keepSystems) {
   // 1. 延迟销毁所有实体
   for (auto entity : m_Registry.GetAllEntities()) {
     m_Registry.AddComponent<DestroyComponent>(entity);
@@ -98,16 +88,14 @@ void SceneCore::Clear(bool keepSystems)
   }
 }
 
-Entity SceneCore::CreateEntity(const std::string &name, Entity parent)
-{
+Entity SceneCore::CreateEntity(const std::string &name, Entity parent) {
   auto entity = m_Registry.CreateEntity(name, parent);
   ++m_EntityCounter;
 
   return entity;
 }
 
-void SceneCore::DestroyEntity(Entity entity)
-{
+void SceneCore::DestroyEntity(Entity entity) {
   if (!entity.IsValid()) {
     return;
   }

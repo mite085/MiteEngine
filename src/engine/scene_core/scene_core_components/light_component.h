@@ -73,12 +73,9 @@ class LightComponentSystem : public ComponentSystem<LightComponent> {
 class LightUpdatedEvent : public ComponentEvent<LightComponent> {
  public:
   LightUpdatedEvent(Entity entity, LightComponent &component)
-      : ComponentEvent<LightComponent>(entity, component)
-  {
-  }
+      : ComponentEvent<LightComponent>(entity, component) {}
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new LightUpdatedEvent(this->m_Entity, this->m_Component);
   }
 };

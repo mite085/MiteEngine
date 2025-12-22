@@ -2,8 +2,8 @@
 
 namespace mite {
 // ------------------------ 模板特化实现 ------------------------
-template<typename AssetType> bool AssetCache<AssetType>::Store(AssetPtr asset)
-{
+template <typename AssetType>
+bool AssetCache<AssetType>::Store(AssetPtr asset) {
   std::lock_guard<std::mutex> lock(m_Mutex);
   AssetIDType id = asset->GetID();
   // 检查是否已存在
@@ -11,7 +11,8 @@ template<typename AssetType> bool AssetCache<AssetType>::Store(AssetPtr asset)
     return false;  // 已存在的资源需要显式更新
   }
   // 添加新资源（初始引用计数为0，由调用方决定是否增加）
-  auto [it, success] = m_Cache.emplace(id, CachedAsset{asset, 0, m_LruList.end()});
+  auto [it, success] =
+      m_Cache.emplace(id, CachedAsset{asset, 0, m_LruList.end()});
   if (success && m_MaxSize > 0) {
     // 更新LRU列表
     m_LruList.push_front(id);
@@ -29,9 +30,9 @@ template<typename AssetType> bool AssetCache<AssetType>::Store(AssetPtr asset)
   return success;
 }
 
-template<typename AssetType>
-typename AssetCache<AssetType>::AssetPtr AssetCache<AssetType>::Get(const AssetIDType &id) const
-{
+template <typename AssetType>
+typename AssetCache<AssetType>::AssetPtr AssetCache<AssetType>::Get(
+    const AssetIDType &id) const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   auto it = m_Cache.find(id);
   if (it == m_Cache.end()) {
@@ -45,8 +46,8 @@ typename AssetCache<AssetType>::AssetPtr AssetCache<AssetType>::Get(const AssetI
   return it->second.data;
 }
 
-template<typename AssetType> int AssetCache<AssetType>::Release(const AssetIDType &id)
-{
+template <typename AssetType>
+int AssetCache<AssetType>::Release(const AssetIDType &id) {
   std::lock_guard<std::mutex> lock(m_Mutex);
   auto it = m_Cache.find(id);
   if (it == m_Cache.end()) {
@@ -62,15 +63,15 @@ template<typename AssetType> int AssetCache<AssetType>::Release(const AssetIDTyp
   return newCount;
 }
 
-template<typename AssetType> int AssetCache<AssetType>::GetRefCount(const AssetIDType &id) const
-{
+template <typename AssetType>
+int AssetCache<AssetType>::GetRefCount(const AssetIDType &id) const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   auto it = m_Cache.find(id);
   return it != m_Cache.end() ? it->second.refCount : -1;
 }
 
-template<typename AssetType> void AssetCache<AssetType>::AddRefCount(const AssetIDType &id) const
-{
+template <typename AssetType>
+void AssetCache<AssetType>::AddRefCount(const AssetIDType &id) const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   auto it = m_Cache.find(id);
   if (it != m_Cache.end()) {
@@ -78,8 +79,8 @@ template<typename AssetType> void AssetCache<AssetType>::AddRefCount(const Asset
   }
 }
 
-template<typename AssetType> size_t AssetCache<AssetType>::PurgeUnused()
-{
+template <typename AssetType>
+size_t AssetCache<AssetType>::PurgeUnused() {
   std::lock_guard<std::mutex> lock(m_Mutex);
   size_t count = 0;
   for (auto it = m_Cache.begin(); it != m_Cache.end();) {
@@ -89,16 +90,15 @@ template<typename AssetType> size_t AssetCache<AssetType>::PurgeUnused()
       }
       it = m_Cache.erase(it);
       count++;
-    }
-    else {
+    } else {
       ++it;
     }
   }
   return count;
 }
 
-template<typename AssetType> bool AssetCache<AssetType>::ForceRemove(const AssetIDType &id)
-{
+template <typename AssetType>
+bool AssetCache<AssetType>::ForceRemove(const AssetIDType &id) {
   std::lock_guard<std::mutex> lock(m_Mutex);
   auto it = m_Cache.find(id);
   if (it == m_Cache.end()) {
@@ -110,13 +110,13 @@ template<typename AssetType> bool AssetCache<AssetType>::ForceRemove(const Asset
   m_Cache.erase(it);
   return true;
 }
-template<typename AssetType> size_t AssetCache<AssetType>::Size() const
-{
+template <typename AssetType>
+size_t AssetCache<AssetType>::Size() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_Cache.size();
 }
-template<typename AssetType> void AssetCache<AssetType>::SetMaxSize(size_t maxSize)
-{
+template <typename AssetType>
+void AssetCache<AssetType>::SetMaxSize(size_t maxSize) {
   std::lock_guard<std::mutex> lock(m_Mutex);
   m_MaxSize = maxSize;
 

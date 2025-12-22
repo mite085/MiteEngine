@@ -1,33 +1,23 @@
 #include "simple_bvh.h"
 
 namespace mite {
-int BVHNode::GetHeight() const
-{
-  if (IsLeaf())
-    return 0;
+int BVHNode::GetHeight() const {
+  if (IsLeaf()) return 0;
   int leftHeight = left ? left->GetHeight() : 0;
   int rightHeight = right ? right->GetHeight() : 0;
   return 1 + std::max(leftHeight, rightHeight);
 }
 
 SimpleBVH::SimpleBVH(int maxDepth, int minLeafSize)
-    : m_MaxDepth(maxDepth), m_MinLeafSize(minLeafSize)
-{
-}
+    : m_MaxDepth(maxDepth), m_MinLeafSize(minLeafSize) {}
 
-SimpleBVH::~SimpleBVH()
-{
-  Clear();
-}
-bool SimpleBVH::Contains(std::shared_ptr<SceneNode> node) const
-{
+SimpleBVH::~SimpleBVH() { Clear(); }
+bool SimpleBVH::Contains(std::shared_ptr<SceneNode> node) const {
   return m_AllNodes.find(node) != m_AllNodes.end();
 }
 // ==================== 空间划分生命周期管理 ====================
-void SimpleBVH::Insert(std::shared_ptr<SceneNode> node)
-{
-  if (!node)
-    return;
+void SimpleBVH::Insert(std::shared_ptr<SceneNode> node) {
+  if (!node) return;
   // 检查是否已存在
   if (m_AllNodes.find(node) != m_AllNodes.end()) {
     return;
@@ -55,12 +45,11 @@ void SimpleBVH::Insert(std::shared_ptr<SceneNode> node)
   // 这些节点会在下次 UpdateTree 时批量处理
   m_NewNodes.insert(node);
 
-  LOG_DEBUG("Node added to pending insert list, total pending: {}", m_NewNodes.size());
+  LOG_DEBUG("Node added to pending insert list, total pending: {}",
+            m_NewNodes.size());
 }
-void SimpleBVH::Remove(std::shared_ptr<SceneNode> node)
-{
-  if (!node)
-    return;
+void SimpleBVH::Remove(std::shared_ptr<SceneNode> node) {
+  if (!node) return;
   // 从总节点集合中移除
   auto allIt = m_AllNodes.find(node);
   if (allIt == m_AllNodes.end()) {
@@ -100,10 +89,8 @@ void SimpleBVH::Remove(std::shared_ptr<SceneNode> node)
 
   LOG_DEBUG("Node removed from BVH");
 }
-void SimpleBVH::Update(std::shared_ptr<SceneNode> node)
-{
-  if (!node)
-    return;
+void SimpleBVH::Update(std::shared_ptr<SceneNode> node) {
+  if (!node) return;
 
   // 如果节点不在BVH中，忽略更新
   if (m_AllNodes.find(node) == m_AllNodes.end()) {
@@ -113,14 +100,12 @@ void SimpleBVH::Update(std::shared_ptr<SceneNode> node)
   if (m_NodeToBVHNodeMap.find(node) != m_NodeToBVHNodeMap.end()) {
     // 节点在树中，标记为脏以便增量更新
     m_DirtyNodes.insert(node);
-  }
-  else {
+  } else {
     // 节点不在树中（可能是新增节点），添加到待插入集合
     m_NewNodes.insert(node);
   }
 }
-void SimpleBVH::Clear()
-{
+void SimpleBVH::Clear() {
   if (m_Root) {
     FreeNode(m_Root);
     m_Root = nullptr;
@@ -134,8 +119,7 @@ void SimpleBVH::Clear()
   m_NodeCount = 0;
   m_ForceRebuild = false;
 }
-void SimpleBVH::Rebuild()
-{
+void SimpleBVH::Rebuild() {
   if (m_AllNodes.empty()) {
     if (m_Root) {
       FreeNode(m_Root);
@@ -154,7 +138,8 @@ void SimpleBVH::Rebuild()
     FreeNode(m_Root);
   }
   // 构建新树
-  std::vector<std::shared_ptr<SceneNode>> nodesToBuild(m_AllNodes.begin(), m_AllNodes.end());
+  std::vector<std::shared_ptr<SceneNode>> nodesToBuild(m_AllNodes.begin(),
+                                                       m_AllNodes.end());
   m_Root = BuildTree(nodesToBuild, 0, static_cast<int>(nodesToBuild.size()), 0);
 
   // 重建映射
@@ -170,29 +155,27 @@ void SimpleBVH::Rebuild()
 }
 
 // ==================== 空间结构外部查询接口 ====================
-bool SimpleBVH::Raycast(const Ray &ray, std::vector<std::shared_ptr<SceneNode> > &results)
-{
+bool SimpleBVH::Raycast(const Ray &ray,
+                        std::vector<std::shared_ptr<SceneNode>> &results) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
   }
-  if (!m_Root)
-    return false;
+  if (!m_Root) return false;
 
-  results.clear();  
-  
+  results.clear();
+
   // 使用最佳优先遍历进行射线查询
   RaycastBestFirst(m_Root, ray, results);
   return !results.empty();
 }
-bool SimpleBVH::RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result, float &distance)
-{
+bool SimpleBVH::RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result,
+                             float &distance) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
   }
-  if (!m_Root)
-    return false;
+  if (!m_Root) return false;
 
   result = nullptr;
   distance = std::numeric_limits<float>::max();
@@ -201,16 +184,14 @@ bool SimpleBVH::RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result,
   RaycastFirstBestFirst(m_Root, ray, result, distance);
   return result != nullptr;
 }
-size_t SimpleBVH::FrustumCull(const Frustum &frustum,
-                              const uint32_t visibleMask,
-                              std::vector<std::shared_ptr<SceneNode> > &results)
-{
+size_t SimpleBVH::FrustumCull(
+    const Frustum &frustum, const uint32_t visibleMask,
+    std::vector<std::shared_ptr<SceneNode>> &results) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
   }
-  if (!m_Root)
-    return 0;
+  if (!m_Root) return 0;
 
   results.clear();
 
@@ -218,14 +199,14 @@ size_t SimpleBVH::FrustumCull(const Frustum &frustum,
   FrustumCullBFS(m_Root, frustum, visibleMask, results);
   return results.size();
 }
-size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<std::shared_ptr<SceneNode> > &results)
-{
+size_t SimpleBVH::VolumeQuery(
+    const BoundingVolume &volume,
+    std::vector<std::shared_ptr<SceneNode>> &results) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
   }
-  if (!m_Root)
-    return 0;
+  if (!m_Root) return 0;
 
   results.clear();
 
@@ -233,28 +214,27 @@ size_t SimpleBVH::VolumeQuery(const BoundingVolume &volume, std::vector<std::sha
   VolumeQueryBFS(m_Root, volume, results);
   return results.size();
 }
-size_t SimpleBVH::PointQuery(const glm::vec3 &point, std::vector<std::shared_ptr<SceneNode> > &results)
-{
+size_t SimpleBVH::PointQuery(const glm::vec3 &point,
+                             std::vector<std::shared_ptr<SceneNode>> &results) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
   }
-  if (!m_Root)
-    return 0;
+  if (!m_Root) return 0;
 
   results.clear();
-  BoundingVolume pointAABB = BoundingVolume::CreateFromPoints(BoundingVolumeType::AABB,
-                                                              {point});  // 创建零大小的AABB
+  BoundingVolume pointAABB = BoundingVolume::CreateFromPoints(
+      BoundingVolumeType::AABB, {point});  // 创建零大小的AABB
   return VolumeQuery(pointAABB, results);
 }
-bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, std::shared_ptr<SceneNode> &result, float maxDistance)
-{
+bool SimpleBVH::NearestNeighbor(const glm::vec3 &point,
+                                std::shared_ptr<SceneNode> &result,
+                                float maxDistance) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
   }
-  if (!m_Root)
-    return false;
+  if (!m_Root) return false;
 
   result = nullptr;
   float bestDistance = maxDistance;
@@ -265,8 +245,7 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, std::shared_ptr<SceneNod
     BVHNode *node;
     float distanceSq;
 
-    bool operator<(const QueueElement &other) const
-    {
+    bool operator<(const QueueElement &other) const {
       return distanceSq > other.distanceSq;  // 最小堆
     }
   };
@@ -285,14 +264,14 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, std::shared_ptr<SceneNod
     if (current.node->IsLeaf()) {
       // 遍历叶子节点中的所有场景节点
       for (std::shared_ptr<SceneNode> sceneNode : current.node->sceneNodes) {
-        float distSq = glm::distance2(point, sceneNode->GetWorldBounds().GetCenter());
+        float distSq =
+            glm::distance2(point, sceneNode->GetWorldBounds().GetCenter());
         if (distSq < bestDistanceSq) {
           bestDistanceSq = distSq;
           result = sceneNode;
         }
       }
-    }
-    else {
+    } else {
       if (current.node->left) {
         float leftDistSq = current.node->left->bounds.DistanceToPointSq(point);
         if (leftDistSq <= bestDistanceSq) {
@@ -301,7 +280,8 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, std::shared_ptr<SceneNod
       }
 
       if (current.node->right) {
-        float rightDistSq = current.node->right->bounds.DistanceToPointSq(point);
+        float rightDistSq =
+            current.node->right->bounds.DistanceToPointSq(point);
         if (rightDistSq <= bestDistanceSq) {
           queue.push({current.node->right, rightDistSq});
         }
@@ -313,42 +293,29 @@ bool SimpleBVH::NearestNeighbor(const glm::vec3 &point, std::shared_ptr<SceneNod
 }
 
 // ==================== 空间结构内部查询接口 ====================
-void SimpleBVH::ForEachNode(std::function<bool(std::shared_ptr<SceneNode> )> callback)
-{
+void SimpleBVH::ForEachNode(
+    std::function<bool(std::shared_ptr<SceneNode>)> callback) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
   }
-  if (!m_Root)
-    return;
+  if (!m_Root) return;
 
   // 递归遍历所有Node
   TraverseDFS(m_Root, callback);
 }
-size_t SimpleBVH::GetNodeCount() const
-{
-  return m_NodeCount;
-}
+size_t SimpleBVH::GetNodeCount() const { return m_NodeCount; }
 
-bool SimpleBVH::IsEmpty() const
-{
-  return m_NodeCount == 0;
-}
+bool SimpleBVH::IsEmpty() const { return m_NodeCount == 0; }
 
-int SimpleBVH::GetDepth() const
-{
-  if (!m_Root)
-    return 0;
+int SimpleBVH::GetDepth() const {
+  if (!m_Root) return 0;
   return m_Root->GetHeight();
 }
 
-const char *SimpleBVH::GetTypeName() const
-{
-  return "SimpleBVH";
-}
+const char *SimpleBVH::GetTypeName() const { return "SimpleBVH"; }
 
-std::string SimpleBVH::GetStats() const
-{
+std::string SimpleBVH::GetStats() const {
   BVHStats stats;
   if (m_Root) {
     CollectStatsRecursive(m_Root, stats);
@@ -363,25 +330,22 @@ std::string SimpleBVH::GetStats() const
      << ", Avg Depth: " << stats.avgDepth;
   return ss.str();
 }
-void SimpleBVH::DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
-{
+void SimpleBVH::DebugDraw(
+    std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
   }
-  if (!m_Root)
-    return;
+  if (!m_Root) return;
 
   DebugDrawRecursive(m_Root, drawCallback);
 }
 
-
 // ==================== 私有方法：BVH树构建 ====================
 
-BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int depth)
-{
-  if (start >= end)
-    return nullptr;
+BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes,
+                              int start, int end, int depth) {
+  if (start >= end) return nullptr;
 
   const int count = end - start;
 
@@ -438,11 +402,10 @@ BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode> > &nodes, i
 }
 
 bool SimpleBVH::FindBestSplit(
-    const std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int &axis, float &splitPos) const
-{
+    const std::vector<std::shared_ptr<SceneNode>> &nodes, int start, int end,
+    int &axis, float &splitPos) const {
   const int count = end - start;
-  if (count <= 1)
-    return false;
+  if (count <= 1) return false;
 
   // 计算所有节点的中心点包围盒
   BoundingVolumeAABB centerBounds;
@@ -453,10 +416,8 @@ bool SimpleBVH::FindBestSplit(
   // 选择最长的轴
   glm::vec3 size = centerBounds.GetSize();
   axis = 0;
-  if (size.y > size.x)
-    axis = 1;
-  if (size.z > size[axis])
-    axis = 2;
+  if (size.y > size.x) axis = 1;
+  if (size.z > size[axis]) axis = 2;
 
   // 如果所有中心点在同一位置，无法分割，直接返回
   if (size[axis] < 1e-6f) {
@@ -478,9 +439,9 @@ bool SimpleBVH::FindBestSplit(
   return true;
 }
 
-int SimpleBVH::PartitionNodes(
-    std::vector<std::shared_ptr<SceneNode> > &nodes, int start, int end, int axis, float splitPos) const
-{
+int SimpleBVH::PartitionNodes(std::vector<std::shared_ptr<SceneNode>> &nodes,
+                              int start, int end, int axis,
+                              float splitPos) const {
   int left = start;
   int right = end - 1;
 
@@ -488,10 +449,12 @@ int SimpleBVH::PartitionNodes(
   // 通过left和right迭代，与swap交换，实现了复杂度O(1)的“排序”，
   // 将node位置在splitPos左侧的点集中在vector的前left个元素
   while (left <= right) {
-    while (left <= right && nodes[left]->GetWorldBounds().GetCenter()[axis] < splitPos) {
+    while (left <= right &&
+           nodes[left]->GetWorldBounds().GetCenter()[axis] < splitPos) {
       left++;
     }
-    while (left <= right && nodes[right]->GetWorldBounds().GetCenter()[axis] >= splitPos) {
+    while (left <= right &&
+           nodes[right]->GetWorldBounds().GetCenter()[axis] >= splitPos) {
       right--;
     }
     if (left < right) {
@@ -504,10 +467,8 @@ int SimpleBVH::PartitionNodes(
   return left;
 }
 
-void SimpleBVH::FreeNode(BVHNode *node)
-{
-  if (!node)
-    return;
+void SimpleBVH::FreeNode(BVHNode *node) {
+  if (!node) return;
 
   // 如果是叶子节点，从映射中移除所有关联的场景节点
   if (node->IsLeaf()) {
@@ -522,12 +483,10 @@ void SimpleBVH::FreeNode(BVHNode *node)
   node->sceneNodes.clear();
   delete node;
   m_NodeCount--;
-
 }
 
 // ==================== 私有方法：BVH树增量更新 ====================
-void SimpleBVH::UpdateTree(bool forceFullRebuild)
-{
+void SimpleBVH::UpdateTree(bool forceFullRebuild) {
   // 检查是否需要完全重建
   if (forceFullRebuild || m_ForceRebuild || ShouldRebuildCompletely()) {
     Rebuild();
@@ -559,25 +518,22 @@ void SimpleBVH::UpdateTree(bool forceFullRebuild)
   // 第四步：清理状态
   ClearDirtyFlags();
 }
-bool SimpleBVH::UpdateNodeRecursive(BVHNode *node)
-{
-  if (!node)
-    return false;
+bool SimpleBVH::UpdateNodeRecursive(BVHNode *node) {
+  if (!node) return false;
   if (node->IsLeaf()) {
     // 叶子节点：检查是否需要重构
     if (NeedsRefit(node)) {
       RefitNode(node);
       return false;
     }
-  }
-  else {
+  } else {
     // 使用后序遍历（左子树 → 右子树 → 当前节点）
-    // 
+    //
     // 由于叶子节点变化会导致父节点包围盒失效，所以需要：
     // 1. 先更新所有受影响的叶子节点
     // 2. 然后更新直接父节点
     // 3. 最后更新更高层节点
-    
+
     // 内部节点：先更新子节点
     bool leftNeedsRebuild = UpdateNodeRecursive(node->left);
     bool rightNeedsRebuild = UpdateNodeRecursive(node->right);
@@ -595,18 +551,17 @@ bool SimpleBVH::UpdateNodeRecursive(BVHNode *node)
 
   return false;
 }
-void SimpleBVH::RefitNode(BVHNode *node)
-{
+void SimpleBVH::RefitNode(BVHNode *node) {
   if (node->IsLeaf()) {
     // 叶子节点：重新计算所有场景节点的合并包围盒
     BoundingVolumeAABB newBounds;
     for (std::shared_ptr<SceneNode> sceneNode : node->sceneNodes) {
-      BoundingVolumeAABB nodeBounds = sceneNode->GetWorldBounds().GetAABBApproximation();
+      BoundingVolumeAABB nodeBounds =
+          sceneNode->GetWorldBounds().GetAABBApproximation();
       newBounds.Expand(nodeBounds);
     }
     node->bounds = newBounds;
-  }
-  else {
+  } else {
     // 内部节点：合并子节点的包围盒
     BoundingVolumeAABB newBounds;
     if (node->left) {
@@ -618,8 +573,7 @@ void SimpleBVH::RefitNode(BVHNode *node)
     node->bounds = newBounds;
   }
 }
-bool SimpleBVH::NeedsRefit(BVHNode *node) const
-{
+bool SimpleBVH::NeedsRefit(BVHNode *node) const {
   if (node->IsLeaf()) {
     // 检查叶子节点中的场景节点是否为脏节点
     for (std::shared_ptr<SceneNode> sceneNode : node->sceneNodes) {
@@ -628,22 +582,22 @@ bool SimpleBVH::NeedsRefit(BVHNode *node) const
         return true;
       }
     }
-  }
-  else {
+  } else {
     // 内部节点
-    bool leftDirty = node->left && m_DirtyBVHNodes.find(node->left) != m_DirtyBVHNodes.end();
-    bool rightDirty = node->right && m_DirtyBVHNodes.find(node->right) != m_DirtyBVHNodes.end();
+    bool leftDirty =
+        node->left && m_DirtyBVHNodes.find(node->left) != m_DirtyBVHNodes.end();
+    bool rightDirty = node->right && m_DirtyBVHNodes.find(node->right) !=
+                                         m_DirtyBVHNodes.end();
 
     // 如果左右子节点需要重构，或者当前节点被标记为脏，则返回true
-    return leftDirty || rightDirty || m_DirtyBVHNodes.find(node) != m_DirtyBVHNodes.end();
+    return leftDirty || rightDirty ||
+           m_DirtyBVHNodes.find(node) != m_DirtyBVHNodes.end();
   }
 
   return false;
 }
-void SimpleBVH::FindDirtyBVHNodes(BVHNode *node)
-{
-  if (!node)
-    return;
+void SimpleBVH::FindDirtyBVHNodes(BVHNode *node) {
+  if (!node) return;
   if (node->IsLeaf()) {
     // 检查叶子节点是否包含脏场景节点
     for (std::shared_ptr<SceneNode> sceneNode : node->sceneNodes) {
@@ -652,43 +606,40 @@ void SimpleBVH::FindDirtyBVHNodes(BVHNode *node)
         break;
       }
     }
-  }
-  else {
+  } else {
     // 递归检查子节点
     FindDirtyBVHNodes(node->left);
     FindDirtyBVHNodes(node->right);
 
     // 如果子节点是脏的，当前节点也是脏的
-    bool leftDirty = node->left && m_DirtyBVHNodes.find(node->left) != m_DirtyBVHNodes.end();
-    bool rightDirty = node->right && m_DirtyBVHNodes.find(node->right) != m_DirtyBVHNodes.end();
+    bool leftDirty =
+        node->left && m_DirtyBVHNodes.find(node->left) != m_DirtyBVHNodes.end();
+    bool rightDirty = node->right && m_DirtyBVHNodes.find(node->right) !=
+                                         m_DirtyBVHNodes.end();
 
     if (leftDirty || rightDirty) {
       m_DirtyBVHNodes.insert(node);
     }
   }
 }
-void SimpleBVH::MarkDirty(BVHNode *node)
-{
+void SimpleBVH::MarkDirty(BVHNode *node) {
   if (node) {
     m_DirtyBVHNodes.insert(node);
   }
 }
-void SimpleBVH::ClearDirtyFlags()
-{
+void SimpleBVH::ClearDirtyFlags() {
   m_DirtyNodes.clear();
   m_DirtyBVHNodes.clear();
 }
 
 // ==================== 私有方法：BVH树递归查询 ====================
-void SimpleBVH::RaycastBestFirst(BVHNode *root,
-                                 const Ray &ray,
-                                 std::vector<std::shared_ptr<SceneNode> > &results) const
-{
+void SimpleBVH::RaycastBestFirst(
+    BVHNode *root, const Ray &ray,
+    std::vector<std::shared_ptr<SceneNode>> &results) const {
   struct NodeWithDistance {
     BVHNode *node;
     float distance;
-    bool operator<(const NodeWithDistance &other) const
-    {
+    bool operator<(const NodeWithDistance &other) const {
       return distance > other.distance;  // 最小堆，距离小的优先
     }
   };
@@ -714,18 +665,18 @@ void SimpleBVH::RaycastBestFirst(BVHNode *root,
           results.push_back(sceneNode);
         }
       }
-    }
-    else {
+    } else {
       // 计算子节点距离并排序
-      float leftDist = CalculateRayAABBDistance(ray, current.node->left->bounds);
-      float rightDist = CalculateRayAABBDistance(ray, current.node->right->bounds);
+      float leftDist =
+          CalculateRayAABBDistance(ray, current.node->left->bounds);
+      float rightDist =
+          CalculateRayAABBDistance(ray, current.node->right->bounds);
 
       // 距离近的先处理
       if (leftDist < rightDist) {
         queue.push({current.node->left, leftDist});
         queue.push({current.node->right, rightDist});
-      }
-      else {
+      } else {
         queue.push({current.node->right, rightDist});
         queue.push({current.node->left, leftDist});
       }
@@ -733,16 +684,13 @@ void SimpleBVH::RaycastBestFirst(BVHNode *root,
   }
 }
 
-void SimpleBVH::RaycastFirstBestFirst(BVHNode *root,
-                                      const Ray &ray,
+void SimpleBVH::RaycastFirstBestFirst(BVHNode *root, const Ray &ray,
                                       std::shared_ptr<SceneNode> &bestNode,
-                                      float &bestDistance) const
-{
+                                      float &bestDistance) const {
   struct NodeWithDistance {
     BVHNode *node;
     float distance;
-    bool operator<(const NodeWithDistance &other) const
-    {
+    bool operator<(const NodeWithDistance &other) const {
       return distance > other.distance;
     }
   };
@@ -767,33 +715,30 @@ void SimpleBVH::RaycastFirstBestFirst(BVHNode *root,
       for (std::shared_ptr<SceneNode> sceneNode : current.node->sceneNodes) {
         float nodeDistance;
         if (ray.Intersects(sceneNode->GetWorldBounds(), nodeDistance) &&
-            nodeDistance < bestDistance)
-        {
+            nodeDistance < bestDistance) {
           bestNode = sceneNode;
           bestDistance = nodeDistance;
         }
       }
-    }
-    else {
-      float leftDist = CalculateRayAABBDistance(ray, current.node->left->bounds);
-      float rightDist = CalculateRayAABBDistance(ray, current.node->right->bounds);
+    } else {
+      float leftDist =
+          CalculateRayAABBDistance(ray, current.node->left->bounds);
+      float rightDist =
+          CalculateRayAABBDistance(ray, current.node->right->bounds);
 
       if (leftDist < rightDist) {
         queue.push({current.node->left, leftDist});
         queue.push({current.node->right, rightDist});
-      }
-      else {
+      } else {
         queue.push({current.node->right, rightDist});
         queue.push({current.node->left, leftDist});
       }
     }
   }
 }
-void SimpleBVH::FrustumCullBFS(BVHNode *root,
-                               const Frustum &frustum,
-                               const uint32_t visibleMask,
-                               std::vector<std::shared_ptr<SceneNode> > &results) const
-{
+void SimpleBVH::FrustumCullBFS(
+    BVHNode *root, const Frustum &frustum, const uint32_t visibleMask,
+    std::vector<std::shared_ptr<SceneNode>> &results) const {
   std::queue<BVHNode *> queue;
   queue.push(root);
 
@@ -813,12 +758,13 @@ void SimpleBVH::FrustumCullBFS(BVHNode *root,
     if (current->IsLeaf()) {
       for (std::shared_ptr<SceneNode> sceneNode : current->sceneNodes) {
         // 当前BVHNode不在视锥体外（相交或者在内），或者SceneNode不在视锥体外（相交或者在内）
-        if (intersection != BoundingVolumeIntersection::IntersectionType::Outside||
-                frustum.TestBoundingVolume(sceneNode->GetWorldBounds()) !=
-                BoundingVolumeIntersection::IntersectionType::Outside)
-        {
+        if (intersection !=
+                BoundingVolumeIntersection::IntersectionType::Outside ||
+            frustum.TestBoundingVolume(sceneNode->GetWorldBounds()) !=
+                BoundingVolumeIntersection::IntersectionType::Outside) {
           // 确保可见，且可见性掩码匹配
-          if (sceneNode->IsWorldVisible() && (sceneNode->GetVisibilityMask() & visibleMask) != 0)
+          if (sceneNode->IsWorldVisible() &&
+              (sceneNode->GetVisibilityMask() & visibleMask) != 0)
             // 记录SceneNode，不被裁剪
             results.push_back(sceneNode);
         }
@@ -831,10 +777,9 @@ void SimpleBVH::FrustumCullBFS(BVHNode *root,
     }
   }
 }
-void SimpleBVH::VolumeQueryBFS(BVHNode *root,
-                               const BoundingVolume &volume,
-                               std::vector<std::shared_ptr<SceneNode> > &results) const
-{
+void SimpleBVH::VolumeQueryBFS(
+    BVHNode *root, const BoundingVolume &volume,
+    std::vector<std::shared_ptr<SceneNode>> &results) const {
   std::queue<BVHNode *> queue;
   queue.push(root);
 
@@ -855,8 +800,7 @@ void SimpleBVH::VolumeQueryBFS(BVHNode *root,
       for (std::shared_ptr<SceneNode> sceneNode : current->sceneNodes) {
         // 当前SceneNode不在volume外（相交或者在内）
         if (sceneNode->GetWorldBounds().Intersects(volume) !=
-            BoundingVolumeIntersection::IntersectionType::Outside)
-        {
+            BoundingVolumeIntersection::IntersectionType::Outside) {
           // 记录SceneNode
           results.push_back(sceneNode);
         }
@@ -870,11 +814,10 @@ void SimpleBVH::VolumeQueryBFS(BVHNode *root,
   }
 }
 
-bool SimpleBVH::TraverseDFS(BVHNode *node,
-                                     std::function<bool(std::shared_ptr<SceneNode> )> callback) const
-{
-  if (!node)
-    return true;
+bool SimpleBVH::TraverseDFS(
+    BVHNode *node,
+    std::function<bool(std::shared_ptr<SceneNode>)> callback) const {
+  if (!node) return true;
 
   if (node->IsLeaf()) {
     for (std::shared_ptr<SceneNode> sceneNode : node->sceneNodes) {
@@ -882,26 +825,20 @@ bool SimpleBVH::TraverseDFS(BVHNode *node,
         return false;
       }
     }
-  }
-  else {
-    if (!TraverseDFS(node->left, callback))
-      return false;
-    if (!TraverseDFS(node->right, callback))
-      return false;
+  } else {
+    if (!TraverseDFS(node->left, callback)) return false;
+    if (!TraverseDFS(node->right, callback)) return false;
   }
 
   return true;
 }
-void SimpleBVH::CollectStatsRecursive(BVHNode *node, BVHStats &stats) const
-{
-  if (!node)
-    return;
+void SimpleBVH::CollectStatsRecursive(BVHNode *node, BVHStats &stats) const {
+  if (!node) return;
 
   if (node->IsLeaf()) {
     stats.leafCount++;
     stats.totalDepth += node->depth;
-  }
-  else {
+  } else {
     stats.internalCount++;
     CollectStatsRecursive(node->left, stats);
     CollectStatsRecursive(node->right, stats);
@@ -911,10 +848,10 @@ void SimpleBVH::CollectStatsRecursive(BVHNode *node, BVHStats &stats) const
 }
 
 void SimpleBVH::DebugDrawRecursive(
-    BVHNode *node, std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) const
-{
-  if (!node)
-    return;
+    BVHNode *node,
+    std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
+    const {
+  if (!node) return;
 
   drawCallback(node->bounds, node->depth);
 
@@ -924,22 +861,20 @@ void SimpleBVH::DebugDrawRecursive(
   }
 }
 
-float SimpleBVH::CalculateRayAABBDistance(const Ray &ray, const BoundingVolumeAABB &aabb) const
-{
+float SimpleBVH::CalculateRayAABBDistance(
+    const Ray &ray, const BoundingVolumeAABB &aabb) const {
   float t;
   if (ray.Intersects(aabb, t)) {
     return t;
   }
   return std::numeric_limits<float>::max();
 }
-float SimpleBVH::CalculatePointAABBDistanceSq(const glm::vec3 &point,
-                                              const BoundingVolumeAABB &aabb) const
-{
+float SimpleBVH::CalculatePointAABBDistanceSq(
+    const glm::vec3 &point, const BoundingVolumeAABB &aabb) const {
   return aabb.DistanceToPointSq(point);
 }
 
-bool SimpleBVH::ShouldRebuildCompletely() const
-{
+bool SimpleBVH::ShouldRebuildCompletely() const {
   // 启发式判断是否需要完全重建
 
   // 0. 强制重建标志
@@ -954,27 +889,29 @@ bool SimpleBVH::ShouldRebuildCompletely() const
 
   // 2. 如果待插入节点太多（超过总节点的30%），重建更高效
   if (!m_NewNodes.empty() && m_NewNodes.size() > m_AllNodes.size() * 0.3f) {
-    LOG_DEBUG("Too many new nodes ({} > 30%), triggering rebuild", m_NewNodes.size());
+    LOG_DEBUG("Too many new nodes ({} > 30%), triggering rebuild",
+              m_NewNodes.size());
     return true;
   }
 
   // 3. 如果空叶子节点太多（超过总节点的20%），重建以优化结构
   if (!m_EmptyLeaves.empty() && m_EmptyLeaves.size() > m_NodeCount * 0.2f) {
-    LOG_DEBUG("Too many empty leaves ({} > 20%), triggering rebuild", m_EmptyLeaves.size());
+    LOG_DEBUG("Too many empty leaves ({} > 20%), triggering rebuild",
+              m_EmptyLeaves.size());
     return true;
   }
 
   // 4. 如果脏节点太多（超过总节点的40%），重建可能更高效
   if (!m_DirtyNodes.empty() && m_DirtyNodes.size() > m_AllNodes.size() * 0.4f) {
-    LOG_DEBUG("Too many dirty nodes ({} > 40%), triggering rebuild", m_DirtyNodes.size());
+    LOG_DEBUG("Too many dirty nodes ({} > 40%), triggering rebuild",
+              m_DirtyNodes.size());
     return true;
   }
 
   return false;
 }
 
-void SimpleBVH::ProcessStructuralChanges()
-{
+void SimpleBVH::ProcessStructuralChanges() {
   // 处理空叶子节点
   if (!m_EmptyLeaves.empty()) {
     RemoveEmptyLeaves();
@@ -992,8 +929,8 @@ void SimpleBVH::ProcessStructuralChanges()
   }
 }
 
-bool SimpleBVH::BatchInsertNodes(const std::unordered_set<std::shared_ptr<SceneNode>> &nodes)
-{
+bool SimpleBVH::BatchInsertNodes(
+    const std::unordered_set<std::shared_ptr<SceneNode>> &nodes) {
   if (!m_Root || nodes.empty()) {
     return false;
   }
@@ -1004,10 +941,10 @@ bool SimpleBVH::BatchInsertNodes(const std::unordered_set<std::shared_ptr<SceneN
   for (auto &node : nodes) {
     if (TryInsertIntoExistingTree(node)) {
       successCount++;
-    }
-    else {
+    } else {
       // 插入失败，返回false
-      LOG_DEBUG("Batch insert failed after {} successful insertions", successCount);
+      LOG_DEBUG("Batch insert failed after {} successful insertions",
+                successCount);
       return false;
     }
   }
@@ -1016,8 +953,7 @@ bool SimpleBVH::BatchInsertNodes(const std::unordered_set<std::shared_ptr<SceneN
   return true;
 }
 
-bool SimpleBVH::TryInsertIntoExistingTree(std::shared_ptr<SceneNode> node)
-{
+bool SimpleBVH::TryInsertIntoExistingTree(std::shared_ptr<SceneNode> node) {
   if (!m_Root || !node) {
     return false;
   }
@@ -1030,8 +966,7 @@ bool SimpleBVH::TryInsertIntoExistingTree(std::shared_ptr<SceneNode> node)
 
   // 递归查找最佳叶子节点
   std::function<void(BVHNode *)> findBestLeaf = [&](BVHNode *currentNode) {
-    if (!currentNode)
-      return;
+    if (!currentNode) return;
 
     if (currentNode->IsLeaf()) {
       // 计算插入到这个叶子节点的成本
@@ -1039,14 +974,15 @@ bool SimpleBVH::TryInsertIntoExistingTree(std::shared_ptr<SceneNode> node)
       expandedBounds.Expand(node->GetWorldBounds().GetAABBApproximation());
 
       // 简单成本计算：扩展后的表面积 * 节点数量
-      float cost = expandedBounds.GetSurfaceArea() * (currentNode->sceneNodes.size() + 1);
+      float cost = expandedBounds.GetSurfaceArea() *
+                   (currentNode->sceneNodes.size() + 1);
 
-      if (cost < bestCost && currentNode->sceneNodes.size() < m_MinLeafSize * 2) {
+      if (cost < bestCost &&
+          currentNode->sceneNodes.size() < m_MinLeafSize * 2) {
         bestCost = cost;
         bestLeaf = currentNode;
       }
-    }
-    else {
+    } else {
       // 内部节点：递归检查子节点
       findBestLeaf(currentNode->left);
       findBestLeaf(currentNode->right);
@@ -1072,8 +1008,7 @@ bool SimpleBVH::TryInsertIntoExistingTree(std::shared_ptr<SceneNode> node)
   return false;
 }
 
-void SimpleBVH::RemoveEmptyLeaves()
-{
+void SimpleBVH::RemoveEmptyLeaves() {
   if (m_EmptyLeaves.empty()) {
     return;
   }
@@ -1087,23 +1022,18 @@ void SimpleBVH::RemoveEmptyLeaves()
   m_EmptyLeaves.clear();
 }
 
-void SimpleBVH::BuildNodeMapping(BVHNode *node)
-{
-  if (!node)
-    return;
+void SimpleBVH::BuildNodeMapping(BVHNode *node) {
+  if (!node) return;
 
   if (node->IsLeaf()) {
     // 叶子节点：为每个SceneNode建立映射
     for (auto &sceneNode : node->sceneNodes) {
       m_NodeToBVHNodeMap[sceneNode] = node;
     }
-  }
-  else {
+  } else {
     // 内部节点：递归处理子节点
     BuildNodeMapping(node->left);
     BuildNodeMapping(node->right);
   }
 }
-
-
 }  // namespace mite

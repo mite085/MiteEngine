@@ -1,11 +1,10 @@
 #ifndef MITE_VISIBILITY_COMPONENT_H
 #define MITE_VISIBILITY_COMPONENT_H
 
-#include "scene_core/component_system.h"
 #include "basic_type/visible_type.h"
+#include "scene_core/component_system.h"
 
 namespace mite {
-
 /**
  * @class VisibilityComponent
  * @brief 可见性组件，专注于管理实体的可见性掩码和可见性状态
@@ -14,11 +13,12 @@ namespace mite {
  * 1. 提供可见性掩码支持分层渲染
  * 2. 维护“可见/不可见”的可见性状态
  * 3. 与SceneGraph协同实现高效的可见性管理
- * 
+ *
  * 注意：相机实体也应当持有该组件，但相机不使用bool的可见性判断，仅使用可见性掩码进行匹配。
  */
 class VisibilityComponent
-    : public SnapshotComponentTraits<Visibility, Component::Family::Visibility> {
+    : public SnapshotComponentTraits<Visibility,
+                                     Component::Family::Visibility> {
  public:
   /**
    * @brief 默认构造函数
@@ -86,7 +86,8 @@ class VisibilityComponent
  * @class VisibilityComponentSystem
  * @brief 可见性组件系统，负责批量处理可见性计算和剔除
  */
-class VisibilityComponentSystem : public SnapshotComponentSystem<VisibilityComponent> {
+class VisibilityComponentSystem
+    : public SnapshotComponentSystem<VisibilityComponent> {
   DECLARE_COMPONENT_SYSTEM(VisibilityComponentSystem)
 };
 
@@ -99,13 +100,10 @@ class VisibilityComponentSystem : public SnapshotComponentSystem<VisibilityCompo
 class VisibilityChangedEvent : public ComponentEvent<VisibilityComponent> {
  public:
   VisibilityChangedEvent(Entity entity, VisibilityComponent &component)
-      : ComponentEvent<VisibilityComponent>(entity, component)
-  {
-  }
+      : ComponentEvent<VisibilityComponent>(entity, component) {}
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new VisibilityChangedEvent(this->m_Entity, this->m_Component);
   }
 };

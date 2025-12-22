@@ -28,8 +28,7 @@ class IPropertyTable {
    * @param labelTranslateKey 名称显示
    * @param propsRenderFunc 属性绘制函数
    */
-  void RenderLabelItemRow(UIRender &render,
-                          std::string labelTranslateKey,
+  void RenderLabelItemRow(UIRender &render, std::string labelTranslateKey,
                           std::function<void()> propsRenderFunc);
 
   std::string m_TableTranslateKey = "";
@@ -39,7 +38,8 @@ class IPropertyTable {
 /**
  * @brief 属性模板基类 - 基于模板特化的自动映射
  */
-template<typename T> class PropertyTable : public IPropertyTable {};
+template <typename T>
+class PropertyTable : public IPropertyTable {};
 };  // namespace mite
 
 #endif  // MITE_PROPERTY_H

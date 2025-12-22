@@ -1,11 +1,10 @@
 #include "filesystem.h"
 
-
 #ifdef _WIN32
-#  include <windows.h>
+#include <windows.h>
 #else
-#  include <limits.h>
-#  include <unistd.h>
+#include <limits.h>
+#include <unistd.h>
 #endif
 
 namespace fs = std::filesystem;
@@ -15,54 +14,52 @@ namespace mite {
 fs::path FileSystem::s_ExecutablePath;
 bool FileSystem::s_Initialized = false;
 Logger FileSystem::s_Logger = nullptr;
-void FileSystem::Initialize()
-{
-  if (s_Initialized)
-    return;
+void FileSystem::Initialize() {
+  if (s_Initialized) return;
   s_ExecutablePath = GetExecutablePath();
   s_Initialized = true;
   s_Logger = LoggerSystem::CreateModuleLogger("Mite File System");
-  s_Logger->info("FileSystem initialized. Executable path: {}", s_ExecutablePath.string());
+  s_Logger->info("FileSystem initialized. Executable path: {}",
+                 s_ExecutablePath.string());
   s_Logger->info("Assets root: {}", GetAssetsRoot().string());
 }
-fs::path FileSystem::GetAssetPath(const std::string &relativePath)
-{
+fs::path FileSystem::GetAssetPath(const std::string &relativePath) {
   if (!s_Initialized) {
-    throw std::runtime_error("FileSystem not initialized. Call FileSystem::Init() first.");
-  } 
+    throw std::runtime_error(
+        "FileSystem not initialized. Call FileSystem::Init() first.");
+  }
   fs::path assetsRoot = GetAssetsRoot();
   fs::path fullPath = assetsRoot / relativePath;
   if (!Exists(fullPath)) {
     LOG_ERROR("Invalid Asset Path: {}", fullPath.string());
-    throw std::runtime_error("Asset not found: " + relativePath + "\nFull path: " +
-                             fullPath.string() + "\nAssets root: " + assetsRoot.string());
+    throw std::runtime_error("Asset not found: " + relativePath +
+                             "\nFull path: " + fullPath.string() +
+                             "\nAssets root: " + assetsRoot.string());
   }
   return fullPath;
 }
-fs::path FileSystem::GetAssetsRoot()
-{
+fs::path FileSystem::GetAssetsRoot() {
   if (!s_Initialized) {
-    throw std::runtime_error("FileSystem not initialized. Call FileSystem::Init() first.");
+    throw std::runtime_error(
+        "FileSystem not initialized. Call FileSystem::Init() first.");
   }
 
   // 直接从exe同级目录下的assets文件夹
   return s_ExecutablePath / ASSETS_DIR;
 }
-bool FileSystem::Exists(const fs::path &path)
-{
+bool FileSystem::Exists(const fs::path &path) {
   std::error_code ec;
   bool exists = fs::exists(path, ec);
 
   if (ec) {
-    s_Logger->warn(
-        "Error checking file existence: {}, error: {}", path.string(), ec.message());
+    s_Logger->warn("Error checking file existence: {}, error: {}",
+                   path.string(), ec.message());
     return false;
   }
 
   return exists;
 }
-std::string FileSystem::ReadFileToString(const fs::path &path)
-{
+std::string FileSystem::ReadFileToString(const fs::path &path) {
   if (!Exists(path)) {
     throw std::runtime_error("File not found: " + path.string());
   }
@@ -86,8 +83,8 @@ std::string FileSystem::ReadFileToString(const fs::path &path)
   }
   return content;
 }
-bool FileSystem::WriteStringToFile(const fs::path &path, const std::string &content)
-{
+bool FileSystem::WriteStringToFile(const fs::path &path,
+                                   const std::string &content) {
   try {
     // 创建父目录（如果不存在）
     fs::create_directories(path.parent_path());
@@ -99,14 +96,12 @@ bool FileSystem::WriteStringToFile(const fs::path &path, const std::string &cont
     }
     file.write(content.data(), content.size());
     return !file.fail();
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     s_Logger->error("Error writing to file {}: {}", path.string(), e.what());
     return false;
   }
 }
-fs::path FileSystem::GetExecutablePath()
-{
+fs::path FileSystem::GetExecutablePath() {
 #ifdef _WIN32
   wchar_t path[MAX_PATH] = {0};
   DWORD result = GetModuleFileNameW(nullptr, path, MAX_PATH);
@@ -118,14 +113,14 @@ fs::path FileSystem::GetExecutablePath()
 #else
   char path[PATH_MAX] = {0};
 
-#  if defined(__linux__)
+#if defined(__linux__)
   ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
   if (count == -1 || count >= PATH_MAX) {
     s_Logger->warn("Failed to get executable path, using current directory");
     return fs::current_path();
   }
   path[count] = '\0';
-#  elif defined(__APPLE__)
+#elif defined(__APPLE__)
   uint32_t size = sizeof(path);
   if (_NSGetExecutablePath(path, &size) != 0) {
     s_Logger->warn("Failed to get executable path, using current directory");
@@ -138,8 +133,8 @@ fs::path FileSystem::GetExecutablePath()
     return fs::path(path).parent_path();
   }
   return fs::path(realPath).parent_path();
-#  endif
+#endif
   return fs::path(path).parent_path();
 #endif
 }
-};
+};  // namespace mite

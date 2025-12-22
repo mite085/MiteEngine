@@ -64,10 +64,10 @@ class Light {
    * @param cameraProj 相机投影矩阵
    * @return 阴影数据
    */
-  ShadowMapData PrepareShadowData(const uint32_t lightIndex,
-                                  const Transform &worldTransform,
-                                  const Transform &cameraWorldTransform,
-                                  const glm::mat4 &cameraProj = glm::mat4(1.0f)) const;
+  ShadowMapData PrepareShadowData(
+      const uint32_t lightIndex, const Transform &worldTransform,
+      const Transform &cameraWorldTransform,
+      const glm::mat4 &cameraProj = glm::mat4(1.0f)) const;
   /**
    * @brief 计算光源的影响半径（用于粗略剔除）
    * @return 影响范围半径

@@ -3,8 +3,8 @@
 
 #include "basic_data/bounding_volume.h"
 #include "basic_data/transform.h"
-#include "scene_core/entity.h"
 #include "event.h"
+#include "scene_core/entity.h"
 
 namespace mite {
 /**
@@ -161,7 +161,7 @@ class SceneNode : public std::enable_shared_from_this<SceneNode> {
   void Update(const SceneRegistry &registry, bool force = false);
 
  private:
-  Entity m_Entity;                      // 关联的ECS实体
+  Entity m_Entity;                                      // 关联的ECS实体
   std::shared_ptr<SceneNode> m_Parent = nullptr;        // 父节点指针
   std::vector<std::shared_ptr<SceneNode> > m_Children;  // 子节点列表
 
@@ -187,7 +187,8 @@ class SceneNode : public std::enable_shared_from_this<SceneNode> {
  */
 class SceneNodeSelectedEvent : public Event {
  public:
-  explicit SceneNodeSelectedEvent(std::shared_ptr<SceneNode> node) : m_node(node) {}
+  explicit SceneNodeSelectedEvent(std::shared_ptr<SceneNode> node)
+      : m_node(node) {}
   std::shared_ptr<SceneNode> GetSceneNode() const { return m_node; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
   Event *Clone() const override { return new SceneNodeSelectedEvent(m_node); }
@@ -198,20 +199,20 @@ class SceneNodeSelectedEvent : public Event {
 
 class SceneNodeParentChangeEvent : public Event {
  public:
-  explicit SceneNodeParentChangeEvent(std::shared_ptr<SceneNode> node, std::shared_ptr<SceneNode> newParent)
-      : m_node(node), m_newParent(newParent)
-  {
-  }
+  explicit SceneNodeParentChangeEvent(std::shared_ptr<SceneNode> node,
+                                      std::shared_ptr<SceneNode> newParent)
+      : m_node(node), m_newParent(newParent) {}
   std::shared_ptr<SceneNode> GetSceneNode() const { return m_node; }
   std::shared_ptr<SceneNode> GetNewParent() const { return m_newParent; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
-  Event *Clone() const override { return new SceneNodeParentChangeEvent(m_node, m_newParent); }
+  Event *Clone() const override {
+    return new SceneNodeParentChangeEvent(m_node, m_newParent);
+  }
 
  private:
   std::shared_ptr<SceneNode> m_node;
   std::shared_ptr<SceneNode> m_newParent;
 };
-
 }  // namespace mite
 
 #endif  // MITE_SCENE_NODE_H

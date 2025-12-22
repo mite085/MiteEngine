@@ -76,12 +76,11 @@ class RenderCommand {
 
   // ---------------- 基础命令接口 ----------------
   virtual void Init() = 0;
-  virtual void Clear(uint32_t clearFlags,
-                     const glm::vec4 &clearColor,
-                     float depthClear = 1.0f,
-                     int stencilClear = 0) = 0;
+  virtual void Clear(uint32_t clearFlags, const glm::vec4 &clearColor,
+                     float depthClear = 1.0f, int stencilClear = 0) = 0;
   // 帧缓冲操作
-  virtual void BindFrameBuffer(const std::shared_ptr<FrameBuffer> &framebuffer) = 0;
+  virtual void BindFrameBuffer(
+      const std::shared_ptr<FrameBuffer> &framebuffer) = 0;
   virtual void UnbindFrameBuffer() = 0;
   // 视口设置
   virtual void SetViewport(int x, int y, int width, int height) = 0;
@@ -98,8 +97,10 @@ class RenderCommand {
   virtual void BindMaterialUBO(std::shared_ptr<MaterialInstance> instance) = 0;
   virtual void BindModelUBO(std::shared_ptr<MeshInstance> instance) = 0;
   virtual void BindShadowUBO(std::shared_ptr<ShadowInstance> shadowUBO) = 0;
-  virtual void BindShadowRenderContextUBO(std::shared_ptr<ShaderUBO> shadowRenderCtxUBO) = 0;
-  virtual void BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance) = 0;
+  virtual void BindShadowRenderContextUBO(
+      std::shared_ptr<ShaderUBO> shadowRenderCtxUBO) = 0;
+  virtual void BindLightSSBO(
+      std::shared_ptr<LightShaderStorgeBuffer> instance) = 0;
 
   /**
    * @brief 绑定/解绑着色器程序
@@ -113,9 +114,9 @@ class RenderCommand {
    *     shader->SetMat4("u_Projection", projectionMatrix);
    * });
    */
-  virtual void BindShader(
-      std::shared_ptr<OpenGLShader> shader,
-      std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup = nullptr) = 0;
+  virtual void BindShader(std::shared_ptr<OpenGLShader> shader,
+                          std::function<void(std::shared_ptr<OpenGLShader>)>
+                              uniformSetup = nullptr) = 0;
   virtual void UnbindShader(std::shared_ptr<OpenGLShader> shader) = 0;
   /**
    * @brief 绑定运行时/外部纹理到指定槽位
@@ -123,27 +124,28 @@ class RenderCommand {
    * @param textureHandle 纹理句柄
    * @param target 采样器类型（2D/Cube等）
    */
-  virtual void BindRuntimeTexture(RuntimeTextureType type,
-                                  TextureGPUHandle textureHandle,
-                                  TextureTarget target = TextureTarget::TEXTURE_2D) = 0;
-  virtual void BindExternalTexture(ExternalTextureType type,
-                                   TextureGPUHandle textureHandle,
-                                   TextureTarget target = TextureTarget::TEXTURE_2D) = 0;
+  virtual void BindRuntimeTexture(
+      RuntimeTextureType type, TextureGPUHandle textureHandle,
+      TextureTarget target = TextureTarget::TEXTURE_2D) = 0;
+  virtual void BindExternalTexture(
+      ExternalTextureType type, TextureGPUHandle textureHandle,
+      TextureTarget target = TextureTarget::TEXTURE_2D) = 0;
   /**
    * @brief 绑定默认(纯黑,1x1)图像到指定槽位，避免纹理槽位悬空
    */
   virtual void BindDefaultTexture(uint32_t textureUnit) = 0;
 
   /**
-   * @brief ShadowMap的FrameBuffer深度数组纹理附件绑定的便捷方法（2D_ARRAY和CUBE_MAP_ARRAY专用）
+   * @brief
+   * ShadowMap的FrameBuffer深度数组纹理附件绑定的便捷方法（2D_ARRAY和CUBE_MAP_ARRAY专用）
    * @param fbo ShadowMap帧缓冲
    * @param layer 需要绑定的纹理层数
    * @param face 需要绑定的Cube面索引（CubeMapArray专用）
    */
-  virtual void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo, uint32_t layer) = 0;
+  virtual void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
+                                         uint32_t layer) = 0;
   virtual void BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
-                                            uint32_t layer,
-                                            uint32_t face) = 0;
+                                            uint32_t layer, uint32_t face) = 0;
   /**
    * @brief 绑定网格VAO
    * @param mesh 网格数据
@@ -156,10 +158,10 @@ class RenderCommand {
    * @param primitiveType 图元类型
    * @param indexType 索引类型
    */
-  virtual void DrawMesh(uint32_t indexCount,
-                        uint32_t indexOffset = 0,
-                        uint32_t primitiveType = 0x0004,   // GL_TRIANGLES from glad
-                        uint32_t indexType = 0x1405) = 0;  // GL_UNSIGNED_INT from glad
+  virtual void DrawMesh(
+      uint32_t indexCount, uint32_t indexOffset = 0,
+      uint32_t primitiveType = 0x0004,   // GL_TRIANGLES from glad
+      uint32_t indexType = 0x1405) = 0;  // GL_UNSIGNED_INT from glad
   /**
    * @brief 绘制全屏四边形
    */
@@ -175,13 +177,14 @@ class RenderCommand {
 
   // ---------------- 完成事件发布 ----------------
   /**
-   * @brief 每当一个运行时纹理完成绘制时发布事件，可以通过订阅该事件获取运行时纹理用于显示
+   * @brief
+   * 每当一个运行时纹理完成绘制时发布事件，可以通过订阅该事件获取运行时纹理用于显示
    * @param texture 运行时纹理指针
    * @param identify
    * 可选的标识符，用于区分纹理（如GBuffer无需区分，但ShadowMap需要按照光源名称区分）
    */
-  virtual void PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,
-                                                  std::string identify = "") = 0;
+  virtual void PublishEventRuntimeTextureFinished(
+      RuntimeTexturePtr texture, std::string identify = "") = 0;
 
   // ---------------- 执行控制 ----------------
   virtual void Flush() = 0;       // 执行所有命令
@@ -189,7 +192,7 @@ class RenderCommand {
   static RenderCommand &Get();    // 单例获取
 
   // ---------------- 模板方法：自定义命令 ----------------
-  template<typename Func>
+  template <typename Func>
   void PushCustomCommand(Func &&func, const std::string &debugName = "Custom");
 
  protected:
@@ -200,11 +203,12 @@ class RenderCommand {
   std::mutex m_QueueMutex;                 // 命令锁
 };
 // 辅助函数
-template<typename Func>
-void RenderCommand::PushCustomCommand(Func &&func, const std::string &debugName)
-{
+template <typename Func>
+void RenderCommand::PushCustomCommand(Func &&func,
+                                      const std::string &debugName) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push({CommandType::Custom, std::forward<Func>(func), debugName});
+  m_CommandQueue.push(
+      {CommandType::Custom, std::forward<Func>(func), debugName});
 }
 }  // namespace mite
 

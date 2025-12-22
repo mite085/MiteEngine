@@ -36,24 +36,34 @@ class RenderContext {
    * @param stageName 阶段名称（如"GBufferStage", "DeferredLightingStage"等）
    * @param shader 着色器对象
    */
-  void RegisterStageShader(const std::string &stageName, std::shared_ptr<OpenGLShader> shader);
+  void RegisterStageShader(const std::string &stageName,
+                           std::shared_ptr<OpenGLShader> shader);
   /**
    * @brief 获取指定阶段的着色器
    */
-  std::shared_ptr<OpenGLShader> GetStageShader(const std::string &stageName) const;
+  std::shared_ptr<OpenGLShader> GetStageShader(
+      const std::string &stageName) const;
   /**
    * @brief 获取所有已注册的阶段着色器
    */
-  const std::unordered_map<std::string, std::shared_ptr<OpenGLShader>> &GetAllStageShaders() const;
+  const std::unordered_map<std::string, std::shared_ptr<OpenGLShader>> &
+  GetAllStageShaders() const;
 
   // ---- 窗口尺寸管理 ----
-  void SetViewportSize(uint32_t width, uint32_t height) { m_ViewportSize = {width, height}; }
+  void SetViewportSize(uint32_t width, uint32_t height) {
+    m_ViewportSize = {width, height};
+  }
   const glm::vec2 &GetViewportSize() const { return m_ViewportSize; }
-  uint32_t GetViewportWidth() const { return static_cast<uint32_t>(m_ViewportSize.x); }
-  uint32_t GetViewportHeight() const {return static_cast<uint32_t>(m_ViewportSize.y); }
-  float GetViewportAspectRatio() const
-  {
-    return m_ViewportSize.y > 0 ? static_cast<float>(m_ViewportSize.x) / m_ViewportSize.y : 1.0f;
+  uint32_t GetViewportWidth() const {
+    return static_cast<uint32_t>(m_ViewportSize.x);
+  }
+  uint32_t GetViewportHeight() const {
+    return static_cast<uint32_t>(m_ViewportSize.y);
+  }
+  float GetViewportAspectRatio() const {
+    return m_ViewportSize.y > 0
+               ? static_cast<float>(m_ViewportSize.x) / m_ViewportSize.y
+               : 1.0f;
   }
 
   // ---- 分层纹理管理 ----
@@ -74,7 +84,9 @@ class RenderContext {
 
   // 场景数据
   std::shared_ptr<RenderQueue> GetRenderQueue() const { return m_RenderQueue; }
-  std::shared_ptr<CameraInstance> GetMainCameraInstance() const { return m_MainCameraInstance; }
+  std::shared_ptr<CameraInstance> GetMainCameraInstance() const {
+    return m_MainCameraInstance;
+  }
   LightManager &GetLightManager() const { return LightManager::Get(); }
 
   // ---- 上下文状态 ----
@@ -112,8 +124,6 @@ class RenderContext {
   Logger m_Logger;
   SubscriptionGroup m_EventSubscription;
 };
-
-
 }  // namespace mite
 
 #endif

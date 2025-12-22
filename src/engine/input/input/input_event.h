@@ -15,24 +15,12 @@ class MouseMoveEvent : public Event {
    * @param ypos 移动后的位置Y
    */
   explicit MouseMoveEvent(double xpos, double ypos) : xpos(xpos), ypos(ypos) {}
-  glm::vec2 GetPosition() const
-  {
-    return glm::vec2(xpos, ypos);
-  }
-  double GetXPos() const
-  {
-    return xpos;
-  }
-  double GetYPos() const
-  {
-    return ypos;
-  }
+  glm::vec2 GetPosition() const { return glm::vec2(xpos, ypos); }
+  double GetXPos() const { return xpos; }
+  double GetYPos() const { return ypos; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
-  Event *Clone() const override
-  {
-    return new MouseMoveEvent(xpos, ypos);
-  }
+  Event *Clone() const override { return new MouseMoveEvent(xpos, ypos); }
 
  private:
   double xpos, ypos;
@@ -49,30 +37,16 @@ class MouseButtonPressedEvent : public Event {
    * @param xpos 按下时的位置X
    * @param ypos 按下时的位置Y
    */
-  explicit MouseButtonPressedEvent(int button, int mods, double xpos, double ypos)
-      : button(button), mods(mods), xpos(xpos), ypos(ypos)
-  {
-  }
-  int GetButton() const
-  {
-    return button;
-  }
-  int GetMods() const
-  {
-    return mods;
-  }
-  double GetXPos() const
-  {
-    return xpos;
-  }
-  double GetYPos() const
-  {
-    return ypos;
-  }
+  explicit MouseButtonPressedEvent(int button, int mods, double xpos,
+                                   double ypos)
+      : button(button), mods(mods), xpos(xpos), ypos(ypos) {}
+  int GetButton() const { return button; }
+  int GetMods() const { return mods; }
+  double GetXPos() const { return xpos; }
+  double GetYPos() const { return ypos; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new MouseButtonPressedEvent(button, mods, xpos, ypos);
   }
 
@@ -92,25 +66,13 @@ class MouseButtonReleasedEvent : public Event {
    * @param ypos 释放时的位置Y
    */
   explicit MouseButtonReleasedEvent(int button, double xpos, double ypos)
-      : button(button), xpos(xpos), ypos(ypos)
-  {
-  }
-  int GetButton() const
-  {
-    return button;
-  }
-  double GetXPos() const
-  {
-    return xpos;
-  }
-  double GetYPos() const
-  {
-    return ypos;
-  }
+      : button(button), xpos(xpos), ypos(ypos) {}
+  int GetButton() const { return button; }
+  double GetXPos() const { return xpos; }
+  double GetYPos() const { return ypos; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new MouseButtonReleasedEvent(button, xpos, ypos);
   }
 
@@ -130,39 +92,30 @@ class MouseScrollEvent : public Event {
    * @param xoffset 水平滚动量（向右为正）
    * @param yoffset 垂直滚动量（向上为正）
    */
-  explicit MouseScrollEvent(double xoffset, double yoffset) : xoffset(xoffset), yoffset(yoffset) {}
+  explicit MouseScrollEvent(double xoffset, double yoffset)
+      : xoffset(xoffset), yoffset(yoffset) {}
 
   /**
    * @brief 获取水平滚动量
    * @return 水平滚动量（向右为正）
    */
-  double GetXOffset() const
-  {
-    return xoffset;
-  }
+  double GetXOffset() const { return xoffset; }
 
   /**
    * @brief 获取垂直滚动量
    * @return 垂直滚动量（向上为正）
    */
-  double GetYOffset() const
-  {
-    return yoffset;
-  }
+  double GetYOffset() const { return yoffset; }
 
   /**
    * @brief 获取滚动量向量
    * @return 包含水平和垂直滚动量的二维向量
    */
-  glm::vec2 GetOffset() const
-  {
-    return glm::vec2(xoffset, yoffset);
-  }
+  glm::vec2 GetOffset() const { return glm::vec2(xoffset, yoffset); }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
 
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new MouseScrollEvent(xoffset, yoffset);
   }
 
@@ -182,25 +135,13 @@ class KeyPressedEvent : public Event {
    * @param isRepeated 是否重复按下的flag
    */
   explicit KeyPressedEvent(int key, int mods, bool isRepeated)
-      : key(key), mods(mods), isRepeated(isRepeated)
-  {
-  }
-  int GetKey() const
-  {
-    return key;
-  }
-  int GetMods() const
-  {
-    return mods;
-  }
-  bool IsRepeated() const
-  {
-    return isRepeated;
-  }
+      : key(key), mods(mods), isRepeated(isRepeated) {}
+  int GetKey() const { return key; }
+  int GetMods() const { return mods; }
+  bool IsRepeated() const { return isRepeated; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new KeyPressedEvent(key, mods, isRepeated);
   }
 
@@ -219,15 +160,9 @@ class KeyReleasedEvent : public Event {
    */
   explicit KeyReleasedEvent(int key) : key(key) {}
 
-  int GetKey() const
-  {
-    return key;
-  }
+  int GetKey() const { return key; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
-  Event *Clone() const override
-  {
-    return new KeyReleasedEvent(key);
-  }
+  Event *Clone() const override { return new KeyReleasedEvent(key); }
 
  private:
   int key;
@@ -249,23 +184,16 @@ class KeyTypedEvent : public Event {
   /**
    * @brief 获取字符的UTF-32编码
    */
-  unsigned int GetCodepoint() const
-  {
-    return m_Codepoint;
-  }
+  unsigned int GetCodepoint() const { return m_Codepoint; }
   /**
    * @brief 尝试转换为ASCII字符（如果是可打印ASCII）
    * @return 如果可转换返回char，否则返回0
    */
-  char GetAsciiChar() const
-  {
+  char GetAsciiChar() const {
     return (m_Codepoint < 128) ? static_cast<char>(m_Codepoint) : '\0';
   }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_INPUT)
-  Event *Clone() const override
-  {
-    return new KeyTypedEvent(m_Codepoint);
-  }
+  Event *Clone() const override { return new KeyTypedEvent(m_Codepoint); }
 
  private:
   unsigned int m_Codepoint;  // UTF-32编码的字符

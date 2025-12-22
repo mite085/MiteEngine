@@ -1,5 +1,3 @@
 #include "component_snapshot.h"
 
-namespace mite {
-
-}  // namespace mite::scene
+namespace mite {}  // namespace mite

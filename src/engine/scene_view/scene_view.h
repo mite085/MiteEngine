@@ -11,7 +11,8 @@
 namespace mite {
 /**
  * @brief 场景视图管理器
- * @note 职责：负责渲染数据的收集、组织和交付，作为SceneGraph与Renderer之间的桥梁
+ * @note
+ * 职责：负责渲染数据的收集、组织和交付，作为SceneGraph与Renderer之间的桥梁
  * @note 单一职责：专注于渲染数据管理，不涉及ECS事件监听
  */
 class SceneView {
@@ -36,14 +37,18 @@ class SceneView {
   /**
    * @brief 获取当前摄像机实例
    */
-  std::shared_ptr<CameraInstance> GetCameraInstance() const { return m_CameraInstance; }
+  std::shared_ptr<CameraInstance> GetCameraInstance() const {
+    return m_CameraInstance;
+  }
   Entity GetCameraEntity() const { return m_CameraEntity; }
   /**
    * @brief 选择场景对象，设置模型矩阵（世界坐标）
    * （若当前相机为选中对象，则并非正常选中状态，IsPicked()返回false）
    */
   bool Pick(glm::vec2 screenPosUV);
-  bool IsPicked() const { return m_PickedEntity.IsValid() && m_PickedEntity != m_CameraEntity; }
+  bool IsPicked() const {
+    return m_PickedEntity.IsValid() && m_PickedEntity != m_CameraEntity;
+  }
   void SetPickedWorldTransform(const Transform &worldTransform);
   Transform GetPickedWorldTransform() const;
   /**
@@ -70,11 +75,13 @@ class SceneView {
   void ProcessVisibility(std::vector<std::shared_ptr<SceneNode> > visibleNodes);
 
   // 事件订阅
-  void OnViewportResize(ViewportResizeEvent &event);               // 修改Camera的宽高比
-  void OnViewportPicked(ViewportPickedEvent &event);               // 更新m_PickedEntity状态
-  void OnViewportCameraUpdated(ViewportCameraUpdateEvent &event);  // 更新相机状态
-  void OnViewportPickedUpdated(ViewportPickedUpdateEvent &event);  // 更新picked状态
-  void OnSceneNodeSelected(SceneNodeSelectedEvent &event);		   // 选择场景节点
+  void OnViewportResize(ViewportResizeEvent &event);  // 修改Camera的宽高比
+  void OnViewportPicked(ViewportPickedEvent &event);  // 更新m_PickedEntity状态
+  void OnViewportCameraUpdated(
+      ViewportCameraUpdateEvent &event);  // 更新相机状态
+  void OnViewportPickedUpdated(
+      ViewportPickedUpdateEvent &event);                    // 更新picked状态
+  void OnSceneNodeSelected(SceneNodeSelectedEvent &event);  // 选择场景节点
 
   // 依赖注入
   SceneCore &m_SceneCore;

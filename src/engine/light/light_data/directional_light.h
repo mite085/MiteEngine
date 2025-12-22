@@ -41,7 +41,6 @@ class DirectionalLight : public Light {
    */
   bool ValidateDirectionalLightParameters() const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_POINT_LIGHT_H

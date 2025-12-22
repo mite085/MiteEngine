@@ -14,13 +14,13 @@
 
 namespace mite {
 // 前向声明
-class SceneReloadCalling; 
+class SceneReloadCalling;
 class ModelLoadCalling;
 
 /**
  * @brief MiteApplication为应用程序统筹管理者
  * @note 负责引擎启动/关闭，模块初始化，DEMO场景构建，主循环管理
- * 
+ *
  * （暂时负责统筹，后续考虑拆分Editor和Runtime以分担Application职责）
  */
 class MiteApplication {
@@ -130,11 +130,10 @@ class SceneReloadCalling : public Event {
  */
 class ModelLoadCalling : public Event {
  public:
-  explicit ModelLoadCalling(){}
+  explicit ModelLoadCalling() {}
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override { return new ModelLoadCalling(); }
 };
-
 }  // namespace mite
 
 #endif

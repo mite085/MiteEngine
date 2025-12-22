@@ -14,7 +14,7 @@ namespace mite {
 #define MAX_POINT_LIGHTS 16       // 16个点光源（立方体贴图内存消耗大）
 #define MAX_SPOT_LIGHTS 32        // 32个聚光灯（2D纹理相对节省）
 #define MAX_AREA_LIGHTS 8         // 8个面光源（保留扩展）
-#define MAX_LIGHTS 64             // 总光源最大数量64（8方向光+16点光源+32聚光灯+8面光源）
+#define MAX_LIGHTS 64  // 总光源最大数量64（8方向光+16点光源+32聚光灯+8面光源）
 
 // ----------------- 光源类型和基础参数 -------------------
 /**
@@ -97,10 +97,12 @@ struct alignas(16) GPULightData {
   // 基础属性 - 16字节对齐 (每组vec3+float为16字节)
   glm::vec3 color;
   float intensity;
-  glm::vec3 position;    // 世界坐标（从变换组件获取WorldPosition）
-  float type;            // LightType转换为float
-  glm::vec3 direction;   // 方向（从变换组件获取WorldFront，面光源以WorldUp法线为方向）
-  float typeLocalIndex;  // 类型内局部索引（若此光源是点光源，这个参数则用于指示这是第几个点光源，主要用于ShadowUBO的Matrix索引）
+  glm::vec3 position;  // 世界坐标（从变换组件获取WorldPosition）
+  float type;          // LightType转换为float
+  glm::vec3
+      direction;  // 方向（从变换组件获取WorldFront，面光源以WorldUp法线为方向）
+  float
+      typeLocalIndex;  // 类型内局部索引（若此光源是点光源，这个参数则用于指示这是第几个点光源，主要用于ShadowUBO的Matrix索引）
 
   // 类型特定属性 - 使用union节省空间
   union {
@@ -116,15 +118,17 @@ struct alignas(16) GPULightData {
 
     // 方向光
     struct {
-      float irradiance;   // 辐照度（暂未启用，仅使用最简单的强度控制，待后续考虑物理量）
+      float
+          irradiance;  // 辐照度（暂未启用，仅使用最简单的强度控制，待后续考虑物理量）
       float padding3[3];  // 填充以确保union大小为16字节倍数
     } directional;
 
     // 面光源
     struct {
       glm::vec2 size;  // 尺寸
-      float power;     // 功率（W）（暂未启用，仅使用最简单的强度控制，待后续考虑物理量）
-      float shape;     // AreaLightShape转换为float
+      float
+          power;  // 功率（W）（暂未启用，仅使用最简单的强度控制，待后续考虑物理量）
+      float shape;  // AreaLightShape转换为float
     } area;
   } specific;
 
@@ -133,7 +137,8 @@ struct alignas(16) GPULightData {
    * @param props 光源属性
    * @param lightType 光源类型
    */
-  GPULightData(const LightProperties &props, const Transform &worldTransform, LightType lightType, int typeLocalIndex)
+  GPULightData(const LightProperties &props, const Transform &worldTransform,
+               LightType lightType, int typeLocalIndex)
       : color(props.color),
         intensity(props.intensity),
         type(static_cast<float>(lightType)),
@@ -154,8 +159,8 @@ struct alignas(16) GPULightData {
   GPULightData() = delete;
 
  private:
-  void ExtractTransformData(const Transform &worldTransform, LightType lightType)
-  {
+  void ExtractTransformData(const Transform &worldTransform,
+                            LightType lightType) {
     // 提取位置
     position = worldTransform.GetPosition();
 
@@ -179,8 +184,7 @@ struct alignas(16) GPULightData {
         break;
     }
   }
-  void FillTypeSpecificData(const LightProperties &props, LightType lightType)
-  {
+  void FillTypeSpecificData(const LightProperties &props, LightType lightType) {
     // 根据光源类型填充特定属性
     switch (lightType) {
       case LightType::POINT:
@@ -193,7 +197,8 @@ struct alignas(16) GPULightData {
 
       case LightType::SPOT:
         specific.pointSpot.range = props.specific.spot.range;
-        specific.pointSpot.falloff = 1.0f;  // 聚光灯使用角度衰减，不使用衰减系数
+        specific.pointSpot.falloff =
+            1.0f;  // 聚光灯使用角度衰减，不使用衰减系数
         specific.pointSpot.innerAngle = props.specific.spot.innerAngle;
         specific.pointSpot.outerAngle = props.specific.spot.outerAngle;
         specific.pointSpot.blend = props.specific.spot.blend;
@@ -211,8 +216,7 @@ struct alignas(16) GPULightData {
         break;
     }
   }
-  void InitializePadding()
-  {
+  void InitializePadding() {
     // 初始化所有填充字段为0
     specific.pointSpot.padding2[0] = 0.0f;
     specific.pointSpot.padding2[1] = 0.0f;
@@ -230,7 +234,8 @@ struct alignas(16) LightSSBOHeader {
   int lightCount;    // 有效光源数量
   float padding[3];  // 填充以确保16字节对齐
 
-  LightSSBOHeader(int count = 0) : lightCount(count), padding{0.0f, 0.0f, 0.0f} {}
+  LightSSBOHeader(int count = 0)
+      : lightCount(count), padding{0.0f, 0.0f, 0.0f} {}
 };
 }  // namespace mite
 

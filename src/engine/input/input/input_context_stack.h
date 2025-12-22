@@ -4,7 +4,6 @@
 #include "input_context.h"
 
 namespace mite {
-
 class InputContextStack {
  public:
   InputContextStack();
@@ -35,6 +34,6 @@ class InputContextStack {
   std::mutex m_Mutex;
   Logger m_Logger;
 };
-};
+};  // namespace mite
 
 #endif

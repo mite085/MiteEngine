@@ -71,7 +71,6 @@ class SpotLight : public Light {
    */
   bool ValidateSpotLightParameters() const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_SPOT_LIGHT_H

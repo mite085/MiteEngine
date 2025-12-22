@@ -4,7 +4,6 @@
 #include "light_core/shadow_map.h"
 
 namespace mite {
-
 /**
  * @brief 聚光灯阴影贴图类
  * @note 聚光灯使用透视投影阴影技术，基于光源位置和方向计算单个阴影矩阵
@@ -26,10 +25,10 @@ class SpotShadowMap : public ShadowMap {
    * @return 更新后的阴影数据
    * @note 聚光灯阴影基于光源位置和方向计算单个透视投影矩阵
    */
-  ShadowMapData PrepareShadowData(const uint32_t lightIndex,
-                                  const Transform &lightWorldTransform,
-                                  const Transform &cameraTransform,
-                                  const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
+  ShadowMapData PrepareShadowData(
+      const uint32_t lightIndex, const Transform &lightWorldTransform,
+      const Transform &cameraTransform,
+      const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
 
   /**
    * @brief 获取阴影矩阵数量
@@ -116,7 +115,8 @@ class SpotShadowMap : public ShadowMap {
    * @param lightDirection 光源方向
    * @note 基于光源位置和方向创建透视投影矩阵
    */
-  void CalculateSpotLightMatrix(const glm::vec3 &lightPosition, const glm::vec3 &lightDirection);
+  void CalculateSpotLightMatrix(const glm::vec3 &lightPosition,
+                                const glm::vec3 &lightDirection);
 
   /**
    * @brief 检查光源是否移动或旋转
@@ -124,9 +124,9 @@ class SpotShadowMap : public ShadowMap {
    * @param newDirection 新的光源方向
    * @return 是否发生移动或旋转（超过阈值）
    */
-  bool HasLightTransformChanged(const glm::vec3 &newPosition, const glm::vec3 &newDirection) const;
+  bool HasLightTransformChanged(const glm::vec3 &newPosition,
+                                const glm::vec3 &newDirection) const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_SPOT_SHADOW_MAP_H

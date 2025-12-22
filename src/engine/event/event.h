@@ -24,24 +24,23 @@ enum class EventResult : uint8_t {
  * @brief EventResult辅助函数
  */
 namespace EventResultUtil {
-inline bool ShouldContinue(EventResult result)
-{
+inline bool ShouldContinue(EventResult result) {
   uint8_t flags = static_cast<uint8_t>(result);
 
   // 如果包含以下任一标志，则停止传播
-  bool shouldStop = (flags & static_cast<uint8_t>(EventResult::Consumed)) != 0 ||  // 已消费
-                    (flags & static_cast<uint8_t>(EventResult::Blocked)) != 0;     // 被阻止
+  bool shouldStop =
+      (flags & static_cast<uint8_t>(EventResult::Consumed)) != 0 ||  // 已消费
+      (flags & static_cast<uint8_t>(EventResult::Blocked)) != 0;     // 被阻止
 
   return !shouldStop;
 }
 
-inline bool WasSuccessful(EventResult result)
-{
-  return (static_cast<uint8_t>(result) & static_cast<uint8_t>(EventResult::Failed)) == 0;
+inline bool WasSuccessful(EventResult result) {
+  return (static_cast<uint8_t>(result) &
+          static_cast<uint8_t>(EventResult::Failed)) == 0;
 }
 
-inline bool WasHandled(EventResult result)
-{
+inline bool WasHandled(EventResult result) {
   uint8_t flags = static_cast<uint8_t>(result);
   return (flags & static_cast<uint8_t>(EventResult::Handled)) != 0 ||
          (flags & static_cast<uint8_t>(EventResult::Consumed)) != 0;
@@ -119,24 +118,17 @@ class Event {
    * @brief 设置事件处理结果
    * @param result 处理结果
    */
-  void SetResult(EventResult result)
-  {
-    m_Result = result;
-  }
+  void SetResult(EventResult result) { m_Result = result; }
   /**
    * @brief 获取事件处理结果
    * @return 当前处理结果
    */
-  EventResult GetResult() const
-  {
-    return m_Result;
-  }
+  EventResult GetResult() const { return m_Result; }
   /**
    * @brief 检查是否应该继续传播
    * @return 是否继续传播
    */
-  bool ShouldContinue() const
-  {
+  bool ShouldContinue() const {
     return EventResultUtil::ShouldContinue(m_Result);
   }
 
@@ -147,27 +139,26 @@ class Event {
 
 // Event派生类辅助宏，用于确定Categories
 #define EVENT_CLASS_CATEGORY(category) \
-  virtual int GetCategoryFlags() const override \
-  { \
-    return category; \
-  }
+  virtual int GetCategoryFlags() const override { return category; }
 
 // EventResult运算符重载
-inline mite::EventResult operator|(mite::EventResult lhs, mite::EventResult rhs)
-{
-  return static_cast<mite::EventResult>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+inline mite::EventResult operator|(mite::EventResult lhs,
+                                   mite::EventResult rhs) {
+  return static_cast<mite::EventResult>(static_cast<uint8_t>(lhs) |
+                                        static_cast<uint8_t>(rhs));
 }
-inline mite::EventResult operator&(mite::EventResult lhs, mite::EventResult rhs)
-{
-  return static_cast<mite::EventResult>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+inline mite::EventResult operator&(mite::EventResult lhs,
+                                   mite::EventResult rhs) {
+  return static_cast<mite::EventResult>(static_cast<uint8_t>(lhs) &
+                                        static_cast<uint8_t>(rhs));
 }
-inline mite::EventResult &operator|=(mite::EventResult &lhs, mite::EventResult rhs)
-{
+inline mite::EventResult &operator|=(mite::EventResult &lhs,
+                                     mite::EventResult rhs) {
   lhs = lhs | rhs;
   return lhs;
 }
-inline mite::EventResult &operator&=(mite::EventResult &lhs, mite::EventResult rhs)
-{
+inline mite::EventResult &operator&=(mite::EventResult &lhs,
+                                     mite::EventResult rhs) {
   lhs = lhs & rhs;
   return lhs;
 }

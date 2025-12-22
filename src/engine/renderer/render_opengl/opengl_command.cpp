@@ -1,10 +1,10 @@
 #include "opengl_command.h"
+
 #include "basic_shader/shader_binding_point_manager.h"
 #include "opengl_device.h"
 
 namespace mite {
-void OpenGLRenderCommand::Init()
-{
+void OpenGLRenderCommand::Init() {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
   // 创建日志系统
@@ -21,16 +21,15 @@ void OpenGLRenderCommand::Init()
 }
 
 void OpenGLRenderCommand::Clear(uint32_t clearFlags,
-                                const glm::vec4 &clearColor,
-                                float depthClear,
-                                int stencilClear)
-{
+                                const glm::vec4 &clearColor, float depthClear,
+                                int stencilClear) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
   // 提交清除命令
   m_CommandQueue.push({CommandType::Clear,
                        [=] {
-                         glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+                         glClearColor(clearColor.r, clearColor.g, clearColor.b,
+                                      clearColor.a);
                          glClearDepth(depthClear);
                          glClearStencil(stencilClear);
                          glClear(clearFlags);
@@ -38,8 +37,8 @@ void OpenGLRenderCommand::Clear(uint32_t clearFlags,
                        "Clear"});
 }
 
-void OpenGLRenderCommand::BindFrameBuffer(const std::shared_ptr<FrameBuffer> &framebuffer)
-{
+void OpenGLRenderCommand::BindFrameBuffer(
+    const std::shared_ptr<FrameBuffer> &framebuffer) {
   if (!framebuffer) {
     m_Logger->warn("Attempt to bind null framebuffer");
     return;
@@ -47,12 +46,12 @@ void OpenGLRenderCommand::BindFrameBuffer(const std::shared_ptr<FrameBuffer> &fr
 
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  m_CommandQueue.push(
-      {CommandType::BindFrameBuffer, [framebuffer] { framebuffer->Bind(); }, "BindFrameBuffer"});
+  m_CommandQueue.push({CommandType::BindFrameBuffer,
+                       [framebuffer] { framebuffer->Bind(); },
+                       "BindFrameBuffer"});
 }
 
-void OpenGLRenderCommand::UnbindFrameBuffer()
-{
+void OpenGLRenderCommand::UnbindFrameBuffer() {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
   m_CommandQueue.push({CommandType::UnbindFrameBuffer,
@@ -60,35 +59,36 @@ void OpenGLRenderCommand::UnbindFrameBuffer()
                        "UnbindFrameBuffer"});
 }
 
-void OpenGLRenderCommand::SetViewport(int x, int y, int width, int height)
-{
+void OpenGLRenderCommand::SetViewport(int x, int y, int width, int height) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  m_CommandQueue.push(
-      {CommandType::SetViewport, [=]() { glViewport(x, y, width, height); }, "SetViewport"});
+  m_CommandQueue.push({CommandType::SetViewport,
+                       [=]() { glViewport(x, y, width, height); },
+                       "SetViewport"});
 }
 
-void OpenGLRenderCommand::SetRenderState(std::shared_ptr<RenderState> state)
-{
+void OpenGLRenderCommand::SetRenderState(std::shared_ptr<RenderState> state) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  m_CommandQueue.push(
-      {CommandType::SetRenderState, [=] { ApplyOpenGLState(state); }, "SetRenderState(GL)"});
+  m_CommandQueue.push({CommandType::SetRenderState,
+                       [=] { ApplyOpenGLState(state); }, "SetRenderState(GL)"});
 }
 
-void OpenGLRenderCommand::BindCameraUBO(std::shared_ptr<CameraInstance> instance)
-{
+void OpenGLRenderCommand::BindCameraUBO(
+    std::shared_ptr<CameraInstance> instance) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push(
-      {CommandType::BindCameraUBO, [=]() { instance->BindUBO(); }, "Bind Camera UBO"});
+  m_CommandQueue.push({CommandType::BindCameraUBO,
+                       [=]() { instance->BindUBO(); }, "Bind Camera UBO"});
 }
 
-void OpenGLRenderCommand::BindMaterialUBO(std::shared_ptr<MaterialInstance> instance)
-{
+void OpenGLRenderCommand::BindMaterialUBO(
+    std::shared_ptr<MaterialInstance> instance) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  std::function<void(ExternalTextureType, TextureGPUHandle, TextureTarget)> bindExtTextureFunc =
-      [=](ExternalTextureType type, TextureGPUHandle textureHandle, TextureTarget target) {
+  std::function<void(ExternalTextureType, TextureGPUHandle, TextureTarget)>
+      bindExtTextureFunc = [=](ExternalTextureType type,
+                               TextureGPUHandle textureHandle,
+                               TextureTarget target) {
         m_Device->BindExternalTexture(type, textureHandle, target);
       };
   m_CommandQueue.push({CommandType::BindMaterialUBO,
@@ -96,39 +96,37 @@ void OpenGLRenderCommand::BindMaterialUBO(std::shared_ptr<MaterialInstance> inst
                        "Bind Material UBO and Textures"});
 }
 
-void OpenGLRenderCommand::BindModelUBO(std::shared_ptr<MeshInstance> instance)
-{
+void OpenGLRenderCommand::BindModelUBO(std::shared_ptr<MeshInstance> instance) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push(
-      {CommandType::BindModelUBO, [=]() { instance->BindUBO(); }, "Bind Model UBO"});
+  m_CommandQueue.push({CommandType::BindModelUBO,
+                       [=]() { instance->BindUBO(); }, "Bind Model UBO"});
 }
 
-void OpenGLRenderCommand::BindShadowUBO(std::shared_ptr<ShadowInstance> shadowUBO)
-{
+void OpenGLRenderCommand::BindShadowUBO(
+    std::shared_ptr<ShadowInstance> shadowUBO) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push(
-      {CommandType::BindShadowUBO, [=]() { shadowUBO->BindUBO(); }, "Bind Shadow UBO"});
+  m_CommandQueue.push({CommandType::BindShadowUBO,
+                       [=]() { shadowUBO->BindUBO(); }, "Bind Shadow UBO"});
 }
 
-void OpenGLRenderCommand::BindShadowRenderContextUBO(std::shared_ptr<ShaderUBO> shadowRenderCtxUBO)
-{
+void OpenGLRenderCommand::BindShadowRenderContextUBO(
+    std::shared_ptr<ShaderUBO> shadowRenderCtxUBO) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::BindShadowRenderContextUBO,
                        [=]() { shadowRenderCtxUBO->Bind(); },
                        "Bind Shadow Render Context UBO"});
 }
 
-void OpenGLRenderCommand::BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance)
-{
+void OpenGLRenderCommand::BindLightSSBO(
+    std::shared_ptr<LightShaderStorgeBuffer> instance) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push(
-      {CommandType::BindLightSSBO, [=]() { instance->Bind(); }, "Bind Light SSBO"});
+  m_CommandQueue.push({CommandType::BindLightSSBO, [=]() { instance->Bind(); },
+                       "Bind Light SSBO"});
 }
 
 void OpenGLRenderCommand::BindShader(
     std::shared_ptr<OpenGLShader> shader,
-    std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup)
-{
+    std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup) {
   if (!shader) {
     m_Logger->warn("Attempt to bind null shader");
     return;
@@ -146,96 +144,91 @@ void OpenGLRenderCommand::BindShader(
                        },
                        "BindShader"});
 }
-void OpenGLRenderCommand::UnbindShader(std::shared_ptr<OpenGLShader> shader)
-{
+void OpenGLRenderCommand::UnbindShader(std::shared_ptr<OpenGLShader> shader) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::UnbindShader,
                        [shader] {
-                         if (shader)
-                           shader->Unbind();
+                         if (shader) shader->Unbind();
                        },
                        "UnbindShader"});
 }
 void OpenGLRenderCommand::BindRuntimeTexture(RuntimeTextureType type,
                                              TextureGPUHandle textureHandle,
-                                             TextureTarget target)
-{
+                                             TextureTarget target) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::BindTextures,
                        [this, type, textureHandle, target] {
-                         m_Device->BindRuntimeTexture(type, textureHandle, target);
+                         m_Device->BindRuntimeTexture(type, textureHandle,
+                                                      target);
                        },
                        "BindRuntimeTexture"});
 }
 void OpenGLRenderCommand::BindExternalTexture(ExternalTextureType type,
                                               TextureGPUHandle textureHandle,
-                                              TextureTarget target)
-{
+                                              TextureTarget target) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::BindTextures,
                        [this, type, textureHandle, target] {
-                         m_Device->BindExternalTexture(type, textureHandle, target);
+                         m_Device->BindExternalTexture(type, textureHandle,
+                                                       target);
                        },
                        "BindExternalTexture"});
 }
 
-void OpenGLRenderCommand::BindDefaultTexture(uint32_t textureUnit)
-{
-  std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push({CommandType::BindTextures,
-                       [this, textureUnit] { m_Device->BindDefaultTexture(textureUnit); },
-                       "BindDefaultTexture"});
-}
-
-void OpenGLRenderCommand::BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
-                                                    uint32_t layer)
-{
-  std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push({CommandType::BindTextures,
-                       [this, fbo, layer] { m_Device->BindFrameBufferDepthLayer(fbo, layer); },
-                       "BindFrameBufferDepthLayer"});
-}
-
-void OpenGLRenderCommand::BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
-                                                       uint32_t layer,
-                                                       uint32_t face)
-{
+void OpenGLRenderCommand::BindDefaultTexture(uint32_t textureUnit) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push(
       {CommandType::BindTextures,
-       [this, fbo, layer, face] { m_Device->BindFramebufferDepthCubeFace(fbo, layer, face); },
-       "BindFramebufferDepthCubeFace"});
+       [this, textureUnit] { m_Device->BindDefaultTexture(textureUnit); },
+       "BindDefaultTexture"});
 }
 
-void OpenGLRenderCommand::BindMesh(std::shared_ptr<Mesh> mesh)
-{
+void OpenGLRenderCommand::BindFrameBufferDepthLayer(
+    std::shared_ptr<FrameBuffer> fbo, uint32_t layer) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push(
-      {CommandType::BindMesh, [this, mesh] { m_Device->BindMesh(mesh); }, "BindMesh"});
-}
-void OpenGLRenderCommand::DrawMesh(uint32_t indexCount,
-                                   uint32_t indexOffset,
-                                   uint32_t primitiveType,
-                                   uint32_t indexType)
-{
-  std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push({CommandType::DrawMesh,
-                       [this, indexCount, indexOffset, primitiveType, indexType] {
-                         m_Device->DrawIndexed(indexCount, indexOffset, primitiveType, indexType);
-                       },
-                       "DrawMesh: count=" + std::to_string(indexCount)});
+      {CommandType::BindTextures,
+       [this, fbo, layer] { m_Device->BindFrameBufferDepthLayer(fbo, layer); },
+       "BindFrameBufferDepthLayer"});
 }
 
-void OpenGLRenderCommand::DrawFullScreenQuad()
-{
+void OpenGLRenderCommand::BindFramebufferDepthCubeFace(
+    std::shared_ptr<FrameBuffer> fbo, uint32_t layer, uint32_t face) {
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::BindTextures,
+                       [this, fbo, layer, face] {
+                         m_Device->BindFramebufferDepthCubeFace(fbo, layer,
+                                                                face);
+                       },
+                       "BindFramebufferDepthCubeFace"});
+}
+
+void OpenGLRenderCommand::BindMesh(std::shared_ptr<Mesh> mesh) {
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push({CommandType::BindMesh,
+                       [this, mesh] { m_Device->BindMesh(mesh); }, "BindMesh"});
+}
+void OpenGLRenderCommand::DrawMesh(uint32_t indexCount, uint32_t indexOffset,
+                                   uint32_t primitiveType, uint32_t indexType) {
+  std::lock_guard<std::mutex> lock(m_QueueMutex);
+  m_CommandQueue.push(
+      {CommandType::DrawMesh,
+       [this, indexCount, indexOffset, primitiveType, indexType] {
+         m_Device->DrawIndexed(indexCount, indexOffset, primitiveType,
+                               indexType);
+       },
+       "DrawMesh: count=" + std::to_string(indexCount)});
+}
+
+void OpenGLRenderCommand::DrawFullScreenQuad() {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::DrawIndexed,
                        [=] { m_Device->DrawFullScreenQuad(); },
                        "Submit Full Screen Quad Draw Call"});
 }
 
-void OpenGLRenderCommand::SubmitDrawCall(std::shared_ptr<MeshInstance> meshInstance)
-{
+void OpenGLRenderCommand::SubmitDrawCall(
+    std::shared_ptr<MeshInstance> meshInstance) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::DrawIndexed,
                        [=] {
@@ -249,23 +242,24 @@ void OpenGLRenderCommand::SubmitDrawCall(std::shared_ptr<MeshInstance> meshInsta
                          auto lodLevel = meshInstance->GetMeshLodLevel();
 
                          // 3. 绘制网格
-                         m_Device->DrawMeshLOD(meshInstance->GetMesh(), lodLevel);
+                         m_Device->DrawMeshLOD(meshInstance->GetMesh(),
+                                               lodLevel);
                        },
                        "Submit Mesh Draw Call"});
 }
 
-void OpenGLRenderCommand::PublishEventRuntimeTextureFinished(RuntimeTexturePtr texture,
-                                                             std::string identify)
-{
+void OpenGLRenderCommand::PublishEventRuntimeTextureFinished(
+    RuntimeTexturePtr texture, std::string identify) {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push(
-      {CommandType::Custom,
-       [texture, identify] { EventBus::Publish<RuntimeTextureFinishedEvent>(texture, identify); },
-       "Publish Event Runtime Texture Finished: " + identify});
+  m_CommandQueue.push({CommandType::Custom,
+                       [texture, identify] {
+                         EventBus::Publish<RuntimeTextureFinishedEvent>(
+                             texture, identify);
+                       },
+                       "Publish Event Runtime Texture Finished: " + identify});
 }
 
-void OpenGLRenderCommand::Flush()
-{
+void OpenGLRenderCommand::Flush() {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
   while (!m_CommandQueue.empty()) {
@@ -273,17 +267,16 @@ void OpenGLRenderCommand::Flush()
 
     try {
       cmd.execute();
-    }
-    catch (const std::exception &e) {
-      m_Logger->error("Failed to execute command {}: {}", cmd.debugName, e.what());
+    } catch (const std::exception &e) {
+      m_Logger->error("Failed to execute command {}: {}", cmd.debugName,
+                      e.what());
     }
 
     m_CommandQueue.pop();
   }
 }
 
-void OpenGLRenderCommand::ClearQueue()
-{
+void OpenGLRenderCommand::ClearQueue() {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
   while (!m_CommandQueue.empty()) {
@@ -291,10 +284,9 @@ void OpenGLRenderCommand::ClearQueue()
   }
 }
 
-void OpenGLRenderCommand::ApplyOpenGLState(std::shared_ptr<RenderState> state)
-{
-  std::shared_ptr<OpenGLRenderState> glStatePtr = std::static_pointer_cast<OpenGLRenderState>(
-      state);
+void OpenGLRenderCommand::ApplyOpenGLState(std::shared_ptr<RenderState> state) {
+  std::shared_ptr<OpenGLRenderState> glStatePtr =
+      std::static_pointer_cast<OpenGLRenderState>(state);
   if (!glStatePtr) {
     LOG_ERROR("Invalid OpenGL Render State!");
     return;
@@ -304,8 +296,7 @@ void OpenGLRenderCommand::ApplyOpenGLState(std::shared_ptr<RenderState> state)
   if (glStatePtr->depthTest) {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(glStatePtr->depthFunc);
-  }
-  else {
+  } else {
     glDisable(GL_DEPTH_TEST);
   }
 
@@ -316,8 +307,7 @@ void OpenGLRenderCommand::ApplyOpenGLState(std::shared_ptr<RenderState> state)
   if (glStatePtr->blend) {
     glEnable(GL_BLEND);
     glBlendFunc(glStatePtr->blendSrc, glStatePtr->blendDst);
-  }
-  else {
+  } else {
     glDisable(GL_BLEND);
   }
 
@@ -325,8 +315,7 @@ void OpenGLRenderCommand::ApplyOpenGLState(std::shared_ptr<RenderState> state)
   if (glStatePtr->cullFace) {
     glEnable(GL_CULL_FACE);
     glCullFace(glStatePtr->cullFaceMode);
-  }
-  else {
+  } else {
     glDisable(GL_CULL_FACE);
   }
 
@@ -339,20 +328,18 @@ void OpenGLRenderCommand::ApplyOpenGLState(std::shared_ptr<RenderState> state)
   // 多边形模式
   if (glStatePtr->wireframe) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  }
-  else {
+  } else {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
 
   // 模板测试设置（基础支持，待后续扩展）
   if (glStatePtr->stencilTest) {
     glEnable(GL_STENCIL_TEST);
-    glStencilFunc(glStatePtr->stencilFunc, glStatePtr->stencilRef, glStatePtr->stencilMask);
-    glStencilOp(glStatePtr->stencilFail,
-                glStatePtr->stencilPassDepthFail,
+    glStencilFunc(glStatePtr->stencilFunc, glStatePtr->stencilRef,
+                  glStatePtr->stencilMask);
+    glStencilOp(glStatePtr->stencilFail, glStatePtr->stencilPassDepthFail,
                 glStatePtr->stencilPassDepthPass);
-  }
-  else {
+  } else {
     glDisable(GL_STENCIL_TEST);
   }
 }

@@ -6,8 +6,7 @@ ImVec2 UIImguiInputProducer::s_LastMousePos = ImVec2(-1, -1);
 bool UIImguiInputProducer::s_LastMouseButtons[ImGuiMouseButton_COUNT] = {false};
 bool UIImguiInputProducer::s_LastKeys[ImGuiKey_COUNT] = {false};
 
-void UIImguiInputProducer::ProduceInputEvents()
-{
+void UIImguiInputProducer::ProduceInputEvents() {
   // 按顺序生产各类输入事件
   ProduceMouseMoveEvents();
   ProduceMouseButtonEvents();
@@ -15,8 +14,7 @@ void UIImguiInputProducer::ProduceInputEvents()
   ProduceMouseScrollEvents();
 }
 
-void UIImguiInputProducer::ProduceMouseMoveEvents()
-{
+void UIImguiInputProducer::ProduceMouseMoveEvents() {
   ImGuiIO &io = ImGui::GetIO();
 
   // 只在鼠标位置变化时生成事件
@@ -26,8 +24,7 @@ void UIImguiInputProducer::ProduceMouseMoveEvents()
   }
 }
 
-void UIImguiInputProducer::ProduceMouseButtonEvents()
-{
+void UIImguiInputProducer::ProduceMouseButtonEvents() {
   ImGuiIO &io = ImGui::GetIO();
 
   // 遍历所有鼠标按钮
@@ -39,21 +36,22 @@ void UIImguiInputProducer::ProduceMouseButtonEvents()
     if (currentState != lastState) {
       if (currentState) {
         // 鼠标按下事件
-        EventBus::Publish<MouseButtonPressedEvent>(button, 0, io.MousePos.x, io.MousePos.y);
-      }
-      else {
+        EventBus::Publish<MouseButtonPressedEvent>(button, 0, io.MousePos.x,
+                                                   io.MousePos.y);
+      } else {
         // 鼠标释放事件
-        EventBus::Publish<MouseButtonReleasedEvent>(button, io.MousePos.x, io.MousePos.y);
+        EventBus::Publish<MouseButtonReleasedEvent>(button, io.MousePos.x,
+                                                    io.MousePos.y);
       }
       s_LastMouseButtons[button] = currentState;
     }
   }
 }
 
-void UIImguiInputProducer::ProduceKeyboardEvents()
-{
+void UIImguiInputProducer::ProduceKeyboardEvents() {
   // 遍历所有命名按键（避免遍历整个键盘数组）
-  for (int imguiKey = ImGuiKey_NamedKey_BEGIN; imguiKey < ImGuiKey_NamedKey_END; imguiKey++) {
+  for (int imguiKey = ImGuiKey_NamedKey_BEGIN; imguiKey < ImGuiKey_NamedKey_END;
+       imguiKey++) {
     bool currentState = ImGui::IsKeyDown((ImGuiKey)imguiKey);
     bool lastState = s_LastKeys[imguiKey];
 
@@ -64,8 +62,7 @@ void UIImguiInputProducer::ProduceKeyboardEvents()
         if (currentState) {
           // 键盘按下事件（暂时不支持重复按键检测）
           EventBus::Publish<KeyPressedEvent>(glfwKey, 0, false);
-        }
-        else {
+        } else {
           // 键盘释放事件
           EventBus::Publish<KeyReleasedEvent>(glfwKey);
         }
@@ -75,8 +72,7 @@ void UIImguiInputProducer::ProduceKeyboardEvents()
   }
 }
 
-void UIImguiInputProducer::ProduceMouseScrollEvents()
-{
+void UIImguiInputProducer::ProduceMouseScrollEvents() {
   ImGuiIO &io = ImGui::GetIO();
 
   // 有滚轮偏移就生成事件
@@ -88,8 +84,7 @@ void UIImguiInputProducer::ProduceMouseScrollEvents()
   }
 }
 
-int UIImguiInputProducer::MapImGuiKeyToGLFW(int imguiKey)
-{
+int UIImguiInputProducer::MapImGuiKeyToGLFW(int imguiKey) {
   // ImGuiKey到GLFW键码的转换（参考ImGui_ImplGlfw_KeyToImGuiKey）
 
   switch (imguiKey) {
@@ -328,8 +323,8 @@ int UIImguiInputProducer::MapImGuiKeyToGLFW(int imguiKey)
     case ImGuiKey_F24:
       return GLFW_KEY_F24;
     case ImGuiKey_Oem102:
-      return GLFW_KEY_WORLD_1;  // 注意：GLFW_KEY_WORLD_1 和 GLFW_KEY_WORLD_2 都映射到
-                                // ImGuiKey_Oem102
+      return GLFW_KEY_WORLD_1;  // 注意：GLFW_KEY_WORLD_1 和 GLFW_KEY_WORLD_2
+                                // 都映射到 ImGuiKey_Oem102
     default:
       return GLFW_KEY_UNKNOWN;
   }

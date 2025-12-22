@@ -19,7 +19,8 @@ class SceneRegistry;
  *
  * 注意：这是一个空组件，仅作为标记使用，不包含任何数据成员。
  */
-struct DestroyComponent : public ComponentTraits<Distroy, Component::Family::Cleanup> {
+struct DestroyComponent
+    : public ComponentTraits<Distroy, Component::Family::Cleanup> {
   // 无数据成员，纯标记组件
 
   /**
@@ -30,27 +31,22 @@ struct DestroyComponent : public ComponentTraits<Distroy, Component::Family::Cle
   /**
    * @brief 用于调试的字符串表示
    */
-  std::string ToString() const
-  {
-    return "DestroyComponent";
-  }
+  std::string ToString() const { return "DestroyComponent"; }
 
   /**
    * @brief 序列化操作(空实现)
    */
-  bool Serialize([[maybe_unused]]std::ostream &output) const override
-  {
-    return true; // 无数据需要序列化
-  }  
+  bool Serialize([[maybe_unused]] std::ostream &output) const override {
+    return true;  // 无数据需要序列化
+  }
 };
 
 // Destroy组件系统 =====================================================
 class DestroyComponentSystem : public ComponentSystem<DestroyComponent> {
   DECLARE_COMPONENT_SYSTEM(DestroyComponentSystem)
-
 };
-// Destroy组件事件：由EntityDestroyEvent代行 =====================================================
-
-};
+// Destroy组件事件：由EntityDestroyEvent代行
+// =====================================================
+};  // namespace mite
 
 #endif

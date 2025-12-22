@@ -56,7 +56,9 @@ class CameraInstance {
   /**
    * @brief 获取相机变换/投影矩阵（原则上相机仅接受Zoom修改）
    */
-  const glm::mat4 GetProjectionMatrix() const { return m_Camera->GetProjectionMatrix(); }
+  const glm::mat4 GetProjectionMatrix() const {
+    return m_Camera->GetProjectionMatrix();
+  }
   const Transform &GetCameraTransform() const { return m_CameraTransform; }
   /**
    * @brief 获取UBO对象（用于外部管理）

@@ -15,7 +15,6 @@ class ImGuiFontManager {
   // 设定Imgui全局字体（目前支持"en-US"和"zh-CN"）
   static bool SetLanguageFont(const std::string &languageCode);
 };
-
 }  // namespace mite
 
 #endif  // MITE_IMGUI_FONT_MANAGER_H

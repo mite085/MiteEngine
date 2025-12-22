@@ -47,30 +47,20 @@ class IDComponent : public ComponentTraits<UUID, Component::Family::Core> {
    * @brief 获取UUID字符串表示（RFC4122格式）
    * @return 示例："f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
    */
-  const std::string &String() const
-  {
-    return m_UUIDString;
-  }
+  const std::string &String() const { return m_UUIDString; }
 
   /**
    * @brief 获取底层UUID对象
    */
-  const UUID &GetUUID() const
-  {
-    return m_UUID;
-  }
+  const UUID &GetUUID() const { return m_UUID; }
 
   /**
    * @brief 比较运算符
    */
-  bool operator==(const IDComponent &other) const
-  {
+  bool operator==(const IDComponent &other) const {
     return m_UUID == other.m_UUID;
   }
-  bool operator!=(const IDComponent &other) const
-  {
-    return !(*this == other);
-  }
+  bool operator!=(const IDComponent &other) const { return !(*this == other); }
 
   /**
    * @brief 检查字符串是否为有效UUID
@@ -87,8 +77,6 @@ class IDComponent : public ComponentTraits<UUID, Component::Family::Core> {
 class IDComponentSystem : public ComponentSystem<IDComponent> {
   DECLARE_COMPONENT_SYSTEM(IDComponentSystem)
 };
-
-
 };  // namespace mite
 
 #endif

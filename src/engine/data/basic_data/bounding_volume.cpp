@@ -2,34 +2,21 @@
 
 namespace mite {
 // ==================== 构造函数 ====================
-BoundingVolume::BoundingVolume(BoundingVolumeType type) : m_Type(type)
-{
+BoundingVolume::BoundingVolume(BoundingVolumeType type) : m_Type(type) {
   CreateDefaultVolume(type);
 }
 BoundingVolume::BoundingVolume(const BoundingVolumeAABB &aabb)
-    : m_Type(BoundingVolumeType::AABB), m_Volume(aabb)
-{
-}
+    : m_Type(BoundingVolumeType::AABB), m_Volume(aabb) {}
 BoundingVolume::BoundingVolume(const BoundingVolumeSphere &sphere)
-    : m_Type(BoundingVolumeType::Sphere), m_Volume(sphere)
-{
-}
+    : m_Type(BoundingVolumeType::Sphere), m_Volume(sphere) {}
 BoundingVolume::BoundingVolume(const BoundingVolumeOBB &obb)
-    : m_Type(BoundingVolumeType::OBB), m_Volume(obb)
-{
-}
+    : m_Type(BoundingVolumeType::OBB), m_Volume(obb) {}
 BoundingVolume::BoundingVolume(const BoundingVolumePlane &plane)
-    : m_Type(BoundingVolumeType::Plane), m_Volume(plane)
-{
-}
+    : m_Type(BoundingVolumeType::Plane), m_Volume(plane) {}
 
 // ==================== 类型管理 ====================
-BoundingVolumeType BoundingVolume::GetType() const
-{
-  return m_Type;
-}
-void BoundingVolume::SetType(BoundingVolumeType type)
-{
+BoundingVolumeType BoundingVolume::GetType() const { return m_Type; }
+void BoundingVolume::SetType(BoundingVolumeType type) {
   if (m_Type != type) {
     // 直接执行类型转换
     ConvertTo(type);
@@ -37,59 +24,50 @@ void BoundingVolume::SetType(BoundingVolumeType type)
 }
 
 // ==================== 数据访问 ====================
-const BoundingVolumeAABB &BoundingVolume::GetAABB() const
-{
+const BoundingVolumeAABB &BoundingVolume::GetAABB() const {
   if (m_Type != BoundingVolumeType::AABB) {
     throw std::runtime_error("BoundingVolume is not of type AABB");
   }
   return std::get<BoundingVolumeAABB>(m_Volume);
 }
-const BoundingVolumeSphere &BoundingVolume::GetSphere() const
-{
+const BoundingVolumeSphere &BoundingVolume::GetSphere() const {
   if (m_Type != BoundingVolumeType::Sphere) {
     throw std::runtime_error("BoundingVolume is not of type Sphere");
   }
   return std::get<BoundingVolumeSphere>(m_Volume);
 }
-const BoundingVolumeOBB &BoundingVolume::GetOBB() const
-{
+const BoundingVolumeOBB &BoundingVolume::GetOBB() const {
   if (m_Type != BoundingVolumeType::OBB) {
     throw std::runtime_error("BoundingVolume is not of type OBB");
   }
   return std::get<BoundingVolumeOBB>(m_Volume);
 }
-const BoundingVolumePlane &BoundingVolume::GetPlane() const
-{
+const BoundingVolumePlane &BoundingVolume::GetPlane() const {
   if (m_Type != BoundingVolumeType::Plane) {
     throw std::runtime_error("BoundingVolume is not of type Plane");
   }
   return std::get<BoundingVolumePlane>(m_Volume);
 }
-void BoundingVolume::SetAABB(const BoundingVolumeAABB &aabb)
-{
+void BoundingVolume::SetAABB(const BoundingVolumeAABB &aabb) {
   m_Type = BoundingVolumeType::AABB;
   m_Volume = aabb;
 }
-void BoundingVolume::SetSphere(const BoundingVolumeSphere &sphere)
-{
+void BoundingVolume::SetSphere(const BoundingVolumeSphere &sphere) {
   m_Type = BoundingVolumeType::Sphere;
   m_Volume = sphere;
 }
-void BoundingVolume::SetOBB(const BoundingVolumeOBB &obb)
-{
+void BoundingVolume::SetOBB(const BoundingVolumeOBB &obb) {
   m_Type = BoundingVolumeType::OBB;
   m_Volume = obb;
 }
-void BoundingVolume::SetPlane(const BoundingVolumePlane &plane)
-{
+void BoundingVolume::SetPlane(const BoundingVolumePlane &plane) {
   m_Type = BoundingVolumeType::Plane;
   m_Volume = plane;
 }
 
 // ==================== 统一接口实现 ====================
-BoundingVolume BoundingVolume::CreateFromPoints(BoundingVolumeType type,
-                                                const std::vector<glm::vec3> &points)
-{
+BoundingVolume BoundingVolume::CreateFromPoints(
+    BoundingVolumeType type, const std::vector<glm::vec3> &points) {
   if (points.empty()) {
     return BoundingVolume(type);
   }
@@ -100,7 +78,8 @@ BoundingVolume BoundingVolume::CreateFromPoints(BoundingVolumeType type,
       return BoundingVolume(aabb);
     }
     case BoundingVolumeType::Sphere: {
-      BoundingVolumeSphere sphere = BoundingVolumeSphere::CreateSphereFromPoints(points);
+      BoundingVolumeSphere sphere =
+          BoundingVolumeSphere::CreateSphereFromPoints(points);
       return BoundingVolume(sphere);
     }
     case BoundingVolumeType::OBB: {
@@ -111,16 +90,15 @@ BoundingVolume BoundingVolume::CreateFromPoints(BoundingVolumeType type,
       return BoundingVolume(obb);
     }
     default:
-      throw std::runtime_error("Unsupported bounding volume type for CreateFromPoints");
+      throw std::runtime_error(
+          "Unsupported bounding volume type for CreateFromPoints");
   }
 }
-BoundingVolume BoundingVolume::CreateFromAABB(BoundingVolumeAABB aabb)
-{
+BoundingVolume BoundingVolume::CreateFromAABB(BoundingVolumeAABB aabb) {
   return BoundingVolume(aabb);
 }
 
-bool BoundingVolume::ContainsPoint(const glm::vec3 &point) const
-{
+bool BoundingVolume::ContainsPoint(const glm::vec3 &point) const {
   switch (m_Type) {
     case BoundingVolumeType::AABB:
       return std::get<BoundingVolumeAABB>(m_Volume).Contains(point);
@@ -129,30 +107,33 @@ bool BoundingVolume::ContainsPoint(const glm::vec3 &point) const
     case BoundingVolumeType::OBB:
       return std::get<BoundingVolumeOBB>(m_Volume).Contains(point);
     case BoundingVolumeType::Plane:
-      return std::get<BoundingVolumePlane>(m_Volume).DistanceToPoint(point) <= 0;
+      return std::get<BoundingVolumePlane>(m_Volume).DistanceToPoint(point) <=
+             0;
     default:
       return false;
   }
 }
-BoundingVolume BoundingVolume::Transform(const glm::mat4 &matrix) const
-{
+BoundingVolume BoundingVolume::Transform(const glm::mat4 &matrix) const {
   switch (m_Type) {
     case BoundingVolumeType::AABB: {
-      BoundingVolumeAABB transformed = std::get<BoundingVolumeAABB>(m_Volume).Transform(matrix);
+      BoundingVolumeAABB transformed =
+          std::get<BoundingVolumeAABB>(m_Volume).Transform(matrix);
       return BoundingVolume(transformed);
     }
     case BoundingVolumeType::Sphere: {
-      BoundingVolumeSphere transformed = std::get<BoundingVolumeSphere>(m_Volume).Transform(
-          matrix);
+      BoundingVolumeSphere transformed =
+          std::get<BoundingVolumeSphere>(m_Volume).Transform(matrix);
       return BoundingVolume(transformed);
     }
     case BoundingVolumeType::OBB: {
-      BoundingVolumeOBB transformed = std::get<BoundingVolumeOBB>(m_Volume).Transform(matrix);
+      BoundingVolumeOBB transformed =
+          std::get<BoundingVolumeOBB>(m_Volume).Transform(matrix);
       return BoundingVolume(transformed);
     }
     case BoundingVolumeType::Plane: {
       // 平面变换需要特殊处理
-      const BoundingVolumePlane &plane = std::get<BoundingVolumePlane>(m_Volume);
+      const BoundingVolumePlane &plane =
+          std::get<BoundingVolumePlane>(m_Volume);
       glm::vec4 normal4(plane.normal, 0.0f);
       glm::vec4 pointOnPlane(plane.normal * -plane.distance, 1.0f);
 
@@ -168,17 +149,18 @@ BoundingVolume BoundingVolume::Transform(const glm::mat4 &matrix) const
 }
 BoundingVolume BoundingVolume::Merge(BoundingVolumeType resultType,
                                      const BoundingVolume &a,
-                                     const BoundingVolume &b)
-{
+                                     const BoundingVolume &b) {
   // 情况1：a和b之间不存在类型转换
   if (a.GetType() == b.GetType()) {
     BoundingVolume temp(a.GetType());  // 先按照a和b的类型合并包围盒
     switch (a.GetType()) {
       case BoundingVolumeType::AABB:
-        temp = BoundingVolume(BoundingVolumeAABB(a.GetAABB()).Expand(b.GetAABB()));
+        temp =
+            BoundingVolume(BoundingVolumeAABB(a.GetAABB()).Expand(b.GetAABB()));
         break;
       case BoundingVolumeType::Sphere:
-        temp = BoundingVolume(BoundingVolumeSphere(a.GetSphere()).Expand(b.GetSphere()));
+        temp = BoundingVolume(
+            BoundingVolumeSphere(a.GetSphere()).Expand(b.GetSphere()));
         break;
       case BoundingVolumeType::OBB:
         temp = BoundingVolume(BoundingVolumeOBB(a.GetOBB()).Expand(b.GetOBB()));
@@ -195,7 +177,8 @@ BoundingVolume BoundingVolume::Merge(BoundingVolumeType resultType,
   // 情况2：a和b之间存在类型转换
   else {
     // 统一转换为AABB进行合并
-    BoundingVolumeAABB mergedAABB = a.GetAABBApproximation().Expand(b.GetAABBApproximation());
+    BoundingVolumeAABB mergedAABB =
+        a.GetAABBApproximation().Expand(b.GetAABBApproximation());
 
     switch (resultType) {
       case BoundingVolumeType::AABB:
@@ -210,8 +193,7 @@ BoundingVolume BoundingVolume::Merge(BoundingVolumeType resultType,
   }
 }
 BoundingVolumeIntersection::IntersectionType BoundingVolume::Intersects(
-    const BoundingVolume &other) const
-{
+    const BoundingVolume &other) const {
   switch (other.m_Type) {
     case BoundingVolumeType::AABB:
       return IntersectsAABB(other.GetAABB());
@@ -225,16 +207,17 @@ BoundingVolumeIntersection::IntersectionType BoundingVolume::Intersects(
       return BoundingVolumeIntersection::IntersectionType::Outside;
   }
 }
-BoundingVolumeAABB BoundingVolume::GetAABBApproximation() const
-{
+BoundingVolumeAABB BoundingVolume::GetAABBApproximation() const {
   switch (m_Type) {
     case BoundingVolumeType::AABB:
       return std::get<BoundingVolumeAABB>(m_Volume);
     case BoundingVolumeType::Sphere: {
       // 计算Sphere的外切AABB
-      const BoundingVolumeSphere &sphere = std::get<BoundingVolumeSphere>(m_Volume);
+      const BoundingVolumeSphere &sphere =
+          std::get<BoundingVolumeSphere>(m_Volume);
       glm::vec3 radiusVec(sphere.radius);
-      return BoundingVolumeAABB(sphere.center - radiusVec, sphere.center + radiusVec);
+      return BoundingVolumeAABB(sphere.center - radiusVec,
+                                sphere.center + radiusVec);
     }
     case BoundingVolumeType::OBB:
       return std::get<BoundingVolumeOBB>(m_Volume).GetAABB();
@@ -245,8 +228,7 @@ BoundingVolumeAABB BoundingVolume::GetAABBApproximation() const
       return BoundingVolumeAABB();
   }
 }
-BoundingVolumeSphere BoundingVolume::GetSphereApproximation() const
-{
+BoundingVolumeSphere BoundingVolume::GetSphereApproximation() const {
   switch (m_Type) {
     case BoundingVolumeType::Sphere:
       return std::get<BoundingVolumeSphere>(m_Volume);
@@ -267,8 +249,7 @@ BoundingVolumeSphere BoundingVolume::GetSphereApproximation() const
       return BoundingVolumeSphere();
   }
 }
-bool BoundingVolume::ConvertTo(BoundingVolumeType targetType)
-{
+bool BoundingVolume::ConvertTo(BoundingVolumeType targetType) {
   // 类型相同，无需转换，直接复制
   if (targetType == m_Type) {
     return true;
@@ -277,7 +258,8 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType)
   try {
     switch (targetType) {
       case BoundingVolumeType::AABB:
-        *this = BoundingVolume(GetAABBApproximation());  // 所有类型转换AABB均可使用外接AABB接口
+        *this = BoundingVolume(
+            GetAABBApproximation());  // 所有类型转换AABB均可使用外接AABB接口
         return true;
       case BoundingVolumeType::Sphere:  // 所有类型转换Sphere均可使用外接球接口
         *this = BoundingVolume(GetSphereApproximation());
@@ -287,7 +269,8 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType)
         switch (m_Type) {
           case BoundingVolumeType::AABB: {
             // AABB -> OBB: 直接转换，方向为单位矩阵
-            const BoundingVolumeAABB &aabb = std::get<BoundingVolumeAABB>(m_Volume);
+            const BoundingVolumeAABB &aabb =
+                std::get<BoundingVolumeAABB>(m_Volume);
             glm::vec3 center = aabb.GetCenter();
             glm::vec3 extents = aabb.GetHalfExtents();
             BoundingVolumeOBB obb(center, extents, glm::mat3(1.0f));
@@ -297,7 +280,8 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType)
 
           case BoundingVolumeType::Sphere: {
             // Sphere -> OBB: 创建立方体OBB包围球
-            const BoundingVolumeSphere &sphere = std::get<BoundingVolumeSphere>(m_Volume);
+            const BoundingVolumeSphere &sphere =
+                std::get<BoundingVolumeSphere>(m_Volume);
             glm::vec3 extents(sphere.radius);
             BoundingVolumeOBB obb(sphere.center, extents, glm::mat3(1.0f));
             *this = BoundingVolume(obb);
@@ -306,7 +290,8 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType)
 
           case BoundingVolumeType::Plane: {
             // Plane -> OBB: 为平面创建一个薄的OBB表示
-            const BoundingVolumePlane &plane = std::get<BoundingVolumePlane>(m_Volume);
+            const BoundingVolumePlane &plane =
+                std::get<BoundingVolumePlane>(m_Volume);
 
             // 创建基向量
             glm::vec3 normal = plane.normal;
@@ -315,8 +300,7 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType)
             // 计算切向量和副切向量
             if (std::abs(normal.x) > std::abs(normal.y)) {
               tangent = glm::normalize(glm::vec3(normal.z, 0, -normal.x));
-            }
-            else {
+            } else {
               tangent = glm::normalize(glm::vec3(0, -normal.z, normal.y));
             }
             bitangent = glm::normalize(glm::cross(normal, tangent));
@@ -342,14 +326,12 @@ bool BoundingVolume::ConvertTo(BoundingVolumeType targetType)
       default:
         return false;
     }
-  }
-  catch (...) {
+  } catch (...) {
     return false;
   }
 }
 // ==================== 工具方法 ====================
-bool BoundingVolume::IsValid() const
-{
+bool BoundingVolume::IsValid() const {
   switch (m_Type) {
     case BoundingVolumeType::AABB:
       return std::get<BoundingVolumeAABB>(m_Volume).IsValid();
@@ -363,16 +345,17 @@ bool BoundingVolume::IsValid() const
       return false;
   }
 }
-float BoundingVolume::GetVolume() const
-{
+float BoundingVolume::GetVolume() const {
   switch (m_Type) {
     case BoundingVolumeType::AABB: {
       glm::vec3 size = std::get<BoundingVolumeAABB>(m_Volume).GetSize();
       return size.x * size.y * size.z;
     }
     case BoundingVolumeType::Sphere: {
-      const BoundingVolumeSphere &sphere = std::get<BoundingVolumeSphere>(m_Volume);
-      return (4.0f / 3.0f) * glm::pi<float>() * sphere.radius * sphere.radius * sphere.radius;
+      const BoundingVolumeSphere &sphere =
+          std::get<BoundingVolumeSphere>(m_Volume);
+      return (4.0f / 3.0f) * glm::pi<float>() * sphere.radius * sphere.radius *
+             sphere.radius;
     }
     case BoundingVolumeType::OBB: {
       glm::vec3 extents = std::get<BoundingVolumeOBB>(m_Volume).extents;
@@ -383,28 +366,28 @@ float BoundingVolume::GetVolume() const
       return 0.0f;
   }
 }
-float BoundingVolume::GetSurfaceArea() const
-{
+float BoundingVolume::GetSurfaceArea() const {
   switch (m_Type) {
     case BoundingVolumeType::AABB: {
       glm::vec3 size = std::get<BoundingVolumeAABB>(m_Volume).GetSize();
       return 2.0f * (size.x * size.y + size.x * size.z + size.y * size.z);
     }
     case BoundingVolumeType::Sphere: {
-      const BoundingVolumeSphere &sphere = std::get<BoundingVolumeSphere>(m_Volume);
+      const BoundingVolumeSphere &sphere =
+          std::get<BoundingVolumeSphere>(m_Volume);
       return 4.0f * glm::pi<float>() * sphere.radius * sphere.radius;
     }
     case BoundingVolumeType::OBB: {
       glm::vec3 extents = std::get<BoundingVolumeOBB>(m_Volume).extents;
       // 注意半长轴
-      return 8.0f * (extents.x * extents.y + extents.x * extents.z + extents.y * extents.z);
+      return 8.0f * (extents.x * extents.y + extents.x * extents.z +
+                     extents.y * extents.z);
     }
     default:
       return 0.0f;
   }
 }
-glm::vec3 BoundingVolume::GetCenter() const
-{
+glm::vec3 BoundingVolume::GetCenter() const {
   switch (m_Type) {
     case BoundingVolumeType::AABB:
       return std::get<BoundingVolumeAABB>(m_Volume).GetCenter();
@@ -419,8 +402,7 @@ glm::vec3 BoundingVolume::GetCenter() const
       return glm::vec3(0.0f);
   }
 }
-void BoundingVolume::ExpandToInclude(const glm::vec3 &point)
-{
+void BoundingVolume::ExpandToInclude(const glm::vec3 &point) {
   switch (m_Type) {
     case BoundingVolumeType::AABB: {
       BoundingVolumeAABB &aabb = std::get<BoundingVolumeAABB>(m_Volume);
@@ -451,8 +433,7 @@ void BoundingVolume::ExpandToInclude(const glm::vec3 &point)
       break;
   }
 }
-void BoundingVolume::ExpandToInclude(const BoundingVolume &other)
-{
+void BoundingVolume::ExpandToInclude(const BoundingVolume &other) {
   switch (m_Type) {
     case BoundingVolumeType::AABB: {
       BoundingVolumeAABB &aabb = std::get<BoundingVolumeAABB>(m_Volume);
@@ -485,8 +466,7 @@ void BoundingVolume::ExpandToInclude(const BoundingVolume &other)
 }
 
 // ==================== 内部辅助方法 ====================
-void BoundingVolume::CreateDefaultVolume(BoundingVolumeType type)
-{
+void BoundingVolume::CreateDefaultVolume(BoundingVolumeType type) {
   switch (type) {
     case BoundingVolumeType::AABB:
       m_Volume = BoundingVolumeAABB();
@@ -495,7 +475,8 @@ void BoundingVolume::CreateDefaultVolume(BoundingVolumeType type)
       m_Volume = BoundingVolumeSphere(glm::vec3(0.0f), 1.0f);
       break;
     case BoundingVolumeType::OBB:
-      m_Volume = BoundingVolumeOBB(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3(1.0f));
+      m_Volume =
+          BoundingVolumeOBB(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3(1.0f));
       break;
     case BoundingVolumeType::Plane:
       m_Volume = BoundingVolumePlane(glm::vec3(0.0f, 1.0f, 0.0f), 0.0f);
@@ -507,86 +488,92 @@ void BoundingVolume::CreateDefaultVolume(BoundingVolumeType type)
 }
 
 BoundingVolumeIntersection::IntersectionType BoundingVolume::IntersectsAABB(
-    const BoundingVolumeAABB &other) const
-{
+    const BoundingVolumeAABB &other) const {
   switch (m_Type) {
     case BoundingVolumeType::AABB:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeAABB>(m_Volume), other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeAABB>(m_Volume), other);
     case BoundingVolumeType::Sphere:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeSphere>(m_Volume),
-                                                    other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeSphere>(m_Volume), other);
     case BoundingVolumeType::OBB:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeOBB>(m_Volume), other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeOBB>(m_Volume), other);
     case BoundingVolumeType::Plane:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumePlane>(m_Volume),
-                                                    other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumePlane>(m_Volume), other);
     default:
       return BoundingVolumeIntersection::IntersectionType::Outside;
   }
 }
 
 BoundingVolumeIntersection::IntersectionType BoundingVolume::IntersectsSphere(
-    const BoundingVolumeSphere &other) const
-{
+    const BoundingVolumeSphere &other) const {
   // 函数体与IntersectsAABB完全相同，但是other类型不同，所以需要重载
   switch (m_Type) {
     case BoundingVolumeType::AABB:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeAABB>(m_Volume), other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeAABB>(m_Volume), other);
     case BoundingVolumeType::Sphere:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeSphere>(m_Volume),
-                                                    other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeSphere>(m_Volume), other);
     case BoundingVolumeType::OBB:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeOBB>(m_Volume), other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeOBB>(m_Volume), other);
     case BoundingVolumeType::Plane:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumePlane>(m_Volume),
-                                                    other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumePlane>(m_Volume), other);
     default:
       return BoundingVolumeIntersection::IntersectionType::Outside;
   }
 }
 
 BoundingVolumeIntersection::IntersectionType BoundingVolume::IntersectsOBB(
-    const BoundingVolumeOBB &other) const
-{
+    const BoundingVolumeOBB &other) const {
   switch (m_Type) {
     case BoundingVolumeType::AABB:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeAABB>(m_Volume), other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeAABB>(m_Volume), other);
     case BoundingVolumeType::Sphere:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeSphere>(m_Volume),
-                                                    other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeSphere>(m_Volume), other);
     case BoundingVolumeType::OBB:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeOBB>(m_Volume), other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeOBB>(m_Volume), other);
     case BoundingVolumeType::Plane:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumePlane>(m_Volume),
-                                                    other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumePlane>(m_Volume), other);
     default:
       return BoundingVolumeIntersection::IntersectionType::Outside;
   }
 }
 
 BoundingVolumeIntersection::IntersectionType BoundingVolume::IntersectsPlane(
-    const BoundingVolumePlane &other) const
-{
+    const BoundingVolumePlane &other) const {
   switch (m_Type) {
     case BoundingVolumeType::AABB:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeAABB>(m_Volume), other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeAABB>(m_Volume), other);
     case BoundingVolumeType::Sphere:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeSphere>(m_Volume),
-                                                    other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeSphere>(m_Volume), other);
     case BoundingVolumeType::OBB:
-      return BoundingVolumeIntersection::Intersects(std::get<BoundingVolumeOBB>(m_Volume), other);
+      return BoundingVolumeIntersection::Intersects(
+          std::get<BoundingVolumeOBB>(m_Volume), other);
     default:
       return BoundingVolumeIntersection::IntersectionType::Outside;
   }
 }
 
 // // ==================== 静态数学工具（暂时保留） ====================
-// BoundingVolumeAABB BoundingVolume::CreateAABBFromPoints(const glm::vec3 *points, uint32_t count)
+// BoundingVolumeAABB BoundingVolume::CreateAABBFromPoints(const glm::vec3
+// *points, uint32_t count)
 //{
 //  return BoundingVolumeAABB::CreateAABBFromPoints(points, count);
 //}
 //
-// BoundingVolumeAABB BoundingVolume::TransformAABB(const BoundingVolumeAABB &original,
+// BoundingVolumeAABB BoundingVolume::TransformAABB(const BoundingVolumeAABB
+// &original,
 //                                                 const glm::mat4 &transform)
 //{
 //  return original.Transform(transform);
@@ -598,13 +585,14 @@ BoundingVolumeIntersection::IntersectionType BoundingVolume::IntersectsPlane(
 //  return BoundingVolumeAABB::Merge(a, b);
 //}
 //
-// bool BoundingVolume::PointInAABB(const glm::vec3 &point, const BoundingVolumeAABB &aabb)
+// bool BoundingVolume::PointInAABB(const glm::vec3 &point, const
+// BoundingVolumeAABB &aabb)
 //{
 //  return aabb.Contains(point);
 //}
 //
-// bool BoundingVolume::AABBIntersectsAABB(const BoundingVolumeAABB &a, const BoundingVolumeAABB
-// &b)
+// bool BoundingVolume::AABBIntersectsAABB(const BoundingVolumeAABB &a, const
+// BoundingVolumeAABB &b)
 //{
 //  return a.Intersects(b);
 //}
@@ -626,18 +614,22 @@ BoundingVolumeIntersection::IntersectionType BoundingVolume::IntersectsPlane(
 //  return dist <= (a.radius + b.radius);
 //}
 //
-// BoundingVolumeSphere BoundingVolume::CreateSphereFromAABB(const BoundingVolumeAABB &aabb)
+// BoundingVolumeSphere BoundingVolume::CreateSphereFromAABB(const
+// BoundingVolumeAABB &aabb)
 //{
 //  return BoundingVolumeSphere::FromAABB(aabb);
 //}
 //
-// BoundingVolumeSphere BoundingVolume::TransformSphere(const BoundingVolumeSphere &sphere,
-//                                                     const glm::mat4 &transform)
+// BoundingVolumeSphere BoundingVolume::TransformSphere(const
+// BoundingVolumeSphere &sphere,
+//                                                     const glm::mat4
+//                                                     &transform)
 //{
 //  return sphere.Transform(transform);
 //}
 //
-// BoundingVolumeOBB BoundingVolume::CreateOBBFromAABB(const BoundingVolumeAABB &aabb)
+// BoundingVolumeOBB BoundingVolume::CreateOBBFromAABB(const BoundingVolumeAABB
+// &aabb)
 //{
 //  return BoundingVolumeOBB::FromAABB(aabb);
 //}
@@ -648,7 +640,8 @@ BoundingVolumeIntersection::IntersectionType BoundingVolume::IntersectsPlane(
 //  return obb.Transform(transform);
 //}
 //
-// BoundingVolumeAABB BoundingVolume::GetAABBFromOBB(const BoundingVolumeOBB &obb)
+// BoundingVolumeAABB BoundingVolume::GetAABBFromOBB(const BoundingVolumeOBB
+// &obb)
 //{
 //  return obb.GetAABB();
 //}

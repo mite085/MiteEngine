@@ -35,7 +35,7 @@ class MeshInstance {
    * @note Initialize之后发布事件，由管理Shader的RenderContext接手负责绑定即可
    * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
+  // void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
   /**
    * @brief 更新模型UBO数据
    * @param worldTransform 世界变换矩阵

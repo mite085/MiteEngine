@@ -16,15 +16,16 @@ namespace mite {
  * CommandRegistry::Get().RegisterCommandType<CreateEntityCommand>();
  *
  * 2. 创建命令实例并执行（编译时类型检查）
- * CommandHandle handle = CommandRegistry::Get().CreateCommand<CreateEntityCommand>();
- * CommandPtr command = CommandRegistry::Get().AcquireCommand(handle)
- * if(command)
+ * CommandHandle handle =
+ * CommandRegistry::Get().CreateCommand<CreateEntityCommand>(); CommandPtr
+ * command = CommandRegistry::Get().AcquireCommand(handle) if(command)
  *     CommandResult result = command->Execute();
- * 
+ *
  *
  * 3. 创建命令实例（通过type_index创建）
  * std::type_index createEntityType = typeid(CreateEntityCommand);
- * CommandHandle handle2 = CommandRegistry::Get().CreateCommand(createEntityType);
+ * CommandHandle handle2 =
+ * CommandRegistry::Get().CreateCommand(createEntityType);
  */
 class CommandRegistry {
  public:
@@ -43,19 +44,22 @@ class CommandRegistry {
    * @tparam T 命令类型（必须继承自Command）
    * @return bool 注册是否成功
    */
-  template<typename T> bool RegisterCommandType();
+  template <typename T>
+  bool RegisterCommandType();
   /**
    * @brief 注销命令类型
    * @tparam T 要注销的命令类型
    * @return bool 注销是否成功
    */
-  template<typename T> bool UnregisterCommandType();
+  template <typename T>
+  bool UnregisterCommandType();
   /**
    * @brief 检查命令类型是否已注册
    * @tparam T 命令类型
    * @return bool 是否已注册
    */
-  template<typename T> bool IsCommandTypeRegistered() const;
+  template <typename T>
+  bool IsCommandTypeRegistered() const;
   bool IsCommandTypeRegistered(std::type_index index) const;
 
   // ==================== 命令创建/获取/存储/释放接口 ====================
@@ -64,7 +68,8 @@ class CommandRegistry {
    * @tparam T 命令类型
    * @return CommandHandle 命令句柄，无效时返回空句柄
    */
-  template<typename T> CommandHandle CreateCommand();
+  template <typename T>
+  CommandHandle CreateCommand();
   /**
    * @brief 创建命令实例并返回句柄
    * @param typeIndex 命令类型
@@ -77,8 +82,9 @@ class CommandRegistry {
    * @param expectedType 期望的命令类型（可选，用于类型安全检查）
    * @return CommandPtr 命令对象，无效时返回nullptr
    */
-  CommandPtr AcquireCommand(const CommandHandle &handle,
-                            std::type_index expectedType = std::type_index(typeid(void)));
+  CommandPtr AcquireCommand(
+      const CommandHandle &handle,
+      std::type_index expectedType = std::type_index(typeid(void)));
   /**
    * @brief 根据句柄获取命令对象（不转移所有权，仅查看）
    * @param handle 命令句柄
@@ -97,8 +103,7 @@ class CommandRegistry {
    * @param command 命令对象
    * @return bool 是否成功（句柄必须有效且当前无命令关联）
    */
-  bool ReStoreCommand(const CommandHandle &handle,
-                      CommandPtr command);
+  bool ReStoreCommand(const CommandHandle &handle, CommandPtr command);
   /**
    * @brief 检查句柄是否有关联的命令对象
    * @param handle 命令句柄
@@ -131,7 +136,8 @@ class CommandRegistry {
    * @param state 新的状态
    * @return bool 设置是否成功
    */
-  bool SetCommandState(const CommandHandle &handle, CommandExecutionState state);
+  bool SetCommandState(const CommandHandle &handle,
+                       CommandExecutionState state);
   /**
    * @brief 获取命令状态
    * @param handle 命令句柄
@@ -179,7 +185,8 @@ class CommandRegistry {
    * @tparam T 命令类型
    * @return const char* 类型名称
    */
-  template<typename T> std::string GetCommandTypeName() const;
+  template <typename T>
+  std::string GetCommandTypeName() const;
   /**
    * @brief 获取命令类型的友好名称
    * @param typeIndex 命令类型的type_index
@@ -236,7 +243,8 @@ class CommandRegistry {
 
  private:
   // ==================== 内部辅助方法 ====================
-  bool ValidateStateTransition(CommandExecutionState from, CommandExecutionState to);
+  bool ValidateStateTransition(CommandExecutionState from,
+                               CommandExecutionState to);
 
   // 禁止拷贝和移动
   CommandRegistry(const CommandRegistry &) = delete;
@@ -263,16 +271,14 @@ class CommandRegistry {
     CommandInstance() = delete;
 
     // 必须提供 type 参数的构造函数
-    CommandInstance(CommandPtr cmd,
-                    std::type_index cmdType,
-                    CommandExecutionState cmdState = CommandExecutionState::PENDING)
+    CommandInstance(
+        CommandPtr cmd, std::type_index cmdType,
+        CommandExecutionState cmdState = CommandExecutionState::PENDING)
         : command(std::move(cmd)),
           type(cmdType),
           createTime(std::chrono::system_clock::now()),
           state(cmdState),
-          isAcquired(false)
-    {
-    }
+          isAcquired(false) {}
   };
 
   // 日志管理
@@ -280,15 +286,18 @@ class CommandRegistry {
 
   // 线程安全的数据成员
   mutable std::shared_mutex m_typesMutex;
-  std::unordered_map<std::type_index, CommandTypeInfo> m_commandTypes;  // 注册的命令类型
+  std::unordered_map<std::type_index, CommandTypeInfo>
+      m_commandTypes;  // 注册的命令类型
   mutable std::shared_mutex m_instancesMutex;
-  std::unordered_map<CommandHandle, CommandInstance> m_commandInstances;  // 所有命令UniquePtr存储
+  std::unordered_map<CommandHandle, CommandInstance>
+      m_commandInstances;  // 所有命令UniquePtr存储
 };
 
 // 模板方法实现
-template<typename T> bool CommandRegistry::RegisterCommandType()
-{
-  static_assert(std::is_base_of<Command, T>::value, "T must be derived from Command");
+template <typename T>
+bool CommandRegistry::RegisterCommandType() {
+  static_assert(std::is_base_of<Command, T>::value,
+                "T must be derived from Command");
   std::type_index typeIndex = typeid(T);
   std::unique_lock lock(m_typesMutex);
 
@@ -298,31 +307,31 @@ template<typename T> bool CommandRegistry::RegisterCommandType()
 
   // 创建临时实例以获取默认信息
   T tempCommand;
-  m_commandTypes[typeIndex] = {[]() -> CommandPtr { return std::make_unique<T>(); },
-                               typeid(T).name(),
-                               tempCommand.GetCategory(),
-                               tempCommand.GetPriority()};
+  m_commandTypes[typeIndex] = {
+      []() -> CommandPtr { return std::make_unique<T>(); }, typeid(T).name(),
+      tempCommand.GetCategory(), tempCommand.GetPriority()};
 
   return true;
 }
 
-template<typename T> bool CommandRegistry::UnregisterCommandType()
-{
+template <typename T>
+bool CommandRegistry::UnregisterCommandType() {
   std::type_index typeIndex = typeid(T);
   std::unique_lock lock(m_typesMutex);
   return m_commandTypes.erase(typeIndex) > 0;
 }
 
-template<typename T> bool CommandRegistry::IsCommandTypeRegistered() const
-{
+template <typename T>
+bool CommandRegistry::IsCommandTypeRegistered() const {
   std::type_index typeIndex = typeid(T);
   std::shared_lock lock(m_typesMutex);
   return m_commandTypes.find(typeIndex) != m_commandTypes.end();
 }
 
-template<typename T> CommandHandle CommandRegistry::CreateCommand()
-{
-  static_assert(std::is_base_of<Command, T>::value, "T must be derived from Command");
+template <typename T>
+CommandHandle CommandRegistry::CreateCommand() {
+  static_assert(std::is_base_of<Command, T>::value,
+                "T must be derived from Command");
 
   std::type_index typeIndex = typeid(T);
   std::shared_lock readLock(m_typesMutex);
@@ -342,8 +351,8 @@ template<typename T> CommandHandle CommandRegistry::CreateCommand()
   return StoreCommand(std::move(command));
 }
 
-template<typename T> std::string CommandRegistry::GetCommandTypeName() const
-{
+template <typename T>
+std::string CommandRegistry::GetCommandTypeName() const {
   std::type_index typeIndex = typeid(T);
   std::shared_lock lock(m_typesMutex);
   auto it = m_commandTypes.find(typeIndex);

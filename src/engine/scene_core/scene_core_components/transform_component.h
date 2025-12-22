@@ -28,24 +28,25 @@ class TransformComponent
    * @param scale 缩放
    * @param order 旋转顺序
    */
-  explicit TransformComponent(const glm::vec3 position,
-                              const glm::vec3 rotation = glm::vec3(0.0f),
-                              const glm::vec3 scale = glm::vec3(1.0f),
-                              const Transform::EulerOrder order = Transform::EulerOrder::XYZ);
+  explicit TransformComponent(
+      const glm::vec3 position, const glm::vec3 rotation = glm::vec3(0.0f),
+      const glm::vec3 scale = glm::vec3(1.0f),
+      const Transform::EulerOrder order = Transform::EulerOrder::XYZ);
 
   /**
    * @brief 使用变换矩阵的构造函数
    * @param matrix 变换矩阵
    * @param order 旋转顺序
    */
-  explicit TransformComponent(const glm::mat4 &matrix,
-                              const Transform::EulerOrder order = Transform::EulerOrder::XYZ);
+  explicit TransformComponent(
+      const glm::mat4 &matrix,
+      const Transform::EulerOrder order = Transform::EulerOrder::XYZ);
 
   ~TransformComponent() override = default;
   std::vector<std::type_index> GetDependencies() const override;
 
   // ==================== 数据操作 ====================
-  const Transform& GetLocalTransform() const;
+  const Transform &GetLocalTransform() const;
   /**
    * @brief 支持直接的值赋予与对矩阵直接执行操作两种模式。确保可便捷访问矩阵接口
    * @note 使用实例：
@@ -56,7 +57,7 @@ class TransformComponent
    *   });
    */
   void SetLocalTransform(const Transform &transform);
-  void SetLocalTransform(std::function<void(Transform&)> transformOperator);
+  void SetLocalTransform(std::function<void(Transform &)> transformOperator);
 
   // ==================== 序列化接口 ====================
   bool Serialize(std::ostream &output) const override;
@@ -72,7 +73,8 @@ class TransformComponent
 };
 
 // ==================== 组件系统 ====================
-class TransformComponentSystem : public SnapshotComponentSystem<TransformComponent> {
+class TransformComponentSystem
+    : public SnapshotComponentSystem<TransformComponent> {
   DECLARE_COMPONENT_SYSTEM(TransformComponentSystem)
 };
 // ==================== 事件定义 ====================
@@ -83,12 +85,9 @@ class TransformComponentSystem : public SnapshotComponentSystem<TransformCompone
 class TransformUpdatedEvent : public ComponentEvent<TransformComponent> {
  public:
   TransformUpdatedEvent(Entity entity, TransformComponent &component)
-      : ComponentEvent<TransformComponent>(entity, component)
-  {
-  }
+      : ComponentEvent<TransformComponent>(entity, component) {}
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new TransformUpdatedEvent(this->m_Entity, this->m_Component);
   }
 };

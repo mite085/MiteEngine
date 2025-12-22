@@ -1,47 +1,48 @@
 #include "render_context.h"
 
 namespace mite {
-RenderContext::RenderContext() : m_Logger(LoggerSystem::CreateModuleLogger("Mite Render Context"))
-{
+RenderContext::RenderContext()
+    : m_Logger(LoggerSystem::CreateModuleLogger("Mite Render Context")) {
   m_Logger->info("Render Context created");
 }
 
-RenderContext::~RenderContext()
-{
+RenderContext::~RenderContext() {
   // ClearTemporaryResources();
   ClearTextures();
   m_Logger->info("Render Context destroyed");
 }
 
-void RenderContext::SetSceneData(std::shared_ptr<RenderQueue> renderQueue,
-                                 std::shared_ptr<CameraInstance> cameraInstance)
-{
+void RenderContext::SetSceneData(
+    std::shared_ptr<RenderQueue> renderQueue,
+    std::shared_ptr<CameraInstance> cameraInstance) {
   m_RenderQueue = renderQueue;
   m_MainCameraInstance = cameraInstance;
 
-  m_Logger->trace("Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
-                  m_RenderQueue ? "valid" : "null",
-                  cameraInstance->GetCameraTransform().GetPosition().x,
-                  cameraInstance->GetCameraTransform().GetPosition().y,
-                  cameraInstance->GetCameraTransform().GetPosition().z);
+  m_Logger->trace(
+      "Set scene data - RenderQueue: {}, Camera position: ({}, {}, {})",
+      m_RenderQueue ? "valid" : "null",
+      cameraInstance->GetCameraTransform().GetPosition().x,
+      cameraInstance->GetCameraTransform().GetPosition().y,
+      cameraInstance->GetCameraTransform().GetPosition().z);
 }
 
 // ---- 着色器阶段管理实现 ----
 void RenderContext::RegisterStageShader(const std::string &stageName,
-                                        std::shared_ptr<OpenGLShader> shader)
-{
+                                        std::shared_ptr<OpenGLShader> shader) {
   if (!shader) {
-    m_Logger->warn("Attempted to register null shader for stage: {}", stageName);
+    m_Logger->warn("Attempted to register null shader for stage: {}",
+                   stageName);
     return;
   }
   if (shader->GetProgramId() == 0) {
-    m_Logger->warn("Shader for stage {} is not linked, UBO bindings may fail", stageName);
+    m_Logger->warn("Shader for stage {} is not linked, UBO bindings may fail",
+                   stageName);
   }
   m_StageShaders[stageName] = shader;
   m_Logger->debug("Registered shader for stage: {}", stageName);
 }
-std::shared_ptr<OpenGLShader> RenderContext::GetStageShader(const std::string &stageName) const
-{
+std::shared_ptr<OpenGLShader> RenderContext::GetStageShader(
+    const std::string &stageName) const {
   auto it = m_StageShaders.find(stageName);
   if (it != m_StageShaders.end()) {
     return it->second;
@@ -49,40 +50,38 @@ std::shared_ptr<OpenGLShader> RenderContext::GetStageShader(const std::string &s
   m_Logger->debug("Stage shader not found: {}", stageName);
   return nullptr;
 }
-const std::unordered_map<std::string, std::shared_ptr<OpenGLShader>> &RenderContext::
-    GetAllStageShaders() const
-{
+const std::unordered_map<std::string, std::shared_ptr<OpenGLShader>> &
+RenderContext::GetAllStageShaders() const {
   return m_StageShaders;
 }
 
 // ---- 阴影贴图管理实现 ----
-void RenderContext::SetShadowMapTexture(LightType type, RuntimeTexturePtr texture)
-{
+void RenderContext::SetShadowMapTexture(LightType type,
+                                        RuntimeTexturePtr texture) {
   if (texture && texture->IsValid()) {
     m_ShadowMapTextures[type] = texture;
-    m_Logger->trace("Set shadow map texture for type: {}", static_cast<int>(type));
-  }
-  else {
+    m_Logger->trace("Set shadow map texture for type: {}",
+                    static_cast<int>(type));
+  } else {
     m_Logger->warn("Attempted to set invalid shadow map texture for type: {}",
                    static_cast<int>(type));
   }
 }
-RuntimeTexturePtr RenderContext::GetShadowMapTexture(LightType type) const
-{
+RuntimeTexturePtr RenderContext::GetShadowMapTexture(LightType type) const {
   auto it = m_ShadowMapTextures.find(type);
   if (it != m_ShadowMapTextures.end()) {
     return it->second;
   }
-  m_Logger->debug("Shadow map texture not found for type: {}", static_cast<int>(type));
+  m_Logger->debug("Shadow map texture not found for type: {}",
+                  static_cast<int>(type));
   return nullptr;
 }
-bool RenderContext::HasShadowMapTexture(LightType type) const
-{
+bool RenderContext::HasShadowMapTexture(LightType type) const {
   auto it = m_ShadowMapTextures.find(type);
   return it != m_ShadowMapTextures.end() && it->second && it->second->IsValid();
 }
-void RenderContext::SetRenderTarget(const std::string &name, RuntimeTexturePtr texture)
-{
+void RenderContext::SetRenderTarget(const std::string &name,
+                                    RuntimeTexturePtr texture) {
   if (name.empty()) {
     m_Logger->warn("Attempted to set RenderTarget with empty name");
     return;
@@ -90,8 +89,8 @@ void RenderContext::SetRenderTarget(const std::string &name, RuntimeTexturePtr t
   m_RenderTargets[name] = texture;
   m_Logger->trace("Set RenderTarget: {}", name);
 }
-RuntimeTexturePtr RenderContext::GetRenderTarget(const std::string &name) const
-{
+RuntimeTexturePtr RenderContext::GetRenderTarget(
+    const std::string &name) const {
   auto it = m_RenderTargets.find(name);
   if (it != m_RenderTargets.end()) {
     return it->second;
@@ -99,23 +98,19 @@ RuntimeTexturePtr RenderContext::GetRenderTarget(const std::string &name) const
   m_Logger->debug("RenderTarget not found: {}", name);
   return nullptr;
 }
-void RenderContext::ClearTextures()
-{
+void RenderContext::ClearTextures() {
   // 清空所有纹理映射（注意：这里清空的是映射，不是纹理本身）
   m_ShadowMapTextures.clear();
   m_RenderTargets.clear();
   m_Logger->debug("Cleared all texture mappings");
 }
 
-bool RenderContext::IsValid() const
-{
-  return m_RenderQueue != nullptr;
-}
+bool RenderContext::IsValid() const { return m_RenderQueue != nullptr; }
 
-void RenderContext::Validate() const
-{
+void RenderContext::Validate() const {
   if (!m_RenderQueue) {
-    throw std::runtime_error("RenderContext validation failed: No render queue");
+    throw std::runtime_error(
+        "RenderContext validation failed: No render queue");
   }
   m_Logger->debug("RenderContext validation passed");
 }

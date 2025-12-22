@@ -29,7 +29,8 @@ namespace mite {
  * 存在风险：
  * 1. 如果渲染指令需在多个线程提交（如渲染线程 vs. 资源加载线程），
  *	  单例的全局锁可能成为性能瓶颈。此时需设计无锁队列或线程局部存储（TLS）。
- * 2. 即使当前无需多渲染器，未来可能支持多视口、多GPU或离线渲染。单例会限制架构灵活性。
+ * 2.
+ *即使当前无需多渲染器，未来可能支持多视口、多GPU或离线渲染。单例会限制架构灵活性。
  */
 class RenderDevice {
  public:
@@ -37,15 +38,17 @@ class RenderDevice {
   virtual ~RenderDevice() = default;
 
   // ---- 纹理操作 ----
-  virtual TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) = 0;
-  virtual TextureGPUHandle CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo) = 0;
+  virtual TextureGPUHandle CreateTexture(
+      std::shared_ptr<TextureSourceData> data) = 0;
+  virtual TextureGPUHandle CreateRuntimeTexture(
+      std::shared_ptr<TextureCreateInfo> createInfo) = 0;
   virtual void DestroyTexture(TextureGPUHandle handle) = 0;
-  virtual void BindRuntimeTexture(RuntimeTextureType type,
-                                  TextureGPUHandle textureHandle,
-                                  TextureTarget target = TextureTarget::TEXTURE_2D) const = 0;
-  virtual void BindExternalTexture(ExternalTextureType type,
-                                   TextureGPUHandle textureHandle,
-                                   TextureTarget target = TextureTarget::TEXTURE_2D) const = 0;
+  virtual void BindRuntimeTexture(
+      RuntimeTextureType type, TextureGPUHandle textureHandle,
+      TextureTarget target = TextureTarget::TEXTURE_2D) const = 0;
+  virtual void BindExternalTexture(
+      ExternalTextureType type, TextureGPUHandle textureHandle,
+      TextureTarget target = TextureTarget::TEXTURE_2D) const = 0;
   // 绑定默认(纯黑,1x1)图像到指定槽位，避免纹理槽位悬空
   virtual void BindDefaultTexture(uint32_t textureUnit) const = 0;
 
@@ -74,7 +77,8 @@ class RenderDevice {
    * @param mesh
    * @param lodLevel
    */
-  virtual void DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const = 0;
+  virtual void DrawMeshLOD(std::shared_ptr<Mesh> mesh,
+                           uint32_t lodLevel) const = 0;
   /**
    * @brief DrawIndexed 按照顶点执行绘制任务
    * @param indexCount 绘制的顶点数量
@@ -83,13 +87,13 @@ class RenderDevice {
    * @param indexType 顶点数据格式，默认UNSIGNED INT
    * @param enableDepthTest 允许深度测试，默认开启
    */
-  virtual void DrawIndexed(uint32_t indexCount,
-                           uint32_t indexOffset,
+  virtual void DrawIndexed(uint32_t indexCount, uint32_t indexOffset,
                            GLenum mode = GL_TRIANGLES,
                            GLenum indexType = GL_UNSIGNED_INT) const = 0;
 
   // ---- FrameBuffer 操作 ----
-  virtual std::shared_ptr<FrameBuffer> CreateFrameBuffer(const FrameBufferSpec &spec) = 0;
+  virtual std::shared_ptr<FrameBuffer> CreateFrameBuffer(
+      const FrameBufferSpec &spec) = 0;
   virtual void DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer) = 0;
 
   // ---- 全屏四边形（用于延迟光照和后处理） ----
@@ -102,7 +106,8 @@ class RenderDevice {
   virtual void OnModelLoaded(ModelLoadEvent &e) = 0;
   virtual void OnTextureLoaded(TextureLoadEvent &e) = 0;
   virtual void OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e) = 0;
-  virtual void OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEvent &e) = 0;
+  virtual void OnRuntimeTextureDestroyRequest(
+      RuntimeTextureDestroyRequestEvent &e) = 0;
 
   SubscriptionGroup m_EventSubscriptions;  // 事件订阅
 };

@@ -70,7 +70,9 @@ class Entity {
   /**
    * @brief 获取实体UUID字符串
    */
-  std::string GetUUIDString() const { return UUIDGenerator::UUIDToString(m_UUID); }
+  std::string GetUUIDString() const {
+    return UUIDGenerator::UUIDToString(m_UUID);
+  }
 
   //===================== 操作符重载 ========================
 
@@ -88,9 +90,9 @@ class Entity {
 
 // 哈希支持，用于将Entity用作unordered_map的key
 namespace std {
-template<> struct hash<mite::Entity> {
-  size_t operator()(const mite::Entity &entity) const
-  {
+template <>
+struct hash<mite::Entity> {
+  size_t operator()(const mite::Entity &entity) const {
     return hash<mite::UUID>()(entity.GetUUID());
   }
 };

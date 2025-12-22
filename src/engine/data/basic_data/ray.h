@@ -94,12 +94,8 @@ class Ray {
    * @param v 重心坐标v（输出参数）
    * @return 是否相交
    */
-  bool Intersects(const glm::vec3 &v0,
-                  const glm::vec3 &v1,
-                  const glm::vec3 &v2,
-                  float &t,
-                  float &u,
-                  float &v) const;
+  bool Intersects(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2,
+                  float &t, float &u, float &v) const;
 };
 }  // namespace mite
 

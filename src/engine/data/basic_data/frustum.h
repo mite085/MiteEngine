@@ -37,7 +37,8 @@ class Frustum {
   /**
    * @brief 判断球是否在视锥体内
    * @param sphere 球体
-   * @return 相交类型（不包含Contain，若物体将整个视锥体全部包含在内，那就和Outside没有区别了）
+   * @return
+   * 相交类型（不包含Contain，若物体将整个视锥体全部包含在内，那就和Outside没有区别了）
    */
   BoundingVolumeIntersection::IntersectionType TestSphere(
       const BoundingVolumeSphere &sphere) const;
@@ -46,19 +47,22 @@ class Frustum {
    * @param aabb 轴对齐包围盒
    * @return 相交类型
    */
-  BoundingVolumeIntersection::IntersectionType TestAABB(const BoundingVolumeAABB &aabb) const;
+  BoundingVolumeIntersection::IntersectionType TestAABB(
+      const BoundingVolumeAABB &aabb) const;
   /**
    * @brief 判断OBB是否在视锥体内
    * @param obb 有向包围盒
    * @return 相交类型
    */
-  BoundingVolumeIntersection::IntersectionType TestOBB(const BoundingVolumeOBB &obb) const;
+  BoundingVolumeIntersection::IntersectionType TestOBB(
+      const BoundingVolumeOBB &obb) const;
   /**
    * @brief 判断OBB是否在视锥体内
    * @param obb 有向包围盒
    * @return 相交类型
    */
-  BoundingVolumeIntersection::IntersectionType TestPlane(const BoundingVolumePlane &plane) const;
+  BoundingVolumeIntersection::IntersectionType TestPlane(
+      const BoundingVolumePlane &plane) const;
   /**
    * @brief 判断通用包围体是否在视锥体内
    * @param volume 通用包围体
@@ -66,16 +70,12 @@ class Frustum {
    */
   BoundingVolumeIntersection::IntersectionType TestBoundingVolume(
       const BoundingVolume &volume) const;
-  
 
   /**
    * @brief 获取视锥体的6个裁剪平面
    * @return 平面数组的指针
    */
-  const BoundingVolumePlane *GetPlanes() const
-  {
-    return m_Planes;
-  }
+  const BoundingVolumePlane *GetPlanes() const { return m_Planes; }
 
   /**
    * @brief 获取视锥体的8个角点
@@ -84,7 +84,14 @@ class Frustum {
   void GetCorners(glm::vec3 corners[8]) const;
 
  private:
-  enum FrustumPlane { LEFT = 0, RIGHT = 1, BOTTOM = 2, TOP = 3, NEAR = 4, FAR = 5 };
+  enum FrustumPlane {
+    LEFT = 0,
+    RIGHT = 1,
+    BOTTOM = 2,
+    TOP = 3,
+    NEAR = 4,
+    FAR = 5
+  };
 
   /**
    * @brief 从矩阵提取裁剪平面

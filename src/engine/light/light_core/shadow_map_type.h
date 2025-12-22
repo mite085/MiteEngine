@@ -1,8 +1,8 @@
 #ifndef MITE_SHADOW_CONFIG_H
 #define MITE_SHADOW_CONFIG_H
 
-#include "headers/headers.h"
 #include "basic_type/light_type.h"
+#include "headers/headers.h"
 
 namespace mite {
 /**

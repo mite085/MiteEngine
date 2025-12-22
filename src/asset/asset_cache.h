@@ -11,14 +11,15 @@ namespace mite {
  * 1. 管理所有已加载资源的生命周期（模型/纹理等）
  * 2. 实现引用计数自动释放
  * 3. 支持LRU缓存淘汰策略
- * 
+ *
  * 注意：
  * AssetCache缓存的对象均为shared_ptr，其他任何
  * 模块均将AssetPtr作为临时变量调用，所以当cache_
  * 哈希表线程安全的删除AssetPtr时，外部不可能存在
  * 其他AssetPtr，所以会触发shared_ptr自动释放资源。
  */
-template<typename AssetType> class AssetCache {
+template <typename AssetType>
+class AssetCache {
  public:
   using AssetPtr = std::shared_ptr<AssetType>;
   using AssetIDType = typename AssetType::AssetIDType;
@@ -90,15 +91,19 @@ template<typename AssetType> class AssetCache {
     typename std::list<AssetIDType>::iterator lruIt;  // 用于LRU链表
   };
 
-  // ---- 成员变量（因为const的Get操作需要维护链表添加计数，所以为了避免上层歧义，添加mutable限定符） ----
+  // ----
+  // 成员变量（因为const的Get操作需要维护链表添加计数，所以为了避免上层歧义，添加mutable限定符）
+  // ----
   mutable std::mutex m_Mutex;
-  mutable std::unordered_map<AssetIDType, CachedAsset, typename AssetIDType::Hash> m_Cache;
+  mutable std::unordered_map<AssetIDType, CachedAsset,
+                             typename AssetIDType::Hash>
+      m_Cache;
 
   // LRU实现：（Least recently used，最近最少使用）
   // 该算法根据数据的历史访问记录来进行淘汰数据，
   // 确保缓存占用小，且被重复访问的效率高.
   mutable std::list<AssetIDType> m_LruList;  // 最近使用顺序
-  mutable size_t m_MaxSize = 1000;       // 最大缓存数量
+  mutable size_t m_MaxSize = 1000;           // 最大缓存数量
 };
 
 // 常用缓存类型别名

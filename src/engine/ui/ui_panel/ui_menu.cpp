@@ -1,40 +1,37 @@
 #include "ui_menu.h"
-#include "ui_core/ui_render.h"
+
 #include <algorithm>
 #include <sstream>
 
-namespace mite {
+#include "ui_core/ui_render.h"
 
-UIMenuItemSubmenu *UIMenu::AddMenu(const std::string &label)
-{
+namespace mite {
+UIMenuItemSubmenu *UIMenu::AddMenu(const std::string &label) {
   auto menu = std::make_shared<UIMenuItemSubmenu>(label);
   m_TopLevelMenus.push_back(menu);
   return menu.get();
 }
 
-UIMenuItemSubmenu *UIMenu::FindMenu(const std::string &label)
-{
-  auto it = std::find_if(m_TopLevelMenus.begin(),
-                         m_TopLevelMenus.end(),
-                         [&label](const std::shared_ptr<UIMenuItemSubmenu> &menu) {
-                           return menu->GetLabel() == label;
-                         });
+UIMenuItemSubmenu *UIMenu::FindMenu(const std::string &label) {
+  auto it =
+      std::find_if(m_TopLevelMenus.begin(), m_TopLevelMenus.end(),
+                   [&label](const std::shared_ptr<UIMenuItemSubmenu> &menu) {
+                     return menu->GetLabel() == label;
+                   });
 
   return (it != m_TopLevelMenus.end()) ? it->get() : nullptr;
 }
 
-void UIMenu::RemoveMenu(const std::string &label)
-{
-  auto it = std::remove_if(m_TopLevelMenus.begin(),
-                           m_TopLevelMenus.end(),
-                           [&label](const std::shared_ptr<UIMenuItemSubmenu> &menu) {
-                             return menu->GetLabel() == label;
-                           });
+void UIMenu::RemoveMenu(const std::string &label) {
+  auto it =
+      std::remove_if(m_TopLevelMenus.begin(), m_TopLevelMenus.end(),
+                     [&label](const std::shared_ptr<UIMenuItemSubmenu> &menu) {
+                       return menu->GetLabel() == label;
+                     });
   m_TopLevelMenus.erase(it, m_TopLevelMenus.end());
 }
 
-std::shared_ptr<UIMenuItem> UIMenu::FindMenuItem(const std::string &path)
-{
+std::shared_ptr<UIMenuItem> UIMenu::FindMenuItem(const std::string &path) {
   // 解析路径
   std::vector<std::string> pathComponents = SplitPath(path);
   if (pathComponents.empty()) {
@@ -58,38 +55,33 @@ std::shared_ptr<UIMenuItem> UIMenu::FindMenuItem(const std::string &path)
   return FindMenuItemRecursive(currentItem, pathComponents, 1);
 }
 
-void UIMenu::SetMenuEnabled(const std::string &menuLabel, bool enabled)
-{
+void UIMenu::SetMenuEnabled(const std::string &menuLabel, bool enabled) {
   auto menu = FindMenu(menuLabel);
   if (menu) {
     menu->SetEnabled(enabled);
   }
 }
 
-void UIMenu::SetMenuItemSelected(const std::string &path, bool selected)
-{
+void UIMenu::SetMenuItemSelected(const std::string &path, bool selected) {
   auto item = FindMenuItem(path);
   if (item && item->IsCheckable()) {  // 只对可勾选的菜单项生效
     item->SetSelected(selected);
   }
 }
-void UIMenu::SetMenuItemEnabled(const std::string &path, bool enabled)
-{
+void UIMenu::SetMenuItemEnabled(const std::string &path, bool enabled) {
   auto item = FindMenuItem(path);
   if (item) {
     item->SetEnabled(enabled);
   }
 }
-void UIMenu::SetMenuItemVisible(const std::string &path, bool visible)
-{
+void UIMenu::SetMenuItemVisible(const std::string &path, bool visible) {
   auto item = FindMenuItem(path);
   if (item) {
     item->SetVisible(visible);
   }
 }
 
-void UIMenu::Render()
-{
+void UIMenu::Render() {
   // 获取渲染器
   UIRender &renderer = UIRender::Get();
 
@@ -101,8 +93,7 @@ void UIMenu::Render()
   }
 }
 
-void UIMenu::RenderMenuBar()
-{
+void UIMenu::RenderMenuBar() {
   // 获取渲染器
   UIRender &renderer = UIRender::Get();
 
@@ -120,8 +111,7 @@ void UIMenu::RenderMenuBar()
   }
 }
 
-std::vector<std::string> UIMenu::SplitPath(const std::string &path)
-{
+std::vector<std::string> UIMenu::SplitPath(const std::string &path) {
   std::vector<std::string> components;
   std::stringstream ss(path);
   std::string component;
@@ -137,9 +127,7 @@ std::vector<std::string> UIMenu::SplitPath(const std::string &path)
 
 std::shared_ptr<UIMenuItem> UIMenu::FindMenuItemRecursive(
     std::shared_ptr<UIMenuItem> current,
-    const std::vector<std::string> &pathComponents,
-    size_t currentIndex)
-{
+    const std::vector<std::string> &pathComponents, size_t currentIndex) {
   // 如果已经到达路径末尾，返回当前项
   if (currentIndex >= pathComponents.size()) {
     return current;
@@ -156,5 +144,4 @@ std::shared_ptr<UIMenuItem> UIMenu::FindMenuItemRecursive(
   // 递归查找
   return FindMenuItemRecursive(child, pathComponents, currentIndex + 1);
 }
-
 }  // namespace mite

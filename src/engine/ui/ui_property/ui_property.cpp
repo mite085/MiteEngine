@@ -2,16 +2,13 @@
 
 namespace mite {
 IPropertyTable::IPropertyTable(std::string tableTranslateLey)
-    : m_TableTranslateKey(tableTranslateLey)
-{
-}
-void IPropertyTable::RenderTable(UIRender &render)
-{
+    : m_TableTranslateKey(tableTranslateLey) {}
+void IPropertyTable::RenderTable(UIRender &render) {
   // 绘制分隔符
   render.RenderLabelSprator(m_TableTranslateKey);
 
   // 填充表格属性
-  m_TableProps.columns = 2;        // 2列显示
+  m_TableProps.columns = 2;          // 2列显示
   m_TableProps.showHeaders = false;  // 不显示表头
   m_TableProps.resizable = false;    // 不允许resize
   m_TableProps.borders = false;      // 不显示边框
@@ -27,8 +24,7 @@ void IPropertyTable::RenderTable(UIRender &render)
 
 void IPropertyTable::RenderLabelItemRow(UIRender &render,
                                         std::string labelTranslateKey,
-                                        std::function<void()> propsRenderFunc)
-{
+                                        std::function<void()> propsRenderFunc) {
   // 新的一行绘制文本
   render.TableNextRow();
   render.RenderLabel(labelTranslateKey);
@@ -37,6 +33,4 @@ void IPropertyTable::RenderLabelItemRow(UIRender &render,
   render.TableNextColume();
   propsRenderFunc();
 }
-
-
 }  // namespace mite

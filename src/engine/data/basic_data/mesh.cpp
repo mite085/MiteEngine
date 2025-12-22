@@ -2,16 +2,16 @@
 
 namespace mite {
 Mesh::Mesh(ModelGPUHandle modelHandle, const MeshSectionLODChain &lodChain)
-    : m_ModelGPUHandle(modelHandle), m_LODChain(lodChain)
-{
+    : m_ModelGPUHandle(modelHandle), m_LODChain(lodChain) {
   // 检查是否为空Mesh
-  if (m_LODChain.baseSection.vertexCount == 0 || m_LODChain.baseSection.indexCount == 0) {
-    throw std::invalid_argument("Invalid mesh section: vertex or index count is zero");
+  if (m_LODChain.baseSection.vertexCount == 0 ||
+      m_LODChain.baseSection.indexCount == 0) {
+    throw std::invalid_argument(
+        "Invalid mesh section: vertex or index count is zero");
   }
 }
 
-uint32_t Mesh::GetVertexCount(uint32_t lodLevel) const
-{
+uint32_t Mesh::GetVertexCount(uint32_t lodLevel) const {
   for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return section.vertexCount;
@@ -21,8 +21,7 @@ uint32_t Mesh::GetVertexCount(uint32_t lodLevel) const
   return m_LODChain.baseSection.vertexCount;
 }
 
-uint32_t Mesh::GetIndexCount(uint32_t lodLevel) const
-{
+uint32_t Mesh::GetIndexCount(uint32_t lodLevel) const {
   for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return section.indexCount;
@@ -32,8 +31,7 @@ uint32_t Mesh::GetIndexCount(uint32_t lodLevel) const
   return m_LODChain.baseSection.indexCount;
 }
 
-uint32_t Mesh::GetIndexOffset(uint32_t lodLevel) const
-{
+uint32_t Mesh::GetIndexOffset(uint32_t lodLevel) const {
   for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return section.indexOffset;
@@ -43,8 +41,7 @@ uint32_t Mesh::GetIndexOffset(uint32_t lodLevel) const
   return m_LODChain.baseSection.indexOffset;
 }
 
-const MeshSection &Mesh::GetSection(uint32_t lodLevel) const
-{
+const MeshSection &Mesh::GetSection(uint32_t lodLevel) const {
   for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return section;
@@ -54,29 +51,23 @@ const MeshSection &Mesh::GetSection(uint32_t lodLevel) const
   return m_LODChain.baseSection;
 }
 
-const MeshSection &Mesh::GetBaseSection() const
-{
+const MeshSection &Mesh::GetBaseSection() const {
   return m_LODChain.baseSection;
 }
 
-const std::vector<MeshSection> &Mesh::GetSubLODSections() const
-{
+const std::vector<MeshSection> &Mesh::GetSubLODSections() const {
   return m_LODChain.lodSections;
 }
 
-uint32_t Mesh::GetLODCount() const
-{
+uint32_t Mesh::GetLODCount() const {
   // Base级别+SubLODSection数量
   return static_cast<uint32_t>(m_LODChain.lodSections.size() + 1);
 }
 
-ModelGPUHandle Mesh::GetModelHandle() const
-{
-  return m_ModelGPUHandle;
-}
+ModelGPUHandle Mesh::GetModelHandle() const { return m_ModelGPUHandle; }
 
-const std::pair<glm::vec3, glm::vec3> Mesh::GetBoundingBox(uint32_t lodLevel) const
-{
+const std::pair<glm::vec3, glm::vec3> Mesh::GetBoundingBox(
+    uint32_t lodLevel) const {
   for (const auto &section : m_LODChain.lodSections) {
     if (section.lodLevel == lodLevel) {
       return {section.bboxMin, section.bboxMax};
@@ -86,18 +77,9 @@ const std::pair<glm::vec3, glm::vec3> Mesh::GetBoundingBox(uint32_t lodLevel) co
   return {m_LODChain.baseSection.bboxMin, m_LODChain.baseSection.bboxMax};
 }
 
-uint32_t Mesh::GetMaterialIndex() const
-{
-  return m_LODChain.materialIndex;
-}
+uint32_t Mesh::GetMaterialIndex() const { return m_LODChain.materialIndex; }
 
-std::string Mesh::GetName() const
-{
-  return m_LODChain.name;
-}
+std::string Mesh::GetName() const { return m_LODChain.name; }
 
-glm::mat4 Mesh::GetTransform() const
-{
-  return m_LODChain.transform;
-}
+glm::mat4 Mesh::GetTransform() const { return m_LODChain.transform; }
 };  // namespace mite

@@ -8,7 +8,8 @@ namespace mite {
 /**
  * @brief MaterialComponent的特化实现
  */
-template<> class PropertyTable<MaterialComponent> : public IPropertyTable {
+template <>
+class PropertyTable<MaterialComponent> : public IPropertyTable {
  public:
   explicit PropertyTable(MaterialComponent &component);
   void Render(UIRender &render);
@@ -17,12 +18,13 @@ template<> class PropertyTable<MaterialComponent> : public IPropertyTable {
   MaterialComponent &m_Component;
 
   // 纹理启用flag
-  CheckboxProps m_IsBaseColorTextureEnabled, m_IsMetallicRoughnessTextureEnabled,
-      m_IsOcclusionTextureEnabled, m_IsEmissiveTextureEnabled, m_IsNormalTextureEnabled;
+  CheckboxProps m_IsBaseColorTextureEnabled,
+      m_IsMetallicRoughnessTextureEnabled, m_IsOcclusionTextureEnabled,
+      m_IsEmissiveTextureEnabled, m_IsNormalTextureEnabled;
 
   // 纹理属性
-  ImageProps m_BaseColorTexture, m_MetallicRoughnessTexture, m_OcclusionTexture, m_EmissiveTexture,
-      m_NormalTexture;
+  ImageProps m_BaseColorTexture, m_MetallicRoughnessTexture, m_OcclusionTexture,
+      m_EmissiveTexture, m_NormalTexture;
 
   // 非纹理状态下的值属性
   ColorEditProps m_BaseColorProps, m_EmissionProps;

@@ -2,8 +2,8 @@
 #define MITE_SCENE_REGISTRY
 
 #include "component.h"
-#include "entity.h"
 #include "component_event_publisher.h"
+#include "entity.h"
 
 namespace mite {
 /**
@@ -24,7 +24,8 @@ class SceneRegistry {
   /**
    * @brief 创建新实体
    * @param name 实体名称
-   * @param entity 目标实体的Parent实体，若为根节点则输入空实体，默认Parent为空实体
+   * @param entity
+   * 目标实体的Parent实体，若为根节点则输入空实体，默认Parent为空实体
    * @return 新创建的实体
    */
   Entity CreateEntity(const std::string &name = "", Entity parent = Entity{});
@@ -45,8 +46,8 @@ class SceneRegistry {
   /**
    * @brief 添加组件
    */
-  template<typename T, typename... Args> T &AddComponent(Entity entity, Args &&...args)
-  {
+  template <typename T, typename... Args>
+  T &AddComponent(Entity entity, Args &&...args) {
     // 先检查实体有效性（不需要锁）
     if (!entity.IsValid()) {
       throw std::runtime_error("Cannot add component to invalid entity");
@@ -76,8 +77,8 @@ class SceneRegistry {
   /**
    * @brief 获取或添加组件
    */
-  template<typename T> T &GetOrAddComponent(Entity entity)
-  {
+  template <typename T>
+  T &GetOrAddComponent(Entity entity) {
     std::shared_lock lock(m_ComponentMutex);
 
     if (HasComponent<T>(entity)) {
@@ -91,8 +92,8 @@ class SceneRegistry {
   /**
    * @brief 移除组件
    */
-  template<typename T> void RemoveComponent(Entity entity)
-  {
+  template <typename T>
+  void RemoveComponent(Entity entity) {
     std::unique_lock lock(m_ComponentMutex);
 
     // 先确保ComponentTypeMap中存在该类型的ComponentMap
@@ -114,13 +115,14 @@ class SceneRegistry {
   /**
    * @brief 检查实体是否拥有组件
    */
-  template<typename T> bool HasComponent(Entity entity) const
-  {
+  template <typename T>
+  bool HasComponent(Entity entity) const {
     std::shared_lock lock(m_ComponentMutex);
 
     if (entity.IsValid()) {
       auto it = m_Components.find(typeid(T));
-      return it != m_Components.end() && it->second.find(entity) != it->second.end();
+      return it != m_Components.end() &&
+             it->second.find(entity) != it->second.end();
     }
     return false;
   }
@@ -131,9 +133,10 @@ class SceneRegistry {
    * @param entity 要检查的实体
    * @return 如果实体拥有所有指定组件返回true，否则false
    */
-  template<typename... Components> bool HasComponentWithAllOf(Entity entity) const
-  {
-    static_assert(sizeof...(Components) > 0, "At least one component type must be specified");
+  template <typename... Components>
+  bool HasComponentWithAllOf(Entity entity) const {
+    static_assert(sizeof...(Components) > 0,
+                  "At least one component type must be specified");
 
     std::shared_lock lock(m_ComponentMutex);
 
@@ -145,7 +148,8 @@ class SceneRegistry {
     // 使用折叠表达式检查所有组件 - 避免重复查找
     return (([](const auto &compMap, Entity e, auto type) -> bool {
               auto it = compMap.find(type);
-              return it != compMap.end() && it->second.find(e) != it->second.end();
+              return it != compMap.end() &&
+                     it->second.find(e) != it->second.end();
             }(m_Components, entity, typeid(Components))) &&
             ...);
   }
@@ -153,8 +157,8 @@ class SceneRegistry {
   /**
    * @brief 获取组件
    */
-  template<typename T> T &GetComponent(Entity entity)
-  {
+  template <typename T>
+  T &GetComponent(Entity entity) {
     std::shared_lock lock(m_ComponentMutex);
 
     auto it = m_Components.find(typeid(T));
@@ -170,8 +174,8 @@ class SceneRegistry {
   /**
    * @brief 获取组件 const版本
    */
-  template<typename T> T &GetComponent(Entity entity) const
-  {
+  template <typename T>
+  T &GetComponent(Entity entity) const {
     std::shared_lock lock(m_ComponentMutex);
 
     auto it = m_Components.find(typeid(T));
@@ -188,8 +192,8 @@ class SceneRegistry {
   /**
    * @brief 尝试获取组件
    */
-  template<typename T> T *TryGetComponent(Entity entity)
-  {
+  template <typename T>
+  T *TryGetComponent(Entity entity) {
     std::shared_lock lock(m_ComponentMutex);
 
     auto it = m_Components.find(typeid(T));
@@ -204,8 +208,8 @@ class SceneRegistry {
   /**
    * @brief 尝试获取组件 const版本
    */
-  template<typename T> T *TryGetComponent(Entity entity) const
-  {
+  template <typename T>
+  T *TryGetComponent(Entity entity) const {
     std::shared_lock lock(m_ComponentMutex);
 
     auto it = m_Components.find(typeid(T));
@@ -228,8 +232,8 @@ class SceneRegistry {
   /**
    * @brief 获取拥有指定组件的所有实体
    */
-  template<typename T> std::vector<Entity> GetEntitiesWith()
-  {
+  template <typename T>
+  std::vector<Entity> GetEntitiesWith() {
     std::shared_lock lock(m_ComponentMutex);
 
     std::vector<Entity> entities;
@@ -248,9 +252,10 @@ class SceneRegistry {
    * @tparam Components 要查询的组件类型列表
    * @return 拥有所有指定组件的实体列表
    */
-  template<typename... Components> std::vector<Entity> GetEntitiesWithAllOf()
-  {
-    static_assert(sizeof...(Components) > 0, "At least one component type must be specified");
+  template <typename... Components>
+  std::vector<Entity> GetEntitiesWithAllOf() {
+    static_assert(sizeof...(Components) > 0,
+                  "At least one component type must be specified");
 
     std::shared_lock lock(m_ComponentMutex);
 
@@ -260,8 +265,8 @@ class SceneRegistry {
     }
 
     // 获取第一个组件类型的实体列表作为基准
-    const std::type_index firstType = typeid(
-        typename std::tuple_element<0, std::tuple<Components...>>::type);
+    const std::type_index firstType =
+        typeid(typename std::tuple_element<0, std::tuple<Components...>>::type);
     auto firstIt = m_Components.find(firstType);
     if (firstIt == m_Components.end()) {
       return {};
@@ -282,7 +287,9 @@ class SceneRegistry {
 
       // 检查是否拥有所有组件
       bool hasAllComponents = true;
-      ((hasAllComponents = hasAllComponents && HasComponent<Components>(entity)), ...);
+      ((hasAllComponents =
+            hasAllComponents && HasComponent<Components>(entity)),
+       ...);
 
       if (hasAllComponents) {
         result.push_back(entity);
@@ -291,6 +298,7 @@ class SceneRegistry {
 
     return result;
   }
+
  private:
   // 组件存储结构
   using ComponentMap = std::unordered_map<Entity, std::shared_ptr<Component>>;

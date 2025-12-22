@@ -21,11 +21,8 @@ class RuntimeTexture {
    * @param format 纹理格式
    * @return 初始化是否成功
    */
-  bool initialize(RuntimeTextureType type,
-                  uint32_t width,
-                  uint32_t height,
-                  TextureFormat format,
-                  TextureTarget target,
+  bool initialize(RuntimeTextureType type, uint32_t width, uint32_t height,
+                  TextureFormat format, TextureTarget target,
                   uint32_t arrayLayers);
   /**
    * 清理纹理资源
@@ -56,7 +53,7 @@ class RuntimeTexture {
   uint32_t m_Height = 0;                                         // 纹理高度
   TextureFormat m_Format = TextureFormat::RGBA8;                 // 纹理格式
   TextureTarget m_Target = TextureTarget::TEXTURE_2D;            // 纹理目标
-  uint32_t m_ArrayLayers = 1;                                    // 纹理层数（如果是数组纹理）
+  uint32_t m_ArrayLayers = 1;  // 纹理层数（如果是数组纹理）
 };
 
 // 智能指针别名

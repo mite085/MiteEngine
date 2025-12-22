@@ -1,11 +1,10 @@
 #ifndef MITE_INPUT_STATE_TRACKER_H
 #define MITE_INPUT_STATE_TRACKER_H
 
-#include "timer/timer.h"
 #include "headers/headers.h"
+#include "timer/timer.h"
 
 namespace mite {
-
 /**
  * @brief 输入状态跟踪器
  *
@@ -109,7 +108,6 @@ class InputStateTracker {
 
   bool m_HasAnyState = false;  // 是否有任何状态记录（用于Timer自洁判断）
 };
-
 }  // namespace mite
 
 #endif  // MITE_INPUT_STATE_TRACKER_H

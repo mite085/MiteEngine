@@ -2,10 +2,10 @@
 #define MITE_PROPERTY_PANEL_H
 
 #include "basic_event/render_event.h"
-#include "ui_property/ui_property.h"
-#include "ui_panel.h"
 #include "scene_core/scene_registry.h"
 #include "scene_node.h"
+#include "ui_panel.h"
+#include "ui_property/ui_property.h"
 
 namespace mite {
 /**
@@ -34,21 +34,21 @@ class PropertyPanel : public UIPanel {
 
   /**
    * @brief 针对组件执行渲染
-   * @param property 
+   * @param property
    */
-  template<typename T> void RenderProperty()
-  {
-    static_assert(std::is_base_of<Component, T>::value, "T Must be derived from component");
-    if (!m_SelectedNode)
-      return;
+  template <typename T>
+  void RenderProperty() {
+    static_assert(std::is_base_of<Component, T>::value,
+                  "T Must be derived from component");
+    if (!m_SelectedNode) return;
 
     // 查询到组件，创建属性，执行渲染操作
     if (m_SceneRegistry.HasComponent<T>(m_SelectedNode->GetEntity())) {
-      T& component = m_SceneRegistry.GetComponent<T>(m_SelectedNode->GetEntity());
+      T &component =
+          m_SceneRegistry.GetComponent<T>(m_SelectedNode->GetEntity());
       PropertyTable<T> property(component);
       property.RenderTable(m_Renderer);
-    }
-    else {
+    } else {
       // 组件不存在，不执行渲染
       return;
     }

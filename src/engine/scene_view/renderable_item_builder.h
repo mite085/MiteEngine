@@ -55,9 +55,9 @@ class RenderableItemBuilder {
    * 由于MeshInstance涉及UBO的创建、绑定和更新，所以必须优先实现缓存机制，
    * 以确保创建和绑定仅执行一次，但Update操作每帧更新
    */
-  std::vector<RenderableItem> BuildFromSceneNodes(SceneRegistry &registry,
-                                                  std::shared_ptr<CameraInstance> camera,
-                                                  const std::vector<std::shared_ptr<SceneNode> > &sceneNodes);
+  std::vector<RenderableItem> BuildFromSceneNodes(
+      SceneRegistry &registry, std::shared_ptr<CameraInstance> camera,
+      const std::vector<std::shared_ptr<SceneNode>> &sceneNodes);
 
   // ==================== 核心构建接口 ====================
   /**
@@ -86,7 +86,8 @@ class RenderableItemBuilder {
    * @param sceneNode 场景节点
    * @return 是否包含渲染所需的组件
    */
-  bool IsRenderable(SceneRegistry &registry, std::shared_ptr<SceneNode> sceneNode) const;
+  bool IsRenderable(SceneRegistry &registry,
+                    std::shared_ptr<SceneNode> sceneNode) const;
   /**
    * @brief 检查Entity是否可渲染
    * @param entity ECS实体
@@ -98,7 +99,8 @@ class RenderableItemBuilder {
    * @param mesh 网格体对象
    * @param cameraPosition 相机距离
    * @param worldTransform 局部空间到世界空间的旋转矩阵
-   * @param lodBias LOD层级偏差值(偏差值越高，越倾向于高精度，如10代表距离为默认值10倍时才切换下一个LOD)
+   * @param lodBias
+   * LOD层级偏差值(偏差值越高，越倾向于高精度，如10代表距离为默认值10倍时才切换下一个LOD)
    * @return LOD层级
    *
    * 针对超大Model（如地形）可以逐Mesh划分LOD，降低渲染压力
@@ -115,27 +117,27 @@ class RenderableItemBuilder {
    * @param worldTransform 世界变换
    * @return MeshInstance共享指针
    */
-  std::shared_ptr<MeshInstance> GetOrCreateMeshInstance(SceneRegistry &registry,
-                                                        Entity entity,
-                                                        const Transform &worldTransform);
+  std::shared_ptr<MeshInstance> GetOrCreateMeshInstance(
+      SceneRegistry &registry, Entity entity, const Transform &worldTransform);
   /**
    * @brief 从实体提取网格组件
    * @param entity ECS实体
    * @return 网格组件共享指针，如果不存在返回nullptr
    */
-  std::shared_ptr<Mesh> ExtractMeshComponent(SceneRegistry &registry, Entity entity);
+  std::shared_ptr<Mesh> ExtractMeshComponent(SceneRegistry &registry,
+                                             Entity entity);
   /**
    * @brief 从实体提取材质组件
    * @param entity ECS实体
    * @return 材质实例Handle
    */
-  std::shared_ptr<MaterialInstance> ExtractMaterialComponent(SceneRegistry &registry,
-                                                             Entity entity);
+  std::shared_ptr<MaterialInstance> ExtractMaterialComponent(
+      SceneRegistry &registry, Entity entity);
   /**
    * @brief 创建新的MeshInstance
    */
-  std::shared_ptr<MeshInstance> CreateMeshInstance(std::shared_ptr<Mesh> mesh,
-                                                   const Transform &worldTransform);
+  std::shared_ptr<MeshInstance> CreateMeshInstance(
+      std::shared_ptr<Mesh> mesh, const Transform &worldTransform);
 
   // 禁用拷贝构造和赋值
   RenderableItemBuilder(const RenderableItemBuilder &) = delete;

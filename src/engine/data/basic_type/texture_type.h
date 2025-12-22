@@ -45,14 +45,15 @@ enum class TextureFormat : unsigned int {
 
 // 纹理目标类型
 enum class TextureTarget {
-  TEXTURE_2D = GL_TEXTURE_2D,                                      // 2D纹理（最常用）
-  TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,                          // 立方体贴图
-  TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,                          // 2D纹理数组
-  TEXTURE_3D = GL_TEXTURE_3D,                                      // 3D纹理/体积纹理
-  TEXTURE_2D_MULTISAMPLE = GL_TEXTURE_2D_MULTISAMPLE,              // 2D多重采样纹理
-  TEXTURE_CUBE_MAP_ARRAY = GL_TEXTURE_CUBE_MAP_ARRAY,              // 立方体贴图数组
-  TEXTURE_2D_MULTISAMPLE_ARRAY = GL_TEXTURE_2D_MULTISAMPLE_ARRAY,  // 多重采样纹理数组
-  TEXTURE_BUFFER = GL_TEXTURE_BUFFER,                              // 缓冲纹理
+  TEXTURE_2D = GL_TEXTURE_2D,                          // 2D纹理（最常用）
+  TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,              // 立方体贴图
+  TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,              // 2D纹理数组
+  TEXTURE_3D = GL_TEXTURE_3D,                          // 3D纹理/体积纹理
+  TEXTURE_2D_MULTISAMPLE = GL_TEXTURE_2D_MULTISAMPLE,  // 2D多重采样纹理
+  TEXTURE_CUBE_MAP_ARRAY = GL_TEXTURE_CUBE_MAP_ARRAY,  // 立方体贴图数组
+  TEXTURE_2D_MULTISAMPLE_ARRAY =
+      GL_TEXTURE_2D_MULTISAMPLE_ARRAY,      // 多重采样纹理数组
+  TEXTURE_BUFFER = GL_TEXTURE_BUFFER,       // 缓冲纹理
   TEXTURE_RECTANGLE = GL_TEXTURE_RECTANGLE  // 矩形纹理（非2的幂次方）
 };
 
@@ -103,8 +104,8 @@ enum class RuntimeTextureType {
   Lighting_Combined,  // 综合光照结果
 
   // 前向渲染相关（在Lighting_Combined基础上，添加了半透明的Blend物体）
-  Forward_Transparent,	// 仅包含透明物体的结果
-  Forward_Blend,		// 混合之后的结果
+  Forward_Transparent,  // 仅包含透明物体的结果
+  Forward_Blend,        // 混合之后的结果
 
   // 后期处理相关(暂未启用)
   // PostProcess_Bloom,
@@ -119,7 +120,7 @@ enum class RuntimeTextureType {
   // 特殊用途(暂未启用)
   // Debug_View,  // 调试视图纹理
   // UI_Overlay,  // UI覆盖纹理
-  None,        // 不合法纹理
+  None,  // 不合法纹理
 };
 
 /**

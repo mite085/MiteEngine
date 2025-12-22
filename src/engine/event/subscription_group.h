@@ -30,9 +30,7 @@ class SubscriptionGroup {
    * @param bus 事件总线引用
    */
   SubscriptionGroup(const std::string &groupName = "")
-      : m_EventBus(EventBus::Get()), m_GroupName(groupName)
-  {
-  }
+      : m_EventBus(EventBus::Get()), m_GroupName(groupName) {}
 
   /**
    * @brief 析构函数 - 自动取消所有订阅
@@ -50,68 +48,64 @@ class SubscriptionGroup {
   /**
    * @brief 添加事件订阅/大类订阅到组内，接收到事件同步处理
    */
-  template<typename T>
-  void SubscribeImmediate(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
-  {
+  template <typename T>
+  void SubscribeImmediate(EventFn<T> handler,
+                          EventPriority priority = EventPriority::Normal) {
     Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Sync);
   }
-  void SubscribeByCategoryImmediate(EventCategory category,
-                                    EventHandler handler,
-                                    EventPriority priority = EventPriority::Normal)
-  {
-    SubscribeByCategory(category, std::move(handler), priority, SubscriptionFlags::Sync);
+  void SubscribeByCategoryImmediate(
+      EventCategory category, EventHandler handler,
+      EventPriority priority = EventPriority::Normal) {
+    SubscribeByCategory(category, std::move(handler), priority,
+                        SubscriptionFlags::Sync);
   }
   /**
    * @brief 添加异步事件订阅/大类订阅
    */
-  template<typename T>
-  void SubscribeAsync(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
-  {
+  template <typename T>
+  void SubscribeAsync(EventFn<T> handler,
+                      EventPriority priority = EventPriority::Normal) {
     Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Async);
   }
-  void SubscribeByCategoryAsync(EventCategory category,
-                                EventHandler handler,
-                                EventPriority priority = EventPriority::Normal)
-  {
-    SubscribeByCategory(category, std::move(handler), priority, SubscriptionFlags::Async);
+  void SubscribeByCategoryAsync(
+      EventCategory category, EventHandler handler,
+      EventPriority priority = EventPriority::Normal) {
+    SubscribeByCategory(category, std::move(handler), priority,
+                        SubscriptionFlags::Async);
   }
   /**
    * @brief 添加异步延迟事件订阅/大类订阅
    */
-  template<typename T>
-  void SubscribeAsyncDeferred(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
-  {
-    Subscribe<T>(
-        std::move(handler), priority, SubscriptionFlags::Async | SubscriptionFlags::Deferred);
+  template <typename T>
+  void SubscribeAsyncDeferred(EventFn<T> handler,
+                              EventPriority priority = EventPriority::Normal) {
+    Subscribe<T>(std::move(handler), priority,
+                 SubscriptionFlags::Async | SubscriptionFlags::Deferred);
   }
-  void SubscribeByCategoryAsyncDeferred(EventCategory category,
-                                        EventHandler handler,
-                                        EventPriority priority = EventPriority::Normal)
-  {
-    SubscribeByCategory(category,
-                        std::move(handler),
-                        priority,
+  void SubscribeByCategoryAsyncDeferred(
+      EventCategory category, EventHandler handler,
+      EventPriority priority = EventPriority::Normal) {
+    SubscribeByCategory(category, std::move(handler), priority,
                         SubscriptionFlags::Async | SubscriptionFlags::Deferred);
   }
   /**
    * @brief 添加延迟事件订阅/大类订阅
    */
-  template<typename T>
-  void SubscribeDeferred(EventFn<T> handler, EventPriority priority = EventPriority::Normal)
-  {
+  template <typename T>
+  void SubscribeDeferred(EventFn<T> handler,
+                         EventPriority priority = EventPriority::Normal) {
     Subscribe<T>(std::move(handler), priority, SubscriptionFlags::Deferred);
   }
-  void SubscribeByCategoryDeferred(EventCategory category,
-                                   EventHandler handler,
-                                   EventPriority priority = EventPriority::Normal)
-  {
-    SubscribeByCategory(category, std::move(handler), priority, SubscriptionFlags::Deferred);
+  void SubscribeByCategoryDeferred(
+      EventCategory category, EventHandler handler,
+      EventPriority priority = EventPriority::Normal) {
+    SubscribeByCategory(category, std::move(handler), priority,
+                        SubscriptionFlags::Deferred);
   }
   /**
    * @brief 取消组内所有订阅
    */
-  void UnsubscribeAll()
-  {
+  void UnsubscribeAll() {
     for (auto id : m_Handlers) {
       m_EventBus.Unsubscribe(id);
     }
@@ -145,19 +139,16 @@ class SubscriptionGroup {
    * @param priority 处理优先级
    * @param flags 处理标志
    */
-  template<typename T>
+  template <typename T>
   void Subscribe(EventFn<T> handler,
                  EventPriority priority = EventPriority::Normal,
-                 SubscriptionFlags flags = SubscriptionFlags::Sync)
-  {
-    m_Handlers.push_back(
-        m_EventBus.Subscribe<T>(std::move(handler), priority, flags, m_GroupName));
+                 SubscriptionFlags flags = SubscriptionFlags::Sync) {
+    m_Handlers.push_back(m_EventBus.Subscribe<T>(std::move(handler), priority,
+                                                 flags, m_GroupName));
   }
-  void SubscribeByCategory(EventCategory category,
-                           EventHandler handler,
+  void SubscribeByCategory(EventCategory category, EventHandler handler,
                            EventPriority priority = EventPriority::Normal,
-                           SubscriptionFlags flags = SubscriptionFlags::Sync)
-  {
+                           SubscriptionFlags flags = SubscriptionFlags::Sync) {
     m_Handlers.push_back(m_EventBus.SubscribeByCategory(
         category, std::move(handler), priority, flags, m_GroupName));
   }

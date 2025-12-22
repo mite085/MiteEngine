@@ -1,11 +1,10 @@
 #ifndef MITE_EDITOR_UI_EVENTS_H
 #define MITE_EDITOR_UI_EVENTS_H
 
-#include "ui_event.h"
 #include "scene_core/entity.h"
+#include "ui_event.h"
 
 namespace mite {
-
 /**
  * @brief 场景保存事件
  */
@@ -13,20 +12,13 @@ class SceneSaveEvent : public Event {
  public:
   explicit SceneSaveEvent(const std::string &filePath) : m_FilePath(filePath) {}
 
-  const std::string &GetFilePath() const
-  {
-    return m_FilePath;
-  }
+  const std::string &GetFilePath() const { return m_FilePath; }
 
-  std::string ToString() const override
-  {
+  std::string ToString() const override {
     return "SceneSaveEvent: " + m_FilePath;
   }
 
-  Event *Clone() const override
-  {
-    return new SceneSaveEvent(m_FilePath);
-  }
+  Event *Clone() const override { return new SceneSaveEvent(m_FilePath); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
 
@@ -41,20 +33,13 @@ class SceneLoadEvent : public Event {
  public:
   explicit SceneLoadEvent(const std::string &filePath) : m_FilePath(filePath) {}
 
-  const std::string &GetFilePath() const
-  {
-    return m_FilePath;
-  }
+  const std::string &GetFilePath() const { return m_FilePath; }
 
-  std::string ToString() const override
-  {
+  std::string ToString() const override {
     return "SceneLoadEvent: " + m_FilePath;
   }
 
-  Event *Clone() const override
-  {
-    return new SceneLoadEvent(m_FilePath);
-  }
+  Event *Clone() const override { return new SceneLoadEvent(m_FilePath); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
 
@@ -67,27 +52,19 @@ class SceneLoadEvent : public Event {
  */
 class EntitySelectedEvent : public Event {
  public:
-  explicit EntitySelectedEvent(Entity entity, const std::string &entityName = "")
-      : m_Entity(entity), m_EntityName(entityName)
-  {
+  explicit EntitySelectedEvent(Entity entity,
+                               const std::string &entityName = "")
+      : m_Entity(entity), m_EntityName(entityName) {}
+
+  Entity GetEntity() const { return m_Entity; }
+  const std::string &GetEntityName() const { return m_EntityName; }
+
+  std::string ToString() const override {
+    return "EntitySelectedEvent: " + m_EntityName +
+           " (ID: " + m_Entity.GetUUIDString() + ")";
   }
 
-  Entity GetEntity() const
-  {
-    return m_Entity;
-  }
-  const std::string &GetEntityName() const
-  {
-    return m_EntityName;
-  }
-
-  std::string ToString() const override
-  {
-    return "EntitySelectedEvent: " + m_EntityName + " (ID: " + m_Entity.GetUUIDString() + ")";
-  }
-
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new EntitySelectedEvent(m_Entity, m_EntityName);
   }
 
@@ -105,20 +82,13 @@ class EntityDeselectedEvent : public Event {
  public:
   explicit EntityDeselectedEvent(Entity entity) : m_Entity(entity) {}
 
-  Entity GetEntity() const
-  {
-    return m_Entity;
-  }
+  Entity GetEntity() const { return m_Entity; }
 
-  std::string ToString() const override
-  {
+  std::string ToString() const override {
     return "EntityDeselectedEvent: ID " + m_Entity.GetUUIDString();
   }
 
-  Event *Clone() const override
-  {
-    return new EntityDeselectedEvent(m_Entity);
-  }
+  Event *Clone() const override { return new EntityDeselectedEvent(m_Entity); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_EDITOR)
 
@@ -134,21 +104,12 @@ class GizmoOperationEvent : public Event {
   enum class OperationType { TRANSLATE, ROTATE, SCALE, NONE };
 
   explicit GizmoOperationEvent(OperationType operation, const glm::vec3 &delta)
-      : m_Operation(operation), m_Delta(delta)
-  {
-  }
+      : m_Operation(operation), m_Delta(delta) {}
 
-  OperationType GetOperation() const
-  {
-    return m_Operation;
-  }
-  glm::vec3 GetDelta() const
-  {
-    return m_Delta;
-  }
+  OperationType GetOperation() const { return m_Operation; }
+  glm::vec3 GetDelta() const { return m_Delta; }
 
-  std::string ToString() const override
-  {
+  std::string ToString() const override {
     std::string opStr;
     switch (m_Operation) {
       case OperationType::TRANSLATE:
@@ -164,12 +125,12 @@ class GizmoOperationEvent : public Event {
         opStr = "NONE";
         break;
     }
-    return "GizmoOperationEvent: " + opStr + " Delta: (" + std::to_string(m_Delta.x) + ", " +
-           std::to_string(m_Delta.y) + ", " + std::to_string(m_Delta.z) + ")";
+    return "GizmoOperationEvent: " + opStr + " Delta: (" +
+           std::to_string(m_Delta.x) + ", " + std::to_string(m_Delta.y) + ", " +
+           std::to_string(m_Delta.z) + ")";
   }
 
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new GizmoOperationEvent(m_Operation, m_Delta);
   }
 
@@ -188,22 +149,20 @@ class FileSelectedEvent : public Event {
   explicit FileSelectedEvent(const std::string &filePathName,
                              const std::string &fileName,
                              const std::string &filePath)
-      : m_FilePathName(filePathName), m_FileName(fileName), m_FilePath(filePath)
-  {
-  }
+      : m_FilePathName(filePathName),
+        m_FileName(fileName),
+        m_FilePath(filePath) {}
 
   // 支持完整文件路径+文件名、文件名、文件路径三种读取模式
   const std::string &GetFilePathName() const { return m_FilePathName; }
   const std::string &GetFileName() const { return m_FileName; }
   const std::string &GetFilePath() const { return m_FilePath; }
 
-  std::string ToString() const override
-  {
+  std::string ToString() const override {
     return "FileSelectedEvent: " + m_FilePathName;
   }
 
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new FileSelectedEvent(m_FilePathName, m_FileName, m_FilePath);
   }
 
@@ -213,7 +172,6 @@ class FileSelectedEvent : public Event {
   Entity m_Entity;
   std::string m_FilePathName, m_FileName, m_FilePath;
 };
-
 }  // namespace mite
 
 #endif  // MITE_EDITOR_UI_EVENTS_H

@@ -1,8 +1,8 @@
 #ifndef MITE_ASSET_TEXTURE_LOADER
 #define MITE_ASSET_TEXTURE_LOADER
 
-#include "basic_event/asset_event.h"
 #include "asset_cache.h"
+#include "basic_event/asset_event.h"
 
 struct aiTexture;
 
@@ -63,11 +63,10 @@ class TextureLoader {
   /**
    * 核心加载实现 - 处理像素数据加载和资产构建
    */
-  static TextureAssetID LoadTextureInternal(TextureCache &cache,
-                                            const std::string &path,
-                                            const std::vector<uint8_t> &embeddedData,
-                                            int desiredChannels,
-                                            bool flipVertical);
+  static TextureAssetID LoadTextureInternal(
+      TextureCache &cache, const std::string &path,
+      const std::vector<uint8_t> &embeddedData, int desiredChannels,
+      bool flipVertical);
   /**
    * 从Assimp纹理对象提取嵌入式数据
    */
@@ -79,7 +78,8 @@ class TextureLoader {
   /**
    * 通过路径查找已缓存的纹理
    */
-  static TextureAssetID FindTextureByPath(TextureCache &cache, const std::string &path);
+  static TextureAssetID FindTextureByPath(TextureCache &cache,
+                                          const std::string &path);
 };
 };  // namespace mite
 

@@ -1,15 +1,15 @@
 #ifndef MITE_UI_MENU_ITEM_H
 #define MITE_UI_MENU_ITEM_H
 
-#include "ui_core/ui_render.h"
-#include "ui_core/ui_render_props.h"
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace mite {
+#include "ui_core/ui_render.h"
+#include "ui_core/ui_render_props.h"
 
+namespace mite {
 enum class MenuItemType {
   ITEM,       // 普通菜单项
   CHECKBOX,   // 复选框菜单项
@@ -22,8 +22,7 @@ enum class MenuItemType {
  */
 class UIMenuItem {
  public:
-  UIMenuItem(const std::string &label,
-             MenuItemType type = MenuItemType::ITEM,
+  UIMenuItem(const std::string &label, MenuItemType type = MenuItemType::ITEM,
              bool selected = false,
              std::function<void(bool)> callback = nullptr);
 
@@ -51,13 +50,17 @@ class UIMenuItem {
 
   void AddChild(std::shared_ptr<UIMenuItem> child);
   void RemoveChild(const std::string &label);
-  const std::vector<std::shared_ptr<UIMenuItem>> &GetChildren() const { return m_Children; }
+  const std::vector<std::shared_ptr<UIMenuItem>> &GetChildren() const {
+    return m_Children;
+  }
   bool HasChildren() const { return !m_Children.empty(); }
   std::shared_ptr<UIMenuItem> FindChild(const std::string &label) const;
 
   // ==================== 回调管理 ====================
 
-  void SetCallback(std::function<void(bool)> callback) { m_Props.callback = callback; }
+  void SetCallback(std::function<void(bool)> callback) {
+    m_Props.callback = callback;
+  }
   std::function<void(bool)> GetCallback() const { return m_Props.callback; }
 
   // ==================== 渲染接口 ====================
@@ -93,11 +96,11 @@ class UIMenuItemSubmenu : public UIMenuItem {
   UIMenuItemSubmenu *AddSubmenu(const std::string &label);
 
   // 添加普通菜单项
-  UIMenuItem *AddItem(const std::string &label, std::function<void()> callback = nullptr);
+  UIMenuItem *AddItem(const std::string &label,
+                      std::function<void()> callback = nullptr);
 
   // 添加复选框菜单项
-  UIMenuItem *AddCheckbox(const std::string &label,
-                          bool checked = false,
+  UIMenuItem *AddCheckbox(const std::string &label, bool checked = false,
                           std::function<void(bool)> callback = nullptr);
 
   void AddSeparator();
@@ -105,7 +108,6 @@ class UIMenuItemSubmenu : public UIMenuItem {
  protected:
   void InitRenderProps() override;
 };
-
 }  // namespace mite
 
 #endif  // MITE_UI_MENU_ITEM_H

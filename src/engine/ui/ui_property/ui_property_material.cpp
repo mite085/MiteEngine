@@ -2,16 +2,13 @@
 
 namespace mite {
 PropertyTable<MaterialComponent>::PropertyTable(MaterialComponent &component)
-    : IPropertyTable("editor.material"), m_Component(component)
-{
-}
+    : IPropertyTable("editor.material"), m_Component(component) {}
 
-void PropertyTable<MaterialComponent>::Render(UIRender &render)
-{
+void PropertyTable<MaterialComponent>::Render(UIRender &render) {
   // 获取材质实例
-  std::shared_ptr<MaterialInstance> instance = m_Component.GetMaterialInstance();
-  if (!instance)
-    return;
+  std::shared_ptr<MaterialInstance> instance =
+      m_Component.GetMaterialInstance();
+  if (!instance) return;
 
   // BaseColor基本色（图像显示/值编辑）
   RenderLabelItemRow(render, "editor.material_base_color_texture_using", [&]() {
@@ -24,10 +21,10 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
   if (instance->IsBaseColorTextureEnabled()) {
     // 显示图像
     RenderLabelItemRow(render, "editor.material_base_color_texture", [&]() {
-      m_BaseColorTexture.textureId = instance->GetBaseColorTexture().gpuHandle.apiHandle;
+      m_BaseColorTexture.textureId =
+          instance->GetBaseColorTexture().gpuHandle.apiHandle;
     });
-  }
-  else {
+  } else {
     // 编辑颜色
     RenderLabelItemRow(render, "editor.material_base_color", [&]() {
       m_BaseColorProps.color = instance->GetBaseColor();
@@ -38,19 +35,23 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
   }
 
   // 金属度/粗糙度（图像显示/值编辑）
-  RenderLabelItemRow(render, "editor.material_metallic_roughness_texture_using", [&]() {
-    m_IsMetallicRoughnessTextureEnabled.checked = instance->IsMetallicRoughnessTextureEnabled();
-    if (render.RenderCheckbox(m_IsMetallicRoughnessTextureEnabled)) {
-      instance->SetMetallicRoughnessTextureEnabled(m_IsMetallicRoughnessTextureEnabled.checked);
-    }
-  });
+  RenderLabelItemRow(
+      render, "editor.material_metallic_roughness_texture_using", [&]() {
+        m_IsMetallicRoughnessTextureEnabled.checked =
+            instance->IsMetallicRoughnessTextureEnabled();
+        if (render.RenderCheckbox(m_IsMetallicRoughnessTextureEnabled)) {
+          instance->SetMetallicRoughnessTextureEnabled(
+              m_IsMetallicRoughnessTextureEnabled.checked);
+        }
+      });
   if (instance->IsMetallicRoughnessTextureEnabled()) {
     // 显示图像
-    RenderLabelItemRow(render, "editor.material_metallic_roughness_texture", [&]() {
-      m_BaseColorTexture.textureId = instance->GetMetallicRoughnessTexture().gpuHandle.apiHandle;
-    });
-  }
-  else {
+    RenderLabelItemRow(
+        render, "editor.material_metallic_roughness_texture", [&]() {
+          m_BaseColorTexture.textureId =
+              instance->GetMetallicRoughnessTexture().gpuHandle.apiHandle;
+        });
+  } else {
     // 编辑金属度/粗糙度
     RenderLabelItemRow(render, "editor.material_metallic", [&]() {
       m_MetallicProps.value = instance->GetMetallic();
@@ -71,20 +72,23 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
   }
 
   // 环境光遮蔽
-  RenderLabelItemRow(render, "editor.material_ambient_occlusion_texture_using", [&]() {
-    m_IsOcclusionTextureEnabled.checked = instance->IsOcclusionTextureEnabled();
-    if (render.RenderCheckbox(m_IsOcclusionTextureEnabled)) {
-
-      instance->SetOcclusionTextureEnabled(m_IsOcclusionTextureEnabled.checked);
-    }
-  });
+  RenderLabelItemRow(render, "editor.material_ambient_occlusion_texture_using",
+                     [&]() {
+                       m_IsOcclusionTextureEnabled.checked =
+                           instance->IsOcclusionTextureEnabled();
+                       if (render.RenderCheckbox(m_IsOcclusionTextureEnabled)) {
+                         instance->SetOcclusionTextureEnabled(
+                             m_IsOcclusionTextureEnabled.checked);
+                       }
+                     });
   if (instance->IsOcclusionTextureEnabled()) {
     // 显示图像
-    RenderLabelItemRow(render, "editor.material_ambient_occlusion_texture", [&]() {
-      m_BaseColorTexture.textureId = instance->GetOcclusionTexture().gpuHandle.apiHandle;
-    });
-  }
-  else {
+    RenderLabelItemRow(
+        render, "editor.material_ambient_occlusion_texture", [&]() {
+          m_BaseColorTexture.textureId =
+              instance->GetOcclusionTexture().gpuHandle.apiHandle;
+        });
+  } else {
     // 编辑环境光遮蔽值
     RenderLabelItemRow(render, "editor.material_ambient_occlusion", [&]() {
       m_AmbientOcclusionProps.value = instance->GetAO();
@@ -106,10 +110,10 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
   if (instance->IsEmissiveTextureEnabled()) {
     // 显示图像
     RenderLabelItemRow(render, "editor.material_emission_texture", [&]() {
-      m_BaseColorTexture.textureId = instance->GetEmissiveTexture().gpuHandle.apiHandle;
+      m_BaseColorTexture.textureId =
+          instance->GetEmissiveTexture().gpuHandle.apiHandle;
     });
-  }
-  else {
+  } else {
     // 编辑自发光颜色
     RenderLabelItemRow(render, "editor.material_emission", [&]() {
       m_EmissionProps.color = instance->GetEmission();
@@ -129,7 +133,8 @@ void PropertyTable<MaterialComponent>::Render(UIRender &render)
   if (instance->IsNormalTextureEnabled()) {
     // 显示图像
     RenderLabelItemRow(render, "editor.material_normal_texture", [&]() {
-      m_BaseColorTexture.textureId = instance->GetNormalTexture().gpuHandle.apiHandle;
+      m_BaseColorTexture.textureId =
+          instance->GetNormalTexture().gpuHandle.apiHandle;
     });
   }
 }

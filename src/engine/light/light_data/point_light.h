@@ -61,7 +61,6 @@ class PointLight : public Light {
    */
   bool ValidatePointLightParameters() const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_POINT_LIGHT_H

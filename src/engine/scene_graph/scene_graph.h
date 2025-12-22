@@ -39,10 +39,12 @@ class SceneGraph {
   /**
    * @brief 为实体创建场景节点
    * @param entity 目标实体
-   * @param entity 目标实体的Parent实体，若为根节点则输入空实体，默认Parent为空实体
+   * @param entity
+   * 目标实体的Parent实体，若为根节点则输入空实体，默认Parent为空实体
    * @return 创建的场景节点指针，失败返回nullptr
    */
-  std::shared_ptr<SceneNode> CreateNode(SceneRegistry &registry, Entity entity, Entity parent = Entity{});
+  std::shared_ptr<SceneNode> CreateNode(SceneRegistry &registry, Entity entity,
+                                        Entity parent = Entity{});
   /**
    * @brief 销毁实体的场景节点
    * @param entity 目标实体
@@ -91,7 +93,8 @@ class SceneGraph {
    * @param visibleMask 可见性掩码（用于分层渲染）
    * @return 可见节点列表
    */
-  std::vector<std::shared_ptr<SceneNode> > FrustumCull(const Frustum &frustum, const uint32_t visibleMask) const;
+  std::vector<std::shared_ptr<SceneNode> > FrustumCull(
+      const Frustum &frustum, const uint32_t visibleMask) const;
   /**
    * @brief 射线检测查询/单次查询
    * @param ray 检测射线
@@ -104,13 +107,15 @@ class SceneGraph {
    * @param volume 查询体积
    * @return 包含节点列表
    */
-  std::vector<std::shared_ptr<SceneNode> > VolumeQuery(const BoundingVolume &volume) const;
+  std::vector<std::shared_ptr<SceneNode> > VolumeQuery(
+      const BoundingVolume &volume) const;
   /**
    * @brief 点查询
    * @param point 查询点
    * @return 包含节点列表
    */
-  std::vector<std::shared_ptr<SceneNode> > PointQuery(const glm::vec3 &point) const;
+  std::vector<std::shared_ptr<SceneNode> > PointQuery(
+      const glm::vec3 &point) const;
 
   // ==================== 场景图遍历接口 ====================
   /**
@@ -118,7 +123,7 @@ class SceneGraph {
    * @param callback 回调函数
    * @param type 遍历类型
    */
-  void Traverse(std::function<bool(std::shared_ptr<SceneNode> )> callback,
+  void Traverse(std::function<bool(std::shared_ptr<SceneNode>)> callback,
                 SceneNodeManager::TraversalType type =
                     SceneNodeManager::TraversalType::DepthFirstPreOrder) const;
   /**
@@ -126,9 +131,10 @@ class SceneGraph {
    * @param callback 回调函数
    * @param type 遍历类型
    */
-  void TraverseVisible(std::function<bool(std::shared_ptr<SceneNode> )> callback,
-                       SceneNodeManager::TraversalType type =
-                           SceneNodeManager::TraversalType::DepthFirstPreOrder) const;
+  void TraverseVisible(
+      std::function<bool(std::shared_ptr<SceneNode>)> callback,
+      SceneNodeManager::TraversalType type =
+          SceneNodeManager::TraversalType::DepthFirstPreOrder) const;
 
   // ==================== 更新管理接口 ====================
 
@@ -170,7 +176,8 @@ class SceneGraph {
    * @brief 调试绘制
    * @param drawCallback 绘制回调函数
    */
-  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) const;
+  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)>
+                     drawCallback) const;
 
  private:
   // ==================== 事件响应 ====================
@@ -188,8 +195,10 @@ class SceneGraph {
    * @brief 处理组件添加事件（用于检测必要组件）
    * @param event 组件添加事件
    */
-  void OnTransformComponentAdded(ComponentAddedEvent<TransformComponent> &event);
-  void OnBoundingVolumeComponentAdded(ComponentAddedEvent<BoundingVolumeComponent> &event);
+  void OnTransformComponentAdded(
+      ComponentAddedEvent<TransformComponent> &event);
+  void OnBoundingVolumeComponentAdded(
+      ComponentAddedEvent<BoundingVolumeComponent> &event);
   /**
    * @brief 执行延迟的节点创建与销毁
    */
@@ -199,14 +208,14 @@ class SceneGraph {
   std::unique_ptr<SceneNodeManager> m_NodeManager;
   std::unique_ptr<SpatialPartition> m_SpatialPartition;
 
-  
   struct EntityProperties {
     bool hasTransform = false;
     bool hasBoundingVolume = false;
     Entity parent = Entity{};
   };
-  std::unordered_map<Entity, EntityProperties> m_PendingCreateNodes;  // 待创建的实体队列
-  std::unordered_set<Entity> m_PendingDestroyNodes;                   // 待销毁的实体队列
+  std::unordered_map<Entity, EntityProperties>
+      m_PendingCreateNodes;                          // 待创建的实体队列
+  std::unordered_set<Entity> m_PendingDestroyNodes;  // 待销毁的实体队列
 
   // 事件订阅
   SubscriptionGroup m_EventSubscriptions;

@@ -15,18 +15,18 @@ namespace mite {
 class UniformVariant {
  public:
   // ---- 支持的参数类型 ----
-  using VariantType = std::variant<std::monostate,          // 空状态（替代None）
-                                   bool,                    // bool (自动转换为int)
-                                   int,                     // int
-                                   unsigned int,            // uint
-                                   float,                   // float
-                                   glm::vec2,               // vec2
-                                   glm::vec3,               // vec3
-                                   glm::vec4,               // vec4
-                                   glm::mat3,               // mat3
-                                   glm::mat4,               // mat4
-                                   std::vector<int>,        // int[]
-                                   std::vector<float>,      // float[]
+  using VariantType = std::variant<std::monostate,      // 空状态（替代None）
+                                   bool,                // bool (自动转换为int)
+                                   int,                 // int
+                                   unsigned int,        // uint
+                                   float,               // float
+                                   glm::vec2,           // vec2
+                                   glm::vec3,           // vec3
+                                   glm::vec4,           // vec4
+                                   glm::mat3,           // mat3
+                                   glm::mat4,           // mat4
+                                   std::vector<int>,    // int[]
+                                   std::vector<float>,  // float[]
                                    std::vector<glm::vec3>,  // vec3[]
                                    TextureGPUSlot           // 纹理类型
                                    >;
@@ -53,23 +53,24 @@ class UniformVariant {
   UniformVariant() = default;
 
   // 通用构造函数（支持所有variant类型）
-  template<typename T> UniformVariant(T &&value) : m_Data(std::forward<T>(value))
-  {
-    static_assert(std::is_constructible_v<VariantType, T>, "Invalid uniform type");
+  template <typename T>
+  UniformVariant(T &&value) : m_Data(std::forward<T>(value)) {
+    static_assert(std::is_constructible_v<VariantType, T>,
+                  "Invalid uniform type");
   }
 
   // ---- 类型查询 ----
   Type GetType() const;
 
   // 类型检查
-  template<typename T> bool Is() const
-  {
+  template <typename T>
+  bool Is() const {
     return std::holds_alternative<T>(m_Data);
   }
 
   // ---- 值获取（安全版）----
-  template<typename T> bool TryGet(T &out) const
-  {
+  template <typename T>
+  bool TryGet(T &out) const {
     if (const T *ptr = std::get_if<T>(&m_Data)) {
       out = *ptr;
       return true;
@@ -78,15 +79,12 @@ class UniformVariant {
   }
 
   // ---- 值获取（非安全版）----
-  template<typename T> const T &Get() const
-  {
+  template <typename T>
+  const T &Get() const {
     return std::get<T>(m_Data);
   }
 
-  const VariantType &GetVariant() const
-  {
-    return m_Data;
-  }
+  const VariantType &GetVariant() const { return m_Data; }
 
   // ---- 转换为旧UniformValue兼容接口 ----
   // 用于MaterialInstance的调用
@@ -98,7 +96,8 @@ class UniformVariant {
   int GetInt(int defaultValue = 0) const;
 
   // 获取数组指针和长度（兼容旧接口）
-  template<typename T> std::pair<const T *, size_t> GetArray() const;
+  template <typename T>
+  std::pair<const T *, size_t> GetArray() const;
 
   // ---- 辅助方法 ----
   std::string GetTypeName() const;
@@ -117,21 +116,19 @@ class UniformVariant {
   VariantType m_Data;
 };
 
-template<typename T> inline std::pair<const T *, size_t> UniformVariant::GetArray() const
-{
+template <typename T>
+inline std::pair<const T *, size_t> UniformVariant::GetArray() const {
   if constexpr (std::is_same_v<T, int>) {
     if (Is<std::vector<int>>()) {
       const auto &vec = Get<std::vector<int>>();
       return {vec.data(), vec.size()};
     }
-  }
-  else if constexpr (std::is_same_v<T, float>) {
+  } else if constexpr (std::is_same_v<T, float>) {
     if (Is<std::vector<float>>()) {
       const auto &vec = Get<std::vector<float>>();
       return {vec.data(), vec.size()};
     }
-  }
-  else if constexpr (std::is_same_v<T, glm::vec3>) {
+  } else if constexpr (std::is_same_v<T, glm::vec3>) {
     if (Is<std::vector<glm::vec3>>()) {
       const auto &vec = Get<std::vector<glm::vec3>>();
       return {vec.data(), vec.size()};

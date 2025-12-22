@@ -4,8 +4,10 @@
 #include "event.h"
 
 namespace mite {
-template<typename T> using EventFn = std::function<void(T &)>;  // 事件处理函数类型（类型安全版本）
-using EventHandler = std::function<void(Event &)>;  // 事件处理函数类型（通用版本）
+template <typename T>
+using EventFn = std::function<void(T &)>;  // 事件处理函数类型（类型安全版本）
+using EventHandler =
+    std::function<void(Event &)>;  // 事件处理函数类型（通用版本）
 /**
  * @brief 事件分发器类
  *
@@ -44,11 +46,13 @@ class EventDispatcher {
    *
    * 1. 检查当前事件是否与模板类型T匹配
    * 2. 如果匹配，将事件转换为具体类型并调用处理函数
-   * 3. 将处理函数的返回值设置到事件的handled标志（该步骤删除，由func自主决定是否handled）
+   * 3.
+   * 将处理函数的返回值设置到事件的handled标志（该步骤删除，由func自主决定是否handled）
    */
-  template<typename T> bool Dispatch(EventFn<T> func)
-  {
-    static_assert(std::is_base_of<Event, T>::value, "T must inherit from Event");
+  template <typename T>
+  bool Dispatch(EventFn<T> func) {
+    static_assert(std::is_base_of<Event, T>::value,
+                  "T must inherit from Event");
 
     // 检查是否有有效事件且事件类型匹配
     if (m_Event && typeid(*m_Event) == typeid(T)) {
@@ -63,9 +67,10 @@ class EventDispatcher {
    * @tparam T 要检查的事件类型
    * @return 是否匹配
    */
-  template<typename T> bool IsType() const
-  {
-    static_assert(std::is_base_of<Event, T>::value, "T must inherit from Event");
+  template <typename T>
+  bool IsType() const {
+    static_assert(std::is_base_of<Event, T>::value,
+                  "T must inherit from Event");
     return m_Event && typeid(*m_Event) == typeid(T);
   }
 
@@ -73,7 +78,9 @@ class EventDispatcher {
    * @brief 获取当前事件的类型信息
    * @return 类型信息指针，如果没有事件则返回nullptr
    */
-  const std::type_info *GetEventType() const { return m_Event ? &typeid(*m_Event) : nullptr; }
+  const std::type_info *GetEventType() const {
+    return m_Event ? &typeid(*m_Event) : nullptr;
+  }
   /**
    * @brief 检查是否有有效的事件关联
    * @return 是否有关联的事件
@@ -92,7 +99,8 @@ class EventDispatcher {
  * auto handlerId = EventBus::Get().Subscribe<WindowResizeEvent>(
  *  BIND_DISPATCH_FN(OnWindowResized)
  * );
- * 此时，BIND_DISPATCH_FN(OnWindowResized) 等价于 [this](auto&& e) { this->OnWindowResized(e); }
+ * 此时，BIND_DISPATCH_FN(OnWindowResized) 等价于 [this](auto&& e) {
+ * this->OnWindowResized(e); }
  */
 #define BIND_DISPATCH_FN(fn) [this](auto &&event) { return this->fn(event); }
 /**

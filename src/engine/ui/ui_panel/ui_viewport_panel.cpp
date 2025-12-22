@@ -1,14 +1,14 @@
 #include "ui_viewport_panel.h"
+
 #include "input/input_manager.h"
 
 namespace mite {
 ViewportPanel::ViewportPanel(SceneView &sceneView, const std::string &name)
-    : UIPanel(name), m_SceneView(sceneView), m_PanelSize(glm::vec2(1280, 720))
-{
+    : UIPanel(name), m_SceneView(sceneView), m_PanelSize(glm::vec2(1280, 720)) {
   m_EventSubscriptions.SubscribeImmediate<RuntimeTextureFinishedEvent>(
       BIND_DISPATCH_FN(OnRenderFinished));
   m_EventSubscriptions.SubscribeImmediate<DisplayTextureTypeChangedEvent>(
-      BIND_DISPATCH_FN(OnDisplayTextureTypeChanged)); 
+      BIND_DISPATCH_FN(OnDisplayTextureTypeChanged));
 
   // 初始化面板属性
   InitializePanelProps();
@@ -25,20 +25,19 @@ ViewportPanel::ViewportPanel(SceneView &sceneView, const std::string &name)
   m_GizmoOverlayContext = OverlayContext();
 
   // 创建输入上下文，并注册
-  m_InputContext = std::make_shared<ViewportInputContext>("Viewport Input Context");
+  m_InputContext =
+      std::make_shared<ViewportInputContext>("Viewport Input Context");
   InputManager::Get().PushContext(m_InputContext);
 
   LOG_DEBUG("Created ViewportPanel: {}", name);
 }
-void ViewportPanel::Update(float deltaTime)
-{
+void ViewportPanel::Update(float deltaTime) {
   UpdateImageProps();
   UpdateOverlayContext();
   UpdateInputContext(deltaTime, m_GizmoOverlay->IsUsing());
 }
 
-void ViewportPanel::Render()
-{
+void ViewportPanel::Render() {
   try {
     // 获取当前内容区域尺寸
     glm::vec2 panelPos = m_Renderer.GetPanelPos();
@@ -63,21 +62,18 @@ void ViewportPanel::Render()
 
       // Gizmo完成之后应用变换
       m_InputContext->Apply(m_GizmoOverlayContext.cameraTransform);
-    }
-    else {
+    } else {
       // FrameBuffer未就绪时的占位显示
       LabelProps placeholderProps;
       placeholderProps.visible = true;
       placeholderProps.translationKey = "FrameBuffer Not Ready";
       m_Renderer.RenderLabel(placeholderProps);
     }
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     LOG_ERROR("ViewportPanel render error: {}", e.what());
   }
 }
-void ViewportPanel::InitializePanelProps()
-{
+void ViewportPanel::InitializePanelProps() {
   auto &props = GetPanelProps();
 
   // 视口面板专用配置
@@ -90,8 +86,8 @@ void ViewportPanel::InitializePanelProps()
   props.minSize = glm::vec2(0, 0);        // 最小尺寸
   props.maxSize = glm::vec2(3840, 2160);  // 最大4K分辨率
 }
-void ViewportPanel::UpdatePanelBorder(const glm::vec2 &newPos, const glm::vec2 &newSize)
-{
+void ViewportPanel::UpdatePanelBorder(const glm::vec2 &newPos,
+                                      const glm::vec2 &newSize) {
   // 更新Panel位置
   if (newPos != m_PanelPos) {
     m_PanelPos = newPos;
@@ -107,23 +103,24 @@ void ViewportPanel::UpdatePanelBorder(const glm::vec2 &newPos, const glm::vec2 &
     LOG_DEBUG("ViewportPanel size changed to {}x{}", newSize.x, newSize.y);
   }
 }
-void ViewportPanel::UpdateOverlayContext()
-{
+void ViewportPanel::UpdateOverlayContext() {
   m_GizmoOverlayContext.mousePos = m_Renderer.GetMousePos();
   // 更新Overlay上下文视口信息
   m_GizmoOverlayContext.viewportPos = m_PanelPos;
   m_GizmoOverlayContext.viewportSize = m_PanelSize;
-  m_GizmoOverlayContext.contentPos = m_PanelPos;  // 内容位置和尺寸与视口位置尺寸保持一致即可
+  m_GizmoOverlayContext.contentPos =
+      m_PanelPos;  // 内容位置和尺寸与视口位置尺寸保持一致即可
   m_GizmoOverlayContext.contentSize = m_PanelSize;
 
   // 更新Overlay上下文矩阵信息
-  m_GizmoOverlayContext.cameraTransform = m_SceneView.GetCameraInstance()->GetCameraTransform();
-  m_GizmoOverlayContext.cameraProjection = m_SceneView.GetCameraInstance()->GetProjectionMatrix();
+  m_GizmoOverlayContext.cameraTransform =
+      m_SceneView.GetCameraInstance()->GetCameraTransform();
+  m_GizmoOverlayContext.cameraProjection =
+      m_SceneView.GetCameraInstance()->GetProjectionMatrix();
   m_GizmoOverlayContext.isModelSelected = m_SceneView.IsPicked();
   m_GizmoOverlayContext.modelTransform = m_SceneView.GetPickedWorldTransform();
 }
-void ViewportPanel::UpdateImageProps()
-{
+void ViewportPanel::UpdateImageProps() {
   if (m_DisplayTexture) {
     // 更新ImageProps句柄
     m_ImageProps.textureId = m_DisplayTexture->GetHandle().apiHandle;
@@ -134,8 +131,7 @@ void ViewportPanel::UpdateImageProps()
     m_ImageProps.enabled = IsEnabled();
   }
 }
-void ViewportPanel::UpdateInputContext(float deltatime, bool gizmoUsing)
-{
+void ViewportPanel::UpdateInputContext(float deltatime, bool gizmoUsing) {
   // 更新聚焦信息和视口尺寸
   m_InputContext->SetViewportFocus(m_PanelProps.isFocused);
   m_InputContext->SetViewportHovered(m_PanelProps.isHovered);
@@ -144,14 +140,13 @@ void ViewportPanel::UpdateInputContext(float deltatime, bool gizmoUsing)
   // 更新输入上下文
   m_InputContext->Update(deltatime, gizmoUsing);
 }
-void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
-{
+void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event) {
   // 首先匹配纹理类型
-  if (event.GetTextureType() != m_DisplayTextureType)
-    return;
+  if (event.GetTextureType() != m_DisplayTextureType) return;
 
   // 然后匹配纹理标识符（若m_Identify为空则不执行匹配）
-  if (!m_DisplayTextureIdentify.empty() && m_DisplayTextureIdentify != event.GetIdentify())
+  if (!m_DisplayTextureIdentify.empty() &&
+      m_DisplayTextureIdentify != event.GetIdentify())
     return;
 
   // 执行更新操作
@@ -161,8 +156,8 @@ void ViewportPanel::OnRenderFinished(RuntimeTextureFinishedEvent &event)
   event.SetResult(EventResult::Handled);
 }
 
-void ViewportPanel::OnDisplayTextureTypeChanged(DisplayTextureTypeChangedEvent &event) 
-{
+void ViewportPanel::OnDisplayTextureTypeChanged(
+    DisplayTextureTypeChangedEvent &event) {
   if (event.GetDisplayTextureType() != m_DisplayTextureType) {
     // 执行更新操作
     m_DisplayTextureType = event.GetDisplayTextureType();
@@ -171,5 +166,4 @@ void ViewportPanel::OnDisplayTextureTypeChanged(DisplayTextureTypeChangedEvent &
     event.SetResult(EventResult::Handled);
   }
 }
-
 }  // namespace mite

@@ -27,8 +27,7 @@ namespace mite {
  */
 class MaterialFactory {
  public:
-  static MaterialFactory &Get()
-  {
+  static MaterialFactory &Get() {
     static MaterialFactory system;
     return system;
   }
@@ -64,8 +63,8 @@ class MaterialFactory {
   std::shared_ptr<MaterialInstance> CreateInstance(const MaterialType &type);
   /**
    * @brief 基于资产模块载入的材质源数据创建材质实例
-   * @param sourceData 
-   * @return 
+   * @param sourceData
+   * @return
    */
   std::shared_ptr<MaterialInstance> CreateInstanceFromMaterialSourceData(
       const MaterialSourceData &sourceData);
@@ -77,7 +76,8 @@ class MaterialFactory {
    * @param newMaterial 新材质模板
    * @note 会触发MaterialReloadedEvent事件
    */
-  //void ReloadTemplate(const std::string &name, std::unique_ptr<MaterialTemplate> newMaterial);
+  // void ReloadTemplate(const std::string &name,
+  // std::unique_ptr<MaterialTemplate> newMaterial);
 
   // ---- 错误处理 ----
   /**
@@ -101,7 +101,8 @@ class MaterialFactory {
   SubscriptionGroup m_EventSubscription;
 
   // ---- 成员变量 ----
-  std::unordered_map<MaterialType, std::unique_ptr<MaterialTemplate>> m_Templates;  // 模板存储
+  std::unordered_map<MaterialType, std::unique_ptr<MaterialTemplate>>
+      m_Templates;                                       // 模板存储
   std::unique_ptr<MaterialTemplate> m_FallbackMaterial;  // 错误回退材质
 };
 };  // namespace mite

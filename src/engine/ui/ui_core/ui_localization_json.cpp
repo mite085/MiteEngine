@@ -1,19 +1,18 @@
 #include "ui_localization_json.h"
+
+#include "filesystem/filesystem.h"
 #include "ui_event/ui_events_lifecycle.h"
 #include "ui_imgui_backend/ui_imgui_font_manager.h"
-#include "filesystem/filesystem.h"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 namespace mite {
-
-UILocalizationJson::UILocalizationJson()
-{
+UILocalizationJson::UILocalizationJson() {
   // 初始化日志系统
-  m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI Localization Json");
+  m_Logger =
+      mite::LoggerSystem::CreateModuleLogger("Mite UI Localization Json");
   m_Logger->info("Initializing UII Localization Json");
-
 
   InitializeBuiltinLanguages();
   SetCurrentLanguage(SIMPLIFIED_CHINESE);  // 默认中文
@@ -27,49 +26,42 @@ UILocalizationJson::UILocalizationJson()
 
 UILocalizationJson::~UILocalizationJson() = default;
 
-void UILocalizationJson::InitializeBuiltinLanguages()
-{
+void UILocalizationJson::InitializeBuiltinLanguages() {
   // 尝试从文件加载
   std::string enPath = GetLocalizationFilePath("en-US");
   if (!enPath.empty() && LoadLanguagePackFromFile(ENGLISH, enPath)) {
     m_Logger->info("Loaded English language pack from file");
-  }
-  else {
+  } else {
     m_Logger->error("Failed in Loading English language pack from file");
   }
 
   std::string zhPath = GetLocalizationFilePath("zh-CN");
   if (!zhPath.empty() && LoadLanguagePackFromFile(SIMPLIFIED_CHINESE, zhPath)) {
     m_Logger->info("Loaded Simplified Chinese language pack from file");
-  }
-  else {
-    m_Logger->error("Failed in Loading Simplified Chinese language pack from file");
+  } else {
+    m_Logger->error(
+        "Failed in Loading Simplified Chinese language pack from file");
   }
 }
 
 bool UILocalizationJson::LoadLanguagePack(const std::string &languageCode,
-                                          const std::string &filePath)
-{
+                                          const std::string &filePath) {
   return LoadLanguagePackFromFile(languageCode, filePath);
 }
 
-
-void UILocalizationJson::OnLanguageChanged(LanguageChangedEvent &e)
-{
+void UILocalizationJson::OnLanguageChanged(LanguageChangedEvent &e) {
   std::string languageCode = e.GetNewLanguage();
   if (SetCurrentLanguage(languageCode)) {
     // 语言切换成功，消费事件（其他本地化系统不需要重复处理）
     e.SetResult(EventResult::Consumed);
-  }
-  else {
+  } else {
     // 语言切换失败，标记处理失败但允许其他系统尝试
     e.SetResult(EventResult::Failed);
   }
 }
 
-bool UILocalizationJson::LoadLanguagePackFromFile(const std::string &languageCode,
-                                                  const std::string &filePath)
-{
+bool UILocalizationJson::LoadLanguagePackFromFile(
+    const std::string &languageCode, const std::string &filePath) {
   try {
     if (!FileSystem::Exists(filePath)) {
       m_Logger->error("Localization file not found: {}", filePath);
@@ -94,19 +86,18 @@ bool UILocalizationJson::LoadLanguagePackFromFile(const std::string &languageCod
     m_LanguagePacks[languageCode] = pack;
     m_Logger->info("Loaded language pack: {} from {}", languageCode, filePath);
     return true;
-  }
-  catch (const json::exception &e) {
+  } catch (const json::exception &e) {
     m_Logger->error("JSON parsing error in {}: {}", filePath, e.what());
     return false;
-  }
-  catch (const std::exception &e) {
-    m_Logger->error("Failed to load language pack from {}: {}", filePath, e.what());
+  } catch (const std::exception &e) {
+    m_Logger->error("Failed to load language pack from {}: {}", filePath,
+                    e.what());
     return false;
   }
 }
 
-std::string UILocalizationJson::GetLocalizationFilePath(const std::string &languageCode) const
-{
+std::string UILocalizationJson::GetLocalizationFilePath(
+    const std::string &languageCode) const {
   try {
     // 直接构建相对于assets的路径
     std::string relativePath = "localization/" + languageCode + ".json";
@@ -117,15 +108,13 @@ std::string UILocalizationJson::GetLocalizationFilePath(const std::string &langu
     }
 
     return "";  // 文件不存在
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     m_Logger->debug("Localization file not found: {}", e.what());
     return "";
   }
 }
 
-bool UILocalizationJson::ValidateLanguagePack(const json &jsonData) const
-{
+bool UILocalizationJson::ValidateLanguagePack(const json &jsonData) const {
   // 基本验证：检查必需字段
   if (!jsonData.is_object()) {
     m_Logger->error("Localization file must be a JSON object");
@@ -151,15 +140,16 @@ bool UILocalizationJson::ValidateLanguagePack(const json &jsonData) const
   return true;
 }
 
-bool UILocalizationJson::ParseLanguagePack(const json &jsonData, LanguagePack &pack) const
-{
+bool UILocalizationJson::ParseLanguagePack(const json &jsonData,
+                                           LanguagePack &pack) const {
   try {
     const auto &metadata = jsonData["metadata"];
     pack.locale = metadata.value("locale", "");
     pack.displayName = metadata.value("display_name", "");
 
     std::string directionStr = metadata.value("direction", "LTR");
-    pack.direction = (directionStr == "RTL") ? TextDirection::RTL : TextDirection::LTR;
+    pack.direction =
+        (directionStr == "RTL") ? TextDirection::RTL : TextDirection::LTR;
 
     // 合并所有翻译项
     MergeTranslations(jsonData["common"], pack.translations, "common.");
@@ -177,33 +167,28 @@ bool UILocalizationJson::ParseLanguagePack(const json &jsonData, LanguagePack &p
     }
 
     m_Logger->debug("Parsed language pack: {}, {} translations",
-                    metadata.value("language", ""),
-                    pack.translations.size());
+                    metadata.value("language", ""), pack.translations.size());
     return true;
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     m_Logger->error("Failed to parse language pack: {}", e.what());
     return false;
   }
 }
 
-void UILocalizationJson::MergeTranslations(const json &source,
-                                           std::unordered_map<std::string, std::string> &target,
-                                           const std::string &prefix) const
-{
+void UILocalizationJson::MergeTranslations(
+    const json &source, std::unordered_map<std::string, std::string> &target,
+    const std::string &prefix) const {
   for (auto it = source.begin(); it != source.end(); ++it) {
     if (it.value().is_string()) {
       target[prefix + it.key()] = it.value();
-    }
-    else if (it.value().is_object()) {
+    } else if (it.value().is_object()) {
       // 递归处理嵌套对象
       MergeTranslations(it.value(), target, prefix + it.key() + ".");
     }
   }
 }
 
-bool UILocalizationJson::SetCurrentLanguage(const std::string &languageCode)
-{
+bool UILocalizationJson::SetCurrentLanguage(const std::string &languageCode) {
   if (m_LanguagePacks.find(languageCode) == m_LanguagePacks.end()) {
     m_Logger->error("Language not available: {}", languageCode);
     return false;
@@ -218,13 +203,11 @@ bool UILocalizationJson::SetCurrentLanguage(const std::string &languageCode)
   return true;
 }
 
-std::string UILocalizationJson::GetCurrentLanguage() const
-{
+std::string UILocalizationJson::GetCurrentLanguage() const {
   return m_CurrentLanguage;
 }
 
-std::vector<std::string> UILocalizationJson::GetAvailableLanguages() const
-{
+std::vector<std::string> UILocalizationJson::GetAvailableLanguages() const {
   std::vector<std::string> languages;
   for (const auto &pair : m_LanguagePacks) {
     languages.push_back(pair.first);
@@ -232,8 +215,7 @@ std::vector<std::string> UILocalizationJson::GetAvailableLanguages() const
   return languages;
 }
 
-std::string UILocalizationJson::Translate(const std::string &key) const
-{
+std::string UILocalizationJson::Translate(const std::string &key) const {
   if (m_CurrentLanguage.empty() || m_LanguagePacks.empty()) {
     return key;  // 返回键名作为默认值
   }
@@ -245,7 +227,8 @@ std::string UILocalizationJson::Translate(const std::string &key) const
   }
 
   // 如果当前语言找不到，尝试英文作为后备
-  if (m_CurrentLanguage != ENGLISH && m_LanguagePacks.find(ENGLISH) != m_LanguagePacks.end()) {
+  if (m_CurrentLanguage != ENGLISH &&
+      m_LanguagePacks.find(ENGLISH) != m_LanguagePacks.end()) {
     const auto &englishPack = m_LanguagePacks.at(ENGLISH);
     auto engIt = englishPack.translations.find(key);
     if (engIt != englishPack.translations.end()) {
@@ -257,24 +240,18 @@ std::string UILocalizationJson::Translate(const std::string &key) const
   return key;  // 无翻译，返回键名作为默认值
 }
 
-
-
-bool UILocalizationJson::IsRTLLanguage(const std::string &languageCode) const
-{
+bool UILocalizationJson::IsRTLLanguage(const std::string &languageCode) const {
   if (m_LanguagePacks.find(languageCode) != m_LanguagePacks.end()) {
     return m_LanguagePacks.at(languageCode).direction == TextDirection::RTL;
   }
   return false;
 }
 
-TextDirection UILocalizationJson::GetTextDirection() const
-{
+TextDirection UILocalizationJson::GetTextDirection() const {
   if (m_CurrentLanguage.empty() ||
-      m_LanguagePacks.find(m_CurrentLanguage) == m_LanguagePacks.end())
-  {
+      m_LanguagePacks.find(m_CurrentLanguage) == m_LanguagePacks.end()) {
     return TextDirection::LTR;
   }
   return m_LanguagePacks.at(m_CurrentLanguage).direction;
 }
-
 }  // namespace mite

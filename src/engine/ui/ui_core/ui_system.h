@@ -6,9 +6,9 @@
 #include "ui_event/ui_event.h"
 #include "ui_event/ui_events_lifecycle.h"
 #include "ui_localization.h"
-#include "ui_style_manager.h"
-#include "ui_panel/ui_panel.h"
 #include "ui_panel/ui_menu.h"
+#include "ui_panel/ui_panel.h"
+#include "ui_style_manager.h"
 
 namespace mite {
 /**
@@ -78,13 +78,12 @@ class UISystem {
   /**
    * @brief UIRender文件选择对话框的接口封装
    */
-  void OpenFileDialog(const std::string &dialogKey,
-                      const std::string &title,
-                      const std::string &filters = ".*",
-                      const std::string &defaultPath = ".",
-                      std::function<void(const std::string &)> callback = nullptr)
-  {
-    UIRender::Get().OpenFileDialog(dialogKey, title, filters, defaultPath, callback);
+  void OpenFileDialog(
+      const std::string &dialogKey, const std::string &title,
+      const std::string &filters = ".*", const std::string &defaultPath = ".",
+      std::function<void(const std::string &)> callback = nullptr) {
+    UIRender::Get().OpenFileDialog(dialogKey, title, filters, defaultPath,
+                                   callback);
   }
 
  private:

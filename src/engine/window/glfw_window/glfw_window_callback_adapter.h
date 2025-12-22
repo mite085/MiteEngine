@@ -74,12 +74,14 @@ class GLFWWindowCallbackAdapter : public CallbackAdapter<GLFWwindow *> {
    * @param action 动作（GLFW_PRESS/GLFW_RELEASE）
    * @param mods 修饰键（GLFW_MOD_*组合）
    */
-  static void HandleMouseButton(GLFWwindow *window, int button, int action, int mods);
+  static void HandleMouseButton(GLFWwindow *window, int button, int action,
+                                int mods);
 
   /**
    * @brief 处理鼠标滚轮事件
    */
-  static void HandleMouseScroll(GLFWwindow *window, double xoffset, double yoffset);
+  static void HandleMouseScroll(GLFWwindow *window, double xoffset,
+                                double yoffset);
 
   /* 键盘事件处理函数 */
 
@@ -90,7 +92,8 @@ class GLFWWindowCallbackAdapter : public CallbackAdapter<GLFWwindow *> {
    * @param action 动作（GLFW_PRESS/GLFW_RELEASE/GLFW_REPEAT）
    * @param mods 修饰键（GLFW_MOD_*组合）
    */
-  static void HandleKeyEvent(GLFWwindow *window, int key, int scancode, int action, int mods);
+  static void HandleKeyEvent(GLFWwindow *window, int key, int scancode,
+                             int action, int mods);
 
   /**
    * @brief 处理字符输入事件（用于文本输入）

@@ -60,12 +60,10 @@ class ShadowInstance {
                                uint32_t lightIndex,
                                std::shared_ptr<CameraInstance> cameraInstance);
   bool ProcessPointLight(std::shared_ptr<Light> light,
-                         const Transform &lightTransform,
-                         uint32_t lightIndex,
+                         const Transform &lightTransform, uint32_t lightIndex,
                          std::shared_ptr<CameraInstance> cameraInstance);
   bool ProcessSpotLight(std::shared_ptr<Light> light,
-                        const Transform &lightTransform,
-                        uint32_t lightIndex,
+                        const Transform &lightTransform, uint32_t lightIndex,
                         std::shared_ptr<CameraInstance> cameraInstance);
 
   std::shared_ptr<ShaderUBO> m_ShadowUBO;  // 阴影UBO实例

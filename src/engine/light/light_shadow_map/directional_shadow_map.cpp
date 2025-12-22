@@ -1,13 +1,11 @@
 #include "directional_shadow_map.h"
 
 namespace mite {
-
 DirectionalShadowMap::DirectionalShadowMap(const ShadowMapData &data)
     : ShadowMap(data),
       m_LastLightDirection(0.0f, 0.0f, -1.0f),
       m_LastCameraView(1.0f),
-      m_LastCameraProj(1.0f)
-{
+      m_LastCameraProj(1.0f) {
   // 确保数据配置正确
   if (!m_Data.enabled) {
     LOG_WARN("DirectionalShadowMap created but not enabled");
@@ -21,11 +19,9 @@ DirectionalShadowMap::DirectionalShadowMap(const ShadowMapData &data)
             m_Data.specific.directional.splitLambda);
 }
 
-ShadowMapData DirectionalShadowMap::PrepareShadowData(const uint32_t lightIndex,
-                                                      const Transform &lightWorldTransform,
-                                                      const Transform &cameraWorldTransform,
-                                                      const glm::mat4 &cameraProj)
-{
+ShadowMapData DirectionalShadowMap::PrepareShadowData(
+    const uint32_t lightIndex, const Transform &lightWorldTransform,
+    const Transform &cameraWorldTransform, const glm::mat4 &cameraProj) {
   if (!m_Data.enabled) {
     LOG_TRACE("DirectionalShadowMap is disabled, returning empty data");
     return ShadowMapData();
@@ -42,12 +38,14 @@ ShadowMapData DirectionalShadowMap::PrepareShadowData(const uint32_t lightIndex,
   glm::mat4 cameraProjMatrix = cameraProj;
 
   // 检查是否需要更新阴影矩阵
-  if (m_NeedsUpdate || HasTransformChanged(lightDirection, cameraViewMatrix, cameraProjMatrix)) {
+  if (m_NeedsUpdate ||
+      HasTransformChanged(lightDirection, cameraViewMatrix, cameraProjMatrix)) {
     // 计算级联分割距离
     CalculateCascadeSplits(cameraProjMatrix);
 
     // 计算级联阴影矩阵
-    CalculateCascadeMatrices(lightDirection, cameraWorldTransform, cameraProjMatrix);
+    CalculateCascadeMatrices(lightDirection, cameraWorldTransform,
+                             cameraProjMatrix);
 
     m_LastLightDirection = lightDirection;
     m_LastCameraView = cameraViewMatrix;
@@ -63,53 +61,50 @@ ShadowMapData DirectionalShadowMap::PrepareShadowData(const uint32_t lightIndex,
   return m_Data;
 }
 
-size_t DirectionalShadowMap::GetShadowMatrixCount() const
-{
+size_t DirectionalShadowMap::GetShadowMatrixCount() const {
   return m_Data.specific.directional.cascadeCount;
 }
 
-glm::mat4 DirectionalShadowMap::GetShadowMatrix(size_t index) const
-{
+glm::mat4 DirectionalShadowMap::GetShadowMatrix(size_t index) const {
   if (index >= m_Data.specific.directional.cascadeCount) {
-    LOG_ERROR("Invalid shadow matrix index for DirectionalShadowMap: {} (max: {})",
-              index,
-              m_Data.specific.directional.cascadeCount - 1);
+    LOG_ERROR(
+        "Invalid shadow matrix index for DirectionalShadowMap: {} (max: {})",
+        index, m_Data.specific.directional.cascadeCount - 1);
     return glm::mat4(1.0f);
   }
 
   if (!m_Data.isValid) {
-    LOG_WARN("DirectionalShadowMap data is not valid, returning identity matrix");
+    LOG_WARN(
+        "DirectionalShadowMap data is not valid, returning identity matrix");
     return glm::mat4(1.0f);
   }
 
   return m_Data.specific.directional.cascadeMatrices[index];
 }
 
-bool DirectionalShadowMap::NeedsUpdate() const
-{
-  return m_NeedsUpdate;
-}
+bool DirectionalShadowMap::NeedsUpdate() const { return m_NeedsUpdate; }
 
-void DirectionalShadowMap::MarkUpdated()
-{
+void DirectionalShadowMap::MarkUpdated() {
   m_NeedsUpdate = false;
   LOG_TRACE("DirectionalShadowMap marked as updated");
 }
 
-std::string DirectionalShadowMap::GetShadowTypeName() const
-{
+std::string DirectionalShadowMap::GetShadowTypeName() const {
   return "DirectionalShadowMap";
 }
 
-void DirectionalShadowMap::SetCascadeParams(unsigned int cascadeCount, float splitLambda)
-{
+void DirectionalShadowMap::SetCascadeParams(unsigned int cascadeCount,
+                                            float splitLambda) {
   if (cascadeCount < 1 || cascadeCount > 4) {
-    LOG_ERROR("Invalid cascade count for DirectionalShadowMap: {} (must be 1-4)", cascadeCount);
+    LOG_ERROR(
+        "Invalid cascade count for DirectionalShadowMap: {} (must be 1-4)",
+        cascadeCount);
     return;
   }
 
   if (splitLambda < 0.0f || splitLambda > 1.0f) {
-    LOG_ERROR("Invalid split lambda for DirectionalShadowMap: {} (must be 0-1)", splitLambda);
+    LOG_ERROR("Invalid split lambda for DirectionalShadowMap: {} (must be 0-1)",
+              splitLambda);
     return;
   }
 
@@ -117,36 +112,33 @@ void DirectionalShadowMap::SetCascadeParams(unsigned int cascadeCount, float spl
   m_Data.specific.directional.splitLambda = splitLambda;
   m_NeedsUpdate = true;
 
-  LOG_TRACE("DirectionalShadowMap cascade params updated - count: {}, lambda: {}",
-            cascadeCount,
-            splitLambda);
+  LOG_TRACE(
+      "DirectionalShadowMap cascade params updated - count: {}, lambda: {}",
+      cascadeCount, splitLambda);
 }
 
-void DirectionalShadowMap::SetCascadeSplits(const std::array<float, MAX_CASCADES> &splits)
-{
+void DirectionalShadowMap::SetCascadeSplits(
+    const std::array<float, MAX_CASCADES> &splits) {
   m_Data.specific.directional.cascadeSplits = splits;
   m_NeedsUpdate = true;
 
   LOG_TRACE("DirectionalShadowMap cascade splits updated");
 }
 
-unsigned int DirectionalShadowMap::GetCascadeCount() const
-{
+unsigned int DirectionalShadowMap::GetCascadeCount() const {
   return m_Data.specific.directional.cascadeCount;
 }
 
-float DirectionalShadowMap::GetSplitLambda() const
-{
+float DirectionalShadowMap::GetSplitLambda() const {
   return m_Data.specific.directional.splitLambda;
 }
 
-const std::array<float, MAX_CASCADES> &DirectionalShadowMap::GetCascadeSplits() const
-{
+const std::array<float, MAX_CASCADES> &DirectionalShadowMap::GetCascadeSplits()
+    const {
   return m_Data.specific.directional.cascadeSplits;
 }
 
-void DirectionalShadowMap::CalculateCascadeSplits(const glm::mat4 &cameraProj)
-{
+void DirectionalShadowMap::CalculateCascadeSplits(const glm::mat4 &cameraProj) {
   // 从投影矩阵提取近远平面距离（假设使用透视投影）
   float nearPlane = 0.1f;
   float farPlane = 100.0f;
@@ -169,25 +161,23 @@ void DirectionalShadowMap::CalculateCascadeSplits(const glm::mat4 &cameraProj)
     float uniformSplit = nearPlane + (farPlane - nearPlane) * fraction;
 
     // 混合对数和均匀分割（仅记录每个级联的远平面距离）
-    m_Data.specific.directional.cascadeSplits[i - 1] = splitLambda * logSplit +
-                                                   (1.0f - splitLambda) * uniformSplit;
+    m_Data.specific.directional.cascadeSplits[i - 1] =
+        splitLambda * logSplit + (1.0f - splitLambda) * uniformSplit;
   }
 
   LOG_TRACE(
-      "DirectionalShadowMap cascade splits calculated - near: {}, far: {}, splits: [{}, {}, {}, "
+      "DirectionalShadowMap cascade splits calculated - near: {}, far: {}, "
+      "splits: [{}, {}, {}, "
       "{}]",
-      nearPlane,
-      farPlane,
-      m_Data.specific.directional.cascadeSplits[0],
+      nearPlane, farPlane, m_Data.specific.directional.cascadeSplits[0],
       m_Data.specific.directional.cascadeSplits[1],
       m_Data.specific.directional.cascadeSplits[2],
       m_Data.specific.directional.cascadeSplits[3]);
 }
 
-void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirection,
-                                                    const Transform &cameraWorldTransform,
-                                                    const glm::mat4 &cameraProj)
-{
+void DirectionalShadowMap::CalculateCascadeMatrices(
+    const glm::vec3 &lightDirection, const Transform &cameraWorldTransform,
+    const glm::mat4 &cameraProj) {
   unsigned int cascadeCount = m_Data.specific.directional.cascadeCount;
 
   // 从投影矩阵提取相机近远平面
@@ -200,26 +190,23 @@ void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirect
 
   // 从Transform获取相机参数
   glm::vec3 cameraPos = cameraWorldTransform.GetPosition();
-  glm::vec3 cameraForward = cameraWorldTransform.GetForward();  // 相机看向的方向
+  glm::vec3 cameraForward =
+      cameraWorldTransform.GetForward();  // 相机看向的方向
 
   // 调试信息：相机和光源基本信息
   LOG_TRACE("DirectionalShadowMap: Calculating {} cascades", cascadeCount);
-  LOG_TRACE("Camera: pos=({:.1f},{:.1f},{:.1f}), forward=({:.3f},{:.3f},{:.3f})",
-            cameraPos.x,
-            cameraPos.y,
-            cameraPos.z,
-            cameraForward.x,
-            cameraForward.y,
-            cameraForward.z);
-  LOG_TRACE("Light direction: ({:.3f},{:.3f},{:.3f})",
-            lightDirection.x,
-            lightDirection.y,
-            lightDirection.z);
+  LOG_TRACE(
+      "Camera: pos=({:.1f},{:.1f},{:.1f}), forward=({:.3f},{:.3f},{:.3f})",
+      cameraPos.x, cameraPos.y, cameraPos.z, cameraForward.x, cameraForward.y,
+      cameraForward.z);
+  LOG_TRACE("Light direction: ({:.3f},{:.3f},{:.3f})", lightDirection.x,
+            lightDirection.y, lightDirection.z);
 
   for (unsigned int i = 0; i < cascadeCount; ++i) {
     // 获取当前级联的近远平面
-    float nearSplit = (i == 0) ? cameraNearPlane :
-                                 m_Data.specific.directional.cascadeSplits[i - 1];
+    float nearSplit = (i == 0)
+                          ? cameraNearPlane
+                          : m_Data.specific.directional.cascadeSplits[i - 1];
     float farSplit = m_Data.specific.directional.cascadeSplits[i];
 
     LOG_TRACE("Cascade {}: near={:.1f}, far={:.1f}", i, nearSplit, farSplit);
@@ -230,10 +217,7 @@ void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirect
     glm::vec3 cascadeCenter = cameraPos + cameraForward * centerDepth;
 
     LOG_TRACE("  Center depth: {:.1f}, world center: ({:.1f},{:.1f},{:.1f})",
-              centerDepth,
-              cascadeCenter.x,
-              cascadeCenter.y,
-              cascadeCenter.z);
+              centerDepth, cascadeCenter.x, cascadeCenter.y, cascadeCenter.z);
 
     // 2. 计算正交投影的大小
     // 基于级联的深度范围确定正交投影大小
@@ -246,7 +230,8 @@ void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirect
     // 确保最小尺寸，避免数值问题
     orthoSize = glm::max(orthoSize, 5.0f);
 
-    LOG_TRACE("  Cascade depth: {:.1f}, ortho size: {:.1f}", cascadeDepth, orthoSize);
+    LOG_TRACE("  Cascade depth: {:.1f}, ortho size: {:.1f}", cascadeDepth,
+              orthoSize);
 
     // 3. 选择光源视图的上向量
     // 避免上向量与光源方向平行（会导致视图矩阵无效）
@@ -267,10 +252,7 @@ void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirect
     glm::vec3 lightPosition = cascadeCenter - lightDirection * lightDistance;
 
     LOG_TRACE("  Light position: ({:.1f},{:.1f},{:.1f}), distance: {:.1f}",
-              lightPosition.x,
-              lightPosition.y,
-              lightPosition.z,
-              lightDistance);
+              lightPosition.x, lightPosition.y, lightPosition.z, lightDistance);
 
     // 5. 创建光源视图矩阵
     // 光源从lightPosition看向cascadeCenter，使用up作为上方向
@@ -292,13 +274,10 @@ void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirect
       zFar = zNear + 100.0f;
     }
 
-    LOG_TRACE("  Ortho bounds: X=[{:.1f},{:.1f}], Y=[{:.1f},{:.1f}], Z=[{:.1f},{:.1f}]",
-              -halfSize,
-              halfSize,
-              -halfSize,
-              halfSize,
-              zNear,
-              zFar);
+    LOG_TRACE(
+        "  Ortho bounds: X=[{:.1f},{:.1f}], Y=[{:.1f},{:.1f}], "
+        "Z=[{:.1f},{:.1f}]",
+        -halfSize, halfSize, -halfSize, halfSize, zNear, zFar);
 
     // 7. 创建正交投影矩阵
     glm::mat4 lightProjection = glm::ortho(-halfSize,
@@ -311,17 +290,14 @@ void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirect
 
     // 8. 应用阴影贴图稳定化
     glm::mat4 shadowMatrix = lightProjection * lightView;
-    shadowMatrix = StabilizeShadowMatrix(shadowMatrix, static_cast<float>(ShadowQuality::MEDIUM));
+    shadowMatrix = StabilizeShadowMatrix(
+        shadowMatrix, static_cast<float>(ShadowQuality::MEDIUM));
 
     // 9. 存储稳定化后的矩阵
     m_Data.specific.directional.cascadeMatrices[i] = shadowMatrix;
 
     // 10. 验证矩阵（调试用）
-    ValidateCascadeMatrix(i,
-                          cameraPos,
-                          cameraForward,
-                          nearSplit,
-                          farSplit,
+    ValidateCascadeMatrix(i, cameraPos, cameraForward, nearSplit, farSplit,
                           cameraProj,
                           m_Data.specific.directional.cascadeMatrices[i]);
 
@@ -331,34 +307,32 @@ void DirectionalShadowMap::CalculateCascadeMatrices(const glm::vec3 &lightDirect
   LOG_TRACE("DirectionalShadowMap: All cascade matrices calculated");
 }
 
-glm::mat4 DirectionalShadowMap::StabilizeShadowMatrix(const glm::mat4 &shadowMatrix,
-                                                      float shadowMapResolution)
-{
+glm::mat4 DirectionalShadowMap::StabilizeShadowMatrix(
+    const glm::mat4 &shadowMatrix, float shadowMapResolution) {
   // 将世界空间点转换到阴影贴图空间
   glm::vec4 shadowOrigin = shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
   shadowOrigin *= shadowMapResolution / 2.0f;
 
   // 计算纹素对齐的偏移
-  glm::vec2 roundedOrigin = glm::round(glm::vec2(shadowOrigin.x, shadowOrigin.y));
-  glm::vec2 roundOffset = roundedOrigin - glm::vec2(shadowOrigin.x, shadowOrigin.y);
+  glm::vec2 roundedOrigin =
+      glm::round(glm::vec2(shadowOrigin.x, shadowOrigin.y));
+  glm::vec2 roundOffset =
+      roundedOrigin - glm::vec2(shadowOrigin.x, shadowOrigin.y);
   roundOffset /= (shadowMapResolution / 2.0f);
 
   // 创建偏移矩阵
-  glm::mat4 offsetMatrix = glm::translate(glm::mat4(1.0f),
-                                          glm::vec3(roundOffset.x, roundOffset.y, 0.0f));
+  glm::mat4 offsetMatrix = glm::translate(
+      glm::mat4(1.0f), glm::vec3(roundOffset.x, roundOffset.y, 0.0f));
 
   // 返回稳定化后的矩阵
   return offsetMatrix * shadowMatrix;
 }
 
-void DirectionalShadowMap::ValidateCascadeMatrix(unsigned int cascadeIndex,
-                                                 const glm::vec3 &cameraPos,
-                                                 const glm::vec3 &cameraForward,
-                                                 float nearSplit,
-                                                 float farSplit,
-                                                 [[maybe_unused]] const glm::mat4 &cameraProj,
-                                                 const glm::mat4 &shadowMatrix) const
-{
+void DirectionalShadowMap::ValidateCascadeMatrix(
+    unsigned int cascadeIndex, const glm::vec3 &cameraPos,
+    const glm::vec3 &cameraForward, float nearSplit, float farSplit,
+    [[maybe_unused]] const glm::mat4 &cameraProj,
+    const glm::mat4 &shadowMatrix) const {
   // 简单验证：检查几个关键点是否在阴影投影范围内
 
   // 计算视锥体中心线上的几个点
@@ -367,7 +341,8 @@ void DirectionalShadowMap::ValidateCascadeMatrix(unsigned int cascadeIndex,
   // 近平面中心点
   testPoints.push_back(cameraPos + cameraForward * nearSplit);
   // 中间点
-  testPoints.push_back(cameraPos + cameraForward * ((nearSplit + farSplit) * 0.5f));
+  testPoints.push_back(cameraPos +
+                       cameraForward * ((nearSplit + farSplit) * 0.5f));
   // 远平面中心点
   testPoints.push_back(cameraPos + cameraForward * farSplit);
 
@@ -378,47 +353,33 @@ void DirectionalShadowMap::ValidateCascadeMatrix(unsigned int cascadeIndex,
 
     // 检查是否在标准设备坐标范围内[-1, 1]
     if (projPoint.x < -1.01f || projPoint.x > 1.01f || projPoint.y < -1.01f ||
-        projPoint.y > 1.01f || projPoint.z < -1.01f || projPoint.z > 1.01f)
-    {
+        projPoint.y > 1.01f || projPoint.z < -1.01f || projPoint.z > 1.01f) {
       outOfBounds++;
       LOG_WARN("Cascade {} test point {} out of bounds: ({:.2f},{:.2f},{:.2f})",
-               cascadeIndex,
-               i,
-               projPoint.x,
-               projPoint.y,
-               projPoint.z);
+               cascadeIndex, i, projPoint.x, projPoint.y, projPoint.z);
     }
   }
 
   if (outOfBounds == 0) {
-    LOG_TRACE("Cascade {} validation passed: all test points in bounds", cascadeIndex);
-  }
-  else {
-    LOG_WARN("Cascade {} validation: {}/{} points out of bounds",
-             cascadeIndex,
-             outOfBounds,
-             testPoints.size());
+    LOG_TRACE("Cascade {} validation passed: all test points in bounds",
+              cascadeIndex);
+  } else {
+    LOG_WARN("Cascade {} validation: {}/{} points out of bounds", cascadeIndex,
+             outOfBounds, testPoints.size());
   }
 }
 
-
 std::array<glm::vec3, 8> DirectionalShadowMap::CalculateFrustumCornersGeometric(
-    float nearPlane,
-    float farPlane,
-    const glm::vec3 &cameraPos,
-    const glm::vec3 &cameraForward,
-    const glm::vec3 &cameraUp,
-    const glm::vec3 &cameraRight,
-    const glm::mat4 &cameraProj) const
-{
+    float nearPlane, float farPlane, const glm::vec3 &cameraPos,
+    const glm::vec3 &cameraForward, const glm::vec3 &cameraUp,
+    const glm::vec3 &cameraRight, const glm::mat4 &cameraProj) const {
   // 从投影矩阵提取FOV和宽高比
   float fovY, aspect;
 
   if (cameraProj[3][3] == 0.0f) {  // 透视投影
     fovY = 2.0f * atan(1.0f / cameraProj[1][1]);
     aspect = cameraProj[1][1] / cameraProj[0][0];
-  }
-  else {                         // 正交投影
+  } else {                       // 正交投影
     fovY = glm::radians(60.0f);  // 默认值
     aspect = 1.0f;
   }
@@ -436,14 +397,14 @@ std::array<glm::vec3, 8> DirectionalShadowMap::CalculateFrustumCornersGeometric(
   std::array<glm::vec3, 8> corners;
 
   // 近平面角点
-  corners[0] = cameraPos + cameraForward * nearPlane - cameraUp * nearHalfHeight -
-               cameraRight * nearHalfWidth;
-  corners[1] = cameraPos + cameraForward * nearPlane - cameraUp * nearHalfHeight +
-               cameraRight * nearHalfWidth;
-  corners[2] = cameraPos + cameraForward * nearPlane + cameraUp * nearHalfHeight +
-               cameraRight * nearHalfWidth;
-  corners[3] = cameraPos + cameraForward * nearPlane + cameraUp * nearHalfHeight -
-               cameraRight * nearHalfWidth;
+  corners[0] = cameraPos + cameraForward * nearPlane -
+               cameraUp * nearHalfHeight - cameraRight * nearHalfWidth;
+  corners[1] = cameraPos + cameraForward * nearPlane -
+               cameraUp * nearHalfHeight + cameraRight * nearHalfWidth;
+  corners[2] = cameraPos + cameraForward * nearPlane +
+               cameraUp * nearHalfHeight + cameraRight * nearHalfWidth;
+  corners[3] = cameraPos + cameraForward * nearPlane +
+               cameraUp * nearHalfHeight - cameraRight * nearHalfWidth;
 
   // 远平面角点
   corners[4] = cameraPos + cameraForward * farPlane - cameraUp * farHalfHeight -
@@ -456,32 +417,34 @@ std::array<glm::vec3, 8> DirectionalShadowMap::CalculateFrustumCornersGeometric(
                cameraRight * farHalfWidth;
 
   // 调试输出
-  LOG_DEBUG("Frustum corners for near={:.1f}, far={:.1f}:", nearPlane, farPlane);
+  LOG_DEBUG("Frustum corners for near={:.1f}, far={:.1f}:", nearPlane,
+            farPlane);
   for (int i = 0; i < 8; ++i) {
-    LOG_DEBUG(
-        "  Corner {}: ({:.1f}, {:.1f}, {:.1f})", i, corners[i].x, corners[i].y, corners[i].z);
+    LOG_DEBUG("  Corner {}: ({:.1f}, {:.1f}, {:.1f})", i, corners[i].x,
+              corners[i].y, corners[i].z);
   }
 
   return corners;
 }
 
-bool DirectionalShadowMap::HasTransformChanged(const glm::vec3 &newLightDirection,
-                                               const glm::mat4 &newCameraView,
-                                               const glm::mat4 &newCameraProj) const
-{
+bool DirectionalShadowMap::HasTransformChanged(
+    const glm::vec3 &newLightDirection, const glm::mat4 &newCameraView,
+    const glm::mat4 &newCameraProj) const {
   // 计算方向变化角度
   float directionDot = glm::dot(newLightDirection, m_LastLightDirection);
-  float directionAngle = glm::acos(glm::clamp(directionDot, -1.0f, 1.0f)) * 180.0f /
-                         glm::pi<float>();
+  float directionAngle = glm::acos(glm::clamp(directionDot, -1.0f, 1.0f)) *
+                         180.0f / glm::pi<float>();
 
   // 计算相机矩阵变化（使用矩阵差的Frobenius范数）
   glm::mat4 cameraViewDiff = newCameraView - m_LastCameraView;
   glm::mat4 cameraProjDiff = newCameraProj - m_LastCameraProj;
 
-  float viewChange = glm::length(glm::vec4(cameraViewDiff[0]) + glm::vec4(cameraViewDiff[1]) +
-                                 glm::vec4(cameraViewDiff[2]) + glm::vec4(cameraViewDiff[3]));
-  float projChange = glm::length(glm::vec4(cameraProjDiff[0]) + glm::vec4(cameraProjDiff[1]) +
-                                 glm::vec4(cameraProjDiff[2]) + glm::vec4(cameraProjDiff[3]));
+  float viewChange =
+      glm::length(glm::vec4(cameraViewDiff[0]) + glm::vec4(cameraViewDiff[1]) +
+                  glm::vec4(cameraViewDiff[2]) + glm::vec4(cameraViewDiff[3]));
+  float projChange =
+      glm::length(glm::vec4(cameraProjDiff[0]) + glm::vec4(cameraProjDiff[1]) +
+                  glm::vec4(cameraProjDiff[2]) + glm::vec4(cameraProjDiff[3]));
 
   // 如果光源方向旋转超过阈值（1度）或相机矩阵变化超过阈值，则认为变换发生变化
   bool directionChanged = directionAngle > 1.0f;
@@ -489,12 +452,11 @@ bool DirectionalShadowMap::HasTransformChanged(const glm::vec3 &newLightDirectio
 
   if (directionChanged || cameraChanged) {
     LOG_TRACE(
-        "DirectionalShadowMap transform changed - direction rotated: {}°, camera changed: {}",
-        directionAngle,
-        cameraChanged);
+        "DirectionalShadowMap transform changed - direction rotated: {}°, "
+        "camera changed: {}",
+        directionAngle, cameraChanged);
   }
 
   return directionChanged || cameraChanged;
 }
-
 }  // namespace mite

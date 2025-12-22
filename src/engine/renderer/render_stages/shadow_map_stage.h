@@ -51,21 +51,23 @@ class ShadowMapStage : public RenderStage {
   void CreateShadowRenderContextUniformBuffer();
 
   // ---- 阴影渲染方法 ----
-  void RenderDirectionalShadowMap(RenderContext &context,
-                                  const std::vector<std::shared_ptr<Light>> &directionalLights);
-  void RenderPointShadowMap(RenderContext &context,
-                            const std::vector<std::shared_ptr<Light>> &pointLights);
-  void RenderSpotShadowMap(RenderContext &context,
-                           const std::vector<std::shared_ptr<Light>> &spotLights);
+  void RenderDirectionalShadowMap(
+      RenderContext &context,
+      const std::vector<std::shared_ptr<Light>> &directionalLights);
+  void RenderPointShadowMap(
+      RenderContext &context,
+      const std::vector<std::shared_ptr<Light>> &pointLights);
+  void RenderSpotShadowMap(
+      RenderContext &context,
+      const std::vector<std::shared_ptr<Light>> &spotLights);
 
   // ---- 辅助方法 ----
   void SetupShadowRenderState();
-  void BindShadowRenderContext(uint32_t lightIndex,
-                               uint32_t cascadeIndex,
-                               uint32_t faceIndex,
-                               uint32_t shadowMapType);
+  void BindShadowRenderContext(uint32_t lightIndex, uint32_t cascadeIndex,
+                               uint32_t faceIndex, uint32_t shadowMapType);
   // 场景几何体渲染辅助方法
-  void RenderSceneToShadowMap(RenderContext &context, const std::vector<RenderableItem> &items);
+  void RenderSceneToShadowMap(RenderContext &context,
+                              const std::vector<RenderableItem> &items);
   // 存储shadow map到上下文
   void StoreShadowMapsToContext(RenderContext &context);
 

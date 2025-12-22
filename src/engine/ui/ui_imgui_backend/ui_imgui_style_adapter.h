@@ -1,12 +1,11 @@
 #ifndef MITE_IMGUI_STYLE_ADAPTER_H
 #define MITE_IMGUI_STYLE_ADAPTER_H
 
+#include "imgui.h"
 #include "ui_core/ui_style_manager.h"
 #include "ui_event/ui_events_lifecycle.h"
-#include "imgui.h"
 
 namespace mite {
-
 /**
  * @brief ImGui样式适配器
  * 负责将引擎的UIStyle系统与ImGui的样式系统进行桥接
@@ -72,7 +71,6 @@ class ImGuiStyleAdapter {
   // 事件订阅
   SubscriptionGroup m_EventSubscriptions;
 };
-
 }  // namespace mite
 
 #endif  // MITE_IMGUI_STYLE_ADAPTER_H

@@ -1,13 +1,12 @@
 #ifndef MITE_IMGUI_LOCALIZATION_H
 #define MITE_IMGUI_LOCALIZATION_H
 
+#include <nlohmann/json.hpp>
+
 #include "filesystem/fileSystem.h"
 #include "ui_core/ui_localization.h"
 
-#include <nlohmann/json.hpp>
-
 namespace mite {
-
 /**
  * @brief 基于Json配置文件的本地化（翻译）实现
  */
@@ -17,7 +16,8 @@ class UILocalizationJson : public UILocalization {
   ~UILocalizationJson() override;
 
   // 语言管理
-  bool LoadLanguagePack(const std::string &languageCode, const std::string &filePath) override;
+  bool LoadLanguagePack(const std::string &languageCode,
+                        const std::string &filePath) override;
   bool SetCurrentLanguage(const std::string &languageCode) override;
   std::string GetCurrentLanguage() const override;
   std::vector<std::string> GetAvailableLanguages() const override;
@@ -45,7 +45,8 @@ class UILocalizationJson : public UILocalization {
   };
 
   // 从文件加载语言包
-  bool LoadLanguagePackFromFile(const std::string &languageCode, const std::string &filePath);
+  bool LoadLanguagePackFromFile(const std::string &languageCode,
+                                const std::string &filePath);
 
   // 获取本地化文件路径
   std::string GetLocalizationFilePath(const std::string &languageCode) const;
@@ -54,7 +55,8 @@ class UILocalizationJson : public UILocalization {
   bool ValidateLanguagePack(const nlohmann::json &jsonData) const;
 
   // 解析JSON到语言包
-  bool ParseLanguagePack(const nlohmann::json &jsonData, LanguagePack &pack) const;
+  bool ParseLanguagePack(const nlohmann::json &jsonData,
+                         LanguagePack &pack) const;
 
   // 合并翻译项（支持层级结构）
   void MergeTranslations(const nlohmann::json &source,
@@ -69,11 +71,8 @@ class UILocalizationJson : public UILocalization {
   Logger m_Logger;
 
   // 事件订阅系统
-  SubscriptionGroup m_EventSubscriptions;  
-
-
+  SubscriptionGroup m_EventSubscriptions;
 };
-
 }  // namespace mite
 
 #endif  // MITE_IMGUI_LOCALIZATION_H

@@ -1,18 +1,19 @@
 #include "thread_pool_manager.h"
+
 #include <thread>
+
 #include "logger/logger.h"
 
 namespace mite {
 // 静态成员初始化
 std::mutex ThreadPoolManager::s_Mutex;
 
-BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &ThreadPoolManager::GetDefaultPool()
-{
+BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &
+ThreadPoolManager::GetDefaultPool() {
   return GetDefaultPoolImpl<ThreadPoolConfig::DEFAULT_FLAGS>();
 }
 
-size_t ThreadPoolManager::GetRecommendedThreadCount()
-{
+size_t ThreadPoolManager::GetRecommendedThreadCount() {
   // 获取硬件并发线程数
   size_t hardware_threads = std::thread::hardware_concurrency();
 
@@ -28,8 +29,7 @@ size_t ThreadPoolManager::GetRecommendedThreadCount()
   return std::max<size_t>(1, hardware_threads - 1);
 }
 
-void ThreadPoolManager::Initialize()
-{
+void ThreadPoolManager::Initialize() {
   // 预初始化默认线程池，避免首次使用时的创建延迟
   GetDefaultPool();
 
@@ -40,15 +40,15 @@ void ThreadPoolManager::Initialize()
 
   // 日志记录初始化完成
   LOG_INFO("ThreadPoolManager initialized with recommended thread count: {}",
-                 GetRecommendedThreadCount());
+           GetRecommendedThreadCount());
 }
 
-void ThreadPoolManager::Shutdown()
-{
+void ThreadPoolManager::Shutdown() {
   std::lock_guard<std::mutex> lock(s_Mutex);
 
   // 关闭所有默认配置的命名线程池
-  auto &default_pools = NamedPoolStorage<ThreadPoolConfig::DEFAULT_FLAGS>::pools;
+  auto &default_pools =
+      NamedPoolStorage<ThreadPoolConfig::DEFAULT_FLAGS>::pools;
   for (auto &[name, pool] : default_pools) {
     if (pool) {
       pool->wait();  // 等待所有任务完成
@@ -58,7 +58,8 @@ void ThreadPoolManager::Shutdown()
   default_pools.clear();
 
   // 关闭高性能配置的命名线程池
-  auto &high_perf_pools = NamedPoolStorage<ThreadPoolConfig::HIGH_PERFORMANCE_FLAGS>::pools;
+  auto &high_perf_pools =
+      NamedPoolStorage<ThreadPoolConfig::HIGH_PERFORMANCE_FLAGS>::pools;
   for (auto &[name, pool] : high_perf_pools) {
     if (pool) {
       pool->wait();
@@ -67,7 +68,8 @@ void ThreadPoolManager::Shutdown()
   high_perf_pools.clear();
 
   // 关闭安全优先配置的命名线程池
-  auto &safety_pools = NamedPoolStorage<ThreadPoolConfig::SAFETY_FIRST_FLAGS>::pools;
+  auto &safety_pools =
+      NamedPoolStorage<ThreadPoolConfig::SAFETY_FIRST_FLAGS>::pools;
   for (auto &[name, pool] : safety_pools) {
     if (pool) {
       pool->wait();

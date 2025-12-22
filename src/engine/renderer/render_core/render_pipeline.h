@@ -37,7 +37,8 @@ class RenderPipeline {
   virtual void SetClearColor(const glm::vec4 &color) = 0;
 
   // ---- 阶段管理 ----
-  void AddStage(std::unique_ptr<RenderStage> stage, std::shared_ptr<OpenGLShader> shader);
+  void AddStage(std::unique_ptr<RenderStage> stage,
+                std::shared_ptr<OpenGLShader> shader);
   void SetStageEnabled(const std::string &stageName, bool enabled);
   RenderStage *GetStage(const std::string &stageName) const;
 

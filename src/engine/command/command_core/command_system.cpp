@@ -2,8 +2,7 @@
 
 namespace mite {
 // ==================== 单例实现 ====================
-CommandSystem &CommandSystem::Get()
-{
+CommandSystem &CommandSystem::Get() {
   static CommandSystem instance;
   return instance;
 }
@@ -12,19 +11,14 @@ CommandSystem::CommandSystem()
     : m_Registry(std::make_unique<CommandRegistry>()),
       m_Executor(std::make_unique<CommandExecutor>(*m_Registry)),
       m_UndoStack(std::make_unique<CommandUndoStack>()),
-      m_RedoStack(std::make_unique<CommandRedoStack>())
-{
+      m_RedoStack(std::make_unique<CommandRedoStack>()) {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Command System");
   m_Logger->debug("Command System created");
 }
-CommandSystem::~CommandSystem()
-{
-  Shutdown(true);
-}
+CommandSystem::~CommandSystem() { Shutdown(true); }
 
 // ==================== 系统生命周期管理接口实现 ====================
-void CommandSystem::Initialize(const CommandSystemInitParams &initParams)
-{
+void CommandSystem::Initialize(const CommandSystemInitParams &initParams) {
   if (m_initialized) {
     m_Logger->warn("CommandSystem already initialized");
     return;
@@ -47,10 +41,8 @@ void CommandSystem::Initialize(const CommandSystemInitParams &initParams)
   m_Logger->info("CommandSystem initialized");
 }
 
-void CommandSystem::Shutdown(bool waitForCompletion)
-{
-  if (!m_initialized)
-    return;
+void CommandSystem::Shutdown(bool waitForCompletion) {
+  if (!m_initialized) return;
 
   // 停止执行器
   m_Executor->Stop(waitForCompletion);
@@ -61,24 +53,18 @@ void CommandSystem::Shutdown(bool waitForCompletion)
   m_Logger->info("CommandSystem shutdown");
 }
 
-bool CommandSystem::IsInitialized() const
-{
-  return m_initialized;
-}
+bool CommandSystem::IsInitialized() const { return m_initialized; }
 
-bool CommandSystem::HasCommand(const CommandHandle &handle) const
-{
+bool CommandSystem::HasCommand(const CommandHandle &handle) const {
   return m_Registry->HasCommand(handle);
 }
 
-bool CommandSystem::ReleaseCommand(const CommandHandle &handle)
-{
+bool CommandSystem::ReleaseCommand(const CommandHandle &handle) {
   return m_Registry->ReleaseCommand(handle);
 }
 
 // ==================== 命令执行接口实现 ====================
-CommandResult CommandSystem::Execute(CommandHandle handle)
-{
+CommandResult CommandSystem::Execute(CommandHandle handle) {
   if (!handle.IsValid()) {
     return CommandResult::Failure("Invalid command handle");
   }
@@ -89,8 +75,8 @@ CommandResult CommandSystem::Execute(CommandHandle handle)
   return result;
 }
 
-CommandResult CommandSystem::Submit(CommandHandle handle, CommandPriority priority)
-{
+CommandResult CommandSystem::Submit(CommandHandle handle,
+                                    CommandPriority priority) {
   if (!handle.IsValid()) {
     return CommandResult::Failure("Invalid command handle");
   }
@@ -98,14 +84,12 @@ CommandResult CommandSystem::Submit(CommandHandle handle, CommandPriority priori
   bool submitted = m_Executor->SubmitCommandAsync(handle, nullptr, priority);
   if (submitted) {
     return CommandResult::Pending("Command submitted for execution");
-  }
-  else {
+  } else {
     return CommandResult::Failure("Command submission failed");
   }
 }
 // ==================== Undo/Redo 接口实现 ====================
-CommandResult CommandSystem::Undo()
-{
+CommandResult CommandSystem::Undo() {
   if (!CanUndo()) {
     return CommandResult::Failure("Nothing to undo");
   }
@@ -121,8 +105,7 @@ CommandResult CommandSystem::Undo()
   return result;
 }
 
-bool CommandSystem::UndoSubmit()
-{
+bool CommandSystem::UndoSubmit() {
   if (!CanUndo()) {
     return false;
   }
@@ -135,8 +118,7 @@ bool CommandSystem::UndoSubmit()
   return m_Executor->SubmitCommandAsync(handle);
 }
 
-CommandResult CommandSystem::Redo()
-{
+CommandResult CommandSystem::Redo() {
   if (!CanRedo()) {
     return CommandResult::Failure("Nothing to redo");
   }
@@ -152,8 +134,7 @@ CommandResult CommandSystem::Redo()
   return result;
 }
 
-bool CommandSystem::RedoSubmit()
-{
+bool CommandSystem::RedoSubmit() {
   if (!CanRedo()) {
     return false;
   }
@@ -166,55 +147,36 @@ bool CommandSystem::RedoSubmit()
   return m_Executor->SubmitCommandAsync(handle);
 }
 
-bool CommandSystem::CanUndo() const
-{
+bool CommandSystem::CanUndo() const {
   // 栈不为空，即可撤销
   return !m_UndoStack->IsEmpty();
 }
-bool CommandSystem::CanRedo() const
-{
+bool CommandSystem::CanRedo() const {
   // 栈不为空，即可重做
   return !m_RedoStack->IsEmpty();
 }
-size_t CommandSystem::GetUndoStackSize() const
-{
+size_t CommandSystem::GetUndoStackSize() const {
   return m_UndoStack->GetSize();
 }
-size_t CommandSystem::GetRedoStackSize() const
-{
+size_t CommandSystem::GetRedoStackSize() const {
   return m_RedoStack->GetSize();
 }
-void CommandSystem::ClearStacks()
-{
+void CommandSystem::ClearStacks() {
   m_UndoStack->Clear();
   m_RedoStack->Clear();
 }
-void CommandSystem::SetMaxStackSize(size_t maxSize)
-{
+void CommandSystem::SetMaxStackSize(size_t maxSize) {
   m_UndoStack->SetMaxSize(maxSize);
   m_RedoStack->SetMaxSize(maxSize);
 }
 
 // ==================== 其他接口实现 ====================
-CommandExecutor &CommandSystem::GetExecutor()
-{
-  return *m_Executor;
-}
-CommandRegistry &CommandSystem::GetRegistry()
-{
-  return *m_Registry;
-}
-CommandUndoStack &CommandSystem::GetUndoStack()
-{
-  return *m_UndoStack;
-}
-CommandRedoStack &CommandSystem::GetRedoStack()
-{
-  return *m_RedoStack;
-}
+CommandExecutor &CommandSystem::GetExecutor() { return *m_Executor; }
+CommandRegistry &CommandSystem::GetRegistry() { return *m_Registry; }
+CommandUndoStack &CommandSystem::GetUndoStack() { return *m_UndoStack; }
+CommandRedoStack &CommandSystem::GetRedoStack() { return *m_RedoStack; }
 
-void CommandSystem::OnCommandCompleted(CommandCompletedEvent &event)
-{
+void CommandSystem::OnCommandCompleted(CommandCompletedEvent &event) {
   if (event.GetResult().success && event.HasCommandHandle()) {
     CommandHandle handle = event.GetCommandHandle();
 
@@ -223,17 +185,18 @@ void CommandSystem::OnCommandCompleted(CommandCompletedEvent &event)
       // 正常命令执行完成：添加到撤销栈，清空重做栈
       m_UndoStack->Push(*m_Registry, handle);
       m_RedoStack->Clear();
-      m_Logger->debug("Command handle {} added to undo stack", handle.ToString());
-    }
-    else if (event.GetResult().state == CommandExecutionState::UNDONE) {
+      m_Logger->debug("Command handle {} added to undo stack",
+                      handle.ToString());
+    } else if (event.GetResult().state == CommandExecutionState::UNDONE) {
       // 撤销操作完成：添加到重做栈
       m_RedoStack->Push(handle);
-      m_Logger->debug("Command handle {} added to redo stack (undo completed)", handle.ToString());
-    }
-    else if (event.GetResult().state == CommandExecutionState::REDONE) {
+      m_Logger->debug("Command handle {} added to redo stack (undo completed)",
+                      handle.ToString());
+    } else if (event.GetResult().state == CommandExecutionState::REDONE) {
       // 重做操作完成：添加到撤销栈
       m_UndoStack->Push(*m_Registry, handle);
-      m_Logger->debug("Command handle {} added to undo stack (redo completed)", handle.ToString());
+      m_Logger->debug("Command handle {} added to undo stack (redo completed)",
+                      handle.ToString());
     }
   }
   // Failed则无需处理

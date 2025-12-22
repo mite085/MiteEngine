@@ -71,7 +71,9 @@ class SceneCore {
   /**
    * @brief 获取ComponentSystemManager
    */
-  ComponentSystemManager &GetComponentSystemManager() { return m_SystemManager; }
+  ComponentSystemManager &GetComponentSystemManager() {
+    return m_SystemManager;
+  }
   /**
    * @brief 初始化组件系统
    *

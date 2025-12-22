@@ -1,9 +1,9 @@
 #ifndef MITE_COMMAND_EVENTS
 #define MITE_COMMAND_EVENTS
 
-#include "subscription_group.h"
 #include "command.h"
 #include "command_executor/command_execution_context.h"
+#include "subscription_group.h"
 
 namespace mite {
 /**
@@ -21,25 +21,13 @@ class CommandExecuteEvent : public Event {
    */
   explicit CommandExecuteEvent(const Command *commandInfo,
                                CommandExecutionContext *context)
-      : m_CommandInfo(commandInfo), m_Context(context)
-  {
-  }
-  const Command *GetCommandInfo() const
-  {
-    return m_CommandInfo;
-  }
-  CommandExecutionContext *GetContext() const
-  {
-    return m_Context;
-  }
-  CommandPriority GetPriority() const
-  {
-    return m_CommandInfo->GetPriority();
-  }
+      : m_CommandInfo(commandInfo), m_Context(context) {}
+  const Command *GetCommandInfo() const { return m_CommandInfo; }
+  CommandExecutionContext *GetContext() const { return m_Context; }
+  CommandPriority GetPriority() const { return m_CommandInfo->GetPriority(); }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_COMMAND)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new CommandExecuteEvent(m_CommandInfo, m_Context);
   }
 
@@ -62,42 +50,23 @@ class CommandCompletedEvent : public Event {
   /**
    * @brief 获取执行结果（不转移所有权）
    */
-  const CommandResult &GetResult() const
-  {
-    return m_Result;
-  }
+  const CommandResult &GetResult() const { return m_Result; }
   /**
    * @brief 检查是否包含命令对象
    */
-  bool HasCommandHandle() const
-  {
-    return m_Result.HasCommandHandle();
-  }
+  bool HasCommandHandle() const { return m_Result.HasCommandHandle(); }
   /**
    * @brief 获取命令句柄
    */
-  const CommandHandle &GetCommandHandle() const
-  {
+  const CommandHandle &GetCommandHandle() const {
     return m_Result.GetCommandHandle();
   }
-  bool IsSuccess() const
-  {
-    return m_Result.success;
-  }
-  CommandExecutionState GetState() const
-  {
-    return m_Result.state;
-  }
-  const std::string &GetMessage() const
-  {
-    return m_Result.message;
-  }
+  bool IsSuccess() const { return m_Result.success; }
+  CommandExecutionState GetState() const { return m_Result.state; }
+  const std::string &GetMessage() const { return m_Result.message; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_COMMAND)
-  Event *Clone() const override
-  {
-    return new CommandCompletedEvent(m_Result);
-  }
+  Event *Clone() const override { return new CommandCompletedEvent(m_Result); }
 
  private:
   CommandResult m_Result;  // 持有命令对象的所有权
@@ -112,16 +81,10 @@ class CommandUndoEvent : public Event {
    * @param result 撤销操作结果（包含命令对象）
    */
   explicit CommandUndoEvent(CommandHandle handle) : m_Handle(handle) {}
-  const CommandHandle &GetHandle() const
-  {
-    return m_Handle;
-  }
+  const CommandHandle &GetHandle() const { return m_Handle; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_COMMAND)
-  Event *Clone() const override
-  {
-    return new CommandUndoEvent(m_Handle);
-  }
+  Event *Clone() const override { return new CommandUndoEvent(m_Handle); }
 
  private:
   CommandHandle m_Handle;
@@ -136,16 +99,10 @@ class CommandRedoEvent : public Event {
    * @param result 重做操作结果（包含命令对象）
    */
   explicit CommandRedoEvent(CommandHandle handle) : m_Handle(handle) {}
-  const CommandHandle &GetHandle() const
-  {
-    return m_Handle;
-  }
+  const CommandHandle &GetHandle() const { return m_Handle; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_COMMAND)
-  Event *Clone() const override
-  {
-    return new CommandRedoEvent(m_Handle);
-  }
+  Event *Clone() const override { return new CommandRedoEvent(m_Handle); }
 
  private:
   CommandHandle m_Handle;

@@ -26,9 +26,7 @@ class FrameBuffer {
   FrameBuffer(const FrameBuffer &) = delete;
   FrameBuffer &operator=(const FrameBuffer &) = delete;
 
-  glm::vec2 GetSize() const {
-    return {m_Spec.width, m_Spec.height};
-  }
+  glm::vec2 GetSize() const { return {m_Spec.width, m_Spec.height}; }
 
   // ==================== 核心接口 ====================
   /**
@@ -72,14 +70,15 @@ class FrameBuffer {
    * @brief 获取所有颜色附件
    * @return 颜色附件映射表
    */
-  const std::unordered_map<uint32_t, RuntimeTexturePtr> &GetColorAttachments() const
-  {
+  const std::unordered_map<uint32_t, RuntimeTexturePtr> &GetColorAttachments()
+      const {
     return m_ColorAttachments;
   }
 
   // ==================== 绑定外部来源的深度附件纹理 ====================
-   /**
-   * @brief 绑定外部深度纹理作为深度附件（目前作为ForwardStage复用GBufferStage深度结果的专用函数）
+  /**
+   * @brief
+   * 绑定外部深度纹理作为深度附件（目前作为ForwardStage复用GBufferStage深度结果的专用函数）
    * @param externalDepthTexture 外部深度纹理
    * @note 调用此方法后，本FBO将使用外部深度纹理，但不会管理其生命周期
    */
@@ -90,10 +89,7 @@ class FrameBuffer {
    * @brief 获取帧缓冲规格
    * @return 帧缓冲规格引用
    */
-  const FrameBufferSpec &GetSpecification() const
-  {
-    return m_Spec;
-  }
+  const FrameBufferSpec &GetSpecification() const { return m_Spec; }
 
   /**
    * @brief 检查帧缓冲是否完整
@@ -123,7 +119,6 @@ class FrameBuffer {
   RuntimeTexturePtr m_DepthAttachment = nullptr;
   RuntimeTexturePtr m_StencilAttachment = nullptr;
 };
-
 }  // namespace mite
 
 #endif  // MITE_FRAMEBUFFER_H

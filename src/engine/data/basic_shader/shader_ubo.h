@@ -21,18 +21,14 @@ class ShaderUBO {
    * @param bindingPoint 预分配的绑定点（使用BindingPointManager）
    * @param usage 缓冲区使用模式
    */
-  explicit ShaderUBO(size_t size,
-                     uint32_t bindingPoint,
+  explicit ShaderUBO(size_t size, uint32_t bindingPoint,
                      GLenum usage = GL_DYNAMIC_DRAW);
   ~ShaderUBO();
 
   // ---- 生命周期管理 ----
   void Initialize();
   void Destroy();
-  bool IsInitialized() const
-  {
-    return m_IsInitialized;
-  }
+  bool IsInitialized() const { return m_IsInitialized; }
 
   // ---- 数据操作 ----
   /**
@@ -61,33 +57,22 @@ class ShaderUBO {
   // * @param shader 目标着色器
   // * @param uniformBlockName Uniform块名称
   // */
-  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+  // void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
   //                        const std::string &uniformBlockName) const;
 
   // ---- 属性访问 ----
-  uint32_t GetUBOId() const
-  {
-    return m_UBOId;
-  }
-  size_t GetSize() const
-  {
-    return m_Size;
-  }
-  GLenum GetUsage() const
-  {
-    return m_Usage;
-  }
-  uint32_t GetBindingPoint() const
-  {
-    return m_BindingPoint;
-  }
+  uint32_t GetUBOId() const { return m_UBOId; }
+  size_t GetSize() const { return m_Size; }
+  GLenum GetUsage() const { return m_Usage; }
+  uint32_t GetBindingPoint() const { return m_BindingPoint; }
 
  private:
-  uint32_t m_UBOId = 0;                  // OpenGL UBO句柄
-  size_t m_Size = 0;                     // UBO大小（字节）
-  GLenum m_Usage = GL_DYNAMIC_DRAW;      // 缓冲区使用模式
-  uint32_t m_BindingPoint = UINT32_MAX;  // 绑定点（通过BindingPointManager分配）
-  bool m_IsInitialized = false;          // 初始化状态
+  uint32_t m_UBOId = 0;              // OpenGL UBO句柄
+  size_t m_Size = 0;                 // UBO大小（字节）
+  GLenum m_Usage = GL_DYNAMIC_DRAW;  // 缓冲区使用模式
+  uint32_t m_BindingPoint =
+      UINT32_MAX;                // 绑定点（通过BindingPointManager分配）
+  bool m_IsInitialized = false;  // 初始化状态
 
   // ---- 内部方法 ----
   void CreateUBO();

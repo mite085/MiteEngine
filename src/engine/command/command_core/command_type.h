@@ -14,32 +14,16 @@ class CommandHandle {
  public:
   UUID id;  // 唯一标识，用于在注册表内索引CommandPtr对象，默认为空ID
 
-  CommandHandle() : id(UUID()){}
+  CommandHandle() : id(UUID()) {}
   explicit CommandHandle(const UUID uuid) : id(uuid) {}
-  bool IsValid() const
-  {
-    return !id.is_nil();
-  }
-  bool operator==(const CommandHandle &other) const
-  {
-    return id == other.id;
-  }
-  bool operator!=(const CommandHandle &other) const
-  {
-    return id != other.id;
-  }
-  bool operator<(const CommandHandle &other) const
-  {
-    return id < other.id;
-  }
-  std::string ToString() const
-  {
-    return UUIDGenerator::UUIDToString(id);
-  }
+  bool IsValid() const { return !id.is_nil(); }
+  bool operator==(const CommandHandle &other) const { return id == other.id; }
+  bool operator!=(const CommandHandle &other) const { return id != other.id; }
+  bool operator<(const CommandHandle &other) const { return id < other.id; }
+  std::string ToString() const { return UUIDGenerator::UUIDToString(id); }
 
   // 静态创建方法
-  static CommandHandle Create()
-  {
+  static CommandHandle Create() {
     return CommandHandle(UUIDGenerator::Generate());
   }
 };
@@ -78,9 +62,9 @@ enum class CommandExecutionState {
 
 // 命令优先级（用于执行顺序控制）（与BS::priority_t保持一致）
 enum class CommandPriority : int8_t {
-  LOW = -64,        // 低优先级命令
-  NORMAL = 0,    // 普通优先级命令
-  HIGH = +64,     // 高优先级命令
+  LOW = -64,       // 低优先级命令
+  NORMAL = 0,      // 普通优先级命令
+  HIGH = +64,      // 高优先级命令
   CRITICAL = +127  // 关键优先级命令
 };
 
@@ -102,19 +86,21 @@ enum CommandContextFlags : uint32_t {
  *
  * // 1: 默认构造
  * mite::CommandResult result1;
- * // result1: success=false, state=PENDING, message="Default constructed result", command =
- * nullptr
+ * // result1: success=false, state=PENDING, message="Default constructed
+ * result", command = nullptr
  *
  * // 2: 使用静态工厂方法（注意CommandResult所有权移交）
- * auto result2 = mite::CommandResult::Success(std::move(cmd), "Operation completed");
+ * auto result2 = mite::CommandResult::Success(std::move(cmd), "Operation
+ * completed");
  * // result2: success=true, state=SUCCEEDED, message="Operation completed"
  *
- * auto result3 = mite::CommandResult::Failure("File not found", std::move(cmd));
+ * auto result3 = mite::CommandResult::Failure("File not found",
+ * std::move(cmd));
  * // result3: success=false, state=FAILED, message="File not found"
  *
  * // 3: 参数化构造（注意CommandResult所有权移交）
- * mite::CommandResult result4(true, mite::CommandExecutionState::SUCCEEDED, "Created entity",
- * std::move(cmd));
+ * mite::CommandResult result4(true, mite::CommandExecutionState::SUCCEEDED,
+ * "Created entity", std::move(cmd));
  * // result4: success=true, state=SUCCEEDED, message="Created entity"
  *
  * // 4: 布尔检查
@@ -124,7 +110,8 @@ enum CommandContextFlags : uint32_t {
  *
  * // 5: 字符串表示
  * LOG_DEBUG("Result: {}", result3.ToString());
- * // 输出: "Result: CommandResult{success: false, state: FAILED, message: "File not found"}"
+ * // 输出: "Result: CommandResult{success: false, state: FAILED, message: "File
+ * not found"}"
  *
  * // 6: 有效性检查
  * if (!result1.IsValid()) {
@@ -146,22 +133,20 @@ struct CommandResult {
       : success(false),
         state(CommandExecutionState::PENDING),
         message("Default constructed result"),
-        commandHandle()
-  {
-  }
+        commandHandle() {}
   /**
    * @brief 参数化构造函数
    * @param success 执行是否成功
    * @param state 执行状态
    * @param message 结果消息（可选）
    */
-  CommandResult(bool success,
-                CommandExecutionState state,
+  CommandResult(bool success, CommandExecutionState state,
                 std::string message = "",
                 CommandHandle handle = CommandHandle())
-      : success(success), state(state), message(message), commandHandle(handle)
-  {
-  }
+      : success(success),
+        state(state),
+        message(message),
+        commandHandle(handle) {}
 
   // ==================== 静态工厂方法 ====================
   /**
@@ -170,8 +155,7 @@ struct CommandResult {
    * @param message 成功消息
    */
   static CommandResult Success(CommandHandle handle = CommandHandle(),
-                               std::string message = "Success")
-  {
+                               std::string message = "Success") {
     return {true, CommandExecutionState::SUCCEEDED, message, handle};
   }
   /**
@@ -180,16 +164,14 @@ struct CommandResult {
    * @param handle 命令句柄（可选）
    */
   static CommandResult Failure(std::string message = "Failure",
-                               CommandHandle handle = CommandHandle())
-  {
+                               CommandHandle handle = CommandHandle()) {
     return {false, CommandExecutionState::FAILED, message, handle};
   }
   /**
    * @brief 创建待定结果
    * @param message 待定消息
    */
-  static CommandResult Pending(std::string message = "Pending")
-  {
+  static CommandResult Pending(std::string message = "Pending") {
     return {false, CommandExecutionState::PENDING, message};
   }
 
@@ -198,17 +180,16 @@ struct CommandResult {
    * @brief 检查结果是否有效（非默认构造状态）
    * @return bool 是否有效
    */
-  bool IsValid() const
-  {
-    return state != CommandExecutionState::PENDING || message != "Default constructed result";
+  bool IsValid() const {
+    return state != CommandExecutionState::PENDING ||
+           message != "Default constructed result";
   }
 
   /**
    * @brief 转换为字符串表示（用于调试）
    * @return std::string 字符串表示
    */
-  static std::string StateToString(CommandExecutionState state)
-  {
+  static std::string StateToString(CommandExecutionState state) {
     std::string stateStr;
     switch (state) {
       case CommandExecutionState::PENDING:
@@ -235,48 +216,38 @@ struct CommandResult {
     }
     return stateStr;
   }
-  std::string ToString() const
-  {
+  std::string ToString() const {
     std::string stateStr = StateToString(state);
-    std::string handleStr = commandHandle.IsValid() ? commandHandle.ToString() : "Invalid";
+    std::string handleStr =
+        commandHandle.IsValid() ? commandHandle.ToString() : "Invalid";
 
     return "CommandResult{success: " + std::string(success ? "true" : "false") +
-           ", state: " + stateStr + ", handle: " + handleStr + ", message: \"" + message + "\"}";
+           ", state: " + stateStr + ", handle: " + handleStr + ", message: \"" +
+           message + "\"}";
   }
-  bool HasCommandHandle() const
-  {
-    return commandHandle.IsValid();
-  }
-  const CommandHandle &GetCommandHandle() const
-  {
-    return commandHandle;
-  }
+  bool HasCommandHandle() const { return commandHandle.IsValid(); }
+  const CommandHandle &GetCommandHandle() const { return commandHandle; }
   // ==================== 操作符重载 ====================
   /**
    * @brief 布尔转换操作符
    * @return bool 执行是否成功
    */
-  explicit operator bool() const
-  {
-    return success;
-  }
+  explicit operator bool() const { return success; }
   /**
    * @brief 相等比较操作符
    * @param other 另一个CommandResult
    * @return bool 是否相等
    */
-  bool operator==(const CommandResult &other) const
-  {
-    return success == other.success && state == other.state && message == other.message &&
-           commandHandle == other.commandHandle;
+  bool operator==(const CommandResult &other) const {
+    return success == other.success && state == other.state &&
+           message == other.message && commandHandle == other.commandHandle;
   }
   /**
    * @brief 不等比较操作符
    * @param other 另一个CommandResult
    * @return bool 是否不等
    */
-  bool operator!=(const CommandResult &other) const
-  {
+  bool operator!=(const CommandResult &other) const {
     return !(*this == other);
   }
 };
@@ -284,9 +255,9 @@ struct CommandResult {
 
 // 为 CommandHandle 特化 std::hash
 namespace std {
-template<> struct hash<mite::CommandHandle> {
-  size_t operator()(const mite::CommandHandle &handle) const noexcept
-  {
+template <>
+struct hash<mite::CommandHandle> {
+  size_t operator()(const mite::CommandHandle &handle) const noexcept {
     return std::hash<mite::UUID>{}(handle.id);
   }
 };

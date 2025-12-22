@@ -22,21 +22,26 @@ class BindingPointManager {
   void Reset();
 
   // ---- UBO 绑定点接口 ----
-  uint32_t AllocateUBOBinding(UBOResourceType type, const std::string &name = "");
+  uint32_t AllocateUBOBinding(UBOResourceType type,
+                              const std::string &name = "");
   void ReleaseUBOBinding(uint32_t bindingPoint);
   uint32_t GetCameraUBOBinding() const { return m_CameraUBOBinding; }
   uint32_t GetMaterialUBOBinding() const { return m_MaterialUBOBinding; }
   uint32_t GetModelUBOBinding() const { return m_ModelUBOBinding; }
   uint32_t GetShadowUBOBinding() const { return m_ShadowUBOBinding; }
-  uint32_t GetShadowRenderContextUBOBinding() const { return m_ShadowRenderContextUBOBinding; }
+  uint32_t GetShadowRenderContextUBOBinding() const {
+    return m_ShadowRenderContextUBOBinding;
+  }
 
   // ---- SSBO 绑定点接口 ----
-  uint32_t AllocateSSBOBinding(SSBOResourceType type, const std::string &name = "");
+  uint32_t AllocateSSBOBinding(SSBOResourceType type,
+                               const std::string &name = "");
   void ReleaseSSBOBinding(uint32_t bindingPoint);
   uint32_t GetLightSSBOBinding() const { return m_LightSSBOBinding; }
 
   // ---- 纹理绑定点接口 ----
-  uint32_t AllocateTextureBinding(TextureResourceType category, const std::string &name = "");
+  uint32_t AllocateTextureBinding(TextureResourceType category,
+                                  const std::string &name = "");
   void ReleaseTextureBinding(uint32_t textureUnit);
   uint32_t GetRuntimeTextureBinding(RuntimeTextureType type) const;
   uint32_t GetExternalTextureBinding(ExternalTextureType type) const;
@@ -68,8 +73,7 @@ class BindingPointManager {
    * @param name 资源名称（用于调试和识别）
    * @return 分配的绑定点，如果分配失败返回UINT32_MAX
    */
-  uint32_t AllocateFromRange(std::bitset<1024> &allocated,
-                             uint32_t rangeStart,
+  uint32_t AllocateFromRange(std::bitset<1024> &allocated, uint32_t rangeStart,
                              uint32_t rangeCount,
                              std::atomic<uint32_t> &nextPoint,
                              const std::string &name);
@@ -80,7 +84,8 @@ class BindingPointManager {
 
   // UBO 绑定点管理
   std::bitset<1024> m_AllocatedUBOs;
-  std::array<std::atomic<uint32_t>, static_cast<size_t>(UBOResourceType::Count)> m_NextUBOPoints;
+  std::array<std::atomic<uint32_t>, static_cast<size_t>(UBOResourceType::Count)>
+      m_NextUBOPoints;
   uint32_t m_CameraUBOBinding = UINT32_MAX;
   uint32_t m_MaterialUBOBinding = UINT32_MAX;
   uint32_t m_ModelUBOBinding = UINT32_MAX;
@@ -89,13 +94,16 @@ class BindingPointManager {
 
   // SSBO 绑定点管理
   std::bitset<1024> m_AllocatedSSBOs;
-  std::array<std::atomic<uint32_t>, static_cast<size_t>(SSBOResourceType::Count)> m_NextSSBOPoints;
+  std::array<std::atomic<uint32_t>,
+             static_cast<size_t>(SSBOResourceType::Count)>
+      m_NextSSBOPoints;
   uint32_t m_LightSSBOBinding = UINT32_MAX;
 
   // 纹理单元管理
   std::bitset<1024> m_AllocatedTextures;  // 负责密集式bindpoint分配管理
-  std::array<std::atomic<uint32_t>, static_cast<size_t>(TextureResourceType::Count)>
-      m_NextTexturePoints; 
+  std::array<std::atomic<uint32_t>,
+             static_cast<size_t>(TextureResourceType::Count)>
+      m_NextTexturePoints;
 
   // 纹理类型映射
   std::unordered_map<RuntimeTextureType, uint32_t> m_RuntimeTextureBindings;

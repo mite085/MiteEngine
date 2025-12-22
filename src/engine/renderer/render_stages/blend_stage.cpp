@@ -1,22 +1,17 @@
 #include "blend_stage.h"
+
 #include "basic_shader/shader_cache.h"
 #include "render_opengl/opengl_command.h"
 
 namespace mite {
-
-BlendStage::BlendStage() : RenderStage("BlendStage")
-{
+BlendStage::BlendStage() : RenderStage("BlendStage") {
   SetupBlendRenderState();
   m_Logger->info("BlendStage created");
 }
 
-BlendStage::~BlendStage()
-{
-  m_Logger->info("BlendStage destroyed");
-}
+BlendStage::~BlendStage() { m_Logger->info("BlendStage destroyed"); }
 
-void BlendStage::Initialize([[maybe_unused]] RenderContext &context)
-{
+void BlendStage::Initialize([[maybe_unused]] RenderContext &context) {
   if (m_Initialized) {
     m_Logger->warn("BlendStage already initialized");
     return;
@@ -29,8 +24,7 @@ void BlendStage::Initialize([[maybe_unused]] RenderContext &context)
   m_Logger->info("BlendStage initialization completed");
 }
 
-void BlendStage::Execute(RenderContext &context)
-{
+void BlendStage::Execute(RenderContext &context) {
   if (!m_Initialized) {
     m_Logger->warn("BlendStage executed but not properly initialized");
     return;
@@ -44,11 +38,13 @@ void BlendStage::Execute(RenderContext &context)
   // 从上下文获取BlendStage的着色器
   auto blendShader = context.GetStageShader("BlendStage");
   if (!blendShader) {
-    m_Logger->error("BlendStage: No blendShader found in context for stage 'BlendStage'");
+    m_Logger->error(
+        "BlendStage: No blendShader found in context for stage 'BlendStage'");
     return;
   }
   if (blendShader->GetProgramId() == 0) {
-    m_Logger->error("BlendStage: blendShader from context is not properly linked");
+    m_Logger->error(
+        "BlendStage: blendShader from context is not properly linked");
     return;
   }
 
@@ -63,8 +59,8 @@ void BlendStage::Execute(RenderContext &context)
   RenderCommand::Get().BindFrameBuffer(m_BlendFBO);
 
   // 清除输出目标
-  RenderCommand::Get().Clear(
-      GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
+  RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT,
+                             glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
   // 设置混合渲染状态
   RenderCommand::Get().SetRenderState(m_BlendState);
@@ -88,7 +84,8 @@ void BlendStage::Execute(RenderContext &context)
     context.SetRenderTarget("Forward_Blend", blendTexture);
 
     // 发布纹理完成事件
-    RenderCommand::Get().PublishEventRuntimeTextureFinished(blendTexture, "Forward_Blend");
+    RenderCommand::Get().PublishEventRuntimeTextureFinished(blendTexture,
+                                                            "Forward_Blend");
 
     m_Logger->trace("Stored blend output to context");
   }
@@ -99,8 +96,7 @@ void BlendStage::Execute(RenderContext &context)
   RenderCommand::Get().Flush();
 }
 
-void BlendStage::Shutdown()
-{
+void BlendStage::Shutdown() {
   // 清理Framebuffer
   if (m_BlendFBO) {
     m_BlendFBO.reset();
@@ -110,8 +106,7 @@ void BlendStage::Shutdown()
   m_Logger->info("BlendStage shutdown completed");
 }
 
-void BlendStage::CreateBlendFramebuffer()
-{
+void BlendStage::CreateBlendFramebuffer() {
   // 配置Framebuffer规格
   FrameBufferSpec spec;
   spec.samples = 1;
@@ -124,11 +119,11 @@ void BlendStage::CreateBlendFramebuffer()
   spec.attachments.push_back(colorSpec);
 
   //// 创建深度附件（延迟光照应当无需深度附件）
-  //FrameBufferAttachmentSpec depthAttachment;
-  //depthAttachment.type = RuntimeTextureType::Depth;
-  //depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
-  //depthAttachment.generateMipmaps = false;
-  //spec.attachments.push_back(depthAttachment);
+  // FrameBufferAttachmentSpec depthAttachment;
+  // depthAttachment.type = RuntimeTextureType::Depth;
+  // depthAttachment.internalFormat = TextureFormat::DEPTH_COMPONENT16;
+  // depthAttachment.generateMipmaps = false;
+  // spec.attachments.push_back(depthAttachment);
 
   // 创建Framebuffer
   m_BlendFBO = std::make_shared<FrameBuffer>(spec);
@@ -141,8 +136,7 @@ void BlendStage::CreateBlendFramebuffer()
   m_Logger->info("Created blend output framebuffer");
 }
 
-void BlendStage::SetupBlendRenderState()
-{
+void BlendStage::SetupBlendRenderState() {
   m_BlendState = std::make_shared<OpenGLRenderState>();
 
   // 混合阶段：不需要深度测试，不需要混合（混合在着色器中完成）
@@ -156,37 +150,35 @@ void BlendStage::SetupBlendRenderState()
   m_BlendState->colorWriteA = true;
 }
 
-void BlendStage::BindInputTextures(RenderContext &context)
-{
+void BlendStage::BindInputTextures(RenderContext &context) {
   // 绑定Deferred Lighting纹理
-  RuntimeTexturePtr deferredTexture = context.GetRenderTarget("Deferred_Lighting_Combined");
+  RuntimeTexturePtr deferredTexture =
+      context.GetRenderTarget("Deferred_Lighting_Combined");
   if (deferredTexture && deferredTexture->IsValid()) {
-    RenderCommand::Get().BindRuntimeTexture(RuntimeTextureType::Lighting_Combined,
-                                            deferredTexture->GetHandle(),
-                                            TextureTarget::TEXTURE_2D);
+    RenderCommand::Get().BindRuntimeTexture(
+        RuntimeTextureType::Lighting_Combined, deferredTexture->GetHandle(),
+        TextureTarget::TEXTURE_2D);
 
     m_Logger->trace("Bound deferred lighting texture");
-  }
-  else {
+  } else {
     m_Logger->warn("Missing deferred lighting texture");
   }
 
   // 绑定Forward半透明纹理
-  RuntimeTexturePtr forwardTexture = context.GetRenderTarget("Forward_Transparent");
+  RuntimeTexturePtr forwardTexture =
+      context.GetRenderTarget("Forward_Transparent");
   if (forwardTexture && forwardTexture->IsValid()) {
-    RenderCommand::Get().BindRuntimeTexture(RuntimeTextureType::Forward_Transparent,
-                                            forwardTexture->GetHandle(),
-                                            TextureTarget::TEXTURE_2D);
+    RenderCommand::Get().BindRuntimeTexture(
+        RuntimeTextureType::Forward_Transparent, forwardTexture->GetHandle(),
+        TextureTarget::TEXTURE_2D);
 
     m_Logger->trace("Bound forward transparent texture");
-  }
-  else {
+  } else {
     m_Logger->warn("Missing forward transparent texture");
   }
 }
 
-void BlendStage::ValidateInputs(RenderContext &context) const
-{
+void BlendStage::ValidateInputs(RenderContext &context) const {
   // 验证必要的输入纹理
   auto deferredTexture = context.GetRenderTarget("Deferred_Lighting_Combined");
   if (!deferredTexture || !deferredTexture->IsValid()) {
@@ -200,8 +192,7 @@ void BlendStage::ValidateInputs(RenderContext &context) const
   }
 }
 
-void BlendStage::ValidateBlendFramebuffer(const glm::vec2 &viewportSize)
-{
+void BlendStage::ValidateBlendFramebuffer(const glm::vec2 &viewportSize) {
   if (!m_BlendFBO) {
     m_Logger->error("Invalid blend framebuffer");
     return;
@@ -209,11 +200,8 @@ void BlendStage::ValidateBlendFramebuffer(const glm::vec2 &viewportSize)
 
   auto currentSize = m_BlendFBO->GetSize();
   if (currentSize != viewportSize) {
-    m_Logger->info("Resizing blend FBO from {}x{} to {}x{}",
-                   currentSize.x,
-                   currentSize.y,
-                   viewportSize.x,
-                   viewportSize.y);
+    m_Logger->info("Resizing blend FBO from {}x{} to {}x{}", currentSize.x,
+                   currentSize.y, viewportSize.x, viewportSize.y);
     m_BlendFBO->Resize(static_cast<uint32_t>(glm::max(viewportSize.x, 0.0f)),
                        static_cast<uint32_t>(glm::max(viewportSize.y, 0.0f)));
 
@@ -223,5 +211,4 @@ void BlendStage::ValidateBlendFramebuffer(const glm::vec2 &viewportSize)
     }
   }
 }
-
 }  // namespace mite

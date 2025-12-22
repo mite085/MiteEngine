@@ -1,8 +1,7 @@
 #include "event.h"
 
 namespace mite {
-std::string Event::ToString() const
-{
+std::string Event::ToString() const {
   std::stringstream ss;
   ss << "Event[" << typeid(*this).name() << "]";
 
@@ -39,8 +38,7 @@ std::string Event::ToString() const
 
   return ss.str();
 }
-bool Event::IsInCategory(EventCategory category)
-{
+bool Event::IsInCategory(EventCategory category) {
   return (GetCategoryFlags() & static_cast<int>(category)) != 0;
 }
-}
+}  // namespace mite

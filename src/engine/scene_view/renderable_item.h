@@ -22,9 +22,9 @@ enum class RenderableItemType {
  * 注：仅包含渲染所需的最小字段，未来可扩展（如LOD、骨骼动画等）
  */
 struct RenderableItem {
-  Entity entity;                               // 对应的ECS实体ID
-  Transform worldTransform;                    // 世界空间变换矩阵（从SceneNode获取）
-  std::shared_ptr<MeshInstance> mesh;          // 网格实例
+  Entity entity;                       // 对应的ECS实体ID
+  Transform worldTransform;            // 世界空间变换矩阵（从SceneNode获取）
+  std::shared_ptr<MeshInstance> mesh;  // 网格实例
   std::shared_ptr<MaterialInstance> material;  // 材质实例
 
   // 渲染排序相关字段
@@ -40,14 +40,11 @@ struct RenderableItem {
         worldTransform(Transform()),
         distanceToCamera(0.0f),
         renderLayer(0),
-        itemType(RenderableItemType::Opaque)
-  {
-  }
+        itemType(RenderableItemType::Opaque) {}
   /**
    * @brief 参数化构造函数
    */
-  RenderableItem(Entity ent,
-                 const Transform &transform,
+  RenderableItem(Entity ent, const Transform &transform,
                  std::shared_ptr<MeshInstance> mesh,
                  std::shared_ptr<MaterialInstance> material,
                  RenderableItemType itemType)
@@ -57,9 +54,7 @@ struct RenderableItem {
         material(material),
         distanceToCamera(0.0f),
         renderLayer(0),
-        itemType(itemType)
-  {
-  }
+        itemType(itemType) {}
 };
 };  // namespace mite
 

@@ -4,7 +4,6 @@
 #include "ui_event.h"
 
 namespace mite {
-
 /**
  * @brief 运行时UI初始化事件
  */
@@ -12,15 +11,9 @@ class RuntimeUIInitializedEvent : public Event {
  public:
   RuntimeUIInitializedEvent() = default;
 
-  std::string ToString() const override
-  {
-    return "RuntimeUIInitializedEvent";
-  }
+  std::string ToString() const override { return "RuntimeUIInitializedEvent"; }
 
-  Event *Clone() const override
-  {
-    return new RuntimeUIInitializedEvent();
-  }
+  Event *Clone() const override { return new RuntimeUIInitializedEvent(); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_RUNTIME)
 };
@@ -32,15 +25,9 @@ class RuntimeUIShutdownEvent : public Event {
  public:
   RuntimeUIShutdownEvent() = default;
 
-  std::string ToString() const override
-  {
-    return "RuntimeUIShutdownEvent";
-  }
+  std::string ToString() const override { return "RuntimeUIShutdownEvent"; }
 
-  Event *Clone() const override
-  {
-    return new RuntimeUIShutdownEvent();
-  }
+  Event *Clone() const override { return new RuntimeUIShutdownEvent(); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_RUNTIME)
 };
@@ -52,15 +39,9 @@ class GameStartEvent : public Event {
  public:
   GameStartEvent() = default;
 
-  std::string ToString() const override
-  {
-    return "GameStartEvent";
-  }
+  std::string ToString() const override { return "GameStartEvent"; }
 
-  Event *Clone() const override
-  {
-    return new GameStartEvent();
-  }
+  Event *Clone() const override { return new GameStartEvent(); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_RUNTIME)
 };
@@ -72,20 +53,13 @@ class GamePauseEvent : public Event {
  public:
   explicit GamePauseEvent(bool paused) : m_Paused(paused) {}
 
-  bool IsPaused() const
-  {
-    return m_Paused;
-  }
+  bool IsPaused() const { return m_Paused; }
 
-  std::string ToString() const override
-  {
+  std::string ToString() const override {
     return "GamePauseEvent: " + std::string(m_Paused ? "PAUSED" : "RESUMED");
   }
 
-  Event *Clone() const override
-  {
-    return new GamePauseEvent(m_Paused);
-  }
+  Event *Clone() const override { return new GamePauseEvent(m_Paused); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_RUNTIME)
 
@@ -100,15 +74,9 @@ class GameStopEvent : public Event {
  public:
   GameStopEvent() = default;
 
-  std::string ToString() const override
-  {
-    return "GameStopEvent";
-  }
+  std::string ToString() const override { return "GameStopEvent"; }
 
-  Event *Clone() const override
-  {
-    return new GameStopEvent();
-  }
+  Event *Clone() const override { return new GameStopEvent(); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_RUNTIME)
 };
@@ -120,26 +88,17 @@ class RuntimeSettingChangedEvent : public Event {
  public:
   explicit RuntimeSettingChangedEvent(const std::string &settingName,
                                       const std::string &settingValue)
-      : m_SettingName(settingName), m_SettingValue(settingValue)
-  {
+      : m_SettingName(settingName), m_SettingValue(settingValue) {}
+
+  const std::string &GetSettingName() const { return m_SettingName; }
+  const std::string &GetSettingValue() const { return m_SettingValue; }
+
+  std::string ToString() const override {
+    return "RuntimeSettingChangedEvent: " + m_SettingName + " = " +
+           m_SettingValue;
   }
 
-  const std::string &GetSettingName() const
-  {
-    return m_SettingName;
-  }
-  const std::string &GetSettingValue() const
-  {
-    return m_SettingValue;
-  }
-
-  std::string ToString() const override
-  {
-    return "RuntimeSettingChangedEvent: " + m_SettingName + " = " + m_SettingValue;
-  }
-
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new RuntimeSettingChangedEvent(m_SettingName, m_SettingValue);
   }
 
@@ -155,42 +114,28 @@ class RuntimeSettingChangedEvent : public Event {
  */
 class RuntimePerformanceEvent : public Event {
  public:
-  explicit RuntimePerformanceEvent(float fps,
-                                   float frameTime,
-                                   uint64_t memoryUsage,
-                                   uint64_t drawCalls)
-      : m_FPS(fps), m_FrameTime(frameTime), m_MemoryUsage(memoryUsage), m_DrawCalls(drawCalls)
-  {
-  }
+  explicit RuntimePerformanceEvent(float fps, float frameTime,
+                                   uint64_t memoryUsage, uint64_t drawCalls)
+      : m_FPS(fps),
+        m_FrameTime(frameTime),
+        m_MemoryUsage(memoryUsage),
+        m_DrawCalls(drawCalls) {}
 
-  float GetFPS() const
-  {
-    return m_FPS;
-  }
-  float GetFrameTime() const
-  {
-    return m_FrameTime;
-  }
-  uint64_t GetMemoryUsage() const
-  {
-    return m_MemoryUsage;
-  }
-  uint64_t GetDrawCalls() const
-  {
-    return m_DrawCalls;
-  }
+  float GetFPS() const { return m_FPS; }
+  float GetFrameTime() const { return m_FrameTime; }
+  uint64_t GetMemoryUsage() const { return m_MemoryUsage; }
+  uint64_t GetDrawCalls() const { return m_DrawCalls; }
 
-  std::string ToString() const override
-  {
+  std::string ToString() const override {
     return "RuntimePerformanceEvent: FPS=" + std::to_string(m_FPS) +
            ", FrameTime=" + std::to_string(m_FrameTime) + "ms" +
            ", Memory=" + std::to_string(m_MemoryUsage / 1024 / 1024) + "MB" +
            ", DrawCalls=" + std::to_string(m_DrawCalls);
   }
 
-  Event *Clone() const override
-  {
-    return new RuntimePerformanceEvent(m_FPS, m_FrameTime, m_MemoryUsage, m_DrawCalls);
+  Event *Clone() const override {
+    return new RuntimePerformanceEvent(m_FPS, m_FrameTime, m_MemoryUsage,
+                                       m_DrawCalls);
   }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_RUNTIME)
@@ -201,7 +146,6 @@ class RuntimePerformanceEvent : public Event {
   uint64_t m_MemoryUsage;
   uint64_t m_DrawCalls;
 };
-
 }  // namespace mite
 
 #endif  //

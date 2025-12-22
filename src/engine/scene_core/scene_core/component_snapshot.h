@@ -1,10 +1,9 @@
 #ifndef MITE_SCENE_CORE_COMPONENT_SNAPSHOT
 #define MITE_SCENE_CORE_COMPONENT_SNAPSHOT
 
+#include "basic_type/snapshot.h"
 #include "event_bus.h"
 #include "scene_core_event.h"
-
-#include "basic_type/snapshot.h"
 
 namespace mite {
 /**
@@ -13,7 +12,8 @@ namespace mite {
  * 负责存储和管理特定类型组件的数据快照，通过事件机制通知组件系统应用快照
  * 设计原则：避免循环依赖，保持架构简洁
  */
-template<typename DataT> class ComponentSnapshot : public ISnapshot {
+template <typename DataT>
+class ComponentSnapshot : public ISnapshot {
  public:
   /**
    * @brief 构造函数
@@ -21,9 +21,7 @@ template<typename DataT> class ComponentSnapshot : public ISnapshot {
    * @param data 组件数据副本（创建组件数据的深拷贝）
    */
   ComponentSnapshot(Entity entityId, const DataT &data)
-      : m_entityId(entityId), m_snapshotData(data)
-  {
-  }
+      : m_entityId(entityId), m_snapshotData(data) {}
   virtual ~ComponentSnapshot() = default;
 
   // ==================== ISnapshot接口实现 ====================
@@ -33,8 +31,7 @@ template<typename DataT> class ComponentSnapshot : public ISnapshot {
    * 通过事件总线发布快照应用事件，由对应的组件系统处理实际的应用逻辑
    * 这种设计避免了直接依赖，符合ECS架构原则
    */
-  void Apply() override
-  {
+  void Apply() override {
     // 发布快照应用事件，让组件系统来处理
     EventBus::Get().Post(ApplySnapshotEvent<DataT>(m_entityId, m_snapshotData));
   }
@@ -43,8 +40,7 @@ template<typename DataT> class ComponentSnapshot : public ISnapshot {
    *
    * 对于组件快照，撤销和应用是相同的操作，都是将数据恢复到快照状态
    */
-  void Revert() override
-  {
+  void Revert() override {
     Apply();  // 撤销操作与应用操作相同
   }
   /**
@@ -73,7 +69,6 @@ template<typename DataT> class ComponentSnapshot : public ISnapshot {
   Entity m_entityId;     ///< 关联的实体ID
   DataT m_snapshotData;  ///< 组件数据副本
 };
-
 }  // namespace mite
 
 #endif  // MITE_SCENE_CORE_COMPONENT_SNAPSHOT

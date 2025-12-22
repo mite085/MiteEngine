@@ -5,7 +5,8 @@
 
 namespace mite {
 // 类型安全的资产ID包装器
-template<typename Tag> class TypedAssetID {
+template <typename Tag>
+class TypedAssetID {
  private:
   UUID id_;
 
@@ -14,33 +15,17 @@ template<typename Tag> class TypedAssetID {
   explicit TypedAssetID(const UUID &id) : id_(id) {}
   explicit TypedAssetID(const char *str) : id_(UUIDGenerator::Generate(str)) {}
 
-  const UUID &GetUUID() const
-  {
-    return id_;
-  }
-  bool IsValid() const
-  {
-    return !id_.is_nil();
-  }
+  const UUID &GetUUID() const { return id_; }
+  bool IsValid() const { return !id_.is_nil(); }
 
   // 比较操作
-  bool operator==(const TypedAssetID &other) const
-  {
-    return id_ == other.id_;
-  }
-  bool operator!=(const TypedAssetID &other) const
-  {
-    return id_ != other.id_;
-  }
-  bool operator<(const TypedAssetID &other) const
-  {
-    return id_ < other.id_;
-  }
+  bool operator==(const TypedAssetID &other) const { return id_ == other.id_; }
+  bool operator!=(const TypedAssetID &other) const { return id_ != other.id_; }
+  bool operator<(const TypedAssetID &other) const { return id_ < other.id_; }
 
   // 哈希支持
   struct Hash {
-    size_t operator()(const TypedAssetID &id) const
-    {
+    size_t operator()(const TypedAssetID &id) const {
       return std::hash<UUID>()(id.id_);
     }
   };

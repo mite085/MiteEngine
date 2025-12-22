@@ -15,7 +15,8 @@ namespace mite {
  * 3. 管理组件的序列化和脏标记
  */
 class BoundingVolumeComponent
-    : public SnapshotComponentTraits<BoundingVolume, Component::Family::Geometry> {
+    : public SnapshotComponentTraits<BoundingVolume,
+                                     Component::Family::Geometry> {
  public:
   /**
    * @brief 默认构造函数
@@ -67,7 +68,8 @@ class BoundingVolumeComponent
  * @class BoundingVolumeComponentSystem
  * @brief 包围体组件系统，负责管理包围体状态
  */
-class BoundingVolumeComponentSystem : public SnapshotComponentSystem<BoundingVolumeComponent> {
+class BoundingVolumeComponentSystem
+    : public SnapshotComponentSystem<BoundingVolumeComponent> {
   DECLARE_COMPONENT_SYSTEM(BoundingVolumeComponentSystem)
 };
 
@@ -77,16 +79,14 @@ class BoundingVolumeComponentSystem : public SnapshotComponentSystem<BoundingVol
  * @class BoundingVolumeChangedEvent
  * @brief 包围体改变事件
  */
-class BoundingVolumeChangedEvent : public ComponentEvent<BoundingVolumeComponent> {
+class BoundingVolumeChangedEvent
+    : public ComponentEvent<BoundingVolumeComponent> {
  public:
   BoundingVolumeChangedEvent(Entity entity, BoundingVolumeComponent &component)
-      : ComponentEvent<BoundingVolumeComponent>(entity, component)
-  {
-  }
+      : ComponentEvent<BoundingVolumeComponent>(entity, component) {}
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new BoundingVolumeChangedEvent(this->m_Entity, this->m_Component);
   }
 };

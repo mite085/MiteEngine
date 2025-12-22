@@ -45,11 +45,13 @@ class LightShaderStorgeBuffer {
    * @param bindingPoint 绑定点索引
    * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
+  // void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader) const;
 
   // ---- 数据管理 ----
   /**
-   * @brief 批量更新所有光源数据到SSBO（LightManager和组件系统负责脏标记更新（TODO: 未实现））
+   * @brief
+   * 批量更新所有光源数据到SSBO（LightManager和组件系统负责脏标记更新（TODO:
+   * 未实现））
    * @param lights 光源数据列表
    * @return 更新是否成功
    * @note 这是最常用的更新方式，性能最佳
@@ -75,7 +77,6 @@ class LightShaderStorgeBuffer {
    * @brief 绑定SSBO到指定绑定点（DrawCall之前绑定）
    */
   void Bind() const;
-
 
   // ---- 统计信息 ----
   /**
@@ -123,8 +124,8 @@ class LightShaderStorgeBuffer {
    * @param header 输出的头部信息（包含实际光源数量）
    * @return 处理后的光源数据，确保不超过最大数量限制
    */
-  std::vector<GPULightData> PrepareLightDataForSSBO(const std::vector<GPULightData> &lights,
-                                                    LightSSBOHeader &header) const;
+  std::vector<GPULightData> PrepareLightDataForSSBO(
+      const std::vector<GPULightData> &lights, LightSSBOHeader &header) const;
   /**
    * @brief 创建空的SSBO数据（用于初始化）
    * @return 空的光源数据列表
@@ -142,11 +143,11 @@ class LightShaderStorgeBuffer {
   };
 
   // ---- 成员变量 ----
-  std::unique_ptr<ShaderSSBO> m_SSBO;    // 底层SSBO对象，管理OpenGL资源
-  size_t m_MaxLights;                    // 最大光源数量，决定SSBO大小
-  size_t m_CurrentLightCount;            // 当前有效光源数量
-  size_t m_SSBOSize;                     // SSBO总大小（字节）
-  bool m_IsInitialized = false;          // 初始化状态标志
+  std::unique_ptr<ShaderSSBO> m_SSBO;  // 底层SSBO对象，管理OpenGL资源
+  size_t m_MaxLights;                  // 最大光源数量，决定SSBO大小
+  size_t m_CurrentLightCount;          // 当前有效光源数量
+  size_t m_SSBOSize;                   // SSBO总大小（字节）
+  bool m_IsInitialized = false;        // 初始化状态标志
 };
 }  // namespace mite
 

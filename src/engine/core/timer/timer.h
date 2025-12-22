@@ -5,7 +5,6 @@
 #include <unordered_map>
 
 namespace mite {
-
 /**
  * @brief Timer 计时器
  * @note 职责：负责精确计时
@@ -31,6 +30,6 @@ class Timer {
   std::chrono::time_point<std::chrono::high_resolution_clock> m_LastFrameTime;
   std::unordered_map<std::string, decltype(m_StartTime)> m_ProfileStart;
 };
-};
+};  // namespace mite
 
 #endif

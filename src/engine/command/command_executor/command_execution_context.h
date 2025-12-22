@@ -14,7 +14,7 @@ namespace mite {
 class CommandExecutionContext {
  public:
   // ==================== 类型定义 ====================
-  using CommandFilter = std::function<bool(const CommandHandle&)>;
+  using CommandFilter = std::function<bool(const CommandHandle &)>;
   using TypeFilter = std::function<bool(std::type_index)>;
 
   // ==================== 构造函数和析构函数 ====================
@@ -23,8 +23,9 @@ class CommandExecutionContext {
    * @param contextFlags 上下文标志
    * @param name 上下文名称（用于调试）
    */
-  explicit CommandExecutionContext(CommandContextFlags contextFlags = CONTEXT_NONE,
-                                   const std::string &name = "");
+  explicit CommandExecutionContext(
+      CommandContextFlags contextFlags = CONTEXT_NONE,
+      const std::string &name = "");
   virtual ~CommandExecutionContext();
 
   // ==================== 上下文标志管理接口 ====================
@@ -102,7 +103,8 @@ class CommandExecutionContext {
    * @param handle 完成的命令句柄
    * @param result 执行结果
    */
-  void RecordCommandExecutionComplete(const CommandHandle &handle, const CommandResult &result);
+  void RecordCommandExecutionComplete(const CommandHandle &handle,
+                                      const CommandResult &result);
   /**
    * @brief 获取当前正在执行的命令数量
    * @return size_t 执行中的命令数量
@@ -145,8 +147,8 @@ class CommandExecutionContext {
   // ==================== 受保护的成员变量 ====================
   Logger m_Logger;
   CommandContextFlags m_contextFlags;  // 上下文标志
-  std::string m_name;       // 上下文名称
-  bool m_isActive;          // 是否处于活动状态
+  std::string m_name;                  // 上下文名称
+  bool m_isActive;                     // 是否处于活动状态
 
   // 执行统计
   mutable std::shared_mutex m_ExecutionMutex;

@@ -1,13 +1,12 @@
 #include "command_undo_stack.h"
 
 namespace mite {
-CommandUndoStack::CommandUndoStack(size_t maxSize) : m_MaxSize(maxSize)
-{
+CommandUndoStack::CommandUndoStack(size_t maxSize) : m_MaxSize(maxSize) {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Command Undo Stack");
   m_Logger->debug("Command Undo Stack created");
 }
-void CommandUndoStack::Push(CommandRegistry &registry, CommandHandle commandHandle)
-{
+void CommandUndoStack::Push(CommandRegistry &registry,
+                            CommandHandle commandHandle) {
   if (!commandHandle.IsValid()) {
     m_Logger->warn("Attempted to push null command handle to undo stack");
     return;
@@ -19,7 +18,8 @@ void CommandUndoStack::Push(CommandRegistry &registry, CommandHandle commandHand
     return;
   }
   if (!command->CanUndo()) {
-    m_Logger->warn("Command '{}' cannot be undone, not pushing to stack", command->GetName());
+    m_Logger->warn("Command '{}' cannot be undone, not pushing to stack",
+                   command->GetName());
     return;
   }
   std::lock_guard<std::mutex> lock(m_Mutex);
@@ -45,15 +45,15 @@ void CommandUndoStack::Push(CommandRegistry &registry, CommandHandle commandHand
       tempStack.pop();
     }
 
-    m_Logger->debug("Undo stack reached max size {}, removed oldest command", m_MaxSize);
+    m_Logger->debug("Undo stack reached max size {}, removed oldest command",
+                    m_MaxSize);
   }
 
   m_Stack.push(std::move(commandHandle));
   m_Logger->debug("Command pushed to undo stack, size: {}", m_Stack.size());
 }
 
-CommandHandle CommandUndoStack::Pop()
-{
+CommandHandle CommandUndoStack::Pop() {
   std::lock_guard<std::mutex> lock(m_Mutex);
   if (m_Stack.empty()) {
     m_Logger->debug("Undo stack is empty");
@@ -64,23 +64,19 @@ CommandHandle CommandUndoStack::Pop()
   m_Logger->debug("Command popped from undo stack, size: {}", m_Stack.size());
   return commandHandle;
 }
-bool CommandUndoStack::IsEmpty() const
-{
+bool CommandUndoStack::IsEmpty() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_Stack.empty();
 }
-size_t CommandUndoStack::GetSize() const
-{
+size_t CommandUndoStack::GetSize() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_Stack.size();
 }
-size_t CommandUndoStack::GetMaxSize() const
-{
+size_t CommandUndoStack::GetMaxSize() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_MaxSize;
 }
-void CommandUndoStack::SetMaxSize(size_t maxSize)
-{
+void CommandUndoStack::SetMaxSize(size_t maxSize) {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
   if (maxSize == m_MaxSize) {
@@ -105,22 +101,19 @@ void CommandUndoStack::SetMaxSize(size_t maxSize)
       tempStack.pop();
     }
 
-    m_Logger->debug("Undo stack resized from {} to {}, removed {} oldest commands",
-                    m_Stack.size() + elementsToRemove,
-                    m_MaxSize,
-                    elementsToRemove);
+    m_Logger->debug(
+        "Undo stack resized from {} to {}, removed {} oldest commands",
+        m_Stack.size() + elementsToRemove, m_MaxSize, elementsToRemove);
   }
 }
-void CommandUndoStack::Clear()
-{
+void CommandUndoStack::Clear() {
   std::lock_guard<std::mutex> lock(m_Mutex);
   m_Logger->debug("Clearing undo stack, size: {}", m_Stack.size());
   // 使用空的栈替换当前栈来清空
   std::stack<CommandHandle> emptyStack;
   std::swap(m_Stack, emptyStack);
 }
-CommandHandle CommandUndoStack::Peek() const
-{
+CommandHandle CommandUndoStack::Peek() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_Stack.empty() ? CommandHandle() : m_Stack.top();
 }

@@ -2,6 +2,8 @@
 #define MITE_INCLUDED_HEADERS
 
 // C++标准库
+#include <stdint.h>
+
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -22,15 +24,14 @@
 #include <regex>
 #include <set>
 #include <shared_mutex>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
-#include <stdint.h>
 #include <string>
-#include <sstream>
 #include <thread>
 #include <typeindex>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -45,13 +46,13 @@
 // 数学库（使用gtx相关函数，需要启用EXPERIMENTAL）
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_access.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
 
 // 日志系统
 #include "logger/logger.h"

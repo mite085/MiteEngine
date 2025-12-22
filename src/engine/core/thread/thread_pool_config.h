@@ -4,14 +4,12 @@
 #include "BS_thread_pool.hpp"
 
 namespace mite {
-
 /**
  * @brief 线程池配置常量定义
  *
  * 提供预定义的线程池配置选项，便于统一管理和使用
  */
 namespace ThreadPoolConfig {
-
 /**
  * @brief 默认线程池配置标志
  *
@@ -19,8 +17,8 @@ namespace ThreadPoolConfig {
  * - BS::tp::priority: 启用任务优先级支持
  * - BS::tp::wait_deadlock_checks: 启用等待时的死锁检查
  */
-constexpr BS::tp DEFAULT_FLAGS = static_cast<BS::tp>(BS::tp::priority |
-                                                     BS::tp::wait_deadlock_checks);
+constexpr BS::tp DEFAULT_FLAGS =
+    static_cast<BS::tp>(BS::tp::priority | BS::tp::wait_deadlock_checks);
 
 /**
  * @brief 高性能线程池配置标志
@@ -34,7 +32,8 @@ constexpr BS::tp HIGH_PERFORMANCE_FLAGS = BS::tp::priority;
  *
  * 适用于需要严格错误检查的场景，启用所有安全检查
  */
-constexpr BS::tp SAFETY_FIRST_FLAGS = static_cast<BS::tp>(BS::tp::priority | BS::tp::wait_deadlock_checks);
+constexpr BS::tp SAFETY_FIRST_FLAGS =
+    static_cast<BS::tp>(BS::tp::priority | BS::tp::wait_deadlock_checks);
 
 /**
  * @brief 简单线程池配置标志
@@ -65,9 +64,7 @@ constexpr size_t DOUBLE = 2;     // 双线程
 constexpr size_t QUADRUPLE = 4;  // 四线程
 constexpr size_t OCTA = 8;       // 八线程
 }  // namespace ThreadCounts
-
 }  // namespace ThreadPoolConfig
-
 }  // namespace mite
 
 #endif  // MITE_CORE_THREAD_POOL_CONFIG_H

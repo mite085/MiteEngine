@@ -15,7 +15,8 @@ using ExternalTextureBindFunc =
  * @brief 材质实例（运行时绑定具体Shader和参数）
  * @note 职责：
  * 1. 关联Material逻辑参数与具体Shader
- * 2. 管理Uniform状态和纹理绑定（不再支持单独的uniform变量，所有数据通过UBO传递）
+ * 2.
+ * 管理Uniform状态和纹理绑定（不再支持单独的uniform变量，所有数据通过UBO传递）
  * 3. 提供渲染前的Apply接口
  *
  * 数据存储：
@@ -54,7 +55,8 @@ class MaterialInstance {
    */
   size_t BindTexturesOnly(ExternalTextureBindFunc textureBindFunc) const;
   /**
-   * @brief 仅绑定UBO（不存在OverrideShader，UBO已经在Shader中注册好的BindingPoint）
+   * @brief
+   * 仅绑定UBO（不存在OverrideShader，UBO已经在Shader中注册好的BindingPoint）
    */
   void BindBuffersOnly() const;
   /**
@@ -66,7 +68,9 @@ class MaterialInstance {
   // ===================== MaterialUniformBuffer 设置接口 =====================
   // ---- 材质数据引用 ----
   MaterialUniformBuffer &GetMaterialData() { return m_MaterialData; }
-  const MaterialUniformBuffer &GetMaterialData() const { return m_MaterialData; }
+  const MaterialUniformBuffer &GetMaterialData() const {
+    return m_MaterialData;
+  }
 
   // ---- 材质类型标识 ----
   void SetMaterialInfo(MaterialType type);
@@ -88,7 +92,8 @@ class MaterialInstance {
 
   // ---- NPR参数 (未启用) ----
   void SetNPRParameters(
-      const glm::vec4 &params);  // rampThreshold, rampSmoothness, specularSize, outlineWidth
+      const glm::vec4 &
+          params);  // rampThreshold, rampSmoothness, specularSize, outlineWidth
   glm::vec4 GetNPRParameters() const { return m_MaterialData.nprParameters; }
   void SetNPRColors(const glm::vec4 &colors);  // shadowTint(xyz), rimPower(w)
   glm::vec4 GetNPRColors() const { return m_MaterialData.nprColors; }
@@ -107,38 +112,53 @@ class MaterialInstance {
 
   // ---- 纹理标志设置 ----
   void SetBaseColorTextureEnabled(bool enabled);
-  bool IsBaseColorTextureEnabled() const { return m_MaterialData.textureCNMROFlags.x > 0.0f; }
+  bool IsBaseColorTextureEnabled() const {
+    return m_MaterialData.textureCNMROFlags.x > 0.0f;
+  }
   void SetNormalTextureEnabled(bool enabled);
-  bool IsNormalTextureEnabled() const { return m_MaterialData.textureCNMROFlags.y > 0.0f; }
+  bool IsNormalTextureEnabled() const {
+    return m_MaterialData.textureCNMROFlags.y > 0.0f;
+  }
   void SetMetallicRoughnessTextureEnabled(bool enabled);
-  bool IsMetallicRoughnessTextureEnabled() const
-  {
+  bool IsMetallicRoughnessTextureEnabled() const {
     return m_MaterialData.textureCNMROFlags.z > 0.0f;
   }
   void SetOcclusionTextureEnabled(bool enabled);
-  bool IsOcclusionTextureEnabled() const { return m_MaterialData.textureCNMROFlags.w > 0.0f; }
+  bool IsOcclusionTextureEnabled() const {
+    return m_MaterialData.textureCNMROFlags.w > 0.0f;
+  }
   void SetEmissiveTextureEnabled(bool enabled);
-  bool IsEmissiveTextureEnabled() const { return m_MaterialData.textureEmissionFlag.x > 0.0f; }
+  bool IsEmissiveTextureEnabled() const {
+    return m_MaterialData.textureEmissionFlag.x > 0.0f;
+  }
 
   // ---- 纹理参数设置 ----
   void SetBaseColorTexParams(const glm::vec4 &params);  // xy: scale, zw: offset
-  glm::vec4 GetBaseColorTexParams() const { return m_MaterialData.baseColorTexParams; }
+  glm::vec4 GetBaseColorTexParams() const {
+    return m_MaterialData.baseColorTexParams;
+  }
   void SetNormalTexParams(const glm::vec4 &params);
-  glm::vec4 GetNormalTexParams() const { return m_MaterialData.normalTexParams; }
+  glm::vec4 GetNormalTexParams() const {
+    return m_MaterialData.normalTexParams;
+  }
   void SetMRTexParams(const glm::vec4 &params);
   glm::vec4 GetMRTexParams() const { return m_MaterialData.mrTexParams; }
   void SetEmissiveTexParams(const glm::vec4 &params);
-  glm::vec4 GetEmissiveTexParams() const { return m_MaterialData.emissiveTexParams; }
+  glm::vec4 GetEmissiveTexParams() const {
+    return m_MaterialData.emissiveTexParams;
+  }
   void SetOcclusionTexParams(const glm::vec4 &params);
-  glm::vec4 GetOcclusionTexParams() const { return m_MaterialData.occlusionTexParams; }
+  glm::vec4 GetOcclusionTexParams() const {
+    return m_MaterialData.occlusionTexParams;
+  }
 
   // ---- 渲染属性设置 ----
   void SetAlphaCutoff(float cutoff);
   float GetAlphaCutoff() const { return m_MaterialAlphaCutoff; }
   void SetDoubleSided(bool doubleSided);
   bool IsDoubleSided() const { return m_MaterialDoubleSided; }
-  void SetAlphaMode(
-      AlphaMode mode);  // 不透明OPAQUE = 0, 遮罩ALPHA_MODE_MASK = 1, 混合ALPHA_MODE_BLEND = 2
+  void SetAlphaMode(AlphaMode mode);  // 不透明OPAQUE = 0, 遮罩ALPHA_MODE_MASK =
+                                      // 1, 混合ALPHA_MODE_BLEND = 2
   AlphaMode GetAlphaMode() const { return m_MaterialAlphaMode; }
 
   // ===================== 纹理绑定 =====================

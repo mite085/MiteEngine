@@ -8,7 +8,8 @@ namespace mite {
  * @brief 抽象回调适配器基类
  * @tparam SourceType 原始回调数据来源类型（如GLFWwindow*, entt::registry*）
  */
-template<typename SourceType> class CallbackAdapter {
+template <typename SourceType>
+class CallbackAdapter {
  public:
   explicit CallbackAdapter() {}
   virtual ~CallbackAdapter() = default;
@@ -24,6 +25,6 @@ template<typename SourceType> class CallbackAdapter {
    */
   virtual void UnregisterCallbacks() = 0;
 };
-};
+};  // namespace mite
 
 #endif

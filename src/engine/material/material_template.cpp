@@ -1,12 +1,12 @@
 #include "material_template.h"
-#include "subscription_group.h"
+
 #include "basic_event/instance_event.h"
+#include "subscription_group.h"
 
 namespace mite {
-MaterialTemplate::MaterialTemplate(){}
+MaterialTemplate::MaterialTemplate() {}
 
-std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance()
-{
+std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance() {
   auto instance = std::make_shared<MaterialInstance>();
 
   // 根据MaterialType和计数拼接默认创建的材质实例的名称
@@ -27,15 +27,14 @@ std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance()
   MaterialSourceData defaultData = CreateDefaultSourceData();
   InitializeMaterialInstance(instance, defaultData);
 
-  LOG_DEBUG("Applied default parameters to material instance '{}'", instance->GetName());
+  LOG_DEBUG("Applied default parameters to material instance '{}'",
+            instance->GetName());
 
   return instance;
 }
 
 std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance(
-    const MaterialSourceData &sourceData) const
-{
-
+    const MaterialSourceData &sourceData) const {
   auto instance = std::make_shared<MaterialInstance>();
   // 设置材质名称
   if (!sourceData.name.empty()) {
@@ -43,22 +42,16 @@ std::shared_ptr<MaterialInstance> MaterialTemplate::CreateInstance(
   }
   // 初始化材质实例
   InitializeMaterialInstance(instance, sourceData);
-  LOG_DEBUG("Created material instance '{}' of type '{}'", instance->GetName(), GetMaterialTypeName());
+  LOG_DEBUG("Created material instance '{}' of type '{}'", instance->GetName(),
+            GetMaterialTypeName());
   return instance;
 }
 
-void MaterialTemplate::SetName(const std::string &name)
-{
-  m_Name = name;
-}
-const std::string &MaterialTemplate::GetName() const
-{
-  return m_Name;
-}
+void MaterialTemplate::SetName(const std::string &name) { m_Name = name; }
+const std::string &MaterialTemplate::GetName() const { return m_Name; }
 
-const TextureGPUSlot *MaterialTemplate::GetTextureSlot(const MaterialSourceData &sourceData,
-                                                       const std::string &slotName)
-{
+const TextureGPUSlot *MaterialTemplate::GetTextureSlot(
+    const MaterialSourceData &sourceData, const std::string &slotName) {
   auto it = sourceData.textureSlots.find(slotName);
   if (it != sourceData.textureSlots.end()) {
     return &it->second;
@@ -66,32 +59,28 @@ const TextureGPUSlot *MaterialTemplate::GetTextureSlot(const MaterialSourceData 
   return nullptr;
 }
 
-bool MaterialTemplate::HasParameter(const MaterialSourceData &sourceData, const std::string &key)
-{
+bool MaterialTemplate::HasParameter(const MaterialSourceData &sourceData,
+                                    const std::string &key) {
   return sourceData.parameters.find(key) != sourceData.parameters.end();
 }
 
 bool MaterialTemplate::HasTextureSlot(const MaterialSourceData &sourceData,
-                                      const std::string &slotName)
-{
-  return sourceData.textureSlots.find(slotName) != sourceData.textureSlots.end();
+                                      const std::string &slotName) {
+  return sourceData.textureSlots.find(slotName) !=
+         sourceData.textureSlots.end();
 }
 
-AlphaMode MaterialTemplate::GetAlphaMode(const MaterialSourceData &sourceData)
-{
+AlphaMode MaterialTemplate::GetAlphaMode(const MaterialSourceData &sourceData) {
   return sourceData.alphaMode;
 }
-float MaterialTemplate::GetAlphaCutoff(const MaterialSourceData &sourceData)
-{
+float MaterialTemplate::GetAlphaCutoff(const MaterialSourceData &sourceData) {
   return sourceData.alphaCutoff;
 }
-bool MaterialTemplate::IsDoubleSided(const MaterialSourceData &sourceData)
-{
+bool MaterialTemplate::IsDoubleSided(const MaterialSourceData &sourceData) {
   return sourceData.doubleSided;
 }
-void MaterialTemplate::FillMaterialDataFromSource(MaterialUniformBuffer &materialData,
-                                                  const MaterialSourceData &sourceData)
-{
+void MaterialTemplate::FillMaterialDataFromSource(
+    MaterialUniformBuffer &materialData, const MaterialSourceData &sourceData) {
   // 清空数据
   memset(&materialData, 0, sizeof(MaterialUniformBuffer));
 
@@ -100,37 +89,42 @@ void MaterialTemplate::FillMaterialDataFromSource(MaterialUniformBuffer &materia
       static_cast<float>(static_cast<int>(sourceData.type)), 0.0f, 0.0f, 0.0f);
 
   // ---- 基础PBR参数 ----
-  materialData.baseColor = GetParameter<glm::vec4>(
-      sourceData, MaterialParamKeys::BASE_COLOR, glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
+  materialData.baseColor =
+      GetParameter<glm::vec4>(sourceData, MaterialParamKeys::BASE_COLOR,
+                              glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
 
   materialData.metallicRoughnessAO = glm::vec4(
       GetParameter<float>(sourceData, MaterialParamKeys::METALLIC, 0.0f),
       GetParameter<float>(sourceData, MaterialParamKeys::ROUGHNESS, 1.0f),
-      GetParameter<float>(sourceData, MaterialParamKeys::AO, 1.0f),
-      0.0f);
+      GetParameter<float>(sourceData, MaterialParamKeys::AO, 1.0f), 0.0f);
 
-  // ---- 自发光合并Color和Intensity ---- 
+  // ---- 自发光合并Color和Intensity ----
   glm::vec3 emissionColor = GetParameter<glm::vec3>(
       sourceData, MaterialParamKeys::EMISSION_COLOR, glm::vec3(0.0f));
   float emissionIntensity = GetParameter<float>(
       sourceData, MaterialParamKeys::EMISSION_INTENSITY, 0.0f);
   materialData.emission = glm::vec4(emissionColor, emissionIntensity);
 
-  // ---- 法线缩放 ---- 
+  // ---- 法线缩放 ----
   materialData.normalScale = glm::vec4(
-      GetParameter<float>(sourceData, MaterialParamKeys::NORMAL_SCALE, 1.0f), 0.0f, 0.0f, 0.0f);
+      GetParameter<float>(sourceData, MaterialParamKeys::NORMAL_SCALE, 1.0f),
+      0.0f, 0.0f, 0.0f);
 
   // ---- 纹理标识 ----
   materialData.textureCNMROFlags = glm::vec4(
-      HasTextureSlot(sourceData, MaterialParamKeys::BASE_COLOR_TEXTURE) ? 1.0f : 0.0f,
-      HasTextureSlot(sourceData, MaterialParamKeys::NORMAL_TEXTURE) ? 1.0f : 0.0f,
-      HasTextureSlot(sourceData, MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE) ? 1.0f : 0.0f,
-      HasTextureSlot(sourceData, MaterialParamKeys::OCCLUSION_TEXTURE) ? 1.0f : 0.0f);
+      HasTextureSlot(sourceData, MaterialParamKeys::BASE_COLOR_TEXTURE) ? 1.0f
+                                                                        : 0.0f,
+      HasTextureSlot(sourceData, MaterialParamKeys::NORMAL_TEXTURE) ? 1.0f
+                                                                    : 0.0f,
+      HasTextureSlot(sourceData, MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE)
+          ? 1.0f
+          : 0.0f,
+      HasTextureSlot(sourceData, MaterialParamKeys::OCCLUSION_TEXTURE) ? 1.0f
+                                                                       : 0.0f);
   materialData.textureEmissionFlag = glm::vec4(
-      HasTextureSlot(sourceData, MaterialParamKeys::EMISSIVE_TEXTURE) ? 1.0f : 0.0f,
-      0.0f,
-      0.0f,
-      0.0f);
+      HasTextureSlot(sourceData, MaterialParamKeys::EMISSIVE_TEXTURE) ? 1.0f
+                                                                      : 0.0f,
+      0.0f, 0.0f, 0.0f);
 
   // ---- 纹理参数 ----
   auto setupTexParams = [&](const std::string &slotName, glm::vec4 &params) {
@@ -143,22 +137,25 @@ void MaterialTemplate::FillMaterialDataFromSource(MaterialUniformBuffer &materia
     }
     params = glm::vec4(1.0f, 1.0f, 0.0f, 0.0f);  // 默认参数
   };
-  setupTexParams(MaterialParamKeys::BASE_COLOR_TEXTURE, materialData.baseColorTexParams);
-  setupTexParams(MaterialParamKeys::NORMAL_TEXTURE, materialData.normalTexParams);
-  setupTexParams(MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE, materialData.mrTexParams);
-  setupTexParams(MaterialParamKeys::EMISSIVE_TEXTURE, materialData.emissiveTexParams);
-  setupTexParams(MaterialParamKeys::OCCLUSION_TEXTURE, materialData.occlusionTexParams);
+  setupTexParams(MaterialParamKeys::BASE_COLOR_TEXTURE,
+                 materialData.baseColorTexParams);
+  setupTexParams(MaterialParamKeys::NORMAL_TEXTURE,
+                 materialData.normalTexParams);
+  setupTexParams(MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE,
+                 materialData.mrTexParams);
+  setupTexParams(MaterialParamKeys::EMISSIVE_TEXTURE,
+                 materialData.emissiveTexParams);
+  setupTexParams(MaterialParamKeys::OCCLUSION_TEXTURE,
+                 materialData.occlusionTexParams);
 
   // ---- 渲染属性 ----
   materialData.renderProperties = glm::vec4(
-      sourceData.alphaCutoff,
-      sourceData.doubleSided ? 1.0f : 0.0f,
-      static_cast<float>(static_cast<int>(sourceData.alphaMode)),
-      0.0f);
+      sourceData.alphaCutoff, sourceData.doubleSided ? 1.0f : 0.0f,
+      static_cast<float>(static_cast<int>(sourceData.alphaMode)), 0.0f);
 }
-void MaterialTemplate::SetupMaterialTextures(std::shared_ptr<MaterialInstance> instance,
-                                             const MaterialSourceData &sourceData)
-{
+void MaterialTemplate::SetupMaterialTextures(
+    std::shared_ptr<MaterialInstance> instance,
+    const MaterialSourceData &sourceData) {
   // 设置所有标准纹理槽位
   auto setupTexture = [&](const std::string &slotName) {
     if (HasTextureSlot(sourceData, slotName)) {
@@ -167,20 +164,15 @@ void MaterialTemplate::SetupMaterialTextures(std::shared_ptr<MaterialInstance> i
         // 根据槽位名称设置对应的纹理
         if (slotName == MaterialParamKeys::BASE_COLOR_TEXTURE) {
           instance->SetBaseColorTexture(*slot);
-        }
-        else if (slotName == MaterialParamKeys::NORMAL_TEXTURE) {
+        } else if (slotName == MaterialParamKeys::NORMAL_TEXTURE) {
           instance->SetNormalTexture(*slot);
-        }
-        else if (slotName == MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE) {
+        } else if (slotName == MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE) {
           instance->SetMetallicRoughnessTexture(*slot);
-        }
-        else if (slotName == MaterialParamKeys::EMISSIVE_TEXTURE) {
+        } else if (slotName == MaterialParamKeys::EMISSIVE_TEXTURE) {
           instance->SetEmissiveTexture(*slot);
-        }
-        else if (slotName == MaterialParamKeys::OCCLUSION_TEXTURE) {
+        } else if (slotName == MaterialParamKeys::OCCLUSION_TEXTURE) {
           instance->SetOcclusionTexture(*slot);
-        }
-        else {
+        } else {
           LOG_WARN("Unknown texture slot: {}", slotName);
         }
       }
@@ -192,9 +184,9 @@ void MaterialTemplate::SetupMaterialTextures(std::shared_ptr<MaterialInstance> i
   setupTexture(MaterialParamKeys::EMISSIVE_TEXTURE);
   setupTexture(MaterialParamKeys::OCCLUSION_TEXTURE);
 }
-void MaterialTemplate::InitializeMaterialInstance(std::shared_ptr<MaterialInstance> instance,
-                                                  const MaterialSourceData &sourceData) 
-{
+void MaterialTemplate::InitializeMaterialInstance(
+    std::shared_ptr<MaterialInstance> instance,
+    const MaterialSourceData &sourceData) {
   // 初始化实例的UBO
   instance->InitializeUBO();
 
@@ -217,8 +209,7 @@ void MaterialTemplate::InitializeMaterialInstance(std::shared_ptr<MaterialInstan
   // 应用材质特定的纹理设置
   SetupMaterialTextures(instance, sourceData);
 }
-MaterialSourceData MaterialTemplate::CreateDefaultSourceData() const
-{
+MaterialSourceData MaterialTemplate::CreateDefaultSourceData() const {
   MaterialSourceData defaultData;
   defaultData.name = "Default_" + GetMaterialTypeName();
 
@@ -227,9 +218,12 @@ MaterialSourceData MaterialTemplate::CreateDefaultSourceData() const
   defaultData.parameters[MaterialParamKeys::METALLIC] = GetDefaultMetallic();
   defaultData.parameters[MaterialParamKeys::ROUGHNESS] = GetDefaultRoughness();
   defaultData.parameters[MaterialParamKeys::AO] = GetDefaultAO();
-  defaultData.parameters[MaterialParamKeys::EMISSION_COLOR] = GetDefaultEmissionColor();
-  defaultData.parameters[MaterialParamKeys::EMISSION_INTENSITY] = GetDefaultEmissionIntensity();
-  defaultData.parameters[MaterialParamKeys::NORMAL_SCALE] = GetDefaultNormalScale();
+  defaultData.parameters[MaterialParamKeys::EMISSION_COLOR] =
+      GetDefaultEmissionColor();
+  defaultData.parameters[MaterialParamKeys::EMISSION_INTENSITY] =
+      GetDefaultEmissionIntensity();
+  defaultData.parameters[MaterialParamKeys::NORMAL_SCALE] =
+      GetDefaultNormalScale();
 
   // 设置默认渲染属性
   defaultData.alphaMode = static_cast<AlphaMode>(GetDefaultAlphaMode());

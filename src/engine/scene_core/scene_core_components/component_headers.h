@@ -1,9 +1,9 @@
 #ifndef MITE_SCENE_COMPONENTS
 #define MITE_SCENE_COMPONENTS
 
+#include "bounding_volume_component.h"
 #include "camera_component.h"
 #include "destroy_component.h"
-#include "bounding_volume_component.h"
 #include "id_component.h"
 #include "light_component.h"
 #include "material_component.h"

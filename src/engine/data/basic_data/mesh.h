@@ -57,7 +57,8 @@ class Mesh {
   /**
    * @brief 获取子网格级包围盒
    */
-  const std::pair<glm::vec3, glm::vec3> GetBoundingBox(uint32_t lodLevel = 0) const;
+  const std::pair<glm::vec3, glm::vec3> GetBoundingBox(
+      uint32_t lodLevel = 0) const;
   /**
    * @brief 获取材质索引
    */
@@ -73,7 +74,8 @@ class Mesh {
 
  private:
   ModelGPUHandle m_ModelGPUHandle;  // 父模型资源
-  MeshSectionLODChain m_LODChain;  // 包含网格体Section的LODChain对象，可从中提取到Offset信息
+  MeshSectionLODChain
+      m_LODChain;  // 包含网格体Section的LODChain对象，可从中提取到Offset信息
 };
 };  // namespace mite
 

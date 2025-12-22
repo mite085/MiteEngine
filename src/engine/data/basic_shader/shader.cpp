@@ -1,11 +1,12 @@
 #include "shader.h"
+
 #include "filesystem/filesystem.h"
 
 namespace mite {
-OpenGLShader::OpenGLShader()
-{
+OpenGLShader::OpenGLShader() {
   // 配置为 Vulkan 目标环境，保持 SPIR-V 严格验证
-  m_CompileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+  m_CompileOptions.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                        shaderc_env_version_vulkan_1_2);
   m_CompileOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
   m_CompileOptions.SetGenerateDebugInfo();
 
@@ -16,24 +17,19 @@ OpenGLShader::OpenGLShader()
   m_CompileOptions.AddMacroDefinition("GLSL_VERSION", "460");
   m_CompileOptions.AddMacroDefinition("VULKAN_TARGET", "1");
 }
-OpenGLShader::~OpenGLShader()
-{
-  Destroy();
-}
-
+OpenGLShader::~OpenGLShader() { Destroy(); }
 
 void OpenGLShader::LoadFromFile(const char *vertexPath,
                                 const char *fragmentPath,
-                                const char *geometryPath)
-{
+                                const char *geometryPath) {
   try {
-    LOG_DEBUG("Compiling shader from files: vertex={}, fragment={}, geometry={}",
-              vertexPath,
-              fragmentPath,
-              geometryPath ? geometryPath : "none");
+    LOG_DEBUG(
+        "Compiling shader from files: vertex={}, fragment={}, geometry={}",
+        vertexPath, fragmentPath, geometryPath ? geometryPath : "none");
     // 使用Shaderc编译文件到SPIR-V
     auto vertexSpirv = CompileFileToSPIRV(vertexPath, shaderc_vertex_shader);
-    auto fragmentSpirv = CompileFileToSPIRV(fragmentPath, shaderc_fragment_shader);
+    auto fragmentSpirv =
+        CompileFileToSPIRV(fragmentPath, shaderc_fragment_shader);
 
     std::vector<uint32_t> geometrySpirv;
     if (geometryPath != nullptr) {
@@ -42,45 +38,46 @@ void OpenGLShader::LoadFromFile(const char *vertexPath,
     // 从SPIR-V加载着色器程序
     LoadFromSPIRV(vertexSpirv, fragmentSpirv, geometrySpirv);
 
-    LOG_DEBUG("Shader compilation completed successfully (ID: {})", m_Handle.programId);
-  }
-  catch (std::exception &e) {
+    LOG_DEBUG("Shader compilation completed successfully (ID: {})",
+              m_Handle.programId);
+  } catch (std::exception &e) {
     LOG_CRITICAL("ERROR::SHADER::COMPILATION_FAILED: {}", e.what());
-    throw std::runtime_error("Shader compilation failed: " + std::string(e.what()));
+    throw std::runtime_error("Shader compilation failed: " +
+                             std::string(e.what()));
   }
 }
 
 void OpenGLShader::LoadFromSource(const std::string &vertexSrc,
                                   const std::string &fragmentSrc,
-                                  const std::string &geometrySrc)
-{
+                                  const std::string &geometrySrc) {
   try {
     LOG_DEBUG("Compiling shader from source strings");
     // 使用Shaderc编译源码到SPIR-V
-    auto vertexSpirv = CompileGLSLToSPIRV(vertexSrc, "vertex_shader", shaderc_vertex_shader);
-    auto fragmentSpirv = CompileGLSLToSPIRV(
-        fragmentSrc, "fragment_shader", shaderc_fragment_shader);
+    auto vertexSpirv =
+        CompileGLSLToSPIRV(vertexSrc, "vertex_shader", shaderc_vertex_shader);
+    auto fragmentSpirv = CompileGLSLToSPIRV(fragmentSrc, "fragment_shader",
+                                            shaderc_fragment_shader);
 
     std::vector<uint32_t> geometrySpirv;
     if (!geometrySrc.empty()) {
-      geometrySpirv = CompileGLSLToSPIRV(geometrySrc, "geometry_shader", shaderc_geometry_shader);
+      geometrySpirv = CompileGLSLToSPIRV(geometrySrc, "geometry_shader",
+                                         shaderc_geometry_shader);
     }
     // 从SPIR-V加载着色器程序
     LoadFromSPIRV(vertexSpirv, fragmentSpirv, geometrySpirv);
 
     LOG_DEBUG("Shader compilation from source completed successfully (ID: {})",
               m_Handle.programId);
-  }
-  catch (std::exception &e) {
+  } catch (std::exception &e) {
     LOG_CRITICAL("ERROR::SHADER::COMPILATION_FAILED: {}", e.what());
-    throw std::runtime_error("Shader compilation failed: " + std::string(e.what()));
+    throw std::runtime_error("Shader compilation failed: " +
+                             std::string(e.what()));
   }
 }
 
-std::vector<uint32_t> OpenGLShader::CompileGLSLToSPIRV(const std::string &source,
-                                                       const std::string &filename,
-                                                       shaderc_shader_kind kind)
-{
+std::vector<uint32_t> OpenGLShader::CompileGLSLToSPIRV(
+    const std::string &source, const std::string &filename,
+    shaderc_shader_kind kind) {
   try {
     // 编译GLSL到SPIR-V（自动处理#include和#ifdef等预处理指令）
     shaderc::SpvCompilationResult result = m_Compiler.CompileGlslToSpv(
@@ -90,25 +87,25 @@ std::vector<uint32_t> OpenGLShader::CompileGLSLToSPIRV(const std::string &source
 
       // 增强错误信息
       if (error_msg.find("include") != std::string::npos) {
-        error_msg += "\nNote: Make sure include paths are relative to the current file";
+        error_msg +=
+            "\nNote: Make sure include paths are relative to the current file";
       }
-       
-      throw std::runtime_error("Failed to compile " + filename + ":\n" + error_msg); 
+
+      throw std::runtime_error("Failed to compile " + filename + ":\n" +
+                               error_msg);
     }
-    LOG_DEBUG("Successfully compiled {} to SPIR-V ({} words)",
-              filename,
+    LOG_DEBUG("Successfully compiled {} to SPIR-V ({} words)", filename,
               result.cend() - result.cbegin());
     return {result.cbegin(), result.cend()};
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     // 重新抛出以保留调用栈
-    throw std::runtime_error("Shader compilation error in " + filename + ": " + e.what());
+    throw std::runtime_error("Shader compilation error in " + filename + ": " +
+                             e.what());
   }
 }
 
-std::vector<uint32_t> OpenGLShader::CompileFileToSPIRV(const std::string &filename,
-                                                       shaderc_shader_kind kind)
-{
+std::vector<uint32_t> OpenGLShader::CompileFileToSPIRV(
+    const std::string &filename, shaderc_shader_kind kind) {
   // 读取文件内容
   std::filesystem::path absolutePath = FileSystem::GetAssetPath(filename);
 
@@ -119,10 +116,8 @@ std::vector<uint32_t> OpenGLShader::CompileFileToSPIRV(const std::string &filena
   return CompileGLSLToSPIRV(source, filename, kind);
 }
 
-
-
-uint32_t OpenGLShader::CompileSPIRVToGLShader(const std::vector<uint32_t> &spirv, uint32_t type)
-{
+uint32_t OpenGLShader::CompileSPIRVToGLShader(
+    const std::vector<uint32_t> &spirv, uint32_t type) {
   if (spirv.empty()) {
     throw std::runtime_error("Empty SPIR-V data provided");
   }
@@ -146,10 +141,7 @@ uint32_t OpenGLShader::CompileSPIRVToGLShader(const std::vector<uint32_t> &spirv
 
   bool format_found = false;
   for (GLenum format : formats) {
-    glShaderBinary(1,
-                   &shader,
-                   GL_SHADER_BINARY_FORMAT_SPIR_V,
-                   spirv.data(),
+    glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(),
                    static_cast<GLsizei>(spirv.size() * sizeof(uint32_t)));
 
     GLenum error = glGetError();
@@ -183,14 +175,13 @@ uint32_t OpenGLShader::CompileSPIRVToGLShader(const std::vector<uint32_t> &spirv
   return shader;
 }
 
-
 void OpenGLShader::LoadFromSPIRV(const std::vector<uint32_t> &vertexSpirv,
                                  const std::vector<uint32_t> &fragmentSpirv,
-                                 const std::vector<uint32_t> &geometrySpirv)
-{
+                                 const std::vector<uint32_t> &geometrySpirv) {
   // 1. 编译SPIR-V到OpenGL着色器对象
   uint32_t vertexShader = CompileSPIRVToGLShader(vertexSpirv, GL_VERTEX_SHADER);
-  uint32_t fragmentShader = CompileSPIRVToGLShader(fragmentSpirv, GL_FRAGMENT_SHADER);
+  uint32_t fragmentShader =
+      CompileSPIRVToGLShader(fragmentSpirv, GL_FRAGMENT_SHADER);
   uint32_t geometryShader = 0;
   if (!geometrySpirv.empty()) {
     geometryShader = CompileSPIRVToGLShader(geometrySpirv, GL_GEOMETRY_SHADER);
@@ -204,7 +195,8 @@ void OpenGLShader::LoadFromSPIRV(const std::vector<uint32_t> &vertexSpirv,
   }
   // 3. 链接程序
   glLinkProgram(static_cast<GLuint>(m_Handle.programId));
-  CheckCompileErrors(static_cast<GLuint>(m_Handle.programId), GL_LINK_STATUS, true);
+  CheckCompileErrors(static_cast<GLuint>(m_Handle.programId), GL_LINK_STATUS,
+                     true);
   // 4. 清理临时着色器对象
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
@@ -213,67 +205,77 @@ void OpenGLShader::LoadFromSPIRV(const std::vector<uint32_t> &vertexSpirv,
   }
 }
 
-void OpenGLShader::Destroy()
-{
+void OpenGLShader::Destroy() {
   if (m_Handle.programId != 0) {
     glDeleteProgram(static_cast<GLuint>(m_Handle.programId));
     m_Handle.programId = 0;
   }
-  //m_StorageBlockCache.clear();
-  //m_UniformBlockCache.clear();
+  // m_StorageBlockCache.clear();
+  // m_UniformBlockCache.clear();
 }
 
-//void OpenGLShader::SetUniformBlockBinding(const std::string &uniformBlockName,
-//                                          uint32_t bindingPoint)
+// void OpenGLShader::SetUniformBlockBinding(const std::string
+// &uniformBlockName,
+//                                           uint32_t bindingPoint)
 //{
-//  uint32_t blockIndex = GetUniformBlockIndex(uniformBlockName);
-//  if (blockIndex != GL_INVALID_INDEX) {
-//    glUniformBlockBinding(static_cast<GLuint>(m_Handle.programId), blockIndex, bindingPoint);
-//    LOG_DEBUG("Uniform block '{}' bound to point {}", uniformBlockName, bindingPoint);
-//  }
-//  else {
-//    LOG_WARN("Uniform block '{}' not found in shader", uniformBlockName);
-//  }
-//}
+//   uint32_t blockIndex = GetUniformBlockIndex(uniformBlockName);
+//   if (blockIndex != GL_INVALID_INDEX) {
+//     glUniformBlockBinding(static_cast<GLuint>(m_Handle.programId),
+//     blockIndex, bindingPoint); LOG_DEBUG("Uniform block '{}' bound to point
+//     {}", uniformBlockName, bindingPoint);
+//   }
+//   else {
+//     LOG_WARN("Uniform block '{}' not found in shader", uniformBlockName);
+//   }
+// }
 //
-//void OpenGLShader::SetShaderStorageBlockBinding(const std::string &storageBlockName,
-//                                                uint32_t bindingPoint)
+// void OpenGLShader::SetShaderStorageBlockBinding(const std::string
+// &storageBlockName,
+//                                                 uint32_t bindingPoint)
 //{
-//  uint32_t blockIndex = GetShaderStorageBlockIndex(storageBlockName);
-//  if (blockIndex != GL_INVALID_INDEX) {
-//    glShaderStorageBlockBinding(static_cast<GLuint>(m_Handle.programId), blockIndex, bindingPoint);
-//    LOG_DEBUG("Shader storage block '{}' bound to point {}", storageBlockName, bindingPoint);
-//  }
-//  else {
-//    LOG_WARN("Shader storage block '{}' not found in shader", storageBlockName);
-//  }
-//}
+//   uint32_t blockIndex = GetShaderStorageBlockIndex(storageBlockName);
+//   if (blockIndex != GL_INVALID_INDEX) {
+//     glShaderStorageBlockBinding(static_cast<GLuint>(m_Handle.programId),
+//     blockIndex, bindingPoint); LOG_DEBUG("Shader storage block '{}' bound to
+//     point {}", storageBlockName, bindingPoint);
+//   }
+//   else {
+//     LOG_WARN("Shader storage block '{}' not found in shader",
+//     storageBlockName);
+//   }
+// }
 //
-//uint32_t OpenGLShader::GetUniformBlockIndex(const std::string &uniformBlockName) const
+// uint32_t OpenGLShader::GetUniformBlockIndex(const std::string
+// &uniformBlockName) const
 //{
-//  if (auto it = m_UniformBlockCache.find(uniformBlockName); it != m_UniformBlockCache.end()) {
-//    return it->second;
-//  }
-//  uint32_t blockIndex = glGetUniformBlockIndex(static_cast<GLuint>(m_Handle.programId),
-//                                               uniformBlockName.c_str());
-//  m_UniformBlockCache[uniformBlockName] = blockIndex;
-//  return blockIndex;
-//}
+//   if (auto it = m_UniformBlockCache.find(uniformBlockName); it !=
+//   m_UniformBlockCache.end()) {
+//     return it->second;
+//   }
+//   uint32_t blockIndex =
+//   glGetUniformBlockIndex(static_cast<GLuint>(m_Handle.programId),
+//                                                uniformBlockName.c_str());
+//   m_UniformBlockCache[uniformBlockName] = blockIndex;
+//   return blockIndex;
+// }
 //
-//uint32_t OpenGLShader::GetShaderStorageBlockIndex(const std::string &storageBlockName) const
+// uint32_t OpenGLShader::GetShaderStorageBlockIndex(const std::string
+// &storageBlockName) const
 //{
-//  if (auto it = m_StorageBlockCache.find(storageBlockName); it != m_StorageBlockCache.end()) {
-//    return it->second;
-//  }
-//  uint32_t blockIndex = glGetProgramResourceIndex(
-//      static_cast<GLuint>(m_Handle.programId), GL_SHADER_STORAGE_BLOCK, storageBlockName.c_str());
-//  m_StorageBlockCache[storageBlockName] = blockIndex;
-//  return blockIndex;
-//}
+//   if (auto it = m_StorageBlockCache.find(storageBlockName); it !=
+//   m_StorageBlockCache.end()) {
+//     return it->second;
+//   }
+//   uint32_t blockIndex = glGetProgramResourceIndex(
+//       static_cast<GLuint>(m_Handle.programId), GL_SHADER_STORAGE_BLOCK,
+//       storageBlockName.c_str());
+//   m_StorageBlockCache[storageBlockName] = blockIndex;
+//   return blockIndex;
+// }
 
 // =============== 私有工具方法 ===============
-void OpenGLShader::CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram)
-{
+void OpenGLShader::CheckCompileErrors(uint32_t id, uint32_t type,
+                                      bool isProgram) {
   int success;
   char infoLog[1024];
   if (isProgram) {
@@ -281,48 +283,41 @@ void OpenGLShader::CheckCompileErrors(uint32_t id, uint32_t type, bool isProgram
     if (!success) {
       glGetProgramInfoLog(id, 1024, nullptr, infoLog);
       LOG_CRITICAL("ERROR::PROGRAM_LINK_ERROR: {}", infoLog);
-      throw std::runtime_error("Program linking failed: " + std::string(infoLog));
+      throw std::runtime_error("Program linking failed: " +
+                               std::string(infoLog));
     }
-  }
-  else {
+  } else {
     glGetShaderiv(id, type, &success);
     if (!success) {
       glGetShaderInfoLog(id, 1024, nullptr, infoLog);
       LOG_CRITICAL("ERROR::SHADER_COMPILE_ERROR: {}", infoLog);
-      throw std::runtime_error("Shader compilation failed: " + std::string(infoLog));
+      throw std::runtime_error("Shader compilation failed: " +
+                               std::string(infoLog));
     }
   }
 }
 
-void OpenGLShader::Bind() const
-{
+void OpenGLShader::Bind() const {
   glUseProgram(static_cast<GLuint>(m_Handle.programId));
 }
 
-void OpenGLShader::Unbind() const
-{
-  glUseProgram(0);
-}
+void OpenGLShader::Unbind() const { glUseProgram(0); }
 
-void OpenGLShader::SetVulkanTarget(bool enable)
-{
+void OpenGLShader::SetVulkanTarget(bool enable) {
   if (enable) {
     m_CompileOptions.SetTargetEnvironment(shaderc_target_env_vulkan,
                                           shaderc_env_version_vulkan_1_2);
     m_CompileOptions.AddMacroDefinition("VULKAN_TARGET", "1");
-  }
-  else {
+  } else {
     m_CompileOptions.SetTargetEnvironment(shaderc_target_env_opengl_compat,
                                           shaderc_env_version_opengl_4_5);
     m_CompileOptions.AddMacroDefinition("VULKAN_TARGET", "0");
   }
 }
 
-shaderc_include_result *ShaderIncluder::GetInclude(const char *requested_source,
-                                                   shaderc_include_type type,
-                                                   const char *requesting_source,
-                                                   size_t include_depth)
-{
+shaderc_include_result *ShaderIncluder::GetInclude(
+    const char *requested_source, shaderc_include_type type,
+    const char *requesting_source, size_t include_depth) {
   std::string full_path;
 
   if (type == shaderc_include_type_relative) {
@@ -330,8 +325,7 @@ shaderc_include_result *ShaderIncluder::GetInclude(const char *requested_source,
     std::filesystem::path requesting_path(requesting_source);
     std::filesystem::path parent_dir = requesting_path.parent_path();
     full_path = (parent_dir / requested_source).string();
-  }
-  else {
+  } else {
     // 系统路径（通常不使用）
     full_path = requested_source;
   }
@@ -368,16 +362,14 @@ shaderc_include_result *ShaderIncluder::GetInclude(const char *requested_source,
   return result;
 }
 
-void ShaderIncluder::ReleaseInclude(shaderc_include_result *data)
-{
+void ShaderIncluder::ReleaseInclude(shaderc_include_result *data) {
   if (data && data->user_data) {
     delete static_cast<PersistentIncludeData *>(data->user_data);
   }
   delete data;
 }
 
-std::string ShaderIncluder::NormalizeAssetPath(const std::string &path) const
-{
+std::string ShaderIncluder::NormalizeAssetPath(const std::string &path) const {
   std::filesystem::path p(path);
   return std::filesystem::weakly_canonical(p).string();
 }

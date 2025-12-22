@@ -14,7 +14,7 @@ class Time {
   using Milliseconds = std::chrono::milliseconds;
   using Microseconds = std::chrono::microseconds;
 
-  static void Reset(); // 重置累积时间
+  static void Reset();  // 重置累积时间
 
   static void Update();  // 每帧调用，更新时间
 

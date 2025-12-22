@@ -19,24 +19,36 @@ class GLTFPBRMaterialTemplate : public MaterialTemplate {
   // ---- 核心接口重写 ----
   MaterialType GetMaterialType() const override { return MaterialType::PBR; }
   static MaterialType StaticType() { return MaterialType::PBR; }
-  std::string GetMaterialTypeName() const override { return "GLTF PBR Material"; }
+  std::string GetMaterialTypeName() const override {
+    return "GLTF PBR Material";
+  }
 
   // ---- GLTF特定参数设置 ----
-  void SetDefaultBaseColor(const glm::vec4 &color) { m_DefaultBaseColor = color; }
+  void SetDefaultBaseColor(const glm::vec4 &color) {
+    m_DefaultBaseColor = color;
+  }
   void SetDefaultMetallic(float metallic) { m_DefaultMetallic = metallic; }
   void SetDefaultRoughness(float roughness) { m_DefaultRoughness = roughness; }
-  void SetDefaultEmissive(const glm::vec3 &emissive) { m_DefaultEmissive = emissive; }
+  void SetDefaultEmissive(const glm::vec3 &emissive) {
+    m_DefaultEmissive = emissive;
+  }
   void SetDefaultAlphaMode(AlphaMode mode) { m_DefaultAlphaMode = mode; }
   void SetDefaultAlphaCutoff(float cutoff) { m_DefaultAlphaCutoff = cutoff; }
-  void SetDefaultDoubleSided(bool doubleSided) { m_DefaultDoubleSided = doubleSided; }
-  void SetDefaultNormalScale(float normalScale) { m_DefaultNormalScale = normalScale; }
+  void SetDefaultDoubleSided(bool doubleSided) {
+    m_DefaultDoubleSided = doubleSided;
+  }
+  void SetDefaultNormalScale(float normalScale) {
+    m_DefaultNormalScale = normalScale;
+  }
 
  protected:
   // ---- 默认值重写 ----
   glm::vec4 GetDefaultBaseColor() const override { return m_DefaultBaseColor; }
   float GetDefaultMetallic() const override { return m_DefaultMetallic; }
   float GetDefaultRoughness() const override { return m_DefaultRoughness; }
-  glm::vec3 GetDefaultEmissionColor() const override { return m_DefaultEmissive; }
+  glm::vec3 GetDefaultEmissionColor() const override {
+    return m_DefaultEmissive;
+  }
   float GetDefaultEmissionIntensity() const override { return 1.0f; }
   float GetDefaultNormalScale() const override { return m_DefaultNormalScale; }
   float GetDefaultAlphaCutoff() const override { return m_DefaultAlphaCutoff; }

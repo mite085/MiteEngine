@@ -8,17 +8,17 @@ namespace mite {
  * @brief UI样式管理器
  * 负责管理所有UI样式，提供样式的注册、获取、切换等功能
  * 采用单例模式确保全局唯一性
- * 
+ *
  * 使用示例：
  * // 初始化
  * manager.Initialize();
- * 
+ *
  * // 获取当前样式
  * auto currentStyle = manager.GetCurrentStyle();
- * 
+ *
  * // 切换主题
  * manager.SetCurrentStyle("dark");
- * 
+ *
  * // 监听样式变更事件
  * SubscriptionGroup m_EventSubscriptions;
  * m_EventSubscriptions.Subscribe<StyleChangedEvent>((BIND_DISPATCH_FN(onStyleChanged));
@@ -109,7 +109,6 @@ class UIStyleManager {
   static std::shared_ptr<UIStyle> CreateLightTheme();
 
  private:
-
   /**
    * @brief 创建并注册内置样式
    */
@@ -117,12 +116,10 @@ class UIStyleManager {
 
   Logger m_Logger;
 
-  std::unordered_map<std::string, std::shared_ptr<UIStyle>> m_Styles;  // 样式存储映射表
-  std::string m_CurrentStyleName;                                      // 当前样式名称
+  std::unordered_map<std::string, std::shared_ptr<UIStyle>>
+      m_Styles;                    // 样式存储映射表
+  std::string m_CurrentStyleName;  // 当前样式名称
 };
-
-
-
 }  // namespace mite
 
 #endif  // MITE_UI_STYLE_MANAGER_H

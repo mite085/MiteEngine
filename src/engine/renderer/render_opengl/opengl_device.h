@@ -18,15 +18,17 @@ class OpenGLDevice : public RenderDevice {
   void CleanupResources();
 
   // ---- 纹理操作 ----
-  TextureGPUHandle CreateTexture(std::shared_ptr<TextureSourceData> data) override;
-  TextureGPUHandle CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo) override;
+  TextureGPUHandle CreateTexture(
+      std::shared_ptr<TextureSourceData> data) override;
+  TextureGPUHandle CreateRuntimeTexture(
+      std::shared_ptr<TextureCreateInfo> createInfo) override;
   void DestroyTexture(TextureGPUHandle handle) override;
-  void BindRuntimeTexture(RuntimeTextureType type,
-                          TextureGPUHandle textureHandle,
-                          TextureTarget target = TextureTarget::TEXTURE_2D) const override;
-  void BindExternalTexture(ExternalTextureType type,
-                           TextureGPUHandle textureHandle,
-                           TextureTarget target = TextureTarget::TEXTURE_2D) const override;
+  void BindRuntimeTexture(
+      RuntimeTextureType type, TextureGPUHandle textureHandle,
+      TextureTarget target = TextureTarget::TEXTURE_2D) const override;
+  void BindExternalTexture(
+      ExternalTextureType type, TextureGPUHandle textureHandle,
+      TextureTarget target = TextureTarget::TEXTURE_2D) const override;
   void BindDefaultTexture(uint32_t textureUnit) const override;
 
   void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
@@ -49,14 +51,15 @@ class OpenGLDevice : public RenderDevice {
   // 需要整体梳理std::shared_ptr<Model>的生命周期
   void DestroyModel(ModelGPUHandle model) override;
   void BindMesh(std::shared_ptr<Mesh> mesh) const override;
-  void DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const override;
-  void DrawIndexed(uint32_t indexCount,
-                   uint32_t indexOffset,
+  void DrawMeshLOD(std::shared_ptr<Mesh> mesh,
+                   uint32_t lodLevel) const override;
+  void DrawIndexed(uint32_t indexCount, uint32_t indexOffset,
                    GLenum mode = GL_TRIANGLES,
                    GLenum indexType = GL_UNSIGNED_INT) const override;
 
   // ---- FrameBuffer 操作 ----
-  std::shared_ptr<FrameBuffer> CreateFrameBuffer(const FrameBufferSpec &spec) override;
+  std::shared_ptr<FrameBuffer> CreateFrameBuffer(
+      const FrameBufferSpec &spec) override;
   void DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer) override;
 
   // ---- 全屏四边形（用于延迟光照和后处理） ----
@@ -69,7 +72,8 @@ class OpenGLDevice : public RenderDevice {
   void OnModelLoaded(ModelLoadEvent &e) override;
   void OnTextureLoaded(TextureLoadEvent &e) override;
   void OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e) override;
-  void OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEvent &e) override;
+  void OnRuntimeTextureDestroyRequest(
+      RuntimeTextureDestroyRequestEvent &e) override;
 
   // ---- 默认纹理管理 ----
   void InitializeDefaultTextures();
@@ -81,10 +85,8 @@ class OpenGLDevice : public RenderDevice {
   void SetVertexAttributes(const VertexLayout &layout);
   void SetTextureParameters(std::shared_ptr<TextureSourceData> data);
   bool UploadTextureData(std::shared_ptr<TextureSourceData> data);
-  bool GetGLTextureFormats(TextureFormat textureFormat,
-                           GLenum &internalFormat,
-                           GLenum &format,
-                           GLenum &type);
+  bool GetGLTextureFormats(TextureFormat textureFormat, GLenum &internalFormat,
+                           GLenum &format, GLenum &type);
   void CheckGLError(std::string debugName = "");
 
   // 资源追踪（用于调试和泄漏检测）

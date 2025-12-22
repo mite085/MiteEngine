@@ -28,9 +28,9 @@ class ShaderCache {
    * @return std::shared_ptr<Shader> 缓存的Shader智能指针
    * @throws std::runtime_error 着色器编译失败时抛出
    */
-  std::shared_ptr<OpenGLShader> GetOpenGLShader(const std::string &vertexPath,
-                              const std::string &fragmentPath,
-                              const std::string &geometryPath = "");
+  std::shared_ptr<OpenGLShader> GetOpenGLShader(
+      const std::string &vertexPath, const std::string &fragmentPath,
+      const std::string &geometryPath = "");
 
   /**
    * @brief 清空所有缓存（强制释放GPU资源）
@@ -49,7 +49,6 @@ class ShaderCache {
   mutable std::mutex m_Mutex;
   std::unordered_map<std::string, std::weak_ptr<OpenGLShader>> m_Cache;
 };
-
 }  // namespace mite
 
 #endif

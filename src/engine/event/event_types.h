@@ -7,8 +7,8 @@ namespace mite {
 // 事件类别，支持掩码判断，
 // 如 flags = EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD;
 // 表示flags既是输入事件又是键盘事件。
-// 使用flags & (EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD) != 0,判断类别是否符合
-// （键盘鼠标分开意义不大，合并到EVENT_CATEGORY_INPUT）
+// 使用flags & (EVENT_CATEGORY_INPUT | EVENT_CATEGORY_KEYBOARD) !=
+// 0,判断类别是否符合 （键盘鼠标分开意义不大，合并到EVENT_CATEGORY_INPUT）
 enum EventCategory : uint64_t {
   None = 0,
   EVENT_CATEGORY_SYSTEM = 1 << 0,  // 系统事件

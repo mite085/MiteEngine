@@ -36,7 +36,8 @@ class OpenGLPipeline : public RenderPipeline {
 
  private:
   // ---- 事件处理 ----
-  void OnViewPortResize(ViewportResizeEvent &event);  // 消费Viewport尺寸变化事件
+  void OnViewPortResize(
+      ViewportResizeEvent &event);  // 消费Viewport尺寸变化事件
 
   // ---- 成员变量 ----
   bool m_IsRenderingScene = false;

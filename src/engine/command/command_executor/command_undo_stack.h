@@ -5,7 +5,6 @@
 #include "command_core/command_registry.h"
 
 namespace mite {
-
 /**
  * @brief 命令撤销栈
  *
@@ -74,7 +73,6 @@ class CommandUndoStack {
   std::stack<CommandHandle> m_Stack;
   size_t m_MaxSize;
 };
-
 }  // namespace mite
 
 #endif  // MITE_ENGINE_COMMAND_CORE_COMMAND_UNDO_STACK

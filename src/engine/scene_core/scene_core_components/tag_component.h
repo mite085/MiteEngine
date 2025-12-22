@@ -14,8 +14,6 @@ namespace mite {
 // 前向声明
 class SceneRegistry;
 
-
-
 /**
  * @brief 标签组件 - 为实体提供名称标识和分类标签
  *
@@ -43,23 +41,11 @@ class TagComponent : public ComponentTraits<Tag, Component::Family::Core> {
   TagComponent(const std::string &tag, const glm::vec4 &color);
 
   // ------------------------ 属性访问 ------------------------
-  const std::string &GetTag() const
-  {
-    return m_Tag;
-  }
-  void SetTag(const std::string &tag)
-  {
-    m_Tag = tag;
-  }
+  const std::string &GetTag() const { return m_Tag; }
+  void SetTag(const std::string &tag) { m_Tag = tag; }
 
-  const glm::vec4 &GetColor() const
-  {
-    return m_Color;
-  }
-  void SetColor(const glm::vec4 &color)
-  {
-    m_Color = color;
-  }
+  const glm::vec4 &GetColor() const { return m_Color; }
+  void SetColor(const glm::vec4 &color) { m_Color = color; }
 
   // ------------------------ 辅助方法 ------------------------
   /**
@@ -97,7 +83,6 @@ class TagComponent : public ComponentTraits<Tag, Component::Family::Core> {
 class TagComponentSystem : public ComponentSystem<TagComponent> {
   DECLARE_COMPONENT_SYSTEM(TagComponentSystem)
 };
-
 };  // namespace mite
 
 #endif

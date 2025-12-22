@@ -1,8 +1,9 @@
 #ifndef MITE_COMPONENT_ID
 #define MITE_COMPONENT_ID
 
-#include "headers/headers.h"
 #include <uuid.h>
+
+#include "headers/headers.h"
 
 namespace mite {
 /**
@@ -17,8 +18,8 @@ namespace mite {
 class ComponentID {
  public:
   // 获取特定组件类型的ID (编译期确定)
-  template<typename T> static ComponentID Get()
-  {
+  template <typename T>
+  static ComponentID Get() {
     // 使用类型信息生成确定性UUID
     const std::type_index typeIdx(typeid(T));
     const size_t hash = typeIdx.hash_code();
@@ -51,16 +52,13 @@ class ComponentID {
   // 内部UUID存储
   UUID m_ID;
 };
-
 };  // namespace mite
 
 // 哈希特化
 namespace std {
-template<> struct hash<mite::ComponentID> {
-  size_t operator()(const mite::ComponentID &id) const
-  {
-    return id.Hash();
-  }
+template <>
+struct hash<mite::ComponentID> {
+  size_t operator()(const mite::ComponentID &id) const { return id.Hash(); }
 };
 }  // namespace std
 

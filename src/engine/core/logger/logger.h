@@ -12,7 +12,6 @@
 #pragma warning(pop)
 
 namespace mite {
-
 typedef std::shared_ptr<spdlog::logger> Logger;
 
 class LoggerSystem {
@@ -21,65 +20,70 @@ class LoggerSystem {
   static void Shutdown();
 
   // 核心日志接口
-  template<typename... Args> static void Trace(const std::string &fmt, Args &&...args)
-  {
+  template <typename... Args>
+  static void Trace(const std::string &fmt, Args &&...args) {
     GetCoreLogger()->trace(fmt, std::forward<Args>(args)...);
   }
 
-  template<typename... Args> static void Debug(const std::string &fmt, Args &&...args)
-  {
+  template <typename... Args>
+  static void Debug(const std::string &fmt, Args &&...args) {
     GetCoreLogger()->debug(fmt, std::forward<Args>(args)...);
   }
 
-  template<typename... Args> static void Info(const std::string &fmt, Args &&...args)
-  {
+  template <typename... Args>
+  static void Info(const std::string &fmt, Args &&...args) {
     GetCoreLogger()->info(fmt, std::forward<Args>(args)...);
   }
 
-  template<typename... Args> static void Warn(const std::string &fmt, Args &&...args)
-  {
+  template <typename... Args>
+  static void Warn(const std::string &fmt, Args &&...args) {
     GetCoreLogger()->warn(fmt, std::forward<Args>(args)...);
   }
 
-  template<typename... Args> static void Error(const std::string &fmt, Args &&...args)
-  {
+  template <typename... Args>
+  static void Error(const std::string &fmt, Args &&...args) {
     GetCoreLogger()->error(fmt, std::forward<Args>(args)...);
   }
 
-  template<typename... Args> static void Critical(const std::string &fmt, Args &&...args)
-  {
+  template <typename... Args>
+  static void Critical(const std::string &fmt, Args &&...args) {
     GetCoreLogger()->critical(fmt, std::forward<Args>(args)...);
   }
 
   // 带标签的日志接口
-  template<typename... Args>
-  static void TraceTag(const std::string &tag, const std::string &fmt, Args &&...args)
-  {
-    GetCoreLogger()->trace("[{}] {}", tag, fmt::format(fmt, std::forward<Args>(args)...));
+  template <typename... Args>
+  static void TraceTag(const std::string &tag, const std::string &fmt,
+                       Args &&...args) {
+    GetCoreLogger()->trace("[{}] {}", tag,
+                           fmt::format(fmt, std::forward<Args>(args)...));
   }
 
-  template<typename... Args>
-  static void InfoTag(const std::string &tag, const std::string &fmt, Args &&...args)
-  {
-    GetCoreLogger()->info("[{}] {}", tag, fmt::format(fmt, std::forward<Args>(args)...));
+  template <typename... Args>
+  static void InfoTag(const std::string &tag, const std::string &fmt,
+                      Args &&...args) {
+    GetCoreLogger()->info("[{}] {}", tag,
+                          fmt::format(fmt, std::forward<Args>(args)...));
   }
 
-  template<typename... Args>
-  static void WarnTag(const std::string &tag, const std::string &fmt, Args &&...args)
-  {
-    GetCoreLogger()->warn("[{}] {}", tag, fmt::format(fmt, std::forward<Args>(args)...));
+  template <typename... Args>
+  static void WarnTag(const std::string &tag, const std::string &fmt,
+                      Args &&...args) {
+    GetCoreLogger()->warn("[{}] {}", tag,
+                          fmt::format(fmt, std::forward<Args>(args)...));
   }
 
-  template<typename... Args>
-  static void ErrorTag(const std::string &tag, const std::string &fmt, Args &&...args)
-  {
-    GetCoreLogger()->error("[{}] {}", tag, fmt::format(fmt, std::forward<Args>(args)...));
+  template <typename... Args>
+  static void ErrorTag(const std::string &tag, const std::string &fmt,
+                       Args &&...args) {
+    GetCoreLogger()->error("[{}] {}", tag,
+                           fmt::format(fmt, std::forward<Args>(args)...));
   }
 
-  template<typename... Args>
-  static void CriticalTag(const std::string &tag, const std::string &fmt, Args &&...args)
-  {
-    GetCoreLogger()->critical("[{}] {}", tag, fmt::format(fmt, std::forward<Args>(args)...));
+  template <typename... Args>
+  static void CriticalTag(const std::string &tag, const std::string &fmt,
+                          Args &&...args) {
+    GetCoreLogger()->critical("[{}] {}", tag,
+                              fmt::format(fmt, std::forward<Args>(args)...));
   }
 
   // 设置全局日志级别
@@ -89,7 +93,8 @@ class LoggerSystem {
   static std::shared_ptr<spdlog::logger> &GetCoreLogger();
 
   // 创建模块专属logger
-  static std::shared_ptr<spdlog::logger> CreateModuleLogger(const std::string &name);
+  static std::shared_ptr<spdlog::logger> CreateModuleLogger(
+      const std::string &name);
 
  private:
   static std::shared_ptr<spdlog::logger> s_CoreLogger;
@@ -108,13 +113,13 @@ class LoggerSystem {
 #define LOG_INFO_TAG(tag, ...) ::mite::LoggerSystem::InfoTag(tag, __VA_ARGS__)
 #define LOG_WARN_TAG(tag, ...) ::mite::LoggerSystem::WarnTag(tag, __VA_ARGS__)
 #define LOG_ERROR_TAG(tag, ...) ::mite::LoggerSystem::ErrorTag(tag, __VA_ARGS__)
-#define LOG_CRITICAL_TAG(tag, ...) ::mite::LoggerSystem::CriticalTag(tag, __VA_ARGS__)
+#define LOG_CRITICAL_TAG(tag, ...) \
+  ::mite::LoggerSystem::CriticalTag(tag, __VA_ARGS__)
 
 // 获取类型名的方法
-template<typename U> std::string type_name()
-{
+template <typename U>
+std::string type_name() {
   return typeid(U).name();
 }
-
 }  // namespace mite
 #endif

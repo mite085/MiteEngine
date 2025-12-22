@@ -18,9 +18,9 @@ class GizmoOverlay : public UIOverlay {
   void Render(OverlayContext &context) override;
 
   // ==================== Gizmo状态控制 ====================
-  void SetOperation(int operation);                 // 设置操作类型：平移/旋转/缩放
-  void SetMode(int mode);                           // 设置模式：局部/世界
-  void EnableSnap(bool snap) { m_UseSnap = snap; }  // 启用吸附
+  void SetOperation(int operation);  // 设置操作类型：平移/旋转/缩放
+  void SetMode(int mode);            // 设置模式：局部/世界
+  void EnableSnap(bool snap) { m_UseSnap = snap; }      // 启用吸附
   void SetSnap(glm::vec3 snap) { m_SnapValue = snap; }  // 设定吸附值
 
   bool IsUsing() const { return m_IsUsing; }
@@ -38,7 +38,8 @@ class GizmoOverlay : public UIOverlay {
   // ==================== 配置参数 ====================
   glm::vec2 m_ViewManipulateSize = {128, 128};  // Gizmo显示大小
   bool m_UseSnap = false;                       // 是否启用吸附
-  glm::vec3 m_SnapValue = glm::vec3(1.0f);  // 吸附值(按照该值的倍数执行Translate/Rotate/Scale)
+  glm::vec3 m_SnapValue =
+      glm::vec3(1.0f);  // 吸附值(按照该值的倍数执行Translate/Rotate/Scale)
 };
 }  // namespace mite
 

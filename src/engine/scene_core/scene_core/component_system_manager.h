@@ -1,9 +1,9 @@
 #ifndef MITE_SCENE_COMPONENT_SYSTEM_MANAGER
 #define MITE_SCENE_COMPONENT_SYSTEM_MANAGER
 
+#include "component_event_publisher.h"
 #include "component_system.h"
 #include "scene_core_event.h"
-#include "component_event_publisher.h"
 namespace mite {
 /**
  * @brief 组件系统管理器，集中管理所有组件系统
@@ -29,9 +29,11 @@ class ComponentSystemManager {
   ~ComponentSystemManager();
 
   // SFINAE 检测 T 是否有 ComponentType 成员类型
-  template<typename T, typename = void> struct HasComponentType : std::false_type {};
-  template<typename T>
-  struct HasComponentType<T, std::void_t<typename T::ComponentType>> : std::true_type {};
+  template <typename T, typename = void>
+  struct HasComponentType : std::false_type {};
+  template <typename T>
+  struct HasComponentType<T, std::void_t<typename T::ComponentType>>
+      : std::true_type {};
 
   /**
    * @brief 注册组件系统
@@ -42,8 +44,8 @@ class ComponentSystemManager {
    * @param args 构造参数
    * @return 注册的系统指针
    */
-  template<typename T, typename... Args> T *RegisterSystem(Args &&...args)
-  {
+  template <typename T, typename... Args>
+  T *RegisterSystem(Args &&...args) {
     static_assert(std::is_base_of<IComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
 
@@ -79,8 +81,8 @@ class ComponentSystemManager {
    * @tparam T 系统类型
    * @tparam U 组件类型
    */
-  template<typename T> void UnregisterSystem()
-  {
+  template <typename T>
+  void UnregisterSystem() {
     static_assert(std::is_base_of<IComponentSystem, T>::value,
                   "Registered system must inherit from ComponentSystem");
     const std::type_index type = typeid(T);
@@ -95,19 +97,19 @@ class ComponentSystemManager {
     m_SystemMap.erase(mapIt);
 
     // 3. 从vector中移除对应的unique_ptr
-    auto vecIt = std::find_if(m_Systems.begin(),
-                              m_Systems.end(),
-                              [systemPtr](const std::unique_ptr<IComponentSystem> &ptr) {
-                                return ptr.get() == systemPtr;
-                              });
+    auto vecIt =
+        std::find_if(m_Systems.begin(), m_Systems.end(),
+                     [systemPtr](const std::unique_ptr<IComponentSystem> &ptr) {
+                       return ptr.get() == systemPtr;
+                     });
 
     if (vecIt != m_Systems.end()) {
       m_Systems.erase(vecIt);  // 这会删除unique_ptr，从而释放内存
-    }
-    else {
+    } else {
       // 仅当map和vector双重存储结构出现问题时触发：map中
       // 能查找到并且正常删除，但vector未能查找到对应的unique_ptr
-      assert(false && "Inconsistent state: system found in map but not in vector");
+      assert(false &&
+             "Inconsistent state: system found in map but not in vector");
       return;
     }
 
@@ -126,8 +128,8 @@ class ComponentSystemManager {
    * @tparam T 系统类型
    * @return 系统指针，未找到返回nullptr
    */
-  template<typename T> bool HasSystem() const
-  {
+  template <typename T>
+  bool HasSystem() const {
     const std::type_index type = typeid(T);
     auto it = m_SystemMap.find(type);
     if (it != m_SystemMap.end() && it->second) {
@@ -142,8 +144,8 @@ class ComponentSystemManager {
    * @tparam T 系统类型
    * @return 系统指针，未找到返回nullptr
    */
-  template<typename T> T *GetSystem() const
-  {
+  template <typename T>
+  T *GetSystem() const {
     // 获取前使用assert断言检查，便于在debug阶段发现问题。
     assert(HasSystem<T>());
     const std::type_index type = typeid(T);
@@ -190,8 +192,9 @@ class ComponentSystemManager {
  private:
   SceneRegistry &m_Registry;
 
-  std::vector<std::unique_ptr<IComponentSystem>> m_Systems;             // 用于遍历
-  std::unordered_map<std::type_index, IComponentSystem *> m_SystemMap;  // 用于查找
+  std::vector<std::unique_ptr<IComponentSystem>> m_Systems;  // 用于遍历
+  std::unordered_map<std::type_index, IComponentSystem *>
+      m_SystemMap;  // 用于查找
   bool m_SystemsSorted = false;
 };
 };  // namespace mite

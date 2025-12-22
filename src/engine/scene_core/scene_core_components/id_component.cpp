@@ -5,16 +5,14 @@ namespace mite {
 IDComponent::IDComponent()
     : ComponentTraits(),
       m_UUID(UUIDGenerator::Generate()),
-      m_UUIDString(UUIDGenerator::UUIDToString(m_UUID))
-{
+      m_UUIDString(UUIDGenerator::UUIDToString(m_UUID)) {
   // 确保生成的UUID有效
   if (m_UUID.is_nil()) {
     throw std::runtime_error("Failed to generate valid UUID");
   }
 }
 
-IDComponent::IDComponent(const std::string &id) : ComponentTraits()
-{
+IDComponent::IDComponent(const std::string &id) : ComponentTraits() {
   // 尝试解析字符串
   auto optionalUUID = UUID::from_string(id);
   if (!optionalUUID) {
@@ -28,11 +26,9 @@ IDComponent::IDComponent(const std::string &id) : ComponentTraits()
   m_UUIDString = UUIDGenerator::UUIDToString(m_UUID);
 }
 
-bool IDComponent::IsValid(const std::string &id)
-{
+bool IDComponent::IsValid(const std::string &id) {
   // 空字符串不算有效UUID
-  if (id.empty())
-    return false;
+  if (id.empty()) return false;
 
   // 尝试解析
   auto optionalUUID = UUID::from_string(id);

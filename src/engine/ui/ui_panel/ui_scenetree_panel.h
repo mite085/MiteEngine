@@ -5,7 +5,6 @@
 #include "ui_panel.h"
 
 namespace mite {
-
 /**
  * @brief 场景树面板 - 显示和管理场景节点层级结构
  */
@@ -41,11 +40,10 @@ class SceneTreePanel : public UIPanel {
   void OnSceneNodeSelected(SceneNodeSelectedEvent &event);
 
  private:
-  SceneGraph &m_SceneGraph;             // 场景图引用
+  SceneGraph &m_SceneGraph;                             // 场景图引用
   std::shared_ptr<SceneNode> m_SelectedNode = nullptr;  // 当前选中的节点
-  SubscriptionGroup m_EventSubscriptions; // 事件订阅
+  SubscriptionGroup m_EventSubscriptions;               // 事件订阅
 };
-
 }  // namespace mite
 
 #endif  // MITE_SCENE_TREE_PANEL_H

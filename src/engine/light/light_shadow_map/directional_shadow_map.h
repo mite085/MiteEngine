@@ -25,10 +25,10 @@ class DirectionalShadowMap : public ShadowMap {
    * @return 更新后的阴影数据
    * @note 方向光阴影基于相机视锥体和光源方向计算多个级联的阴影矩阵
    */
-  ShadowMapData PrepareShadowData(const uint32_t lightIndex,
-                                  const Transform &lightWorldTransform,
-                                  const Transform &cameraTransform,
-                                  const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
+  ShadowMapData PrepareShadowData(
+      const uint32_t lightIndex, const Transform &lightWorldTransform,
+      const Transform &cameraTransform,
+      const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
 
   /**
    * @brief 获取阴影矩阵数量
@@ -120,17 +120,16 @@ class DirectionalShadowMap : public ShadowMap {
   /**
    * @brief 基于纹素对齐的方向光ShadowMap稳定化
    */
-  glm::mat4 StabilizeShadowMatrix(const glm::mat4 &shadowMatrix, float shadowMapResolution);
+  glm::mat4 StabilizeShadowMatrix(const glm::mat4 &shadowMatrix,
+                                  float shadowMapResolution);
 
   /**
    * @brief 验证级联阴影矩阵计算结果的合理性
    */
   void ValidateCascadeMatrix(unsigned int cascadeIndex,
                              const glm::vec3 &cameraPos,
-                             const glm::vec3 &cameraForward,
-                             float nearSplit,
-                             float farSplit,
-                             const glm::mat4 &cameraProj,
+                             const glm::vec3 &cameraForward, float nearSplit,
+                             float farSplit, const glm::mat4 &cameraProj,
                              const glm::mat4 &shadowMatrix) const;
 
   /**
@@ -141,13 +140,10 @@ class DirectionalShadowMap : public ShadowMap {
    * @param cameraProj 相机投影矩阵
    * @return 视锥体8个角点的世界坐标
    */
-  std::array<glm::vec3, 8> CalculateFrustumCornersGeometric(float nearPlane,
-                                                            float farPlane,
-                                                            const glm::vec3 &cameraPos,
-                                                            const glm::vec3 &cameraForward,
-                                                            const glm::vec3 &cameraUp,
-                                                            const glm::vec3 &cameraRight,
-                                                            const glm::mat4 &cameraProj) const;
+  std::array<glm::vec3, 8> CalculateFrustumCornersGeometric(
+      float nearPlane, float farPlane, const glm::vec3 &cameraPos,
+      const glm::vec3 &cameraForward, const glm::vec3 &cameraUp,
+      const glm::vec3 &cameraRight, const glm::mat4 &cameraProj) const;
 
   /**
    * @brief 检查是否需要更新阴影数据

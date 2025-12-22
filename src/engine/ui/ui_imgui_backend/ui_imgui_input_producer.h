@@ -5,7 +5,6 @@
 #include "input/input_event.h"
 
 namespace mite {
-
 /**
  * @brief ImGui输入事件生产者
  *
@@ -71,7 +70,6 @@ class UIImguiInputProducer {
   static bool s_LastMouseButtons[ImGuiMouseButton_COUNT];  // 上次鼠标按键状态
   static bool s_LastKeys[ImGuiKey_COUNT];                  // 上次键盘按键状态
 };
-
 }  // namespace mite
 
 #endif  // MITE_UI_IMGUI_INPUT_PRODUCER_H

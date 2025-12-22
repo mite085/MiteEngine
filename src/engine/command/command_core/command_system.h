@@ -45,15 +45,22 @@ class CommandSystem {
    */
   bool IsInitialized() const;
 
-  // ==================== 命令注册/创建接口（CommandRegistry核心方法再封装） ====================
-  template<typename T> bool RegisterCommandType();
-  template<typename... Types> void RegisterCommandTypes();
-  template<typename T> bool IsCommandTypeRegistered() const;
-  template<typename T> CommandHandle CreateCommand();
+  // ==================== 命令注册/创建接口（CommandRegistry核心方法再封装）
+  // ====================
+  template <typename T>
+  bool RegisterCommandType();
+  template <typename... Types>
+  void RegisterCommandTypes();
+  template <typename T>
+  bool IsCommandTypeRegistered() const;
+  template <typename T>
+  CommandHandle CreateCommand();
   bool HasCommand(const CommandHandle &handle) const;
   bool ReleaseCommand(const CommandHandle &handle);
 
-  // ==================== 命令执行/重做/撤销接口（CommandExecutor核心方法再封装） ====================
+  // ====================
+  // 命令执行/重做/撤销接口（CommandExecutor核心方法再封装）
+  // ====================
   /**
    * @brief 执行命令（同步，自动处理Undo/Redo栈）
    * @param handle 命令句柄
@@ -66,20 +73,23 @@ class CommandSystem {
    * @param priority 执行优先级
    * @return CommandResult 提交结果
    */
-  CommandResult Submit(CommandHandle handle, CommandPriority priority = CommandPriority::NORMAL);
+  CommandResult Submit(CommandHandle handle,
+                       CommandPriority priority = CommandPriority::NORMAL);
   /**
    * @brief 创建并执行命令
    * @tparam T 命令类型
    * @return CommandResult 执行结果
    */
-  template<typename T> CommandResult ExecuteNew();
+  template <typename T>
+  CommandResult ExecuteNew();
   /**
    * @brief 创建并异步提交命令
    * @tparam T 命令类型
    * @param priority 执行优先级
    * @return CommandResult 提交结果
    */
-  template<typename T> CommandResult SubmitNew(CommandPriority priority = CommandPriority::NORMAL);
+  template <typename T>
+  CommandResult SubmitNew(CommandPriority priority = CommandPriority::NORMAL);
   /**
    * @brief 执行撤销操作
    * @return CommandResult 撤销执行结果
@@ -175,37 +185,36 @@ class CommandSystem {
 
 // ==================== 模板方法实现 ====================
 
-template<typename T> bool CommandSystem::RegisterCommandType()
-{
+template <typename T>
+bool CommandSystem::RegisterCommandType() {
   return m_Registry->RegisterCommandType<T>();
 }
 
-template<typename... Types> void CommandSystem::RegisterCommandTypes()
-{
+template <typename... Types>
+void CommandSystem::RegisterCommandTypes() {
   (RegisterCommandType<Types>(), ...);
 }
 
-template<typename T> bool CommandSystem::IsCommandTypeRegistered() const
-{
+template <typename T>
+bool CommandSystem::IsCommandTypeRegistered() const {
   return m_Registry->IsCommandTypeRegistered<T>();
 }
 
-template<typename T> inline CommandHandle CommandSystem::CreateCommand()
-{
+template <typename T>
+inline CommandHandle CommandSystem::CreateCommand() {
   return m_Registry->CreateCommand<T>();
 }
 
-template<typename T> CommandResult CommandSystem::ExecuteNew()
-{
+template <typename T>
+CommandResult CommandSystem::ExecuteNew() {
   CommandHandle handle = m_Registry->CreateCommand<T>();
   if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to create command");
   }
   return Execute(handle);
 }
-template<typename T>
-CommandResult CommandSystem::SubmitNew(CommandPriority priority)
-{
+template <typename T>
+CommandResult CommandSystem::SubmitNew(CommandPriority priority) {
   CommandHandle handle = m_Registry->CreateCommand<T>();
   if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to create command");

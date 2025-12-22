@@ -69,10 +69,8 @@ class OpenGLWindow : public Window {
   void LogDriverInfo();
 
   // 错误检查回调函数
-  static void GLAPIENTRY openGLErrorCallback(GLenum source,
-                                             GLenum type,
-                                             GLuint id,
-                                             GLenum severity,
+  static void GLAPIENTRY openGLErrorCallback(GLenum source, GLenum type,
+                                             GLuint id, GLenum severity,
                                              GLsizei length,
                                              const GLchar *message,
                                              const void *userParam);

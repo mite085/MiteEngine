@@ -41,7 +41,8 @@ enum class CameraClearFlags {
  * - glm::perspective和 glm::ortho生成右手坐标系的透视/正交投影矩阵
  * - GLM的mat4使用了列主序
  *   如：
- *   m_ProjectionMatrix[2]或者glm::column(m_ProjectionMatrix,2)表示第三列[0,  0,  -(f+n)/(f-n), -1]
+ *   m_ProjectionMatrix[2]或者glm::column(m_ProjectionMatrix,2)表示第三列[0,  0,
+ * -(f+n)/(f-n), -1]
  *
  * - 标准的右手系透视投影矩阵
  *   [ n/r   0     0             0        ]
@@ -57,8 +58,8 @@ class Camera {
   // ==================== 投影参数设置 ====================
   void SetPerspective(float fov, float near, float far);    // 设定为透视相机
   void SetOrthographic(float size, float near, float far);  // 设定为正交相机
-  void SetProjectionType(CameraProjectionType type);        // 设定投影类型：透视/正交
-  void SetAspectRatio(float aspect);                        // 设置宽高比
+  void SetProjectionType(CameraProjectionType type);  // 设定投影类型：透视/正交
+  void SetAspectRatio(float aspect);                  // 设置宽高比
 
   // ==================== 矩阵获取 ====================
   const glm::mat4 GetProjectionMatrix() const;  // 获取投影矩阵
@@ -67,18 +68,22 @@ class Camera {
   CameraProjectionType GetProjectionType() const;  // 获取投影类型
   float GetNear() const;                           // 近平面
   float GetFar() const;                            // 远平面
-  float GetFOV() const;                            // 视场角（deg，透视相机专属）
-  float GetAspectRatio() const;                    // 宽高比
-  float GetOrthoSize() const;                      // 正交尺寸
+  float GetFOV() const;          // 视场角（deg，透视相机专属）
+  float GetAspectRatio() const;  // 宽高比
+  float GetOrthoSize() const;    // 正交尺寸
 
   // ==================== 投影控制方法 ====================
   void SetFov(float fov);
   void SetOrthoSize(float size);
   void Zoom(float amount);
-  static constexpr float FovMax() { return 179.99f; }         // fov必须小于180
-  static constexpr float FovMin() { return FLT_MIN; }        // fov必须大于0
-  static constexpr float OrthoSizeMax() { return FLT_MAX; }  // OrthoSize最大值无限制
-  static constexpr float OrthoSizeMin() { return FLT_MIN; }  // OrthoSize必须大于0
+  static constexpr float FovMax() { return 179.99f; }  // fov必须小于180
+  static constexpr float FovMin() { return FLT_MIN; }  // fov必须大于0
+  static constexpr float OrthoSizeMax() {
+    return FLT_MAX;
+  }  // OrthoSize最大值无限制
+  static constexpr float OrthoSizeMin() {
+    return FLT_MIN;
+  }  // OrthoSize必须大于0
 
   /**
    * @brief 填充UBO Data

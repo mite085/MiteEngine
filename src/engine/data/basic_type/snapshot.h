@@ -5,7 +5,6 @@
 #include "time/time.h"
 
 namespace mite {
-
 /**
  * @brief 快照基类
  *
@@ -13,7 +12,7 @@ namespace mite {
  */
 class ISnapshot {
  public:
-  ISnapshot() : m_timestamp(Time::CurrentTimeMS()){}
+  ISnapshot() : m_timestamp(Time::CurrentTimeMS()) {}
   virtual ~ISnapshot() = default;
 
   // ================== 核心接口 ======================
@@ -34,17 +33,11 @@ class ISnapshot {
   /**
    * @brief 检查快照是否可压缩
    */
-  virtual bool IsCompressible() const
-  {
-    return false;
-  }
+  virtual bool IsCompressible() const { return false; }
   /**
    * @brief 压缩快照（如果支持）
    */
-  virtual bool Compress()
-  {
-    return false;
-  }
+  virtual bool Compress() { return false; }
   /**
    * @brief 获取快照内存使用量
    */
@@ -54,23 +47,17 @@ class ISnapshot {
   /**
    * @brief 获取快照时间戳（毫秒）
    */
-  uint64_t GetTimestamp() const
-  {
-    return m_timestamp;
-  }
+  uint64_t GetTimestamp() const { return m_timestamp; }
   /**
    * @brief 获取快照时间戳（秒）
    */
-  float GetTimestampSeconds() const
-  {
+  float GetTimestampSeconds() const {
     return static_cast<float>(m_timestamp) / 1000.0f;
   }
 
  protected:
   uint64_t m_timestamp;  // 快照创建时间戳（毫秒）
 };
-
-
-}  // namespace mite::scene
+}  // namespace mite
 
 #endif  // MITE_SCENE_CORE_SNAPSHOT

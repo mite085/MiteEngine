@@ -1,8 +1,8 @@
 #ifndef MITE_UI_LIFECYCLE_EVENTS_H
 #define MITE_UI_LIFECYCLE_EVENTS_H
 
-#include "ui_event.h"
 #include "ui_core/ui_style.h"
+#include "ui_event.h"
 
 namespace mite {
 /**
@@ -12,15 +12,9 @@ class UISystemInitializedEvent : public Event {
  public:
   UISystemInitializedEvent() = default;
 
-  std::string ToString() const override
-  {
-    return "UIInitializedEvent";
-  }
+  std::string ToString() const override { return "UIInitializedEvent"; }
 
-  Event *Clone() const override
-  {
-    return new UISystemInitializedEvent();
-  }
+  Event *Clone() const override { return new UISystemInitializedEvent(); }
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 };
 
@@ -31,15 +25,9 @@ class UISystemShutdownEvent : public Event {
  public:
   UISystemShutdownEvent() = default;
 
-  std::string ToString() const override
-  {
-    return "UIShutdownEvent";
-  }
+  std::string ToString() const override { return "UIShutdownEvent"; }
 
-  Event *Clone() const override
-  {
-    return new UISystemShutdownEvent();
-  }
+  Event *Clone() const override { return new UISystemShutdownEvent(); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 };
@@ -49,15 +37,9 @@ class UISystemShutdownEvent : public Event {
  */
 class PanelOpenedEvent : public UIEvent {
  public:
-  explicit PanelOpenedEvent(std::shared_ptr<UIPanel> panel)
-      : UIEvent(panel)
-  {
-  }
+  explicit PanelOpenedEvent(std::shared_ptr<UIPanel> panel) : UIEvent(panel) {}
 
-  Event *Clone() const override
-  {
-    return new PanelOpenedEvent(m_Panel);
-  }
+  Event *Clone() const override { return new PanelOpenedEvent(m_Panel); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
 };
@@ -67,10 +49,7 @@ class PanelOpenedEvent : public UIEvent {
  */
 class PanelClosedEvent : public UIEvent {
  public:
-  explicit PanelClosedEvent(std::shared_ptr<UIPanel> panel)
-      : UIEvent(panel)
-  {
-  }
+  explicit PanelClosedEvent(std::shared_ptr<UIPanel> panel) : UIEvent(panel) {}
   Event *Clone() const override { return new PanelClosedEvent(m_Panel); }
 
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LIFECYCLE)
@@ -82,18 +61,9 @@ class PanelClosedEvent : public UIEvent {
  */
 struct StyleChangedEvent : public Event {
  public:
-  explicit StyleChangedEvent(std::shared_ptr<UIStyle> style)
-      : m_Style(style)
-  {
-  }
-  std::shared_ptr<UIStyle> GetUIStyle() const
-  {
-    return m_Style;
-  }
-  Event *Clone() const override
-  {
-    return new StyleChangedEvent(m_Style);
-  }
+  explicit StyleChangedEvent(std::shared_ptr<UIStyle> style) : m_Style(style) {}
+  std::shared_ptr<UIStyle> GetUIStyle() const { return m_Style; }
+  Event *Clone() const override { return new StyleChangedEvent(m_Style); }
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_INTERACTION)
 
  private:
@@ -106,21 +76,14 @@ struct StyleChangedEvent : public Event {
 class LanguageChangedEvent : public Event {
  public:
   explicit LanguageChangedEvent(const std::string &newLanguageCode)
-      : m_NewLanguageCode(newLanguageCode)
-  {
-  }
-  const std::string &GetNewLanguage() const
-  {
-    return m_NewLanguageCode;
-  }
+      : m_NewLanguageCode(newLanguageCode) {}
+  const std::string &GetNewLanguage() const { return m_NewLanguageCode; }
 
-  std::string ToString() const override
-  {
+  std::string ToString() const override {
     return "LanguageChangedEvent: " + m_NewLanguageCode;
   }
 
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new LanguageChangedEvent(m_NewLanguageCode);
   }
 

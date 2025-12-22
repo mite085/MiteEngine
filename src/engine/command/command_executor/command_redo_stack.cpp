@@ -1,13 +1,11 @@
 #include "command_redo_stack.h"
 
 namespace mite {
-CommandRedoStack::CommandRedoStack(size_t maxSize) : m_MaxSize(maxSize)
-{
+CommandRedoStack::CommandRedoStack(size_t maxSize) : m_MaxSize(maxSize) {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite Command Redo Stack");
   m_Logger->debug("Command Redo Stack created");
 }
-void CommandRedoStack::Push(CommandHandle commandHandle)
-{
+void CommandRedoStack::Push(CommandHandle commandHandle) {
   if (!commandHandle.IsValid()) {
     m_Logger->warn("Attempted to push null command handle to redo stack");
     return;
@@ -35,15 +33,15 @@ void CommandRedoStack::Push(CommandHandle commandHandle)
       tempStack.pop();
     }
 
-    m_Logger->debug("Redo stack reached max size {}, removed oldest command", m_MaxSize);
+    m_Logger->debug("Redo stack reached max size {}, removed oldest command",
+                    m_MaxSize);
   }
 
   m_Stack.push(std::move(commandHandle));
   m_Logger->debug("Command pushed to redo stack, size: {}", m_Stack.size());
 }
 
-CommandHandle CommandRedoStack::Pop()
-{
+CommandHandle CommandRedoStack::Pop() {
   std::lock_guard<std::mutex> lock(m_Mutex);
   if (m_Stack.empty()) {
     m_Logger->debug("Redo stack is empty");
@@ -55,24 +53,20 @@ CommandHandle CommandRedoStack::Pop()
   return commandHandle;
 }
 
-bool CommandRedoStack::IsEmpty() const
-{
+bool CommandRedoStack::IsEmpty() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_Stack.empty();
 }
-size_t CommandRedoStack::GetSize() const
-{
+size_t CommandRedoStack::GetSize() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_Stack.size();
 }
-size_t CommandRedoStack::GetMaxSize() const
-{
+size_t CommandRedoStack::GetMaxSize() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_MaxSize;
 }
 
-void CommandRedoStack::SetMaxSize(size_t maxSize)
-{
+void CommandRedoStack::SetMaxSize(size_t maxSize) {
   std::lock_guard<std::mutex> lock(m_Mutex);
 
   if (maxSize == m_MaxSize) {
@@ -97,25 +91,21 @@ void CommandRedoStack::SetMaxSize(size_t maxSize)
       tempStack.pop();
     }
 
-    m_Logger->debug("Redo stack resized from {} to {}, removed {} oldest commands",
-                    m_Stack.size() + elementsToRemove,
-                    m_MaxSize,
-                    elementsToRemove);
+    m_Logger->debug(
+        "Redo stack resized from {} to {}, removed {} oldest commands",
+        m_Stack.size() + elementsToRemove, m_MaxSize, elementsToRemove);
   }
 }
 
-void CommandRedoStack::Clear()
-{
+void CommandRedoStack::Clear() {
   std::lock_guard<std::mutex> lock(m_Mutex);
   m_Logger->debug("Clearing redo stack, size: {}", m_Stack.size());
   // 使用空的栈替换当前栈来清空
   std::stack<CommandHandle> emptyStack;
   std::swap(m_Stack, emptyStack);
 }
-CommandHandle CommandRedoStack::Peek() const
-{
+CommandHandle CommandRedoStack::Peek() const {
   std::lock_guard<std::mutex> lock(m_Mutex);
   return m_Stack.empty() ? CommandHandle() : m_Stack.top();
 }
-
 }  // namespace mite

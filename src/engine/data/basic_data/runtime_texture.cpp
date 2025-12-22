@@ -1,20 +1,14 @@
 #include "runtime_texture.h"
+
 #include "basic_event/asset_event.h"
 #include "subscription_group.h"
 
 namespace mite {
-RuntimeTexture::~RuntimeTexture()
-{
-  cleanup();
-}
+RuntimeTexture::~RuntimeTexture() { cleanup(); }
 
-bool RuntimeTexture::initialize(RuntimeTextureType type,
-                                uint32_t width,
-                                uint32_t height,
-                                TextureFormat format,
-                                TextureTarget target,
-                                uint32_t arrayLayers)
-{
+bool RuntimeTexture::initialize(RuntimeTextureType type, uint32_t width,
+                                uint32_t height, TextureFormat format,
+                                TextureTarget target, uint32_t arrayLayers) {
   // 参数验证
   if (width <= 0 || height <= 0) {
     LOG_ERROR("Invalid texture dimensions: {}x{}", width, height);
@@ -24,8 +18,7 @@ bool RuntimeTexture::initialize(RuntimeTextureType type,
   if ((target == TextureTarget::TEXTURE_2D_ARRAY ||
        target == TextureTarget::TEXTURE_CUBE_MAP_ARRAY ||
        target == TextureTarget::TEXTURE_2D_MULTISAMPLE_ARRAY) &&
-      arrayLayers == 0)
-  {
+      arrayLayers == 0) {
     LOG_ERROR("Array texture target requires arrayLayers > 0");
     return false;
   }
@@ -44,7 +37,8 @@ bool RuntimeTexture::initialize(RuntimeTextureType type,
   m_ArrayLayers = arrayLayers;
 
   // 创建纹理创建信息
-  std::shared_ptr<TextureCreateInfo> createInfo = std::make_shared<TextureCreateInfo>();
+  std::shared_ptr<TextureCreateInfo> createInfo =
+      std::make_shared<TextureCreateInfo>();
   createInfo->width = width;
   createInfo->height = height;
   createInfo->format = format;
@@ -97,30 +91,23 @@ bool RuntimeTexture::initialize(RuntimeTextureType type,
   }
 
   // 发布事件委托OpenGLDevice创建纹理
-  std::function<void(TextureGPUHandle)> onComplete = [this](TextureGPUHandle handle) {
-    m_Handle = handle;
-  };
+  std::function<void(TextureGPUHandle)> onComplete =
+      [this](TextureGPUHandle handle) { m_Handle = handle; };
   EventBus::Publish<RuntimeTextureCreateEvent>(createInfo, onComplete);
 
   if (!IsValid()) {
     LOG_ERROR("Failed to create runtime texture of type {} ({}x{})",
-              static_cast<int>(type),
-              width,
-              height);
+              static_cast<int>(type), width, height);
     return false;
   }
 
   LOG_DEBUG("Created runtime texture: type={}, size={}x{}, format={}",
-            static_cast<int>(type),
-            width,
-            height,
-            static_cast<int>(format));
+            static_cast<int>(type), width, height, static_cast<int>(format));
 
   return true;
 }
 
-void RuntimeTexture::cleanup()
-{
+void RuntimeTexture::cleanup() {
   if (IsValid()) {
     // 发布事件委托OpenGLDevice销毁纹理
     EventBus::Publish<RuntimeTextureDestroyRequestEvent>(m_Handle);
@@ -136,8 +123,7 @@ void RuntimeTexture::cleanup()
   m_Target = TextureTarget::TEXTURE_2D;
 }
 
-bool RuntimeTexture::resize(uint32_t newWidth, uint32_t newHeight)
-{
+bool RuntimeTexture::resize(uint32_t newWidth, uint32_t newHeight) {
   if (newWidth <= 0 || newHeight <= 0) {
     LOG_ERROR("Invalid resize dimensions: {}x{}", newWidth, newHeight);
     return false;
@@ -148,7 +134,8 @@ bool RuntimeTexture::resize(uint32_t newWidth, uint32_t newHeight)
     return true;
   }
 
-  LOG_INFO("Resizing runtime texture from {}x{} to {}x{}", m_Width, m_Height, newWidth, newHeight);
+  LOG_INFO("Resizing runtime texture from {}x{} to {}x{}", m_Width, m_Height,
+           newWidth, newHeight);
 
   // 保存原有类型和格式
   RuntimeTextureType oldType = m_Type;
@@ -159,6 +146,7 @@ bool RuntimeTexture::resize(uint32_t newWidth, uint32_t newHeight)
   cleanup();
 
   // 使用新尺寸重新初始化
-  return initialize(oldType, newWidth, newHeight, oldFormat, oldTarget, oldLayers);
+  return initialize(oldType, newWidth, newHeight, oldFormat, oldTarget,
+                    oldLayers);
 }
 }  // namespace mite

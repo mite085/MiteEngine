@@ -4,7 +4,6 @@
 #include "render_stage.h"
 
 namespace mite {
-
 /**
  * @brief 前向渲染阶段（接管原OpenGLRenderer的场景渲染功能）
  *
@@ -44,7 +43,6 @@ class ForwardStage : public RenderStage {
   // ---- 性能统计 ----
   size_t m_LastFrameTransparentCount = 0;
 };
-
 }  // namespace mite
 
 #endif

@@ -37,11 +37,11 @@ class Component {
 
   virtual ~Component() = default;
 
-
   /**
    * @brief 更新方法，每帧调用。(不要求子类实现)
    */
-  virtual void Update([[maybe_unused]] float deltaTime, [[maybe_unused]] SceneRegistry &reg) {}
+  virtual void Update([[maybe_unused]] float deltaTime,
+                      [[maybe_unused]] SceneRegistry &reg) {}
   // ================== 组件标识相关 ======================
   /**
    * @brief 获取组件类型家族
@@ -55,10 +55,7 @@ class Component {
    * @brief 返回组件是否依赖于其他组件
    * @return 依赖的组件类型列表
    */
-  virtual std::vector<std::type_index> GetDependencies() const
-  {
-    return {};
-  }
+  virtual std::vector<std::type_index> GetDependencies() const { return {}; }
   /**
    * @brief 组件启用状态
    */
@@ -82,8 +79,7 @@ class Component {
    *    TemporaryComponent - 临时数据
    *    SystemComponent - 系统内部状态
    */
-  virtual bool SupportsSnapshot() const
-  {
+  virtual bool SupportsSnapshot() const {
     return false;  // 默认不支持，需要支持的直接override该方法
   }
 
@@ -138,26 +134,20 @@ class Component {
  * @tparam T 组件类型（主要用于快照和序列化）
  * @tparam F 组件家族
  */
-template<typename T, Component::Family F>
+template <typename T, Component::Family F>
 class ComponentTraits : public Component {
  public:
   static constexpr Family family = F;
   using DataType = T;
   ComponentTraits() : Component() {}
   virtual ~ComponentTraits() = default;
-  Family GetFamily() const override
-  {
-    return family;
-  }
-  std::type_index GetType() const override
-  {
-    return typeid(*this);
-  }
+  Family GetFamily() const override { return family; }
+  std::type_index GetType() const override { return typeid(*this); }
 };
 
 /**
  * @brief 支持快照的组件基类，若需要处理脏标记则需要继承自该类
- * 
+ *
  * 1. 需要快照的组件类型（举例）：
  *    TransformComponent - 核心变换数据
  *    MeshRendererComponent - 渲染相关状态
@@ -181,22 +171,16 @@ class SnapshotComponent : public Component {
  * @tparam T 组件类型
  * @tparam F 组件家族
  */
-template<typename T, Component::Family F>
-class SnapshotComponentTraits: public SnapshotComponent {
+template <typename T, Component::Family F>
+class SnapshotComponentTraits : public SnapshotComponent {
  public:
   // 添加自描述类型别名
   using SnapshotDataType = T;
   static constexpr Family family = F;
   SnapshotComponentTraits() : SnapshotComponent() {}
   virtual ~SnapshotComponentTraits() = default;
-  Family GetFamily() const override
-  {
-    return family;
-  }
-  std::type_index GetType() const override
-  {
-    return typeid(*this);
-  }
+  Family GetFamily() const override { return family; }
+  std::type_index GetType() const override { return typeid(*this); }
   // ================== 快照相关 ======================
   /**
    * @brief 创建组件快照
@@ -207,9 +191,9 @@ class SnapshotComponentTraits: public SnapshotComponent {
    * @return std::unique_ptr<ISnapshot> 组件快照智能指针
    * @throws 如果组件不支持快照，默认实现返回nullptr
    */
-  std::unique_ptr<ComponentSnapshot<T>> CreateSnapshot() const
-  {
-    return std::make_unique<ComponentSnapshot<T>>(GetEntity(), GetSnapshotData());
+  std::unique_ptr<ComponentSnapshot<T>> CreateSnapshot() const {
+    return std::make_unique<ComponentSnapshot<T>>(GetEntity(),
+                                                  GetSnapshotData());
   }
   /**
    * @brief 应用快照数据到组件
@@ -221,13 +205,11 @@ class SnapshotComponentTraits: public SnapshotComponent {
    * @return bool 是否成功应用快照
    * @throws 如果组件不支持快照，默认实现返回false
    */
-  bool ApplySnapshot(const T &snapshotData)
-  {
+  bool ApplySnapshot(const T &snapshotData) {
     try {
       SetSnapshotData(snapshotData);
       return true;
-    }
-    catch (const std::exception &e) {
+    } catch (const std::exception &e) {
       LOG_ERROR("Failed to apply snapshot: {}", e.what());
       return false;
     }
@@ -239,10 +221,8 @@ class SnapshotComponentTraits: public SnapshotComponent {
    *
    * @return size_t 快照数据大小（字节）
    */
-  size_t GetSnapshotDataSize() const
-  {
-    return sizeof(T);
-  }
+  size_t GetSnapshotDataSize() const { return sizeof(T); }
+
  protected:
   /**
    * @brief 获取 / 设置快照数据 - 子类必须实现
@@ -288,20 +268,15 @@ class DirtyComponent : public Component {
  * @tparam T 组件类型
  * @tparam F 组件家族
  */
-template<typename T, Component::Family F> class DirtyComponentTraits : public DirtyComponent {
+template <typename T, Component::Family F>
+class DirtyComponentTraits : public DirtyComponent {
  public:
   static constexpr Family family = F;
   using DataType = T;
   DirtyComponentTraits() : DirtyComponent() {}
   virtual ~DirtyComponentTraits() = default;
-  Family GetFamily() const override
-  {
-    return family;
-  }
-  std::type_index GetType() const override
-  {
-    return typeid(*this);
-  }
+  Family GetFamily() const override { return family; }
+  std::type_index GetType() const override { return typeid(*this); }
 };
 };  // namespace mite
 

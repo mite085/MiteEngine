@@ -43,9 +43,10 @@ class MaterialTemplate {
    * @brief 获取材质类型标识--静态模板方法
    * @return 字符串类型标识
    */
-  template<typename T> static MaterialType GetMaterialTypeStatic()
-  {
-    static_assert(std::is_base_of<MaterialTemplate, T>::value, "Must inherit from Material");
+  template <typename T>
+  static MaterialType GetMaterialTypeStatic() {
+    static_assert(std::is_base_of<MaterialTemplate, T>::value,
+                  "Must inherit from Material");
     return T::StaticType();
   }
 
@@ -63,11 +64,9 @@ class MaterialTemplate {
    * @param defaultValue 默认值
    * @return 参数值或默认值
    */
-  template<typename T>
+  template <typename T>
   static T GetParameter(const MaterialSourceData &sourceData,
-                        const std::string &key,
-                        const T &defaultValue)
-  {
+                        const std::string &key, const T &defaultValue) {
     auto it = sourceData.parameters.find(key);
     if (it != sourceData.parameters.end() && it->second.Is<T>()) {
       return it->second.Get<T>();
@@ -80,22 +79,24 @@ class MaterialTemplate {
    * @param slotName 纹理槽位名称
    * @return 纹理槽位指针，如果不存在返回nullptr
    */
-  static const TextureGPUSlot *GetTextureSlot(const MaterialSourceData &sourceData,
-                                              const std::string &slotName);
+  static const TextureGPUSlot *GetTextureSlot(
+      const MaterialSourceData &sourceData, const std::string &slotName);
   /**
    * @brief 检查源数据是否包含特定参数
    * @param sourceData 源数据
    * @param key 参数键名
    * @return 是否包含该参数
    */
-  static bool HasParameter(const MaterialSourceData &sourceData, const std::string &key);
+  static bool HasParameter(const MaterialSourceData &sourceData,
+                           const std::string &key);
   /**
    * @brief 检查源数据是否包含特定纹理槽位
    * @param sourceData 源数据
    * @param slotName 纹理槽位名称
    * @return 是否包含该纹理槽位
    */
-  static bool HasTextureSlot(const MaterialSourceData &sourceData, const std::string &slotName);
+  static bool HasTextureSlot(const MaterialSourceData &sourceData,
+                             const std::string &slotName);
 
   /**
    * @brief 获取渲染属性（供派生类使用）
@@ -111,8 +112,9 @@ class MaterialTemplate {
   /**
    * @brief 使用默认值初始化材质实例
    */
-  static void InitializeMaterialInstance(std::shared_ptr<MaterialInstance> instance,
-                                  const MaterialSourceData &sourceData);
+  static void InitializeMaterialInstance(
+      std::shared_ptr<MaterialInstance> instance,
+      const MaterialSourceData &sourceData);
   /**
    * @brief 纹理设置方法
    */
@@ -125,7 +127,9 @@ class MaterialTemplate {
    */
   MaterialSourceData CreateDefaultSourceData() const;
 
-  virtual glm::vec4 GetDefaultBaseColor() const { return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f); }
+  virtual glm::vec4 GetDefaultBaseColor() const {
+    return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+  }
   virtual float GetDefaultMetallic() const { return 0.0f; }
   virtual float GetDefaultRoughness() const { return 1.0f; }
   virtual float GetDefaultAO() const { return 1.0f; }
@@ -134,7 +138,9 @@ class MaterialTemplate {
   virtual float GetDefaultNormalScale() const { return 1.0f; }
   virtual float GetDefaultAlphaCutoff() const { return 0.5f; }
   virtual bool GetDefaultDoubleSided() const { return false; }
-  virtual AlphaMode GetDefaultAlphaMode() const { return AlphaMode::OPAQUE; }  // ALPHA_MODE_OPAQUE
+  virtual AlphaMode GetDefaultAlphaMode() const {
+    return AlphaMode::OPAQUE;
+  }  // ALPHA_MODE_OPAQUE
 
  protected:
   std::string m_Name = "Unnamed_Material";  // 材质名称（用于调试和UI显示）

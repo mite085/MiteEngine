@@ -4,7 +4,6 @@
 #include "subscription_group.h"
 
 namespace mite {
-
 // 前向声明
 class UIStyle;
 
@@ -67,9 +66,9 @@ class UIBackend {
   /**
    * @brief 语言管理
    */
-  virtual void ApplyLanguaged(const std::string &oldLanguageCode, const std::string &newLanguageCode) = 0;
+  virtual void ApplyLanguaged(const std::string &oldLanguageCode,
+                              const std::string &newLanguageCode) = 0;
 };
-
 }  // namespace mite
 
 #endif  // MITE_UI_BACKEND_H

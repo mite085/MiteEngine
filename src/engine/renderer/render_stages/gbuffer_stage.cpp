@@ -1,4 +1,5 @@
 #include "gbuffer_stage.h"
+
 #include "basic_event/render_event.h"
 #include "basic_instance/material_instance.h"
 #include "basic_shader/shader_cache.h"
@@ -6,21 +7,16 @@
 #include "render_opengl/opengl_command.h"
 
 namespace mite {
-GBufferStage::GBufferStage() : RenderStage("GBufferStage")
-{
+GBufferStage::GBufferStage() : RenderStage("GBufferStage") {
   // 配置G-Buffer渲染状态
   SetupGBufferRenderState();
 
   m_Logger->info("GBufferStage created with G-Buffer rendering configuration");
 }
 
-GBufferStage::~GBufferStage()
-{
-  m_Logger->info("GBufferStage destroyed");
-}
+GBufferStage::~GBufferStage() { m_Logger->info("GBufferStage destroyed"); }
 
-void GBufferStage::Initialize([[maybe_unused]] RenderContext &context)
-{
+void GBufferStage::Initialize([[maybe_unused]] RenderContext &context) {
   if (m_Initialized) {
     m_Logger->warn("GBufferStage already initialized");
     return;
@@ -34,8 +30,7 @@ void GBufferStage::Initialize([[maybe_unused]] RenderContext &context)
   m_Logger->info("GBufferStage initialization completed");
 }
 
-void GBufferStage::Execute(RenderContext &context)
-{
+void GBufferStage::Execute(RenderContext &context) {
   // 检查初始化和GBuffer状态
   if (!m_Initialized || !m_GBuffer || !m_GBuffer->IsValid()) {
     m_Logger->warn("GBufferStage executed but not properly initialized");
@@ -51,11 +46,13 @@ void GBufferStage::Execute(RenderContext &context)
   // 从上下文获取G-Buffer Stage的着色器
   std::shared_ptr<OpenGLShader> gbufferShader = context.GetStageShader(m_Name);
   if (!gbufferShader) {
-    m_Logger->error("G-Buffer Stage: No shader registered for G-Buffer Stage in context");
+    m_Logger->error(
+        "G-Buffer Stage: No shader registered for G-Buffer Stage in context");
     return;
   }
   if (gbufferShader->GetProgramId() == 0) {
-    m_Logger->error("G-Buffer Stage: G-Buffer Shader from context is not properly linked");
+    m_Logger->error(
+        "G-Buffer Stage: G-Buffer Shader from context is not properly linked");
     return;
   }
 
@@ -97,11 +94,13 @@ void GBufferStage::Execute(RenderContext &context)
     auto texture = m_GBuffer->GetTexture(type);
     if (texture && texture->IsValid()) {
       // 使用统一的命名约定存储GBuffer纹理
-      std::string targetName = "GBuffer_" + std::string(GBuffer::GetTextureTypeName(type));
+      std::string targetName =
+          "GBuffer_" + std::string(GBuffer::GetTextureTypeName(type));
       context.SetRenderTarget(targetName, texture);
 
       // 发布绘制完成事件
-      RenderCommand::Get().PublishEventRuntimeTextureFinished(m_GBuffer->GetTexture(type));
+      RenderCommand::Get().PublishEventRuntimeTextureFinished(
+          m_GBuffer->GetTexture(type));
     }
   }
   // 特别存储深度纹理（Forward阶段需要）
@@ -110,8 +109,7 @@ void GBufferStage::Execute(RenderContext &context)
     context.SetRenderTarget("GBuffer_DepthAttachment", depthTexture);
   }
 }
-void GBufferStage::Shutdown()
-{
+void GBufferStage::Shutdown() {
   if (m_GBuffer) {
     m_GBuffer->cleanup();
   }
@@ -120,8 +118,7 @@ void GBufferStage::Shutdown()
   m_Logger->info("GBufferStage shutdown completed");
 }
 
-void GBufferStage::RenderOpaqueQueue(RenderContext &context)
-{
+void GBufferStage::RenderOpaqueQueue(RenderContext &context) {
   auto renderQueue = context.GetRenderQueue();
   if (!renderQueue) {
     return;
@@ -161,12 +158,11 @@ void GBufferStage::RenderOpaqueQueue(RenderContext &context)
   // 调试专用：当前阶段提交完毕后直接执行。
   RenderCommand::Get().Flush();
 
-  m_Logger->trace(
-      "Rendered {} opaque objects to G-Buffer, skipped {}", renderedCount, skippedCount);
+  m_Logger->trace("Rendered {} opaque objects to G-Buffer, skipped {}",
+                  renderedCount, skippedCount);
 }
 
-void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
-{
+void GBufferStage::RenderAlphaTestQueue(RenderContext &context) {
   auto renderQueue = context.GetRenderQueue();
   if (!renderQueue) {
     return;
@@ -202,12 +198,11 @@ void GBufferStage::RenderAlphaTestQueue(RenderContext &context)
     RenderCommand::Get().SubmitDrawCall(item.mesh);
     renderedCount++;
   }
-  m_Logger->trace(
-      "Rendered {} alpha-test objects to G-Buffer, skipped {}", renderedCount, skippedCount);
+  m_Logger->trace("Rendered {} alpha-test objects to G-Buffer, skipped {}",
+                  renderedCount, skippedCount);
 }
 
-void GBufferStage::SetupGBufferRenderState()
-{
+void GBufferStage::SetupGBufferRenderState() {
   // G-Buffer阶段需要深度测试和写入，但不需要混合
   // （TODO：OpenGL管线的不同stage之间出现了状态污染）
   // （先设定的和后设定的状态会互相影响）
@@ -234,8 +229,8 @@ void GBufferStage::SetupGBufferRenderState()
   m_AlphaTestState->colorWriteA = true;
 }
 
-bool GBufferStage::ValidateGBufferRenderableItem(const RenderableItem &item) const
-{
+bool GBufferStage::ValidateGBufferRenderableItem(
+    const RenderableItem &item) const {
   // 验证基础有效性
   if (!item.material) {
     m_Logger->trace("GBufferStage: Renderable item has no material");

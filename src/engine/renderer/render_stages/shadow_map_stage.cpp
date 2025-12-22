@@ -1,24 +1,21 @@
 #include "shadow_map_stage.h"
+
 #include "basic_shader/shader_binding_point_manager.h"
 #include "basic_shader/shader_cache.h"
 #include "basic_shader/uniform_buffer.h"
 #include "render_opengl/opengl_command.h"
 
 namespace mite {
-ShadowMapStage::ShadowMapStage() : RenderStage("ShadowMapStage")
-{
+ShadowMapStage::ShadowMapStage() : RenderStage("ShadowMapStage") {
   m_Logger->info("ShadowMapStage created");
 }
 
-ShadowMapStage::~ShadowMapStage()
-{
+ShadowMapStage::~ShadowMapStage() {
   m_Logger->info("ShadowMapStage destroyed");
 }
 
-void ShadowMapStage::SetShadowQuality(ShadowQuality quality)
-{
+void ShadowMapStage::SetShadowQuality(ShadowQuality quality) {
   if (m_ShadowQuality != quality && m_Initialized) {
-    
     // 清理已创建资源
     Shutdown();
 
@@ -35,22 +32,19 @@ void ShadowMapStage::SetShadowQuality(ShadowQuality quality)
     m_Logger->info("Shadow quality set to {}", static_cast<int>(quality));
   }
 }
-void ShadowMapStage::SetShadowFilter(ShadowFilter filter)
-{
+void ShadowMapStage::SetShadowFilter(ShadowFilter filter) {
   if (m_ShadowFilter != filter) {
     m_ShadowFilter = filter;
     m_Logger->info("Shadow filter set to {}", static_cast<int>(filter));
   }
 }
-void ShadowMapStage::SetShadowBias(float bias, float normalBias)
-{
+void ShadowMapStage::SetShadowBias(float bias, float normalBias) {
   m_ShadowBias = bias;
   m_NormalBias = normalBias;
   m_Logger->info("Shadow bias set to {}, normal bias: {}", bias, normalBias);
 }
 
-void ShadowMapStage::Initialize([[maybe_unused]] RenderContext &context)
-{
+void ShadowMapStage::Initialize([[maybe_unused]] RenderContext &context) {
   if (m_Initialized) {
     m_Logger->warn("ShadowMapStage already initialized");
     return;
@@ -71,8 +65,7 @@ void ShadowMapStage::Initialize([[maybe_unused]] RenderContext &context)
   m_Logger->info("ShadowMapStage initialization completed");
 }
 
-void ShadowMapStage::Execute(RenderContext &context)
-{
+void ShadowMapStage::Execute(RenderContext &context) {
   if (!m_Initialized) {
     m_Logger->warn("ShadowMapStage executed but not properly initialized");
     return;
@@ -88,13 +81,16 @@ void ShadowMapStage::Execute(RenderContext &context)
 
   // 更新Shadow Map UBO
   LightManager &lightManager = context.GetLightManager();
-  std::shared_ptr<CameraInstance> cameraInstance = context.GetMainCameraInstance();
+  std::shared_ptr<CameraInstance> cameraInstance =
+      context.GetMainCameraInstance();
   if (!cameraInstance) {
     m_Logger->warn("No main camera available for directional shadow rendering");
     return;
   }
 
-  lightManager.UpdateLightShadowUBO(cameraInstance, glm::vec4(m_ShadowBias, m_NormalBias, m_ShadowFilter, m_ShadowQuality));
+  lightManager.UpdateLightShadowUBO(
+      cameraInstance,
+      glm::vec4(m_ShadowBias, m_NormalBias, m_ShadowFilter, m_ShadowQuality));
 
   // 设置阴影渲染状态
   RenderCommand::Get().SetRenderState(m_ShadowRenderState);
@@ -106,10 +102,12 @@ void ShadowMapStage::Execute(RenderContext &context)
   RenderCommand::Get().BindCameraUBO(context.GetMainCameraInstance());
 
   // 按照类型获取光源
-  std::vector<std::shared_ptr<Light>> directionalLights = lightManager.GetLightsByType(
-      LightType::DIRECTIONAL);
-  std::vector<std::shared_ptr<Light>> pointLights = lightManager.GetLightsByType(LightType::POINT);
-  std::vector<std::shared_ptr<Light>> spotLights = lightManager.GetLightsByType(LightType::SPOT);
+  std::vector<std::shared_ptr<Light>> directionalLights =
+      lightManager.GetLightsByType(LightType::DIRECTIONAL);
+  std::vector<std::shared_ptr<Light>> pointLights =
+      lightManager.GetLightsByType(LightType::POINT);
+  std::vector<std::shared_ptr<Light>> spotLights =
+      lightManager.GetLightsByType(LightType::SPOT);
 
   // 渲染光源的阴影贴图
   RenderDirectionalShadowMap(context, directionalLights);
@@ -125,8 +123,7 @@ void ShadowMapStage::Execute(RenderContext &context)
   m_Logger->trace("ShadowMap stage completed");
 }
 
-void ShadowMapStage::Shutdown()
-{
+void ShadowMapStage::Shutdown() {
   // 清理阴影贴图Framebuffer
   m_DirectionalShadowFBO = nullptr;
   m_PointShadowFBO = nullptr;
@@ -142,8 +139,7 @@ void ShadowMapStage::Shutdown()
   m_Logger->info("ShadowMapStage shutdown completed");
 }
 
-RuntimeTexturePtr ShadowMapStage::GetDirectionalShadowMap() const
-{
+RuntimeTexturePtr ShadowMapStage::GetDirectionalShadowMap() const {
   if (!m_DirectionalShadowFBO) {
     m_Logger->warn("Directional shadow FBO is null");
     return nullptr;
@@ -156,8 +152,7 @@ RuntimeTexturePtr ShadowMapStage::GetDirectionalShadowMap() const
   }
   return depthTexture;
 }
-RuntimeTexturePtr ShadowMapStage::GetPointShadowMap() const
-{
+RuntimeTexturePtr ShadowMapStage::GetPointShadowMap() const {
   if (!m_PointShadowFBO) {
     m_Logger->warn("Point shadow FBO is null");
     return nullptr;
@@ -175,8 +170,7 @@ RuntimeTexturePtr ShadowMapStage::GetPointShadowMap() const
   }
   return depthTexture;
 }
-RuntimeTexturePtr ShadowMapStage::GetSpotShadowMap() const
-{
+RuntimeTexturePtr ShadowMapStage::GetSpotShadowMap() const {
   if (!m_SpotShadowFBO) {
     m_Logger->warn("Spot shadow FBO is null");
     return nullptr;
@@ -190,8 +184,7 @@ RuntimeTexturePtr ShadowMapStage::GetSpotShadowMap() const
   return depthTexture;
 }
 
-void ShadowMapStage::CreateDirectionalShadowMap()
-{
+void ShadowMapStage::CreateDirectionalShadowMap() {
   FrameBufferSpec spec;
   spec.samples = 1;
   spec.width = static_cast<uint32_t>(m_ShadowQuality);
@@ -202,23 +195,23 @@ void ShadowMapStage::CreateDirectionalShadowMap()
   depthSpec.type = RuntimeTextureType::Depth;
   depthSpec.internalFormat = TextureFormat::DEPTH_COMPONENT32;
   depthSpec.generateMipmaps = false;
-  depthSpec.internalTarget = TextureTarget::TEXTURE_2D_ARRAY;     // 2D数组纹理
-  depthSpec.arrayLayers = MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES;  // 所有光源×所有级联
+  depthSpec.internalTarget = TextureTarget::TEXTURE_2D_ARRAY;  // 2D数组纹理
+  depthSpec.arrayLayers =
+      MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES;  // 所有光源×所有级联
   spec.attachments.push_back(depthSpec);
   m_DirectionalShadowFBO = std::make_shared<FrameBuffer>(spec);
   if (m_DirectionalShadowFBO->IsComplete()) {
-    m_Logger->debug("Created directional shadow FBO with {} layers ({} lights with {} cascades)",
-                    MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES,
-                    MAX_DIRECTIONAL_LIGHTS,
-                    MAX_CASCADES);
-  }
-  else {
+    m_Logger->debug(
+        "Created directional shadow FBO with {} layers ({} lights with {} "
+        "cascades)",
+        MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES, MAX_DIRECTIONAL_LIGHTS,
+        MAX_CASCADES);
+  } else {
     m_Logger->error("Failed to create directional shadow FBO");
     m_DirectionalShadowFBO = nullptr;
   }
 }
-void ShadowMapStage::CreatePointShadowMap()
-{
+void ShadowMapStage::CreatePointShadowMap() {
   FrameBufferSpec spec;
   spec.samples = 1;
   spec.width = static_cast<uint32_t>(m_ShadowQuality);
@@ -234,15 +227,14 @@ void ShadowMapStage::CreatePointShadowMap()
   spec.attachments.push_back(depthSpec);
   m_PointShadowFBO = std::make_shared<FrameBuffer>(spec);
   if (m_PointShadowFBO->IsComplete()) {
-    m_Logger->debug("Created point shadow FBO with {} cube maps", MAX_POINT_LIGHTS);
-  }
-  else {
+    m_Logger->debug("Created point shadow FBO with {} cube maps",
+                    MAX_POINT_LIGHTS);
+  } else {
     m_Logger->error("Failed to create point shadow FBO");
     m_PointShadowFBO = nullptr;
   }
 }
-void ShadowMapStage::CreateSpotShadowMap()
-{
+void ShadowMapStage::CreateSpotShadowMap() {
   FrameBufferSpec spec;
   spec.samples = 1;
   spec.width = static_cast<uint32_t>(m_ShadowQuality);
@@ -259,15 +251,13 @@ void ShadowMapStage::CreateSpotShadowMap()
   m_SpotShadowFBO = std::make_shared<FrameBuffer>(spec);
   if (m_SpotShadowFBO->IsComplete()) {
     m_Logger->debug("Created spot shadow FBO with {} layers", MAX_SPOT_LIGHTS);
-  }
-  else {
+  } else {
     m_Logger->error("Failed to create spot shadow FBO");
     m_SpotShadowFBO = nullptr;
   }
 }
 
-void ShadowMapStage::CreateShadowRenderContextUniformBuffer()
-{
+void ShadowMapStage::CreateShadowRenderContextUniformBuffer() {
   // 默认填充清空
   m_DirectionallightUBOs.fill(nullptr);
   m_PointlightUBOs.fill(nullptr);
@@ -298,8 +288,8 @@ void ShadowMapStage::CreateShadowRenderContextUniformBuffer()
 }
 
 void ShadowMapStage::RenderDirectionalShadowMap(
-    RenderContext &context, const std::vector<std::shared_ptr<Light>> &directionalLights)
-{
+    RenderContext &context,
+    const std::vector<std::shared_ptr<Light>> &directionalLights) {
   if (!m_DirectionalShadowFBO) {
     m_Logger->warn("Directional shadow FBO not available");
     return;
@@ -317,15 +307,15 @@ void ShadowMapStage::RenderDirectionalShadowMap(
 
   for (uint32_t lightIdx = 0;
        lightIdx < directionalLights.size() && lightIdx < MAX_DIRECTIONAL_LIGHTS;
-       lightIdx++)
-  {
+       lightIdx++) {
     std::shared_ptr<Light> light = directionalLights[lightIdx];
 
     // 为每个级联渲染
     for (uint32_t cascadeIdx = 0; cascadeIdx < MAX_CASCADES; cascadeIdx++) {
       // 使用分层渲染到数组纹理的特定层
       uint32_t layer = lightIdx * MAX_CASCADES + cascadeIdx;
-      RenderCommand::Get().BindFrameBufferDepthLayer(m_DirectionalShadowFBO, layer);
+      RenderCommand::Get().BindFrameBufferDepthLayer(m_DirectionalShadowFBO,
+                                                     layer);
       RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
       // 绑定阴影着色器
@@ -334,22 +324,22 @@ void ShadowMapStage::RenderDirectionalShadowMap(
       // 绑定阴影渲染上下文
       BindShadowRenderContext(lightIdx, cascadeIdx, 0, 0);
       // 渲染场景到当前级联（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
-      RenderSceneToShadowMap(context,
-                             context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
-      RenderSceneToShadowMap(context,
-                             context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
+      RenderSceneToShadowMap(context, context.GetRenderQueue()->GetItems(
+                                          RenderableItemType::Opaque));
+      RenderSceneToShadowMap(context, context.GetRenderQueue()->GetItems(
+                                          RenderableItemType::AlphaTest));
 
       // 解绑着色器
       RenderCommand::Get().UnbindShader(shadowShader);
-
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
-  m_Logger->trace("Rendered directional shadow maps for {} lights", directionalLights.size());
+  m_Logger->trace("Rendered directional shadow maps for {} lights",
+                  directionalLights.size());
 }
-void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
-                                          const std::vector<std::shared_ptr<Light>> &pointLights)
-{
+void ShadowMapStage::RenderPointShadowMap(
+    RenderContext &context,
+    const std::vector<std::shared_ptr<Light>> &pointLights) {
   if (!m_PointShadowFBO) {
     m_Logger->warn("Point shadow FBO not available");
     return;
@@ -365,14 +355,15 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
   // 绑定点光源阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_PointShadowFBO);
 
-  for (uint32_t lightIdx = 0; lightIdx < pointLights.size() && lightIdx < MAX_POINT_LIGHTS;
-       lightIdx++)
-  {
+  for (uint32_t lightIdx = 0;
+       lightIdx < pointLights.size() && lightIdx < MAX_POINT_LIGHTS;
+       lightIdx++) {
     std::shared_ptr<Light> light = pointLights[lightIdx];
 
     // 为立方体贴图数组的6个面分别执行渲染
     for (uint32_t faceIdx = 0; faceIdx < 6; faceIdx++) {
-      RenderCommand::Get().BindFramebufferDepthCubeFace(m_PointShadowFBO, lightIdx, faceIdx);
+      RenderCommand::Get().BindFramebufferDepthCubeFace(m_PointShadowFBO,
+                                                        lightIdx, faceIdx);
       RenderCommand::Get().Clear(GL_DEPTH_BUFFER_BIT, glm::vec4(0.0f), 1.0f);
 
       // 绑定阴影着色器
@@ -380,21 +371,22 @@ void ShadowMapStage::RenderPointShadowMap(RenderContext &context,
 
       BindShadowRenderContext(lightIdx, 0, faceIdx, 1);
       // 渲染场景到当前立方体贴图的面（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
-      RenderSceneToShadowMap(context,
-                             context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
-      RenderSceneToShadowMap(context,
-                             context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
+      RenderSceneToShadowMap(context, context.GetRenderQueue()->GetItems(
+                                          RenderableItemType::Opaque));
+      RenderSceneToShadowMap(context, context.GetRenderQueue()->GetItems(
+                                          RenderableItemType::AlphaTest));
 
       // 解绑着色器
       RenderCommand::Get().UnbindShader(shadowShader);
     }
   }
   RenderCommand::Get().UnbindFrameBuffer();
-  m_Logger->trace("Rendered point shadow maps for {} lights", pointLights.size());
+  m_Logger->trace("Rendered point shadow maps for {} lights",
+                  pointLights.size());
 }
-void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
-                                         const std::vector<std::shared_ptr<Light>> &spotLights)
-{
+void ShadowMapStage::RenderSpotShadowMap(
+    RenderContext &context,
+    const std::vector<std::shared_ptr<Light>> &spotLights) {
   if (!m_SpotShadowFBO) {
     m_Logger->warn("Spot shadow FBO not available");
     return;
@@ -410,9 +402,8 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
   // 绑定聚光灯阴影FBO
   RenderCommand::Get().BindFrameBuffer(m_SpotShadowFBO);
 
-  for (uint32_t lightIdx = 0; lightIdx < spotLights.size() && lightIdx < MAX_SPOT_LIGHTS;
-       lightIdx++)
-  {
+  for (uint32_t lightIdx = 0;
+       lightIdx < spotLights.size() && lightIdx < MAX_SPOT_LIGHTS; lightIdx++) {
     std::shared_ptr<Light> light = spotLights[lightIdx];
 
     // 使用分层渲染到数组纹理的特定层
@@ -425,10 +416,10 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
     // 绑定阴影渲染上下文
     BindShadowRenderContext(lightIdx, 0, 0, 2);  // 类型2=聚光灯
     // 渲染场景几何体（仅包含不透明和Alpha测试，半透明物体需要更复杂的ShadowMap策略实现阴影）
-    RenderSceneToShadowMap(context,
-                           context.GetRenderQueue()->GetItems(RenderableItemType::Opaque));
-    RenderSceneToShadowMap(context,
-                           context.GetRenderQueue()->GetItems(RenderableItemType::AlphaTest));
+    RenderSceneToShadowMap(context, context.GetRenderQueue()->GetItems(
+                                        RenderableItemType::Opaque));
+    RenderSceneToShadowMap(context, context.GetRenderQueue()->GetItems(
+                                        RenderableItemType::AlphaTest));
 
     // 解绑着色器
     RenderCommand::Get().UnbindShader(shadowShader);
@@ -437,8 +428,7 @@ void ShadowMapStage::RenderSpotShadowMap(RenderContext &context,
   m_Logger->trace("Rendered spot shadow maps for {} lights", spotLights.size());
 }
 
-void ShadowMapStage::SetupShadowRenderState()
-{
+void ShadowMapStage::SetupShadowRenderState() {
   m_ShadowRenderState = std::make_shared<OpenGLRenderState>();
 
   // 阴影渲染需要深度测试和写入，不需要颜色输出和混合
@@ -455,20 +445,20 @@ void ShadowMapStage::SetupShadowRenderState()
   m_ShadowRenderState->colorWriteA = true;
 
   // 使用正面剔除减少阴影痤疮
-  std::static_pointer_cast<OpenGLRenderState>(m_ShadowRenderState)->cullFaceMode = GL_FRONT;
+  std::static_pointer_cast<OpenGLRenderState>(m_ShadowRenderState)
+      ->cullFaceMode = GL_FRONT;
 }
 
 void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
                                              uint32_t cascadeIndex,
                                              uint32_t faceIndex,
-                                             uint32_t shadowMapType)
-{
+                                             uint32_t shadowMapType) {
   // 创建UBO数据
   ShadowRenderContextUniformBuffer shadowContext;
-  shadowContext.shadowRenderContext = glm::ivec4(
-      lightIndex, cascadeIndex, faceIndex, shadowMapType);
-  shadowContext.shadowRenderParams = glm::vec4(
-      0.0f, static_cast<uint32_t>(m_ShadowQuality), 0.0f, 0.0f);
+  shadowContext.shadowRenderContext =
+      glm::ivec4(lightIndex, cascadeIndex, faceIndex, shadowMapType);
+  shadowContext.shadowRenderParams =
+      glm::vec4(0.0f, static_cast<uint32_t>(m_ShadowQuality), 0.0f, 0.0f);
 
   // 获取UBO对象
   std::shared_ptr<ShaderUBO> ubo = nullptr;
@@ -493,16 +483,14 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
   // 实现ShadowRenderContextUBO的绑定
   RenderCommand::Get().BindShadowRenderContextUBO(ubo);
 
-  m_Logger->trace("Bound shadow render context: light={}, cascade={}, face={}, type={}",
-                  lightIndex,
-                  cascadeIndex,
-                  faceIndex,
-                  shadowMapType);
+  m_Logger->trace(
+      "Bound shadow render context: light={}, cascade={}, face={}, type={}",
+      lightIndex, cascadeIndex, faceIndex, shadowMapType);
 }
 
-void ShadowMapStage::RenderSceneToShadowMap([[maybe_unused]] RenderContext &context,
-                                            const std::vector<RenderableItem> &items)
-{
+void ShadowMapStage::RenderSceneToShadowMap(
+    [[maybe_unused]] RenderContext &context,
+    const std::vector<RenderableItem> &items) {
   for (const auto &item : items) {
     if (!ValidateShadowRenderableItem(item)) {
       continue;
@@ -514,8 +502,7 @@ void ShadowMapStage::RenderSceneToShadowMap([[maybe_unused]] RenderContext &cont
   }
 }
 
-void ShadowMapStage::StoreShadowMapsToContext(RenderContext &context)
-{
+void ShadowMapStage::StoreShadowMapsToContext(RenderContext &context) {
   // ==================== 使用ShadowMapType枚举存储 ====================
   //
   // 存储方向光源阴影贴图（2D数组纹理）
@@ -544,8 +531,8 @@ void ShadowMapStage::StoreShadowMapsToContext(RenderContext &context)
   }
 }
 
-bool ShadowMapStage::ValidateShadowRenderableItem(const RenderableItem &item) const
-{
+bool ShadowMapStage::ValidateShadowRenderableItem(
+    const RenderableItem &item) const {
   // 验证基础有效性
   if (!item.material || !item.mesh) {
     m_Logger->trace("ShadowMapStage: Invalid renderable item");
@@ -561,8 +548,7 @@ bool ShadowMapStage::ValidateShadowRenderableItem(const RenderableItem &item) co
   return true;
 }
 
-void ShadowMapStage::ValidateShadowInputs(RenderContext &context) const
-{
+void ShadowMapStage::ValidateShadowInputs(RenderContext &context) const {
   // 验证必要的输入数据
   auto renderQueue = context.GetRenderQueue();
   if (!renderQueue) {

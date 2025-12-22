@@ -1,19 +1,21 @@
 #ifndef MITE_CORE_FILESYSTEM
 #define MITE_CORE_FILESYSTEM
 
-#include <fstream> 
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
+
 #include "logger/logger.h"
-// 通过CmakeLists的target_include_directories(PRIVATE ${CMAKE_BINARY_DIR}/src/core/filesystem)
+// 通过CmakeLists的target_include_directories(PRIVATE
+// ${CMAKE_BINARY_DIR}/src/core/filesystem)
 // 检索到build/src/core/filesystem/filesystem_config.h文件
 #include "filesystem_config.h"
 
 namespace mite {
 /**
  * @brief 文件管理函数
- * 
+ *
  */
 class FileSystem {
  public:
@@ -33,7 +35,8 @@ class FileSystem {
   static std::string ReadFileToString(const std::filesystem::path &path);
 
   // 写入文件内容
-  static bool WriteStringToFile(const std::filesystem::path &path, const std::string &content);
+  static bool WriteStringToFile(const std::filesystem::path &path,
+                                const std::string &content);
 
  private:
   // 获取可执行文件路径
@@ -43,6 +46,6 @@ class FileSystem {
   static bool s_Initialized;
   static Logger s_Logger;
 };
-};
+};  // namespace mite
 
 #endif

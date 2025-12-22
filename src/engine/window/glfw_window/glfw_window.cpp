@@ -4,33 +4,26 @@ namespace mite {
 // 静态成员初始化
 uint32_t OpenGLWindow::s_GLFWWindowCount = 0;
 
-OpenGLWindow::OpenGLWindow() : m_CallbackAdapter()
-{
+OpenGLWindow::OpenGLWindow() : m_CallbackAdapter() {
   // 初始化日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite GLFW Window");
   m_Logger->trace("GLFW Window constructor called");
 }
-OpenGLWindow::~OpenGLWindow()
-{
+OpenGLWindow::~OpenGLWindow() {
   m_Logger->trace("GLFW Window destructor called");
 }
-const bool OpenGLWindow::WindowShouldClose()
-{
+const bool OpenGLWindow::WindowShouldClose() {
   return glfwWindowShouldClose(m_Window);
 }
-void OpenGLWindow::Initialize(const WindowConfig &config)
-{
+void OpenGLWindow::Initialize(const WindowConfig &config) {
   try {
     // 如果是第一个窗口，初始化GLFW库
     if (s_GLFWWindowCount == 0) {
       InitGLFW();
     }
 
-    m_Logger->info("Creating GLFW window: {} ({}x{}), VSync: {}",
-                   config.title,
-                   config.width,
-                   config.height,
-                   config.vsync);
+    m_Logger->info("Creating GLFW window: {} ({}x{}), VSync: {}", config.title,
+                   config.width, config.height, config.vsync);
 
     // 设置窗口提示
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -41,11 +34,10 @@ void OpenGLWindow::Initialize(const WindowConfig &config)
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);  // 启用调试上下文
 
     // 创建窗口
-    m_Window = glfwCreateWindow(static_cast<int>(config.width),
-                                static_cast<int>(config.height),
-                                config.title.c_str(),
-                                config.fullscreen ? glfwGetPrimaryMonitor() : nullptr,
-                                nullptr);
+    m_Window = glfwCreateWindow(
+        static_cast<int>(config.width), static_cast<int>(config.height),
+        config.title.c_str(),
+        config.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if (!m_Window) {
       m_Logger->critical("Failed to create GLFW window");
       throw;
@@ -85,14 +77,12 @@ void OpenGLWindow::Initialize(const WindowConfig &config)
     m_Initialized = true;
 
     m_Logger->info("GLFW window created successfully");
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     m_Logger->critical("Window initialization failed: {}", e.what());
     throw;
   }
 }
-void OpenGLWindow::Shutdown()
-{
+void OpenGLWindow::Shutdown() {
   m_Logger->info("Shutting down GLFW window: {}", m_WindowData.title);
   if (m_Window) {
     // 注销回调函数
@@ -111,61 +101,43 @@ void OpenGLWindow::Shutdown()
     }
   }
 }
-uint32_t OpenGLWindow::GetWidth() const
-{
-  return m_WindowData.width;
-}
-uint32_t OpenGLWindow::GetHeight() const
-{
-  return m_WindowData.height;
-}
-void *OpenGLWindow::GetNativeWindow() const
-{
-  return m_Window;
-}
-bool OpenGLWindow::IsVSync() const
-{
-  return m_WindowData.vsync;
-}
-void OpenGLWindow::SetVSync(bool enabled)
-{
+uint32_t OpenGLWindow::GetWidth() const { return m_WindowData.width; }
+uint32_t OpenGLWindow::GetHeight() const { return m_WindowData.height; }
+void *OpenGLWindow::GetNativeWindow() const { return m_Window; }
+bool OpenGLWindow::IsVSync() const { return m_WindowData.vsync; }
+void OpenGLWindow::SetVSync(bool enabled) {
   if (m_Window) {
     m_WindowData.vsync = enabled;
     // GLFW内置设置垂直同步的函数
     glfwSwapInterval(enabled ? 1 : 0);
     m_Logger->debug("VSync {}", enabled ? "enabled" : "disabled");
-  }
-  else {
+  } else {
     m_Logger->warn("Attempt to set VSYNC on uninitialized window");
   }
 }
-void OpenGLWindow::SetTitle(const std::string &title)
-{
+void OpenGLWindow::SetTitle(const std::string &title) {
   if (m_Window) {
     m_WindowData.title = title;
     // 更换窗口标题
     glfwSetWindowTitle(m_Window, title.c_str());
     m_Logger->debug("Window title set to: {}", title);
-  }
-  else {
+  } else {
     m_Logger->warn("Attempt to set TITLE on uninitialized window");
   }
 }
-void OpenGLWindow::Resize(uint32_t width, uint32_t height)
-{
+void OpenGLWindow::Resize(uint32_t width, uint32_t height) {
   if (m_Window) {
     m_WindowData.width = width;
     m_WindowData.height = height;
     // 重置窗口尺寸
-    glfwSetWindowSize(m_Window, static_cast<int>(width), static_cast<int>(height));
+    glfwSetWindowSize(m_Window, static_cast<int>(width),
+                      static_cast<int>(height));
     m_Logger->debug("Window resized to: {}x{}", width, height);
-  }
-  else {
+  } else {
     m_Logger->warn("Attempt to RESIZE uninitialized window");
   }
 }
-void OpenGLWindow::Maximize()
-{
+void OpenGLWindow::Maximize() {
   if (m_Window) {
     glfwMaximizeWindow(m_Window);
     // 更新窗口尺寸
@@ -174,23 +146,19 @@ void OpenGLWindow::Maximize()
     m_WindowData.width = static_cast<uint32_t>(width);
     m_WindowData.height = static_cast<uint32_t>(height);
     m_Logger->debug("Window maximized, new size: {}x{}", width, height);
-  }
-  else {
+  } else {
     m_Logger->warn("Attempt to MAXIMIZED uninitialized window");
   }
 }
-void OpenGLWindow::Minimize()
-{
+void OpenGLWindow::Minimize() {
   if (m_Window) {
     glfwIconifyWindow(m_Window);
     m_Logger->debug("Window minimized");
-  }
-  else {
+  } else {
     m_Logger->warn("Attempt to MINIMIZED uninitialized window");
   }
 }
-void OpenGLWindow::Restore()
-{
+void OpenGLWindow::Restore() {
   if (m_Window) {
     glfwRestoreWindow(m_Window);
     // 更新窗口尺寸
@@ -199,26 +167,22 @@ void OpenGLWindow::Restore()
     m_WindowData.width = static_cast<uint32_t>(width);
     m_WindowData.height = static_cast<uint32_t>(height);
     m_Logger->debug("Window restored, size: {}x{}", width, height);
-  }
-  else {
+  } else {
     m_Logger->warn("Attempt to restore uninitialized window");
   }
 }
-void OpenGLWindow::Close()
-{
+void OpenGLWindow::Close() {
   if (m_Window) {
     m_ShouldClose = true;
     // 关闭窗口
     glfwSetWindowShouldClose(m_Window, GLFW_TRUE);
     m_Logger->debug("Window close requested");
-  }
-  else {
+  } else {
     m_Logger->warn("Attempt to close uninitialized window");
   }
 }
 
-void OpenGLWindow::PollEvents()
-{  // 检查窗口是否有效
+void OpenGLWindow::PollEvents() {  // 检查窗口是否有效
   if (!m_Window) {
     m_Logger->warn("Attempted to poll events on null window");
     return;
@@ -236,8 +200,7 @@ void OpenGLWindow::PollEvents()
     m_Logger->info("Window close requested: {}", m_WindowData.title);
   }
 }
-void OpenGLWindow::WaitEvents()
-{  // 检查窗口是否有效
+void OpenGLWindow::WaitEvents() {  // 检查窗口是否有效
   if (!m_Window) {
     m_Logger->warn("Attempted to wait for events on null window");
     return;
@@ -252,11 +215,11 @@ void OpenGLWindow::WaitEvents()
   // 检查窗口关闭请求
   m_ShouldClose = glfwWindowShouldClose(m_Window);
   if (m_ShouldClose) {
-    m_Logger->info("Window close requested during wait: {}", m_WindowData.title);
+    m_Logger->info("Window close requested during wait: {}",
+                   m_WindowData.title);
   }
 }
-bool OpenGLWindow::IsKeyPressed(int keycode) const
-{
+bool OpenGLWindow::IsKeyPressed(int keycode) const {
   // 参数检查
   if (keycode < 0 || keycode >= GLFW_KEY_LAST) {
     m_Logger->warn("Invalid keycode queried: {}", keycode);
@@ -270,8 +233,7 @@ bool OpenGLWindow::IsKeyPressed(int keycode) const
   else
     return false;
 }
-bool OpenGLWindow::IsMouseButtonPressed(int button) const
-{
+bool OpenGLWindow::IsMouseButtonPressed(int button) const {
   // 参数检查
   if (button < 0 || button >= GLFW_MOUSE_BUTTON_LAST) {
     m_Logger->warn("Invalid mouse button queried: {}", button);
@@ -285,15 +247,13 @@ bool OpenGLWindow::IsMouseButtonPressed(int button) const
   else
     return false;
 }
-std::pair<double, double> OpenGLWindow::GetMousePosition() const
-{
+std::pair<double, double> OpenGLWindow::GetMousePosition() const {
   double xpos, ypos;
   // 查询并返回鼠标位置
   glfwGetCursorPos(m_Window, &xpos, &ypos);
   return {xpos, ypos};
 }
-void OpenGLWindow::MakeContextCurrent()
-{
+void OpenGLWindow::MakeContextCurrent() {
   if (!m_Window) {
     m_Logger->error("Attempted to make context current on null window");
     throw;
@@ -304,12 +264,12 @@ void OpenGLWindow::MakeContextCurrent()
 
   // 检查上下文是否成功设置
   if (glfwGetCurrentContext() != m_Window) {
-    m_Logger->error("Failed to make context current for window: {}", m_WindowData.title);
+    m_Logger->error("Failed to make context current for window: {}",
+                    m_WindowData.title);
     throw;
   }
 }
-void OpenGLWindow::SwapBuffers()
-{
+void OpenGLWindow::SwapBuffers() {
   if (!m_Window) {
     m_Logger->error("Attempted to swap buffers on null window");
     return;  // 这里选择不抛出异常，因为可能在关闭过程中调用
@@ -325,13 +285,9 @@ void OpenGLWindow::SwapBuffers()
     m_Logger->warn("OpenGL error after buffer swap: {}", err);
   }
 }
-const uint32_t OpenGLWindow::GLFWWindowCount()
-{
-  return s_GLFWWindowCount;
-}
+const uint32_t OpenGLWindow::GLFWWindowCount() { return s_GLFWWindowCount; }
 
-void OpenGLWindow::InitWindowData(const WindowConfig &config)
-{
+void OpenGLWindow::InitWindowData(const WindowConfig &config) {
   m_WindowData.title = config.title;
   m_WindowData.width = config.width;
   m_WindowData.height = config.height;
@@ -339,8 +295,7 @@ void OpenGLWindow::InitWindowData(const WindowConfig &config)
   m_WindowData.fullscreen = config.fullscreen;
   m_WindowData.resizable = config.resizable;
 }
-void OpenGLWindow::InitGLFW()
-{
+void OpenGLWindow::InitGLFW() {
   if (!glfwInit()) {
     LOG_CRITICAL("Failed to initialize GLFW");
     throw std::runtime_error("Failed to initialize GLFW");
@@ -354,31 +309,28 @@ void OpenGLWindow::InitGLFW()
 
   LOG_INFO("GLFW initialized successfully");
 }
-void OpenGLWindow::ShutdownGLFW()
-{
+void OpenGLWindow::ShutdownGLFW() {
   LOG_INFO("Terminating GLFW");
   glfwTerminate();
 }
-void OpenGLWindow::LoadSPIRVExtensions()
-{
+void OpenGLWindow::LoadSPIRVExtensions() {
   // 获取函数指针
-  auto glSpecializeShaderPtr = (PFNGLSPECIALIZESHADERPROC)glfwGetProcAddress(
-      "glSpecializeShaderARB");
+  auto glSpecializeShaderPtr =
+      (PFNGLSPECIALIZESHADERPROC)glfwGetProcAddress("glSpecializeShaderARB");
   if (!glSpecializeShaderPtr) {
-    glSpecializeShaderPtr = (PFNGLSPECIALIZESHADERPROC)glfwGetProcAddress("glSpecializeShader");
+    glSpecializeShaderPtr =
+        (PFNGLSPECIALIZESHADERPROC)glfwGetProcAddress("glSpecializeShader");
   }
 
   if (glSpecializeShaderPtr) {
     // 替换GLAD的函数指针
     glSpecializeShader = glSpecializeShaderPtr;
     LOG_INFO("Successfully loaded glSpecializeShader");
-  }
-  else {
+  } else {
     LOG_WARN("Failed to load glSpecializeShader function");
   }
 }
-bool OpenGLWindow::InitializeSPIRVSupport()
-{
+bool OpenGLWindow::InitializeSPIRVSupport() {
   LoadSPIRVExtensions();
 
   // 重新检查支持状态
@@ -390,15 +342,15 @@ bool OpenGLWindow::InitializeSPIRVSupport()
   LOG_INFO("SPIR-V support initialized successfully");
   return true;
 }
-void OpenGLWindow::CheckSPIRVSupportDetailed()
-{
+void OpenGLWindow::CheckSPIRVSupportDetailed() {
   LOG_INFO("=== SPIR-V Toolchain Diagnostics ===");
   // 1. 基础OpenGL信息
   LOG_INFO("--- OpenGL Context Info ---");
   const char *version = (const char *)glGetString(GL_VERSION);
   const char *renderer = (const char *)glGetString(GL_RENDERER);
   const char *vendor = (const char *)glGetString(GL_VENDOR);
-  const char *glsl_version = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
+  const char *glsl_version =
+      (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
   LOG_INFO("OpenGL Version: {}", version ? version : "Unknown");
   LOG_INFO("Renderer: {}", renderer ? renderer : "Unknown");
   LOG_INFO("Vendor: {}", vendor ? vendor : "Unknown");
@@ -417,8 +369,7 @@ void OpenGLWindow::CheckSPIRVSupportDetailed()
   CheckToolchainSupport();
   LOG_INFO("=== Diagnostics Complete ===");
 }
-void OpenGLWindow::CheckGLADFunctions()
-{
+void OpenGLWindow::CheckGLADFunctions() {
   // 检查GLAD是否正确加载了SPIR-V相关函数
   struct FunctionCheck {
     const char *name;
@@ -432,8 +383,7 @@ void OpenGLWindow::CheckGLADFunctions()
   for (const auto &func : functions) {
     if (func.pointer) {
       LOG_INFO("{}: Loaded successfully", func.name);
-    }
-    else {
+    } else {
       LOG_WARN("{}: NOT loaded (GLAD issue)", func.name);
     }
   }
@@ -444,8 +394,7 @@ void OpenGLWindow::CheckGLADFunctions()
   LOG_INFO("GLAD version: Unknown");
 #endif
 }
-void OpenGLWindow::CheckSPIRVExtensions()
-{
+void OpenGLWindow::CheckSPIRVExtensions() {
   // 检查所有相关的SPIR-V扩展
   const char *extensions[] = {
       "GL_ARB_gl_spirv",
@@ -457,14 +406,12 @@ void OpenGLWindow::CheckSPIRVExtensions()
   for (const char *ext : extensions) {
     if (CheckExtension(ext)) {
       LOG_INFO("{}: Supported", ext);
-    }
-    else {
+    } else {
       LOG_INFO("{}: Not supported", ext);
     }
   }
 }
-bool OpenGLWindow::CheckExtension(const char *extensionName)
-{
+bool OpenGLWindow::CheckExtension(const char *extensionName) {
   if (glGetStringi) {
     GLint numExtensions = 0;
     glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
@@ -477,8 +424,7 @@ bool OpenGLWindow::CheckExtension(const char *extensionName)
   }
   return false;
 }
-void OpenGLWindow::CheckBinaryFormats()
-{
+void OpenGLWindow::CheckBinaryFormats() {
   // 检查程序二进制格式
   GLint numProgramFormats = 0;
   glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &numProgramFormats);
@@ -529,8 +475,7 @@ void OpenGLWindow::CheckBinaryFormats()
     }
   }
 }
-void OpenGLWindow::CheckToolchainSupport()
-{
+void OpenGLWindow::CheckToolchainSupport() {
   LOG_INFO("Checking build configuration...");
 // 检查编译时定义
 #ifdef GL_ARB_gl_spirv
@@ -539,21 +484,25 @@ void OpenGLWindow::CheckToolchainSupport()
   LOG_WARN("GL_ARB_gl_spirv NOT defined in headers");
 #endif
 #ifdef GL_SHADER_BINARY_FORMAT_SPIR_V
-  LOG_INFO("GL_SHADER_BINARY_FORMAT_SPIR_V defined: 0x{:X}", GL_SHADER_BINARY_FORMAT_SPIR_V);
+  LOG_INFO("GL_SHADER_BINARY_FORMAT_SPIR_V defined: 0x{:X}",
+           GL_SHADER_BINARY_FORMAT_SPIR_V);
 #else
   LOG_WARN("GL_SHADER_BINARY_FORMAT_SPIR_V NOT defined");
 #endif
   // 检查GLFW配置
   LOG_INFO("GLFW context hints:");
   int context_version_major, context_version_minor;
-  context_version_major = glfwGetWindowAttrib(m_Window, GLFW_CONTEXT_VERSION_MAJOR);
-  context_version_minor = glfwGetWindowAttrib(m_Window, GLFW_CONTEXT_VERSION_MINOR);
-  LOG_INFO("  - Context version: {}.{}", context_version_major, context_version_minor);
+  context_version_major =
+      glfwGetWindowAttrib(m_Window, GLFW_CONTEXT_VERSION_MAJOR);
+  context_version_minor =
+      glfwGetWindowAttrib(m_Window, GLFW_CONTEXT_VERSION_MINOR);
+  LOG_INFO("  - Context version: {}.{}", context_version_major,
+           context_version_minor);
   int profile = glfwGetWindowAttrib(m_Window, GLFW_OPENGL_PROFILE);
-  LOG_INFO("  - Profile: {}",
-           profile == GLFW_OPENGL_CORE_PROFILE   ? "Core" :
-           profile == GLFW_OPENGL_COMPAT_PROFILE ? "Compatibility" :
-                                                   "Unknown");
+  LOG_INFO("  - Profile: {}", profile == GLFW_OPENGL_CORE_PROFILE ? "Core"
+                              : profile == GLFW_OPENGL_COMPAT_PROFILE
+                                  ? "Compatibility"
+                                  : "Unknown");
   int debug = glfwGetWindowAttrib(m_Window, GLFW_OPENGL_DEBUG_CONTEXT);
   LOG_INFO("  - Debug context: {}", debug ? "Yes" : "No");
   // 检查可能的头文件冲突
@@ -566,8 +515,7 @@ void OpenGLWindow::CheckToolchainSupport()
 #endif
 }
 // 辅助函数：获取详细的驱动信息
-void OpenGLWindow::LogDriverInfo()
-{
+void OpenGLWindow::LogDriverInfo() {
 #ifdef _WIN32
   LOG_INFO("Platform: Windows");
 #elif defined(__linux__)
@@ -583,14 +531,11 @@ void OpenGLWindow::LogDriverInfo()
   }
 }
 // 全局调试回调函数
-void OpenGLWindow::openGLErrorCallback(GLenum source,
-                                       GLenum type,
-                                       GLuint id,
+void OpenGLWindow::openGLErrorCallback(GLenum source, GLenum type, GLuint id,
                                        GLenum severity,
                                        [[maybe_unused]] GLsizei length,
                                        const GLchar *message,
-                                       [[maybe_unused]] const void *userParam)
-{
+                                       [[maybe_unused]] const void *userParam) {
   // 忽略通知级别的信息，专注于错误和警告
   if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
     return;
@@ -672,17 +617,12 @@ void OpenGLWindow::openGLErrorCallback(GLenum source,
 
   // 输出格式化错误信息
   LOG_ERROR("OpenGL Debug - Source: {}, Type: {}, ID: {}, Severity: {} - {}",
-            sourceStr,
-            typeStr,
-            id,
-            severityStr,
-            message);
+            sourceStr, typeStr, id, severityStr, message);
 
   return;
 }
 
-void OpenGLWindow::initializeOpenGLDebugging()
-{
+void OpenGLWindow::initializeOpenGLDebugging() {
   // 检查是否支持调试输出
   GLint flags;
   glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -694,22 +634,24 @@ void OpenGLWindow::initializeOpenGLDebugging()
     glDebugMessageCallback(OpenGLWindow::openGLErrorCallback, nullptr);
 
     // 控制输出级别：启用所有错误和警告，禁用通知
-    glDebugMessageControl(
-        GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_TRUE);
-    glDebugMessageControl(
-        GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_TRUE);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE,
+                          GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0,
+                          nullptr, GL_TRUE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM,
+                          0, nullptr, GL_TRUE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0,
+                          nullptr, GL_TRUE);
 
     LOG_INFO("OpenGL debug output enabled");
-  }
-  else {
-    LOG_WARN("OpenGL debug context not available, falling back to basic error checking");
+  } else {
+    LOG_WARN(
+        "OpenGL debug context not available, falling back to basic error "
+        "checking");
   }
 }
 
-void OpenGLWindow::cleanupOpenGLDebugging()
-{
+void OpenGLWindow::cleanupOpenGLDebugging() {
   glDebugMessageCallback(nullptr, nullptr);
   glDisable(GL_DEBUG_OUTPUT);
 }

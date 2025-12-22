@@ -1,17 +1,16 @@
 #include "ui_system.h"
+
 #include "ui_imgui_backend/ui_imgui_backend.h"
 #include "ui_localization_json.h"
 #include "window.h"
 
 namespace mite {
-UISystem::UISystem()
-{
+UISystem::UISystem() {
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI System");
   m_Logger->info("Initializing UI System");
 }
 
-void UISystem::Initialize(void *nativeWindow)
-{
+void UISystem::Initialize(void *nativeWindow) {
   // 初始化后端
   if (!InitializeBackend(nativeWindow)) {
     m_Logger->error("UI Backend Initialize FAILED!");
@@ -28,8 +27,7 @@ void UISystem::Initialize(void *nativeWindow)
   EventBus::Publish<UISystemInitializedEvent>();
 }
 
-void UISystem::Shutdown()
-{
+void UISystem::Shutdown() {
   // 发布关闭事件
   EventBus::Publish<UISystemShutdownEvent>();
 
@@ -45,8 +43,7 @@ void UISystem::Shutdown()
   m_Logger->info("UI System Shut Down");
 }
 
-void UISystem::Update(float deltaTime)
-{
+void UISystem::Update(float deltaTime) {
   // 更新所有面板
   for (auto &panel : m_Panels) {
     if (panel->IsVisible()) {
@@ -58,36 +55,32 @@ void UISystem::Update(float deltaTime)
   UIRender::Get().UpdateFileDialogs();
 }
 
-void UISystem::BeginFrame()
-{
+void UISystem::BeginFrame() {
   if (m_Backend) {
     m_Backend->BeginFrame([this]() { m_Menu->RenderMenuBar(); });
   }
 }
 
-void UISystem::Render()
-{
+void UISystem::Render() {
   if (m_Backend) {
     // 渲染所有可见面板
     for (auto &panel : m_Panels) {
-      if (panel->IsVisible())
-        panel->RenderPanel();
+      if (panel->IsVisible()) panel->RenderPanel();
     }
   }
 }
 
-void UISystem::EndFrame()
-{
+void UISystem::EndFrame() {
   if (m_Backend) {
     m_Backend->EndFrame();
   }
 }
 
-void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
-{
+void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel) {
   // 需要检查UI的ID
   if (m_Panels.find(panel) != m_Panels.end()) {
-    m_Logger->error("Cannot Register Existing Panel: name = {}", panel->GetName());
+    m_Logger->error("Cannot Register Existing Panel: name = {}",
+                    panel->GetName());
   }
 
   // 注册进哈希表
@@ -97,8 +90,7 @@ void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
   EventBus::Publish<PanelOpenedEvent>(panel);
 }
 
-void UISystem::DestroyPanel(std::shared_ptr<UIPanel> panel)
-{
+void UISystem::DestroyPanel(std::shared_ptr<UIPanel> panel) {
   auto it = m_Panels.find(panel);
   if (it != m_Panels.end()) {
     // 发布面板关闭事件
@@ -107,8 +99,7 @@ void UISystem::DestroyPanel(std::shared_ptr<UIPanel> panel)
   }
 }
 
-bool UISystem::InitializeBackend(void *nativeWindow)
-{
+bool UISystem::InitializeBackend(void *nativeWindow) {
   // 目前只实现ImGui后端
   m_Backend = std::make_unique<ImGuiBackend>();
 

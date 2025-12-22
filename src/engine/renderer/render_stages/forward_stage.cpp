@@ -1,9 +1,9 @@
 #include "forward_stage.h"
+
 #include "render_opengl/opengl_command.h"
 
 namespace mite {
-ForwardStage::ForwardStage() : RenderStage("ForwardStage")
-{
+ForwardStage::ForwardStage() : RenderStage("ForwardStage") {
   // 透明物体状态
   m_TransparentState = std::make_shared<OpenGLRenderState>();
   m_TransparentState->depthTest = true;    // 启用深度测试
@@ -12,16 +12,13 @@ ForwardStage::ForwardStage() : RenderStage("ForwardStage")
   m_TransparentState->cullFace = true;
   m_TransparentState->wireframe = false;
 
-  m_Logger->info("ForwardStage initialized with complete render state configurations");
+  m_Logger->info(
+      "ForwardStage initialized with complete render state configurations");
 }
 
-ForwardStage::~ForwardStage()
-{
-  m_Logger->info("ForwardStage destroyed");
-}
+ForwardStage::~ForwardStage() { m_Logger->info("ForwardStage destroyed"); }
 
-void ForwardStage::Initialize([[maybe_unused]] RenderContext &context)
-{
+void ForwardStage::Initialize([[maybe_unused]] RenderContext &context) {
   // 创建FrameBuffer规格
   FrameBufferSpec spec;
   spec.samples = 1;
@@ -45,15 +42,15 @@ void ForwardStage::Initialize([[maybe_unused]] RenderContext &context)
   m_ForwardFrameBuffer = std::make_shared<FrameBuffer>(spec);
 
   if (!m_ForwardFrameBuffer->IsComplete()) {
-    m_Logger->error("Failed to create complete framebuffers for forward rendering");
+    m_Logger->error(
+        "Failed to create complete framebuffers for forward rendering");
     throw std::runtime_error("Framebuffers are incomplete");
   }
 
   m_Logger->info("ForwardStage initialization completed");
 }
 
-void ForwardStage::Execute(RenderContext &context)
-{
+void ForwardStage::Execute(RenderContext &context) {
   // 验证上下文有效性
   if (!context.IsValid()) {
     m_Logger->warn("ForwardStage executed with invalid context");
@@ -70,11 +67,13 @@ void ForwardStage::Execute(RenderContext &context)
   // 从上下文获取G-Buffer Stage的着色器
   std::shared_ptr<OpenGLShader> forwardShader = context.GetStageShader(m_Name);
   if (!forwardShader) {
-    m_Logger->error("Forward Stage: No shader registered for Forward Stage in context");
+    m_Logger->error(
+        "Forward Stage: No shader registered for Forward Stage in context");
     return;
   }
   if (forwardShader->GetProgramId() == 0) {
-    m_Logger->error("Forward Stage: Shader from context is not properly linked");
+    m_Logger->error(
+        "Forward Stage: Shader from context is not properly linked");
     return;
   }
 
@@ -83,8 +82,9 @@ void ForwardStage::Execute(RenderContext &context)
 
   // 若与帧缓冲尺寸不匹配，则执行Resize（直接执行即可，无需提交给Commit队列）
   if (m_ForwardFrameBuffer->GetSize() != viewportSize) {
-    m_ForwardFrameBuffer->Resize(static_cast<uint32_t>(glm::max(viewportSize.x, 0.0f)),
-                                 static_cast<uint32_t>(glm::max(viewportSize.y, 0.0f)));
+    m_ForwardFrameBuffer->Resize(
+        static_cast<uint32_t>(glm::max(viewportSize.x, 0.0f)),
+        static_cast<uint32_t>(glm::max(viewportSize.y, 0.0f)));
   }
 
   // 绑定G-Buffer的深度附件
@@ -94,8 +94,7 @@ void ForwardStage::Execute(RenderContext &context)
   auto gbufferDepthTexture = context.GetRenderTarget("GBuffer_DepthAttachment");
   if (gbufferDepthTexture && gbufferDepthTexture->IsValid()) {
     m_ForwardFrameBuffer->AttachExternalDepthTexture(gbufferDepthTexture);
-  }
-  else {
+  } else {
     m_Logger->error("Failed to get GBuffer depth texture for Forward stage");
     return;
   }
@@ -104,7 +103,8 @@ void ForwardStage::Execute(RenderContext &context)
   RenderCommand::Get().BindFrameBuffer(m_ForwardFrameBuffer);
 
   // 清除输出目标（深度附件为复用的GBuffer的，不清理深度Buffer）
-  RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
+  RenderCommand::Get().Clear(GL_COLOR_BUFFER_BIT,
+                             glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), 1.0f);
 
   // 设置透明物体渲染状态
   RenderCommand::Get().SetRenderState(m_TransparentState);
@@ -122,11 +122,13 @@ void ForwardStage::Execute(RenderContext &context)
   RenderCommand::Get().UnbindFrameBuffer();
 
   // 将光照输出纹理存储到上下文供后续阶段使用
-  RuntimeTexturePtr forwardTexture = m_ForwardFrameBuffer->GetColorAttachment(0);
+  RuntimeTexturePtr forwardTexture =
+      m_ForwardFrameBuffer->GetColorAttachment(0);
   if (forwardTexture && forwardTexture->IsValid()) {
     context.SetRenderTarget("Forward_Transparent", forwardTexture);
     // 发布纹理完成事件
-    RenderCommand::Get().PublishEventRuntimeTextureFinished(forwardTexture, "Forward_Transparent");
+    RenderCommand::Get().PublishEventRuntimeTextureFinished(
+        forwardTexture, "Forward_Transparent");
     m_Logger->trace("Stored deferred lighting output to context");
   }
 
@@ -136,13 +138,11 @@ void ForwardStage::Execute(RenderContext &context)
   RenderCommand::Get().Flush();
 }
 
-void ForwardStage::Shutdown()
-{
+void ForwardStage::Shutdown() {
   m_Logger->info("ForwardStage shutdown completed");
 }
 
-void ForwardStage::RenderTransparentQueue(RenderContext &context)
-{
+void ForwardStage::RenderTransparentQueue(RenderContext &context) {
   auto renderQueue = context.GetRenderQueue();
   const auto &items = renderQueue->GetItems(RenderableItemType::Transparent);
 
@@ -165,8 +165,7 @@ void ForwardStage::RenderTransparentQueue(RenderContext &context)
   m_Logger->trace("Rendered {} transparent objects", renderedCount);
 }
 
-bool ForwardStage::ValidateRenderableItem(const RenderableItem &item) const
-{
+bool ForwardStage::ValidateRenderableItem(const RenderableItem &item) const {
   // 验证材质和Shader
   if (!item.material) {
     m_Logger->warn("Renderable item has no material");

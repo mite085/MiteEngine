@@ -1,27 +1,28 @@
 #include "ui_property_light.h"
+
 #include "light_data/area_light.h"
 #include "light_data/directional_light.h"
 #include "light_data/point_light.h"
 #include "light_data/spot_light.h"
 
 namespace mite {
-const EnumComboBoxList<LightType, 5> PropertyTable<LightComponent>::m_LightTypeList =
-    EnumComboBoxList(std::array{std::pair{LightType::POINT, "editor.light_point"},
-                                std::pair{LightType::SPOT, "editor.light_spot"},
-                                std::pair{LightType::DIRECTIONAL, "editor.light_directional"},
-                                std::pair{LightType::AREA_RECT, "editor.light_area_rect"},
-                                std::pair{LightType::AREA_ELLIPSE, "editor.light_area_ellipse"}});
+const EnumComboBoxList<LightType, 5>
+    PropertyTable<LightComponent>::m_LightTypeList =
+        EnumComboBoxList(std::array{
+            std::pair{LightType::POINT, "editor.light_point"},
+            std::pair{LightType::SPOT, "editor.light_spot"},
+            std::pair{LightType::DIRECTIONAL, "editor.light_directional"},
+            std::pair{LightType::AREA_RECT, "editor.light_area_rect"},
+            std::pair{LightType::AREA_ELLIPSE, "editor.light_area_ellipse"}});
 
 PropertyTable<LightComponent>::PropertyTable(LightComponent &component)
-    : IPropertyTable("editor.light"), m_Component(component)
-{
-}
+    : IPropertyTable("editor.light"), m_Component(component) {}
 
-void PropertyTable<LightComponent>::Render(UIRender &render)
-{
+void PropertyTable<LightComponent>::Render(UIRender &render) {
   // 光源类型显示（不支持更改）
   RenderLabelItemRow(render, "editor.light_type", [&]() {
-    render.RenderLabel(m_LightTypeList.GetTranslateKey(m_Component.GetLightType()));
+    render.RenderLabel(
+        m_LightTypeList.GetTranslateKey(m_Component.GetLightType()));
   });
 
   // 绘制详细属性页
@@ -45,11 +46,10 @@ void PropertyTable<LightComponent>::Render(UIRender &render)
       break;
   }
 }
-void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render)
-{
+void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render) {
   // 运行时动态检测
-  std::shared_ptr<PointLight> pointLight = std::dynamic_pointer_cast<PointLight>(
-      m_Component.GetLight());
+  std::shared_ptr<PointLight> pointLight =
+      std::dynamic_pointer_cast<PointLight>(m_Component.GetLight());
 
   // 确保是点光源对象
   if (pointLight) {
@@ -69,8 +69,9 @@ void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render)
     m_PointColorProps.color = {pointLight->GetColor(), 1.0f};
     RenderLabelItemRow(render, "editor.light_color", [&]() {
       if (render.RenderColorEdit(m_PointColorProps)) {
-        pointLight->SetColor(glm::vec3(
-            m_PointColorProps.color.x, m_PointColorProps.color.y, m_PointColorProps.color.z));
+        pointLight->SetColor(glm::vec3(m_PointColorProps.color.x,
+                                       m_PointColorProps.color.y,
+                                       m_PointColorProps.color.z));
       }
     });
 
@@ -105,10 +106,10 @@ void PropertyTable<LightComponent>::RenderPointLightProperty(UIRender &render)
   }
 }
 
-void PropertyTable<LightComponent>::RenderDirectionalLightProperty(UIRender &render)
-{  // 运行时动态检测
-  std::shared_ptr<DirectionalLight> directionalLight = std::dynamic_pointer_cast<DirectionalLight>(
-      m_Component.GetLight());
+void PropertyTable<LightComponent>::RenderDirectionalLightProperty(
+    UIRender &render) {  // 运行时动态检测
+  std::shared_ptr<DirectionalLight> directionalLight =
+      std::dynamic_pointer_cast<DirectionalLight>(m_Component.GetLight());
   // 确保是方向光对象
   if (directionalLight) {
     // 是否启用
@@ -140,22 +141,20 @@ void PropertyTable<LightComponent>::RenderDirectionalLightProperty(UIRender &ren
       }
     });
     // 辐照度编辑（方向光特有属性）（暂未启用，仅使用最简单的强度控制，待后续考虑物理量）
-    //FloatEditProps m_DirectionalIrradiusProps;
-    //m_DirectionalIrradiusProps.value = directionalLight->GetIrradius();
-    //m_DirectionalIrradiusProps.minValue = 0.0f;  // 最小值限制在0.0
-    //RenderLabelItemRow(render, "editor.light_directional_irradius", [&]() {
+    // FloatEditProps m_DirectionalIrradiusProps;
+    // m_DirectionalIrradiusProps.value = directionalLight->GetIrradius();
+    // m_DirectionalIrradiusProps.minValue = 0.0f;  // 最小值限制在0.0
+    // RenderLabelItemRow(render, "editor.light_directional_irradius", [&]() {
     //  if (render.RenderDragFloat(m_DirectionalIrradiusProps)) {
     //    directionalLight->SetIrradius(m_DirectionalIrradiusProps.value);
     //  }
     //});
   }
 }
-void PropertyTable<LightComponent>::RenderSpotLightProperty([[maybe_unused]] UIRender &render) {}
-void PropertyTable<LightComponent>::RenderAreaRectLightProperty([[maybe_unused]] UIRender &render)
-{
-}
+void PropertyTable<LightComponent>::RenderSpotLightProperty(
+    [[maybe_unused]] UIRender &render) {}
+void PropertyTable<LightComponent>::RenderAreaRectLightProperty(
+    [[maybe_unused]] UIRender &render) {}
 void PropertyTable<LightComponent>::RenderAreaEllipseLightProperty(
-    [[maybe_unused]] UIRender &render)
-{
-}
+    [[maybe_unused]] UIRender &render) {}
 }  // namespace mite

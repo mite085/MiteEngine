@@ -8,7 +8,8 @@ namespace mite {
 /**
  * @brief CameraComponent的特化实现
  */
-template<> class PropertyTable<CameraComponent> : public IPropertyTable {
+template <>
+class PropertyTable<CameraComponent> : public IPropertyTable {
  public:
   explicit PropertyTable(CameraComponent &component);
   void Render(UIRender &render);

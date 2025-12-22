@@ -1,37 +1,34 @@
-#include "uuid/mite_uuid.h"
-#include "gtest/gtest.h"
 #include <atomic>
 #include <thread>
 #include <unordered_set>
 #include <vector>
 
+#include "gtest/gtest.h"
+#include "uuid/mite_uuid.h"
+
 namespace mite_test {
 // 测试夹具类，用于设置测试环境和共享资源
 class UUIDTest : public ::testing::Test {
  protected:
-  void SetUp() override
-  {
+  void SetUp() override {
     // 每个测试用例执行前的初始化代码
   }
-  void TearDown() override
-  {
+  void TearDown() override {
     // 每个测试用例执行后的清理代码
   }
   // 辅助函数：验证UUID是否有效
-  static bool IsValidUUID(const uuids::uuid &id)
-  {
+  static bool IsValidUUID(const uuids::uuid &id) {
     return !id.is_nil() && id.version() != uuids::uuid_version::none;
   }
   // 辅助函数：验证两个UUID是否不同
-  static bool AreUUIDsDifferent(const uuids::uuid &id1, const uuids::uuid &id2)
-  {
+  static bool AreUUIDsDifferent(const uuids::uuid &id1,
+                                const uuids::uuid &id2) {
     return id1 != id2;
   }
 };
 
 // 测试用例1：基本功能测试 - 生成有效的UUID
-TEST_F(UUIDTest, GenerateValidUUID)
-{
+TEST_F(UUIDTest, GenerateValidUUID) {
   // 测试生成随机UUID
   auto uuid = mite::UUIDGenerator::Generate();
 
@@ -44,8 +41,7 @@ TEST_F(UUIDTest, GenerateValidUUID)
 }
 
 // 测试用例2：唯一性测试 - 确保生成的UUID都是唯一的
-TEST_F(UUIDTest, GenerateUniqueUUIDs)
-{
+TEST_F(UUIDTest, GenerateUniqueUUIDs) {
   constexpr int NUM_UUIDS = 1000;
   std::unordered_set<std::string> uuid_set;
 
@@ -67,8 +63,7 @@ TEST_F(UUIDTest, GenerateUniqueUUIDs)
 }
 
 // 测试用例3：基于索引的确定性生成测试
-TEST_F(UUIDTest, GenerateFromIndexDeterministic)
-{
+TEST_F(UUIDTest, GenerateFromIndexDeterministic) {
   const size_t test_index = 42;
 
   // 使用相同索引生成两次UUID
@@ -82,8 +77,7 @@ TEST_F(UUIDTest, GenerateFromIndexDeterministic)
 }
 
 // 测试用例4：不同索引生成不同UUID
-TEST_F(UUIDTest, GenerateFromDifferentIndexes)
-{
+TEST_F(UUIDTest, GenerateFromDifferentIndexes) {
   // 使用不同索引生成UUID
   auto uuid1 = mite::UUIDGenerator::Generate(1);
   auto uuid2 = mite::UUIDGenerator::Generate(2);
@@ -99,8 +93,7 @@ TEST_F(UUIDTest, GenerateFromDifferentIndexes)
 }
 
 // 测试用例5：基于字符串的确定性生成测试
-TEST_F(UUIDTest, GenerateFromStringDeterministic)
-{
+TEST_F(UUIDTest, GenerateFromStringDeterministic) {
   const char *test_string = "test_string_123";
 
   // 使用相同字符串生成两次UUID
@@ -114,8 +107,7 @@ TEST_F(UUIDTest, GenerateFromStringDeterministic)
 }
 
 // 测试用例6：不同字符串生成不同UUID
-TEST_F(UUIDTest, GenerateFromDifferentStrings)
-{
+TEST_F(UUIDTest, GenerateFromDifferentStrings) {
   // 使用不同字符串生成UUID
   auto uuid1 = mite::UUIDGenerator::Generate("string1");
   auto uuid2 = mite::UUIDGenerator::Generate("string2");
@@ -131,8 +123,7 @@ TEST_F(UUIDTest, GenerateFromDifferentStrings)
 }
 
 // 测试用例7：空字符串处理测试
-TEST_F(UUIDTest, GenerateFromEmptyString)
-{
+TEST_F(UUIDTest, GenerateFromEmptyString) {
   // 测试空字符串生成UUID
   auto uuid = mite::UUIDGenerator::Generate("");
 
@@ -145,8 +136,7 @@ TEST_F(UUIDTest, GenerateFromEmptyString)
 }
 
 // 测试用例8：特殊字符字符串测试
-TEST_F(UUIDTest, GenerateFromSpecialCharacters)
-{
+TEST_F(UUIDTest, GenerateFromSpecialCharacters) {
   const char *special_chars = "!@#$%^&*()_+-=[]{}|;:',.<>/?";
 
   // 测试特殊字符字符串生成UUID
@@ -160,8 +150,7 @@ TEST_F(UUIDTest, GenerateFromSpecialCharacters)
 }
 
 // 测试用例9：多线程安全性测试
-TEST_F(UUIDTest, ThreadSafety)
-{
+TEST_F(UUIDTest, ThreadSafety) {
   constexpr int NUM_THREADS = 10;
   constexpr int UUIDS_PER_THREAD = 100;
 
@@ -171,12 +160,13 @@ TEST_F(UUIDTest, ThreadSafety)
 
   // 创建多个线程同时生成UUID
   for (int i = 0; i < NUM_THREADS; ++i) {
-    threads.emplace_back([i, &thread_results, &completed_threads, UUIDS_PER_THREAD]() {
-      for (int j = 0; j < UUIDS_PER_THREAD; ++j) {
-        thread_results[i].push_back(mite::UUIDGenerator::Generate());
-      }
-      completed_threads++;
-    });
+    threads.emplace_back(
+        [i, &thread_results, &completed_threads, UUIDS_PER_THREAD]() {
+          for (int j = 0; j < UUIDS_PER_THREAD; ++j) {
+            thread_results[i].push_back(mite::UUIDGenerator::Generate());
+          }
+          completed_threads++;
+        });
   }
 
   // 等待所有线程完成
@@ -207,8 +197,7 @@ TEST_F(UUIDTest, ThreadSafety)
 }
 
 // 测试用例10：性能测试 - 批量生成UUID
-TEST_F(UUIDTest, PerformanceBatchGeneration)
-{
+TEST_F(UUIDTest, PerformanceBatchGeneration) {
   constexpr int BATCH_SIZE = 10000;
   std::vector<uuids::uuid> uuids;
   uuids.reserve(BATCH_SIZE);
@@ -221,7 +210,8 @@ TEST_F(UUIDTest, PerformanceBatchGeneration)
   }
 
   auto end_time = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+      end_time - start_time);
 
   // 验证所有UUID有效且唯一
   std::unordered_set<std::string> uuid_set;
@@ -233,18 +223,17 @@ TEST_F(UUIDTest, PerformanceBatchGeneration)
   }
 
   // 输出性能信息（在测试报告中可见）
-  std::cout << "Generated " << BATCH_SIZE << " UUIDs in " << duration.count() << " ms"
-            << std::endl;
-  std::cout << "Average time per UUID: " << (duration.count() * 1000.0 / BATCH_SIZE) << " μs"
-            << std::endl;
+  std::cout << "Generated " << BATCH_SIZE << " UUIDs in " << duration.count()
+            << " ms" << std::endl;
+  std::cout << "Average time per UUID: "
+            << (duration.count() * 1000.0 / BATCH_SIZE) << " μs" << std::endl;
 
   // 验证生成了正确数量的UUID
   EXPECT_EQ(uuid_set.size(), BATCH_SIZE);
 }
 
 // 测试用例11：边界条件测试 - 极大索引值
-TEST_F(UUIDTest, LargeIndexValue)
-{
+TEST_F(UUIDTest, LargeIndexValue) {
   constexpr size_t large_index = std::numeric_limits<size_t>::max();
 
   // 测试极大索引值生成UUID
@@ -259,8 +248,7 @@ TEST_F(UUIDTest, LargeIndexValue)
 }
 
 // 测试用例12：字符串哈希一致性测试
-TEST_F(UUIDTest, StringHashConsistency)
-{
+TEST_F(UUIDTest, StringHashConsistency) {
   // 测试相同内容不同指针的字符串生成相同UUID
   const char *str1 = "hello_world";
   std::string str2 = "hello_world";
@@ -275,8 +263,7 @@ TEST_F(UUIDTest, StringHashConsistency)
 }
 
 // 测试用例13：UUID字符串转换测试
-TEST_F(UUIDTest, UUIDStringConversion)
-{
+TEST_F(UUIDTest, UUIDStringConversion) {
   // 生成UUID并测试字符串转换
   auto uuid = mite::UUIDGenerator::Generate();
   std::string uuid_str = uuids::to_string(uuid);
@@ -295,8 +282,7 @@ TEST_F(UUIDTest, UUIDStringConversion)
 }
 
 // 测试用例14：nil UUID 处理测试
-TEST_F(UUIDTest, NonNilUUID)
-{
+TEST_F(UUIDTest, NonNilUUID) {
   // 验证生成的UUID不是nil UUID
   auto uuid = mite::UUIDGenerator::Generate();
   EXPECT_FALSE(uuid.is_nil());

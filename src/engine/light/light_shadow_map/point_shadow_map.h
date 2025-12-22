@@ -4,7 +4,6 @@
 #include "light_core/shadow_map.h"
 
 namespace mite {
-
 /**
  * @brief 点光源阴影贴图类
  * @note 点光源使用立方体贴图阴影技术，需要为立方体的六个面分别计算阴影矩阵
@@ -26,10 +25,10 @@ class PointShadowMap : public ShadowMap {
    * @return 更新后的阴影数据
    * @note 点光源阴影基于光源位置计算六个面的立方体贴图矩阵
    */
-  ShadowMapData PrepareShadowData(const uint32_t lightIndex,
-                                  const Transform &lightWorldTransform,
-                                  const Transform &cameraTransform,
-                                  const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
+  ShadowMapData PrepareShadowData(
+      const uint32_t lightIndex, const Transform &lightWorldTransform,
+      const Transform &cameraTransform,
+      const glm::mat4 &cameraProj = glm::mat4(1.0f)) override;
 
   /**
    * @brief 获取阴影矩阵数量
@@ -102,7 +101,6 @@ class PointShadowMap : public ShadowMap {
    */
   bool HasLightMoved(const glm::vec3 &newPosition) const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_POINT_SHADOW_MAP_H

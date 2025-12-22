@@ -1,10 +1,10 @@
 #include "opengl_device.h"
+
 #include "basic_shader/shader_binding_point_manager.h"
 
 namespace mite {
 // ------------------------ 构造函数/析构函数 ------------------------
-OpenGLDevice::OpenGLDevice() : RenderDevice()
-{
+OpenGLDevice::OpenGLDevice() : RenderDevice() {
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite OpenGL Device");
   m_Logger->trace("Created OpenGL Device");
@@ -22,8 +22,7 @@ OpenGLDevice::OpenGLDevice() : RenderDevice()
   CreateFullScreenQuad();
 }
 
-OpenGLDevice::~OpenGLDevice()
-{
+OpenGLDevice::~OpenGLDevice() {
   // 清理默认纹理
   CleanupDefaultTextures();
 
@@ -35,49 +34,54 @@ OpenGLDevice::~OpenGLDevice()
   m_Logger->info("OpenGLDevice destroyed");
 }
 
-void OpenGLDevice::CleanupResources()
-{
+void OpenGLDevice::CleanupResources() {
   // 清理纹理
   if (!m_ActiveTextures.empty()) {
-    m_Logger->warn("{} textures not released on shutdown", m_ActiveTextures.size());
+    m_Logger->warn("{} textures not released on shutdown",
+                   m_ActiveTextures.size());
     for (GLuint tex : m_ActiveTextures) {
       glDeleteTextures(1, &tex);
     }
   }
   // 清理缓冲区对象
   if (!m_ActiveVAOs.empty()) {
-    m_Logger->info("{} VAOs not released on shutdown, cleaning", m_ActiveVAOs.size());
+    m_Logger->info("{} VAOs not released on shutdown, cleaning",
+                   m_ActiveVAOs.size());
     for (GLuint vao : m_ActiveVAOs) {
       glDeleteVertexArrays(1, &vao);
     }
   }
   if (!m_ActiveVBOs.empty()) {
-    m_Logger->info("{} VBOs not released on shutdown, cleaning", m_ActiveVBOs.size());
+    m_Logger->info("{} VBOs not released on shutdown, cleaning",
+                   m_ActiveVBOs.size());
     for (GLuint vbo : m_ActiveVBOs) {
       glDeleteBuffers(1, &vbo);
     }
   }
   if (!m_ActiveEBOs.empty()) {
-    m_Logger->info("{} EBOs not released on shutdown, cleaning", m_ActiveEBOs.size());
+    m_Logger->info("{} EBOs not released on shutdown, cleaning",
+                   m_ActiveEBOs.size());
     for (GLuint ebo : m_ActiveEBOs) {
       glDeleteBuffers(1, &ebo);
     }
   }
   // 清理FrameBuffer对象
   if (!m_ActiveFBOs.empty()) {
-    m_Logger->info("{} FBOs not released on shutdown, cleaning", m_ActiveFBOs.size());
+    m_Logger->info("{} FBOs not released on shutdown, cleaning",
+                   m_ActiveFBOs.size());
     for (GLuint fbo : m_ActiveFBOs) {
       glDeleteFramebuffers(1, &fbo);
     }
   }
   m_Logger->info("Cleaned up {} GPU resources",
-                 m_ActiveTextures.size() + m_ActiveVAOs.size() + m_ActiveVBOs.size() +
-                     m_ActiveEBOs.size() + m_ActiveFBOs.size());
+                 m_ActiveTextures.size() + m_ActiveVAOs.size() +
+                     m_ActiveVBOs.size() + m_ActiveEBOs.size() +
+                     m_ActiveFBOs.size());
 }
 
 // ------------------------ 纹理操作 ------------------------
-TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> data)
-{
+TextureGPUHandle OpenGLDevice::CreateTexture(
+    std::shared_ptr<TextureSourceData> data) {
   if (!data) {
     LOG_ERROR("Invalid texture source data provided");
     return TextureGPUHandle{0};
@@ -117,8 +121,8 @@ TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> 
   return TextureGPUHandle{static_cast<uintptr_t>(textureId)};
 }
 
-TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreateInfo> createInfo)
-{
+TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(
+    std::shared_ptr<TextureCreateInfo> createInfo) {
   if (!createInfo) {
     LOG_ERROR("Invalid texture create info provided");
     return TextureGPUHandle{0};
@@ -126,7 +130,8 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
 
   // 参数验证
   if (createInfo->width == 0 || createInfo->height == 0) {
-    LOG_ERROR("Invalid texture dimensions: {}x{}", createInfo->width, createInfo->height);
+    LOG_ERROR("Invalid texture dimensions: {}x{}", createInfo->width,
+              createInfo->height);
     return TextureGPUHandle{0};
   }
 
@@ -134,11 +139,10 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
   if ((createInfo->target == TextureTarget::TEXTURE_2D_ARRAY ||
        createInfo->target == TextureTarget::TEXTURE_CUBE_MAP_ARRAY ||
        createInfo->target == TextureTarget::TEXTURE_2D_MULTISAMPLE_ARRAY) &&
-      createInfo->arrayLayers == 0)
-  {
-    LOG_ERROR("Array texture target requires arrayLayers > 0, target: {}, layers: {}",
-              static_cast<int>(createInfo->target),
-              createInfo->arrayLayers);
+      createInfo->arrayLayers == 0) {
+    LOG_ERROR(
+        "Array texture target requires arrayLayers > 0, target: {}, layers: {}",
+        static_cast<int>(createInfo->target), createInfo->arrayLayers);
     return TextureGPUHandle{0};
   }
 
@@ -154,11 +158,9 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
   glBindTexture(static_cast<GLenum>(createInfo->target), textureId);
 
   // 设置纹理参数
-  glTexParameteri(static_cast<GLenum>(createInfo->target),
-                  GL_TEXTURE_WRAP_S,
+  glTexParameteri(static_cast<GLenum>(createInfo->target), GL_TEXTURE_WRAP_S,
                   static_cast<GLint>(createInfo->wrapModeS));
-  glTexParameteri(static_cast<GLenum>(createInfo->target),
-                  GL_TEXTURE_WRAP_T,
+  glTexParameteri(static_cast<GLenum>(createInfo->target), GL_TEXTURE_WRAP_T,
                   static_cast<GLint>(createInfo->wrapModeT));
   glTexParameteri(static_cast<GLenum>(createInfo->target),
                   GL_TEXTURE_MIN_FILTER,
@@ -176,7 +178,8 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
     return TextureGPUHandle{0};
   }
 
-  // ==================== 修改：根据纹理目标使用不同的分配函数 ====================
+  // ==================== 修改：根据纹理目标使用不同的分配函数
+  // ====================
   switch (createInfo->target) {
     case TextureTarget::TEXTURE_2D:
     case TextureTarget::TEXTURE_CUBE_MAP:
@@ -184,27 +187,14 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
       if (createInfo->target == TextureTarget::TEXTURE_CUBE_MAP) {
         // 立方体贴图需要为6个面分别分配存储
         for (GLuint face = 0; face < 6; ++face) {
-          glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                       0,
-                       internalFormat,
-                       createInfo->width,
-                       createInfo->height,
-                       0,
-                       format,
-                       type,
+          glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, internalFormat,
+                       createInfo->width, createInfo->height, 0, format, type,
                        nullptr);
         }
-      }
-      else {
+      } else {
         // 普通2D纹理
-        glTexImage2D(static_cast<GLenum>(createInfo->target),
-                     0,
-                     internalFormat,
-                     createInfo->width,
-                     createInfo->height,
-                     0,
-                     format,
-                     type,
+        glTexImage2D(static_cast<GLenum>(createInfo->target), 0, internalFormat,
+                     createInfo->width, createInfo->height, 0, format, type,
                      nullptr);
       }
       break;
@@ -212,35 +202,26 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
     case TextureTarget::TEXTURE_CUBE_MAP_ARRAY:
     case TextureTarget::TEXTURE_3D:
       // 数组纹理和3D纹理使用glTexImage3D
-      glTexImage3D(static_cast<GLenum>(createInfo->target),
-                   0,
-                   internalFormat,
-                   createInfo->width,
-                   createInfo->height,
-                   createInfo->arrayLayers,
-                   0,
-                   format,
-                   type,
-                   nullptr);
+      glTexImage3D(static_cast<GLenum>(createInfo->target), 0, internalFormat,
+                   createInfo->width, createInfo->height,
+                   createInfo->arrayLayers, 0, format, type, nullptr);
       break;
     case TextureTarget::TEXTURE_2D_MULTISAMPLE:
       // 多重采样2D纹理
-      glTexImage2DMultisample(static_cast<GLenum>(createInfo->target),
-                              4,  // 采样数 createInfo->samples，未实现，默认为4平衡性能
-                              internalFormat,
-                              createInfo->width,
-                              createInfo->height,
-                              GL_TRUE);  // 固定采样位置
+      glTexImage2DMultisample(
+          static_cast<GLenum>(createInfo->target),
+          4,  // 采样数 createInfo->samples，未实现，默认为4平衡性能
+          internalFormat, createInfo->width, createInfo->height,
+          GL_TRUE);  // 固定采样位置
       break;
     case TextureTarget::TEXTURE_2D_MULTISAMPLE_ARRAY:
       // 多重采样数组纹理
-      glTexImage3DMultisample(static_cast<GLenum>(createInfo->target),
-                              4,  // 采样数 createInfo->samples，未实现，默认为4平衡性能
-                              internalFormat,
-                              createInfo->width,
-                              createInfo->height,
-                              createInfo->arrayLayers,
-                              GL_TRUE);  // 固定采样位置
+      glTexImage3DMultisample(
+          static_cast<GLenum>(createInfo->target),
+          4,  // 采样数 createInfo->samples，未实现，默认为4平衡性能
+          internalFormat, createInfo->width, createInfo->height,
+          createInfo->arrayLayers,
+          GL_TRUE);  // 固定采样位置
       break;
     default:
       LOG_ERROR("Unsupported texture target for runtime texture: {}",
@@ -260,21 +241,18 @@ TextureGPUHandle OpenGLDevice::CreateRuntimeTexture(std::shared_ptr<TextureCreat
   // 检查GLError
   CheckGLError();
 
-  m_Logger->debug("Created runtime texture: ID={}, size={}x{}, layers={}, format={}, target={}",
-                  textureId,
-                  createInfo->width,
-                  createInfo->height,
-                  createInfo->arrayLayers,
-                  static_cast<int>(createInfo->format),
-                  static_cast<int>(createInfo->target));
+  m_Logger->debug(
+      "Created runtime texture: ID={}, size={}x{}, layers={}, format={}, "
+      "target={}",
+      textureId, createInfo->width, createInfo->height, createInfo->arrayLayers,
+      static_cast<int>(createInfo->format),
+      static_cast<int>(createInfo->target));
 
   return TextureGPUHandle{static_cast<uintptr_t>(textureId)};
 }
 
-void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
-{
-  if (!handle.apiHandle)
-    return;
+void OpenGLDevice::DestroyTexture(TextureGPUHandle handle) {
+  if (!handle.apiHandle) return;
 
   GLuint textureID = static_cast<GLuint>(handle.apiHandle);
   glDeleteTextures(1, &textureID);
@@ -283,49 +261,48 @@ void OpenGLDevice::DestroyTexture(TextureGPUHandle handle)
 
 void OpenGLDevice::BindRuntimeTexture(RuntimeTextureType type,
                                       TextureGPUHandle textureHandle,
-                                      TextureTarget target) const
-{
-  uint32_t textureUnit = BindingPointManager::Get().GetRuntimeTextureBinding(type);
+                                      TextureTarget target) const {
+  uint32_t textureUnit =
+      BindingPointManager::Get().GetRuntimeTextureBinding(type);
   if (textureUnit != UINT32_MAX) {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     if (textureHandle.apiHandle != 0) {
       // 绑定有效纹理
-      glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
-    }
-    else {
+      glBindTexture(static_cast<GLenum>(target),
+                    static_cast<GLuint>(textureHandle.apiHandle));
+    } else {
       // 绑定默认纹理（白色，表示纹理绑定失败的语义）
       glBindTexture(GL_TEXTURE_2D, m_WhiteTexture);
 
-      LOG_WARN("Failed to bind runtime texture: invalid texture handle, bind to default texture");
+      LOG_WARN(
+          "Failed to bind runtime texture: invalid texture handle, bind to "
+          "default texture");
     }
-  }
-  else {
+  } else {
     LOG_ERROR("Failed to bind runtime texture: binding point not allocated");
   }
 }
 void OpenGLDevice::BindExternalTexture(ExternalTextureType type,
                                        TextureGPUHandle textureHandle,
-                                       TextureTarget target) const
-{
-  uint32_t textureUnit = BindingPointManager::Get().GetExternalTextureBinding(type);
+                                       TextureTarget target) const {
+  uint32_t textureUnit =
+      BindingPointManager::Get().GetExternalTextureBinding(type);
   if (textureUnit != UINT32_MAX) {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     if (textureHandle.apiHandle != 0) {
       // 绑定有效纹理
-      glBindTexture(static_cast<GLenum>(target), static_cast<GLuint>(textureHandle.apiHandle));
-    }
-    else {
+      glBindTexture(static_cast<GLenum>(target),
+                    static_cast<GLuint>(textureHandle.apiHandle));
+    } else {
       // 绑定默认纹理（白色，表示纹理绑定失败的语义）
       glBindTexture(GL_TEXTURE_2D, m_WhiteTexture);
     }
-  }
-  else {
+  } else {
     LOG_ERROR("Failed to bind external texture: binding point not allocated");
   }
 }
 
-void OpenGLDevice::BindDefaultTexture(uint32_t textureUnit) const
-{
+void OpenGLDevice::BindDefaultTexture(uint32_t textureUnit) const {
   // 使用纯黑图像填充textureUnit
   if (textureUnit != UINT32_MAX) {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
@@ -335,10 +312,8 @@ void OpenGLDevice::BindDefaultTexture(uint32_t textureUnit) const
 }
 
 void OpenGLDevice::BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
-                                             uint32_t layer) const
-{
-  if (!fbo)
-    return;
+                                             uint32_t layer) const {
+  if (!fbo) return;
 
   // 获取深度纹理附件
   auto depthTexture = fbo->GetDepthAttachment();
@@ -349,14 +324,12 @@ void OpenGLDevice::BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
   GLuint textureID = static_cast<GLuint>(depthTexture->GetHandle().apiHandle);
 
   // 使用glFramebufferTextureLayer绑定到特定层
-  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0, layer);
+  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0,
+                            layer);
 }
-void OpenGLDevice::BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
-                                                uint32_t layer,
-                                                uint32_t face) const
-{
-  if (!fbo)
-    return;
+void OpenGLDevice::BindFramebufferDepthCubeFace(
+    std::shared_ptr<FrameBuffer> fbo, uint32_t layer, uint32_t face) const {
+  if (!fbo) return;
 
   // 获取深度纹理附件
   auto depthTexture = fbo->GetDepthAttachment();
@@ -370,12 +343,13 @@ void OpenGLDevice::BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo
   // 对于立方体贴图数组，使用glFramebufferTextureLayer绑定到特定层和面
   // 注意：立方体贴图数组的层索引计算为 layer * 6 + face
   uint32_t arrayLayer = layer * 6 + face;
-  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0, arrayLayer);
+  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textureID, 0,
+                            arrayLayer);
 }
 
 // ------------------------ 模型操作 ------------------------
-ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
-{
+ModelGPUHandle OpenGLDevice::CreateModel(
+    std::shared_ptr<ModelSourceData> data) {
   // 0. 创建临时VAO等对象
   GLuint VBO, EBO, VAO;
 
@@ -386,18 +360,15 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
   // 2. 创建VBO并上传数据
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER,
-               data->mergedVertexData.size(),
-               data->mergedVertexData.data(),
-               GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, data->mergedVertexData.size(),
+               data->mergedVertexData.data(), GL_STATIC_DRAW);
 
   // 3. 创建EBO并上传数据
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                data->mergedIndices.size() * sizeof(uint32_t),
-               data->mergedIndices.data(),
-               GL_STATIC_DRAW);
+               data->mergedIndices.data(), GL_STATIC_DRAW);
 
   // 4. 设置顶点属性指针(基于统一的layout)
   SetVertexAttributes(data->layout);
@@ -425,11 +396,12 @@ ModelGPUHandle OpenGLDevice::CreateModel(std::shared_ptr<ModelSourceData> data)
   return handle;
 }
 
-void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
-{
+void OpenGLDevice::DestroyModel(ModelGPUHandle handle) {
   // 防御性检查
-  if (handle.vertexArray == 0 && handle.vertexBuffer == 0 && handle.indexBuffer == 0) {
-    m_Logger->warn("Attempted to destroy invalid ModelGPUHandle (all handles are 0)");
+  if (handle.vertexArray == 0 && handle.vertexBuffer == 0 &&
+      handle.indexBuffer == 0) {
+    m_Logger->warn(
+        "Attempted to destroy invalid ModelGPUHandle (all handles are 0)");
     return;
   }
 
@@ -462,9 +434,7 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
 
   // 4. 调试日志
   m_Logger->debug("Destroyed model resources: VAO={}, VBO={}, EBO={}",
-                  handle.vertexArray,
-                  handle.vertexBuffer,
-                  handle.indexBuffer);
+                  handle.vertexArray, handle.vertexBuffer, handle.indexBuffer);
 
   // 5. 清空句柄(防御性编程)
   handle.vertexArray = 0;
@@ -472,8 +442,7 @@ void OpenGLDevice::DestroyModel(ModelGPUHandle handle)
   handle.indexBuffer = 0;
 }
 
-void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
-{
+void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const {
   if (!mesh || !mesh->GetVertexCount()) {
     m_Logger->error("Invalid Mesh in binding mesh by opengl device.");
     return;
@@ -489,9 +458,9 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   }
 
   if (meshSection.indexCount == 0 || meshSection.vertexCount == 0) {
-    m_Logger->warn("Attempt to bind empty mesh section (indices={}, vertices={})",
-                   meshSection.indexCount,
-                   meshSection.vertexCount);
+    m_Logger->warn(
+        "Attempt to bind empty mesh section (indices={}, vertices={})",
+        meshSection.indexCount, meshSection.vertexCount);
     return;
   }
 
@@ -502,13 +471,13 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   // 3. 验证缓冲区是否有效
   if (modelHandle.vertexBuffer == 0 || modelHandle.indexBuffer == 0) {
     m_Logger->error("Model buffers not initialized (VBO={}, EBO={})",
-                    modelHandle.vertexBuffer,
-                    modelHandle.indexBuffer);
+                    modelHandle.vertexBuffer, modelHandle.indexBuffer);
   }
 
   // 4. 绑定缓冲区（VAO已包含这些信息，但显式绑定更安全）
   glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(modelHandle.vertexBuffer));
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLuint>(modelHandle.indexBuffer));
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
+               static_cast<GLuint>(modelHandle.indexBuffer));
 
   // 5. 存储当前绑定的MeshSection（供后续Draw调用使用）
   // 注意：这需要OpenGLDevice有成员变量存储当前状态，或者使用其他状态管理机制
@@ -516,29 +485,24 @@ void OpenGLDevice::BindMesh(std::shared_ptr<Mesh> mesh) const
   // m_CurrentModelHandle = modelHandle;
 
   // 6. 调试信息
-  m_Logger->trace("Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
-                  vao,
-                  modelHandle.vertexBuffer,
-                  modelHandle.indexBuffer,
-                  meshSection.indexOffset,
-                  meshSection.vertexOffset);
+  m_Logger->trace(
+      "Bound mesh: VAO={}, VBO={}, EBO={}, indexOffset={}, vertexOffset={}",
+      vao, modelHandle.vertexBuffer, modelHandle.indexBuffer,
+      meshSection.indexOffset, meshSection.vertexOffset);
 }
 
-void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh, uint32_t lodLevel) const
-{
+void OpenGLDevice::DrawMeshLOD(std::shared_ptr<Mesh> mesh,
+                               uint32_t lodLevel) const {
   // 直接从Mesh对象获取指定LOD级别的MeshSection
   const MeshSection *targetSection = &mesh->GetSection(lodLevel);
 
   // 绘制指定LOD级别的网格
-  DrawIndexed(
-      targetSection->indexCount, targetSection->indexOffset, GL_TRIANGLES, GL_UNSIGNED_INT);
+  DrawIndexed(targetSection->indexCount, targetSection->indexOffset,
+              GL_TRIANGLES, GL_UNSIGNED_INT);
 }
 
-void OpenGLDevice::DrawIndexed(uint32_t indexCount,
-                               uint32_t indexOffset,
-                               GLenum mode,
-                               GLenum indexType) const
-{
+void OpenGLDevice::DrawIndexed(uint32_t indexCount, uint32_t indexOffset,
+                               GLenum mode, GLenum indexType) const {
   // 1. 参数验证
   if (indexCount == 0) {
     // index count = 0时，直接返回即可。仅检测，不执行draw call，
@@ -595,8 +559,8 @@ void OpenGLDevice::DrawIndexed(uint32_t indexCount,
 
 // ------------------------ FrameBuffer 操作 ------------------------
 
-std::shared_ptr<FrameBuffer> OpenGLDevice::CreateFrameBuffer(const FrameBufferSpec &spec)
-{
+std::shared_ptr<FrameBuffer> OpenGLDevice::CreateFrameBuffer(
+    const FrameBufferSpec &spec) {
   // 创建FrameBuffer对象
   auto framebuffer = std::make_shared<FrameBuffer>(spec);
 
@@ -607,10 +571,9 @@ std::shared_ptr<FrameBuffer> OpenGLDevice::CreateFrameBuffer(const FrameBufferSp
   return framebuffer;
 }
 
-void OpenGLDevice::DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer)
-{
-  if (!framebuffer)
-    return;
+void OpenGLDevice::DestroyFrameBuffer(
+    std::shared_ptr<FrameBuffer> framebuffer) {
+  if (!framebuffer) return;
 
   // 从活动集合中移除
   m_ActiveFBOs.erase(framebuffer->GetID());
@@ -619,11 +582,9 @@ void OpenGLDevice::DestroyFrameBuffer(std::shared_ptr<FrameBuffer> framebuffer)
   m_Logger->debug("Destroyed framebuffer");
 }
 
-void OpenGLDevice::CreateFullScreenQuad()
-{
+void OpenGLDevice::CreateFullScreenQuad() {
   // 全屏四边形顶点数据 (位置, UV)
-  float quadVertices[] = {
-                          -1.0f, 1.0f,  0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+  float quadVertices[] = {-1.0f, 1.0f,  0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
                           1.0f,  -1.0f, 1.0f, 0.0f, -1.0f, 1.0f,  0.0f, 1.0f,
                           1.0f,  -1.0f, 1.0f, 0.0f, 1.0f,  1.0f,  1.0f, 1.0f};
 
@@ -634,7 +595,8 @@ void OpenGLDevice::CreateFullScreenQuad()
   // 绑定顶点数据
   glBindVertexArray(m_ScreenQuadVAO);
   glBindBuffer(GL_ARRAY_BUFFER, m_ScreenQuadVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices,
+               GL_STATIC_DRAW);
 
   // 位置属性
   glEnableVertexAttribArray(0);
@@ -642,20 +604,19 @@ void OpenGLDevice::CreateFullScreenQuad()
 
   // UV属性
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
+                        (void *)(2 * sizeof(float)));
 
   glBindVertexArray(0);
 }
 
-void OpenGLDevice::DrawFullScreenQuad()
-{
+void OpenGLDevice::DrawFullScreenQuad() {
   glBindVertexArray(m_ScreenQuadVAO);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindVertexArray(0);
 }
 
-void OpenGLDevice::DestroyFullScreenQuad()
-{
+void OpenGLDevice::DestroyFullScreenQuad() {
   // 清理全屏四边形
   if (m_ScreenQuadVAO != 0) {
     glDeleteVertexArrays(1, &m_ScreenQuadVAO);
@@ -669,8 +630,7 @@ void OpenGLDevice::DestroyFullScreenQuad()
 
 // ------------------------ 辅助方法 ------------------------
 
-void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
-{
+void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e) {
   // 1. 创建GPU资源
   ModelGPUHandle modelHandle = CreateModel(e.GetModelSourceData());
 
@@ -681,8 +641,7 @@ void OpenGLDevice::OnModelLoaded(ModelLoadEvent &e)
   e.SetResult(EventResult::Consumed);
 }
 
-void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
-{
+void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e) {
   //  1. 创建GPU资源
   TextureGPUHandle textureHandle = CreateTexture(e.GetTextureSourceData());
 
@@ -693,10 +652,10 @@ void OpenGLDevice::OnTextureLoaded(TextureLoadEvent &e)
   e.SetResult(EventResult::Consumed);
 }
 
-void OpenGLDevice::OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e)
-{
+void OpenGLDevice::OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e) {
   //  1. 创建GPU资源
-  TextureGPUHandle textureHandle = CreateRuntimeTexture(e.GetTextureCreateInfo());
+  TextureGPUHandle textureHandle =
+      CreateRuntimeTexture(e.GetTextureCreateInfo());
 
   // 2. 调用回调函数传回Handle
   e.GetCallback()(textureHandle);
@@ -705,24 +664,22 @@ void OpenGLDevice::OnRuntimeTextureCreate(RuntimeTextureCreateEvent &e)
   e.SetResult(EventResult::Consumed);
 }
 
-void OpenGLDevice::OnRuntimeTextureDestroyRequest(RuntimeTextureDestroyRequestEvent &e)
-{
+void OpenGLDevice::OnRuntimeTextureDestroyRequest(
+    RuntimeTextureDestroyRequestEvent &e) {
   DestroyTexture(e.GetTextureGPUHandle());
 
   // 标记事件已消费，阻断传播
   e.SetResult(EventResult::Consumed);
 }
 
-void OpenGLDevice::InitializeDefaultTextures()
-{
+void OpenGLDevice::InitializeDefaultTextures() {
   // 创建1x1白色/黑色纹理作为通用默认纹理
   m_WhiteTexture = CreateWhite1x1Texture();
   m_BlackTexture = CreateBlack1x1Texture();
 
   m_Logger->info("Initialized default textures");
 }
-void OpenGLDevice::CleanupDefaultTextures()
-{
+void OpenGLDevice::CleanupDefaultTextures() {
   if (m_WhiteTexture != 0) {
     glDeleteTextures(1, &m_WhiteTexture);
     m_WhiteTexture = 0;
@@ -733,15 +690,15 @@ void OpenGLDevice::CleanupDefaultTextures()
   }
   m_Logger->debug("Cleaned up default textures");
 }
-GLuint OpenGLDevice::CreateWhite1x1Texture()
-{
+GLuint OpenGLDevice::CreateWhite1x1Texture() {
   GLuint textureId;
   glGenTextures(1, &textureId);
   glBindTexture(GL_TEXTURE_2D, textureId);
 
   // 1x1 白色像素
   unsigned char whitePixel[] = {255, 255, 255, 255};
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whitePixel);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               whitePixel);
 
   // 设置合理的默认参数
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -752,15 +709,15 @@ GLuint OpenGLDevice::CreateWhite1x1Texture()
   return textureId;
 }
 
-GLuint OpenGLDevice::CreateBlack1x1Texture()
-{
+GLuint OpenGLDevice::CreateBlack1x1Texture() {
   GLuint textureId;
   glGenTextures(1, &textureId);
   glBindTexture(GL_TEXTURE_2D, textureId);
 
   // 1x1 白色像素
   unsigned char blackPixel[] = {0, 0, 0, 255};
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, blackPixel);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               blackPixel);
 
   // 设置合理的默认参数
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -771,8 +728,7 @@ GLuint OpenGLDevice::CreateBlack1x1Texture()
   return textureId;
 }
 
-void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
-{
+void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout) {
   // 确保VAO已绑定
   GLint currentVAO;
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &currentVAO);
@@ -807,15 +763,17 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
         currentOffset += sizeof(glm::vec2);
         break;
       default:
-        m_Logger->warn("Unknown vertex attribute type in offset calculation: {}",
-                       static_cast<int>(attr));
+        m_Logger->warn(
+            "Unknown vertex attribute type in offset calculation: {}",
+            static_cast<int>(attr));
         break;
     }
   }
 
   // 验证计算的总偏移量与声明的stride一致
   if (currentOffset != stride) {
-    m_Logger->error("Calculated offset {} doesn't match layout stride {}", currentOffset, stride);
+    m_Logger->error("Calculated offset {} doesn't match layout stride {}",
+                    currentOffset, stride);
   }
 
   // 按照枚举顺序设置顶点属性（使用固定location）
@@ -846,19 +804,24 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
         );
         break;
       case VertexAttribute::Normal:
-        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
+        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride,
+                              (void *)(uintptr_t)offset);
         break;
       case VertexAttribute::TexCoord:
-        glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
+        glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride,
+                              (void *)(uintptr_t)offset);
         break;
       case VertexAttribute::Tangent:
-        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
+        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride,
+                              (void *)(uintptr_t)offset);
         break;
       case VertexAttribute::Bitangent:
-        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *)(uintptr_t)offset);
+        glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride,
+                              (void *)(uintptr_t)offset);
         break;
       default:
-        m_Logger->warn("Unknown vertex attribute type: {}", static_cast<int>(attr));
+        m_Logger->warn("Unknown vertex attribute type: {}",
+                       static_cast<int>(attr));
         glDisableVertexAttribArray(i);
         break;
     }
@@ -868,32 +831,29 @@ void OpenGLDevice::SetVertexAttributes(const VertexLayout &layout)
   }
 }
 
-void OpenGLDevice::SetTextureParameters(std::shared_ptr<TextureSourceData> data)
-{
+void OpenGLDevice::SetTextureParameters(
+    std::shared_ptr<TextureSourceData> data) {
   // 设置包装模式
-  glTexParameteri(
-      static_cast<GLenum>(data->target), GL_TEXTURE_WRAP_S, static_cast<GLint>(data->wrapModeS));
-  glTexParameteri(
-      static_cast<GLenum>(data->target), GL_TEXTURE_WRAP_T, static_cast<GLint>(data->wrapModeT));
+  glTexParameteri(static_cast<GLenum>(data->target), GL_TEXTURE_WRAP_S,
+                  static_cast<GLint>(data->wrapModeS));
+  glTexParameteri(static_cast<GLenum>(data->target), GL_TEXTURE_WRAP_T,
+                  static_cast<GLint>(data->wrapModeT));
 
   // 设置过滤模式
-  glTexParameteri(static_cast<GLenum>(data->target),
-                  GL_TEXTURE_MIN_FILTER,
+  glTexParameteri(static_cast<GLenum>(data->target), GL_TEXTURE_MIN_FILTER,
                   static_cast<GLint>(data->minFilter));
-  glTexParameteri(static_cast<GLenum>(data->target),
-                  GL_TEXTURE_MAG_FILTER,
+  glTexParameteri(static_cast<GLenum>(data->target), GL_TEXTURE_MAG_FILTER,
                   static_cast<GLint>(data->magFilter));
 
   // 设置各向异性过滤（如果支持）
   if (GLAD_GL_EXT_texture_filter_anisotropic) {
     GLfloat maxAnisotropy;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-    glTexParameterf(
-        static_cast<GLenum>(data->target), GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
+    glTexParameterf(static_cast<GLenum>(data->target),
+                    GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
   }
 }
-bool OpenGLDevice::UploadTextureData(std::shared_ptr<TextureSourceData> data)
-{
+bool OpenGLDevice::UploadTextureData(std::shared_ptr<TextureSourceData> data) {
   // 获取OpenGL格式信息
   GLenum internalFormat, format, type;
   if (!GetGLTextureFormats(data->format, internalFormat, format, type)) {
@@ -903,14 +863,8 @@ bool OpenGLDevice::UploadTextureData(std::shared_ptr<TextureSourceData> data)
 
   try {
     // 上传纹理数据
-    glTexImage2D(static_cast<GLenum>(data->target),
-                 0,
-                 internalFormat,
-                 data->width,
-                 data->height,
-                 0,
-                 format,
-                 type,
+    glTexImage2D(static_cast<GLenum>(data->target), 0, internalFormat,
+                 data->width, data->height, 0, format, type,
                  data->pixelData.data());
 
     // 检查OpenGL错误
@@ -921,17 +875,14 @@ bool OpenGLDevice::UploadTextureData(std::shared_ptr<TextureSourceData> data)
     }
 
     return true;
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     LOG_ERROR("Exception during texture upload: {}", e.what());
     return false;
   }
 }
 bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
-                                       GLenum &internalFormat,
-                                       GLenum &format,
-                                       GLenum &type)
-{
+                                       GLenum &internalFormat, GLenum &format,
+                                       GLenum &type) {
   switch (textureFormat) {
     // 8位无符号归一化格式
     case TextureFormat::R8:
@@ -1032,8 +983,7 @@ bool OpenGLDevice::GetGLTextureFormats(TextureFormat textureFormat,
   }
   return true;
 }
-void OpenGLDevice::CheckGLError(std::string debugName)
-{
+void OpenGLDevice::CheckGLError(std::string debugName) {
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     const char *errorStr = "";

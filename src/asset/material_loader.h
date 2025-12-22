@@ -1,12 +1,11 @@
 #ifndef MITE_ASSET_MATERIAL_LOADER
 #define MITE_ASSET_MATERIAL_LOADER
 
-#include "basic_event/asset_event.h"
 #include "asset_cache.h"
+#include "basic_event/asset_event.h"
 
 struct aiMaterial;
 struct aiScene;
-enum aiTextureType : int;
 
 namespace mite {
 /**
@@ -26,10 +25,9 @@ class MaterialLoader {
    * @param modelPath 模型文件路径
    * @return 加载的材质AssetID列表
    */
-  static std::vector<MaterialAssetID> LoadMaterialsFromGLTF(MaterialCache &materialCache,
-                                                            TextureCache &textureCache,
-                                                            const aiScene *scene,
-                                                            const std::string &modelPath);
+  static std::vector<MaterialAssetID> LoadMaterialsFromGLTF(
+      MaterialCache &materialCache, TextureCache &textureCache,
+      const aiScene *scene, const std::string &modelPath);
 
  private:
   /**
@@ -45,7 +43,8 @@ class MaterialLoader {
   /**
    * 提取GLTF PBR材质参数
    */
-  static void ExtractPBRParameters(aiMaterial *aiMat, MaterialMetadata &metadata);
+  static void ExtractPBRParameters(aiMaterial *aiMat,
+                                   MaterialMetadata &metadata);
 
   /**
    * 提取并创建材质纹理引用
@@ -59,25 +58,14 @@ class MaterialLoader {
   /**
    * 根据纹理路径创建或获取纹理资产ID
    */
-  static TextureAssetID CreateOrGetTextureAssetID(TextureCache &textureCache,
-                                                  const std::string &texturePath,
-                                                  const std::string &modelPath,
-                                                  const aiScene *scene);
-
-  /**
-   * 提取纹理变换参数（缩放/偏移）
-   */
-  static void ExtractTextureTransform(aiMaterial *aiMat,
-                                      aiTextureType textureType,
-                                      unsigned int textureIndex,
-                                      glm::vec2 &scale,
-                                      glm::vec2 &offset);
+  static TextureAssetID CreateOrGetTextureAssetID(
+      TextureCache &textureCache, const std::string &texturePath,
+      const std::string &modelPath, const aiScene *scene);
 
   /**
    * 生成材质唯一名称
    */
-  static std::string GenerateMaterialName(aiMaterial *aiMat,
-                                          uint32_t index,
+  static std::string GenerateMaterialName(aiMaterial *aiMat, uint32_t index,
                                           const std::string &modelPath);
 
   /**

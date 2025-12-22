@@ -30,7 +30,8 @@ struct BoundingVolumeAABB {
   /**
    * @brief 通过最小最大点构造AABB
    */
-  BoundingVolumeAABB(const glm::vec3 &min, const glm::vec3 &max) : min(min), max(max) {}
+  BoundingVolumeAABB(const glm::vec3 &min, const glm::vec3 &max)
+      : min(min), max(max) {}
   /**
    * @brief 通过中心点和半长构造AABB
    */
@@ -94,7 +95,8 @@ struct BoundingVolumeAABB {
   /**
    * @brief 创建一个AABB
    */
-  static BoundingVolumeAABB CreateAABBFromPoints(const glm::vec3 *points, uint32_t count);
+  static BoundingVolumeAABB CreateAABBFromPoints(const glm::vec3 *points,
+                                                 uint32_t count);
 };
 
 /**
@@ -106,7 +108,8 @@ struct BoundingVolumeSphere {
   float radius;
 
   BoundingVolumeSphere() : center(0.0f), radius(0.0f) {}
-  BoundingVolumeSphere(const glm::vec3 &center, float radius) : center(center), radius(radius) {}
+  BoundingVolumeSphere(const glm::vec3 &center, float radius)
+      : center(center), radius(radius) {}
 
   /**
    * @brief 通过AABB构造包围球（外切球）
@@ -145,19 +148,22 @@ struct BoundingVolumeSphere {
    * @param points 点集
    * @return 最小包围球
    */
-  static BoundingVolumeSphere CreateSphereFromPoints(const std::vector<glm::vec3> &points);
+  static BoundingVolumeSphere CreateSphereFromPoints(
+      const std::vector<glm::vec3> &points);
   /**
    * @brief 从点集创建近似包围球（Ritter算法，更快但非最优）
    * @param points 点集
    * @return 近似包围球
    */
-  static BoundingVolumeSphere CreateSphereFromPointsRitter(const std::vector<glm::vec3> &points);
+  static BoundingVolumeSphere CreateSphereFromPointsRitter(
+      const std::vector<glm::vec3> &points);
   /**
    * @brief 从点集创建快速包围球（AABB中心+最远点）
    * @param points 点集
    * @return 快速包围球
    */
-  static BoundingVolumeSphere CreateSphereFromPointsFast(const std::vector<glm::vec3> &points);
+  static BoundingVolumeSphere CreateSphereFromPointsFast(
+      const std::vector<glm::vec3> &points);
 };
 
 /**
@@ -170,12 +176,9 @@ struct BoundingVolumeOBB {
   glm::mat3 orientation;  // 3x3旋转矩阵
 
   BoundingVolumeOBB() : center(0.0f), extents(0.0f), orientation(1.0f) {}
-  BoundingVolumeOBB(const glm::vec3 &center,
-                    const glm::vec3 &extents,
+  BoundingVolumeOBB(const glm::vec3 &center, const glm::vec3 &extents,
                     const glm::mat3 &orientation)
-      : center(center), extents(extents), orientation(orientation)
-  {
-  }
+      : center(center), extents(extents), orientation(orientation) {}
 
   /**
    * @brief 通过AABB构造OBB（初始方向为单位矩阵）
@@ -226,9 +229,7 @@ struct BoundingVolumePlane {
 
   BoundingVolumePlane() : normal(0.0f, 1.0f, 0.0f), distance(0.0f) {}
   BoundingVolumePlane(const glm::vec3 &normal, float distance)
-      : normal(glm::normalize(normal)), distance(distance)
-  {
-  }
+      : normal(glm::normalize(normal)), distance(distance) {}
   BoundingVolumePlane(const glm::vec3 &point, const glm::vec3 &normal);
 
   /**
@@ -241,7 +242,6 @@ struct BoundingVolumePlane {
    */
   int GetSide(const glm::vec3 &point) const;
 };
-
 }  // namespace mite
 
 #endif  // MITE_BOUNDING_VOLUMES_TYPES_H

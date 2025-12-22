@@ -13,9 +13,11 @@ namespace mite {
  */
 struct OverlayContext {
   // 视口信息
-  glm::vec2 viewportPos;  // Panel左上角屏幕坐标（由panel执行m_Renderer.GetCursorStartPos()获得）
-  glm::vec2 viewportSize;  // Panel尺寸（由panel执行m_Renderer.GetContentRegionAvail()获得）
-  glm::vec2 contentPos;    // OverLay内容区域左上角坐标（支持自定义）
+  glm::vec2
+      viewportPos;  // Panel左上角屏幕坐标（由panel执行m_Renderer.GetCursorStartPos()获得）
+  glm::vec2
+      viewportSize;  // Panel尺寸（由panel执行m_Renderer.GetContentRegionAvail()获得）
+  glm::vec2 contentPos;   // OverLay内容区域左上角坐标（支持自定义）
   glm::vec2 contentSize;  // 内容区域尺寸（支持自定义）
   glm::vec2 mousePos;     // 鼠标位置
 
@@ -38,8 +40,7 @@ struct OverlayContext {
         isModelSelected(false),
         modelTransform()
 
-  {
-  }
+  {}
 };
 /**
  * @brief UI覆盖层抽象基类 - 轻量级叠加渲染组件

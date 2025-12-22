@@ -1,8 +1,8 @@
 #include "runtime.h"
 
 namespace mite {
-bool CoreFunctions::StringMatchWildcard(const std::string &str, const std::string &pattern)
-{
+bool CoreFunctions::StringMatchWildcard(const std::string &str,
+                                        const std::string &pattern) {
   size_t m = str.size();
   size_t n = pattern.size();
 
@@ -24,8 +24,7 @@ bool CoreFunctions::StringMatchWildcard(const std::string &str, const std::strin
       if (pattern[j - 1] == '*') {
         // '*' 可以匹配零个字符或一个或多个字符
         dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
-      }
-      else if (pattern[j - 1] == '?' || str[i - 1] == pattern[j - 1]) {
+      } else if (pattern[j - 1] == '?' || str[i - 1] == pattern[j - 1]) {
         // '?' 或字符匹配
         dp[i][j] = dp[i - 1][j - 1];
       }

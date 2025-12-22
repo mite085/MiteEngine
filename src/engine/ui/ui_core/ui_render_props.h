@@ -46,8 +46,7 @@ struct MenuItemProps : public TextRenderProps {
   std::function<void()> submenuRenderCallback;
 
   // 更新选中状态的方法
-  void UpdateSelected(bool newSelected)
-  {
+  void UpdateSelected(bool newSelected) {
     if (isCheckable) {
       selected = newSelected;
     }
@@ -116,8 +115,9 @@ struct TextAreaProps : public TextInputProps {
  * 包含标签文本的下拉选择控件
  */
 struct ComboboxProps : public TextRenderProps {
-  std::vector<std::string> itemTranslationKeys;  // 选项的翻译键（下拉框所有内容）
-  int selectedIndex = -1;                        // 当前选中索引
+  std::vector<std::string>
+      itemTranslationKeys;  // 选项的翻译键（下拉框所有内容）
+  int selectedIndex = -1;   // 当前选中索引
 };
 
 /**
@@ -240,9 +240,9 @@ struct GroupProps : public TextRenderProps {
  */
 struct TreeNodeProps : public TextRenderProps {
   std::shared_ptr<SceneNode> nodePtr = nullptr;  // 节点指针
-  bool isSelect = false;    // 节点是否被选中
-  bool isLeaf = false;      // 是否为叶子节点
-  int depth = 0;            // 节点深度
+  bool isSelect = false;                         // 节点是否被选中
+  bool isLeaf = false;                           // 是否为叶子节点
+  int depth = 0;                                 // 节点深度
 };
 
 /**
@@ -317,12 +317,12 @@ struct SpacerProps : public BaseRenderProps {
  */
 struct PanelProps : public BaseRenderProps {
   // ============ 基本属性 ============
-  bool resizable = true;               // 是否可调整大小（默认可调整）
-  bool scrollable = true;              // 是否可滚动（默认可滚动）
-  bool collapsed = false;              // 是否折叠标题（默认状态下不折叠）
-  bool bringToFront = false;           // 是否置顶（默认状态下不置顶）
-  bool dockable = true;                // 是否可停靠（默认支持）
-  bool hasMenuBar = false;             // 是否有菜单栏（默认没有，使用统一的window菜单栏）
+  bool resizable = true;      // 是否可调整大小（默认可调整）
+  bool scrollable = true;     // 是否可滚动（默认可滚动）
+  bool collapsed = false;     // 是否折叠标题（默认状态下不折叠）
+  bool bringToFront = false;  // 是否置顶（默认状态下不置顶）
+  bool dockable = true;       // 是否可停靠（默认支持）
+  bool hasMenuBar = false;  // 是否有菜单栏（默认没有，使用统一的window菜单栏）
   bool noBackground = false;           // 无背景
   glm::vec2 minSize = {10, 10};        // 最小尺寸
   glm::vec2 maxSize = {10000, 10000};  // 最大尺寸

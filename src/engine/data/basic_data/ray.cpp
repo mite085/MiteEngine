@@ -5,22 +5,17 @@ Ray::Ray()
     : origin(0.0f),
       direction(0.0f, 0.0f, 1.0f),
       tMin(0.0f),
-      tMax(std::numeric_limits<float>::max())
-{
-}
+      tMax(std::numeric_limits<float>::max()) {}
 
 Ray::Ray(const glm::vec3 &origin, const glm::vec3 &direction)
     : origin(origin),
       direction(glm::normalize(direction)),
       tMin(0.0f),
-      tMax(std::numeric_limits<float>::max())
-{
-}
+      tMax(std::numeric_limits<float>::max()) {}
 
 Ray Ray::GenerateRayFromScreenUV(const glm::vec2 &screenUV,
                                  const glm::mat4 &cameraView,
-                                 const glm::mat4 &cameraProjection)
-{
+                                 const glm::mat4 &cameraProjection) {
   // 1. 屏幕坐标转NDC
   glm::vec2 ndc;
   ndc.x = screenUV.x * 2.0f - 1.0f;  // x: [0,1] -> [-1, 1]
@@ -28,10 +23,12 @@ Ray Ray::GenerateRayFromScreenUV(const glm::vec2 &screenUV,
 
   // 2. NDC转视图空间
   glm::mat4 invProjection = glm::inverse(cameraProjection);
-  glm::vec4 viewNear = invProjection *
-                       glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);  // 近平面：z = -1（NDC空间）
-  glm::vec4 viewFar = invProjection *
-                      glm::vec4(ndc.x, ndc.y, 1.0f, 1.0f);  // 远平面：z = 1（NDC空间）
+  glm::vec4 viewNear =
+      invProjection *
+      glm::vec4(ndc.x, ndc.y, -1.0f, 1.0f);  // 近平面：z = -1（NDC空间）
+  glm::vec4 viewFar =
+      invProjection *
+      glm::vec4(ndc.x, ndc.y, 1.0f, 1.0f);  // 远平面：z = 1（NDC空间）
 
   // 3. 透视除法（从齐次坐标到3D坐标）
   viewNear /= viewNear.w;
@@ -46,13 +43,9 @@ Ray Ray::GenerateRayFromScreenUV(const glm::vec2 &screenUV,
   return Ray(worldNear, glm::normalize(worldFar - worldNear));
 }
 
-glm::vec3 Ray::GetPoint(float t) const
-{
-  return origin + direction * t;
-}
+glm::vec3 Ray::GetPoint(float t) const { return origin + direction * t; }
 
-bool Ray::Intersects(const BoundingVolumeAABB &aabb, float &t) const
-{
+bool Ray::Intersects(const BoundingVolumeAABB &aabb, float &t) const {
   // SLAB方法进行AABB相交测试
   float tmin = tMin;
   float tmax = tMax;
@@ -63,19 +56,16 @@ bool Ray::Intersects(const BoundingVolumeAABB &aabb, float &t) const
       if (origin[i] < aabb.min[i] || origin[i] > aabb.max[i]) {
         return false;
       }
-    }
-    else {
+    } else {
       float invD = 1.0f / direction[i];
       float t1 = (aabb.min[i] - origin[i]) * invD;
       float t2 = (aabb.max[i] - origin[i]) * invD;
 
-      if (t1 > t2)
-        std::swap(t1, t2);
+      if (t1 > t2) std::swap(t1, t2);
       tmin = std::max(tmin, t1);
       tmax = std::min(tmax, t2);
 
-      if (tmin > tmax)
-        return false;
+      if (tmin > tmax) return false;
     }
   }
 
@@ -83,8 +73,7 @@ bool Ray::Intersects(const BoundingVolumeAABB &aabb, float &t) const
   return true;
 }
 
-bool Ray::Intersects(const BoundingVolumeSphere &sphere, float &t) const
-{
+bool Ray::Intersects(const BoundingVolumeSphere &sphere, float &t) const {
   glm::vec3 oc = origin - sphere.center;
   float a = glm::dot(direction, direction);
   float b = 2.0f * glm::dot(oc, direction);
@@ -92,31 +81,26 @@ bool Ray::Intersects(const BoundingVolumeSphere &sphere, float &t) const
 
   float discriminant = b * b - 4 * a * c;
 
-  if (discriminant < 0.0f)
-    return false;
+  if (discriminant < 0.0f) return false;
 
   float sqrtDiscriminant = std::sqrt(discriminant);
   float t0 = (-b - sqrtDiscriminant) / (2.0f * a);
   float t1 = (-b + sqrtDiscriminant) / (2.0f * a);
 
-  if (t0 > t1)
-    std::swap(t0, t1);
+  if (t0 > t1) std::swap(t0, t1);
 
   if (t0 < tMin) {
     t0 = t1;
-    if (t0 < tMin)
-      return false;
+    if (t0 < tMin) return false;
   }
 
-  if (t0 > tMax)
-    return false;
+  if (t0 > tMax) return false;
 
   t = t0;
   return true;
 }
 
-bool Ray::Intersects(const BoundingVolumeOBB &obb, float &t) const
-{
+bool Ray::Intersects(const BoundingVolumeOBB &obb, float &t) const {
   // 使用SLAB方法，但针对OBB的三个主轴进行测试
   float tmin = tMin;
   float tmax = tMax;
@@ -138,19 +122,16 @@ bool Ray::Intersects(const BoundingVolumeOBB &obb, float &t) const
       if (deltaProj < -extent || deltaProj > extent) {
         return false;
       }
-    }
-    else {
+    } else {
       float invDirProj = 1.0f / dirProj;
       float t1 = (-extent - deltaProj) * invDirProj;
       float t2 = (extent - deltaProj) * invDirProj;
 
-      if (t1 > t2)
-        std::swap(t1, t2);
+      if (t1 > t2) std::swap(t1, t2);
       tmin = std::max(tmin, t1);
       tmax = std::min(tmax, t2);
 
-      if (tmin > tmax)
-        return false;
+      if (tmin > tmax) return false;
     }
   }
 
@@ -158,18 +139,15 @@ bool Ray::Intersects(const BoundingVolumeOBB &obb, float &t) const
   return true;
 }
 
-bool Ray::Intersects(const BoundingVolumePlane &plane, float &t) const
-{
+bool Ray::Intersects(const BoundingVolumePlane &plane, float &t) const {
   float denom = glm::dot(plane.normal, direction);
-  if (std::abs(denom) < 1e-6f)
-    return false;  // 射线与平面平行
+  if (std::abs(denom) < 1e-6f) return false;  // 射线与平面平行
 
   t = (plane.distance - glm::dot(plane.normal, origin)) / denom;
   return t >= tMin && t <= tMax;
 }
 
-bool Ray::Intersects(const BoundingVolume &volume, float &t) const
-{
+bool Ray::Intersects(const BoundingVolume &volume, float &t) const {
   switch (volume.GetType()) {
     case BoundingVolumeType::AABB:
       return Intersects(volume.GetAABB(), t);
@@ -184,32 +162,24 @@ bool Ray::Intersects(const BoundingVolume &volume, float &t) const
   }
 }
 
-bool Ray::Intersects(const glm::vec3 &v0,
-                     const glm::vec3 &v1,
-                     const glm::vec3 &v2,
-                     float &t,
-                     float &u,
-                     float &v) const
-{
+bool Ray::Intersects(const glm::vec3 &v0, const glm::vec3 &v1,
+                     const glm::vec3 &v2, float &t, float &u, float &v) const {
   // Möller–Trumbore算法
   glm::vec3 edge1 = v1 - v0;
   glm::vec3 edge2 = v2 - v0;
   glm::vec3 pvec = glm::cross(direction, edge2);
 
   float det = glm::dot(edge1, pvec);
-  if (std::abs(det) < 1e-6f)
-    return false;  // 射线与三角形平行
+  if (std::abs(det) < 1e-6f) return false;  // 射线与三角形平行
 
   float invDet = 1.0f / det;
   glm::vec3 tvec = origin - v0;
   u = glm::dot(tvec, pvec) * invDet;
-  if (u < 0.0f || u > 1.0f)
-    return false;
+  if (u < 0.0f || u > 1.0f) return false;
 
   glm::vec3 qvec = glm::cross(tvec, edge1);
   v = glm::dot(direction, qvec) * invDet;
-  if (v < 0.0f || u + v > 1.0f)
-    return false;
+  if (v < 0.0f || u + v > 1.0f) return false;
 
   t = glm::dot(edge2, qvec) * invDet;
   return t >= tMin && t <= tMax;

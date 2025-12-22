@@ -1,20 +1,15 @@
 #include "frustum.h"
 
 namespace mite {
-Frustum::Frustum()
-{
+Frustum::Frustum() {
   for (int i = 0; i < 6; ++i) {
     m_Planes[i] = BoundingVolumePlane();
   }
 }
 
-Frustum::Frustum(const glm::mat4 &viewProjection)
-{
-  Update(viewProjection);
-}
+Frustum::Frustum(const glm::mat4 &viewProjection) { Update(viewProjection); }
 
-void Frustum::Update(const glm::mat4 &viewProjection)
-{
+void Frustum::Update(const glm::mat4 &viewProjection) {
   // 提取6个裁剪平面
   ExtractPlane(viewProjection, FrustumPlane::LEFT);    // 左平面
   ExtractPlane(viewProjection, FrustumPlane::RIGHT);   // 右平面
@@ -24,8 +19,7 @@ void Frustum::Update(const glm::mat4 &viewProjection)
   ExtractPlane(viewProjection, FrustumPlane::FAR);     // 远平面
 }
 
-void Frustum::ExtractPlane(const glm::mat4 &vpMatrix, FrustumPlane plane)
-{
+void Frustum::ExtractPlane(const glm::mat4 &vpMatrix, FrustumPlane plane) {
   glm::vec4 planeCoeffs;
 
   switch (plane) {
@@ -56,11 +50,11 @@ void Frustum::ExtractPlane(const glm::mat4 &vpMatrix, FrustumPlane plane)
   }
   // 右手系平面方程：normal.x*x + normal.y*y + normal.z*z + d = 0
   // 其中 d = planeCoeffs.w（与左手系符号相反）
-  m_Planes[static_cast<int>(plane)] = BoundingVolumePlane(glm::vec3(planeCoeffs), planeCoeffs.w);
+  m_Planes[static_cast<int>(plane)] =
+      BoundingVolumePlane(glm::vec3(planeCoeffs), planeCoeffs.w);
 }
 
-bool Frustum::Contains(const glm::vec3 &point) const
-{
+bool Frustum::Contains(const glm::vec3 &point) const {
   for (int i = 0; i < 6; ++i) {
     if (m_Planes[i].DistanceToPoint(point) < 0.0f) {
       return false;
@@ -70,13 +64,12 @@ bool Frustum::Contains(const glm::vec3 &point) const
 }
 
 BoundingVolumeIntersection::IntersectionType Frustum::TestSphere(
-    const BoundingVolumeSphere &sphere) const
-{
+    const BoundingVolumeSphere &sphere) const {
   bool completelyInside = true;
 
   for (int i = 0; i < 6; ++i) {
     float distance = m_Planes[i].DistanceToPoint(sphere.center);
-    
+
     // 注意：
     // 视锥体六个平面的正方向都是朝向可视范围内的。
     // 若球心处于任意平面的负方向，且距离平面超过radius
@@ -90,13 +83,13 @@ BoundingVolumeIntersection::IntersectionType Frustum::TestSphere(
     }
   }
 
-  return completelyInside ? BoundingVolumeIntersection::IntersectionType::Inside :
-                            BoundingVolumeIntersection::IntersectionType::Intersect;
+  return completelyInside
+             ? BoundingVolumeIntersection::IntersectionType::Inside
+             : BoundingVolumeIntersection::IntersectionType::Intersect;
 }
 
 BoundingVolumeIntersection::IntersectionType Frustum::TestAABB(
-    const BoundingVolumeAABB &aabb) const
-{
+    const BoundingVolumeAABB &aabb) const {
   bool intersects = false;
   for (int i = 0; i < 6; ++i) {
     // 计算极值点
@@ -157,20 +150,19 @@ BoundingVolumeIntersection::IntersectionType Frustum::TestAABB(
     }
   }
   // 根据intersects，判断结果为Inside完全在内，还是Intersect相交
-  return intersects ? BoundingVolumeIntersection::IntersectionType::Intersect :
-                      BoundingVolumeIntersection::IntersectionType::Inside;
+  return intersects ? BoundingVolumeIntersection::IntersectionType::Intersect
+                    : BoundingVolumeIntersection::IntersectionType::Inside;
 }
 
-BoundingVolumeIntersection::IntersectionType Frustum::TestOBB(const BoundingVolumeOBB &obb) const
-{
+BoundingVolumeIntersection::IntersectionType Frustum::TestOBB(
+    const BoundingVolumeOBB &obb) const {
   // 将OBB转换到视锥体空间测试
   BoundingVolumeAABB localAABB = obb.GetAABB();
   return TestAABB(localAABB);
 }
 
 BoundingVolumeIntersection::IntersectionType Frustum::TestPlane(
-    const BoundingVolumePlane &plane) const
-{
+    const BoundingVolumePlane &plane) const {
   // 平面与视锥体的相交测试需要特殊处理
 
   // 检查视锥体是否完全在平面的正侧
@@ -185,8 +177,7 @@ BoundingVolumeIntersection::IntersectionType Frustum::TestPlane(
 
     if (distance >= 0.0f) {
       allNegative = false;
-    }
-    else {
+    } else {
       allPositive = false;
     }
 
@@ -199,8 +190,7 @@ BoundingVolumeIntersection::IntersectionType Frustum::TestPlane(
   // 根据最终结果返回
   if (allPositive) {
     return BoundingVolumeIntersection::IntersectionType::Inside;
-  }
-  else if (allNegative) {
+  } else if (allNegative) {
     return BoundingVolumeIntersection::IntersectionType::Outside;
   }
 
@@ -208,8 +198,7 @@ BoundingVolumeIntersection::IntersectionType Frustum::TestPlane(
 }
 
 BoundingVolumeIntersection::IntersectionType Frustum::TestBoundingVolume(
-    const BoundingVolume &volume) const
-{
+    const BoundingVolume &volume) const {
   switch (volume.GetType()) {
     case BoundingVolumeType::AABB:
       return TestAABB(volume.GetAABB());
@@ -229,8 +218,7 @@ BoundingVolumeIntersection::IntersectionType Frustum::TestBoundingVolume(
   }
 }
 
-void Frustum::GetCorners(glm::vec3 corners[8]) const
-{
+void Frustum::GetCorners(glm::vec3 corners[8]) const {
   // 通过平面相交计算视锥体角点（简化实现）
   // 实际应用中通常从投影矩阵反算更准确
   corners[0] = glm::vec3(-1, -1, -1);  // 近左下
@@ -242,5 +230,4 @@ void Frustum::GetCorners(glm::vec3 corners[8]) const
   corners[6] = glm::vec3(-1, 1, 1);    // 远左上
   corners[7] = glm::vec3(1, 1, 1);     // 远右上
 }
-
 }  // namespace mite

@@ -1,14 +1,14 @@
 #include "ui_viewport_input_context.h"
+
 #include "basic_event/render_event.h"
 
 namespace mite {
-ViewportInputContext::ViewportInputContext(const std::string &name) : InputContext(name)
-{
+ViewportInputContext::ViewportInputContext(const std::string &name)
+    : InputContext(name) {
   m_InputStateTracker = std::make_unique<InputStateTracker>();
 }
 
-void ViewportInputContext::Update(float deltatime, bool gizmoUsing)
-{
+void ViewportInputContext::Update(float deltatime, bool gizmoUsing) {
   // 更新Gizmo占用
   m_ViewportGizmoUsing = gizmoUsing;
 
@@ -22,12 +22,12 @@ void ViewportInputContext::Update(float deltatime, bool gizmoUsing)
   UpdateCameraMove(deltatime);
 }
 
-void ViewportInputContext::Apply(Transform cameraTransform)
-{
+void ViewportInputContext::Apply(Transform cameraTransform) {
   // 更新相机世界空间移动
-  glm::vec3 cameraWorldMove = m_CameraMoveCache.x * cameraTransform.GetConstrainedRight() +
-                              m_CameraMoveCache.y * cameraTransform.GetConstrainedUp() +
-                              m_CameraMoveCache.z * cameraTransform.GetConstrainedForward();
+  glm::vec3 cameraWorldMove =
+      m_CameraMoveCache.x * cameraTransform.GetConstrainedRight() +
+      m_CameraMoveCache.y * cameraTransform.GetConstrainedUp() +
+      m_CameraMoveCache.z * cameraTransform.GetConstrainedForward();
   cameraTransform.Translate(cameraWorldMove);
 
   // 更新相机旋转
@@ -37,20 +37,20 @@ void ViewportInputContext::Apply(Transform cameraTransform)
   cameraTransform.PanCamera(m_CameraPanCache.x, m_CameraPanCache.y);
 
   // 发布相机变换事件（注意，这里是没有Dirty检测的，也就是每帧都会执行更新操作，向SceneGraph塞入Dirty节点）
-  EventBus::Publish<ViewportCameraUpdateEvent>(cameraTransform, m_CameraZoomCache);
+  EventBus::Publish<ViewportCameraUpdateEvent>(cameraTransform,
+                                               m_CameraZoomCache);
 
   // 清空缓存
   ClearCameraCache();
 }
 
-void ViewportInputContext::SetViewportRect(const glm::vec2 &pos, const glm::vec2 &size)
-{
+void ViewportInputContext::SetViewportRect(const glm::vec2 &pos,
+                                           const glm::vec2 &size) {
   m_ViewportPos = pos;
   m_ViewportSize = size;
 }
 
-void ViewportInputContext::ProcessEvent(Event &e)
-{
+void ViewportInputContext::ProcessEvent(Event &e) {
   // 检查视口是否聚焦，且鼠标悬停，Gizmo非占用，处于可输入状态
   if (!m_ViewportFocused || !m_ViewportHovered || m_ViewportGizmoUsing) {
     // 若不处于输入状态，清空状态机
@@ -62,8 +62,7 @@ void ViewportInputContext::ProcessEvent(Event &e)
   InputContext::ProcessEvent(e);
 }
 
-void ViewportInputContext::ProcessMouseMoveEvent(MouseMoveEvent &e)
-{
+void ViewportInputContext::ProcessMouseMoveEvent(MouseMoveEvent &e) {
   // 记录此次更新
   const glm::vec2 currentPos = {e.GetXPos(), e.GetYPos()};
   const glm::vec2 delta = currentPos - m_LastMousePos;
@@ -80,14 +79,14 @@ void ViewportInputContext::ProcessMouseMoveEvent(MouseMoveEvent &e)
   }
 }
 
-void ViewportInputContext::ProcessMouseButtonPressedEvent(MouseButtonPressedEvent &e)
-{
+void ViewportInputContext::ProcessMouseButtonPressedEvent(
+    MouseButtonPressedEvent &e) {
   // 更新状态机
   m_InputStateTracker->OnMouseButtonPressed(e.GetButton());
 }
 
-void ViewportInputContext::ProcessMouseButtonReleasedEvent(MouseButtonReleasedEvent &e)
-{
+void ViewportInputContext::ProcessMouseButtonReleasedEvent(
+    MouseButtonReleasedEvent &e) {
   // 判断长按/短按行为
   float time = m_InputStateTracker->GetMouseButtonPressTime(e.GetButton());
 
@@ -101,29 +100,26 @@ void ViewportInputContext::ProcessMouseButtonReleasedEvent(MouseButtonReleasedEv
   }
 }
 
-void ViewportInputContext::ProcessMouseScrollEvent(MouseScrollEvent &e)
-{
+void ViewportInputContext::ProcessMouseScrollEvent(MouseScrollEvent &e) {
   // 滚轮缩放操作累积
   // 常规鼠标仅存在Y方向鼠标，仅需处理Y轴。
   m_CameraZoomCache += float(e.GetYOffset()) * m_CameraZoomSpeed;
 }
 
-void ViewportInputContext::ProcessKeyPressdEvent(KeyPressedEvent &e)
-{
+void ViewportInputContext::ProcessKeyPressdEvent(KeyPressedEvent &e) {
   // 更新状态机
   m_InputStateTracker->OnKeyPressed(e.GetKey());
 }
 
-void ViewportInputContext::ProcessKeyReleasedEvent(KeyReleasedEvent &e)
-{
+void ViewportInputContext::ProcessKeyReleasedEvent(KeyReleasedEvent &e) {
   // 更新状态机
   m_InputStateTracker->OnKeyReleased(e.GetKey());
 }
 
-void ViewportInputContext::ProcessKeyTypedEvent([[maybe_unused]] KeyTypedEvent &e) {}
+void ViewportInputContext::ProcessKeyTypedEvent(
+    [[maybe_unused]] KeyTypedEvent &e) {}
 
-glm::vec2 ViewportInputContext::ScreenToUV(const glm::vec2 &screenPos)
-{
+glm::vec2 ViewportInputContext::ScreenToUV(const glm::vec2 &screenPos) {
   // 1. 计算相对于视口左上角的局部坐标
   glm::vec2 localPos = screenPos - m_ViewportPos;
 
@@ -138,21 +134,20 @@ glm::vec2 ViewportInputContext::ScreenToUV(const glm::vec2 &screenPos)
 
   return uv;
 }
-glm::vec2 ViewportInputContext::UVToScreen(const glm::vec2 &uv)
-{
+glm::vec2 ViewportInputContext::UVToScreen(const glm::vec2 &uv) {
   // 钳制UV坐标到有效范围
   glm::vec2 clampedUV = glm::clamp(uv, 0.0f, 1.0f);
 
   // 转换为屏幕坐标
   glm::vec2 screenPos;
   screenPos.x = m_ViewportPos.x + clampedUV.x * m_ViewportSize.x;
-  screenPos.y = m_ViewportPos.y + (1.0f - clampedUV.y) * m_ViewportSize.y;  // 翻转Y轴
+  screenPos.y =
+      m_ViewportPos.y + (1.0f - clampedUV.y) * m_ViewportSize.y;  // 翻转Y轴
 
   return screenPos;
 }
 
-void ViewportInputContext::UpdateCameraMove(float deltatime)
-{
+void ViewportInputContext::UpdateCameraMove(float deltatime) {
   // 相机移动方向
   glm::vec3 cameraMoveDirection = glm::vec3(0.0f);
 
@@ -182,8 +177,7 @@ void ViewportInputContext::UpdateCameraMove(float deltatime)
   m_CameraMoveCache = cameraMoveDirection * m_CameraMoveSpeed * deltatime;
 }
 
-void ViewportInputContext::ClearCameraCache()
-{
+void ViewportInputContext::ClearCameraCache() {
   m_CameraRotateCache = {0.0f, 0.0f};
   m_CameraPanCache = {0.0f, 0.0f};
   m_CameraZoomCache = 0.0f;

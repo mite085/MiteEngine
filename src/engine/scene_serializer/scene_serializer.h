@@ -53,10 +53,7 @@ class SceneSerializer {
    * @brief 获取最后一次序列化/反序列化的错误信息
    * @return 错误信息字符串
    */
-  const std::string &GetLastError() const
-  {
-    return m_lastError;
-  }
+  const std::string &GetLastError() const { return m_lastError; }
 
  private:
   // 场景引用
@@ -70,7 +67,8 @@ class SceneSerializer {
    * @tparam Archive Cereal存档类型(Json/Binary)
    * @param archive Cereal存档对象
    */
-  template<typename Archive> void RegisterComponentTypes(Archive &archive);
+  template <typename Archive>
+  void RegisterComponentTypes(Archive &archive);
 
   /**
    * @brief 序列化实体及其组件
@@ -78,7 +76,8 @@ class SceneSerializer {
    * @param archive Cereal存档对象
    * @param registry EnTT注册表
    */
-  template<typename Archive> void SerializeEntities(Archive &archive, SceneRegistry &registry);
+  template <typename Archive>
+  void SerializeEntities(Archive &archive, SceneRegistry &registry);
 
   /**
    * @brief 反序列化实体及其组件
@@ -86,14 +85,16 @@ class SceneSerializer {
    * @param archive Cereal存档对象
    * @param registry EnTT注册表
    */
-  template<typename Archive> void DeserializeEntities(Archive &archive, SceneRegistry &registry);
+  template <typename Archive>
+  void DeserializeEntities(Archive &archive, SceneRegistry &registry);
 
   /**
    * @brief 类型名称辅助函数
    * @return Component的类型名称，如"Transform"、"Tag"等
    */
-  template<typename T> const char *component_type_name();
+  template <typename T>
+  const char *component_type_name();
 };
-};
+};  // namespace mite
 
 #endif

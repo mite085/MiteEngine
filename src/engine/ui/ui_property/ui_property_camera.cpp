@@ -1,25 +1,23 @@
 #include "ui_property_camera.h"
 
 namespace mite {
-const EnumComboBoxList<CameraProjectionType, 2> PropertyTable<CameraComponent>::m_CameraTypeList =
-    EnumComboBoxList(
-        std::array{std::pair{CameraProjectionType::PERSPECTIVE, "editor.camera_perspective"},
-                   std::pair{CameraProjectionType::ORTHOGRAPHIC, "editor.camera_orthographic"}});
+const EnumComboBoxList<CameraProjectionType, 2>
+    PropertyTable<CameraComponent>::m_CameraTypeList = EnumComboBoxList(
+        std::array{std::pair{CameraProjectionType::PERSPECTIVE,
+                             "editor.camera_perspective"},
+                   std::pair{CameraProjectionType::ORTHOGRAPHIC,
+                             "editor.camera_orthographic"}});
 
 PropertyTable<CameraComponent>::PropertyTable(CameraComponent &component)
-    : IPropertyTable("editor.camera"), m_Component(component)
-{
+    : IPropertyTable("editor.camera"), m_Component(component) {}
 
-}
-
-void PropertyTable<CameraComponent>::Render(UIRender &render)
-{
+void PropertyTable<CameraComponent>::Render(UIRender &render) {
   std::shared_ptr<Camera> camera = m_Component.GetCamera();
-  if (!camera)
-    return;
+  if (!camera) return;
 
   RenderLabelItemRow(render, "editor.camera_type", [&]() {
-    m_CameraTypeProps.itemTranslationKeys = m_CameraTypeList.GetTranslateKeyList();  // 获取所有Keys
+    m_CameraTypeProps.itemTranslationKeys =
+        m_CameraTypeList.GetTranslateKeyList();  // 获取所有Keys
     m_CameraTypeProps.selectedIndex = m_CameraTypeList.GetIndex(
         camera->GetProjectionType());  // 获取当前index
     if (render.RenderCombobox(m_CameraTypeProps)) {
@@ -27,7 +25,6 @@ void PropertyTable<CameraComponent>::Render(UIRender &render)
           m_CameraTypeProps.selectedIndex));  // 使用选择后的index执行Set逻辑
     }
   });
-
 
   if (camera->GetProjectionType() == CameraProjectionType::PERSPECTIVE) {
     RenderLabelItemRow(render, "editor.camera_fov", [&]() {
@@ -40,8 +37,7 @@ void PropertyTable<CameraComponent>::Render(UIRender &render)
         camera->SetFov(m_FovProps.value);
       }
     });
-  }
-  else {
+  } else {
     RenderLabelItemRow(render, "editor.camera_ortho_size", [&]() {
       m_FovProps.translationKey = "math.meter";
       m_FovProps.value = camera->GetOrthoSize();

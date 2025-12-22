@@ -21,7 +21,7 @@ class GBufferStage : public RenderStage {
   ~GBufferStage() override;
 
   // ---- 生命周期管理 ----
-  void Initialize(RenderContext& context) override;
+  void Initialize(RenderContext &context) override;
   void Execute(RenderContext &context) override;
   void Shutdown() override;
 

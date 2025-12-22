@@ -2,29 +2,27 @@
 
 namespace mite {
 ShaderUBO::ShaderUBO(size_t size, uint32_t bindingPoint, GLenum usage)
-    : m_Size(size), m_Usage(usage), m_BindingPoint(bindingPoint)
-{
+    : m_Size(size), m_Usage(usage), m_BindingPoint(bindingPoint) {
   // 验证大小合理性
   if (size == 0) {
     LOG_ERROR("ShaderUBO: Invalid size 0");
     throw std::invalid_argument("UBO size cannot be 0");
   }
   // 验证使用模式
-  if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW && usage != GL_STREAM_DRAW) {
-    LOG_WARN("ShaderUBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW", usage);
+  if (usage != GL_STATIC_DRAW && usage != GL_DYNAMIC_DRAW &&
+      usage != GL_STREAM_DRAW) {
+    LOG_WARN("ShaderUBO: Unusual usage mode 0x{:X}, using GL_DYNAMIC_DRAW",
+             usage);
     m_Usage = GL_DYNAMIC_DRAW;
   }
   LOG_DEBUG(
-      "ShaderUBO created with fixed binding - Size: {} bytes, Binding: {}", size, m_BindingPoint);
+      "ShaderUBO created with fixed binding - Size: {} bytes, Binding: {}",
+      size, m_BindingPoint);
 }
 
-ShaderUBO::~ShaderUBO()
-{
-  Destroy();
-}
+ShaderUBO::~ShaderUBO() { Destroy(); }
 
-void ShaderUBO::Initialize()
-{
+void ShaderUBO::Initialize() {
   // 防止重复初始化
   if (m_IsInitialized) {
     LOG_WARN("ShaderUBO already initialized");
@@ -38,11 +36,11 @@ void ShaderUBO::Initialize()
   // 创建UBO
   CreateUBO();
   m_IsInitialized = true;
-  LOG_DEBUG("ShaderUBO initialized - ID: {}, Binding: {}", m_UBOId, m_BindingPoint);
+  LOG_DEBUG("ShaderUBO initialized - ID: {}, Binding: {}", m_UBOId,
+            m_BindingPoint);
 }
 
-void ShaderUBO::Destroy()
-{
+void ShaderUBO::Destroy() {
   if (m_IsInitialized && m_UBOId != 0) {
     glDeleteBuffers(1, &m_UBOId);
     m_UBOId = 0;
@@ -52,8 +50,7 @@ void ShaderUBO::Destroy()
   }
 }
 
-void ShaderUBO::CreateUBO()
-{
+void ShaderUBO::CreateUBO() {
   // 生成UBO
   glGenBuffers(1, &m_UBOId);
 
@@ -79,8 +76,7 @@ void ShaderUBO::CreateUBO()
   LOG_TRACE("UBO created - ID: {}, Size: {} bytes", m_UBOId, m_Size);
 }
 
-bool ShaderUBO::UpdateData(const void *data, size_t size, size_t offset)
-{
+bool ShaderUBO::UpdateData(const void *data, size_t size, size_t offset) {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot update UBO data: not initialized");
     return false;
@@ -107,27 +103,27 @@ bool ShaderUBO::UpdateData(const void *data, size_t size, size_t offset)
     return false;
   }
 
-  LOG_TRACE("UBO data updated - ID: {}, Offset: {}, Size: {} bytes", m_UBOId, offset, size);
+  LOG_TRACE("UBO data updated - ID: {}, Offset: {}, Size: {} bytes", m_UBOId,
+            offset, size);
   return true;
 }
 
-bool ShaderUBO::ValidateDataSize(size_t size, size_t offset) const
-{
+bool ShaderUBO::ValidateDataSize(size_t size, size_t offset) const {
   if (offset >= m_Size) {
     LOG_ERROR("UBO update offset {} exceeds UBO size {}", offset, m_Size);
     return false;
   }
 
   if (offset + size > m_Size) {
-    LOG_ERROR("UBO update range [{}, {}) exceeds UBO size {}", offset, offset + size, m_Size);
+    LOG_ERROR("UBO update range [{}, {}) exceeds UBO size {}", offset,
+              offset + size, m_Size);
     return false;
   }
 
   return true;
 }
 
-void ShaderUBO::Bind() const
-{
+void ShaderUBO::Bind() const {
   if (!m_IsInitialized) {
     LOG_ERROR("Cannot bind UBO: not initialized");
     return;
@@ -141,18 +137,17 @@ void ShaderUBO::Bind() const
   // 绑定UBO到指定绑定点
   glBindBufferBase(GL_UNIFORM_BUFFER, m_BindingPoint, m_UBOId);
 
-  // 检查错误 (注意此处触发的错误未必是glBindBufferBase的，可能是之前的调用遗留的)
+  // 检查错误
+  // (注意此处触发的错误未必是glBindBufferBase的，可能是之前的调用遗留的)
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
-    LOG_ERROR(
-        "Failed to bind UBO {} to point {}: OpenGL error 0x{:X}", m_UBOId, m_BindingPoint, error);
-  }
-  else {
+    LOG_ERROR("Failed to bind UBO {} to point {}: OpenGL error 0x{:X}", m_UBOId,
+              m_BindingPoint, error);
+  } else {
     LOG_TRACE("UBO bound to point: {}", m_BindingPoint);
   }
 }
-void ShaderUBO::Unbind() const
-{
+void ShaderUBO::Unbind() const {
   if (m_BindingPoint != UINT32_MAX) {
     glBindBufferBase(GL_UNIFORM_BUFFER, m_BindingPoint, 0);
   }
@@ -175,7 +170,7 @@ void ShaderUBO::Unbind() const
 //   }
 //   // 设置着色器的Uniform块绑定点
 //   shader->SetUniformBlockBinding(uniformBlockName, m_BindingPoint);
-//   LOG_DEBUG("Shader UBO binding setup - Block: '{}', Point: {}", uniformBlockName,
-//   m_BindingPoint);
+//   LOG_DEBUG("Shader UBO binding setup - Block: '{}', Point: {}",
+//   uniformBlockName, m_BindingPoint);
 // }
 }  // namespace mite

@@ -1,14 +1,15 @@
 #ifndef MITE_PROPERTY_TRANSFORM_H
 #define MITE_PROPERTY_TRANSFORM_H
 
-#include "ui_property.h"
 #include "scene_core_components/transform_component.h"
+#include "ui_property.h"
 
 namespace mite {
 /**
  * @brief TransformComponent的特化实现
  */
-template<> class PropertyTable<TransformComponent> : public IPropertyTable {
+template <>
+class PropertyTable<TransformComponent> : public IPropertyTable {
  public:
   explicit PropertyTable(TransformComponent &component);
 

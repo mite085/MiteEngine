@@ -1,22 +1,20 @@
 #include "ui_imgui_backend.h"
-#include "imgui.h"
-#include "imguizmo.h"
+
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "ui_imgui_input_producer.h"
+#include "imgui.h"
+#include "imguizmo.h"
 #include "time/time.h"
+#include "ui_imgui_input_producer.h"
 
 namespace mite {
 ImGuiBackend::ImGuiBackend()
     : m_Window(nullptr),
       m_MouseCaptured(false),
       m_MouseCursorVisible(true),
-      m_StyleAdapter(std::make_unique<ImGuiStyleAdapter>())
-{
-}
+      m_StyleAdapter(std::make_unique<ImGuiStyleAdapter>()) {}
 
-bool ImGuiBackend::Initialize(void *glfwWindow)
-{
+bool ImGuiBackend::Initialize(void *glfwWindow) {
   // 创建日志系统
   m_Logger = mite::LoggerSystem::CreateModuleLogger("Mite UI ImGui Backend");
   m_Logger->info("Initializing UI ImGui Backend");
@@ -54,8 +52,7 @@ bool ImGuiBackend::Initialize(void *glfwWindow)
   return true;
 }
 
-void ImGuiBackend::Shutdown()
-{
+void ImGuiBackend::Shutdown() {
   m_Logger->debug("ImGuiBackend shutdown started");
 
   // 1. 清理样式适配器
@@ -86,8 +83,7 @@ void ImGuiBackend::Shutdown()
   m_Logger->info("ImGuiBackend shutdown completed");
 }
 
-void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback)
-{
+void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback) {
   // 开始ImGui帧
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
@@ -101,7 +97,7 @@ void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback)
   UIImguiInputProducer::ProduceInputEvents();
 
   // 创建一个覆盖整个视口的停靠空间
-  //ImGui::DockSpaceOverViewport();
+  // ImGui::DockSpaceOverViewport();
 
   // 使用Time模块设置DeltaTime
   ImGui::GetIO().DeltaTime = Time::DeltaTime();
@@ -115,10 +111,12 @@ void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback)
   ImGui::SetNextWindowSize(viewport->WorkSize);
   ImGui::SetNextWindowViewport(viewport->ID);
 
-  ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
   window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
   window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+  window_flags |=
+      ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
   ImGui::Begin("Mite DockSpace", nullptr, window_flags);
   ImGui::PopStyleVar();
@@ -126,14 +124,12 @@ void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback)
   menuBarCallback();
 
   // 停靠空间
-  ImGui::DockSpace(
-      ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), dockspace_flags);
+  ImGui::DockSpace(ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f),
+                   dockspace_flags);
   ImGui::End();
-
 }
 
-void ImGuiBackend::EndFrame()
-{
+void ImGuiBackend::EndFrame() {
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -141,9 +137,10 @@ void ImGuiBackend::EndFrame()
   // （Copy from imgui/examples/example_glfw_opengl3）
   //
   // Update and Render additional Platform Windows
-  // (Platform functions may change the current OpenGL context, so we save/restore it to make it
-  // easier to paste this code elsewhere.
-  //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
+  // (Platform functions may change the current OpenGL context, so we
+  // save/restore it to make it easier to paste this code elsewhere.
+  //  For this specific demo app we could also call
+  //  glfwMakeContextCurrent(window) directly)
   if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
     GLFWwindow *backup_current_context = glfwGetCurrentContext();
     ImGui::UpdatePlatformWindows();
@@ -152,58 +149,46 @@ void ImGuiBackend::EndFrame()
   }
 }
 
-void ImGuiBackend::SetMouseCaptured(bool captured)
-{
+void ImGuiBackend::SetMouseCaptured(bool captured) {
   m_MouseCaptured = captured;
   if (m_Window) {
-    glfwSetInputMode(m_Window, GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    glfwSetInputMode(m_Window, GLFW_CURSOR,
+                     captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
   }
 }
 
-bool ImGuiBackend::IsMouseCaptured() const
-{
-  return m_MouseCaptured;
-}
+bool ImGuiBackend::IsMouseCaptured() const { return m_MouseCaptured; }
 
-void ImGuiBackend::SetMouseCursorVisible(bool visible)
-{
+void ImGuiBackend::SetMouseCursorVisible(bool visible) {
   m_MouseCursorVisible = visible;
   if (m_Window) {
-    glfwSetInputMode(m_Window, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN);
+    glfwSetInputMode(m_Window, GLFW_CURSOR,
+                     visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN);
   }
 }
 
-bool ImGuiBackend::IsMouseCursorVisible() const
-{
-  return m_MouseCursorVisible;
-}
+bool ImGuiBackend::IsMouseCursorVisible() const { return m_MouseCursorVisible; }
 
-void ImGuiBackend::ApplyUIStyle(std::shared_ptr<UIStyle> newStyle)
-{
+void ImGuiBackend::ApplyUIStyle(std::shared_ptr<UIStyle> newStyle) {
   m_StyleAdapter->ApplyUIStyle(newStyle);
 }
 
-void ImGuiBackend::ApplyLanguaged(const std::string &oldLanguage, const std::string &newLanguage)
-{
+void ImGuiBackend::ApplyLanguaged(const std::string &oldLanguage,
+                                  const std::string &newLanguage) {
   // 切换字体
   if (ImGuiFontManager::SetLanguageFont(newLanguage))
-    m_Logger->info("Language changed from: {} to: {}", oldLanguage, newLanguage);
+    m_Logger->info("Language changed from: {} to: {}", oldLanguage,
+                   newLanguage);
   else
-    m_Logger->error("Language change FALIED from: {} to: {}", oldLanguage, newLanguage);
+    m_Logger->error("Language change FALIED from: {} to: {}", oldLanguage,
+                    newLanguage);
 }
 
-void ImGuiBackend::SetWindow(GLFWwindow *window)
-{
-  m_Window = window;
-}
+void ImGuiBackend::SetWindow(GLFWwindow *window) { m_Window = window; }
 
-GLFWwindow *ImGuiBackend::GetWindow() const
-{
-  return m_Window;
-}
+GLFWwindow *ImGuiBackend::GetWindow() const { return m_Window; }
 
-bool ImGuiBackend::InitializeImGuiContext()
-{
+bool ImGuiBackend::InitializeImGuiContext() {
   // 创建ImGui上下文
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -220,8 +205,7 @@ bool ImGuiBackend::InitializeImGuiContext()
   return true;
 }
 
-bool ImGuiBackend::InitializePlatformBackend()
-{
+bool ImGuiBackend::InitializePlatformBackend() {
   if (!ImGui_ImplGlfw_InitForOpenGL(m_Window, true)) {
     m_Logger->error("Failed to initialize ImGui GLFW backend");
     return false;
@@ -229,8 +213,7 @@ bool ImGuiBackend::InitializePlatformBackend()
   return true;
 }
 
-bool ImGuiBackend::InitializeRendererBackend()
-{
+bool ImGuiBackend::InitializeRendererBackend() {
   // 版本设定应当与GLFWWindow中设定的glfwWindowHint一致
   // （原则上应当将版本号作为参数传入）
   const char *glsl_version = "#version 430";

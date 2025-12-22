@@ -1,4 +1,5 @@
 #include "gbuffer.h"
+
 #include "basic_shader/uniform_buffer.h"
 namespace mite {
 // 静态成员定义
@@ -10,8 +11,7 @@ const std::map<RuntimeTextureType, uint32_t> GBuffer::TextureTypeToIndex = {
     {RuntimeTextureType::GBuffer_EmissionAlpha, 4},
     {RuntimeTextureType::GBuffer_NPRParam, 5},
     {RuntimeTextureType::GBuffer_NPRColor, 6}};
-const std::vector<RuntimeTextureType> &GBuffer::GetTextureTypes()
-{
+const std::vector<RuntimeTextureType> &GBuffer::GetTextureTypes() {
   static const std::vector<RuntimeTextureType> types = {
       RuntimeTextureType::GBuffer_WorldPosDepth,
       RuntimeTextureType::GBuffer_BaseColorMatType,
@@ -22,8 +22,7 @@ const std::vector<RuntimeTextureType> &GBuffer::GetTextureTypes()
       RuntimeTextureType::GBuffer_NPRColor};
   return types;
 }
-const char *GBuffer::GetTextureTypeName(RuntimeTextureType type)
-{
+const char *GBuffer::GetTextureTypeName(RuntimeTextureType type) {
   switch (type) {
     case RuntimeTextureType::GBuffer_WorldPosDepth:
       return ShaderBufferResourceNames::GBUFFER_WORLD_POS_DEPTH;
@@ -43,19 +42,14 @@ const char *GBuffer::GetTextureTypeName(RuntimeTextureType type)
       return "Unknown_GBuffer_Type";
   }
 }
-GBuffer::GBuffer()
-{
-  LOG_TRACE("GBuffer constructor called");
-}
+GBuffer::GBuffer() { LOG_TRACE("GBuffer constructor called"); }
 
-GBuffer::~GBuffer()
-{
+GBuffer::~GBuffer() {
   cleanup();
   LOG_TRACE("GBuffer destructor called");
 }
 
-bool GBuffer::create()
-{
+bool GBuffer::create() {
   // 如果已经初始化，先清理
   if (m_isValid) {
     LOG_WARN("GBuffer already initialized, cleaning up first");
@@ -87,8 +81,7 @@ bool GBuffer::create()
   return true;
 }
 
-void GBuffer::cleanup()
-{
+void GBuffer::cleanup() {
   // 清理帧缓冲
   if (m_framebuffer) {
     m_framebuffer.reset();
@@ -102,8 +95,7 @@ void GBuffer::cleanup()
   LOG_DEBUG("GBuffer resources cleaned up");
 }
 
-bool GBuffer::validate() const
-{
+bool GBuffer::validate() const {
   if (!m_framebuffer) {
     LOG_ERROR("GBuffer validation failed: framebuffer is null");
     return false;
@@ -129,8 +121,7 @@ bool GBuffer::validate() const
   return true;
 }
 
-bool GBuffer::resize(uint32_t newWidth, uint32_t newHeight)
-{
+bool GBuffer::resize(uint32_t newWidth, uint32_t newHeight) {
   if (newWidth <= 0 || newHeight <= 0) {
     LOG_ERROR("Invalid resize dimensions: {}x{}", newWidth, newHeight);
     return false;
@@ -138,7 +129,8 @@ bool GBuffer::resize(uint32_t newWidth, uint32_t newHeight)
   if (newWidth == m_width && newHeight == m_height) {
     return true;
   }
-  LOG_INFO("Resizing GBuffer from {}x{} to {}x{}", m_width, m_height, newWidth, newHeight);
+  LOG_INFO("Resizing GBuffer from {}x{} to {}x{}", m_width, m_height, newWidth,
+           newHeight);
   // 直接调用FrameBuffer的Resize方法，自动重新创建所有纹理
   if (m_framebuffer) {
     m_framebuffer->Resize(newWidth, newHeight);
@@ -154,8 +146,7 @@ bool GBuffer::resize(uint32_t newWidth, uint32_t newHeight)
   }
   return false;
 }
-RuntimeTexturePtr GBuffer::GetTexture(RuntimeTextureType type) const
-{
+RuntimeTexturePtr GBuffer::GetTexture(RuntimeTextureType type) const {
   if (!m_framebuffer) {
     LOG_ERROR("Cannot get texture: framebuffer is null");
     return nullptr;
@@ -170,42 +161,28 @@ RuntimeTexturePtr GBuffer::GetTexture(RuntimeTextureType type) const
   return m_framebuffer->GetColorAttachment(static_cast<uint32_t>(it->second));
 }
 
-std::shared_ptr<FrameBuffer> GBuffer::GetFramebuffer() const
-{
+std::shared_ptr<FrameBuffer> GBuffer::GetFramebuffer() const {
   return m_framebuffer;
 }
-int GBuffer::GetWidth() const
-{
-  return m_width;
-}
-int GBuffer::GetHeight() const
-{
-  return m_height;
-}
-bool GBuffer::IsValid() const
-{
-  return m_isValid;
-}
+int GBuffer::GetWidth() const { return m_width; }
+int GBuffer::GetHeight() const { return m_height; }
+bool GBuffer::IsValid() const { return m_isValid; }
 
-void GBuffer::bind() const
-{
+void GBuffer::bind() const {
   if (m_framebuffer && m_isValid) {
     m_framebuffer->Bind();
-  }
-  else {
+  } else {
     LOG_WARN("Attempted to bind invalid GBuffer");
   }
 }
 
-void GBuffer::unbind() const
-{
+void GBuffer::unbind() const {
   if (m_framebuffer) {
     m_framebuffer->Unbind();
   }
 }
 
-FrameBufferSpec GBuffer::CreateFrameBufferSpec() const
-{
+FrameBufferSpec GBuffer::CreateFrameBufferSpec() const {
   FrameBufferSpec spec;
   spec.width = m_width;
   spec.height = m_height;
@@ -230,8 +207,7 @@ FrameBufferSpec GBuffer::CreateFrameBufferSpec() const
   return spec;
 }
 
-TextureFormat GBuffer::GetTextureFormat(RuntimeTextureType index) const
-{
+TextureFormat GBuffer::GetTextureFormat(RuntimeTextureType index) const {
   switch (index) {
     case RuntimeTextureType::GBuffer_WorldPosDepth:
       return TextureFormat::RGBA32F;  // 世界坐标需要高精度
@@ -246,7 +222,8 @@ TextureFormat GBuffer::GetTextureFormat(RuntimeTextureType index) const
       return TextureFormat::RGBA16F;  // 其他普通精度即可
 
     default:
-      LOG_WARN("Unknown texture index: {}, using RGBA16F as default", static_cast<int>(index));
+      LOG_WARN("Unknown texture index: {}, using RGBA16F as default",
+               static_cast<int>(index));
       return TextureFormat::RGBA16F;
   }
 }

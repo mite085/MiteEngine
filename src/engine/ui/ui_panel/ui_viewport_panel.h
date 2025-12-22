@@ -69,14 +69,13 @@ class ViewportPanel : public UIPanel {
 class DisplayTextureTypeChangedEvent : public Event {
  public:
   explicit DisplayTextureTypeChangedEvent(RuntimeTextureType displayTextureType)
-      : m_DisplayTextureType(displayTextureType)
-  {
-  }
+      : m_DisplayTextureType(displayTextureType) {}
 
-  RuntimeTextureType GetDisplayTextureType() const { return m_DisplayTextureType; }
+  RuntimeTextureType GetDisplayTextureType() const {
+    return m_DisplayTextureType;
+  }
   EVENT_CLASS_CATEGORY(UI_EVENT_CATEGORY_LAYOUT)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new DisplayTextureTypeChangedEvent(m_DisplayTextureType);
   }
 

@@ -1,13 +1,13 @@
 #ifndef MITE_UI_MENU_H
 #define MITE_UI_MENU_H
 
-#include "ui_menu_item.h"
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-namespace mite {
+#include "ui_menu_item.h"
 
+namespace mite {
 /**
  * @brief 菜单管理器 - 支持树状结构的菜单系统
  *
@@ -111,17 +111,17 @@ class UIMenu {
    * @param currentIndex 当前处理的路径组件索引
    * @return 找到的菜单项指针
    */
-  std::shared_ptr<UIMenuItem> FindMenuItemRecursive(std::shared_ptr<UIMenuItem> current,
-                                                    const std::vector<std::string> &pathComponents,
-                                                    size_t currentIndex);
+  std::shared_ptr<UIMenuItem> FindMenuItemRecursive(
+      std::shared_ptr<UIMenuItem> current,
+      const std::vector<std::string> &pathComponents, size_t currentIndex);
 
  private:
-  std::vector<std::shared_ptr<UIMenuItemSubmenu>> m_TopLevelMenus;  // 顶级菜单列表
+  std::vector<std::shared_ptr<UIMenuItemSubmenu>>
+      m_TopLevelMenus;  // 顶级菜单列表
 
   // 快速查找表（可选优化）
   std::unordered_map<std::string, std::shared_ptr<UIMenuItem>> m_ItemMap;
 };
-
 }  // namespace mite
 
 #endif  // MITE_UI_MENU_H

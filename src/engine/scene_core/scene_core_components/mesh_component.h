@@ -19,7 +19,8 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持实例化渲染
  */
-class MeshComponent : public SnapshotComponentTraits<Mesh, Component::Family::Geometry> {
+class MeshComponent
+    : public SnapshotComponentTraits<Mesh, Component::Family::Geometry> {
  public:
   /**
    * @brief 带初始值的构造函数
@@ -70,11 +71,11 @@ class MeshComponentSystem : public SnapshotComponentSystem<MeshComponent> {
 class MeshChangedEvent : public ComponentEvent<MeshComponent> {
  public:
   MeshChangedEvent(Entity entity, MeshComponent &component)
-      : ComponentEvent<MeshComponent>(entity, component)
-  {
-  }
+      : ComponentEvent<MeshComponent>(entity, component) {}
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
-  Event *Clone() const override { return new MeshChangedEvent(this->m_Entity, this->m_Component); }
+  Event *Clone() const override {
+    return new MeshChangedEvent(this->m_Entity, this->m_Component);
+  }
 };
 };  // namespace mite
 

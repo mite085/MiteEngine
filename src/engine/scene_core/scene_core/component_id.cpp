@@ -1,12 +1,11 @@
 #include "component_id.h"
+
 #include "scene_core_components/component_headers.h"
 
 namespace mite {
-
 ComponentID::ComponentID(UUID id) : m_ID(std::move(id)) {}
 
-ComponentID ComponentID::FromString(const std::string &uuidStr)
-{
+ComponentID ComponentID::FromString(const std::string &uuidStr) {
   auto result = UUID::from_string(uuidStr);
   if (result) {
     return ComponentID(*result);
@@ -14,35 +13,23 @@ ComponentID ComponentID::FromString(const std::string &uuidStr)
   return ComponentID(UUID());
 }
 
-bool ComponentID::operator==(const ComponentID &other) const
-{
+bool ComponentID::operator==(const ComponentID &other) const {
   return m_ID == other.m_ID;
 }
 
-bool ComponentID::operator!=(const ComponentID &other) const
-{
+bool ComponentID::operator!=(const ComponentID &other) const {
   return !(*this == other);
 }
 
-bool ComponentID::operator<(const ComponentID &other) const
-{
+bool ComponentID::operator<(const ComponentID &other) const {
   return m_ID < other.m_ID;
 }
 
-std::string ComponentID::ToString() const
-{
+std::string ComponentID::ToString() const {
   return UUIDGenerator::UUIDToString(m_ID);
 }
 
-size_t ComponentID::Hash() const
-{
-  return std::hash<UUID>{}(m_ID);
-}
+size_t ComponentID::Hash() const { return std::hash<UUID>{}(m_ID); }
 
-bool ComponentID::IsValid() const
-{
-  return !m_ID.is_nil();
-}
-
-
-};
+bool ComponentID::IsValid() const { return !m_ID.is_nil(); }
+};  // namespace mite

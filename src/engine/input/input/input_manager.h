@@ -4,7 +4,6 @@
 #include "input_context_stack.h"
 
 namespace mite {
-
 // InputManager是输入模块的核心实现类，
 // 负责统一管理所有输入设备的状态、
 // 处理输入事件的分发逻辑，并维护输入上下文栈。
@@ -34,7 +33,6 @@ class InputManager {
   // 订阅事件集合
   SubscriptionGroup m_EventSubscriptions;
 };
-
-};
+};  // namespace mite
 
 #endif

@@ -1,20 +1,17 @@
 #include "framebuffer.h"
 
 namespace mite {
-FrameBuffer::FrameBuffer(const FrameBufferSpec &spec) : m_Spec(spec)
-{
+FrameBuffer::FrameBuffer(const FrameBufferSpec &spec) : m_Spec(spec) {
   // 创建时立即初始化帧缓冲
   Invalidate();
 }
 
-FrameBuffer::~FrameBuffer()
-{
+FrameBuffer::~FrameBuffer() {
   // 析构时释放资源
   Release();
 }
 
-void FrameBuffer::Invalidate()
-{
+void FrameBuffer::Invalidate() {
   if (m_RendererID) {
     Release();
   }
@@ -34,15 +31,14 @@ void FrameBuffer::Invalidate()
     // 创建运行时纹理
     RuntimeTexturePtr runtimeTexture = std::make_shared<RuntimeTexture>();
 
-    if (!runtimeTexture->initialize(attachmentSpec.type,
-                                    m_Spec.width,
-                                    m_Spec.height,
-                                    attachmentSpec.internalFormat,
-                                    attachmentSpec.internalTarget,
-                                    attachmentSpec.arrayLayers))
-    {
-      LOG_ERROR("Failed to create runtime texture for framebuffer attachment type: {}",
-                static_cast<int>(attachmentSpec.type));
+    if (!runtimeTexture->initialize(
+            attachmentSpec.type, m_Spec.width, m_Spec.height,
+            attachmentSpec.internalFormat, attachmentSpec.internalTarget,
+            attachmentSpec.arrayLayers)) {
+      LOG_ERROR(
+          "Failed to create runtime texture for framebuffer attachment type: "
+          "{}",
+          static_cast<int>(attachmentSpec.type));
       continue;
     }
     // 配置纹理参数和附件点
@@ -79,13 +75,16 @@ void FrameBuffer::Invalidate()
         break;
       default:
         // 其余类型都作为颜色附件处理
-        attachmentPoint = GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(colorAttachments.size());
+        attachmentPoint =
+            GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(colorAttachments.size());
         m_ColorAttachments[static_cast<uint32_t>(i)] = runtimeTexture;
         isColorAttachment = true;
 
         // 设置颜色附件的纹理参数
         if (!multisample) {
-          GLenum minFilter = attachmentSpec.generateMipmaps ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+          GLenum minFilter = attachmentSpec.generateMipmaps
+                                 ? GL_LINEAR_MIPMAP_LINEAR
+                                 : GL_LINEAR;
           glTextureParameteri(handleID, GL_TEXTURE_MIN_FILTER, minFilter);
           glTextureParameteri(handleID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           glTextureParameteri(handleID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -104,7 +103,8 @@ void FrameBuffer::Invalidate()
       case TextureTarget::TEXTURE_2D:
       case TextureTarget::TEXTURE_CUBE_MAP:
         // 标准2D纹理和立方体贴图使用glFramebufferTexture2D
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget, handleID, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget,
+                               handleID, 0);
         break;
 
       case TextureTarget::TEXTURE_2D_ARRAY:
@@ -117,11 +117,12 @@ void FrameBuffer::Invalidate()
       case TextureTarget::TEXTURE_2D_MULTISAMPLE:
         // 多重采样纹理
         if (multisample) {
-          glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget, handleID, 0);
-        }
-        else {
+          glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget,
+                                 handleID, 0);
+        } else {
           LOG_WARN("Multisample texture target used but samples=1");
-          glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget, handleID, 0);
+          glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint, textureTarget,
+                                 handleID, 0);
         }
         break;
 
@@ -129,8 +130,7 @@ void FrameBuffer::Invalidate()
         // 多重采样数组纹理
         if (multisample) {
           glFramebufferTexture(GL_FRAMEBUFFER, attachmentPoint, handleID, 0);
-        }
-        else {
+        } else {
           LOG_WARN("Multisample array texture target used but samples=1");
           glFramebufferTexture(GL_FRAMEBUFFER, attachmentPoint, handleID, 0);
         }
@@ -147,20 +147,18 @@ void FrameBuffer::Invalidate()
     //// 附加纹理到帧缓冲
     // glFramebufferTexture2D(GL_FRAMEBUFFER,
     //                        attachmentPoint,
-    //                        multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
-    //                        handleID,
-    //                        0);
+    //                        multisample ? GL_TEXTURE_2D_MULTISAMPLE :
+    //                        GL_TEXTURE_2D, handleID, 0);
     LOG_DEBUG("Created framebuffer attachment: type={}, format={}, size={}x{}",
               static_cast<int>(attachmentSpec.type),
-              static_cast<int>(attachmentSpec.internalFormat),
-              m_Spec.width,
+              static_cast<int>(attachmentSpec.internalFormat), m_Spec.width,
               m_Spec.height);
   }
   // 设置绘制缓冲区
   if (!colorAttachments.empty()) {
-    glDrawBuffers(static_cast<GLsizei>(colorAttachments.size()), colorAttachments.data());
-  }
-  else {
+    glDrawBuffers(static_cast<GLsizei>(colorAttachments.size()),
+                  colorAttachments.data());
+  } else {
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
   }
@@ -171,8 +169,7 @@ void FrameBuffer::Invalidate()
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::Release()
-{
+void FrameBuffer::Release() {
   // 智能指针自动管理运行时纹理的生命周期
   m_ColorAttachments.clear();
   m_DepthAttachment = nullptr;
@@ -183,8 +180,7 @@ void FrameBuffer::Release()
   }
 }
 
-void FrameBuffer::Resize(uint32_t width, uint32_t height)
-{
+void FrameBuffer::Resize(uint32_t width, uint32_t height) {
   // 检查尺寸是否有效
   if (width == 0 || height == 0) {
     LOG_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
@@ -197,26 +193,18 @@ void FrameBuffer::Resize(uint32_t width, uint32_t height)
   Invalidate();
 }
 
-void FrameBuffer::Bind() const
-{
+void FrameBuffer::Bind() const {
   glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
   // 设置视口大小匹配帧缓冲大小
   glViewport(0, 0, m_Spec.width, m_Spec.height);
 }
 
-void FrameBuffer::Unbind() const
-{
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
+void FrameBuffer::Unbind() const { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
-uint32_t FrameBuffer::GetID() const
-{
-  return m_RendererID;
-}
+uint32_t FrameBuffer::GetID() const { return m_RendererID; }
 
-RuntimeTexturePtr FrameBuffer::GetColorAttachment(uint32_t index) const
-{
+RuntimeTexturePtr FrameBuffer::GetColorAttachment(uint32_t index) const {
   if (m_ColorAttachments.find(index) != m_ColorAttachments.end()) {
     return m_ColorAttachments.at(index);
   }
@@ -224,17 +212,15 @@ RuntimeTexturePtr FrameBuffer::GetColorAttachment(uint32_t index) const
   return 0;
 }
 
-RuntimeTexturePtr FrameBuffer::GetDepthAttachment() const
-{
+RuntimeTexturePtr FrameBuffer::GetDepthAttachment() const {
   return m_DepthAttachment;
 }
-RuntimeTexturePtr FrameBuffer::GetStencilAttachment() const
-{
+RuntimeTexturePtr FrameBuffer::GetStencilAttachment() const {
   return m_StencilAttachment;
 }
 
-void FrameBuffer::AttachExternalDepthTexture(RuntimeTexturePtr externalDepthTexture)
-{
+void FrameBuffer::AttachExternalDepthTexture(
+    RuntimeTexturePtr externalDepthTexture) {
   // 纹理存在性检查
   if (!externalDepthTexture) {
     LOG_ERROR("Cannot attach null external depth texture");
@@ -246,11 +232,10 @@ void FrameBuffer::AttachExternalDepthTexture(RuntimeTexturePtr externalDepthText
 
   // 绑定外部深度纹理
   glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-  glFramebufferTexture2D(GL_FRAMEBUFFER,
-                         GL_DEPTH_ATTACHMENT,
-                         static_cast<GLenum>(m_DepthAttachment->GetTarget()),
-                         static_cast<GLuint>(m_DepthAttachment->GetHandle().apiHandle),
-                         0);
+  glFramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+      static_cast<GLenum>(m_DepthAttachment->GetTarget()),
+      static_cast<GLuint>(m_DepthAttachment->GetHandle().apiHandle), 0);
 
   // 检查完整性
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -262,8 +247,7 @@ void FrameBuffer::AttachExternalDepthTexture(RuntimeTexturePtr externalDepthText
   LOG_TRACE("Attached external depth texture to framebuffer {}", m_RendererID);
 }
 
-bool FrameBuffer::IsComplete() const
-{
+bool FrameBuffer::IsComplete() const {
   glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
   const auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

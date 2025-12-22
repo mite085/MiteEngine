@@ -6,7 +6,6 @@
 #include "render_stage.h"
 
 namespace mite {
-
 /**
  * @brief 混合阶段 - 将Deferred Lighting结果和Forward半透明结果进行Alpha混合
  *
@@ -27,7 +26,9 @@ class BlendStage : public RenderStage {
   void Shutdown() override;
 
   // ---- FBO访问接口 ----
-  std::shared_ptr<FrameBuffer> GetBlendFramebuffer() const { return m_BlendFBO; }
+  std::shared_ptr<FrameBuffer> GetBlendFramebuffer() const {
+    return m_BlendFBO;
+  }
 
  private:
   // ---- 私有方法 ----
@@ -50,7 +51,6 @@ class BlendStage : public RenderStage {
   // 配置参数
   bool m_Initialized = false;
 };
-
 }  // namespace mite
 
 #endif  // MITE_BLEND_STAGE_H

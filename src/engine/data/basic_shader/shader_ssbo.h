@@ -25,18 +25,14 @@ class ShaderSSBO {
   /**
    * @brief 构造函数 - 使用预分配的绑定点
    */
-  explicit ShaderSSBO(size_t size,
-                      uint32_t bindingPoint,
+  explicit ShaderSSBO(size_t size, uint32_t bindingPoint,
                       GLenum usage = GL_DYNAMIC_DRAW);
   ~ShaderSSBO();
 
   // ---- 生命周期管理 ----
   void Initialize();
   void Destroy();
-  bool IsInitialized() const
-  {
-    return m_IsInitialized;
-  }
+  bool IsInitialized() const { return m_IsInitialized; }
 
   // ---- 数据操作 ----
   /**
@@ -80,7 +76,7 @@ class ShaderSSBO {
   // * @param storageBlockName 存储块名称
   // * @param bindingPoint 绑定点
   // */
-  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
+  // void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader,
   //                        const std::string &storageBlockName) const;
   /**
    * @brief 清除SSBO数据（填充0）
@@ -92,34 +88,20 @@ class ShaderSSBO {
   bool ClearData(uint32_t clearValue = 0, size_t offset = 0, size_t size = 0);
 
   // ---- 属性访问 ----
-  uint32_t GetSSBOId() const
-  {
-    return m_SSBOId;
-  }
-  size_t GetSize() const
-  {
-    return m_Size;
-  }
-  GLenum GetUsage() const
-  {
-    return m_Usage;
-  }
-  bool IsMapped() const
-  {
-    return m_IsMapped;
-  }
-  uint32_t GetBindingPoint() const
-  {
-    return m_BindingPoint;
-  }
+  uint32_t GetSSBOId() const { return m_SSBOId; }
+  size_t GetSize() const { return m_Size; }
+  GLenum GetUsage() const { return m_Usage; }
+  bool IsMapped() const { return m_IsMapped; }
+  uint32_t GetBindingPoint() const { return m_BindingPoint; }
 
  private:
-  uint32_t m_SSBOId = 0;                 // OpenGL SSBO句柄
-  size_t m_Size = 0;                     // SSBO大小（字节）
-  GLenum m_Usage = GL_DYNAMIC_DRAW;      // 缓冲区使用模式
-  uint32_t m_BindingPoint = UINT32_MAX;  // 绑定点（通过BindingPointManager分配）
-  bool m_IsInitialized = false;          // 初始化状态
-  bool m_IsMapped = false;               // 内存映射状态
+  uint32_t m_SSBOId = 0;             // OpenGL SSBO句柄
+  size_t m_Size = 0;                 // SSBO大小（字节）
+  GLenum m_Usage = GL_DYNAMIC_DRAW;  // 缓冲区使用模式
+  uint32_t m_BindingPoint =
+      UINT32_MAX;                // 绑定点（通过BindingPointManager分配）
+  bool m_IsInitialized = false;  // 初始化状态
+  bool m_IsMapped = false;       // 内存映射状态
   // ---- 内部方法 ----
   void CreateSSBO();
   bool ValidateDataSize(size_t size, size_t offset) const;

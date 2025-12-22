@@ -8,13 +8,12 @@
 #include "thread/thread_pool_manager.h"
 
 namespace mite {
-
 /**
  * @brief 命令执行器
  *
  * 负责命令的调度和执行，使用CommandHandle作为命令的唯一标识
  * 支持同步和异步执行模式，正确处理命令所有权转移
- * 
+ *
  * 使用示例：
  *
  * // 1. 基础使用
@@ -22,7 +21,8 @@ namespace mite {
  * executor.Start();
  *
  * // 2. 创建执行上下文（目前使用默认上下文即可）
- * auto* context = executor.CreateDefaultExecutionContext(CONTEXT_EDITOR, "Editor");
+ * auto* context = executor.CreateDefaultExecutionContext(CONTEXT_EDITOR,
+ * "Editor");
  *
  * // 3. 异步提交命令（默认优先级）
  * auto moveCmd = CommandRegister::Get().Create<MoveEntityCommand>();
@@ -30,17 +30,20 @@ namespace mite {
  *
  * // 4. 异步提交命令（指定优先级）
  * auto criticalCmd = CommandRegister::Get().Create<DeleteEntityCommand>();
- * executor.SubmitCommand(std::move(criticalCmd), context, BS::pr::high); // 转移所有权
+ * executor.SubmitCommand(std::move(criticalCmd), context, BS::pr::high); //
+ * 转移所有权
  *
  * // 5. 同步执行命令
  * auto saveCmd = CommandRegister::Get().Create<SaveSceneCommand>();
- * auto result = executor.ExecuteCommand(std::move(saveCmd), context); // 转移所有权
+ * auto result = executor.ExecuteCommand(std::move(saveCmd), context); //
+ * 转移所有权
  *
  * // 6. 批量提交命令
  * std::vector<CommandPtr> commands;
  * commands.push_back(CommandRegister::Get().Create<RotateEntityCommand>());
  * commands.push_back(CommandRegister::Get().Create<ScaleEntityCommand>());
- * executor.SubmitCommands(std::move(commands), context, BS::pr::normal);  // 转移所有权
+ * executor.SubmitCommands(std::move(commands), context, BS::pr::normal);  //
+ * 转移所有权
  *
  * // 7. 执行控制
  * executor.Pause();  // 暂停新任务提交
@@ -88,7 +91,8 @@ class CommandExecutor {
    * @param context 执行上下文（可选，若为nullptr则使用默认上下文）
    * @return CommandResult 执行结果
    */
-  CommandResult ExecuteCommand(CommandHandle handle, CommandExecutionContext *context = nullptr);
+  CommandResult ExecuteCommand(CommandHandle handle,
+                               CommandExecutionContext *context = nullptr);
   /**
    * @brief 提交命令执行（异步，使用句柄）
    * @param handle 命令句柄
@@ -128,14 +132,15 @@ class CommandExecutor {
    * @return CommandExecutionContext* 新创建的上下文指针
    */
   CommandExecutionContext *CreateDefaultExecutionContext(
-      CommandContextFlags contextFlags = CONTEXT_NONE, const std::string &name = "Default");
+      CommandContextFlags contextFlags = CONTEXT_NONE,
+      const std::string &name = "Default");
 
   // ==================== 执行统计接口 ====================
   /**
    * @brief 获取待执行命令数量（BS线程池内部管理队列，无法直接获取）
    * @return size_t 待执行命令数量
    */
-  //size_t GetPendingCommandCount() const;
+  // size_t GetPendingCommandCount() const;
 
   /**
    * @brief 获取正在执行的命令数量
@@ -179,10 +184,9 @@ class CommandExecutor {
     CommandHandle handle;
     CommandExecutionContext *context;
     std::type_index expectedType;
-    CommandTask(CommandHandle h, CommandExecutionContext *ctx, std::type_index type)
-        : handle(h), context(ctx), expectedType(type)
-    {
-    }
+    CommandTask(CommandHandle h, CommandExecutionContext *ctx,
+                std::type_index type)
+        : handle(h), context(ctx), expectedType(type) {}
 
     // 拷贝构造函数
     CommandTask(const CommandTask &other) = default;
@@ -190,12 +194,11 @@ class CommandExecutor {
     CommandTask &operator=(const CommandTask &other) = default;
     // 移动构造函数
     CommandTask(CommandTask &&other) noexcept
-        : handle(other.handle), context(other.context), expectedType(other.expectedType)
-    {
-    }
+        : handle(other.handle),
+          context(other.context),
+          expectedType(other.expectedType) {}
     // 移动赋值运算符
-    CommandTask &operator=(CommandTask &&other) noexcept
-    {
+    CommandTask &operator=(CommandTask &&other) noexcept {
       if (this != &other) {
         handle = other.handle;
         context = other.context;
@@ -223,7 +226,6 @@ class CommandExecutor {
   // 使用BS线程池的任务future存储，用于等待任务完成
   std::vector<std::future<void>> m_TaskFutures;
 };
-
 }  // namespace mite
 
 #endif  // MITE_ENGINE_COMMAND_EXECUTOR_COMMAND_EXECUTOR

@@ -1,13 +1,12 @@
 #ifndef MITE_SPATIAL_PARTITION_H
 #define MITE_SPATIAL_PARTITION_H
 
-#include "scene_node.h"
 #include "basic_data/bounding_volume.h"
 #include "basic_data/frustum.h"
 #include "basic_data/ray.h"
+#include "scene_node.h"
 
 namespace mite {
-
 /**
  * @class SpatialPartition
  * @brief 空间划分抽象接口，定义空间数据结构的统一接口
@@ -56,52 +55,58 @@ class SpatialPartition {
    * @param results 相交结果列表（输出参数）
    * @return 是否找到相交节点
    */
-  virtual bool Raycast(const Ray &ray, std::vector<std::shared_ptr<SceneNode> > &results) = 0;
+  virtual bool Raycast(const Ray &ray,
+                       std::vector<std::shared_ptr<SceneNode> > &results) = 0;
   /**
    * @brief 射线检测，返回第一个相交的场景节点
    * @param ray 检测射线
    * @param result 相交结果（输出参数）
    * @param distance 相交距离（输出参数）
    * @return 是否找到相交节点
-   * 
+   *
    * 作用场景：鼠标点击场景交互操作
    */
-  virtual bool RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result, float &distance) = 0;
+  virtual bool RaycastFirst(const Ray &ray, std::shared_ptr<SceneNode> &result,
+                            float &distance) = 0;
   /**
    * @brief 视锥体裁剪，返回视锥体内的所有场景节点
    * @param frustum 视锥体
    * @param visibleMask 可见性掩码（用于分层渲染）
    * @param results 可见节点列表（输出参数）
    * @return 可见节点数量
-   * 
+   *
    * 作用场景：光栅化渲染视锥体剔除
    */
-  virtual size_t FrustumCull(const Frustum &frustum,
-                             const uint32_t visibleMask,
-                             std::vector<std::shared_ptr<SceneNode> > &results) = 0;
+  virtual size_t FrustumCull(
+      const Frustum &frustum, const uint32_t visibleMask,
+      std::vector<std::shared_ptr<SceneNode> > &results) = 0;
   /**
    * @brief 通用包围体查询，返回包围体内的所有场景节点
    * @param volume 查询包围体
    * @param results 结果节点列表（输出参数）
    * @return 结果节点数量
-   * 
+   *
    * 作用场景：鼠标框选场景操作
    */
-  virtual size_t VolumeQuery(const BoundingVolume &volume, std::vector<std::shared_ptr<SceneNode> > &results) = 0;
+  virtual size_t VolumeQuery(
+      const BoundingVolume &volume,
+      std::vector<std::shared_ptr<SceneNode> > &results) = 0;
   /**
    * @brief 点查询，返回包含点的所有场景节点
    * @param point 查询点
    * @param results 结果节点列表（输出参数）
    * @return 结果节点数量
    */
-  virtual size_t PointQuery(const glm::vec3 &point, std::vector<std::shared_ptr<SceneNode> > &results) = 0;
+  virtual size_t PointQuery(
+      const glm::vec3 &point,
+      std::vector<std::shared_ptr<SceneNode> > &results) = 0;
   /**
    * @brief 最近邻查询，返回距离点最近的场景节点
    * @param point 查询点
    * @param result 最近节点（输出参数）
    * @param maxDistance 最大搜索距离
    * @return 是否找到节点
-   * 
+   *
    * 作用场景：Runtime游戏交互操作
    */
   virtual bool NearestNeighbor(const glm::vec3 &point,
@@ -113,7 +118,8 @@ class SpatialPartition {
    * @brief 遍历所有场景节点执行回调函数
    * @param callback 回调函数，返回false可中断遍历
    */
-  virtual void ForEachNode(std::function<bool(std::shared_ptr<SceneNode> )> callback) = 0;
+  virtual void ForEachNode(
+      std::function<bool(std::shared_ptr<SceneNode>)> callback) = 0;
   /**
    * @brief 获取空间结构中节点的总数
    * @return 节点数量
@@ -143,7 +149,9 @@ class SpatialPartition {
    * @brief 调试绘制接口（可选实现）
    * @param drawCallback 绘制回调函数
    */
-  virtual void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) = 0;
+  virtual void DebugDraw(
+      std::function<void(const BoundingVolumeAABB &, int depth)>
+          drawCallback) = 0;
 };
 
 /**
@@ -162,7 +170,8 @@ enum class SpatialPartitionType {
  * @param type 空间划分类型
  * @return 空间划分实例指针
  */
-std::unique_ptr<SpatialPartition> CreateSpatialPartition(SpatialPartitionType type);
+std::unique_ptr<SpatialPartition> CreateSpatialPartition(
+    SpatialPartitionType type);
 
 /**
  * @brief 获取空间划分类型的名称
@@ -170,7 +179,6 @@ std::unique_ptr<SpatialPartition> CreateSpatialPartition(SpatialPartitionType ty
  * @return 类型名称字符串
  */
 const char *GetSpatialPartitionTypeName(SpatialPartitionType type);
-
 }  // namespace mite
 
 #endif  // MITE_SPATIAL_PARTITION_H

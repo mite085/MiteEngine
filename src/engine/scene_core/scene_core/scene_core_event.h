@@ -30,14 +30,14 @@ class EntityEvent : public Event {
 class EntityCreatedEvent : public EntityEvent {
  public:
   EntityCreatedEvent(Entity entity, Entity parent = Entity{})
-      : EntityEvent(entity), m_Parent(parent)
-  {
-  }
+      : EntityEvent(entity), m_Parent(parent) {}
 
   Entity GetParent() const { return m_Parent; }
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override { return new EntityCreatedEvent(entity, m_Parent); }
+  Event *Clone() const override {
+    return new EntityCreatedEvent(entity, m_Parent);
+  }
 
  private:
   Entity m_Parent;
@@ -82,33 +82,33 @@ class EntityTagChangedEvent : public EntityEvent {
  * @class ComponentEvent
  * @brief 组件事件基类(抽象类)
  */
-template<typename T> class ComponentEvent : public Event {
+template <typename T>
+class ComponentEvent : public Event {
  public:
   ComponentEvent(Entity entity, T &component)
-      : m_Entity(entity), m_Component(component), m_ID(ComponentID::Get<T>())
-  {
-  }
+      : m_Entity(entity), m_Component(component), m_ID(ComponentID::Get<T>()) {}
   Entity GetEntity() { return m_Entity; }
   T &GetComponent() { return m_Component; }
 
  protected:
-  Entity m_Entity;  // 关联的实体
-  T &m_Component;   // 组件
-  ComponentID m_ID;   // 组件类型标识符
+  Entity m_Entity;   // 关联的实体
+  T &m_Component;    // 组件
+  ComponentID m_ID;  // 组件类型标识符
 };
 
 /**
  * @class ComponentAddedEvent
  * @brief 组件添加事件
  */
-template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
+template <typename T>
+class ComponentAddedEvent : public ComponentEvent<T> {
  public:
-  ComponentAddedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
+  ComponentAddedEvent(Entity entity, T &component)
+      : ComponentEvent<T>(entity, component) {}
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new ComponentAddedEvent<T>(this->m_Entity, this->m_Component);
   }
 };
@@ -117,13 +117,14 @@ template<typename T> class ComponentAddedEvent : public ComponentEvent<T> {
  * @class ComponentRemovedEvent
  * @brief 组件删除事件
  */
-template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
+template <typename T>
+class ComponentRemovedEvent : public ComponentEvent<T> {
  public:
-  ComponentRemovedEvent(Entity entity, T &component) : ComponentEvent<T>(entity, component) {}
+  ComponentRemovedEvent(Entity entity, T &component)
+      : ComponentEvent<T>(entity, component) {}
 
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new ComponentRemovedEvent<T>(this->m_Entity, this->m_Component);
   }
 };
@@ -135,16 +136,16 @@ template<typename T> class ComponentRemovedEvent : public ComponentEvent<T> {
  *
  * 用于在事件总线中传递快照应用请求，实现解耦的快照应用机制
  */
-template<typename DataT> class ApplySnapshotEvent : public Event {
+template <typename DataT>
+class ApplySnapshotEvent : public Event {
  public:
   /**
    * @brief 构造函数
    * @param entityId 目标实体ID
    * @param data 要应用的快照数据
    */
-  ApplySnapshotEvent(Entity entityId, const DataT &data) : entityId(entityId), snapshotData(data)
-  {
-  }
+  ApplySnapshotEvent(Entity entityId, const DataT &data)
+      : entityId(entityId), snapshotData(data) {}
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
   /**

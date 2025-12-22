@@ -45,10 +45,13 @@ class InputContext {
  */
 class InputContextCreateEvent : public Event {
  public:
-  InputContextCreateEvent(std::shared_ptr<InputContext> context) : m_Context(context) {}
+  InputContextCreateEvent(std::shared_ptr<InputContext> context)
+      : m_Context(context) {}
   std::shared_ptr<InputContext> GetContext() const { return m_Context; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SYSTEM)
-  Event *Clone() const override { return new InputContextCreateEvent(m_Context); }
+  Event *Clone() const override {
+    return new InputContextCreateEvent(m_Context);
+  }
 
  private:
   std::shared_ptr<InputContext> m_Context;

@@ -28,7 +28,9 @@ class DeferredLightingStage : public RenderStage {
   void Shutdown() override;
 
   // ---- FBO访问接口 ----
-  std::shared_ptr<FrameBuffer> GetLightingFramebuffer() const { return m_LightingFBO; }
+  std::shared_ptr<FrameBuffer> GetLightingFramebuffer() const {
+    return m_LightingFBO;
+  }
   RuntimeTexturePtr GetLightingOutputTexture() const;
 
  private:
@@ -37,8 +39,10 @@ class DeferredLightingStage : public RenderStage {
   void SetupLightingRenderState();
 
   // ---- 绑定方法 ----
-  void BindGBufferTextures(RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader);
-  void BindLightSSBOData(RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader);
+  void BindGBufferTextures(RenderContext &context,
+                           std::shared_ptr<OpenGLShader> lightingShader);
+  void BindLightSSBOData(RenderContext &context,
+                         std::shared_ptr<OpenGLShader> lightingShader);
 
   // ---- 验证方法 ----
   void ValidateInputs(RenderContext &context) const;

@@ -36,11 +36,10 @@ class OpenGLRenderCommand : public RenderCommand {
 
   // ---------------- 基础命令接口 ----------------
   void Init() override;
-  void Clear(uint32_t clearFlags,
-             const glm::vec4 &clearColor,
-             float depthClear,
+  void Clear(uint32_t clearFlags, const glm::vec4 &clearColor, float depthClear,
              int stencilClear) override;
-  void BindFrameBuffer(const std::shared_ptr<FrameBuffer> &framebuffer) override;
+  void BindFrameBuffer(
+      const std::shared_ptr<FrameBuffer> &framebuffer) override;
   void UnbindFrameBuffer() override;
   void SetViewport(int x, int y, int width, int height) override;
   void SetRenderState(std::shared_ptr<RenderState> state) override;
@@ -50,28 +49,28 @@ class OpenGLRenderCommand : public RenderCommand {
   void BindMaterialUBO(std::shared_ptr<MaterialInstance> instance) override;
   void BindModelUBO(std::shared_ptr<MeshInstance> instance) override;
   void BindShadowUBO(std::shared_ptr<ShadowInstance> shadowUBO) override;
-  void BindShadowRenderContextUBO(std::shared_ptr<ShaderUBO> shadowRenderCtxUBO) override;
-  void BindLightSSBO(std::shared_ptr<LightShaderStorgeBuffer> instance) override;
-  void BindShader(
-      std::shared_ptr<OpenGLShader> shader,
-      std::function<void(std::shared_ptr<OpenGLShader>)> uniformSetup = nullptr) override;
+  void BindShadowRenderContextUBO(
+      std::shared_ptr<ShaderUBO> shadowRenderCtxUBO) override;
+  void BindLightSSBO(
+      std::shared_ptr<LightShaderStorgeBuffer> instance) override;
+  void BindShader(std::shared_ptr<OpenGLShader> shader,
+                  std::function<void(std::shared_ptr<OpenGLShader>)>
+                      uniformSetup = nullptr) override;
   void UnbindShader(std::shared_ptr<OpenGLShader> shader) override;
-  void BindRuntimeTexture(RuntimeTextureType type,
-                          TextureGPUHandle textureHandle,
-                          TextureTarget target = TextureTarget::TEXTURE_2D) override;
-  void BindExternalTexture(ExternalTextureType type,
-                           TextureGPUHandle textureHandle,
-                           TextureTarget target = TextureTarget::TEXTURE_2D) override;
+  void BindRuntimeTexture(
+      RuntimeTextureType type, TextureGPUHandle textureHandle,
+      TextureTarget target = TextureTarget::TEXTURE_2D) override;
+  void BindExternalTexture(
+      ExternalTextureType type, TextureGPUHandle textureHandle,
+      TextureTarget target = TextureTarget::TEXTURE_2D) override;
   void BindDefaultTexture(uint32_t textureUnit) override;
   void BindFrameBufferDepthLayer(std::shared_ptr<FrameBuffer> fbo,
                                  uint32_t layer) override;
   void BindFramebufferDepthCubeFace(std::shared_ptr<FrameBuffer> fbo,
-                                    uint32_t layer,
-                                    uint32_t face) override;
+                                    uint32_t layer, uint32_t face) override;
 
   void BindMesh(std::shared_ptr<Mesh> mesh) override;
-  void DrawMesh(uint32_t indexCount,
-                uint32_t indexOffset = 0,
+  void DrawMesh(uint32_t indexCount, uint32_t indexOffset = 0,
                 uint32_t primitiveType = 0x0004,
                 uint32_t indexType = 0x1405) override;
   void DrawFullScreenQuad() override;

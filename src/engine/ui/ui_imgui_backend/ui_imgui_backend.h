@@ -6,7 +6,6 @@
 #include "ui_imgui_style_adapter.h"
 
 namespace mite {
-
 /**
  * @brief ImGui后端实现
  *
@@ -40,7 +39,8 @@ class ImGuiBackend : public UIBackend {
   void SetMouseCursorVisible(bool visible) override;
   bool IsMouseCursorVisible() const override;
   void ApplyUIStyle(std::shared_ptr<UIStyle> newStyle) override;
-  void ApplyLanguaged(const std::string &oldLanguage, const std::string &newLanguage) override;
+  void ApplyLanguaged(const std::string &oldLanguage,
+                      const std::string &newLanguage) override;
 
   // ==================== ImGui特定方法 ====================
   void SetWindow(GLFWwindow *window);
@@ -64,8 +64,8 @@ class ImGuiBackend : public UIBackend {
   double m_Time = 0.0f;                               // 时间跟踪
   std::unique_ptr<ImGuiStyleAdapter> m_StyleAdapter;  // 样式适配器
 
-  Logger m_Logger;                        // 日志系统
-  SubscriptionGroup m_EventSubscriptions; // 事件订阅
+  Logger m_Logger;                         // 日志系统
+  SubscriptionGroup m_EventSubscriptions;  // 事件订阅
 };
 }  // namespace mite
 

@@ -1,8 +1,8 @@
 #ifndef MITE_SCENE_MATERIAL_COMPONENT
 #define MITE_SCENE_MATERIAL_COMPONENT
 
-#include "scene_core/component_system.h"
 #include "basic_instance/material_instance.h"
+#include "scene_core/component_system.h"
 
 namespace mite {
 /**
@@ -19,8 +19,9 @@ namespace mite {
  * - 与RendererSystem协同工作
  * - 支持GPU实例化
  */
-class MaterialComponent : public SnapshotComponentTraits<MaterialInstance,
-                                                         Component::Family::Geometry> {
+class MaterialComponent
+    : public SnapshotComponentTraits<MaterialInstance,
+                                     Component::Family::Geometry> {
  public:
   /**
    * @brief 带初始值的构造函数
@@ -56,7 +57,8 @@ class MaterialComponent : public SnapshotComponentTraits<MaterialInstance,
 };
 
 //====================== Material组件系统 ========================
-class MaterialComponentSystem : public SnapshotComponentSystem<MaterialComponent> {
+class MaterialComponentSystem
+    : public SnapshotComponentSystem<MaterialComponent> {
   DECLARE_COMPONENT_SYSTEM(MaterialComponentSystem)
  public:
   void Update(float deltaTime, SceneRegistry &registry) override;
@@ -71,16 +73,12 @@ class MaterialComponentSystem : public SnapshotComponentSystem<MaterialComponent
 class MaterialChangedEvent : public ComponentEvent<MaterialComponent> {
  public:
   MaterialChangedEvent(Entity entity, MaterialComponent &component)
-      : ComponentEvent<MaterialComponent>(entity, component)
-  {
-  }
+      : ComponentEvent<MaterialComponent>(entity, component) {}
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new MaterialChangedEvent(this->m_Entity, this->m_Component);
   }
 };
-
 };  // namespace mite
 
 #endif

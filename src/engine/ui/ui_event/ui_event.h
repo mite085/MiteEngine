@@ -1,12 +1,12 @@
 #ifndef MITE_UI_EVENT_H
 #define MITE_UI_EVENT_H
-#include "ui_panel/ui_panel.h"
-#include "subscription_group.h"
-#include "uuid/mite_uuid.h"
 #include <glm/glm.hpp>
 
-namespace mite {
+#include "subscription_group.h"
+#include "ui_panel/ui_panel.h"
+#include "uuid/mite_uuid.h"
 
+namespace mite {
 /**
  * @brief UI事件基类
  */
@@ -18,15 +18,11 @@ class UIEvent : public Event {
   /**
    * @brief 获取事件源控件ID
    */
-  std::shared_ptr<UIPanel> GetPanel() const
-  {
-    return m_Panel;
-  }
+  std::shared_ptr<UIPanel> GetPanel() const { return m_Panel; }
 
  protected:
   std::shared_ptr<UIPanel> m_Panel;
 };
-
 }  // namespace mite
 
 #endif  // MITE_UI_EVENT_H

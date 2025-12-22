@@ -1,39 +1,39 @@
 #ifndef MITE_CORE_PARALLEL_UTILS_H
 #define MITE_CORE_PARALLEL_UTILS_H
 
-#include "thread_pool_manager.h"
-#include "logger/logger.h"
 #include <functional>
 #include <future>
 #include <iterator>
 #include <type_traits>
 #include <vector>
 
-namespace mite {
+#include "logger/logger.h"
+#include "thread_pool_manager.h"
 
+namespace mite {
 /**
  * @brief 并行处理工具类
  *
  * 提供通用的并行处理函数，简化容器元素的并行操作
- * 
+ *
  * 示例1：处理std::vector
  * std::vector<int> numbers = {1, 2, 3, 4, 5};
  * ParallelUtils::ForEach(numbers, [](int& num) {
  *     num *= 2; // 并行处理每个元素
  * });
- * 
+ *
  * 示例2：处理std::list
  * std::list<std::string> strings = {"a", "b", "c"};
  * ParallelUtils::ForEach(strings, [](std::string& str) {
  *     str += "_processed";
  * });
- * 
+ *
  * 示例3：使用迭代器范围
  * std::vector<Entity*> entities = GetEntities();
- * ParallelUtils::ForEachRange(entities.begin(), entities.end(), [](Entity* entity) {
- *     entity->Process();
+ * ParallelUtils::ForEachRange(entities.begin(), entities.end(), [](Entity*
+ * entity) { entity->Process();
  * });
- * 
+ *
  * 示例4：带索引的处理
  * std::vector<Component*> components = GetComponents();
  * ParallelUtils::ForEachIndexed(components, [](Component* comp, size_t index) {
@@ -54,9 +54,8 @@ class ParallelUtils {
    * @param func 处理每个元素的函数
    * @param batch_size 批处理大小，0表示自动计算
    */
-  template<typename Container, typename Func>
-  static void ForEach(Container &container, Func func, size_t batch_size = 0)
-  {
+  template <typename Container, typename Func>
+  static void ForEach(Container &container, Func func, size_t batch_size = 0) {
     if (container.empty()) {
       return;
     }
@@ -89,13 +88,15 @@ class ParallelUtils {
       auto batch_end = it;
 
       // 前进batch_size个元素，但不能超过end
-      std::advance(batch_end, std::min<size_t>(batch_size, std::distance(it, end)));
+      std::advance(batch_end,
+                   std::min<size_t>(batch_size, std::distance(it, end)));
 
-      futures.push_back(thread_pool.submit_task([batch_start, batch_end, &func]() {
-        for (auto elem_it = batch_start; elem_it != batch_end; ++elem_it) {
-          func(*elem_it);
-        }
-      }));
+      futures.push_back(
+          thread_pool.submit_task([batch_start, batch_end, &func]() {
+            for (auto elem_it = batch_start; elem_it != batch_end; ++elem_it) {
+              func(*elem_it);
+            }
+          }));
 
       it = batch_end;
     }
@@ -113,9 +114,9 @@ class ParallelUtils {
    * @param func 处理每个元素的函数
    * @param batch_size 批处理大小
    */
-  template<typename Iterator, typename Func>
-  static void ForEachRange(Iterator begin, Iterator end, Func func, size_t batch_size = 0)
-  {
+  template <typename Iterator, typename Func>
+  static void ForEachRange(Iterator begin, Iterator end, Func func,
+                           size_t batch_size = 0) {
     const size_t element_count = std::distance(begin, end);
     if (element_count == 0) {
       return;
@@ -137,14 +138,16 @@ class ParallelUtils {
     while (current != end) {
       Iterator batch_start = current;
       Iterator batch_end = current;
-      size_t advance_count = std::min<size_t>(batch_size, std::distance(current, end));
+      size_t advance_count =
+          std::min<size_t>(batch_size, std::distance(current, end));
       std::advance(batch_end, advance_count);
       // 使用 detach_task() 替代 submit() 提交任务
-      futures.push_back(thread_pool.detach_task([batch_start, batch_end, &func]() {
-        for (auto it = batch_start; it != batch_end; ++it) {
-          func(*it);
-        }
-      }));
+      futures.push_back(
+          thread_pool.detach_task([batch_start, batch_end, &func]() {
+            for (auto it = batch_start; it != batch_end; ++it) {
+              func(*it);
+            }
+          }));
       current = batch_end;
     }
     WaitForFutures(futures);
@@ -155,9 +158,9 @@ class ParallelUtils {
    * @tparam Container 容器类型
    * @tparam Func 处理函数类型（接受元素和索引）
    */
-  template<typename Container, typename Func>
-  static void ForEachIndexed(Container &container, Func func, size_t batch_size = 0)
-  {
+  template <typename Container, typename Func>
+  static void ForEachIndexed(Container &container, Func func,
+                             size_t batch_size = 0) {
     if (container.empty()) {
       return;
     }
@@ -179,11 +182,12 @@ class ParallelUtils {
       size_t end = std::min(i + batch_size, element_count);
 
       // 使用值捕获，确保线程安全
-      futures.push_back(thread_pool.detach_task([&container, start, end, func]() {
-        for (size_t j = start; j < end; ++j) {
-          func(container[j], j);
-        }
-      }));
+      futures.push_back(
+          thread_pool.detach_task([&container, start, end, func]() {
+            for (size_t j = start; j < end; ++j) {
+              func(container[j], j);
+            }
+          }));
     }
     WaitForFutures(futures);
   }
@@ -192,22 +196,18 @@ class ParallelUtils {
   /**
    * @brief 等待所有future完成并处理异常
    */
-  static void WaitForFutures(std::vector<std::future<void>> &futures)
-  {
+  static void WaitForFutures(std::vector<std::future<void>> &futures) {
     for (auto &future : futures) {
       try {
         future.get();
-      }
-      catch (const std::exception &e) {
+      } catch (const std::exception &e) {
         LOG_ERROR("Parallel processing error: {}", e.what());
-      }
-      catch (...) {
+      } catch (...) {
         LOG_ERROR("Unknown error in parallel processing");
       }
     }
   }
 };
-
 }  // namespace mite
 
 #endif  // MITE_CORE_PARALLEL_UTILS_H

@@ -38,8 +38,7 @@ class UIStyle {
    * @param value 属性值
    * @param description 属性描述（可选）
    */
-  void SetProperty(const std::string &propertyName,
-                   const StyleValue &value,
+  void SetProperty(const std::string &propertyName, const StyleValue &value,
                    const std::string &description = "");
 
   /**
@@ -47,15 +46,14 @@ class UIStyle {
    * @param propertyName 属性名称
    * @return 属性值，如果不存在返回默认值
    */
-  template<typename T>
-  T GetProperty(const std::string &propertyName, const T &defaultValue = T()) const
-  {
+  template <typename T>
+  T GetProperty(const std::string &propertyName,
+                const T &defaultValue = T()) const {
     auto it = m_Properties.find(propertyName);
     if (it != m_Properties.end()) {
       try {
         return std::get<T>(it->second.value);
-      }
-      catch (const std::bad_variant_access &) {
+      } catch (const std::bad_variant_access &) {
         LOG_WARN("Style property {} is not of requested type", propertyName);
       }
     }
@@ -103,36 +101,24 @@ class UIStyle {
   /**
    * @brief 设置样式名称
    */
-  void SetName(const std::string &name)
-  {
-    m_Name = name;
-  }
+  void SetName(const std::string &name) { m_Name = name; }
 
   /**
    * @brief 获取样式名称
    */
-  const std::string &GetName() const
-  {
-    return m_Name;
-  }
+  const std::string &GetName() const { return m_Name; }
 
   /**
    * @brief 设置父样式
    * @param parent 父样式共享指针
    */
-  void SetParent(std::shared_ptr<UIStyle> parent)
-  {
-    m_Parent = parent;
-  }
+  void SetParent(std::shared_ptr<UIStyle> parent) { m_Parent = parent; }
 
   /**
    * @brief 获取父样式
    * @return std::shared_ptr<UIStyle> 父样式共享指针
    */
-  std::shared_ptr<UIStyle> GetParent() const
-  {
-    return m_Parent;
-  }
+  std::shared_ptr<UIStyle> GetParent() const { return m_Parent; }
 
  private:
   std::string m_Name;                                           // 样式名称
@@ -163,7 +149,8 @@ constexpr const char *COLOR_POPUP_BG = "color.popup_bg";
 constexpr const char *COLOR_SCROLLBAR_BG = "color.scrollbar_bg";
 constexpr const char *COLOR_SCROLLBAR_GRAB = "color.scrollbar_grab";
 constexpr const char *COLOR_SCROLLBAR_GRAB_HOVER = "color.scrollbar_grab_hover";
-constexpr const char *COLOR_SCROLLBAR_GRAB_ACTIVE = "color.scrollbar_grab_active";
+constexpr const char *COLOR_SCROLLBAR_GRAB_ACTIVE =
+    "color.scrollbar_grab_active";
 constexpr const char *COLOR_CHECK_MARK = "color.check_mark";
 constexpr const char *COLOR_SLIDER_GRAB = "color.slider_grab";
 constexpr const char *COLOR_SLIDER_GRAB_ACTIVE = "color.slider_grab_active";
@@ -193,7 +180,8 @@ constexpr const char *COLOR_TABLE_ROW_BG_ALT = "color.table_row_bg_alt";
 constexpr const char *COLOR_TEXT_SELECTED_BG = "color.text_selected_bg";
 constexpr const char *COLOR_DRAG_DROP_TARGET = "color.drag_drop_target";
 constexpr const char *COLOR_NAV_HIGHLIGHT = "color.nav_highlight";
-constexpr const char *COLOR_NAV_WINDOWING_HIGHLIGHT = "color.nav_windowing_highlight";
+constexpr const char *COLOR_NAV_WINDOWING_HIGHLIGHT =
+    "color.nav_windowing_highlight";
 constexpr const char *COLOR_NAV_WINDOWING_DIM_BG = "color.nav_windowing_dim_bg";
 constexpr const char *COLOR_MODAL_WINDOW_DIM_BG = "color.modal_window_dim_bg";
 
@@ -230,25 +218,37 @@ constexpr const char *SIZE_GRAB_ROUNDING = "size.grab_rounding";
 constexpr const char *SIZE_LOG_SLIDER_DEADZONE = "size.log_slider_deadzone";
 constexpr const char *SIZE_TAB_ROUNDING = "size.tab_rounding";
 constexpr const char *SIZE_TAB_BORDER_SIZE = "size.tab_border_size";
-constexpr const char *SIZE_TAB_MIN_WIDTH_FOR_CLOSE_BUTTON = "size.tab_min_width_for_close_button";
+constexpr const char *SIZE_TAB_MIN_WIDTH_FOR_CLOSE_BUTTON =
+    "size.tab_min_width_for_close_button";
 constexpr const char *SIZE_BUTTON_TEXT_ALIGN_X = "size.button_text_align_x";
 constexpr const char *SIZE_BUTTON_TEXT_ALIGN_Y = "size.button_text_align_y";
-constexpr const char *SIZE_SELECTABLE_TEXT_ALIGN_X = "size.selectable_text_align_x";
-constexpr const char *SIZE_SELECTABLE_TEXT_ALIGN_Y = "size.selectable_text_align_y";
-constexpr const char *SIZE_DISPLAY_WINDOW_PADDING_X = "size.display_window_padding_x";
-constexpr const char *SIZE_DISPLAY_WINDOW_PADDING_Y = "size.display_window_padding_y";
-constexpr const char *SIZE_DISPLAY_SAFE_AREA_PADDING_X = "size.display_safe_area_padding_x";
-constexpr const char *SIZE_DISPLAY_SAFE_AREA_PADDING_Y = "size.display_safe_area_padding_y";
+constexpr const char *SIZE_SELECTABLE_TEXT_ALIGN_X =
+    "size.selectable_text_align_x";
+constexpr const char *SIZE_SELECTABLE_TEXT_ALIGN_Y =
+    "size.selectable_text_align_y";
+constexpr const char *SIZE_DISPLAY_WINDOW_PADDING_X =
+    "size.display_window_padding_x";
+constexpr const char *SIZE_DISPLAY_WINDOW_PADDING_Y =
+    "size.display_window_padding_y";
+constexpr const char *SIZE_DISPLAY_SAFE_AREA_PADDING_X =
+    "size.display_safe_area_padding_x";
+constexpr const char *SIZE_DISPLAY_SAFE_AREA_PADDING_Y =
+    "size.display_safe_area_padding_y";
 constexpr const char *SIZE_MOUSE_CURSOR_SCALE = "size.mouse_cursor_scale";
 constexpr const char *SIZE_ANTI_ALIASED_LINES = "size.anti_aliased_lines";
-constexpr const char *SIZE_ANTI_ALIASED_LINES_USE_TEX = "size.anti_aliased_lines_use_tex";
+constexpr const char *SIZE_ANTI_ALIASED_LINES_USE_TEX =
+    "size.anti_aliased_lines_use_tex";
 constexpr const char *SIZE_ANTI_ALIASED_FILL = "size.anti_aliased_fill";
-constexpr const char *SIZE_CURVE_TESSELLATION_TOL = "size.curve_tessellation_tol";
-constexpr const char *SIZE_CIRCLE_TESSELLATION_MAX_ERROR = "size.circle_tessellation_max_error";
+constexpr const char *SIZE_CURVE_TESSELLATION_TOL =
+    "size.curve_tessellation_tol";
+constexpr const char *SIZE_CIRCLE_TESSELLATION_MAX_ERROR =
+    "size.circle_tessellation_max_error";
 
 // 布局相关（枚举类型）
-constexpr const char *LAYOUT_COLOR_BUTTON_POSITION = "layout.color_button_position";
-constexpr const char *LAYOUT_WINDOW_MENU_BUTTON_POSITION = "layout.window_menu_button_position";
+constexpr const char *LAYOUT_COLOR_BUTTON_POSITION =
+    "layout.color_button_position";
+constexpr const char *LAYOUT_WINDOW_MENU_BUTTON_POSITION =
+    "layout.window_menu_button_position";
 
 // 边框相关
 constexpr const char *BORDER_WINDOW = "border.window";
@@ -264,16 +264,20 @@ constexpr const char *SPACING_FRAME_PADDING_X = "spacing.frame_padding_x";
 constexpr const char *SPACING_FRAME_PADDING_Y = "spacing.frame_padding_y";
 constexpr const char *SPACING_ITEM_SPACING_X = "spacing.item_spacing_x";
 constexpr const char *SPACING_ITEM_SPACING_Y = "spacing.item_spacing_y";
-constexpr const char *SPACING_ITEM_INNER_SPACING_X = "spacing.item_inner_spacing_x";
-constexpr const char *SPACING_ITEM_INNER_SPACING_Y = "spacing.item_inner_spacing_y";
+constexpr const char *SPACING_ITEM_INNER_SPACING_X =
+    "spacing.item_inner_spacing_x";
+constexpr const char *SPACING_ITEM_INNER_SPACING_Y =
+    "spacing.item_inner_spacing_y";
 constexpr const char *SPACING_CELL_PADDING_X = "spacing.cell_padding_x";
 constexpr const char *SPACING_CELL_PADDING_Y = "spacing.cell_padding_y";
-constexpr const char *SPACING_TOUCH_EXTRA_PADDING_X = "spacing.touch_extra_padding_x";
-constexpr const char *SPACING_TOUCH_EXTRA_PADDING_Y = "spacing.touch_extra_padding_y";
+constexpr const char *SPACING_TOUCH_EXTRA_PADDING_X =
+    "spacing.touch_extra_padding_x";
+constexpr const char *SPACING_TOUCH_EXTRA_PADDING_Y =
+    "spacing.touch_extra_padding_y";
 constexpr const char *SPACING_INDENT_SPACING = "spacing.indent_spacing";
-constexpr const char *SPACING_COLUMNS_MIN_SPACING = "spacing.columns_min_spacing";
+constexpr const char *SPACING_COLUMNS_MIN_SPACING =
+    "spacing.columns_min_spacing";
 }  // namespace StyleProperties
-
 }  // namespace mite
 
 #endif  // MITE_UI_STYLE_H

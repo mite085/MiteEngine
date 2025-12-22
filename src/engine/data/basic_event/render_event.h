@@ -13,15 +13,9 @@ namespace mite {
 class ViewportResizeEvent : public Event {
  public:
   explicit ViewportResizeEvent(const glm::vec2 &size) : m_Size(size) {}
-  const glm::vec2 &GetSize() const
-  {
-    return m_Size;
-  }
+  const glm::vec2 &GetSize() const { return m_Size; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
-  Event *Clone() const override
-  {
-    return new ViewportResizeEvent(m_Size);
-  }
+  Event *Clone() const override { return new ViewportResizeEvent(m_Size); }
 
  private:
   glm::vec2 m_Size;
@@ -46,15 +40,13 @@ class ViewportPickedEvent : public Event {
  */
 class ViewportCameraUpdateEvent : public Event {
  public:
-  explicit ViewportCameraUpdateEvent(const Transform cameraTransform, const float cameraZoom)
-      : m_CameraTransform(cameraTransform), m_CameraZoom(cameraZoom)
-  {
-  }
+  explicit ViewportCameraUpdateEvent(const Transform cameraTransform,
+                                     const float cameraZoom)
+      : m_CameraTransform(cameraTransform), m_CameraZoom(cameraZoom) {}
   const Transform &GetCameraTransform() const { return m_CameraTransform; }
   float GetCameraZoom() const { return m_CameraZoom; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new ViewportCameraUpdateEvent(m_CameraTransform, m_CameraZoom);
   }
 
@@ -69,11 +61,13 @@ class ViewportCameraUpdateEvent : public Event {
  */
 class ViewportPickedUpdateEvent : public Event {
  public:
-  explicit ViewportPickedUpdateEvent(const Transform transform) : m_Transform(transform) {
-  }
+  explicit ViewportPickedUpdateEvent(const Transform transform)
+      : m_Transform(transform) {}
   const Transform &GetTransform() const { return m_Transform; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
-  Event *Clone() const override { return new ViewportPickedUpdateEvent(m_Transform); }
+  Event *Clone() const override {
+    return new ViewportPickedUpdateEvent(m_Transform);
+  }
 
  private:
   Transform m_Transform;
@@ -84,26 +78,19 @@ class ViewportPickedUpdateEvent : public Event {
  */
 class RuntimeTextureFinishedEvent : public Event {
  public:
-  explicit RuntimeTextureFinishedEvent(RuntimeTexturePtr texture, std::string identify)
-      : m_Texture(texture), m_Identify(identify)
-  {
-  }
-  RuntimeTexturePtr GetTexture() {
-    return m_Texture;
-  }
-  RuntimeTextureType GetTextureType()
-  {
+  explicit RuntimeTextureFinishedEvent(RuntimeTexturePtr texture,
+                                       std::string identify)
+      : m_Texture(texture), m_Identify(identify) {}
+  RuntimeTexturePtr GetTexture() { return m_Texture; }
+  RuntimeTextureType GetTextureType() {
     if (m_Texture)
       return m_Texture->GetType();
     else
       return RuntimeTextureType::None;
   }
-  std::string GetIdentify() {
-    return m_Identify;
-  }
+  std::string GetIdentify() { return m_Identify; }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
-  Event *Clone() const override
-  {
+  Event *Clone() const override {
     return new RuntimeTextureFinishedEvent(m_Texture, m_Identify);
   }
 

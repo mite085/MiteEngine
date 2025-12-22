@@ -1,18 +1,17 @@
 #include "shader_cache.h"
 
 namespace mite {
-ShaderCache &ShaderCache::Get()
-{
+ShaderCache &ShaderCache::Get() {
   static ShaderCache instance;  // 线程安全的单例（C++11保证）
   return instance;
 }
 
-std::shared_ptr<OpenGLShader> ShaderCache::GetOpenGLShader(const std::string &vertexPath,
-                                                           const std::string &fragmentPath,
-                                                           const std::string &geometryPath)
-{
+std::shared_ptr<OpenGLShader> ShaderCache::GetOpenGLShader(
+    const std::string &vertexPath, const std::string &fragmentPath,
+    const std::string &geometryPath) {
   // 1. 生成唯一缓存键（使用规范化路径）
-  const std::string key = GenerateCacheKey(vertexPath, fragmentPath, geometryPath);
+  const std::string key =
+      GenerateCacheKey(vertexPath, fragmentPath, geometryPath);
 
   // 2. 线程安全访问缓存
   std::lock_guard<std::mutex> lock(m_Mutex);
@@ -33,27 +32,25 @@ std::shared_ptr<OpenGLShader> ShaderCache::GetOpenGLShader(const std::string &ve
   auto shader = std::make_shared<OpenGLShader>();
   if (geometryPath.empty()) {
     shader->LoadFromFile(vertexPath.c_str(), fragmentPath.c_str());
-  }
-  else {
-    shader->LoadFromFile(vertexPath.c_str(), fragmentPath.c_str(), geometryPath.c_str());
+  } else {
+    shader->LoadFromFile(vertexPath.c_str(), fragmentPath.c_str(),
+                         geometryPath.c_str());
   }
   m_Cache[key] = shader;
   LOG_DEBUG("ShaderCache: Successfully cached shader - {}", key);
   return shader;
 }
 
-void ShaderCache::Clear()
-{
+void ShaderCache::Clear() {
   std::lock_guard<std::mutex> lock(m_Mutex);
   size_t count = m_Cache.size();
   m_Cache.clear();
   LOG_DEBUG("ShaderCache: Cleared {} shader entries", count);
 }
 
-std::string ShaderCache::GenerateCacheKey(const std::string &vertexPath,
-                                          const std::string &fragmentPath,
-                                          const std::string &geometryPath) const
-{
+std::string ShaderCache::GenerateCacheKey(
+    const std::string &vertexPath, const std::string &fragmentPath,
+    const std::string &geometryPath) const {
   // 使用filesystem规范化路径，确保路径一致性
   std::filesystem::path vPath(vertexPath);
   std::filesystem::path fPath(fragmentPath);

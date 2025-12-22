@@ -9,7 +9,6 @@ namespace mite {
  */
 class BoundingVolumeIntersection {
  public:
-
   /**
    * @brief 相交测试结果枚举
    *
@@ -24,8 +23,10 @@ class BoundingVolumeIntersection {
   };
 
   // ==================== AABB相交测试声明 ====================
-  static IntersectionType Intersects(const BoundingVolumeAABB &aabb, const BoundingVolumeSphere &sphere);
-  static IntersectionType Intersects(const BoundingVolumeAABB &aabb, const BoundingVolumeOBB &obb);
+  static IntersectionType Intersects(const BoundingVolumeAABB &aabb,
+                                     const BoundingVolumeSphere &sphere);
+  static IntersectionType Intersects(const BoundingVolumeAABB &aabb,
+                                     const BoundingVolumeOBB &obb);
   static IntersectionType Intersects(const BoundingVolumeAABB &aabb,
                                      const BoundingVolumePlane &plane);
   static IntersectionType Intersects(const BoundingVolumeAABB &aabb1,
@@ -37,23 +38,25 @@ class BoundingVolumeIntersection {
   static IntersectionType Intersects(const BoundingVolumeSphere &sphere,
                                      const BoundingVolumeOBB &obb);
   static IntersectionType Intersects(const BoundingVolumeSphere &sphere,
-                              const BoundingVolumePlane &plane);
+                                     const BoundingVolumePlane &plane);
   static IntersectionType Intersects(const BoundingVolumeSphere &sphere1,
-                              const BoundingVolumeSphere &sphere2);
+                                     const BoundingVolumeSphere &sphere2);
 
   // ==================== OBB相交测试声明 ====================
-  static IntersectionType Intersects(const BoundingVolumeOBB &obb, const BoundingVolumeAABB &aabb);
+  static IntersectionType Intersects(const BoundingVolumeOBB &obb,
+                                     const BoundingVolumeAABB &aabb);
   static IntersectionType Intersects(const BoundingVolumeOBB &obb,
                                      const BoundingVolumeSphere &sphere);
   static IntersectionType Intersects(const BoundingVolumeOBB &obb,
                                      const BoundingVolumePlane &plane);
-  static IntersectionType Intersects(const BoundingVolumeOBB &obb1, const BoundingVolumeOBB &obb2);
+  static IntersectionType Intersects(const BoundingVolumeOBB &obb1,
+                                     const BoundingVolumeOBB &obb2);
 
   // ==================== Plane相交测试声明 ====================
   static IntersectionType Intersects(const BoundingVolumePlane &plane,
                                      const BoundingVolumeAABB &aabb);
   static IntersectionType Intersects(const BoundingVolumePlane &plane,
-                              const BoundingVolumeSphere &sphere);
+                                     const BoundingVolumeSphere &sphere);
   static IntersectionType Intersects(const BoundingVolumePlane &plane,
                                      const BoundingVolumeOBB &obb);
 };

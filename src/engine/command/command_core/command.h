@@ -33,7 +33,7 @@ class Command {
    * @brief 撤销命令（不强制要求子类必须实现）
    * @return CommandResult 撤销执行结果
    */
-  virtual CommandResult Undo(){};
+  virtual CommandResult Undo() {};
 
   // ==================== 命令标识接口 ====================
   /**
@@ -45,10 +45,7 @@ class Command {
    * @brief 获取命令描述信息
    * @return std::string 命令描述
    */
-  virtual std::string GetDescription() const
-  {
-    return "";
-  }
+  virtual std::string GetDescription() const { return ""; }
 
   // ==================== 命令分类接口 ====================
   /**
@@ -61,8 +58,7 @@ class Command {
    * @param category 要检查的类别
    * @return bool 是否属于该类别
    */
-  bool IsInCategory(CommandCategory category) const
-  {
+  bool IsInCategory(CommandCategory category) const {
     return (GetCategory() & category) != 0;
   }
 
@@ -71,36 +67,25 @@ class Command {
    * @brief 获取命令优先级
    * @return CommandPriority 命令优先级
    */
-  CommandPriority GetPriority() const
-  {
-    return m_priority;
-  }
+  CommandPriority GetPriority() const { return m_priority; }
   /**
    * @brief 设置命令优先级
    * @param priority 新的优先级
    */
-  void SetPriority(CommandPriority priority)
-  {
-    m_priority = priority;
-  }
+  void SetPriority(CommandPriority priority) { m_priority = priority; }
 
   // ==================== 撤销重做接口 ====================
   /**
    * @brief 检查命令是否可撤销
-   * @return bool 是否可撤销（默认不可撤销，可撤销的命令需要继承自CommandUndoable）
+   * @return bool
+   * 是否可撤销（默认不可撤销，可撤销的命令需要继承自CommandUndoable）
    */
-  virtual bool CanUndo() const
-  {
-    return false;
-  }
+  virtual bool CanUndo() const { return false; }
   /**
    * @brief 检查命令是否可重做
    * @return bool 是否可重做
    */
-  virtual bool CanRedo() const
-  {
-    return CanUndo();
-  }
+  virtual bool CanRedo() const { return CanUndo(); }
 
  protected:
   CommandPriority m_priority;  // 命令优先级
@@ -130,10 +115,7 @@ class CommandUndoable : public Command {
   virtual CommandResult Undo() = 0;
 
   // CanUndo标记为True
-  virtual bool CanUndo() const
-  {
-    return true;
-  }
+  virtual bool CanUndo() const { return true; }
 };
 
 // 命令智能指针类型
@@ -141,18 +123,12 @@ using CommandPtr = std::unique_ptr<Command>;
 
 // Command派生类辅助宏，用于自动实现GetName和GetCategory
 #define COMMAND_CLASS_TYPE(type) \
-  virtual std::string GetName() const override \
-  { \
-    return #type; \
-  }
+  virtual std::string GetName() const override { return #type; }
 #define COMMAND_CLASS_CATEGORY(category) \
-  virtual CommandCategory GetCategory() const override \
-  { \
-    return category; \
-  }
+  virtual CommandCategory GetCategory() const override { return category; }
 // 组合宏：一行搞定GetName和GetCategory的实现
 #define COMMAND_CLASS(type, category) \
-  COMMAND_CLASS_TYPE(type) \
+  COMMAND_CLASS_TYPE(type)            \
   COMMAND_CLASS_CATEGORY(category)
 }  // namespace mite
 

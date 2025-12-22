@@ -55,7 +55,8 @@ class ViewportInputContext : public InputContext {
   // Viewport状态
   bool m_ViewportFocused = false;  // Viewport窗口是否聚焦
   bool m_ViewportHovered = false;  // 鼠标是否悬停于Viewport上
-  bool m_ViewportGizmoUsing = false;  // Gizmo是否占用中(若占用则不接收鼠标/键盘事件)
+  bool m_ViewportGizmoUsing =
+      false;  // Gizmo是否占用中(若占用则不接收鼠标/键盘事件)
   glm::vec2 m_ViewportPos = {0, 0};   // Viewport位置记录
   glm::vec2 m_ViewportSize = {0, 0};  // Viewport尺寸记录
 
