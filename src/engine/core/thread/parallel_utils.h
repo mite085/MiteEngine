@@ -120,40 +120,33 @@ class ParallelUtils {
     if (element_count == 0) {
       return;
     }
-
-    auto &thread_pool = ThreadPoolManager::GetDefaultPool();
+    BS::thread_pool<ThreadPoolConfig::DEFAULT_FLAGS> &thread_pool =
+        ThreadPoolManager::GetDefaultPool();
     const size_t thread_count = thread_pool.get_thread_count();
-
     if (element_count <= 1 || thread_count <= 1) {
       for (auto it = begin; it != end; ++it) {
         func(*it);
       }
       return;
     }
-
     if (batch_size == 0) {
       batch_size = std::max<size_t>(1, element_count / thread_count);
     }
-
     std::vector<std::future<void>> futures;
     Iterator current = begin;
-
     while (current != end) {
       Iterator batch_start = current;
       Iterator batch_end = current;
-
       size_t advance_count = std::min<size_t>(batch_size, std::distance(current, end));
       std::advance(batch_end, advance_count);
-
-      futures.push_back(thread_pool.submit([batch_start, batch_end, &func]() {
+      // 使用 detach_task() 替代 submit() 提交任务
+      futures.push_back(thread_pool.detach_task([batch_start, batch_end, &func]() {
         for (auto it = batch_start; it != batch_end; ++it) {
           func(*it);
         }
       }));
-
       current = batch_end;
     }
-
     WaitForFutures(futures);
   }
 
@@ -168,35 +161,30 @@ class ParallelUtils {
     if (container.empty()) {
       return;
     }
-
     auto &thread_pool = ThreadPoolManager::GetDefaultPool();
     const size_t element_count = container.size();
     const size_t thread_count = thread_pool.get_thread_count();
-
     if (element_count <= 1 || thread_count <= 1) {
       for (size_t i = 0; i < element_count; ++i) {
         func(container[i], i);
       }
       return;
     }
-
     if (batch_size == 0) {
       batch_size = std::max<size_t>(1, element_count / thread_count);
     }
-
     std::vector<std::future<void>> futures;
-
     for (size_t i = 0; i < element_count; i += batch_size) {
       size_t start = i;
       size_t end = std::min(i + batch_size, element_count);
 
-      futures.push_back(thread_pool.submit([&container, start, end, &func]() {
+      // 使用值捕获，确保线程安全
+      futures.push_back(thread_pool.detach_task([&container, start, end, func]() {
         for (size_t j = start; j < end; ++j) {
           func(container[j], j);
         }
       }));
     }
-
     WaitForFutures(futures);
   }
 

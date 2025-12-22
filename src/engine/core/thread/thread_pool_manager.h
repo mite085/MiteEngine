@@ -2,6 +2,7 @@
 #define MITE_CORE_THREAD_POOL_MANAGER_H
 
 #include "thread_pool_config.h"
+#include "logger/logger.h"
 #include <memory>
 #include <mutex>
 #include <string>
