@@ -1,3 +1,17 @@
+# 保存当前的目录属性
+get_directory_property(before_thirdparty COMPILE_OPTIONS)
+# ============================================
+# 第三方库显式禁用所有警告
+# ============================================
+if(MSVC)
+    # MSVC: 禁用所有警告
+    add_compile_options(/W0)
+else()
+    # GCC/Clang: 禁用所有警告
+    add_compile_options(-w)
+endif()
+
+
 # 查找 OpenGL 库（跨平台）
 find_package(OpenGL REQUIRED)
 if(NOT OpenGL_FOUND)
@@ -25,20 +39,39 @@ if(BUILD_TESTS)
     add_subdirectory(thirdparty/googletest)
 endif()
 
+# ============================================
+# 为stb_image创建单独的接口库并设置编译选项
+# ============================================
+add_library(stb_image INTERFACE)
+target_include_directories(stb_image INTERFACE thirdparty/stbimg)
+# 为stb_image禁用特定警告
+if(MSVC)
+    target_compile_options(stb_image INTERFACE
+        /wd4505  # 禁用"已删除具有内部链接的未引用函数"警告
+    )
+else()
+    target_compile_options(stb_image INTERFACE
+        -Wno-unused-function  # GCC/Clang对应警告
+    )
+endif()
+
+# ============================================
 # 创建接口库来管理第三方头文件
+# ============================================
 add_library(mite_engine_thirdparty_headers INTERFACE)
 
-# 添加头文件目录到接口库
+# 添加头文件目录到接口库(不包含stb_image,下面手动添加)
 target_include_directories(mite_engine_thirdparty_headers INTERFACE
     thirdparty/glm
     thirdparty/glad
     thirdparty/stduuid
     thirdparty/stduuid/include
     thirdparty/cereal/include
-    thirdparty/stbimg
     thirdparty/json/single_include
     thirdparty/threadpool/include
 )
+# 手动链接stb_image库到第三方接口库
+target_link_libraries(mite_engine_thirdparty_headers INTERFACE stb_image)
 
 # imgui和imguizmo无cmakelist，为避免污染依赖库，此处手动添加
 # imguifuledialog通过find_package寻找imgui，故手动实现，不依赖其自带的cmake文件
@@ -200,3 +233,8 @@ set_thirdparty_folder(SPIRV-Tools-reduce "SPIRV-Tools")
 set_thirdparty_folder(SPIRV-Tools-shared "SPIRV-Tools")
 set_thirdparty_folder(SPIRV-Tools-static "SPIRV-Tools")
 set_thirdparty_folder(spirv-tools-vimsyntax "SPIRV-Tools")
+
+
+
+# 在包含所有第三方库之后，恢复原来的编译选项
+set_directory_properties(PROPERTIES COMPILE_OPTIONS "${before_thirdparty}")

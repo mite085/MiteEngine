@@ -17,7 +17,8 @@ target_include_directories(${PROJECT_NAME}
 # 链接核心库
 target_link_libraries(${PROJECT_NAME}
     PRIVATE 
-
+    # 应用严格警告设置
+    mite_engine_compile_options
     # 第三方头文件接口库
     mite_engine_thirdparty_headers
     # 第三方库依赖

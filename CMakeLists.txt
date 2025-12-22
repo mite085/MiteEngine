@@ -31,27 +31,31 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)  # 禁用编译器扩展，确保跨平台一致性
 
-# 跨平台编译警告设置
+# 全局运行时库设置（对第三方库通常无害）
 if(MSVC)
-    # MSVC 编译器设置
     add_compile_options(
-        /W4           # 警告等级 4
-        /WX           # 将警告视为错误
-        /permissive-  # 标准一致性模式
         "$<$<CONFIG:Release>:/MD>"
         "$<$<CONFIG:Debug>:/MDd>"
         "$<$<CONFIG:RelWithDebInfo>:/MD>"
         "$<$<CONFIG:MinSizeRel>:/MD>"
     )
-    # 禁用特定警告
-    add_compile_options(
-        /wd4828  # 字符集警告
-        /wd4251  # DLL接口警告（如果构建DLL可能需要）
-        /wd4275  # 非DLL接口类警告
+endif()
+
+# 创建编译选项接口库
+add_library(mite_engine_compile_options INTERFACE)
+# 为MiteEngine代码设置严格警告
+if(MSVC)
+    target_compile_options(mite_engine_compile_options INTERFACE
+        /W4           # 警告等级 4
+        /WX           # 将警告视为错误
+        /permissive-  # 标准一致性模式
+        /wd4828       # 字符集警告
+        /wd4251       # DLL接口警告
+        /wd4275       # 非DLL接口类警告
+        /utf-8        # 使用UTF-8编码
     )
 else()
-    # GCC/Clang 编译器设置
-    add_compile_options(
+    target_compile_options(mite_engine_compile_options INTERFACE
         -Wall
         -Wextra
         -Wpedantic
@@ -60,9 +64,10 @@ else()
         -Wno-missing-field-initializers
     )
     
-    # 针对不同编译器优化
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        add_compile_options(-Wno-gnu-zero-variadic-macro-arguments)
+        target_compile_options(mite_engine_compile_options INTERFACE
+            -Wno-gnu-zero-variadic-macro-arguments
+        )
     endif()
 endif()
 
