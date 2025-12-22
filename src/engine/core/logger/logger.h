@@ -4,13 +4,17 @@
 // VS编译spdlog时，
 // fmt库某些内部实现会报warning
 // 不影响功能，可以安全忽略
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26495)
 #pragma warning(disable : 26498)
+#endif
 #include <spdlog/fmt/ostr.h>  // 支持自定义类型输出
 #include <spdlog/spdlog.h>
+// warning出栈
+#ifdef _MSC_VER
 #pragma warning(pop)
-
+#endif
 namespace mite {
 typedef std::shared_ptr<spdlog::logger> Logger;
 
