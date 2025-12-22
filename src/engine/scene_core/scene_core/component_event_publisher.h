@@ -1,7 +1,8 @@
 #ifndef MITE_SCENE_CORE_EVENT_CALLBACK_ADAPTER
 #define MITE_SCENE_CORE_EVENT_CALLBACK_ADAPTER
 
-#include "scene_core_event.h"
+#include "entity.h"
+#include "component.h"
 
 namespace mite {
 /**
@@ -31,14 +32,12 @@ class ComponentEventPublisher {
 
     // 组件添加事件
     RegisterCallbackComponentConstruct<T>([this](Entity entity, T &component) {
-      ComponentAddedEvent<T> event(entity, component);
-      EventBus::Publish<ComponentAddedEvent<T>>(event);
+      EventBus::Publish<ComponentAddedEvent<T>>(entity, component);
     });
 
     // 组件删除事件
     RegisterCallbackComponentDestroy<T>([this](Entity entity, T &component) {
-      ComponentRemovedEvent<T> event(entity, component);
-      EventBus::Publish<ComponentRemovedEvent<T>>(event);
+      EventBus::Publish<ComponentRemovedEvent<T>>(entity, component);
     });
   }
 

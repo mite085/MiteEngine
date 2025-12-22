@@ -3,7 +3,6 @@
 
 #include "entity.h"
 #include "scene_core/component_snapshot.h"
-#include "subscription_group.h"
 
 namespace mite {
 // 前向声明
@@ -42,7 +41,7 @@ class Component {
   /**
    * @brief 更新方法，每帧调用。(不要求子类实现)
    */
-  virtual void Update(float deltaTime, SceneRegistry &reg) {}
+  virtual void Update([[maybe_unused]] float deltaTime, [[maybe_unused]] SceneRegistry &reg) {}
   // ================== 组件标识相关 ======================
   /**
    * @brief 获取组件类型家族
@@ -105,7 +104,7 @@ class Component {
   // ================== 实体绑定相关 ======================
   /**
    * @brief 设定所属实体对象
-   * @param entity 实体对象
+   * @param m_Entity 实体对象
    *
    * 问题：
    * 组件是否应当维护实体？存疑。
@@ -208,9 +207,9 @@ class SnapshotComponentTraits: public SnapshotComponent {
    * @return std::unique_ptr<ISnapshot> 组件快照智能指针
    * @throws 如果组件不支持快照，默认实现返回nullptr
    */
-  auto CreateSnapshot() const
+  std::unique_ptr<ComponentSnapshot<T>> CreateSnapshot() const
   {
-    return CreateComponentSnapshot<T>(GetEntity(), GetSnapshotData());
+    return std::make_unique<ComponentSnapshot<T>>(GetEntity(), GetSnapshotData());
   }
   /**
    * @brief 应用快照数据到组件

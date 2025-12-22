@@ -46,7 +46,9 @@ class IComponentSystem {
   /**
    * @brief 系统更新（每帧执行，不强制子类实现）
    */
-  virtual void Update(float deltaTime, SceneRegistry &registry) {}
+  virtual void Update([[maybe_unused]] float deltaTime, [[maybe_unused]] SceneRegistry &registry)
+  {
+  }
 
   /**
    * @brief 获取该系统管理的组件类型列表
@@ -196,10 +198,10 @@ template<typename T> class SnapshotComponentSystem : public ComponentSystem<T> {
   {
     // 订阅组件添加/移除事件
     // Immediate同步模式
-    ComponentSystem::m_EventSubscriptions.SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
+    ComponentSystem<T>::m_EventSubscriptions.SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
         BIND_DISPATCH_FN(OnSnapshotApplied), EventPriority::High);
 
-    ComponentSystem::Initialize();
+    ComponentSystem<T>::Initialize();
   }
 
  private:
@@ -207,9 +209,9 @@ template<typename T> class SnapshotComponentSystem : public ComponentSystem<T> {
   {
     Entity entity = e.GetEntity();
     // 确保存在组件
-    if (m_AllComponents.find(entity) != m_AllComponents.end())
+    if (this->m_AllComponents.find(entity) != this->m_AllComponents.end())
       if (auto snapComponent = static_cast<SnapshotComponentTraits<TraitsDataType, FamilyID> *>(
-              m_AllComponents.at(entity)))
+              this->m_AllComponents.at(entity)))
         snapComponent->ApplySnapshot(e.GetData());
 
     e.SetResult(EventResult::Handled);
@@ -250,12 +252,12 @@ class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSys
   virtual void Shutdown() override
   {
     m_EventSubscriptions.UnsubscribeAll();
-    m_AllComponents.clear();
+    this->m_AllComponents.clear();
     m_DirtyComponents.clear();
   }
   void Clear() override
   {
-    m_AllComponents.clear();
+    this->m_AllComponents.clear();
     m_DirtyComponents.clear();
   }
   /**
@@ -298,8 +300,10 @@ class DirtyComponentSystem : public ComponentSystem<T>, public DirtyComponentSys
     // 并行收集优化
     std::vector<T *> localDirtyComponents;
     std::mutex mutex;
-    std::for_each(
-        std::execution::par, m_AllComponents.begin(), m_AllComponents.end(), [&](T *comp) {
+    std::for_each(std::execution::par,
+                  this->m_AllComponents.begin(),
+                  this->m_AllComponents.end(),
+                  [&](T *comp) {
           if (comp->IsDirty()) {
             std::lock_guard<std::mutex> lock(mutex);
             localDirtyComponents.push_back(comp);
