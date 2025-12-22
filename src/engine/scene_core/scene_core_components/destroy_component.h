@@ -38,7 +38,7 @@ struct DestroyComponent : public ComponentTraits<Distroy, Component::Family::Cle
   /**
    * @brief 序列化操作(空实现)
    */
-  bool Serialize(std::ostream &output) const override
+  bool Serialize([[maybe_unused]]std::ostream &output) const override
   {
     return true; // 无数据需要序列化
   }  

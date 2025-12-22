@@ -89,7 +89,7 @@ class TransformUpdatedEvent : public ComponentEvent<TransformComponent> {
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new TransformUpdatedEvent(entity, component);
+    return new TransformUpdatedEvent(this->m_Entity, this->m_Component);
   }
 };
 };  // namespace mite

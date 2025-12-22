@@ -77,7 +77,10 @@ class LightUpdatedEvent : public ComponentEvent<LightComponent> {
   {
   }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
-  Event *Clone() const override { return new LightUpdatedEvent(entity, component); }
+  Event *Clone() const override
+  {
+    return new LightUpdatedEvent(this->m_Entity, this->m_Component);
+  }
 };
 }  // namespace mite
 #endif  // MITE_SCENE_LIGHT_COMPONENT

@@ -85,7 +85,10 @@ class BoundingVolumeChangedEvent : public ComponentEvent<BoundingVolumeComponent
   }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 
-  Event *Clone() const override { return new BoundingVolumeChangedEvent(entity, component); }
+  Event *Clone() const override
+  {
+    return new BoundingVolumeChangedEvent(this->m_Entity, this->m_Component);
+  }
 };
 }  // namespace mite
 

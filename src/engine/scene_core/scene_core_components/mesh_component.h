@@ -74,7 +74,7 @@ class MeshChangedEvent : public ComponentEvent<MeshComponent> {
   {
   }
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_RENDER)
-  Event *Clone() const override { return new MeshChangedEvent(entity, component); }
+  Event *Clone() const override { return new MeshChangedEvent(this->m_Entity, this->m_Component); }
 };
 };  // namespace mite
 

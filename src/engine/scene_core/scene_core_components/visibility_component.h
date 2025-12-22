@@ -106,7 +106,7 @@ class VisibilityChangedEvent : public ComponentEvent<VisibilityComponent> {
 
   Event *Clone() const override
   {
-    return new VisibilityChangedEvent(entity, component);
+    return new VisibilityChangedEvent(this->m_Entity, this->m_Component);
   }
 };
 }  // namespace mite

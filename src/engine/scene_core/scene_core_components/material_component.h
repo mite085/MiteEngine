@@ -77,7 +77,7 @@ class MaterialChangedEvent : public ComponentEvent<MaterialComponent> {
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new MaterialChangedEvent(entity, component);
+    return new MaterialChangedEvent(this->m_Entity, this->m_Component);
   }
 };
 

@@ -97,7 +97,7 @@ class CameraComponentSystem : public SnapshotComponentSystem<CameraComponent> {
 //  EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
 //  Event *Clone() const override
 //  {
-//    return new MainCameraChangedEvent(entity, component);
+//    return new MainCameraChangedEvent(this->m_Entity, this->m_Component);
 //  }
 //};
 
@@ -115,7 +115,7 @@ class CameraChangedEvent : public ComponentEvent<CameraComponent> {
   EVENT_CLASS_CATEGORY(EVENT_CATEGORY_SCENE_CHANGE)
   Event *Clone() const override
   {
-    return new CameraChangedEvent(entity, component);
+    return new CameraChangedEvent(this->m_Entity, this->m_Component);
   }
 };
 };  // namespace mite
