@@ -3,6 +3,8 @@ name: Code Format Check
 on:
   pull_request:
     branches: [ main, develop ]
+  push:
+    branches: [ main ]
 
 jobs:
   clang-format:
@@ -11,13 +13,31 @@ jobs:
     - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
     
     - name: Setup clang-format
       uses: jidicula/clang-format-action@v4
       with:
         clang-format-version: '14'
         check-path: 'src'
+        style: 'file'  # 使用项目中的 .clang-format 文件
     
     - name: Check formatting
       run: |
-        git diff --exit-code || (echo "Code formatting issues found. Run clang-format locally." && exit 1)
+        # 显示格式化差异
+        echo "=== Formatting differences ==="
+        git diff --color=always
+        
+        # 检查是否有未提交的更改
+        if git diff --quiet; then
+          echo "✅ Code formatting is correct"
+        else
+          echo "❌ Code formatting issues found"
+          echo ""
+          echo "To fix locally, run:"
+          echo "  find src -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format-14 -i"
+          echo ""
+          echo "Or use the provided script:"
+          echo "  ./scripts/format.sh"
+          exit 1
+        fi
