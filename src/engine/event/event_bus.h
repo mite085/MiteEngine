@@ -3,7 +3,7 @@
 
 #include "dispatcher.h"
 #include "subscription_flags.h"
-#include "thread/parallel_utils.h" // 线程池
+#include "thread/parallel_utils.h"  // 线程池
 #include "thread/thread_pool_manager.h"
 
 namespace mite {
@@ -28,8 +28,7 @@ namespace mite {
  */
 class EventBus {
  public:
-  
-  using HandlerID = size_t;                           // 处理器ID类型
+  using HandlerID = size_t;  // 处理器ID类型
 
   // 订阅者信息结构
   struct Subscription {
@@ -68,10 +67,19 @@ class EventBus {
     return instance;
   }
 
-  // 辅助的发布函数
-  template<typename T> static void Publish(T &event)
+  /**
+   * @brief 创建并发布事件（完美转发构造参数）
+   * @tparam T 事件类型
+   * @tparam Args 构造参数类型
+   * @param args 事件构造参数
+   */
+  template<typename T, typename... Args> static void Publish(Args &&...args)
   {
-    Get().Post<T>(event);
+    static_assert(std::is_base_of<Event, T>::value, "T must inherit from Event");
+
+    // 就地构造事件对象并发布
+    T event(std::forward<Args>(args)...);
+    Get().Post<T>(std::forward<T>(event));
   }
 
   /**
@@ -79,15 +87,17 @@ class EventBus {
    * @tparam T 事件类型
    * @param event 事件对象
    */
-  template<typename T> void Post(T &event)
+  template<typename T> void Post(T &&event)
   {
     static_assert(std::is_base_of<Event, T>::value, "Must inherit from Event");
 
     // 复制订阅者列表（带锁）
-    auto [typeSubscribers, categorySubscribers] = CopySubscribersForEvent<T>(event);
+    auto [typeSubscribers,
+          categorySubscribers] = CopySubscribersForEvent<T>(std::forward<T>(event));
 
     // 根据每个订阅者的flags分别处理（无锁）
-    ProcessEventWithSubscribers(event, std::move(typeSubscribers), std::move(categorySubscribers));
+    ProcessEventWithSubscribers(
+        std::forward<T>(event), std::move(typeSubscribers), std::move(categorySubscribers));
   }
 
   /**
@@ -222,7 +232,7 @@ class EventBus {
   /**
    * @brief 核心处理逻辑：根据订阅者的flags分别处理（无锁）
    */
-  void ProcessEventWithSubscribers(Event &event,
+  void ProcessEventWithSubscribers(Event &&event,
                                    std::vector<Subscription> typeSubscribers,
                                    std::vector<Subscription> categorySubscribers)
   {
@@ -259,27 +269,27 @@ class EventBus {
       }
     }
     // 立即同步处理
-    ProcessSyncSubscribers(event, syncSubscribers);
+    ProcessSyncSubscribers(std::forward<Event>(event), syncSubscribers);
 
     // 立即异步处理
     if (!asyncSubscribers.empty()) {
-      ProcessAsyncSubscribers(event, asyncSubscribers);  // 非延迟模式
+      ProcessAsyncSubscribers(std::forward<Event>(event), asyncSubscribers);  // 非延迟模式
     }
 
     // 延迟同步处理（加入延迟队列，但ProcessQueue时同步执行）
     if (!deferredSyncSubscribers.empty()) {
-      ProcessDeferredSubscribers(event, deferredSyncSubscribers, false);
+      ProcessDeferredSubscribers(std::forward<Event>(event), deferredSyncSubscribers, false);
     }
 
     // 延迟异步处理（加入延迟队列，ProcessQueue时异步执行）
     if (!deferredAsyncSubscribers.empty()) {
-      ProcessDeferredSubscribers(event, deferredAsyncSubscribers, true);
+      ProcessDeferredSubscribers(std::forward<Event>(event), deferredAsyncSubscribers, true);
     }
   }
   /**
    * @brief 处理同步订阅者
    */
-  void ProcessSyncSubscribers(Event &event, std::vector<Subscription> &subscribers)
+  void ProcessSyncSubscribers(Event &&event, std::vector<Subscription> &subscribers)
   {
     for (auto &sub : subscribers) {
       if (!event.ShouldContinue()) {
@@ -299,7 +309,7 @@ class EventBus {
   } /**
      * @brief 处理异步订阅者
      */
-  void ProcessAsyncSubscribers(Event &event, std::vector<Subscription> subscribers)
+  void ProcessAsyncSubscribers(Event &&event, std::vector<Subscription> subscribers)
   {
     // 创建副本
     auto eventCopy = std::unique_ptr<Event>(event.Clone());
@@ -330,7 +340,7 @@ class EventBus {
   /**
    * @brief 处理延迟订阅者
    */
-  void ProcessDeferredSubscribers(Event &event,
+  void ProcessDeferredSubscribers(Event &&event,
                                   std::vector<Subscription> subscribers,
                                   bool isAsync = false)
   {
@@ -434,7 +444,7 @@ class EventBus {
     std::type_index typeIndex = typeid(T);
     if (auto it = m_Subscribers.find(typeIndex); it != m_Subscribers.end()) {
       typeSubscribers = it->second;
-      EnsureSubscribersSorted(typeIndex, typeSubscribers); // 排序需要上锁
+      EnsureSubscribersSorted(typeIndex, typeSubscribers);  // 排序需要上锁
     }
 
     // 复制类别订阅者
