@@ -1,0 +1,23 @@
+name: Code Format Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+    
+    - name: Setup clang-format
+      uses: jidicula/clang-format-action@v4
+      with:
+        clang-format-version: '14'
+        check-path: 'src'
+    
+    - name: Check formatting
+      run: |
+        git diff --exit-code || (echo "Code formatting issues found. Run clang-format locally." && exit 1)
