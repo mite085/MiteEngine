@@ -18,7 +18,7 @@ SceneTreePanel::SceneTreePanel(SceneGraph &sceneGraph, const std::string &name)
       BIND_DISPATCH_FN(OnSceneNodeSelected));
 }
 
-void SceneTreePanel::Update(float deltaTime) {}
+void SceneTreePanel::Update([[maybe_unused]] float deltaTime) {}
 
 void SceneTreePanel::Render()
 {
@@ -33,7 +33,7 @@ void SceneTreePanel::Render()
     TreeNodeProps *props = static_cast<TreeNodeProps *>(dropTargetData);
     std::shared_ptr<SceneNode> dropNode = static_cast<std::shared_ptr<SceneNode> >(props->nodePtr);
     if (dropNode) {
-      EventBus::Publish<SceneNodeParentChangeEvent>(SceneNodeParentChangeEvent(dropNode, nullptr));
+      EventBus::Publish<SceneNodeParentChangeEvent>(dropNode, nullptr);
     }
   };
   m_Renderer.RenderTreeVoid(dragDropTargetContent);
@@ -63,16 +63,16 @@ void SceneTreePanel::RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node)
     TreeNodeProps *props = static_cast<TreeNodeProps *>(dropTargetData);
     std::shared_ptr<SceneNode> dropNode = props->nodePtr;
     if (dropNode) {
-      EventBus::Publish<SceneNodeParentChangeEvent>(SceneNodeParentChangeEvent(dropNode, node));
+      EventBus::Publish<SceneNodeParentChangeEvent>(dropNode, node);
     }
     else {
-      EventBus::Publish<SceneNodeParentChangeEvent>(SceneNodeParentChangeEvent(dropNode, nullptr));
+      EventBus::Publish<SceneNodeParentChangeEvent>(dropNode, nullptr);
     }
   };
 
   // 当选择Item时发布事件
   auto itemSelectedContent = [this, node]() {
-    EventBus::Publish<SceneNodeSelectedEvent>(SceneNodeSelectedEvent(node));
+    EventBus::Publish<SceneNodeSelectedEvent>(node);
   };
 
   // 递归渲染子节点函数

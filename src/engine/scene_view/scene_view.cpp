@@ -44,17 +44,15 @@ void SceneView::Initialize()
   });
 
   // 1.3. 主相机的可见性组件
-  VisibilityComponent &cameraVisibility =
-      m_SceneCore.GetRegistry().AddComponent<VisibilityComponent>(m_CameraEntity);
+  m_SceneCore.GetRegistry().AddComponent<VisibilityComponent>(m_CameraEntity);
   // 1.4. 主相机包围盒组件（仅当创建了包围盒才会纳入SceneGraph的空间加速结构管理）
-  BoundingVolumeComponent &cameraBoundingVolume =
-      m_SceneCore.GetRegistry().AddComponent<BoundingVolumeComponent>(m_CameraEntity);
+  m_SceneCore.GetRegistry().AddComponent<BoundingVolumeComponent>(m_CameraEntity);
 
   // 2. 创建相机实例
   m_CameraInstance = std::make_shared<CameraInstance>(cameraComponent.GetCamera());
   m_CameraInstance->InitializeUBO();
   // 2.1. 初始化UBO后发布事件委托RenderContext注册并执行着色器绑定
-  EventBus::Publish<CameraInstanceCreateEvent>(CameraInstanceCreateEvent(m_CameraInstance));
+  EventBus::Publish<CameraInstanceCreateEvent>(m_CameraInstance);
 
   m_Logger->debug("SceneView initialized");
 }
@@ -104,7 +102,7 @@ bool SceneView::Pick(glm::vec2 screenPosUV)
   std::shared_ptr<SceneNode> node = m_SceneGraph.RaycastFirst(ray);
   if (node) {
     // 查询到节点，发布SceneNodeSelected事件
-    EventBus::Publish<SceneNodeSelectedEvent>(SceneNodeSelectedEvent(node));
+    EventBus::Publish<SceneNodeSelectedEvent>(node);
     return true;
   }
   else {

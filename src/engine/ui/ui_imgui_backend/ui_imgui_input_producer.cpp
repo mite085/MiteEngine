@@ -1,7 +1,6 @@
 #include "ui_imgui_input_producer.h"
 
 namespace mite {
-
 // 静态成员初始化
 ImVec2 UIImguiInputProducer::s_LastMousePos = ImVec2(-1, -1);
 bool UIImguiInputProducer::s_LastMouseButtons[ImGuiMouseButton_COUNT] = {false};
@@ -9,9 +8,6 @@ bool UIImguiInputProducer::s_LastKeys[ImGuiKey_COUNT] = {false};
 
 void UIImguiInputProducer::ProduceInputEvents()
 {
-  // 获取ImGui输入状态
-  ImGuiIO &io = ImGui::GetIO();
-
   // 按顺序生产各类输入事件
   ProduceMouseMoveEvents();
   ProduceMouseButtonEvents();
@@ -25,7 +21,7 @@ void UIImguiInputProducer::ProduceMouseMoveEvents()
 
   // 只在鼠标位置变化时生成事件
   if (io.MousePos.x != s_LastMousePos.x || io.MousePos.y != s_LastMousePos.y) {
-    EventBus::Publish<MouseMoveEvent>(MouseMoveEvent(io.MousePos.x, io.MousePos.y));
+    EventBus::Publish<MouseMoveEvent>(io.MousePos.x, io.MousePos.y);
     s_LastMousePos = io.MousePos;
   }
 }
@@ -43,13 +39,11 @@ void UIImguiInputProducer::ProduceMouseButtonEvents()
     if (currentState != lastState) {
       if (currentState) {
         // 鼠标按下事件
-        EventBus::Publish<MouseButtonPressedEvent>(
-            MouseButtonPressedEvent(button, 0, io.MousePos.x, io.MousePos.y));
+        EventBus::Publish<MouseButtonPressedEvent>(button, 0, io.MousePos.x, io.MousePos.y);
       }
       else {
         // 鼠标释放事件
-        EventBus::Publish<MouseButtonReleasedEvent>(
-            MouseButtonReleasedEvent(button, io.MousePos.x, io.MousePos.y));
+        EventBus::Publish<MouseButtonReleasedEvent>(button, io.MousePos.x, io.MousePos.y);
       }
       s_LastMouseButtons[button] = currentState;
     }
@@ -69,11 +63,11 @@ void UIImguiInputProducer::ProduceKeyboardEvents()
       if (glfwKey != GLFW_KEY_UNKNOWN) {
         if (currentState) {
           // 键盘按下事件（暂时不支持重复按键检测）
-          EventBus::Publish<KeyPressedEvent>(KeyPressedEvent(glfwKey, 0, false));
+          EventBus::Publish<KeyPressedEvent>(glfwKey, 0, false);
         }
         else {
           // 键盘释放事件
-          EventBus::Publish<KeyReleasedEvent>(KeyReleasedEvent(glfwKey));
+          EventBus::Publish<KeyReleasedEvent>(glfwKey);
         }
       }
       s_LastKeys[imguiKey] = currentState;
@@ -87,7 +81,7 @@ void UIImguiInputProducer::ProduceMouseScrollEvents()
 
   // 有滚轮偏移就生成事件
   if (io.MouseWheel != 0 || io.MouseWheelH != 0) {
-    EventBus::Publish<MouseScrollEvent>(MouseScrollEvent(io.MouseWheelH, io.MouseWheel));
+    EventBus::Publish<MouseScrollEvent>(io.MouseWheelH, io.MouseWheel);
 
     // 注意：不需要重置io.MouseWheel和io.MouseWheelH
     // ImGui会在每帧开始时自动重置这些值，我们只需要在它们非零时生成事件即可
@@ -340,5 +334,4 @@ int UIImguiInputProducer::MapImGuiKeyToGLFW(int imguiKey)
       return GLFW_KEY_UNKNOWN;
   }
 }
-
 }  // namespace mite

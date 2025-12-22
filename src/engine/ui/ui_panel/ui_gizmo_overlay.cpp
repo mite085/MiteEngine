@@ -11,7 +11,7 @@ GizmoOverlay::GizmoOverlay()
   m_CurrentMode = ImGuizmo::MODE::WORLD;
 }
 
-void GizmoOverlay::Update(float deltaTime) {}
+void GizmoOverlay::Update([[maybe_unused]] float deltaTime) {}
 
 void GizmoOverlay::Render(OverlayContext &context)
 {
@@ -101,8 +101,7 @@ void GizmoOverlay::Render(OverlayContext &context)
 
   // 若处于using状态，则发布选中物体变换事件
   if (m_IsUsing) {
-    EventBus::Publish<ViewportPickedUpdateEvent>(
-        ViewportPickedUpdateEvent(context.modelTransform));
+    EventBus::Publish<ViewportPickedUpdateEvent>(context.modelTransform);
   }
 
   // Over逻辑完全由Imguizmo判断

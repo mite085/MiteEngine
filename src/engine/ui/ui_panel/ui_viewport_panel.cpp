@@ -102,7 +102,7 @@ void ViewportPanel::UpdatePanelBorder(const glm::vec2 &newPos, const glm::vec2 &
     m_PanelSize = newSize;
 
     // 发布Resize事件，Pipeline和SceneView接收事件后调整FBO尺寸与相机宽高比
-    EventBus::Publish<ViewportResizeEvent>(ViewportResizeEvent(m_PanelSize));
+    EventBus::Publish<ViewportResizeEvent>(m_PanelSize);
 
     LOG_DEBUG("ViewportPanel size changed to {}x{}", newSize.x, newSize.y);
   }

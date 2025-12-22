@@ -149,7 +149,7 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
       subMeshLodChain.materialIndex = aiMesh->mMaterialIndex;
 
       // 生成零级LOD
-      subMeshLodChain.baseSection = ProcessMesh(aiMesh, scene, subMeshLodChain.layout);
+      subMeshLodChain.baseSection = ProcessMesh(aiMesh, subMeshLodChain.layout);
 
       // 生成多级LOD
       if (generateLODs) {
@@ -190,8 +190,7 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
   std::shared_ptr<ModelSourceData> sourceData = CreateModelSourceData(modelAsset, subMeshData);
 
   // 5. 发布事件，委托RendererDevice创建GPU资源
-  ModelLoadEvent event(sourceData, modelAsset);
-  EventBus::Publish<ModelLoadEvent>(event);
+  EventBus::Publish<ModelLoadEvent>(sourceData, modelAsset);
 
   // 6. 存储到缓存
   if (modelCache.Store(modelAsset)) {
@@ -204,7 +203,7 @@ ModelAssetID ModelLoader::LoadModelInternal(ModelCache &modelCache,
   }
 }
 
-MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, const aiScene *scene, VertexLayout layout)
+MeshData ModelLoader::ProcessMesh(const aiMesh *aiMesh, VertexLayout layout)
 {
   MeshData subMesh;
 

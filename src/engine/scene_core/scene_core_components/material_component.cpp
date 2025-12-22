@@ -4,7 +4,8 @@
 namespace mite {
 MaterialComponent::MaterialComponent(){}
 
-void MaterialComponent::Update(float deltaTime, SceneRegistry &registry)
+void MaterialComponent::Update([[maybe_unused]] float deltaTime,
+                               [[maybe_unused]] SceneRegistry &registry)
 {
   // TODO: 此处应当为Dirty式更新。等后续制作材质属性页时处理，每次编辑m_MaterialInstance->m_UBOBinding.uboData时执行。
   m_MaterialInstance->UpdateUBO();
@@ -19,7 +20,7 @@ std::shared_ptr<MaterialInstance> MaterialComponent::GetMaterialInstance() const
 void MaterialComponent::SetMaterialInstance(std::shared_ptr<MaterialInstance> handle)
 {
     m_MaterialInstance = handle;
-    EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
+    EventBus::Publish<MaterialChangedEvent>(GetEntity(), *this);
 }
 
 // ================== 组件接口实现 ======================
@@ -56,7 +57,7 @@ void MaterialComponent::SetSnapshotData(const MaterialInstance &data)
 {
   *m_MaterialInstance = data;
   // 发布更新事件
-  EventBus::Publish<MaterialChangedEvent>(MaterialChangedEvent(GetEntity(), *this));
+  EventBus::Publish<MaterialChangedEvent>(GetEntity(), *this);
 }
 
 void MaterialComponentSystem::Update(float deltaTime, SceneRegistry &registry) {

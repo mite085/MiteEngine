@@ -136,8 +136,8 @@ TextureAssetID TextureLoader::LoadTextureInternal(TextureCache &cache,
   TextureSourceData sourceData = textureAsset->metadata.generateSourceData(std::move(pixelVector));
 
   // 发布纹理加载事件，委托Renderer创建GPU资源
-  TextureLoadEvent event(std::make_shared<TextureSourceData>(std::move(sourceData)), textureAsset);
-  EventBus::Publish<TextureLoadEvent>(event);
+  EventBus::Publish<TextureLoadEvent>(std::make_shared<TextureSourceData>(std::move(sourceData)),
+                                      textureAsset);
 
  // 将纹理资产存入缓存
   if (cache.Store(textureAsset)) {
@@ -225,9 +225,9 @@ TextureFormat TextureLoader::DetermineTextureFormat(int channels)
   }
 }
 
-TextureTarget TextureLoader::DetermineTextureTarget(const std::string &path)
+TextureTarget TextureLoader::DetermineTextureTarget([[maybe_unused]] const std::string &path)
 {
-  // 根据文件扩展名或路径特征推断纹理目标类型
+  // TODO：根据文件扩展名或路径特征推断纹理目标类型
   // 默认使用2D纹理，后续可根据需要扩展
   return TextureTarget::TEXTURE_2D;
 }

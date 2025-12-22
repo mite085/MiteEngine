@@ -41,7 +41,7 @@ std::vector<MaterialAssetID> MaterialLoader::LoadMaterialsFromGLTF(MaterialCache
         // 生成MaterialSourceData并发布事件
         MaterialSourceData sourceData = materialAsset->metadata.generateSourceData(
             textureResolver);
-        EventBus::Publish(MaterialLoadedEvent(sourceData, materialAsset));
+        EventBus::Publish<MaterialLoadedEvent>(sourceData, materialAsset);
       }
     }
     else {

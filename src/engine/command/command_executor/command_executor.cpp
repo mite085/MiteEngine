@@ -325,7 +325,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
   m_Registry.SetCommandState(task.handle, preExecutingState);
 
   // 1.3. 发布执行开始事件
-  EventBus::Publish<CommandExecuteEvent>(CommandExecuteEvent(command.get(), task.context));
+  EventBus::Publish<CommandExecuteEvent>(command.get(), task.context);
 
   // 1.4. 记录开始执行
   task.context->RecordCommandExecutionStart(task.handle);
@@ -393,8 +393,7 @@ CommandResult CommandExecutor::ExecuteSingleCommand(CommandTask task)
     if (m_Registry.ReStoreCommand(task.handle, std::move(command))) {
       // 发布事件，使用原句柄
       result.commandHandle = task.handle;
-      CommandCompletedEvent event(result);
-      EventBus::Publish(event);
+      EventBus::Publish<CommandCompletedEvent>(result);
 
       m_Logger->debug("Command re-stored to original handle: {}", task.handle.ToString());
     }

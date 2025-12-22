@@ -89,8 +89,7 @@ bool UIStyleManager::SetCurrentStyle(const std::string &name)
 
   // 发布样式变更事件
   // 当后端是Imgui时，由ImGuiStyleAdapter负责消费事件，执行样式切换操作
-  StyleChangedEvent event(GetStyle(name));
-  EventBus::Publish<StyleChangedEvent>(event);
+  EventBus::Publish<StyleChangedEvent>(GetStyle(name));
 
   m_Logger->info("Current style changed from {} to {}", oldStyleName, name);
   return true;

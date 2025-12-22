@@ -1024,8 +1024,8 @@ void ImGuiUIRender::UpdateFileDialogs()
         }
 
         // 发布事件
-        EventBus::Publish<FileSelectedEvent>(FileSelectedEvent{
-            filePathName, ImGuiFileDialog::Instance()->GetCurrentFileName(), filePath});
+        EventBus::Publish<FileSelectedEvent>(
+            filePathName, ImGuiFileDialog::Instance()->GetCurrentFileName(), filePath);
       }
       else {
         // 用户取消

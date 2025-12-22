@@ -30,8 +30,7 @@ Entity SceneRegistry::CreateEntity(const std::string &name, Entity parent)
   tag.SetTag(name.empty() ? "Entity_" + id.String() : name);
 
   // 创建事件并发布（此处不检查Parent的可用性，空实体对应无Parent的根节点语义）
-  EntityCreatedEvent event(entity, parent);
-  EventBus::Publish<EntityCreatedEvent>(event);
+  EventBus::Publish<EntityCreatedEvent>(entity, parent);
 
   return entity;
 }

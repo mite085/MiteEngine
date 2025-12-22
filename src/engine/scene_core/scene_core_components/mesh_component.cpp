@@ -14,7 +14,7 @@ std::shared_ptr<Mesh> MeshComponent::GetMesh() const
 void MeshComponent::SetMesh(std::shared_ptr<Mesh> mesh)
 {
   m_Mesh = mesh;
-  EventBus::Publish<MeshChangedEvent>(MeshChangedEvent(GetEntity(), *this));
+  EventBus::Publish<MeshChangedEvent>(GetEntity(), *this);
 }
 
 // 组件接口实现 ==========================================
@@ -51,7 +51,7 @@ void MeshComponent::SetSnapshotData(const Mesh &data)
 {
   *m_Mesh = data;
   // 发布更新事件
-  EventBus::Publish<MeshChangedEvent>(MeshChangedEvent(GetEntity(), *this));
+  EventBus::Publish<MeshChangedEvent>(GetEntity(), *this);
 }
 
 // Mesh组件系统实现 ======================================

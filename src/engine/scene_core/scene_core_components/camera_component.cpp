@@ -10,12 +10,10 @@ CameraComponent::CameraComponent(CameraProjectionType type)
 
 void CameraComponent::SetPerspective(float fov, float near, float far)
 {
-  float aspect = m_Camera->GetAspectRatio();
   m_Camera->SetPerspective(fov, near, far);
 }
 void CameraComponent::SetOrthographic(float size, float near, float far)
 {
-  float aspect = m_Camera->GetAspectRatio();
   m_Camera->SetOrthographic(size, near, far);
 }
 
@@ -87,7 +85,7 @@ void CameraComponent::SetSnapshotData(const Camera &data)
 {
   *m_Camera = data;
   // 发布更新事件
-  EventBus::Publish<CameraChangedEvent>(CameraChangedEvent(GetEntity(), *this));
+  EventBus::Publish<CameraChangedEvent>(GetEntity(), *this);
 }
 
 // ==================== CameraComponentSystem ====================
@@ -99,7 +97,7 @@ std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() cons
 
 //Entity CameraComponentSystem::GetMainCameraEntity() const
 //{
-//  for (auto [entity, component] : m_AllComponents) {
+//  for (auto [m_Entity, component] : m_AllComponents) {
 //    if (component && component->GetUsage() == CameraUsage::MainView) {
 //      return component->GetEntity();
 //    }
@@ -114,7 +112,7 @@ std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() cons
 //  // 遍历组件列表，获取新camera组件和旧camera组件
 //  CameraComponent *oldMain = nullptr, *newMain = nullptr;
 //
-//  for (auto [entity, component] : m_AllComponents) {
+//  for (auto [m_Entity, component] : m_AllComponents) {
 //    if (!component) {
 //      LOG_ERROR("Empty camera component pointer in camera component system!");
 //      continue;
@@ -141,7 +139,7 @@ std::vector<std::type_index> CameraComponentSystem::GetSystemDependencies() cons
 //    EventBus::Publish<MainCameraChangedEvent>(MainCameraChangedEvent(mainCamera, *newMain));
 //  }
 //  else {
-//    LOG_ERROR("Invalid camera entity when setting new main camera");
+//    LOG_ERROR("Invalid camera m_Entity when setting new main camera");
 //  }
 //}
 };  // namespace mite

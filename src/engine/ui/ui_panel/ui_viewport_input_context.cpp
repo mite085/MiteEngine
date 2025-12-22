@@ -37,8 +37,7 @@ void ViewportInputContext::Apply(Transform cameraTransform)
   cameraTransform.PanCamera(m_CameraPanCache.x, m_CameraPanCache.y);
 
   // 发布相机变换事件（注意，这里是没有Dirty检测的，也就是每帧都会执行更新操作，向SceneGraph塞入Dirty节点）
-  EventBus::Publish<ViewportCameraUpdateEvent>(
-      ViewportCameraUpdateEvent(cameraTransform, m_CameraZoomCache));
+  EventBus::Publish<ViewportCameraUpdateEvent>(cameraTransform, m_CameraZoomCache);
 
   // 清空缓存
   ClearCameraCache();
@@ -98,7 +97,7 @@ void ViewportInputContext::ProcessMouseButtonReleasedEvent(MouseButtonReleasedEv
   // 左键短按释放时（小于0.5秒），执行选择（长按无响应）
   if (time < 0.5 && e.GetButton() == GLFW_MOUSE_BUTTON_LEFT) {
     glm::vec2 uv = ScreenToUV({e.GetXPos(), e.GetYPos()});
-    EventBus::Publish<ViewportPickedEvent>(ViewportPickedEvent(uv));
+    EventBus::Publish<ViewportPickedEvent>(uv);
   }
 }
 
@@ -121,7 +120,7 @@ void ViewportInputContext::ProcessKeyReleasedEvent(KeyReleasedEvent &e)
   m_InputStateTracker->OnKeyReleased(e.GetKey());
 }
 
-void ViewportInputContext::ProcessKeyTypedEvent(KeyTypedEvent &e) {}
+void ViewportInputContext::ProcessKeyTypedEvent([[maybe_unused]] KeyTypedEvent &e) {}
 
 glm::vec2 ViewportInputContext::ScreenToUV(const glm::vec2 &screenPos)
 {

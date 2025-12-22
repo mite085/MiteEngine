@@ -25,13 +25,13 @@ void UISystem::Initialize(void *nativeWindow)
   m_Menu = std::make_unique<UIMenu>();
 
   // 发布初始化完成事件
-  EventBus::Publish<UISystemInitializedEvent>(UISystemInitializedEvent());
+  EventBus::Publish<UISystemInitializedEvent>();
 }
 
 void UISystem::Shutdown()
 {
   // 发布关闭事件
-  EventBus::Publish<UISystemShutdownEvent>(UISystemShutdownEvent());
+  EventBus::Publish<UISystemShutdownEvent>();
 
   // 清理面板
   m_Panels.clear();
@@ -94,7 +94,7 @@ void UISystem::RegisterPanel(std::shared_ptr<UIPanel> panel)
   m_Panels.insert(panel);
 
   // 发布面板创建事件
-  EventBus::Publish<PanelOpenedEvent>(PanelOpenedEvent(panel));
+  EventBus::Publish<PanelOpenedEvent>(panel);
 }
 
 void UISystem::DestroyPanel(std::shared_ptr<UIPanel> panel)
@@ -102,7 +102,7 @@ void UISystem::DestroyPanel(std::shared_ptr<UIPanel> panel)
   auto it = m_Panels.find(panel);
   if (it != m_Panels.end()) {
     // 发布面板关闭事件
-    EventBus::Publish<PanelClosedEvent>(PanelClosedEvent(panel));
+    EventBus::Publish<PanelClosedEvent>(panel);
     m_Panels.erase(it);
   }
 }

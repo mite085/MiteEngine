@@ -15,7 +15,7 @@ void BoundingVolumeComponent::SetVolume(const BoundingVolume &volume)
 {
   // 直接使用默认的拷贝构造函数
   *m_Volume = volume;
-  EventBus::Publish<BoundingVolumeChangedEvent>(BoundingVolumeChangedEvent(GetEntity(), *this));
+  EventBus::Publish<BoundingVolumeChangedEvent>(GetEntity(), *this);
 }
 
 std::vector<std::type_index> BoundingVolumeComponent::GetDependencies() const
@@ -49,7 +49,7 @@ void BoundingVolumeComponent::SetSnapshotData(const BoundingVolume &data)
 {
   *m_Volume = data;
   // 发布更新事件
-  EventBus::Publish<BoundingVolumeChangedEvent>(BoundingVolumeChangedEvent(GetEntity(), *this));
+  EventBus::Publish<BoundingVolumeChangedEvent>(GetEntity(), *this);
 }
 // ==================== BoundingVolumeComponentSystem ====================
 }  // namespace mite

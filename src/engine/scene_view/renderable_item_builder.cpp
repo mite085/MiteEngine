@@ -302,7 +302,7 @@ std::shared_ptr<MeshInstance> RenderableItemBuilder::CreateMeshInstance(
     meshInstance->UpdateUBO(worldTransform);
 
     // 发布MeshInstance创建事件，委托RenderContext注册和绑定着色器
-    EventBus::Publish<MeshInstanceCreateEvent>(MeshInstanceCreateEvent(meshInstance));
+    EventBus::Publish<MeshInstanceCreateEvent>(meshInstance);
 
     return meshInstance;
   }

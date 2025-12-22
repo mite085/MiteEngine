@@ -199,7 +199,7 @@ void MaterialTemplate::InitializeMaterialInstance(std::shared_ptr<MaterialInstan
   instance->InitializeUBO();
 
   // 发布事件委托RenderContext注册材质实例、绑定UBO到shader
-  EventBus::Publish<MaterialInstanceCreateEvent>(MaterialInstanceCreateEvent(instance));
+  EventBus::Publish<MaterialInstanceCreateEvent>(instance);
 
   // 从源数据填充材质数据
   MaterialUniformBuffer materialData;

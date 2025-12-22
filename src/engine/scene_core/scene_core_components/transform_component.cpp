@@ -33,7 +33,7 @@ void TransformComponent::SetLocalTransform(const Transform &transform)
 {
   if (m_Transform) {
     *m_Transform = transform;
-    EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
+    EventBus::Publish<TransformUpdatedEvent>(GetEntity(), *this);
   }
 }
 void TransformComponent::SetLocalTransform(std::function<void(Transform &)> transformOperator)
@@ -45,7 +45,7 @@ void TransformComponent::SetLocalTransform(std::function<void(Transform &)> tran
     // 但一旦其他模块获取到事件之后，使用m_Transform.Get()获取值进行更新时
     // 会自动执行UpdateMatrix，清除脏标记（Transform内部的Dirty自洽），
     // 所以可以在Set之后立即发布事件，无需担心Transform内部数据迟滞的问题。
-    EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
+    EventBus::Publish<TransformUpdatedEvent>(GetEntity(), *this);
   }
 }
 
@@ -73,6 +73,6 @@ void TransformComponent::SetSnapshotData(const Transform &data)
 {
   *m_Transform = data;
   // 发布更新事件
-  EventBus::Publish<TransformUpdatedEvent>(TransformUpdatedEvent(GetEntity(), *this));
+  EventBus::Publish<TransformUpdatedEvent>(GetEntity(), *this);
 }
 };  // namespace mite

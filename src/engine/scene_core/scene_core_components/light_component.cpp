@@ -22,7 +22,7 @@ void LightComponent::SetLight(std::shared_ptr<Light> light)
 {
   if (m_Light != light) {
     m_Light = light;
-    EventBus::Publish<LightUpdatedEvent>(LightUpdatedEvent(GetEntity(), *this));
+    EventBus::Publish<LightUpdatedEvent>(GetEntity(), *this);
   }
 }
 
@@ -54,7 +54,7 @@ void LightComponent::SetColor(const glm::vec3 &color)
 {
   if (m_Light && m_Light->GetColor() != color) {
     m_Light->SetColor(color);
-    EventBus::Publish<LightUpdatedEvent>(LightUpdatedEvent(GetEntity(), *this));
+    EventBus::Publish<LightUpdatedEvent>(GetEntity(), *this);
   }
 }
 
@@ -68,7 +68,7 @@ void LightComponent::SetIntensity(float intensity)
 {
   if (m_Light && m_Light->GetIntensity() != intensity) {
     m_Light->SetIntensity(intensity);
-    EventBus::Publish<LightUpdatedEvent>(LightUpdatedEvent(GetEntity(), *this));
+    EventBus::Publish<LightUpdatedEvent>(GetEntity(), *this);
   }
 }
 
@@ -81,7 +81,7 @@ void LightComponent::SetEnabled(bool enabled)
 {
   if (m_Light && m_Light->IsEnabled() != enabled) {
     m_Light->SetEnabled(enabled);
-    EventBus::Publish<LightUpdatedEvent>(LightUpdatedEvent(GetEntity(), *this));
+    EventBus::Publish<LightUpdatedEvent>(GetEntity(), *this);
   }
 }
 
@@ -108,7 +108,7 @@ void LightComponent::SetProperties(const LightProperties &props)
 {
   if (m_Light) {
     m_Light->SetProperties(props);
-    EventBus::Publish<LightUpdatedEvent>(LightUpdatedEvent(GetEntity(), *this));
+    EventBus::Publish<LightUpdatedEvent>(GetEntity(), *this);
   }
 }
 
@@ -139,7 +139,7 @@ void LightComponent::SetSnapshotData(const Light &data)
 {
   *m_Light = data;
   // 发布更新事件
-  EventBus::Publish<LightUpdatedEvent>(LightUpdatedEvent(GetEntity(), *this));
+  EventBus::Publish<LightUpdatedEvent>(GetEntity(), *this);
 }
 
 }  // namespace mite

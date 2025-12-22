@@ -10,7 +10,7 @@ void VisibilityComponent::SetVisible(bool visible)
 {
   if (m_Visibility.m_IsVisible != visible) {
     m_Visibility.m_IsVisible = visible;
-    EventBus::Publish<VisibilityChangedEvent>(VisibilityChangedEvent(GetEntity(), *this));
+    EventBus::Publish<VisibilityChangedEvent>(GetEntity(), *this);
   }
 }
 // ==================== 掩码操作 ====================
@@ -21,11 +21,10 @@ uint32_t VisibilityComponent::GetVisibilityMask() const
 void VisibilityComponent::SetVisibilityMask(uint32_t mask)
 {
   if (m_Visibility.m_VisibilityMask != mask) {
-    uint32_t oldMask = m_Visibility.m_VisibilityMask;
     m_Visibility.m_VisibilityMask = mask;
 
     // 发布掩码改变事件
-    EventBus::Publish<VisibilityChangedEvent>(VisibilityChangedEvent(GetEntity(), *this));
+    EventBus::Publish<VisibilityChangedEvent>(GetEntity(), *this);
   }
 }
 bool VisibilityComponent::MatchesMask(uint32_t cameraMask) const
@@ -55,7 +54,7 @@ void VisibilityComponent::SetSnapshotData(const Visibility &data)
 {
   m_Visibility = data;
   // 发布更新事件
-  EventBus::Publish<VisibilityChangedEvent>(VisibilityChangedEvent(GetEntity(), *this));
+  EventBus::Publish<VisibilityChangedEvent>(GetEntity(), *this);
 }
 
 bool VisibilityComponent::Serialize(std::ostream &output) const
