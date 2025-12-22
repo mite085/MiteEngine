@@ -16,8 +16,8 @@ PointShadowMap::PointShadowMap(const ShadowMapData &data)
 
 ShadowMapData PointShadowMap::PrepareShadowData(const uint32_t lightIndex,
                                                 const Transform &lightWorldTransform,
-                                                const Transform &cameraView,
-                                                const glm::mat4 &cameraProj)
+                                                [[maybe_unused]] const Transform &cameraView,
+                                                [[maybe_unused]] const glm::mat4 &cameraProj)
 {
   if (!m_Data.enabled) {
     LOG_TRACE("PointShadowMap is disabled, returning empty data");

@@ -15,9 +15,7 @@ void OpenGLRenderCommand::Init()
   m_Device = std::make_unique<OpenGLDevice>();
 
   // 提交初始化命令（确保在渲染线程执行）
-  m_CommandQueue.push({CommandType::Custom,
-                       [] {},
-                       "InitRenderState"});
+  m_CommandQueue.push({CommandType::Custom, [] {}, "InitRenderState"});
 
   m_Logger->info("RenderCommand initialized with default states");
 }
@@ -74,9 +72,8 @@ void OpenGLRenderCommand::SetRenderState(std::shared_ptr<RenderState> state)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
 
-  m_CommandQueue.push({CommandType::SetRenderState,
-                       [=] { ApplyOpenGLState(state); },
-                       "SetRenderState(GL)"});
+  m_CommandQueue.push(
+      {CommandType::SetRenderState, [=] { ApplyOpenGLState(state); }, "SetRenderState(GL)"});
 }
 
 void OpenGLRenderCommand::BindCameraUBO(std::shared_ptr<CameraInstance> instance)
@@ -186,9 +183,7 @@ void OpenGLRenderCommand::BindDefaultTexture(uint32_t textureUnit)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::BindTextures,
-                       [this, textureUnit] {
-                         m_Device->BindDefaultTexture(textureUnit);
-                       },
+                       [this, textureUnit] { m_Device->BindDefaultTexture(textureUnit); },
                        "BindDefaultTexture"});
 }
 
@@ -235,9 +230,7 @@ void OpenGLRenderCommand::DrawFullScreenQuad()
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::DrawIndexed,
-                       [=] {
-                         m_Device->DrawFullScreenQuad();
-                       },
+                       [=] { m_Device->DrawFullScreenQuad(); },
                        "Submit Full Screen Quad Draw Call"});
 }
 
@@ -265,12 +258,10 @@ void OpenGLRenderCommand::PublishEventRuntimeTextureFinished(RuntimeTexturePtr t
                                                              std::string identify)
 {
   std::lock_guard<std::mutex> lock(m_QueueMutex);
-  m_CommandQueue.push({CommandType::Custom,
-                       [texture, identify] {
-                         EventBus::Publish<RuntimeTextureFinishedEvent>(
-                             RuntimeTextureFinishedEvent(texture, identify));
-                       },
-                       "Publish Event Runtime Texture Finished: " + identify});
+  m_CommandQueue.push(
+      {CommandType::Custom,
+       [texture, identify] { EventBus::Publish<RuntimeTextureFinishedEvent>(texture, identify); },
+       "Publish Event Runtime Texture Finished: " + identify});
 }
 
 void OpenGLRenderCommand::Flush()
@@ -302,8 +293,8 @@ void OpenGLRenderCommand::ClearQueue()
 
 void OpenGLRenderCommand::ApplyOpenGLState(std::shared_ptr<RenderState> state)
 {
-
-  std::shared_ptr<OpenGLRenderState> glStatePtr = std::static_pointer_cast<OpenGLRenderState>(state);
+  std::shared_ptr<OpenGLRenderState> glStatePtr = std::static_pointer_cast<OpenGLRenderState>(
+      state);
   if (!glStatePtr) {
     LOG_ERROR("Invalid OpenGL Render State!");
     return;

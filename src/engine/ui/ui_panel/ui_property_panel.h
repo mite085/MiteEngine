@@ -23,7 +23,7 @@ class PropertyPanel : public UIPanel {
   ~PropertyPanel() override = default;
 
   // ==================== 核心接口实现 ====================
-  void Update(float deltaTime) override {}
+  void Update([[maybe_unused]] float deltaTime) override {}
   void Render() override;
 
  private:

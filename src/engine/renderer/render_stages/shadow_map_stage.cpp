@@ -49,7 +49,7 @@ void ShadowMapStage::SetShadowBias(float bias, float normalBias)
   m_Logger->info("Shadow bias set to {}, normal bias: {}", bias, normalBias);
 }
 
-void ShadowMapStage::Initialize(RenderContext &context)
+void ShadowMapStage::Initialize([[maybe_unused]] RenderContext &context)
 {
   if (m_Initialized) {
     m_Logger->warn("ShadowMapStage already initialized");
@@ -500,7 +500,7 @@ void ShadowMapStage::BindShadowRenderContext(uint32_t lightIndex,
                   shadowMapType);
 }
 
-void ShadowMapStage::RenderSceneToShadowMap(RenderContext &context,
+void ShadowMapStage::RenderSceneToShadowMap([[maybe_unused]] RenderContext &context,
                                             const std::vector<RenderableItem> &items)
 {
   for (const auto &item : items) {

@@ -54,15 +54,14 @@ class MaterialFactory {
   // ---- 实例管理 ----
   /**
    * @brief 创建材质实例
-   * @param templateName 模板名称
+   * @param type 模板类型
    * @return 共享指针管理的材质实例
    * @throws std::out_of_range 如果模板不存在
    *
    * 作用：
    * 当在运行时动态决定材质类型时（如从配置文件读取）使用，更便捷且可扩展性更强
    */
-  std::shared_ptr<MaterialInstance> CreateInstance(const MaterialType &type,
-                                                   const std::string &instanceName = "");
+  std::shared_ptr<MaterialInstance> CreateInstance(const MaterialType &type);
   /**
    * @brief 基于资产模块载入的材质源数据创建材质实例
    * @param sourceData 

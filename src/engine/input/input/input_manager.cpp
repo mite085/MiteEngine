@@ -38,7 +38,7 @@ void InputManager::PushContext(std::shared_ptr<InputContext> context)
   // 非空栈情况下，
   // 日志记录Input输入的入栈顺序
   if (!m_ContextStack->IsEmpty()) {
-    auto &current = m_ContextStack->GetCurrent();
+    std::shared_ptr<InputContext> current = m_ContextStack->GetCurrent();
     LOG_DEBUG("Pushing input context '{}' over '{}'", context->GetName(), current->GetName());
   }
   else {
@@ -63,7 +63,7 @@ void InputManager::PopContext()
   // 出栈后非空栈的情况下，
   // 日志记录下一个Input事件
   if (!m_ContextStack->IsEmpty()) {
-    auto &newCurrent = m_ContextStack->GetCurrent();
+    std::shared_ptr<InputContext> newCurrent = m_ContextStack->GetCurrent();
     LOG_DEBUG("Popped input context '{}', new current is '{}'",
               popped->GetName(),
               newCurrent->GetName());

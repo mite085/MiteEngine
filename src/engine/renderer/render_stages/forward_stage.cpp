@@ -20,7 +20,7 @@ ForwardStage::~ForwardStage()
   m_Logger->info("ForwardStage destroyed");
 }
 
-void ForwardStage::Initialize(RenderContext &context)
+void ForwardStage::Initialize([[maybe_unused]] RenderContext &context)
 {
   // 创建FrameBuffer规格
   FrameBufferSpec spec;

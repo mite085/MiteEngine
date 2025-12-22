@@ -80,7 +80,7 @@ class OpenGLDevice : public RenderDevice {
   // ---- 辅助方法 ----
   void SetVertexAttributes(const VertexLayout &layout);
   void SetTextureParameters(std::shared_ptr<TextureSourceData> data);
-  bool UploadTextureData(std::shared_ptr<TextureSourceData> data, GLuint textureId);
+  bool UploadTextureData(std::shared_ptr<TextureSourceData> data);
   bool GetGLTextureFormats(TextureFormat textureFormat,
                            GLenum &internalFormat,
                            GLenum &format,

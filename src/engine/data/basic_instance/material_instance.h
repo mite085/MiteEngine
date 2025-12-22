@@ -8,7 +8,8 @@
 
 namespace mite {
 // 定义纹理绑定函数类型
-using ExternalTextureBindFunc = std::function<void(ExternalTextureType, TextureGPUHandle, TextureTarget)>;
+using ExternalTextureBindFunc =
+    std::function<void(ExternalTextureType, TextureGPUHandle, TextureTarget)>;
 
 /**
  * @brief 材质实例（运行时绑定具体Shader和参数）
@@ -40,7 +41,7 @@ class MaterialInstance {
    * @note Initialize之后发布事件，由管理Shader的RenderContext接手负责绑定即可
    * (使用固定的绑定点执行显示绑定，无需手动管理)
    */
-  //void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
+  // void SetupShaderBinding(std::shared_ptr<OpenGLShader> shader);
   /**
    * @brief 更新模型UBO数据（组件负责每帧Update）
    */
@@ -136,7 +137,8 @@ class MaterialInstance {
   float GetAlphaCutoff() const { return m_MaterialAlphaCutoff; }
   void SetDoubleSided(bool doubleSided);
   bool IsDoubleSided() const { return m_MaterialDoubleSided; }
-  void SetAlphaMode(AlphaMode mode);  // 不透明OPAQUE = 0, 遮罩ALPHA_MODE_MASK = 1, 混合ALPHA_MODE_BLEND = 2
+  void SetAlphaMode(
+      AlphaMode mode);  // 不透明OPAQUE = 0, 遮罩ALPHA_MODE_MASK = 1, 混合ALPHA_MODE_BLEND = 2
   AlphaMode GetAlphaMode() const { return m_MaterialAlphaMode; }
 
   // ===================== 纹理绑定 =====================
@@ -163,21 +165,21 @@ class MaterialInstance {
   size_t GetTextureCount() const { return m_Textures.size(); }
 
  private:
-  std::string m_Name = "";
-  std::shared_ptr<ShaderUBO> m_UBO;      // 关联的UBO对象
-  MaterialUniformBuffer m_MaterialData;  // 材质参数数据
+  MaterialUniformBuffer m_MaterialData;  // 材质参数数据（有对齐要求的在最前面）
 
-  AlphaMode m_MaterialAlphaMode = AlphaMode::OPAQUE; // 渲染属性
-  float m_MaterialAlphaCutoff = 0.5f;
-  bool m_MaterialDoubleSided = false;
+  std::shared_ptr<ShaderUBO> m_UBO;  // 关联的UBO对象
 
   // 纹理存储（使用预定义的绑定点）
   // 注意：仅外部纹理，ShadowMap和Gbuffer等内部纹理不使用此接口
   std::unordered_map<ExternalTextureType, TextureGPUSlot> m_Textures;
 
+  std::string m_Name = "";
+  AlphaMode m_MaterialAlphaMode = AlphaMode::OPAQUE;  // 渲染属性
+  float m_MaterialAlphaCutoff = 0.5f;
+  bool m_MaterialDoubleSided = false;
+
   // 内部方法
-  void SetupTextureBinding(TextureGPUSlot texture,
-                           ExternalTextureType type);
+  void SetupTextureBinding(TextureGPUSlot texture, ExternalTextureType type);
 };
 };  // namespace mite
 

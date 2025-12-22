@@ -587,9 +587,9 @@ void OpenGLWindow::openGLErrorCallback(GLenum source,
                                        GLenum type,
                                        GLuint id,
                                        GLenum severity,
-                                       GLsizei length,
+                                       [[maybe_unused]] GLsizei length,
                                        const GLchar *message,
-                                       const void *userParam)
+                                       [[maybe_unused]] const void *userParam)
 {
   // 忽略通知级别的信息，专注于错误和警告
   if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {

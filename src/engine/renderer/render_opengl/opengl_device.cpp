@@ -98,7 +98,7 @@ TextureGPUHandle OpenGLDevice::CreateTexture(std::shared_ptr<TextureSourceData> 
   SetTextureParameters(data);
 
   // 上传纹理数据
-  if (!UploadTextureData(data, textureId)) {
+  if (!UploadTextureData(data)) {
     glDeleteTextures(1, &textureId);
     return TextureGPUHandle{0};
   }
@@ -892,7 +892,7 @@ void OpenGLDevice::SetTextureParameters(std::shared_ptr<TextureSourceData> data)
         static_cast<GLenum>(data->target), GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
   }
 }
-bool OpenGLDevice::UploadTextureData(std::shared_ptr<TextureSourceData> data, GLuint textureId)
+bool OpenGLDevice::UploadTextureData(std::shared_ptr<TextureSourceData> data)
 {
   // 获取OpenGL格式信息
   GLenum internalFormat, format, type;

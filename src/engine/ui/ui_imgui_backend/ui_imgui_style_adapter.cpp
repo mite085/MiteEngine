@@ -64,8 +64,6 @@ void ImGuiStyleAdapter::MapUIStyleToImGui(const std::shared_ptr<UIStyle> &uiStyl
 
 void ImGuiStyleAdapter::MapColorProperties(const std::shared_ptr<UIStyle> &uiStyle)
 {
-  auto &style = ImGui::GetStyle();
-
   for (const auto &[propertyName, colorIndex] : m_ColorMappings) {
     if (uiStyle->HasProperty(propertyName)) {
       try {
@@ -81,8 +79,6 @@ void ImGuiStyleAdapter::MapColorProperties(const std::shared_ptr<UIStyle> &uiSty
 
 void ImGuiStyleAdapter::MapSizeProperties(const std::shared_ptr<UIStyle> &uiStyle)
 {
-  auto &style = ImGui::GetStyle();
-
   for (const auto &[propertyName, setter] : m_SizeMappings) {
     if (uiStyle->HasProperty(propertyName)) {
       try {
@@ -98,8 +94,6 @@ void ImGuiStyleAdapter::MapSizeProperties(const std::shared_ptr<UIStyle> &uiStyl
 
 void ImGuiStyleAdapter::MapEnumProperties(const std::shared_ptr<UIStyle> &uiStyle)
 {
-  auto &style = ImGui::GetStyle();
-
   auto IntToImGuiDir = [](int value) {
     switch (value) {
       case 0:
@@ -134,8 +128,6 @@ void ImGuiStyleAdapter::MapEnumProperties(const std::shared_ptr<UIStyle> &uiStyl
 
 void ImGuiStyleAdapter::MapBorderProperties(const std::shared_ptr<UIStyle> &uiStyle)
 {
-  auto &style = ImGui::GetStyle();
-
   for (const auto &[propertyName, setter] : m_BorderMappings) {
     if (uiStyle->HasProperty(propertyName)) {
       try {
@@ -151,8 +143,6 @@ void ImGuiStyleAdapter::MapBorderProperties(const std::shared_ptr<UIStyle> &uiSt
 
 void ImGuiStyleAdapter::MapSpacingProperties(const std::shared_ptr<UIStyle> &uiStyle)
 {
-  auto &style = ImGui::GetStyle();
-
   for (const auto &[propertyName, setter] : m_SpacingMappings) {
     if (uiStyle->HasProperty(propertyName)) {
       try {

@@ -150,7 +150,12 @@ void PropertyTable<LightComponent>::RenderDirectionalLightProperty(UIRender &ren
     //});
   }
 }
-  void PropertyTable<LightComponent>::RenderSpotLightProperty(UIRender & render) {}
-  void PropertyTable<LightComponent>::RenderAreaRectLightProperty(UIRender & render) {}
-  void PropertyTable<LightComponent>::RenderAreaEllipseLightProperty(UIRender & render) {}
+void PropertyTable<LightComponent>::RenderSpotLightProperty([[maybe_unused]] UIRender &render) {}
+void PropertyTable<LightComponent>::RenderAreaRectLightProperty([[maybe_unused]] UIRender &render)
+{
+}
+void PropertyTable<LightComponent>::RenderAreaEllipseLightProperty(
+    [[maybe_unused]] UIRender &render)
+{
+}
 }  // namespace mite

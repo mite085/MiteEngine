@@ -19,7 +19,7 @@ GBufferStage::~GBufferStage()
   m_Logger->info("GBufferStage destroyed");
 }
 
-void GBufferStage::Initialize(RenderContext &context)
+void GBufferStage::Initialize([[maybe_unused]] RenderContext &context)
 {
   if (m_Initialized) {
     m_Logger->warn("GBufferStage already initialized");

@@ -48,8 +48,7 @@ bool MaterialFactory::HasTemplate(const MaterialType &materialType) const
   return m_Templates.find(materialType) != m_Templates.end();
 }
 
-std::shared_ptr<MaterialInstance> MaterialFactory::CreateInstance(const MaterialType &type,
-                                                                  const std::string &instanceName)
+std::shared_ptr<MaterialInstance> MaterialFactory::CreateInstance(const MaterialType &type)
 {
   m_Logger->info("Creating material instance with material template.");
   // 1. 查找模板

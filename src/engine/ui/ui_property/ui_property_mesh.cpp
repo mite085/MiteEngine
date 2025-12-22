@@ -14,7 +14,7 @@ void PropertyTable<MeshComponent>::Render(UIRender &render)
     return;
 
   // 绘制Mesh属性页（显示LOD以及顶点与索引数量）
-  for (int i = 0; i < int(mesh->GetLODCount()); i++) {
+  for (uint32_t i = 0; i < mesh->GetLODCount(); i++) {
     // LOD等级
     RenderLabelItemRow(render, "editor.mesh_lod_level", [&]() {
       IntEditProps lodLevelProps;
@@ -37,7 +37,7 @@ void PropertyTable<MeshComponent>::Render(UIRender &render)
     });
 
     // 绘制空行进行分割操作（最后一行不绘制）
-    if (i == mesh->GetLODCount() - 1) {
+    if (i == (mesh->GetLODCount() - 1)) {
       break;
     }
     RenderLabelItemRow(render, "", [&]() {});

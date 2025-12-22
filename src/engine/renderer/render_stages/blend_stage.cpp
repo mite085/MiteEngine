@@ -15,7 +15,7 @@ BlendStage::~BlendStage()
   m_Logger->info("BlendStage destroyed");
 }
 
-void BlendStage::Initialize(RenderContext &context)
+void BlendStage::Initialize([[maybe_unused]] RenderContext &context)
 {
   if (m_Initialized) {
     m_Logger->warn("BlendStage already initialized");

@@ -91,7 +91,7 @@ std::shared_ptr<SceneNode> SceneNodeManager::CreateNode(SceneRegistry &registry,
     return nullptr;
   }
 }
-bool SceneNodeManager::DestroyNode(SceneRegistry &registry, Entity entity)
+bool SceneNodeManager::DestroyNode([[maybe_unused]] SceneRegistry &registry, Entity entity)
 {
   std::lock_guard<std::mutex> lock(m_Mutex);
 

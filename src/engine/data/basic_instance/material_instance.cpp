@@ -172,9 +172,6 @@ void MaterialInstance::SetAlphaMode(AlphaMode mode)
 // ===================== 纹理绑定 =====================
 void MaterialInstance::SetupTextureBinding(TextureGPUSlot texture, ExternalTextureType type)
 {
-  // 通过类型查询绑定点管理器获取绑定点
-  uint32_t bindingPoint = BindingPointManager::Get().GetExternalTextureBinding(type);
-
   // 移除已存在的相同绑定点纹理
   if (m_Textures.find(type) != m_Textures.end())
     m_Textures.erase(type);

@@ -356,7 +356,7 @@ void DirectionalShadowMap::ValidateCascadeMatrix(unsigned int cascadeIndex,
                                                  const glm::vec3 &cameraForward,
                                                  float nearSplit,
                                                  float farSplit,
-                                                 const glm::mat4 &cameraProj,
+                                                 [[maybe_unused]] const glm::mat4 &cameraProj,
                                                  const glm::mat4 &shadowMatrix) const
 {
   // 简单验证：检查几个关键点是否在阴影投影范围内

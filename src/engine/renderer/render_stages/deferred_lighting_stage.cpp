@@ -16,7 +16,7 @@ DeferredLightingStage::~DeferredLightingStage()
   m_Logger->info("DeferredLightingStage destroyed");
 }
 
-void DeferredLightingStage::Initialize(RenderContext &context)
+void DeferredLightingStage::Initialize([[maybe_unused]] RenderContext &context)
 {
   if (m_Initialized) {
     m_Logger->warn("DeferredLightingStage already initialized");

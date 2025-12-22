@@ -126,7 +126,7 @@ void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback)
   menuBarCallback();
 
   // 停靠空间
-  ImGuiID dockspace_id = ImGui::DockSpace(
+  ImGui::DockSpace(
       ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), dockspace_flags);
   ImGui::End();
 

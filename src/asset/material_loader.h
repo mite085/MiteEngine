@@ -6,7 +6,7 @@
 
 struct aiMaterial;
 struct aiScene;
-enum aiTextureType;
+enum aiTextureType : int;
 
 namespace mite {
 /**
