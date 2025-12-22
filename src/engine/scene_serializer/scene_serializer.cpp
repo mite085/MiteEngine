@@ -3,6 +3,7 @@
 #include <cereal/cereal.hpp>
 #include "scene_serializer.h"
 #include "scene_core/scene_core.h"
+#include "scene_core_components/component_headers.h"
 
 namespace mite {
 SceneSerializer::SceneSerializer(SceneCore &scene) : m_scene(scene) {}
@@ -224,16 +225,18 @@ void SceneSerializer::DeserializeEntities(Archive &archive, SceneRegistry &regis
 
 template<typename T> const char *SceneSerializer::component_type_name()
 {
-  if constexpr (std::is_same_v<T, TransformComponent>) {
-    return "Transform";
-  }
-  else if constexpr (std::is_same_v<T, TagComponent>) {
-    return "Tag";
-  }
-  // TODO: 其他组件类型...
-  else {
-    static_assert(false, "Unregistered component type");
-  }
+  // TODO: 主动式类型检查
+  // if constexpr (std::is_same_v<T, TransformComponent>) {
+  //  return "Transform";
+  //}
+  // else if constexpr (std::is_same_v<T, TagComponent>) {
+  //  return "Tag";
+  //}
+  //// 其他组件类型...
+  // else {
+  //   static_assert(false, "Unregistered component type");
+  // }
+  return "Undefined Component Type";
 }
 
 };

@@ -33,5 +33,6 @@ target_link_libraries(${ENGINE_SCENE_SERIALIZER_LIB_NAME}
     MiteEngine_Engine_Core
     MiteEngine_Engine_Data
     MiteEngine_Engine_Event
+    MiteEngine_Engine_Light
     MiteEngine_Engine_Scene_Core
 )
