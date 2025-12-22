@@ -22,8 +22,8 @@ class RuntimeTexture {
    * @return 初始化是否成功
    */
   bool initialize(RuntimeTextureType type,
-                  int width,
-                  int height,
+                  uint32_t width,
+                  uint32_t height,
                   TextureFormat format,
                   TextureTarget target,
                   uint32_t arrayLayers);
@@ -37,13 +37,13 @@ class RuntimeTexture {
    * @param newHeight 新高度
    * @return 调整是否成功
    */
-  bool resize(int newWidth, int newHeight);
+  bool resize(uint32_t newWidth, uint32_t newHeight);
 
   // 访问器
   TextureGPUHandle GetHandle() const { return m_Handle; }
   RuntimeTextureType GetType() const { return m_Type; }
-  int GetWidth() const { return m_Width; }
-  int GetHeight() const { return m_Height; }
+  uint32_t GetWidth() const { return m_Width; }
+  uint32_t GetHeight() const { return m_Height; }
   TextureFormat GetFormat() const { return m_Format; }
   TextureTarget GetTarget() const { return m_Target; }
   uint32_t GetArrayLayers() const { return m_ArrayLayers; }
@@ -52,8 +52,8 @@ class RuntimeTexture {
  private:
   TextureGPUHandle m_Handle{0};                                  // GPU纹理句柄
   RuntimeTextureType m_Type = RuntimeTextureType::RenderTarget;  // 纹理类型
-  int m_Width = 0;                                               // 纹理宽度
-  int m_Height = 0;                                              // 纹理高度
+  uint32_t m_Width = 0;                                          // 纹理宽度
+  uint32_t m_Height = 0;                                         // 纹理高度
   TextureFormat m_Format = TextureFormat::RGBA8;                 // 纹理格式
   TextureTarget m_Target = TextureTarget::TEXTURE_2D;            // 纹理目标
   uint32_t m_ArrayLayers = 1;                                    // 纹理层数（如果是数组纹理）
