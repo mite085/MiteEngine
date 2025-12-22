@@ -3,7 +3,9 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
-#include "imguizmo.h"
+
+// 必须在"imgui.h"后面
+#include "ImGuizmo.h"
 #include "time/time.h"
 #include "ui_imgui_input_producer.h"
 

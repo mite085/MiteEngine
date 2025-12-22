@@ -42,7 +42,8 @@
 
 // GLAD+GLFW
 #include <glad.h>
-#include <glfw/glfw3.h>  // 必须在GLAD加载库之后
+// GLFW必须在GLAD加载库之后
+#include <GLFW/glfw3.h>
 
 // 数学库（使用gtx相关函数，需要启用EXPERIMENTAL）
 #define GLM_ENABLE_EXPERIMENTAL

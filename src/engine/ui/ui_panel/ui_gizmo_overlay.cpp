@@ -2,7 +2,9 @@
 
 #include "basic_event/render_event.h"
 #include "imgui.h"
-#include "imguizmo.h"  // 必须在"imgui.h"后面
+
+// 必须在"imgui.h"后面
+#include "ImGuizmo.h"
 
 namespace mite {
 GizmoOverlay::GizmoOverlay() {
