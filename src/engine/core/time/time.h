@@ -1,4 +1,4 @@
-#ifndef MITE_TIME
+﻿#ifndef MITE_TIME
 #define MITE_TIME
 
 #include <chrono>

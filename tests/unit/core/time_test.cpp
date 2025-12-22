@@ -1,4 +1,4 @@
-#include "time/time.h"
+﻿#include "time/time.h"
 #include "gtest/gtest.h"
 #include <chrono>
 #include <thread>
@@ -76,7 +76,6 @@ TEST_F(TimeTest, DeltaTimeAccuracy)
   const size_t waitTimeMS = 80;
 
   mite::Time::Update();
-  float initialTime = mite::Time::CurrentTime();
   // 等待指定时间
   WaitMilliseconds(waitTimeMS);
   mite::Time::Update();
@@ -215,8 +214,6 @@ TEST_F(TimeTest, MixedPrecisionMathOperations)
   // 等待0.2秒
   WaitMilliseconds(200);
   mite::Time::Update();
-
-  float deltatime = mite::Time::DeltaTime();
 
   // 使用秒精度计算位移
   float displacementSec = velocity * mite::Time::DeltaTime();

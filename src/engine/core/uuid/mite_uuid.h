@@ -1,4 +1,4 @@
-#ifndef MITE_CORE_UUID_GENERATER
+﻿#ifndef MITE_CORE_UUID_GENERATER
 #define MITE_CORE_UUID_GENERATER
 
 #include <uuid.h>
@@ -70,7 +70,8 @@ class UUIDGenerator {
     // 直接计算C字符串的哈希，避免创建临时string对象
     size_t hash = 5381;
     int c;
-    while ((c = *str++)) {
+    while (*str) {
+      c = *str++;
       hash = ((hash << 5) + hash) + c;  // hash * 33 + c
     }
     return Generate(hash);
