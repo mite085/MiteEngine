@@ -1,0 +1,20 @@
+# .github/workflows/test.yml
+name: Test Act
+
+on: [push]
+
+jobs:
+  test-act:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Hello World
+        run: echo "Act is working!"
+        
+      - name: Show system info
+        run: |
+          uname -a
+          lsb_release -a
+          cmake --version || echo "CMake not installed"
