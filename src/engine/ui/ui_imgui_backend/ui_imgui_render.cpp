@@ -271,7 +271,8 @@ bool ImGuiUIRender::RenderCombobox(ComboboxProps &props) {
   // 获取当前显示文本（确保selectedIndex合法）
   std::string previewText;
   if (props.selectedIndex >= 0 &&
-      props.selectedIndex < props.itemTranslationKeys.size()) {
+      props.selectedIndex <
+          static_cast<int>(props.itemTranslationKeys.size())) {
     previewText =
         GetTranslatedItem(props.itemTranslationKeys, props.selectedIndex);
   } else {
@@ -279,11 +280,11 @@ bool ImGuiUIRender::RenderCombobox(ComboboxProps &props) {
   }
 
   if (ImGui::BeginCombo(labelText.c_str(), previewText.c_str())) {
-    for (int i = 0; i < props.itemTranslationKeys.size(); ++i) {
+    for (size_t i = 0; i < props.itemTranslationKeys.size(); ++i) {
       std::string itemText = GetTranslatedItem(props.itemTranslationKeys, i);
-      bool isSelected = (i == props.selectedIndex);
+      bool isSelected = (static_cast<int>(i) == props.selectedIndex);
       if (ImGui::Selectable(itemText.c_str(), isSelected)) {
-        props.selectedIndex = i;
+        props.selectedIndex = static_cast<int>(i);
         changed = true;
       }
       if (isSelected) {
@@ -307,11 +308,11 @@ bool ImGuiUIRender::RenderListBox(ListBoxProps &props) {
   if (ImGui::BeginListBox(labelText.c_str(),
                           ImVec2(static_cast<float>(props.size.x),
                                  static_cast<float>(props.size.y)))) {
-    for (int i = 0; i < props.itemTranslationKeys.size(); ++i) {
+    for (size_t i = 0; i < props.itemTranslationKeys.size(); ++i) {
       std::string itemText = GetTranslatedItem(props.itemTranslationKeys, i);
-      bool isSelected = (i == props.selectedIndex);
+      bool isSelected = (static_cast<int>(i) == props.selectedIndex);
       if (ImGui::Selectable(itemText.c_str(), isSelected)) {
-        props.selectedIndex = i;
+        props.selectedIndex = static_cast<int>(i);
         changed = true;
       }
     }
@@ -751,7 +752,7 @@ void ImGuiUIRender::RenderTable(TableProps &props,
   if (ImGui::BeginTable(labelText.c_str(), props.columns, flags)) {
     // 渲染表头
     if (props.showHeaders) {
-      for (int i = 0; i < props.columns; ++i) {
+      for (size_t i = 0; static_cast<int>(i) < props.columns; ++i) {
         std::string headerText = GetTranslatedHeader(props, i);
         ImGui::TableSetupColumn(headerText.c_str());
       }
@@ -911,7 +912,7 @@ std::string ImGuiUIRender::GetTranslatedOverlay(const ProgressBarProps &props) {
 }
 
 std::string ImGuiUIRender::GetTranslatedItem(
-    const std::vector<std::string> &translationKeys, int index) {
+    const std::vector<std::string> &translationKeys, size_t index) {
   if (index < translationKeys.size() && !translationKeys[index].empty()) {
     return UILocalization::Get().Translate(translationKeys[index].c_str());
   }
@@ -919,7 +920,7 @@ std::string ImGuiUIRender::GetTranslatedItem(
 }
 
 std::string ImGuiUIRender::GetTranslatedHeader(const TableProps &props,
-                                               int columnIndex) {
+                                               size_t columnIndex) {
   if (columnIndex < props.headerTranslationKeys.size() &&
       !props.headerTranslationKeys[columnIndex].empty()) {
     return UILocalization::Get().Translate(
@@ -931,6 +932,6 @@ std::string ImGuiUIRender::GetTranslatedHeader(const TableProps &props,
 // ==================== 私有辅助函数 ====================
 
 void ImGuiUIRender::SetItemTooltip(std::string tooltip) {
-  ImGui::SetItemTooltip(tooltip.c_str());
+  ImGui::SetItemTooltip("%s", tooltip.c_str());
 }
 }  // namespace mite

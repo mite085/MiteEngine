@@ -3,17 +3,14 @@
 
 #include "scene_core/component_system.h"
 
-namespace {
+namespace mite {
+// 前向声明
+class SceneRegistry;
+// 标签对象结构体
 struct Tag {
   std::string m_Tag = "Entity";                  // 实体主标签/名称
   glm::vec4 m_Color = {1.0f, 1.0f, 1.0f, 1.0f};  // 编辑器显示颜色
 };
-};  // namespace
-
-namespace mite {
-// 前向声明
-class SceneRegistry;
-
 /**
  * @brief 标签组件 - 为实体提供名称标识和分类标签
  *

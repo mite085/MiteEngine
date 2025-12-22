@@ -33,7 +33,7 @@ class Window {
    * @brief 用于主循环,检测Window关闭标志
    * @return
    */
-  virtual const bool WindowShouldClose() = 0;
+  virtual bool WindowShouldClose() = 0;
 
   // Window生命周期管理 ==============================================
   /**
@@ -118,7 +118,7 @@ class Window {
   virtual void SwapBuffers() = 0;
 
   // 窗口数量计数
-  static const uint32_t WindowCount(WindowType &type);
+  static uint32_t WindowCount(WindowType &type);
 
   // 回调设置
   // TODO: 按照事件总线重新规划EventCallbackFn相关实现

@@ -4,8 +4,10 @@ namespace mite {
 Model::Model(ModelGPUHandle modelHandle, std::vector<MeshSectionLODChain> meshs,
              std::vector<std::shared_ptr<MaterialInstance>> materials)
     : m_Path(modelHandle.path),
+      m_SubMeshes(),
+      m_Materials(materials),
       m_BoundingBox(modelHandle.bboxMin, modelHandle.bboxMax),
-      m_Materials(materials) {
+      m_HasLOD(false) {
   // 基于每个原始 LOD 创建的分组，逐个构建 Mesh 对象
   for (MeshSectionLODChain &lodChain : meshs) {
     Mesh mesh = Mesh(modelHandle, lodChain);

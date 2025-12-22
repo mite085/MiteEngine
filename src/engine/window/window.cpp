@@ -3,7 +3,7 @@
 #include "glfw_window/glfw_window.h"
 
 namespace mite {
-const uint32_t Window::WindowCount(WindowType& type) {
+uint32_t Window::WindowCount(WindowType& type) {
   if (type == WindowType::GLFWWINDOW)
     return OpenGLWindow::GLFWWindowCount();
   else

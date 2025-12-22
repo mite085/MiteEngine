@@ -134,7 +134,7 @@ class SpatialPartition {
    * @brief 获取空间结构的深度（用于调试）
    * @return 结构深度
    */
-  virtual int GetDepth() const = 0;
+  virtual size_t GetDepth() const = 0;
   /**
    * @brief 获取空间结构的类型名称
    * @return 类型名称字符串
@@ -150,7 +150,7 @@ class SpatialPartition {
    * @param drawCallback 绘制回调函数
    */
   virtual void DebugDraw(
-      std::function<void(const BoundingVolumeAABB &, int depth)>
+      std::function<void(const BoundingVolumeAABB &, size_t depth)>
           drawCallback) = 0;
 };
 

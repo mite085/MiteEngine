@@ -1,7 +1,6 @@
 #include "material_loader.h"
 
-#include <assimp/material.h>
-#include <assimp/pbrmaterial.h>
+#include <assimp/GltfMaterial.h>
 #include <assimp/scene.h>
 
 #include "material_templates/material_template_gltf_pbr.h"
@@ -135,12 +134,10 @@ void MaterialLoader::ExtractPBRParameters(aiMaterial *aiMat,
   float value;
 
   // 基础颜色因子（支持RGBA）
-  if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR,
-                 color4D) == AI_SUCCESS) {
+  if (aiMat->Get(AI_MATKEY_BASE_COLOR, color4D) == AI_SUCCESS) {
     metadata.parameters[MaterialParamKeys::BASE_COLOR] =
         glm::vec4(color4D.r, color4D.g, color4D.b, color4D.a);
-  } else if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR,
-                        color) == AI_SUCCESS) {
+  } else if (aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
     // 回退到RGB版本，alpha设为1.0
     metadata.parameters[MaterialParamKeys::BASE_COLOR] =
         glm::vec4(color.r, color.g, color.b, 1.0f);
@@ -157,16 +154,14 @@ void MaterialLoader::ExtractPBRParameters(aiMaterial *aiMat,
   }
 
   // 金属度因子（默认为0）
-  if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, value) ==
-      AI_SUCCESS) {
+  if (aiMat->Get(AI_MATKEY_METALLIC_FACTOR, value) == AI_SUCCESS) {
     metadata.parameters[MaterialParamKeys::METALLIC] = value;
   } else {
     metadata.parameters[MaterialParamKeys::METALLIC] = 0.0f;
   }
 
   // 粗糙度因子（默认为1）
-  if (aiMat->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, value) ==
-      AI_SUCCESS) {
+  if (aiMat->Get(AI_MATKEY_ROUGHNESS_FACTOR, value) == AI_SUCCESS) {
     metadata.parameters[MaterialParamKeys::ROUGHNESS] = value;
   } else {
     metadata.parameters[MaterialParamKeys::ROUGHNESS] = 1.0f;
@@ -226,30 +221,27 @@ void MaterialLoader::ExtractAndCreateTextureReferences(
   aiString texturePath;
 
   // 基础颜色纹理（默认2D纹理）
-  if (aiMat->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE,
-                        &texturePath) == AI_SUCCESS) {
+  if (aiMat->GetTexture(aiTextureType_BASE_COLOR, 0, &texturePath) ==
+      AI_SUCCESS) {
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
       MaterialTextureSlot slot(texId, TextureTarget::TEXTURE_2D);
-      ExtractTextureTransform(
-          aiMat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE,
-          slot.scale, slot.offset);
+      ExtractTextureTransform(aiMat, aiTextureType_BASE_COLOR, 0, slot.scale,
+                              slot.offset);
       metadata.textureSlots[MaterialParamKeys::BASE_COLOR_TEXTURE] = slot;
     }
   }
 
   // 金属粗糙度纹理（默认2D纹理）（也应当支持偏移，但很罕见）
-  if (aiMat->GetTexture(
-          AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE,
-          &texturePath) == AI_SUCCESS) {
+  if (aiMat->GetTexture(aiTextureType_GLTF_METALLIC_ROUGHNESS, 0,
+                        &texturePath) == AI_SUCCESS) {
     TextureAssetID texId = CreateOrGetTextureAssetID(
         textureCache, texturePath.C_Str(), modelPath, scene);
     if (texId.IsValid()) {
       MaterialTextureSlot slot(texId, TextureTarget::TEXTURE_2D);
-      ExtractTextureTransform(
-          aiMat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE,
-          slot.scale, slot.offset);
+      ExtractTextureTransform(aiMat, aiTextureType_GLTF_METALLIC_ROUGHNESS, 0,
+                              slot.scale, slot.offset);
       metadata.textureSlots[MaterialParamKeys::METALLIC_ROUGHNESS_TEXTURE] =
           slot;
     }

@@ -12,7 +12,7 @@ OpenGLWindow::OpenGLWindow() : m_CallbackAdapter() {
 OpenGLWindow::~OpenGLWindow() {
   m_Logger->trace("GLFW Window destructor called");
 }
-const bool OpenGLWindow::WindowShouldClose() {
+bool OpenGLWindow::WindowShouldClose() {
   return glfwWindowShouldClose(m_Window);
 }
 void OpenGLWindow::Initialize(const WindowConfig &config) {
@@ -285,7 +285,7 @@ void OpenGLWindow::SwapBuffers() {
     m_Logger->warn("OpenGL error after buffer swap: {}", err);
   }
 }
-const uint32_t OpenGLWindow::GLFWWindowCount() { return s_GLFWWindowCount; }
+uint32_t OpenGLWindow::GLFWWindowCount() { return s_GLFWWindowCount; }
 
 void OpenGLWindow::InitWindowData(const WindowConfig &config) {
   m_WindowData.title = config.title;

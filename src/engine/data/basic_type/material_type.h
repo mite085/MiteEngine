@@ -64,6 +64,11 @@ struct MaterialMetadata {
   struct GLTFSourceInfo {
     std::string gltfFilePath;    // GLTF文件路径
     uint32_t materialIndex = 0;  // 材质在文件中的索引
+
+    // 添加默认构造函数
+    GLTFSourceInfo() = default;
+    GLTFSourceInfo(std::string filePath, uint32_t index = 0)
+        : gltfFilePath(std::move(filePath)), materialIndex(index) {}
   };
   // struct MaterialXSourceInfo {
   //   std::string materialxFilePath;  // MaterialX文件路径
@@ -72,7 +77,7 @@ struct MaterialMetadata {
   //  使用variant支持不同来源的扩展信息
   std::variant<GLTFSourceInfo /*, MaterialXSourceInfo*/> sourceInfo;
 
-  MaterialMetadata() {}
+  MaterialMetadata() : sourceInfo(GLTFSourceInfo{}) {}
   /**
    * @brief 生成材质源数据，过滤掉与渲染无关的信息
    * @param textureResolver

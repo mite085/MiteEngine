@@ -182,7 +182,7 @@ void DirectionalShadowMap::CalculateCascadeMatrices(
 
   // 从投影矩阵提取相机近远平面
   float cameraNearPlane = 0.1f;
-  float cameraFarPlane = 1000.0f;
+  [[maybe_unused]] float cameraFarPlane = 1000.0f;
   if (cameraProj[3][3] == 0.0f) {  // 透视投影
     cameraNearPlane = cameraProj[3][2] / (cameraProj[2][2] - 1.0f);
     cameraFarPlane = cameraProj[3][2] / (cameraProj[2][2] + 1.0f);

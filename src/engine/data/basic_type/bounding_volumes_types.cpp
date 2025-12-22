@@ -213,7 +213,7 @@ void WelzlAlgorithm(std::vector<glm::vec3> &points, int numPoints,
         if (glm::length(abXac) < 1e-6f) {
           // 共线点，取最大距离的两点
           float maxDist = 0.0f;
-          glm::vec3 p1, p2;
+          glm::vec3 p1 = a, p2 = b;  // 初始化默认值
           for (int i = 0; i < 3; ++i) {
             for (int j = i + 1; j < 3; ++j) {
               float dist = glm::distance(support[i], support[j]);
@@ -240,6 +240,7 @@ void WelzlAlgorithm(std::vector<glm::vec3> &points, int numPoints,
         }
         break;
       }
+
       case 4: {
         // 四点确定球（四面体外接球）
         glm::vec3 a = support[0], b = support[1], c = support[2],

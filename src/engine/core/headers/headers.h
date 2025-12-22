@@ -17,6 +17,7 @@
 #include <functional>
 #include <iomanip>
 #include <limits>
+#include <list>
 #include <map>
 #include <memory>
 #include <mutex>

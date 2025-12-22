@@ -195,7 +195,7 @@ class SnapshotComponentSystem : public ComponentSystem<T> {
     // 订阅组件添加/移除事件
     // Immediate同步模式
     ComponentSystem<T>::m_EventSubscriptions
-        .SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
+        .template SubscribeImmediate<ApplySnapshotEvent<TraitsDataType>>(
             BIND_DISPATCH_FN(OnSnapshotApplied), EventPriority::High);
 
     ComponentSystem<T>::Initialize();

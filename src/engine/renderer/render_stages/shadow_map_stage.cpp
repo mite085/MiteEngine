@@ -264,21 +264,21 @@ void ShadowMapStage::CreateShadowRenderContextUniformBuffer() {
   m_SpotlightUBOs.fill(nullptr);
 
   // 创建UBO，执行初始化
-  for (int i = 0; i < m_DirectionallightUBOs.size(); i++) {
+  for (size_t i = 0; i < m_DirectionallightUBOs.size(); i++) {
     m_DirectionallightUBOs.at(i) = std::make_shared<ShaderUBO>(
         sizeof(ShadowRenderContextUniformBuffer),
         BindingPointManager::Get().GetShadowRenderContextUBOBinding(),
         GL_DYNAMIC_DRAW);
     m_DirectionallightUBOs.at(i)->Initialize();
   }
-  for (int i = 0; i < m_PointlightUBOs.size(); i++) {
+  for (size_t i = 0; i < m_PointlightUBOs.size(); i++) {
     m_PointlightUBOs.at(i) = std::make_shared<ShaderUBO>(
         sizeof(ShadowRenderContextUniformBuffer),
         BindingPointManager::Get().GetShadowRenderContextUBOBinding(),
         GL_DYNAMIC_DRAW);
     m_PointlightUBOs.at(i)->Initialize();
   }
-  for (int i = 0; i < m_SpotlightUBOs.size(); i++) {
+  for (size_t i = 0; i < m_SpotlightUBOs.size(); i++) {
     m_SpotlightUBOs.at(i) = std::make_shared<ShaderUBO>(
         sizeof(ShadowRenderContextUniformBuffer),
         BindingPointManager::Get().GetShadowRenderContextUBOBinding(),

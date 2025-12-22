@@ -2,17 +2,18 @@
 
 namespace mite {
 // ==================== 构造函数 ====================
-BoundingVolume::BoundingVolume(BoundingVolumeType type) : m_Type(type) {
+BoundingVolume::BoundingVolume(BoundingVolumeType type)
+    : m_Volume(), m_Type(type) {
   CreateDefaultVolume(type);
 }
 BoundingVolume::BoundingVolume(const BoundingVolumeAABB &aabb)
-    : m_Type(BoundingVolumeType::AABB), m_Volume(aabb) {}
+    : m_Volume(aabb), m_Type(BoundingVolumeType::AABB) {}
 BoundingVolume::BoundingVolume(const BoundingVolumeSphere &sphere)
-    : m_Type(BoundingVolumeType::Sphere), m_Volume(sphere) {}
+    : m_Volume(sphere), m_Type(BoundingVolumeType::Sphere) {}
 BoundingVolume::BoundingVolume(const BoundingVolumeOBB &obb)
-    : m_Type(BoundingVolumeType::OBB), m_Volume(obb) {}
+    : m_Volume(obb), m_Type(BoundingVolumeType::OBB) {}
 BoundingVolume::BoundingVolume(const BoundingVolumePlane &plane)
-    : m_Type(BoundingVolumeType::Plane), m_Volume(plane) {}
+    : m_Volume(plane), m_Type(BoundingVolumeType::Plane) {}
 
 // ==================== 类型管理 ====================
 BoundingVolumeType BoundingVolume::GetType() const { return m_Type; }

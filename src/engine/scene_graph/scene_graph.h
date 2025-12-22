@@ -176,7 +176,7 @@ class SceneGraph {
    * @brief 调试绘制
    * @param drawCallback 绘制回调函数
    */
-  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)>
+  void DebugDraw(std::function<void(const BoundingVolumeAABB &, size_t depth)>
                      drawCallback) const;
 
  private:

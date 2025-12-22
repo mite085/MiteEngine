@@ -45,7 +45,6 @@ void FrameBuffer::Invalidate() {
     TextureGPUHandle handle = runtimeTexture->GetHandle();
     GLenum attachmentPoint = GL_NONE;
     GLuint handleID = static_cast<GLuint>(handle.apiHandle);
-    bool isColorAttachment = false;
     GLenum textureTarget = static_cast<GLenum>(attachmentSpec.internalTarget);
     // 根据RuntimeTextureType确定OpenGL附件点和存储位置
     switch (attachmentSpec.type) {
@@ -78,7 +77,6 @@ void FrameBuffer::Invalidate() {
         attachmentPoint =
             GL_COLOR_ATTACHMENT0 + static_cast<GLenum>(colorAttachments.size());
         m_ColorAttachments[static_cast<uint32_t>(i)] = runtimeTexture;
-        isColorAttachment = true;
 
         // 设置颜色附件的纹理参数
         if (!multisample) {

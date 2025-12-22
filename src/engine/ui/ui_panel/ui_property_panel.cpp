@@ -11,7 +11,7 @@
 namespace mite {
 PropertyPanel::PropertyPanel(SceneRegistry &sceneRegistry,
                              const std::string &name)
-    : m_SceneRegistry(sceneRegistry), UIPanel(name) {
+    : UIPanel(name), m_SceneRegistry(sceneRegistry) {
   m_EventSubscriptions.SubscribeImmediate<SceneNodeSelectedEvent>(
       BIND_DISPATCH_FN(OnSceneNodeSelected));
 }

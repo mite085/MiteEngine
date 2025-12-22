@@ -3,14 +3,11 @@
 
 #include "scene_core/component_system.h"
 
-// 匿名空distroy
-namespace {
-struct Distroy {};
-}  // namespace
-
 namespace mite {
 // 前向声明
 class SceneRegistry;
+// 空distroy
+struct Distroy {};
 /**
  * @brief 销毁标记组件
  *

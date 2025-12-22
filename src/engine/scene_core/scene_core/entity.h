@@ -21,13 +21,23 @@ class Entity {
    * @brief 默认构造一个空实体（无效实体）
    */
   Entity();  // 生成空ID
+  ~Entity() = default;
 
   /**
    * @brief 拷贝构造函数
    */
   Entity(const Entity &other);
 
-  ~Entity() = default;
+  /**
+   * @brief 拷贝赋值操作符
+   */
+  Entity &operator=(const Entity &other) {
+    if (this != &other) {
+      m_Name = other.m_Name;
+      m_UUID = other.m_UUID;
+    }
+    return *this;
+  }
 
  private:
   /**
@@ -45,6 +55,7 @@ class Entity {
    * 若有其他模块需要构建有效实体，需要添加为friend
    */
   static Entity CreateEntity(const std::string &name = "");
+
   friend SceneRegistry;
 
   //=================== 实体状态操作 =========================

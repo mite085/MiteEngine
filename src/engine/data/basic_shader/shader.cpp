@@ -129,9 +129,6 @@ uint32_t OpenGLShader::CompileSPIRVToGLShader(
 
   uint32_t shader = glCreateShader(type);
 
-  // 尝试不同的SPIR-V格式枚举值
-  GLenum spirv_format = 0;
-
   // 常见的SPIR-V格式枚举值
   const GLenum formats[] = {
       GL_SHADER_BINARY_FORMAT_SPIR_V,  // GLAD宏
@@ -146,7 +143,6 @@ uint32_t OpenGLShader::CompileSPIRVToGLShader(
 
     GLenum error = glGetError();
     if (error == GL_NO_ERROR) {
-      spirv_format = format;
       format_found = true;
       LOG_DEBUG("Found working SPIR-V format: 0x{:X}", format);
       break;

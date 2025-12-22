@@ -173,7 +173,7 @@ std::string SceneGraph::GetStats() const {
 
 // ==================== 调试接口 ====================
 void SceneGraph::DebugDraw(
-    std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
+    std::function<void(const BoundingVolumeAABB &, size_t depth)> drawCallback)
     const {
   m_SpatialPartition->DebugDraw(drawCallback);
 }

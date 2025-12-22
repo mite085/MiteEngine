@@ -1,7 +1,7 @@
 #include "model_loader.h"
 
-#include <assimp/pbrmaterial.h>  // AssimpPBR材质处理
-#include <assimp/postprocess.h>  // Assimp后处理标志
+#include <assimp/GltfMaterial.h>  // AssimpPBR材质处理
+#include <assimp/postprocess.h>   // Assimp后处理标志
 #include <assimp/scene.h>
 
 #include <assimp/Importer.hpp>  // Assimp模型导入器

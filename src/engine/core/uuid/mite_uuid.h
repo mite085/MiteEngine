@@ -49,7 +49,7 @@ class UUIDGenerator {
    */
   static uuids::uuid Generate(size_t index) {
     constexpr size_t fixed_seed = 0x123456789ABCDEF0;
-    std::mt19937 generator(unsigned int(fixed_seed + index));  // 每次重新构造
+    std::mt19937 generator(static_cast<unsigned int>(fixed_seed + index));  // 每次重新构造
     uuids::uuid_random_generator gen(generator);  // 局部变量，不复用
     return gen();  // 确保每次调用都从初始状态开始
   }

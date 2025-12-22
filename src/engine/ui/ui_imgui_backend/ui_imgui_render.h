@@ -130,9 +130,9 @@ class ImGuiUIRender : public UIRender {
   std::string GetTranslatedOverlay(
       const ProgressBarProps &props);  // 获取进度条覆盖文本的翻译
   std::string GetTranslatedItem(const std::vector<std::string> &translationKeys,
-                                int index);  // 选项翻译处理
+                                size_t index);  // 选项翻译处理
   std::string GetTranslatedHeader(const TableProps &props,
-                                  int columnIndex);  // 表头翻译处理
+                                  size_t columnIndex);  // 表头翻译处理
 
   // ==================== 私有辅助函数 ====================
   void SetItemTooltip(std::string tooltip);

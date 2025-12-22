@@ -1,6 +1,7 @@
 #ifndef MITE_TIMER
 #define MITE_TIMER
 
+#include <string>
 #include <chrono>
 #include <unordered_map>
 

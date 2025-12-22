@@ -33,7 +33,7 @@ class Command {
    * @brief 撤销命令（不强制要求子类必须实现）
    * @return CommandResult 撤销执行结果
    */
-  virtual CommandResult Undo() {};
+  virtual CommandResult Undo() { return CommandResult{}; };
 
   // ==================== 命令标识接口 ====================
   /**

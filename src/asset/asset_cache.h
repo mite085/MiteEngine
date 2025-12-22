@@ -89,6 +89,12 @@ class AssetCache {
     AssetPtr data;
     int refCount = 0;
     typename std::list<AssetIDType>::iterator lruIt;  // 用于LRU链表
+
+    // 添加默认构造函数
+    CachedAsset() : data(nullptr), refCount(0), lruIt() {}
+    CachedAsset(AssetPtr d, int rc,
+                typename std::list<AssetIDType>::iterator it)
+        : data(d), refCount(rc), lruIt(it) {}
   };
 
   // ----

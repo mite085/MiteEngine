@@ -28,12 +28,17 @@ class CommandSystem {
   struct CommandSystemInitParams {
     size_t maxUndoStackSize = 100;
     size_t maxRedoStackSize = 100;
+
+    // 添加默认构造函数 + 带参数的构造函数
+    CommandSystemInitParams() = default;
+    CommandSystemInitParams(size_t undoSize, size_t redoSize)
+        : maxUndoStackSize(undoSize), maxRedoStackSize(redoSize) {}
   };
   /**
    * @brief 初始化命令系统
    * @param initParams 初始化参数
    */
-  void Initialize(const CommandSystemInitParams &initParams = {});
+  void Initialize(const CommandSystemInitParams &initParams);
   /**
    * @brief 关闭命令系统
    * @param waitForCompletion 是否等待所有命令完成
@@ -219,7 +224,7 @@ CommandResult CommandSystem::SubmitNew(CommandPriority priority) {
   if (!handle.IsValid()) {
     return CommandResult::Failure("Failed to create command");
   }
-  return Submit(handle, nullptr, priority);
+  return Submit(handle, priority);
 }
 }  // namespace mite
 

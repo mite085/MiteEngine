@@ -1,14 +1,14 @@
 #include "simple_bvh.h"
 
 namespace mite {
-int BVHNode::GetHeight() const {
+size_t BVHNode::GetHeight() const {
   if (IsLeaf()) return 0;
-  int leftHeight = left ? left->GetHeight() : 0;
-  int rightHeight = right ? right->GetHeight() : 0;
+  size_t leftHeight = left ? left->GetHeight() : 0;
+  size_t rightHeight = right ? right->GetHeight() : 0;
   return 1 + std::max(leftHeight, rightHeight);
 }
 
-SimpleBVH::SimpleBVH(int maxDepth, int minLeafSize)
+SimpleBVH::SimpleBVH(size_t maxDepth, size_t minLeafSize)
     : m_MaxDepth(maxDepth), m_MinLeafSize(minLeafSize) {}
 
 SimpleBVH::~SimpleBVH() { Clear(); }
@@ -140,7 +140,7 @@ void SimpleBVH::Rebuild() {
   // 构建新树
   std::vector<std::shared_ptr<SceneNode>> nodesToBuild(m_AllNodes.begin(),
                                                        m_AllNodes.end());
-  m_Root = BuildTree(nodesToBuild, 0, static_cast<int>(nodesToBuild.size()), 0);
+  m_Root = BuildTree(nodesToBuild, 0, nodesToBuild.size(), 0);
 
   // 重建映射
   m_NodeToBVHNodeMap.clear();
@@ -308,7 +308,7 @@ size_t SimpleBVH::GetNodeCount() const { return m_NodeCount; }
 
 bool SimpleBVH::IsEmpty() const { return m_NodeCount == 0; }
 
-int SimpleBVH::GetDepth() const {
+size_t SimpleBVH::GetDepth() const {
   if (!m_Root) return 0;
   return m_Root->GetHeight();
 }
@@ -331,7 +331,8 @@ std::string SimpleBVH::GetStats() const {
   return ss.str();
 }
 void SimpleBVH::DebugDraw(
-    std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback) {
+    std::function<void(const BoundingVolumeAABB &, size_t depth)>
+        drawCallback) {
   // 检查是否需要更新
   if (m_ForceRebuild || !m_DirtyNodes.empty()) {
     UpdateTree(m_ForceRebuild);
@@ -344,10 +345,10 @@ void SimpleBVH::DebugDraw(
 // ==================== 私有方法：BVH树构建 ====================
 
 BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes,
-                              int start, int end, int depth) {
+                              size_t start, size_t end, size_t depth) {
   if (start >= end) return nullptr;
 
-  const int count = end - start;
+  const size_t count = end - start;
 
   // 创建新节点
   BVHNode *node = new BVHNode();
@@ -356,7 +357,7 @@ BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes,
 
   // 计算所有节点的合并包围盒
   BoundingVolumeAABB totalBounds;
-  for (int i = start; i < end; ++i) {
+  for (size_t i = start; i < end; ++i) {
     // 获取场景节点的AABB近似
     totalBounds.Expand(nodes[i]->GetWorldBounds().GetAABBApproximation());
   }
@@ -365,7 +366,7 @@ BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes,
   // 如果节点数较少或达到最大深度，创建叶子节点
   if (count <= m_MinLeafSize || depth >= m_MaxDepth) {
     // 存储该范围内的所有场景节点
-    for (int i = start; i < end; ++i) {
+    for (size_t i = start; i < end; ++i) {
       node->sceneNodes.push_back(nodes[i]);
     }
     return node;
@@ -376,19 +377,19 @@ BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes,
   float bestSplitPos = 0.0f;
   if (!FindBestSplit(nodes, start, end, bestAxis, bestSplitPos)) {
     // 无法分割，创建叶子节点
-    for (int i = start; i < end; ++i) {
+    for (size_t i = start; i < end; ++i) {
       node->sceneNodes.push_back(nodes[i]);
     }
     return node;
   }
 
   // 寻找分割节点的位置
-  int splitIndex = PartitionNodes(nodes, start, end, bestAxis, bestSplitPos);
+  size_t splitIndex = PartitionNodes(nodes, start, end, bestAxis, bestSplitPos);
 
   // 确保分割后的两个区间都非空
   if (splitIndex == start || splitIndex == end) {
     // 分割失败，回退到叶子节点
-    for (int i = start; i < end; ++i) {
+    for (size_t i = start; i < end; ++i) {
       node->sceneNodes.push_back(nodes[i]);
     }
     return node;
@@ -402,14 +403,14 @@ BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes,
 }
 
 bool SimpleBVH::FindBestSplit(
-    const std::vector<std::shared_ptr<SceneNode>> &nodes, int start, int end,
-    int &axis, float &splitPos) const {
-  const int count = end - start;
+    const std::vector<std::shared_ptr<SceneNode>> &nodes, size_t start,
+    size_t end, int &axis, float &splitPos) const {
+  const size_t count = end - start;
   if (count <= 1) return false;
 
   // 计算所有节点的中心点包围盒
   BoundingVolumeAABB centerBounds;
-  for (int i = start; i < end; ++i) {
+  for (size_t i = start; i < end; ++i) {
     centerBounds.Expand(nodes[i]->GetWorldBounds().GetCenter());
   }
 
@@ -427,7 +428,7 @@ bool SimpleBVH::FindBestSplit(
   // 简单选择中心点中位数
   std::vector<float> centers;
   centers.reserve(count);
-  for (int i = start; i < end; ++i) {
+  for (size_t i = start; i < end; ++i) {
     centers.push_back(nodes[i]->GetWorldBounds().GetCenter()[axis]);
   }
 
@@ -439,11 +440,11 @@ bool SimpleBVH::FindBestSplit(
   return true;
 }
 
-int SimpleBVH::PartitionNodes(std::vector<std::shared_ptr<SceneNode>> &nodes,
-                              int start, int end, int axis,
-                              float splitPos) const {
-  int left = start;
-  int right = end - 1;
+size_t SimpleBVH::PartitionNodes(std::vector<std::shared_ptr<SceneNode>> &nodes,
+                                 size_t start, size_t end, int &axis,
+                                 float splitPos) const {
+  size_t left = start;
+  size_t right = end - 1;
 
   // 使用node包围盒中心点在指定轴的分量，作为node在这个轴上的位置
   // 通过left和right迭代，与swap交换，实现了复杂度O(1)的“排序”，
@@ -849,7 +850,7 @@ void SimpleBVH::CollectStatsRecursive(BVHNode *node, BVHStats &stats) const {
 
 void SimpleBVH::DebugDrawRecursive(
     BVHNode *node,
-    std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
+    std::function<void(const BoundingVolumeAABB &, size_t depth)> drawCallback)
     const {
   if (!node) return;
 
@@ -937,7 +938,7 @@ bool SimpleBVH::BatchInsertNodes(
 
   LOG_DEBUG("Batch inserting {} nodes into existing BVH", nodes.size());
 
-  int successCount = 0;
+  size_t successCount = 0;
   for (auto &node : nodes) {
     if (TryInsertIntoExistingTree(node)) {
       successCount++;

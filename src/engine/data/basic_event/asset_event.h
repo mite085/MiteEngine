@@ -93,9 +93,9 @@ class RuntimeTextureCreateEvent : public Event {
   }
 
  private:
+  std::shared_ptr<TextureCreateInfo> m_CreateInfo;
   // 回调函数，负责在Device端将Handle传回事件的发送者
   std::function<void(TextureGPUHandle)> m_Callback;
-  std::shared_ptr<TextureCreateInfo> m_CreateInfo;
 };
 
 /**

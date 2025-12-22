@@ -14,7 +14,7 @@ class OpenGLWindow : public Window {
   OpenGLWindow(const OpenGLWindow &) = delete;
   OpenGLWindow &operator=(const OpenGLWindow &) = delete;
 
-  const bool WindowShouldClose() override;
+  bool WindowShouldClose() override;
 
   // 生命周期管理
   void Initialize(const WindowConfig &config) override;
@@ -49,7 +49,7 @@ class OpenGLWindow : public Window {
   void SwapBuffers() override;
 
   // 窗口数量计数
-  static const uint32_t GLFWWindowCount();
+  static uint32_t GLFWWindowCount();
 
  private:
   // 初始化GLFW库（静态）

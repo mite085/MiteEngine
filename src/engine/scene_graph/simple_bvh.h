@@ -13,8 +13,8 @@ struct BVHNode {
   BVHNode *left = nullptr;    // 左子节点
   BVHNode *right = nullptr;   // 右子节点
   std::vector<std::shared_ptr<SceneNode>>
-      sceneNodes;  // 关联的场景节点（叶子节点）
-  int depth = 0;   // 节点深度
+      sceneNodes;    // 关联的场景节点（叶子节点）
+  size_t depth = 0;  // 节点深度
 
   /**
    * @brief 判断是否为叶子节点
@@ -28,7 +28,7 @@ struct BVHNode {
    * @brief 获取节点高度（叶子节点为0）
    * @return 节点高度
    */
-  int GetHeight() const;
+  size_t GetHeight() const;
 };
 
 /**
@@ -36,10 +36,10 @@ struct BVHNode {
  * @brief BVH状态，用于递归统计节点信息
  */
 struct BVHStats {
-  int leafCount = 0;
-  int internalCount = 0;
-  int maxDepth = 0;
-  int totalDepth = 0;
+  size_t leafCount = 0;
+  size_t internalCount = 0;
+  size_t maxDepth = 0;
+  size_t totalDepth = 0;
   float avgDepth = 0.0f;
 };
 
@@ -56,7 +56,7 @@ class SimpleBVH : public SpatialPartition {
    * @param maxDepth 最大深度限制（防止过度细分）
    * @param minLeafSize 叶子节点最小包含对象数
    */
-  explicit SimpleBVH(int maxDepth = 20, int minLeafSize = 4);
+  explicit SimpleBVH(size_t maxDepth = 20, size_t minLeafSize = 4);
 
   /**
    * @brief 析构函数
@@ -97,10 +97,10 @@ class SimpleBVH : public SpatialPartition {
       std::function<bool(std::shared_ptr<SceneNode>)> callback) override;
   size_t GetNodeCount() const override;
   bool IsEmpty() const override;
-  int GetDepth() const override;
+  size_t GetDepth() const override;
   const char *GetTypeName() const override;
   std::string GetStats() const override;
-  void DebugDraw(std::function<void(const BoundingVolumeAABB &, int depth)>
+  void DebugDraw(std::function<void(const BoundingVolumeAABB &, size_t depth)>
                      drawCallback) override;
 
  private:
@@ -113,8 +113,8 @@ class SimpleBVH : public SpatialPartition {
    * @param depth 当前深度
    * @return 构建的BVH节点
    */
-  BVHNode *BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes, int start,
-                     int end, int depth);
+  BVHNode *BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes,
+                     size_t start, size_t end, size_t depth);
   /**
    * @brief 选择最佳分割轴和位置
    * @param nodes 节点列表
@@ -125,7 +125,8 @@ class SimpleBVH : public SpatialPartition {
    * @return 是否找到有效分割
    */
   bool FindBestSplit(const std::vector<std::shared_ptr<SceneNode>> &nodes,
-                     int start, int end, int &axis, float &splitPos) const;
+                     size_t start, size_t end, int &axis,
+                     float &splitPos) const;
   /**
    * @brief 按指定轴和位置分割节点列表
    * @param nodes 节点列表
@@ -135,8 +136,9 @@ class SimpleBVH : public SpatialPartition {
    * @param splitPos 分割位置
    * @return 分割点索引
    */
-  int PartitionNodes(std::vector<std::shared_ptr<SceneNode>> &nodes, int start,
-                     int end, int axis, float splitPos) const;
+  size_t PartitionNodes(std::vector<std::shared_ptr<SceneNode>> &nodes,
+                        size_t start, size_t end, int &axis,
+                        float splitPos) const;
   /**
    * @brief 递归释放BVH节点
    * @param node 要释放的节点
@@ -241,8 +243,8 @@ class SimpleBVH : public SpatialPartition {
    */
   void DebugDrawRecursive(
       BVHNode *node,
-      std::function<void(const BoundingVolumeAABB &, int depth)> drawCallback)
-      const;
+      std::function<void(const BoundingVolumeAABB &, size_t depth)>
+          drawCallback) const;
   /**
    * @brief 递归统计节点信息
    * @param node 当前节点
@@ -293,8 +295,8 @@ class SimpleBVH : public SpatialPartition {
   BVHNode *m_Root = nullptr;  // BVH根节点
   std::unordered_set<std::shared_ptr<SceneNode>>
       m_AllNodes;               // 所有场景节点列表（用于快速重建）
-  int m_MaxDepth;               // 最大构建深度
-  int m_MinLeafSize;            // 叶子节点最小对象数
+  size_t m_MaxDepth;            // 最大构建深度
+  size_t m_MinLeafSize;         // 叶子节点最小对象数
   bool m_ForceRebuild = false;  // 强制重建标志
   size_t m_NodeCount = 0;       // 总节点数统计
 

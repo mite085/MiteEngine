@@ -24,7 +24,7 @@ void CommandRedoStack::Push(CommandHandle commandHandle) {
     }
 
     // 移除栈底元素（现在在栈顶）
-    CommandHandle removedHandle = std::move(m_Stack.top());
+    // CommandHandle removedHandle = std::move(m_Stack.top());
     m_Stack.pop();
 
     // 恢复其他元素

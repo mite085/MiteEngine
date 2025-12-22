@@ -102,8 +102,6 @@ void ImGuiBackend::BeginFrame(std::function<void()> menuBarCallback) {
   // 使用Time模块设置DeltaTime
   ImGui::GetIO().DeltaTime = Time::DeltaTime();
 
-  static bool opt_fullscreen = true;
-  static bool opt_padding = false;
   static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
   // 设置全屏停靠窗口
   ImGuiViewport *viewport = ImGui::GetMainViewport();

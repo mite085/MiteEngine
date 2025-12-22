@@ -178,10 +178,9 @@ std::vector<std::shared_ptr<SceneNode>> SceneNodeManager::GetLightNodes()
   std::vector<std::shared_ptr<SceneNode>> nodes;
   nodes.reserve(m_LightNodes.size());
 
-  // 遍历赋值
-  for (const auto node : m_LightNodes) {
-    nodes.push_back(node);
-  }
+  // 使用 std::copy
+  std::copy(m_LightNodes.begin(), m_LightNodes.end(),
+            std::back_inserter(nodes));
   return nodes;
 }
 
