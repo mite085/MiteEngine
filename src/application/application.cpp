@@ -93,9 +93,9 @@ void MiteApplication::SnapShotTest()
   transformSnap->Apply();
 }
 
-void MiteApplication::LoadScene(const std::string &filepath) {}
+void MiteApplication::LoadScene([[maybe_unused]]const std::string &filepath) {}
 
-void MiteApplication::SaveScene(const std::string &filepath) {}
+void MiteApplication::SaveScene([[maybe_unused]] const std::string &filepath) {}
 
 void MiteApplication::LoadDemoScene(int index)
 {
@@ -141,8 +141,7 @@ void MiteApplication::CreatePointLight()
   LightComponent &lightComponent = m_SceneCore->GetRegistry().AddComponent<LightComponent>(
       lightEntity);
   lightComponent.SetLight(pointLight);
-  BoundingVolumeComponent &lightBoundingVolumeComponent =
-      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(lightEntity);
+  m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(lightEntity);
 
   // 摆放位置，设定强度
   lightTransformComponent.SetLocalTransform(
@@ -161,8 +160,7 @@ void MiteApplication::CreateDirectionalLight()
   LightComponent &directionalLightComponent =
       m_SceneCore->GetRegistry().AddComponent<LightComponent>(directionalLightEntity);
   directionalLightComponent.SetLight(directionalLight);
-  BoundingVolumeComponent &directionalLightBoundingVolumeComponent =
-      m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(directionalLightEntity);
+  m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(directionalLightEntity);
 
   // 摆放位置，设定强度
   directionalLightTransformComponent.SetLocalTransform([=](Transform &localtrans) {
@@ -191,8 +189,7 @@ void MiteApplication::LoadModelToScene(const std::string &modelName)
   // 模型组件与实体创建
   Entity modelEntity = m_SceneCore->CreateEntity(modelName);
   // 创建变换组件
-  TransformComponent &planeTransformComponent =
-      m_SceneCore->GetRegistry().AddComponent<TransformComponent>(modelEntity);
+  m_SceneCore->GetRegistry().AddComponent<TransformComponent>(modelEntity);
   // 创建包围盒组件
   BoundingVolumeComponent &modelBoundingVolumeComponent =
       m_SceneCore->GetRegistry().AddComponent<BoundingVolumeComponent>(modelEntity);
@@ -221,8 +218,7 @@ void MiteApplication::LoadModelToScene(const std::string &modelName)
     submeshMaterialComponent.SetMaterialInstance(submeshMaterial);
 
     // 5. 创建变换组件
-    TransformComponent &submeshTransformComponent =
-        m_SceneCore->GetRegistry().AddComponent<TransformComponent>(
+    m_SceneCore->GetRegistry().AddComponent<TransformComponent>(
             submeshEntity, model.GetSubMesh(i).GetTransform());
 
     // 6. 创建包围盒组件，使用Mesh的包围盒填充AABB包围盒数据
@@ -235,8 +231,7 @@ void MiteApplication::LoadModelToScene(const std::string &modelName)
     submeshBoundingVolumeComponent.SetVolume(submeshBoundingVolume);
 
     // 7. 创建可见性组件
-    VisibilityComponent &submeshVisibilityComponent =
-        m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(submeshEntity);
+    m_SceneCore->GetRegistry().AddComponent<VisibilityComponent>(submeshEntity);
   }
 }
 
@@ -481,25 +476,21 @@ void MiteApplication::CreateMenuBar()
   UIMenuItemSubmenu *fileMenu = menu.AddMenu("common.File");
   UIMenuItemSubmenu *sceneMenu = fileMenu->AddSubmenu("common.Scene");
   sceneMenu->AddItem("common.Empty_Scene", [&]() {
-    SceneReloadCalling e(0);
-    EventBus::Publish<SceneReloadCalling>(e);
+    ;
+    EventBus::Publish<SceneReloadCalling>(0);
   });
   sceneMenu->AddItem("common.Chess_Scene(Material Test)", [&]() {
-    SceneReloadCalling e(1);
-    EventBus::Publish<SceneReloadCalling>(e);
+    ;
+    EventBus::Publish<SceneReloadCalling>(1);
   });
   sceneMenu->AddItem("common.Sponza_Scene(Shadow Map Test)", [&]() {
-    SceneReloadCalling e(2);
-    EventBus::Publish<SceneReloadCalling>(e);
+    ;
+    EventBus::Publish<SceneReloadCalling>(2);
   });
-  sceneMenu->AddItem("common.Tree_Scene(Alpha Test)", [&]() {
-    SceneReloadCalling e(3);
-    EventBus::Publish<SceneReloadCalling>(e);
-  });
-  sceneMenu->AddItem("common.Car_Scene(Blend Test)", [&]() {
-    SceneReloadCalling e(4);
-    EventBus::Publish<SceneReloadCalling>(e);
-  });
+  sceneMenu->AddItem("common.Tree_Scene(Alpha Test)",
+                     [&]() { EventBus::Publish<SceneReloadCalling>(3); });
+  sceneMenu->AddItem("common.Car_Scene(Blend Test)",
+                     [&]() { EventBus::Publish<SceneReloadCalling>(4); });
 
   fileMenu->AddItem("common.Load_Model", [&]() {
     m_UISystem->OpenFileDialog(
@@ -514,28 +505,23 @@ void MiteApplication::CreateMenuBar()
   UIMenuItemSubmenu *layerMenu = menu.AddMenu("common.Layer_Select");
   // 显示GBuffer的世界坐标和深度（深度作为Alpha通道）
   layerMenu->AddItem("common.GBuffer_WorldPosDepth", []() {
-    DisplayTextureTypeChangedEvent e(RuntimeTextureType::GBuffer_WorldPosDepth);
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::GBuffer_WorldPosDepth);
   });
   layerMenu->AddItem("common.GBuffer_BaseColor", []() {
-    DisplayTextureTypeChangedEvent e(RuntimeTextureType::GBuffer_BaseColorMatType);
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(
+        RuntimeTextureType::GBuffer_BaseColorMatType);
   });
   layerMenu->AddItem("common.GBuffer_Normal", []() {
-    DisplayTextureTypeChangedEvent e(RuntimeTextureType::GBuffer_NormalScale);
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::GBuffer_NormalScale);
   });
   layerMenu->AddItem("common.Deferred_Lighting", []() {
-    DisplayTextureTypeChangedEvent e(RuntimeTextureType::Lighting_Combined);
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::Lighting_Combined);
   });
   layerMenu->AddItem("common.Forward_Rendering", []() {
-    DisplayTextureTypeChangedEvent e(RuntimeTextureType::Forward_Transparent);
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::Forward_Transparent);
   });
   layerMenu->AddItem("common.Blend_Result", []() {
-    DisplayTextureTypeChangedEvent e(RuntimeTextureType::Forward_Blend);
-    EventBus::Publish<DisplayTextureTypeChangedEvent>(e);
+    EventBus::Publish<DisplayTextureTypeChangedEvent>(RuntimeTextureType::Forward_Blend);
   });
 
   // 添加Setting菜单，控制显示内容
@@ -576,7 +562,7 @@ void MiteApplication::CreateMenuBar()
   // 再次点击这个按键之后才会更新状态，并使用新的状态更新回调函数
   sub003Menu->AddCheckbox("Sub0003", false, [this](bool enabled) {
     // 点击Sub0003的响应
-    LOG_INFO("Sub0003 Menu Item Triggered");
+    LOG_INFO("Sub0003 Menu Item Triggered to {}", enabled ? "enabled" : "disabled");
   });
 
 #endif  // DEBUG
@@ -597,7 +583,10 @@ void MiteApplication::RenderUI()
   m_UISystem->EndFrame();
 }
 
-void MiteApplication::OnWindowResize(uint32_t width, uint32_t height) {}
+void MiteApplication::OnWindowResize([[maybe_unused]] uint32_t width,
+                                     [[maybe_unused]] uint32_t height)
+{
+}
 
 void MiteApplication::OnWindowClose(WindowCloseEvent &e)
 {

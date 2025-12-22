@@ -4,7 +4,7 @@
 #include <crtdbg.h>
 #endif
 
-int main(int argc, char **argv)
+int main()
 {
 #ifdef _DEBUG
   // 在Windows平台上启用内存泄漏检测
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   // 初始化日志系统
   mite::LoggerSystem::Initialize();
   // 初始化文件系统（需要在日志系统之后）
-  mite::FileSystem::Initialize(argc, argv);
+  mite::FileSystem::Initialize();
   // 初始化线程池
   mite::ThreadPoolManager::Initialize();
   LOG_INFO("Starting Mite Engine");
