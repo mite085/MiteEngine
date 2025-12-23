@@ -22,14 +22,19 @@ jobs:
         # 安装Ninja构建工具
         brew install ninja
         ninja --version
-        
+
     - name: Build
       run: |
         # 创建构建目录
         mkdir -p build && cd build
         
         # 配置并构建
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+        # 强制GLFW使用X11而不是Cocoa
+        cmake -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DGLFW_BUILD_X11=ON \
+          -DGLFW_BUILD_COCOA=OFF \
+          ..
         ninja
     
     - name: Test
