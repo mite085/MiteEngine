@@ -293,22 +293,23 @@ class DirtyComponentSystem : public ComponentSystem<T>,
    */
   void CollectDirtyComponents() {
     m_DirtyComponents.clear();
-
-    // 并行收集优化
+    // 使用 ParallelUtils::ForEachRange 并行收集脏组件
     std::vector<T *> localDirtyComponents;
     std::mutex mutex;
-    std::for_each(std::execution::par, this->m_AllComponents.begin(),
-                  this->m_AllComponents.end(), [&](T *comp) {
-                    if (comp->IsDirty()) {
-                      std::lock_guard<std::mutex> lock(mutex);
-                      localDirtyComponents.push_back(comp);
-                    }
-                  });
+
+    // 直接使用 unordered_map 的迭代器
+    ParallelUtils::ForEachRange(this->m_AllComponents.begin(),
+                                this->m_AllComponents.end(),
+                                [&](std::pair<const Entity, T *> &pair) {
+                                  auto &[entity, comp] = pair;
+                                  if (comp->IsDirty()) {
+                                    std::lock_guard<std::mutex> lock(mutex);
+                                    localDirtyComponents.push_back(comp);
+                                  }
+                                });
 
     // 合并结果
-    m_DirtyComponents.insert(m_DirtyComponents.end(),
-                             localDirtyComponents.begin(),
-                             localDirtyComponents.end());
+    m_DirtyComponents = std::move(localDirtyComponents);
   }
 
   /**
