@@ -82,8 +82,10 @@ void ComponentSystemManager::SortSystems() {
   // 3. 重建类型映射
   m_SystemMap.clear();
   for (auto &system : m_Systems) {
-    m_SystemMap[typeid(*system)] = system.get();
+    IComponentSystem *ptr = system.get();
+    m_SystemMap[typeid(*ptr)] = ptr;
   }
+  m_SystemsSorted = true;
 
   m_SystemsSorted = true;
 }
