@@ -133,7 +133,7 @@ void OpenGLRenderCommand::BindShader(
   }
   std::lock_guard<std::mutex> lock(m_QueueMutex);
   m_CommandQueue.push({CommandType::BindShader,
-                       [this, shader, uniformSetup] {
+                       [shader, uniformSetup] {
                          // 绑定着色器
                          shader->Bind();
 
