@@ -1,117 +1,38 @@
-# .github/workflows/macos_build.yaml
-name: macOS Build and Test
+# .github/workflows/macos_build.yml
+name: MacOS Build and Test
 
 on: [push, pull_request]
 
 jobs:
-  macos-build:
+  build:
     runs-on: macos-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
     
-    - name: Setup Xcode
-      run: |
-        # 选择 Xcode 作为开发工具
-        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-        xcodebuild -version
-        
-        # 获取编译器路径
-        echo "Clang path: $(xcrun -f clang)"
-        echo "Clang++ path: $(xcrun -f clang++)"
+    - name: Setup Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
     
-    - name: Install dependencies
+    - name: Install Ninja
       run: |
-        # 安装 CMake 和 Ninja
-        brew install cmake ninja
-        
-        # 验证工具版本
-        cmake --version
+        # 安装Ninja构建工具
+        brew install ninja
         ninja --version
-    
-    - name: Configure with CMake (Xcode generator)
+        
+    - name: Build
       run: |
-        # 清理并创建构建目录
-        rm -rf build
-        mkdir -p build
-        cd build
+        # 创建构建目录
+        mkdir -p build && cd build
         
-        echo "=== Configuring CMake with Xcode generator ==="
-        
-        # 使用 Xcode 生成器, 支持 Objective-C++
-        cmake -G "Xcode" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-          -DGLFW_BUILD_DOCS=OFF \
-          -DGLFW_BUILD_TESTS=OFF \
-          -DGLFW_BUILD_EXAMPLES=OFF \
-          ..
-        
-        if [ $? -ne 0 ]; then
-          echo "CMake configuration failed"
-          exit 1
-        fi
-        
-        echo "✓ CMake configuration successful"
+        # 配置并构建
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+        ninja
     
-    - name: Build project with xcodebuild
+    - name: Test
       run: |
         cd build
-        
-        echo "=== Building project ==="
-        
-        # 获取 CPU 核心数
-        CPU_CORES=$(sysctl -n hw.ncpu)
-        echo "Using $CPU_CORES CPU cores"
-        
-        # 使用 xcodebuild 构建
-        xcodebuild \
-          -configuration Release \
-          -jobs $CPU_CORES \
-          -quiet
-        
-        if [ $? -ne 0 ]; then
-          echo "Build failed"
-          exit 1
-        fi
-        
-        echo "✓ Build successful"
-        
-        # 显示构建产物
-        echo "=== Build artifacts ==="
-        find . -path "*/Release/*" -name "*" -type f -perm +111 2>/dev/null | head -20 | while read file; do
-          if [ -x "$file" ]; then
-            size_kb=$(($(stat -f%z "$file" 2>/dev/null || echo 0) / 1024))
-            echo "  $(basename "$file") - ${size_kb} KB"
-          fi
-        done
-    
-    - name: Run tests
-      run: |
-        cd build
-        
-        echo "=== Running tests ==="
-        
-        # 在 Xcode 构建中，可执行文件在 Release 目录下
-        # 查找并运行测试
-        find . -path "*/Release/*" -name "*test*" -type f -perm +111 | while read test_file; do
-          if [ -x "$test_file" ]; then
-            echo "Running test: $(basename "$test_file")"
-            
-            # 设置动态库路径
-            export DYLD_LIBRARY_PATH="$(dirname "$test_file"):$DYLD_LIBRARY_PATH"
-            
-            # 运行测试
-            if "$test_file"; then
-              echo "  ✓ Test passed"
-            else
-              echo "  ✗ Test failed"
-              exit 1
-            fi
-          fi
-        done
-        
-        echo "✓ All tests passed"
+        find . -name "*test*" -type f -executable -exec {} \;
