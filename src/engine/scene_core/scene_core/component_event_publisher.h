@@ -32,12 +32,12 @@ class ComponentEventPublisher {
                   "T must inherit from Component");
 
     // 组件添加事件
-    RegisterCallbackComponentConstruct<T>([this](Entity entity, T &component) {
+    RegisterCallbackComponentConstruct<T>([](Entity entity, T &component) {
       EventBus::Publish<ComponentAddedEvent<T>>(entity, component);
     });
 
     // 组件删除事件
-    RegisterCallbackComponentDestroy<T>([this](Entity entity, T &component) {
+    RegisterCallbackComponentDestroy<T>([](Entity entity, T &component) {
       EventBus::Publish<ComponentRemovedEvent<T>>(entity, component);
     });
   }
