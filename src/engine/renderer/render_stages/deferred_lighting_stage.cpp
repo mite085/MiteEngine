@@ -188,7 +188,8 @@ void DeferredLightingStage::SetupLightingRenderState() {
 }
 
 void DeferredLightingStage::BindGBufferTextures(
-    RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader) {
+    RenderContext &context,
+    [[maybe_unused]] std::shared_ptr<OpenGLShader> lightingShader) {
   // 绑定所有G-Buffer纹理到对应的纹理单元
   for (const auto &type : GBuffer::GetTextureTypes()) {
     // 构建RenderTarget名称：GBuffer_ + 类型名
@@ -211,7 +212,8 @@ void DeferredLightingStage::BindGBufferTextures(
 }
 
 void DeferredLightingStage::BindLightSSBOData(
-    RenderContext &context, std::shared_ptr<OpenGLShader> lightingShader) {
+    RenderContext &context,
+    [[maybe_unused]] std::shared_ptr<OpenGLShader> lightingShader) {
   // 从上下文获取LightManager
   auto lightManager = context.GetLightManager();
 
