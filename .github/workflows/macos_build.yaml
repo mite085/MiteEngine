@@ -1,0 +1,166 @@
+# .github/workflows/macos_build.yaml
+name: macOS Build and Test
+
+on: [push, pull_request]
+
+jobs:
+  macos-build:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code with submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    
+    - name: Install Homebrew dependencies
+      run: |
+        # 安装 Homebrew（如果尚未安装）
+        if ! command -v brew &> /dev/null; then
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+          eval "$(/opt/homebrew/bin/brew shellenv)"
+        fi
+        
+        # 更新 Homebrew
+        brew update
+        
+        # 安装基础构建工具
+        brew install cmake ninja pkg-config
+        
+        # 安装图形库依赖
+        # macOS 使用 Metal 和 Cocoa，但可能需要 X11/Wayland 的替代品
+        brew install glfw3  # 跨平台窗口和输入库
+        brew install glew   # OpenGL 扩展加载库
+        
+        # 可选：安装 Vulkan 相关（如果需要）
+        # brew install vulkan-tools
+        
+        # 验证安装
+        echo "=== Installed tool versions ==="
+        cmake --version
+        ninja --version
+        clang --version
+        pkg-config --version
+        
+        # 验证 GLFW 安装
+        if pkg-config --exists glfw3; then
+          echo "✓ GLFW3 is available via pkg-config"
+          pkg-config --modversion glfw3
+        fi
+    
+    - name: Configure with CMake
+      run: |
+        # 清理旧构建
+        if [ -d "build" ]; then
+          rm -rf build
+        fi
+        
+        mkdir -p build
+        cd build
+        
+        echo "=== Configuring CMake ==="
+        
+        # macOS 特定的 CMake 配置
+        # 注意：macOS 使用 Metal 而不是 OpenGL，可能需要调整图形后端
+        cmake -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+          -DCMAKE_CXX_STANDARD=17 \
+          ..
+        
+        if [ $? -ne 0 ]; then
+          echo "CMake configuration failed"
+          exit 1
+        fi
+        
+        echo "✓ CMake configuration successful"
+    
+    - name: Build with Ninja
+      run: |
+        cd build
+        
+        echo "=== Building project ==="
+        
+        # 获取 CPU 核心数
+        CPU_CORES=$(sysctl -n hw.ncpu)
+        echo "Using $CPU_CORES CPU cores"
+        
+        # 使用 Ninja 构建
+        ninja -j $CPU_CORES
+        
+        if [ $? -ne 0 ]; then
+          echo "Build failed"
+          exit 1
+        fi
+        
+        echo "✓ Build successful"
+        
+        # 显示构建产物
+        echo "=== Build artifacts ==="
+        find . -name "*.dylib" -o -name "*.so" -o -name "*test*" -type f -perm +111 | while read file; do
+          if [ -x "$file" ]; then
+            size_kb=$(($(stat -f%z "$file") / 1024))
+            echo "  $(basename "$file") - ${size_kb} KB"
+          fi
+        done
+    
+    - name: Run tests
+      run: |
+        cd build
+        
+        echo "=== Running tests ==="
+        
+        # 查找所有可执行测试文件
+        test_files=$(find . -name "*test*" -type f -perm +111)
+        
+        if [ -z "$test_files" ]; then
+          echo "No test executables found"
+        else
+          echo "Found $(echo "$test_files" | wc -l) test file(s)"
+          
+          # 设置 macOS 图形测试环境（如果需要）
+          # 对于需要显示服务器的测试，可能需要设置虚拟显示
+          if [[ "$test_files" == *"gui"* || "$test_files" == *"window"* ]]; then
+            echo "Note: GUI tests may require a display server on macOS"
+            # 可以考虑安装 XQuartz 或使用 xvfb-run
+          fi
+          
+          # 运行每个测试
+          passed=0
+          failed=0
+          
+          while IFS= read -r test_file; do
+            if [ -x "$test_file" ]; then
+              echo "Running test: $(basename "$test_file")"
+              
+              # 设置动态库路径（如果需要）
+              export DYLD_LIBRARY_PATH="$(dirname "$test_file"):$DYLD_LIBRARY_PATH"
+              
+              # 运行测试
+              "$test_file"
+              test_exit_code=$?
+              
+              if [ $test_exit_code -eq 0 ]; then
+                echo "  ✓ Test passed"
+                ((passed++))
+              else
+                echo "  ✗ Test failed with exit code: $test_exit_code"
+                ((failed++))
+              fi
+            fi
+          done <<< "$test_files"
+          
+          echo ""
+          echo "=== Test Summary ==="
+          echo "Passed: $passed"
+          echo "Failed: $failed"
+          
+          if [ $failed -gt 0 ]; then
+            echo "Some tests failed"
+            exit 1
+          else
+            echo "✓ All tests passed"
+          fi
+        fi

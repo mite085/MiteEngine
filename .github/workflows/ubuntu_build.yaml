@@ -1,4 +1,4 @@
-# .github/workflows/build.yml
+# .github/workflows/ubuntu_build.yml
 name: Ubuntu Linux Build and Test
 
 on: [push, pull_request]
