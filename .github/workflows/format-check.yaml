@@ -1,3 +1,4 @@
+# 使用jidicula/clang-format-action，它更可靠
 name: Code Format Check
 
 on:
@@ -14,21 +15,10 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Setup clang-format
-      uses: DoozyX/clang-format-lint-action@v0.17
+    - name: clang-format Check
+      uses: jidicula/clang-format-action@v4.11.0
       with:
-        source: 'src'
-        clangFormatVersion: 17  # 与本地的clang-format --version保持一致（通过LLVM安装）
-        style: 'file'  # 使用项目中的 .clang-format 文件
-        inplace: false  # 只检查，不修改
-    
-    - name: Show formatting issues
-      if: failure()
-      run: |
-        echo "Formatting issues found. To fix locally:"
-        echo ""
-        echo "On Linux/macOS:"
-        echo "  find src -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format-14 -i"
-        echo ""
-        echo "On Windows:"
-        echo "  Get-ChildItem src -Recurse -Include *.cpp,*.hpp,*.h | ForEach-Object { clang-format -i $_ }"
+        clang-format-version: '17'
+        check-path: 'src'
+        # 显式指定配置文件
+        config-file: '.clang-format'
