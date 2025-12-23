@@ -77,7 +77,8 @@ CommandHandle CommandRegistry::StoreCommand(CommandPtr command) {
   std::unique_lock lock(m_instancesMutex);
 
   CommandHandle handle = CommandHandle::Create();
-  std::type_index typeIndex = typeid(*command);
+  Command *rawCommand = command.get();
+  std::type_index typeIndex = typeid(*rawCommand);
 
   // 使用新的句柄创建新的实例
   m_commandInstances.try_emplace(
@@ -98,7 +99,8 @@ bool CommandRegistry::ReStoreCommand(const CommandHandle &handle,
   auto it = m_commandInstances.find(handle);
   if (it == m_commandInstances.end()) {
     // 如果句柄不存在，创建新的实例
-    std::type_index typeIndex = typeid(*command);
+    Command *rawCommand = command.get();
+    std::type_index typeIndex = typeid(*rawCommand);
     m_commandInstances.try_emplace(
         handle, std::move(command), typeIndex,
         CommandExecutionState::
@@ -113,7 +115,8 @@ bool CommandRegistry::ReStoreCommand(const CommandHandle &handle,
     }
 
     it->second.command = std::move(command);
-    it->second.type = typeid(*it->second.command);
+    Command *rawCommand = it->second.command.get();
+    it->second.type = typeid(*rawCommand);
     it->second.createTime = std::chrono::system_clock::now();
     // it->second.state = state;                         // 保持原有状态
     it->second.isAcquired = false;  // 重置获取
@@ -156,7 +159,8 @@ bool CommandRegistry::AssociateCommand(const CommandHandle &handle,
     return false;
   }
   it->second.command = std::move(command);
-  it->second.type = typeid(*it->second.command);
+  Command *rawCommand = it->second.command.get();
+  it->second.type = typeid(*rawCommand);
   it->second.createTime = std::chrono::system_clock::now();
   m_Logger->debug("Associated command to pre-allocated handle: {}",
                   handle.ToString());
