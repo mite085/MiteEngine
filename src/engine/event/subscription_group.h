@@ -41,9 +41,9 @@ class SubscriptionGroup {
   SubscriptionGroup(const SubscriptionGroup &) = delete;
   SubscriptionGroup &operator=(const SubscriptionGroup &) = delete;
 
-  // 允许移动语义
-  SubscriptionGroup(SubscriptionGroup &&) = default;
-  SubscriptionGroup &operator=(SubscriptionGroup &&) = default;
+  // 禁止移动语义
+  SubscriptionGroup(SubscriptionGroup &&) = delete;
+  SubscriptionGroup &operator=(SubscriptionGroup &&) = delete;
 
   /**
    * @brief 添加事件订阅/大类订阅到组内，接收到事件同步处理
