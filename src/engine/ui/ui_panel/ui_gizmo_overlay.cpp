@@ -27,8 +27,8 @@ void GizmoOverlay::Render(OverlayContext &context) {
 
   // 相机旋转中心计算（通过cameradir和length确定的旋转中心）
   glm::vec3 cameraPos = context.cameraTransform.GetPosition();  // 相机位置
-  glm::vec3 cameraDir = context.cameraTransform.GetForward();   // 相机看向方向
-  glm::vec3 objectPos = context.modelTransform.GetPosition();   // 选中物体位置
+  glm::vec3 cameraDir = context.cameraTransform.GetForward();  // 相机看向方向
+  glm::vec3 objectPos = context.modelTransform.GetPosition();  // 选中物体位置
 
   // 计算绕物体旋转的最优length，用于选中物体状态下的旋转
   float optimalLength =

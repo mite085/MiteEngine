@@ -176,9 +176,9 @@ class LightManager {
   mutable std::unordered_map<Light *, Transform>
       m_LightTransformCache;                             // 光源变换缓存
   std::shared_ptr<LightShaderStorgeBuffer> m_LightSSBO;  // 光源统一的SSBO管理器
-  std::shared_ptr<ShadowInstance> m_ShadowInstance;      // 阴影实例
-  size_t m_MaxLights;                                    // 最大光源数量
-  bool m_IsInitialized = false;                          // 初始化状态标志
+  std::shared_ptr<ShadowInstance> m_ShadowInstance;  // 阴影实例
+  size_t m_MaxLights;                                // 最大光源数量
+  bool m_IsInitialized = false;                      // 初始化状态标志
 };
 }  // namespace mite
 

@@ -30,7 +30,7 @@ inline bool ShouldContinue(EventResult result) {
   // 如果包含以下任一标志，则停止传播
   bool shouldStop =
       (flags & static_cast<uint8_t>(EventResult::Consumed)) != 0 ||  // 已消费
-      (flags & static_cast<uint8_t>(EventResult::Blocked)) != 0;     // 被阻止
+      (flags & static_cast<uint8_t>(EventResult::Blocked)) != 0;  // 被阻止
 
   return !shouldStop;
 }

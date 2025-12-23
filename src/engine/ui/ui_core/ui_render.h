@@ -81,11 +81,11 @@ class UIRender {
   void RenderLabelSprator(const std::string &translateKey);
   virtual void RenderLabel(const LabelProps &props) = 0;  // 文本显示
   virtual void RenderLabelSprator(
-      const LabelProps &props) = 0;                         // 文本分隔符显示
+      const LabelProps &props) = 0;  // 文本分隔符显示
   virtual bool RenderButton(const ButtonProps &props) = 0;  // 按键
   virtual bool RenderCheckbox(CheckboxProps &props) = 0;  // 复选框（是否选中）
   virtual bool RenderTextInput(TextInputProps &props) = 0;  // 文本输入
-  virtual bool RenderTextArea(TextAreaProps &props) = 0;    // 多行文本输入
+  virtual bool RenderTextArea(TextAreaProps &props) = 0;  // 多行文本输入
 
   // ==================== 选择器控件渲染 ====================
   virtual bool RenderCombobox(ComboboxProps &props) = 0;  // 下拉选择框
@@ -151,12 +151,12 @@ class UIRender {
   virtual void SetSameLine(
       float offset = 0.0f,
       float spacing = -1.0f) = 0;  // 让下一个控件在同一行显示，而不是换行显示
-  virtual void SetNewLine() = 0;   // 显式换行，确保下一个控件在新的一行显示
+  virtual void SetNewLine() = 0;  // 显式换行，确保下一个控件在新的一行显示
 
   // ==================== 状态管理 ====================
   // Imgui的立即模式与上下文系统支持Begin和End的便利性接口
   virtual bool BeginDisabled(
-      bool disabled = true) = 0;   // 启用Disable区域，区域内控件均不允许编辑
+      bool disabled = true) = 0;  // 启用Disable区域，区域内控件均不允许编辑
   virtual void EndDisabled() = 0;  // 终止Disable区域，后续的控件允许编辑
 
   // ==================== 工具函数 ====================

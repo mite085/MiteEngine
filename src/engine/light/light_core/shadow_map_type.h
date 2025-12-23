@@ -54,7 +54,7 @@ struct ShadowMapData {
     struct {
       unsigned int cascadeCount = MAX_CASCADES;
       float splitLambda = 0.95f;
-      std::array<float, MAX_CASCADES> cascadeSplits;        // 级联分割距离
+      std::array<float, MAX_CASCADES> cascadeSplits;  // 级联分割距离
       std::array<glm::mat4, MAX_CASCADES> cascadeMatrices;  // 级联VP矩阵
     } directional;
 

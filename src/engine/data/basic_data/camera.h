@@ -56,7 +56,7 @@ class Camera {
   Camera();
 
   // ==================== 投影参数设置 ====================
-  void SetPerspective(float fov, float near, float far);    // 设定为透视相机
+  void SetPerspective(float fov, float near, float far);  // 设定为透视相机
   void SetOrthographic(float size, float near, float far);  // 设定为正交相机
   void SetProjectionType(CameraProjectionType type);  // 设定投影类型：透视/正交
   void SetAspectRatio(float aspect);                  // 设置宽高比

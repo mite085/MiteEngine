@@ -80,7 +80,7 @@ class SceneView {
   void OnViewportCameraUpdated(
       ViewportCameraUpdateEvent &event);  // 更新相机状态
   void OnViewportPickedUpdated(
-      ViewportPickedUpdateEvent &event);                    // 更新picked状态
+      ViewportPickedUpdateEvent &event);  // 更新picked状态
   void OnSceneNodeSelected(SceneNodeSelectedEvent &event);  // 选择场景节点
 
   // 依赖注入

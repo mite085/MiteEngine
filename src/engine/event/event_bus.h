@@ -235,7 +235,7 @@ class EventBus {
     // 分离同步、异步、延迟处理
     std::vector<Subscription> syncSubscribers;
     std::vector<Subscription> asyncSubscribers;
-    std::vector<Subscription> deferredSyncSubscribers;   // 延迟但同步执行
+    std::vector<Subscription> deferredSyncSubscribers;  // 延迟但同步执行
     std::vector<Subscription> deferredAsyncSubscribers;  // 延迟且异步执行
     // 定义分类函数
     auto classifySubscriber = [&](Subscription &sub) {

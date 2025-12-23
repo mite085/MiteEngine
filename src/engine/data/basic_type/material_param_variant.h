@@ -15,18 +15,18 @@ namespace mite {
 class UniformVariant {
  public:
   // ---- 支持的参数类型 ----
-  using VariantType = std::variant<std::monostate,      // 空状态（替代None）
-                                   bool,                // bool (自动转换为int)
-                                   int,                 // int
-                                   unsigned int,        // uint
-                                   float,               // float
-                                   glm::vec2,           // vec2
-                                   glm::vec3,           // vec3
-                                   glm::vec4,           // vec4
-                                   glm::mat3,           // mat3
-                                   glm::mat4,           // mat4
-                                   std::vector<int>,    // int[]
-                                   std::vector<float>,  // float[]
+  using VariantType = std::variant<std::monostate,  // 空状态（替代None）
+                                   bool,            // bool (自动转换为int)
+                                   int,             // int
+                                   unsigned int,    // uint
+                                   float,           // float
+                                   glm::vec2,       // vec2
+                                   glm::vec3,       // vec3
+                                   glm::vec4,       // vec4
+                                   glm::mat3,       // mat3
+                                   glm::mat4,       // mat4
+                                   std::vector<int>,        // int[]
+                                   std::vector<float>,      // float[]
                                    std::vector<glm::vec3>,  // vec3[]
                                    TextureGPUSlot           // 纹理类型
                                    >;

@@ -10,10 +10,10 @@ namespace mite {
 // 聚光灯：32个 × 1个阴影图 = 32个阴影图
 
 #define MAX_DIRECTIONAL_LIGHTS 8  // 8个方向光源（通常场景足够）
-#define MAX_CASCADES 4            // 每个方向光光源4级级联（平衡质量和性能）
-#define MAX_POINT_LIGHTS 16       // 16个点光源（立方体贴图内存消耗大）
-#define MAX_SPOT_LIGHTS 32        // 32个聚光灯（2D纹理相对节省）
-#define MAX_AREA_LIGHTS 8         // 8个面光源（保留扩展）
+#define MAX_CASCADES 4  // 每个方向光光源4级级联（平衡质量和性能）
+#define MAX_POINT_LIGHTS 16  // 16个点光源（立方体贴图内存消耗大）
+#define MAX_SPOT_LIGHTS 32  // 32个聚光灯（2D纹理相对节省）
+#define MAX_AREA_LIGHTS 8   // 8个面光源（保留扩展）
 #define MAX_LIGHTS 64  // 总光源最大数量64（8方向光+16点光源+32聚光灯+8面光源）
 
 // ----------------- 光源类型和基础参数 -------------------
@@ -58,8 +58,8 @@ struct LightProperties {
   union {
     // 点光源
     struct {
-      float radius = 100.0f;                                      // 影响半径
-      float falloff = 1.0f;                                       // 衰减系数
+      float radius = 100.0f;  // 影响半径
+      float falloff = 1.0f;   // 衰减系数
       LightAttenuation attenuation = LightAttenuation::PHYSICAL;  // 衰减模式
     } point;
 

@@ -189,7 +189,7 @@ class SnapshotComponentSystem : public ComponentSystem<T> {
   static constexpr Component::Family FamilyID = T::family;
 
  public:
-  SnapshotComponentSystem() : ComponentSystem<T>() {};
+  SnapshotComponentSystem() : ComponentSystem<T>(){};
   virtual ~SnapshotComponentSystem() = default;
   virtual void Initialize() override {
     // 订阅组件添加/移除事件
@@ -247,7 +247,7 @@ class DirtyComponentSystem : public ComponentSystem<T>,
                 "T must inherit from Dirty Component");
 
  public:
-  DirtyComponentSystem() : ComponentSystem<T>() {};
+  DirtyComponentSystem() : ComponentSystem<T>(){};
   virtual ~DirtyComponentSystem() = default;
   virtual void Shutdown() override {
     m_EventSubscriptions.UnsubscribeAll();

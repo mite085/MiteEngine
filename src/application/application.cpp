@@ -263,13 +263,13 @@ void MiteApplication::Initialize() {
   InitializeAssertManager();
   InitializeWindowWithOpenGL();
   InitializeMaterialSystem();  // Material模块初始化不涉及UBO创建和绑定，无依赖
-  InitializeSceneCore();       // 无依赖
-  InitializeSceneGraph();      // 依赖SceneCore
-  InitializeSceneView();       // 依赖SceneCore和SceneGraph
+  InitializeSceneCore();         // 无依赖
+  InitializeSceneGraph();        // 依赖SceneCore
+  InitializeSceneView();         // 依赖SceneCore和SceneGraph
   InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行 &
                                  // 依赖SceneView
   InitializeLightSystem();  // Light模块初始化时同步创建LightSSBO，依赖Render绑定
-  InitializeUI();           // 必须在Window创建GL上下文后执行
+  InitializeUI();  // 必须在Window创建GL上下文后执行
 
   // 加载默认场景
   LoadDemoScene(0);

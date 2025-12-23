@@ -77,9 +77,9 @@ void ViewportPanel::InitializePanelProps() {
   auto &props = GetPanelProps();
 
   // 视口面板专用配置
-  props.resizable = true;      // 可调整大小（关键：允许拖拽调整）
-  props.scrollable = false;    // 视口不需要滚动条
-  props.collapsed = false;     // 不折叠标题
+  props.resizable = true;    // 可调整大小（关键：允许拖拽调整）
+  props.scrollable = false;  // 视口不需要滚动条
+  props.collapsed = false;   // 不折叠标题
   props.bringToFront = false;  // 不强制最上层显示
 
   // 设置合理的尺寸限制

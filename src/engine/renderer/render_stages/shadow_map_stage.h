@@ -77,8 +77,8 @@ class ShadowMapStage : public RenderStage {
 
   // ---- 阴影贴图存储 ----
   std::shared_ptr<FrameBuffer> m_DirectionalShadowFBO;  // 方向光源2D数组纹理
-  std::shared_ptr<FrameBuffer> m_PointShadowFBO;        // 点光源立方体贴图数组
-  std::shared_ptr<FrameBuffer> m_SpotShadowFBO;         // 聚光灯2D数组纹理
+  std::shared_ptr<FrameBuffer> m_PointShadowFBO;  // 点光源立方体贴图数组
+  std::shared_ptr<FrameBuffer> m_SpotShadowFBO;  // 聚光灯2D数组纹理
 
   // ---- 阴影上下文UBO存储 ----
   std::array<std::shared_ptr<ShaderUBO>, MAX_DIRECTIONAL_LIGHTS * MAX_CASCADES>

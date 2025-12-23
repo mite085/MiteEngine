@@ -67,7 +67,7 @@ class ViewportInputContext : public InputContext {
   glm::vec3 m_CameraMoveCache = {0.0f, 0.0f, 0.0f};
   glm::vec2 m_CameraRotateCache = {0.0f, 0.0f};  // 仅支持俯仰/偏航旋转
   glm::vec2 m_CameraPanCache = {0.0f, 0.0f};     // 仅支持上下/左右平移
-  float m_CameraZoomCache = 0.0f;                // 仅支持放大/缩小视场角
+  float m_CameraZoomCache = 0.0f;  // 仅支持放大/缩小视场角
 
   /**
    * @brief 将屏幕坐标转换为视口UV坐标

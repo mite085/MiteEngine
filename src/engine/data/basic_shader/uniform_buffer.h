@@ -190,11 +190,11 @@ struct alignas(16) CameraUniformBuffer {
 
   // ---- 相机参数部分 (2 * 12 + 2 * 4 + 192 = 224字节) ----
   glm::vec3
-      position;     // 12字节 - 相机世界坐标（vec3占用12字节，但整个块是16字节）
+      position;  // 12字节 - 相机世界坐标（vec3占用12字节，但整个块是16字节）
   float nearPlane;  // 4字节  - 近平面距离  （后面的标量可以占用剩余的4字节）
   glm::vec3 forward;  // 12字节 - 相机前向向量（但下个vec3必须从新的16字节开始）
-  float farPlane;     // 4字节  - 远平面距离
-                      // （如果没有跟随float/int，则vec3应当占16字节）
+  float farPlane;  // 4字节  - 远平面距离
+                   // （如果没有跟随float/int，则vec3应当占16字节）
 
   // ---- 投影参数部分 (3 * 4 + 224 = 236字节) ----
   float fov;           // 4字节 - 垂直FOV（弧度）

@@ -171,10 +171,10 @@ struct Float3EditProps : public TextRenderProps {
  */
 struct Float4EditProps : public TextRenderProps {
   glm::vec4 value = {0.0f, 0.0f, 0.0f, 0.0f};  // 当前值
-  float dragSpeed = 0.1f;                      // 拖动速度（Drag控件专用）
-  float minValue = -FLT_MAX;                   // 最小值
-  float maxValue = FLT_MAX;                    // 最大值
-  std::string format = "%.3f";                 // 显示格式
+  float dragSpeed = 0.1f;       // 拖动速度（Drag控件专用）
+  float minValue = -FLT_MAX;    // 最小值
+  float maxValue = FLT_MAX;     // 最大值
+  std::string format = "%.3f";  // 显示格式
 };
 
 /**
@@ -317,9 +317,9 @@ struct SpacerProps : public BaseRenderProps {
  */
 struct PanelProps : public BaseRenderProps {
   // ============ 基本属性 ============
-  bool resizable = true;      // 是否可调整大小（默认可调整）
-  bool scrollable = true;     // 是否可滚动（默认可滚动）
-  bool collapsed = false;     // 是否折叠标题（默认状态下不折叠）
+  bool resizable = true;   // 是否可调整大小（默认可调整）
+  bool scrollable = true;  // 是否可滚动（默认可滚动）
+  bool collapsed = false;  // 是否折叠标题（默认状态下不折叠）
   bool bringToFront = false;  // 是否置顶（默认状态下不置顶）
   bool dockable = true;       // 是否可停靠（默认支持）
   bool hasMenuBar = false;  // 是否有菜单栏（默认没有，使用统一的window菜单栏）
@@ -328,7 +328,7 @@ struct PanelProps : public BaseRenderProps {
   glm::vec2 maxSize = {10000, 10000};  // 最大尺寸
 
   // ============ 运行时状态 ============
-  bool movable = true;     // 可移动flag，当鼠标移入显示区域时自动设为false
+  bool movable = true;  // 可移动flag，当鼠标移入显示区域时自动设为false
   bool isFocused = false;  // 是否聚焦于此Panel
   bool isHovered = false;  // 鼠标是否悬浮于此Panel上
 };

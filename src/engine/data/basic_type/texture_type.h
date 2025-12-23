@@ -6,9 +6,9 @@
 namespace mite {
 // 纹理数据类型（像素数据的组件类型）
 enum class TextureDataType {
-  UNSIGNED_BYTE = GL_UNSIGNED_BYTE,          // 8位无符号字节（最常用）
-  FLOAT = GL_FLOAT,                          // 32位浮点（HDR）
-  UNSIGNED_SHORT = GL_UNSIGNED_SHORT,        // 16位无符号短整型
+  UNSIGNED_BYTE = GL_UNSIGNED_BYTE,    // 8位无符号字节（最常用）
+  FLOAT = GL_FLOAT,                    // 32位浮点（HDR）
+  UNSIGNED_SHORT = GL_UNSIGNED_SHORT,  // 16位无符号短整型
   UNSIGNED_INT_24_8 = GL_UNSIGNED_INT_24_8,  // 深度模板打包格式
 };
 
@@ -45,10 +45,10 @@ enum class TextureFormat : unsigned int {
 
 // 纹理目标类型
 enum class TextureTarget {
-  TEXTURE_2D = GL_TEXTURE_2D,                          // 2D纹理（最常用）
-  TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,              // 立方体贴图
-  TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,              // 2D纹理数组
-  TEXTURE_3D = GL_TEXTURE_3D,                          // 3D纹理/体积纹理
+  TEXTURE_2D = GL_TEXTURE_2D,              // 2D纹理（最常用）
+  TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,  // 立方体贴图
+  TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,  // 2D纹理数组
+  TEXTURE_3D = GL_TEXTURE_3D,              // 3D纹理/体积纹理
   TEXTURE_2D_MULTISAMPLE = GL_TEXTURE_2D_MULTISAMPLE,  // 2D多重采样纹理
   TEXTURE_CUBE_MAP_ARRAY = GL_TEXTURE_CUBE_MAP_ARRAY,  // 立方体贴图数组
   TEXTURE_2D_MULTISAMPLE_ARRAY =
@@ -62,17 +62,17 @@ enum class TextureWrapMode {
   Repeat = GL_REPEAT,                   // 默认重复纹理
   ClampToEdge = GL_CLAMP_TO_EDGE,       // 边缘拉伸（防止接缝）
   MirroredRepeat = GL_MIRRORED_REPEAT,  // 镜像重复
-  ClampToBorder = GL_CLAMP_TO_BORDER,   // 边框颜色（需要设置边框色）
+  ClampToBorder = GL_CLAMP_TO_BORDER,  // 边框颜色（需要设置边框色）
 };
 
 // 纹理过滤模式
 enum class TextureFilterMode {
-  Nearest = GL_NEAREST,                              // 最近邻采样（像素化风格）
-  Linear = GL_LINEAR,                                // 线性过滤（平滑）
+  Nearest = GL_NEAREST,  // 最近邻采样（像素化风格）
+  Linear = GL_LINEAR,    // 线性过滤（平滑）
   NearestMipmapNearest = GL_NEAREST_MIPMAP_NEAREST,  // 最近邻Mipmap
-  LinearMipmapNearest = GL_LINEAR_MIPMAP_NEAREST,    // 线性Mipmap+最近邻层间
-  NearestMipmapLinear = GL_NEAREST_MIPMAP_LINEAR,    // 最近邻Mipmap+线性层间
-  LinearMipmapLinear = GL_LINEAR_MIPMAP_LINEAR,      // 三线性过滤（最高质量）
+  LinearMipmapNearest = GL_LINEAR_MIPMAP_NEAREST,  // 线性Mipmap+最近邻层间
+  NearestMipmapLinear = GL_NEAREST_MIPMAP_LINEAR,  // 最近邻Mipmap+线性层间
+  LinearMipmapLinear = GL_LINEAR_MIPMAP_LINEAR,  // 三线性过滤（最高质量）
 };
 
 /**
@@ -83,8 +83,8 @@ enum class TextureFilterMode {
  */
 enum class RuntimeTextureType {
   // G-Buffer 纹理类型
-  GBuffer_WorldPosDepth,        // 世界坐标(xyz) + 深度(w，线性深度)(RGBA32F)
-  GBuffer_BaseColorMatType,     // 基础颜色(rgb) + 材质类型(a，标志位)(RGBA16F)
+  GBuffer_WorldPosDepth,  // 世界坐标(xyz) + 深度(w，线性深度)(RGBA32F)
+  GBuffer_BaseColorMatType,  // 基础颜色(rgb) + 材质类型(a，标志位)(RGBA16F)
   GBuffer_MetallicRoughnessAO,  // 金属度/粗糙度(xy) + AO(z，w保留)(RGBA16F)
   GBuffer_NormalScale,          // 法线(xyz) + 法线缩放(w)(RGBA16F)
   GBuffer_EmissionAlpha,        // 自发光(rgb) + Alpha(a)(RGBA16F)

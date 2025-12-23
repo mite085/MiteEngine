@@ -28,7 +28,7 @@ void Time::Update() {
 
   // 转换为毫秒和秒（保持高精度）
   size_t deltaMicroCount = deltaMicro.count();
-  s_DeltaTimeMS = static_cast<size_t>(deltaMicroCount / 1000);     // 微秒转毫秒
+  s_DeltaTimeMS = static_cast<size_t>(deltaMicroCount / 1000);  // 微秒转毫秒
   s_DeltaTime = static_cast<float>(deltaMicroCount) / 1000000.0f;  // 微秒转秒
 
   // 计算总时间（同样使用微秒精度）

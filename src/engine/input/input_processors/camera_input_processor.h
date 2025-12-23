@@ -2,8 +2,8 @@
 #define MITE_CAMERA_INPUT_PROCESSOR_H
 
 #include "basic_data/camera.h"
-#include "input/input_processor.h"
 #include "input/input_event.h"
+#include "input/input_processor.h"
 
 namespace mite {
 
@@ -15,13 +15,13 @@ namespace mite {
  * - 鼠标中键拖拽平移视角
  * - 滚轮缩放
  * - WASD键盘移动
- * 
+ *
  * 注意：
  * Moving（移动）行为要求持续输入（按住键时每帧触发），
  * handle函数仅仅维护InputState，
  * 真正负责修改Camera数据的，
  * 是每帧调用的UpdateCameraTransform函数
- * 
+ *
  * Rotating（旋转）和Panning（平移）行为
  * 则要求瞬时相对位移（每帧获取鼠标偏移量）
  * handle函数可以直接执行Rotate和Pan
@@ -31,42 +31,30 @@ class CameraInputProcessor : public InputProcessor {
   explicit CameraInputProcessor(std::shared_ptr<Camera> camera);
 
   // InputProcessor接口实现
-  int GetPriority() const override
-  {
-    return InputPriority::CAMERA;
-  }
-  virtual const std::string GetID() const override
-  {
-    return "CameraProcessor";
-  }
+  int GetPriority() const override { return InputPriority::CAMERA; }
+  virtual const std::string GetID() const override { return "CameraProcessor"; }
 
   // 配置方法
-  void SetMoveSpeed(float speed)
-  {
-    m_MoveSpeed = speed;
-  }
-  void SetRotationSpeed(float speed)
-  {
-    m_RotationSpeed = speed;
-  }
-  void SetZoomSpeed(float speed)
-  {
-    m_ZoomSpeed = speed;
-  }
+  void SetMoveSpeed(float speed) { m_MoveSpeed = speed; }
+  void SetRotationSpeed(float speed) { m_RotationSpeed = speed; }
+  void SetZoomSpeed(float speed) { m_ZoomSpeed = speed; }
 
   // 相机控制方法
   void UpdateCameraTransform(float deltaTime);
 
   // 处理事件的方法
-  bool HandleEvent(Event &e) override
-  {
+  bool HandleEvent(Event &e) override {
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<MouseMoveEvent>(BIND_DISPATCH_FN(handleMouseMove));
-    dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_DISPATCH_FN(handleMouseButtonPressed));
-    dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_DISPATCH_FN(handleMouseButtonReleased));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(
+        BIND_DISPATCH_FN(handleMouseButtonPressed));
+    dispatcher.Dispatch<MouseButtonReleasedEvent>(
+        BIND_DISPATCH_FN(handleMouseButtonReleased));
     dispatcher.Dispatch<MouseScrollEvent>(BIND_DISPATCH_FN(handleMouseScroll));
-    dispatcher.Dispatch<KeyPressedEvent>(BIND_DISPATCH_FN(handleKeyPressedEvent));
-    dispatcher.Dispatch<KeyReleasedEvent>(BIND_DISPATCH_FN(handleKeyReleasedEvent));
+    dispatcher.Dispatch<KeyPressedEvent>(
+        BIND_DISPATCH_FN(handleKeyPressedEvent));
+    dispatcher.Dispatch<KeyReleasedEvent>(
+        BIND_DISPATCH_FN(handleKeyReleasedEvent));
     return e.handled;
   }
 
@@ -95,7 +83,7 @@ class CameraInputProcessor : public InputProcessor {
     bool rotating = false;  // 鼠标右键控制旋转
     bool panning = false;   // 鼠标中键控制平移
 
-    glm::vec3 moveDirection{0.0f}; // 记录键盘运动方向
+    glm::vec3 moveDirection{0.0f};            // 记录键盘运动方向
     std::unordered_map<int, bool> keyStates;  // 存储每个按键的状态
   } m_InputState;
 

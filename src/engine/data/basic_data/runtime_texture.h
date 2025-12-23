@@ -47,7 +47,7 @@ class RuntimeTexture {
   bool IsValid() const { return m_Handle.apiHandle != 0; }
 
  private:
-  TextureGPUHandle m_Handle{0};                                  // GPU纹理句柄
+  TextureGPUHandle m_Handle{0};  // GPU纹理句柄
   RuntimeTextureType m_Type = RuntimeTextureType::RenderTarget;  // 纹理类型
   uint32_t m_Width = 0;                                          // 纹理宽度
   uint32_t m_Height = 0;                                         // 纹理高度

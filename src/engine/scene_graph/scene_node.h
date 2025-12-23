@@ -170,7 +170,7 @@ class SceneNode : public std::enable_shared_from_this<SceneNode> {
   BoundingVolume m_WorldBounds;  // 世界空间包围盒
 
   // 可见性状态
-  bool m_WorldVisible = true;              // 世界可见性状态（计算得出）
+  bool m_WorldVisible = true;  // 世界可见性状态（计算得出）
   uint32_t m_VisibilityMask = 0xFFFFFFFF;  // 可见性掩码
   bool m_VisibilityDirty = true;           // 可见性需要重新计算
 

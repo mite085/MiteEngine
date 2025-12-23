@@ -179,8 +179,8 @@ class Transform {
 
   // ==================== 方向向量方法（相机专用） ====================
   const glm::vec3 GetForward() const;  // 在世界空间，相机看向的方向（-Z方向）
-  const glm::vec3 GetUp() const;       // 在世界空间，相机朝上的方向（+Y方向）
-  const glm::vec3 GetRight() const;    // 在世界空间，相机朝右的方向（+X方向）
+  const glm::vec3 GetUp() const;  // 在世界空间，相机朝上的方向（+Y方向）
+  const glm::vec3 GetRight() const;  // 在世界空间，相机朝右的方向（+X方向）
 
   // 获取防翻滚（固定Up方向）后的方向向量，与RotateWithUpConstraint配合使用
   const glm::vec3 GetConstrainedUp(const glm::vec3 &worldUp = s_WorldUp) const;

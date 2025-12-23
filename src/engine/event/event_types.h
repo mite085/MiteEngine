@@ -24,7 +24,7 @@ enum EventCategory : uint64_t {
   UI_EVENT_CATEGORY_LIFECYCLE = 1 << 10,   // 界面：生命周期事件
   UI_EVENT_CATEGORY_EDITOR = 1 << 11,      // 界面：编辑器专用事件
   UI_EVENT_CATEGORY_RUNTIME = 1 << 12,     // 界面：运行时专用事件
-  UI_EVENT_CATEGORY_LAYOUT = 1 << 13,      // 界面：控件与布局专用事件
+  UI_EVENT_CATEGORY_LAYOUT = 1 << 13,  // 界面：控件与布局专用事件
 };
 }  // namespace mite
 

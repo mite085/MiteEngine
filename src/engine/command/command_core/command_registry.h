@@ -265,7 +265,7 @@ class CommandRegistry {
     std::type_index type;
     std::chrono::system_clock::time_point createTime;
     CommandExecutionState state;  // 命令执行状态
-    bool isAcquired;              // 是否被获取（命令对象是否被移走）
+    bool isAcquired;  // 是否被获取（命令对象是否被移走）
 
     // 删除默认构造函数
     CommandInstance() = delete;

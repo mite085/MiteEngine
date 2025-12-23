@@ -152,10 +152,10 @@ class CommandExecutionContext {
 
   // 执行统计
   mutable std::shared_mutex m_ExecutionMutex;
-  size_t m_ExecutingCount;                                // 正在执行的命令数量
-  size_t m_CompletedCount;                                // 已完成的命令数量
-  size_t m_SucceededCount;                                // 成功的命令数量
-  size_t m_FailedCount;                                   // 失败的命令数量
+  size_t m_ExecutingCount;  // 正在执行的命令数量
+  size_t m_CompletedCount;  // 已完成的命令数量
+  size_t m_SucceededCount;  // 成功的命令数量
+  size_t m_FailedCount;     // 失败的命令数量
   std::unordered_set<CommandHandle> m_ExecutingCommands;  // 当前正在执行的命令
 };
 

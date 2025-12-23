@@ -294,15 +294,15 @@ class SimpleBVH : public SpatialPartition {
   // BVH基本属性
   BVHNode *m_Root = nullptr;  // BVH根节点
   std::unordered_set<std::shared_ptr<SceneNode>>
-      m_AllNodes;               // 所有场景节点列表（用于快速重建）
-  size_t m_MaxDepth;            // 最大构建深度
-  size_t m_MinLeafSize;         // 叶子节点最小对象数
+      m_AllNodes;        // 所有场景节点列表（用于快速重建）
+  size_t m_MaxDepth;     // 最大构建深度
+  size_t m_MinLeafSize;  // 叶子节点最小对象数
   bool m_ForceRebuild = false;  // 强制重建标志
   size_t m_NodeCount = 0;       // 总节点数统计
 
   // BVH增量更新
   std::unordered_set<std::shared_ptr<SceneNode>> m_DirtyNodes;  // 脏节点集合
-  std::unordered_set<BVHNode *> m_DirtyBVHNodes;                // 脏BVH节点集合
+  std::unordered_set<BVHNode *> m_DirtyBVHNodes;  // 脏BVH节点集合
 
   // 结构变化跟踪
   std::unordered_map<std::shared_ptr<SceneNode>, BVHNode *>

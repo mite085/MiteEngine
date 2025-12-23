@@ -266,7 +266,7 @@ void DirectionalShadowMap::CalculateCascadeMatrices(
     // zNear: 最近裁剪平面距离（正值）
     // zFar: 最远裁剪平面距离（正值）
     // 对于方向光阴影，我们需要包含从光源位置到级联中心及其后方的所有几何体
-    float zNear = 0.1f;                 // 最小距离
+    float zNear = 0.1f;  // 最小距离
     float zFar = lightDistance * 2.0f;  // 最大距离（包含级联中心后方的几何体）
 
     // 确保zFar > zNear

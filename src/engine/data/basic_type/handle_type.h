@@ -16,24 +16,24 @@ enum class MaterialType : uint32_t {
 // ------------------------ 纹理相关 ------------------------
 // 纹理创建信息（GBuffer、ShadowMap等运行时纹理专用）
 struct TextureCreateInfo {
-  uint32_t width = 0;                                // 纹理宽度
-  uint32_t height = 0;                               // 纹理高度
-  TextureFormat format = TextureFormat::RGBA8;       // 数据格式（RGB8/RGBA8等）
+  uint32_t width = 0;                           // 纹理宽度
+  uint32_t height = 0;                          // 纹理高度
+  TextureFormat format = TextureFormat::RGBA8;  // 数据格式（RGB8/RGBA8等）
   TextureTarget target = TextureTarget::TEXTURE_2D;  // 纹理目标类型
   TextureWrapMode wrapModeS = TextureWrapMode::Repeat;  // 分离S/T方向包装模式
   TextureWrapMode wrapModeT = TextureWrapMode::Repeat;
   TextureFilterMode minFilter = TextureFilterMode::Linear;  // 分离缩小/放大过滤
   TextureFilterMode magFilter = TextureFilterMode::Linear;
   bool generateMipmaps = false;  // 是否生成Mipmap（运行时纹理默认不生成mipmap）
-  uint32_t arrayLayers = 1;      // 纹理层数（如果是数组纹理）
+  uint32_t arrayLayers = 1;  // 纹理层数（如果是数组纹理）
 };
 
 // 纹理数据来源（TextureAsset外部载入纹理专用）
 struct TextureSourceData {
   // 核心数据
-  std::vector<uint8_t> pixelData;               // 原始像素数据（只读指针）
-  uint32_t width = 0;                           // 纹理宽度
-  uint32_t height = 0;                          // 纹理高度
+  std::vector<uint8_t> pixelData;  // 原始像素数据（只读指针）
+  uint32_t width = 0;              // 纹理宽度
+  uint32_t height = 0;             // 纹理高度
   TextureFormat format = TextureFormat::RGBA8;  // 数据格式（RGB8/RGBA8等）
 
   // 纹理目标
@@ -75,8 +75,8 @@ struct TextureInstance {
 // 透明度模式（GLTF标准）
 enum class AlphaMode {
   OPAQUE = 0,  // 不透明材质
-  MASK = 1,    // 透明度裁剪（硬边缘，仅支持0和1的透明度，无需考虑渲染顺序）
-  BLEND = 2    // 透明度混合（软边缘，需要从后向前渲染）
+  MASK = 1,  // 透明度裁剪（硬边缘，仅支持0和1的透明度，无需考虑渲染顺序）
+  BLEND = 2  // 透明度混合（软边缘，需要从后向前渲染）
 };
 
 // 运行时纹理槽位纹理槽，包含纹理GPUHandle和缩放偏移，仅渲染前的材质Apply时需要
@@ -155,7 +155,7 @@ struct ModelGPUHandle {
   uintptr_t indexBuffer = 0;   // 整个Model的EBO
 
   // 从上层收到的信息
-  std::string path;                        // 文件原始路径（用于调试打印）
+  std::string path;  // 文件原始路径（用于调试打印）
   glm::vec3 bboxMin = glm::vec3(FLT_MAX);  // 模型级包围盒
   glm::vec3 bboxMax = glm::vec3(-FLT_MAX);
 };

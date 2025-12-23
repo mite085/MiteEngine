@@ -123,7 +123,7 @@ class UIStyle {
  private:
   std::string m_Name;                                           // 样式名称
   std::unordered_map<std::string, StyleProperty> m_Properties;  // 属性存储
-  std::shared_ptr<UIStyle> m_Parent;                            // 父样式指针
+  std::shared_ptr<UIStyle> m_Parent;  // 父样式指针
 };
 
 // 常用样式属性名称定义（基于imgui的声明编写）

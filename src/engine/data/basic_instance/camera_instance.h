@@ -66,8 +66,8 @@ class CameraInstance {
   std::shared_ptr<ShaderUBO> GetUBO() const { return m_CameraUBO; }
 
  private:
-  std::shared_ptr<Camera> m_Camera;        // 关联的相机对象
-  Transform m_CameraTransform;             // 相机世界空间变换（缓存UBO数据）
+  std::shared_ptr<Camera> m_Camera;  // 关联的相机对象
+  Transform m_CameraTransform;  // 相机世界空间变换（缓存UBO数据）
   std::shared_ptr<ShaderUBO> m_CameraUBO;  // 相机UBO实例
 
   // 禁用拷贝构造和赋值

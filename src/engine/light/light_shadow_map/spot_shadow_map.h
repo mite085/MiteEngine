@@ -104,10 +104,10 @@ class SpotShadowMap : public ShadowMap {
   float GetAspectRatio() const;
 
  private:
-  glm::vec3 m_LastLightPosition;   // 上一次计算时的光源位置，用于检测移动
+  glm::vec3 m_LastLightPosition;  // 上一次计算时的光源位置，用于检测移动
   glm::vec3 m_LastLightDirection;  // 上一次计算时的光源方向，用于检测旋转
   float m_Fov;                     // 视野角度（度）
-  float m_AspectRatio;             // 宽高比
+  float m_AspectRatio;  // 宽高比
 
   /**
    * @brief 计算聚光灯的视图投影矩阵

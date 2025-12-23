@@ -135,7 +135,7 @@ void DeferredLightingStage::CreateLightingFramebuffer() {
   // 颜色附件配置 - 使用HDR格式存储光照结果
   FrameBufferAttachmentSpec colorSpec;
   colorSpec.type = RuntimeTextureType::Lighting_Combined;  // 仅考虑全部着色情况
-  colorSpec.internalFormat = TextureFormat::RGBA16F;       // HDR输出
+  colorSpec.internalFormat = TextureFormat::RGBA16F;  // HDR输出
   colorSpec.generateMipmaps = false;
   spec.attachments.push_back(colorSpec);
 

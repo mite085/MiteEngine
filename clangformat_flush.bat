@@ -4,5 +4,9 @@ for /r src %%f in (*.cpp *.h *.hpp) do (
     echo Formatting: %%f
     clang-format -i --style=file "%%f"
 )
+for /r tests %%f in (*.cpp *.h *.hpp) do (
+    echo Formatting: %%f
+    clang-format -i --style=file "%%f"
+)
 echo Done!
 pause

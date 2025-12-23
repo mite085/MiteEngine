@@ -26,7 +26,7 @@ void ForwardStage::Initialize([[maybe_unused]] RenderContext &context) {
   // 颜色附件配置 - 使用HDR格式存储光照结果
   FrameBufferAttachmentSpec colorSpec;
   colorSpec.type = RuntimeTextureType::Forward_Transparent;  // 透明物体渲染结果
-  colorSpec.internalFormat = TextureFormat::RGBA16F;         // HDR输出
+  colorSpec.internalFormat = TextureFormat::RGBA16F;  // HDR输出
   colorSpec.generateMipmaps = false;
   spec.attachments.push_back(colorSpec);
 

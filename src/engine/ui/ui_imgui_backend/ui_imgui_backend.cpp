@@ -195,9 +195,9 @@ bool ImGuiBackend::InitializeImGuiContext() {
 
   ImGuiIO &io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // 启用键盘导航
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // 启用游戏手柄导航
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // 启用停靠
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // 启用多视口
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // 启用游戏手柄导航
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // 启用停靠
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // 启用多视口
 
   // 设置ini文件位置
   // io.IniFilename = "imgui.ini";

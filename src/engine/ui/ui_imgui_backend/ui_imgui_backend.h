@@ -58,10 +58,10 @@ class ImGuiBackend : public UIBackend {
   bool InitializeRendererBackend();
 
   // 成员变量
-  GLFWwindow *m_Window;                               // GLFW窗口句柄
-  bool m_MouseCaptured;                               // 是否捕获鼠标
-  bool m_MouseCursorVisible;                          // 鼠标指针是否可见
-  double m_Time = 0.0f;                               // 时间跟踪
+  GLFWwindow *m_Window;       // GLFW窗口句柄
+  bool m_MouseCaptured;       // 是否捕获鼠标
+  bool m_MouseCursorVisible;  // 鼠标指针是否可见
+  double m_Time = 0.0f;       // 时间跟踪
   std::unique_ptr<ImGuiStyleAdapter> m_StyleAdapter;  // 样式适配器
 
   Logger m_Logger;                         // 日志系统

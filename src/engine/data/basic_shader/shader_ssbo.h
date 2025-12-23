@@ -99,7 +99,7 @@ class ShaderSSBO {
   size_t m_Size = 0;                 // SSBO大小（字节）
   GLenum m_Usage = GL_DYNAMIC_DRAW;  // 缓冲区使用模式
   uint32_t m_BindingPoint =
-      UINT32_MAX;                // 绑定点（通过BindingPointManager分配）
+      UINT32_MAX;  // 绑定点（通过BindingPointManager分配）
   bool m_IsInitialized = false;  // 初始化状态
   bool m_IsMapped = false;       // 内存映射状态
   // ---- 内部方法 ----

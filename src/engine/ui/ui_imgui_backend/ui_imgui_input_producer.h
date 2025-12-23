@@ -68,7 +68,7 @@ class UIImguiInputProducer {
   // 静态状态记录，用于检测状态变化
   static ImVec2 s_LastMousePos;                            // 上次鼠标位置
   static bool s_LastMouseButtons[ImGuiMouseButton_COUNT];  // 上次鼠标按键状态
-  static bool s_LastKeys[ImGuiKey_COUNT];                  // 上次键盘按键状态
+  static bool s_LastKeys[ImGuiKey_COUNT];  // 上次键盘按键状态
 };
 }  // namespace mite
 
