@@ -5,7 +5,7 @@ std::string Event::ToString() const {
   std::stringstream ss;
   ss << "Event[" << typeid(*this).name() << "]";
 
-  // Ìí¼Ó½á¹û×´Ì¬ÐÅÏ¢
+  // æ·»åŠ ç»“æžœçŠ¶æ€ä¿¡æ¯
   switch (m_Result) {
     case EventResult::None:
       ss << " - None";
