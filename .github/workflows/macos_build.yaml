@@ -15,7 +15,7 @@ jobs:
     
     - name: Setup Xcode
       run: |
-        # 确保使用正确的 Xcode 版本
+        # 选择 Xcode 作为开发工具
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
         xcodebuild -version
         
@@ -32,27 +32,19 @@ jobs:
         cmake --version
         ninja --version
     
-    - name: Configure with CMake
+    - name: Configure with CMake (Xcode generator)
       run: |
         # 清理并创建构建目录
         rm -rf build
         mkdir -p build
         cd build
         
-        echo "=== Configuring CMake ==="
+        echo "=== Configuring CMake with Xcode generator ==="
         
-        # 使用 xcrun 获取完整的编译器路径
-        CLANG_PATH=$(xcrun -f clang)
-        CLANGXX_PATH=$(xcrun -f clang++)
-        
-        # 配置 CMake 明确指定编译器路径
-        cmake -G Ninja \
+        # 使用 Xcode 生成器, 支持 Objective-C++
+        cmake -G "Xcode" \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-          -DCMAKE_C_COMPILER="$CLANG_PATH" \
-          -DCMAKE_CXX_COMPILER="$CLANGXX_PATH" \
-          -DCMAKE_OBJC_COMPILER="$CLANG_PATH" \
-          -DCMAKE_OBJCXX_COMPILER="$CLANGXX_PATH" \
           -DGLFW_BUILD_DOCS=OFF \
           -DGLFW_BUILD_TESTS=OFF \
           -DGLFW_BUILD_EXAMPLES=OFF \
@@ -65,17 +57,21 @@ jobs:
         
         echo "✓ CMake configuration successful"
     
-    - name: Build project
+    - name: Build project with xcodebuild
       run: |
         cd build
         
         echo "=== Building project ==="
         
-        # 获取 CPU 核心数并构建
+        # 获取 CPU 核心数
         CPU_CORES=$(sysctl -n hw.ncpu)
         echo "Using $CPU_CORES CPU cores"
         
-        ninja -j $CPU_CORES
+        # 使用 xcodebuild 构建
+        xcodebuild \
+          -configuration Release \
+          -jobs $CPU_CORES \
+          -quiet
         
         if [ $? -ne 0 ]; then
           echo "Build failed"
@@ -83,6 +79,15 @@ jobs:
         fi
         
         echo "✓ Build successful"
+        
+        # 显示构建产物
+        echo "=== Build artifacts ==="
+        find . -path "*/Release/*" -name "*" -type f -perm +111 2>/dev/null | head -20 | while read file; do
+          if [ -x "$file" ]; then
+            size_kb=$(($(stat -f%z "$file" 2>/dev/null || echo 0) / 1024))
+            echo "  $(basename "$file") - ${size_kb} KB"
+          fi
+        done
     
     - name: Run tests
       run: |
@@ -90,8 +95,9 @@ jobs:
         
         echo "=== Running tests ==="
         
+        # 在 Xcode 构建中，可执行文件在 Release 目录下
         # 查找并运行测试
-        find . -name "*test*" -type f -perm +111 | while read test_file; do
+        find . -path "*/Release/*" -name "*test*" -type f -perm +111 | while read test_file; do
           if [ -x "$test_file" ]; then
             echo "Running test: $(basename "$test_file")"
             
