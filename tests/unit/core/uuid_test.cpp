@@ -151,8 +151,8 @@ TEST_F(UUIDTest, GenerateFromSpecialCharacters) {
 
 // 测试用例9：多线程安全性测试
 TEST_F(UUIDTest, ThreadSafety) {
-  const int NUM_THREADS = 10;
-  const int UUIDS_PER_THREAD = 100;
+  constexpr int NUM_THREADS = 10;
+  constexpr int UUIDS_PER_THREAD = 100;  // 注意：编译时常量无需捕获
 
   std::vector<std::thread> threads;
   std::vector<std::vector<uuids::uuid>> thread_results(NUM_THREADS);
@@ -160,13 +160,13 @@ TEST_F(UUIDTest, ThreadSafety) {
 
   // 创建多个线程同时生成UUID
   for (int i = 0; i < NUM_THREADS; ++i) {
-    threads.emplace_back(
-        [i, &thread_results, &completed_threads, UUIDS_PER_THREAD]() {
-          for (int j = 0; j < UUIDS_PER_THREAD; ++j) {
-            thread_results[i].push_back(mite::UUIDGenerator::Generate());
-          }
-          completed_threads++;
-        });
+    // 注意：捕获列表无需添加编译时常量UUIDS_PER_THREAD，可以直接在Lambda中使用
+    threads.emplace_back([i, &thread_results, &completed_threads]() {
+      for (int j = 0; j < UUIDS_PER_THREAD; ++j) {
+        thread_results[i].push_back(mite::UUIDGenerator::Generate());
+      }
+      completed_threads++;
+    });
   }
 
   // 等待所有线程完成
