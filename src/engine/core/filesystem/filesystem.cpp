@@ -5,6 +5,9 @@
 #else
 #include <limits.h>
 #include <unistd.h>
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
 #endif
 
 namespace fs = std::filesystem;

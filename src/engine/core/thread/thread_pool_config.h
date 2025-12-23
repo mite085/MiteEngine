@@ -5,64 +5,64 @@
 
 namespace mite {
 /**
- * @brief Ïß³Ì³ØÅäÖÃ³£Á¿¶¨Òå
+ * @brief çº¿ç¨‹æ± é…ç½®å¸¸é‡å®šä¹‰
  *
- * Ìá¹©Ô¤¶¨ÒåµÄÏß³Ì³ØÅäÖÃÑ¡Ïî£¬±ãÓÚÍ³Ò»¹ÜÀíºÍÊ¹ÓÃ
+ * æä¾›é¢„å®šä¹‰çš„çº¿ç¨‹æ± é…ç½®é€‰é¡¹ï¼Œä¾¿äºç»Ÿä¸€ç®¡ç†å’Œä½¿ç”¨
  */
 namespace ThreadPoolConfig {
 /**
- * @brief Ä¬ÈÏÏß³Ì³ØÅäÖÃ±êÖ¾
+ * @brief é»˜è®¤çº¿ç¨‹æ± é…ç½®æ ‡å¿—
  *
- * °üº¬£º
- * - BS::tp::priority: ÆôÓÃÈÎÎñÓÅÏÈ¼¶Ö§³Ö
- * - BS::tp::wait_deadlock_checks: ÆôÓÃµÈ´ıÊ±µÄËÀËø¼ì²é
+ * åŒ…å«ï¼š
+ * - BS::tp::priority: å¯ç”¨ä»»åŠ¡ä¼˜å…ˆçº§æ”¯æŒ
+ * - BS::tp::wait_deadlock_checks: å¯ç”¨ç­‰å¾…æ—¶çš„æ­»é”æ£€æŸ¥
  */
 constexpr BS::tp DEFAULT_FLAGS =
     static_cast<BS::tp>(BS::tp::priority | BS::tp::wait_deadlock_checks);
 
 /**
- * @brief ¸ßĞÔÄÜÏß³Ì³ØÅäÖÃ±êÖ¾
+ * @brief é«˜æ€§èƒ½çº¿ç¨‹æ± é…ç½®æ ‡å¿—
  *
- * ÊÊÓÃÓÚ¼ÆËãÃÜ¼¯ĞÍÈÎÎñ£¬½öÆôÓÃÓÅÏÈ¼¶Ö§³Ö
+ * é€‚ç”¨äºè®¡ç®—å¯†é›†å‹ä»»åŠ¡ï¼Œä»…å¯ç”¨ä¼˜å…ˆçº§æ”¯æŒ
  */
 constexpr BS::tp HIGH_PERFORMANCE_FLAGS = BS::tp::priority;
 
 /**
- * @brief °²È«ÓÅÏÈÏß³Ì³ØÅäÖÃ±êÖ¾
+ * @brief å®‰å…¨ä¼˜å…ˆçº¿ç¨‹æ± é…ç½®æ ‡å¿—
  *
- * ÊÊÓÃÓÚĞèÒªÑÏ¸ñ´íÎó¼ì²éµÄ³¡¾°£¬ÆôÓÃËùÓĞ°²È«¼ì²é
+ * é€‚ç”¨äºéœ€è¦ä¸¥æ ¼é”™è¯¯æ£€æŸ¥çš„åœºæ™¯ï¼Œå¯ç”¨æ‰€æœ‰å®‰å…¨æ£€æŸ¥
  */
 constexpr BS::tp SAFETY_FIRST_FLAGS =
     static_cast<BS::tp>(BS::tp::priority | BS::tp::wait_deadlock_checks);
 
 /**
- * @brief ¼òµ¥Ïß³Ì³ØÅäÖÃ±êÖ¾
+ * @brief ç®€å•çº¿ç¨‹æ± é…ç½®æ ‡å¿—
  *
- * ÎŞ¶îÍâ¹¦ÄÜ£¬ÊÊÓÃÓÚ¼òµ¥³¡¾°
+ * æ— é¢å¤–åŠŸèƒ½ï¼Œé€‚ç”¨äºç®€å•åœºæ™¯
  */
 constexpr BS::tp SIMPLE_FLAGS = BS::tp::none;
 
 /**
- * @brief Ô¤¶¨ÒåµÄÏß³Ì³ØÃû³Æ³£Á¿
+ * @brief é¢„å®šä¹‰çš„çº¿ç¨‹æ± åç§°å¸¸é‡
  */
 namespace PoolNames {
-constexpr const char *DEFAULT = "default";        // Ä¬ÈÏÏß³Ì³Ø
-constexpr const char *RENDER = "render";          // äÖÈ¾Ïß³Ì³Ø
-constexpr const char *PHYSICS = "physics";        // ÎïÀíÏß³Ì³Ø
-constexpr const char *IO = "io";                  // IO²Ù×÷Ïß³Ì³Ø
-constexpr const char *NETWORK = "network";        // ÍøÂçÏß³Ì³Ø
-constexpr const char *BACKGROUND = "background";  // ºóÌ¨ÈÎÎñÏß³Ì³Ø
+constexpr const char *DEFAULT = "default";        // é»˜è®¤çº¿ç¨‹æ± 
+constexpr const char *RENDER = "render";          // æ¸²æŸ“çº¿ç¨‹æ± 
+constexpr const char *PHYSICS = "physics";        // ç‰©ç†çº¿ç¨‹æ± 
+constexpr const char *IO = "io";                  // IOæ“ä½œçº¿ç¨‹æ± 
+constexpr const char *NETWORK = "network";        // ç½‘ç»œçº¿ç¨‹æ± 
+constexpr const char *BACKGROUND = "background";  // åå°ä»»åŠ¡çº¿ç¨‹æ± 
 }  // namespace PoolNames
 
 /**
- * @brief Ô¤¶¨ÒåµÄÏß³ÌÊıÁ¿ÅäÖÃ
+ * @brief é¢„å®šä¹‰çš„çº¿ç¨‹æ•°é‡é…ç½®
  */
 namespace ThreadCounts {
-constexpr size_t AUTO = 0;       // ×Ô¶¯¼ì²âÓ²¼ş²¢·¢Êı
-constexpr size_t SINGLE = 1;     // µ¥Ïß³Ì
-constexpr size_t DOUBLE = 2;     // Ë«Ïß³Ì
-constexpr size_t QUADRUPLE = 4;  // ËÄÏß³Ì
-constexpr size_t OCTA = 8;       // °ËÏß³Ì
+constexpr size_t AUTO = 0;       // è‡ªåŠ¨æ£€æµ‹ç¡¬ä»¶å¹¶å‘æ•°
+constexpr size_t SINGLE = 1;     // å•çº¿ç¨‹
+constexpr size_t DOUBLE = 2;     // åŒçº¿ç¨‹
+constexpr size_t QUADRUPLE = 4;  // å››çº¿ç¨‹
+constexpr size_t OCTA = 8;       // å…«çº¿ç¨‹
 }  // namespace ThreadCounts
 }  // namespace ThreadPoolConfig
 }  // namespace mite
