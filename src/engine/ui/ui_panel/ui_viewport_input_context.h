@@ -31,7 +31,7 @@ class ViewportInputContext : public InputContext {
   void SetViewportRect(const glm::vec2 &pos, const glm::vec2 &size);
 
   // 重写输入事件处理逻辑
-  void ProcessEvent(Event &e);
+  void ProcessEvent(Event &e) override;
 
  protected:
   // 输入事件处理
