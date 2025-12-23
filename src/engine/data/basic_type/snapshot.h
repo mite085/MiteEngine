@@ -6,57 +6,57 @@
 
 namespace mite {
 /**
- * @brief ¿ìÕÕ»ùÀà
+ * @brief å¿«ç…§åŸºç±»
  *
- * ËùÓĞ¿ìÕÕÀàĞÍµÄ»ùÀà£¬Ìá¹©Í³Ò»µÄ½Ó¿ÚºÍ»ù´¡¹¦ÄÜ
+ * æ‰€æœ‰å¿«ç…§ç±»å‹çš„åŸºç±»ï¼Œæä¾›ç»Ÿä¸€çš„æ¥å£å’ŒåŸºç¡€åŠŸèƒ½
  */
 class ISnapshot {
  public:
   ISnapshot() : m_timestamp(Time::CurrentTimeMS()) {}
   virtual ~ISnapshot() = default;
 
-  // ================== ºËĞÄ½Ó¿Ú ======================
+  // ================== æ ¸å¿ƒæ¥å£ ======================
   /**
-   * @brief Ó¦ÓÃ¿ìÕÕ£¨ÖØ×ö£©
+   * @brief åº”ç”¨å¿«ç…§ï¼ˆé‡åšï¼‰
    */
   virtual void Apply() = 0;
   /**
-   * @brief ³·Ïú¿ìÕÕ£¨³·Ïú£©
+   * @brief æ’¤é”€å¿«ç…§ï¼ˆæ’¤é”€ï¼‰
    */
   virtual void Revert() = 0;
 
-  // ================== ¹¤¾ßÏà¹Ø ======================
+  // ================== å·¥å…·ç›¸å…³ ======================
   /**
-   * @brief »ñÈ¡¿ìÕÕÃèÊö£¨ÓÃÓÚµ÷ÊÔ£©
+   * @brief è·å–å¿«ç…§æè¿°ï¼ˆç”¨äºè°ƒè¯•ï¼‰
    */
   virtual const char *GetDescription() const = 0;
   /**
-   * @brief ¼ì²é¿ìÕÕÊÇ·ñ¿ÉÑ¹Ëõ
+   * @brief æ£€æŸ¥å¿«ç…§æ˜¯å¦å¯å‹ç¼©
    */
   virtual bool IsCompressible() const { return false; }
   /**
-   * @brief Ñ¹Ëõ¿ìÕÕ£¨Èç¹ûÖ§³Ö£©
+   * @brief å‹ç¼©å¿«ç…§ï¼ˆå¦‚æœæ”¯æŒï¼‰
    */
   virtual bool Compress() { return false; }
   /**
-   * @brief »ñÈ¡¿ìÕÕÄÚ´æÊ¹ÓÃÁ¿
+   * @brief è·å–å¿«ç…§å†…å­˜ä½¿ç”¨é‡
    */
   virtual size_t GetMemoryUsage() const = 0;
 
-  // ================== Ê±¼ä´ÁÏà¹Ø£¨ÎŞĞèÖØĞ´£© ======================
+  // ================== æ—¶é—´æˆ³ç›¸å…³ï¼ˆæ— éœ€é‡å†™ï¼‰ ======================
   /**
-   * @brief »ñÈ¡¿ìÕÕÊ±¼ä´Á£¨ºÁÃë£©
+   * @brief è·å–å¿«ç…§æ—¶é—´æˆ³ï¼ˆæ¯«ç§’ï¼‰
    */
   uint64_t GetTimestamp() const { return m_timestamp; }
   /**
-   * @brief »ñÈ¡¿ìÕÕÊ±¼ä´Á£¨Ãë£©
+   * @brief è·å–å¿«ç…§æ—¶é—´æˆ³ï¼ˆç§’ï¼‰
    */
   float GetTimestampSeconds() const {
     return static_cast<float>(m_timestamp) / 1000.0f;
   }
 
  protected:
-  uint64_t m_timestamp;  // ¿ìÕÕ´´½¨Ê±¼ä´Á£¨ºÁÃë£©
+  uint64_t m_timestamp;  // å¿«ç…§åˆ›å»ºæ—¶é—´æˆ³ï¼ˆæ¯«ç§’ï¼‰
 };
 }  // namespace mite
 
