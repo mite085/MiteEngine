@@ -6,13 +6,13 @@ bool CoreFunctions::StringMatchWildcard(const std::string &str,
   size_t m = str.size();
   size_t n = pattern.size();
 
-  // dp[i][j] ±íÊ¾ str[0..i-1] ÊÇ·ñÆ¥Åä pattern[0..j-1]
+  // dp[i][j] è¡¨ç¤º str[0..i-1] æ˜¯å¦åŒ¹é… pattern[0..j-1]
   std::vector<std::vector<bool>> dp(m + 1, std::vector<bool>(n + 1, false));
 
-  // ¿Õ×Ö·û´®Æ¥Åä¿ÕÄ£Ê½
+  // ç©ºå­—ç¬¦ä¸²åŒ¹é…ç©ºæ¨¡å¼
   dp[0][0] = true;
 
-  // ´¦ÀíÄ£Ê½¿ªÍ·ÓĞ¶à¸ö '*' µÄÇé¿ö
+  // å¤„ç†æ¨¡å¼å¼€å¤´æœ‰å¤šä¸ª '*' çš„æƒ…å†µ
   for (size_t j = 1; j <= n; ++j) {
     if (pattern[j - 1] == '*') {
       dp[0][j] = dp[0][j - 1];
@@ -22,10 +22,10 @@ bool CoreFunctions::StringMatchWildcard(const std::string &str,
   for (size_t i = 1; i <= m; ++i) {
     for (size_t j = 1; j <= n; ++j) {
       if (pattern[j - 1] == '*') {
-        // '*' ¿ÉÒÔÆ¥ÅäÁã¸ö×Ö·û»òÒ»¸ö»ò¶à¸ö×Ö·û
+        // '*' å¯ä»¥åŒ¹é…é›¶ä¸ªå­—ç¬¦æˆ–ä¸€ä¸ªæˆ–å¤šä¸ªå­—ç¬¦
         dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
       } else if (pattern[j - 1] == '?' || str[i - 1] == pattern[j - 1]) {
-        // '?' »ò×Ö·ûÆ¥Åä
+        // '?' æˆ–å­—ç¬¦åŒ¹é…
         dp[i][j] = dp[i - 1][j - 1];
       }
     }
