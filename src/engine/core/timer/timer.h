@@ -1,8 +1,8 @@
 #ifndef MITE_TIMER
 #define MITE_TIMER
 
-#include <string>
 #include <chrono>
+#include <string>
 #include <unordered_map>
 
 namespace mite {
