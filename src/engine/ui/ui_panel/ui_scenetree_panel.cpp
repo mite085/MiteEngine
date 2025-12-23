@@ -28,7 +28,7 @@ void SceneTreePanel::Render() {
   }
 
   // 渲染空白区域用于接收拖拽行为
-  auto dragDropTargetContent = [this](void *dropTargetData) {
+  auto dragDropTargetContent = [](void *dropTargetData) {
     TreeNodeProps *props = static_cast<TreeNodeProps *>(dropTargetData);
     std::shared_ptr<SceneNode> dropNode =
         static_cast<std::shared_ptr<SceneNode> >(props->nodePtr);
@@ -57,7 +57,7 @@ void SceneTreePanel::RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node) {
   treeNodeProps.isLeaf = node->IsLeaf();
 
   // 当作为拖拽的目标节点时，发布事件
-  auto dragDropTargetContent = [this, node](void *dropTargetData) {
+  auto dragDropTargetContent = [node](void *dropTargetData) {
     TreeNodeProps *props = static_cast<TreeNodeProps *>(dropTargetData);
     std::shared_ptr<SceneNode> dropNode = props->nodePtr;
     if (dropNode) {
@@ -68,7 +68,7 @@ void SceneTreePanel::RenderNodeTreeRecursive(std::shared_ptr<SceneNode> node) {
   };
 
   // 当选择Item时发布事件
-  auto itemSelectedContent = [this, node]() {
+  auto itemSelectedContent = [node]() {
     EventBus::Publish<SceneNodeSelectedEvent>(node);
   };
 
