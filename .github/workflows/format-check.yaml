@@ -10,12 +10,12 @@ jobs:
   clang-format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
     
     - name: Setup clang-format
-      uses: DoozyX/clang-format-lint-action@v0.17
+      uses: DoozyX/clang-format-lint-action@v0.20
       with:
         source: 'src'
         clangFormatVersion: 17  # 与本地的clang-format --version保持一致（通过LLVM安装）
