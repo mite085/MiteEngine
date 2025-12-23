@@ -31,18 +31,23 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)  # 禁用编译器扩展，确保跨平台一致性
 
-# 全局运行时库设置（对第三方库通常无害）
+# 全局运行时库设置
 if(MSVC)
+    # 使用CMAKE_MSVC_RUNTIME_LIBRARY设置运行时库
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    
+    # 同时设置编译选项以确保兼容性
     add_compile_options(
-        "$<$<CONFIG:Release>:/MD>"
-        "$<$<CONFIG:Debug>:/MDd>"
-        "$<$<CONFIG:RelWithDebInfo>:/MD>"
-        "$<$<CONFIG:MinSizeRel>:/MD>"
+        $<$<CONFIG:Release>:/MD>
+        $<$<CONFIG:Debug>:/MDd>
+        $<$<CONFIG:RelWithDebInfo>:/MD>
+        $<$<CONFIG:MinSizeRel>:/MD>
     )
 endif()
 
 # 创建编译选项接口库
 add_library(mite_engine_compile_options INTERFACE)
+
 # 为MiteEngine代码设置严格警告
 if(MSVC)
     target_compile_options(mite_engine_compile_options INTERFACE
@@ -72,7 +77,7 @@ else()
 endif()
 
 # 添加第三方依赖目录
-include(thirdparty.cmake)
+include(cmake/thirdparty.cmake)
 
 # 添加核心目录
 add_subdirectory(src)

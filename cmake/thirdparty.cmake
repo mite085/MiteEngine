@@ -75,9 +75,9 @@ target_link_libraries(mite_engine_thirdparty_headers INTERFACE stb_image)
 
 # imgui和imguizmo无cmakelist，为避免污染依赖库，此处手动添加
 # imguifuledialog通过find_package寻找imgui，故手动实现，不依赖其自带的cmake文件
-include(imgui.cmake)
-include(imguizmo.cmake)
-include(imguifiledialog.cmake)
+include(cmake/imgui.cmake)
+include(cmake/imguizmo.cmake)
+include(cmake/imguifiledialog.cmake)
 
 # ============================================
 # Shaderc 依赖自动同步
