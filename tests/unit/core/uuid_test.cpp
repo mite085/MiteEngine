@@ -151,8 +151,8 @@ TEST_F(UUIDTest, GenerateFromSpecialCharacters) {
 
 // 测试用例9：多线程安全性测试
 TEST_F(UUIDTest, ThreadSafety) {
-  constexpr int NUM_THREADS = 10;
-  constexpr int UUIDS_PER_THREAD = 100;
+  const int NUM_THREADS = 10;
+  const int UUIDS_PER_THREAD = 100;
 
   std::vector<std::thread> threads;
   std::vector<std::vector<uuids::uuid>> thread_results(NUM_THREADS);
