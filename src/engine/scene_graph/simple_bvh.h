@@ -310,10 +310,6 @@ class SimpleBVH : public SpatialPartition {
   std::unordered_set<std::shared_ptr<SceneNode>>
       m_NewNodes;                               // 待插入的新增节点
   std::unordered_set<BVHNode *> m_EmptyLeaves;  // 空的叶子节点（待清理）
-
-  // 性能统计
-  mutable uint64_t m_RaycastTests = 0;  // 射线检测测试次数
-  mutable uint64_t m_FrustumTests = 0;  // 视锥体测试次数
 };
 }  // namespace mite
 
