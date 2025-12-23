@@ -3,7 +3,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "filesystem/fileSystem.h"
+#include "filesystem/filesystem.h"
 #include "ui_core/ui_localization.h"
 
 namespace mite {
