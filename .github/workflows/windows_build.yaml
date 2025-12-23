@@ -1,0 +1,109 @@
+# .github/workflows/windows_build.yaml
+name: Windows Build and Test
+
+on: [push, pull_request]
+
+jobs:
+  windows-build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code with submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+        fetch-depth: 0
+    
+    - name: Setup MSVC environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    
+    - name: Setup Python for shaderc
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'  # shaderc需要的Python版本
+    
+    - name: Install build tools
+      run: |
+        # 安装必要的构建工具
+        choco install cmake ninja -y --no-progress
+        
+        # 验证安装
+        cmake --version
+        ninja --version
+        python --version
+        
+        # 验证MSVC编译器
+        cl /?
+        echo "✓ MSVC compiler is available"
+      
+    - name: Configure and Build
+      run: |
+        # 清理旧构建
+        if (Test-Path "build") {
+          Remove-Item -Path "build" -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        
+        # 创建构建目录
+        New-Item -Path "build" -ItemType Directory -Force | Out-Null
+        Set-Location "build"
+        
+        # 配置CMake
+        Write-Host "=== Configuring CMake ===" -ForegroundColor Green
+        cmake -G "Ninja" `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DSHADERC_SKIP_TESTS=ON `
+          -DSHADERC_SKIP_EXAMPLES=ON `
+          ..
+        
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "CMake configuration failed" -ForegroundColor Red
+          exit $LASTEXITCODE
+        }
+        
+        # 构建项目
+        Write-Host "`n=== Building project ===" -ForegroundColor Green
+        $cpuCores = [System.Environment]::ProcessorCount
+        Write-Host "Using $cpuCores CPU cores" -ForegroundColor Cyan
+        
+        ninja -j $cpuCores
+        
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "Build failed" -ForegroundColor Red
+          exit $LASTEXITCODE
+        }
+        
+        # 显示构建产物
+        Write-Host "`n=== Build artifacts ===" -ForegroundColor Green
+        Get-ChildItem -Path . -Recurse -Filter "*.exe" -File | ForEach-Object {
+          $sizeKB = [math]::Round($_.Length / 1KB, 2)
+          Write-Host "  $($_.Name) - $sizeKB KB"
+        }
+        
+        # 返回项目根目录
+        Set-Location ..
+    
+    - name: Run tests
+      run: |
+        Set-Location "build"
+        
+        Write-Host "=== Running tests ===" -ForegroundColor Green
+        $testFiles = Get-ChildItem -Path . -Recurse -Filter "*test*.exe" -File
+        
+        if ($testFiles.Count -eq 0) {
+          Write-Host "No test executables found" -ForegroundColor Yellow
+        } else {
+          foreach ($test in $testFiles) {
+            Write-Host "Test: $($test.Name)" -ForegroundColor Cyan
+            & $test.FullName
+            
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "Test failed: $($test.Name)" -ForegroundColor Red
+              exit $LASTEXITCODE
+            }
+          }
+          Write-Host "`n✓ All tests passed" -ForegroundColor Green
+        }
+        
+        Set-Location ..

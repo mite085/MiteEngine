@@ -1,5 +1,5 @@
 # .github/workflows/build.yml
-name: Linux Build and Test
+name: Ubuntu Linux Build and Test
 
 on: [push, pull_request]
 
