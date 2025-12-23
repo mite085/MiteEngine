@@ -18,7 +18,7 @@ jobs:
       uses: DoozyX/clang-format-lint-action@v0.17
       with:
         source: 'src'
-        clangFormatVersion: 14
+        clangFormatVersion: 17  # 与本地的clang-format --version保持一致（通过LLVM安装）
         style: 'file'  # 使用项目中的 .clang-format 文件
         inplace: false  # 只检查，不修改
     
