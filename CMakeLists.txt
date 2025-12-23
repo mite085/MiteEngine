@@ -58,6 +58,7 @@ if(MSVC)
         /wd4251       # DLL接口警告
         /wd4275       # 非DLL接口类警告
         /utf-8        # 使用UTF-8编码
+        /wd9025       # 忽略D9025警告（覆盖警告级别的警告，避免第三方库的W0警告等级和MiteEngine的W4警告等级切换时的Warning）
     )
 else()
     target_compile_options(mite_engine_compile_options INTERFACE

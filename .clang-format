@@ -2,3 +2,6 @@
 # clang-format -i --style=file <file>
 Language:        Cpp
 BasedOnStyle:  Google
+
+# 控制注释对齐
+AlignTrailingComments: true
