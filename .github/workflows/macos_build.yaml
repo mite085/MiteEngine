@@ -42,4 +42,5 @@ jobs:
     - name: Test
       run: |
         cd build
-        find . -name "*test*" -type f -executable -exec {} \;
+        # macOS兼容的find命令
+        find . -name "*test*" -type f -perm +111 -exec {} \;
