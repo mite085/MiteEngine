@@ -73,6 +73,7 @@ foreach(ASSET_FILE \${ASSET_FILES})
           DESTINATION \${DEST_SUBDIR})
 endforeach()
 ")
+# 复制资产文件到可执行文件目录
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} 
         -D "SOURCE_DIR=${CMAKE_SOURCE_DIR}/assets"
@@ -80,3 +81,18 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         -P "${CMAKE_CURRENT_BINARY_DIR}/copy_filtered_assets.cmake"
     COMMENT "Copying filtered assets to executable directory"
 )
+
+# 在Linux平台下复制mite_ubuntu.sh脚本
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # 检查脚本文件是否存在
+    if(EXISTS "${CMAKE_SOURCE_DIR}/mite_ubuntu.sh")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_SOURCE_DIR}/mite_ubuntu.sh"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/mite_ubuntu.sh"
+            COMMENT "Copying mite_ubuntu.sh to executable directory"
+        )
+    else()
+        message(WARNING "mite_ubuntu.sh not found at ${CMAKE_SOURCE_DIR}/mite_ubuntu.sh")
+    endif()
+endif()
