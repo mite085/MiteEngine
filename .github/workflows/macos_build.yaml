@@ -22,9 +22,9 @@ jobs:
         # 创建构建目录
         mkdir -p build && cd build
 
-        # 使用 Xcode 生成器
-        cmake -G Xcode -DCMAKE_BUILD_TYPE=Release ..
-        xcodebuild -configuration Release
+        # 使用 Unix Makefiles 生成器
+        cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+        make -j$(sysctl -n hw.ncpu)
     
     - name: Test
       run: |
