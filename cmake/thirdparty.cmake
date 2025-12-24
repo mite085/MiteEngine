@@ -37,16 +37,8 @@ find_package(glfw3 3.3 QUIET)
 if(glfw3_FOUND AND USE_SYSTEM_GLFW)
     message(STATUS "Using system GLFW: ${glfw3_VERSION}")
     
-    # 创建导入目标以保持接口一致
-    add_library(glfw INTERFACE)
-    target_link_libraries(glfw INTERFACE glfw)
-    
     # 设置文件夹属性
     set_target_properties(glfw PROPERTIES FOLDER "ThirdParty/Window")
-    
-    # 标记为已找到
-    set(GLFW_FOUND TRUE)
-    set(GLFW_TARGET glfw)
 else()
     message(STATUS "System GLFW not found, using submodule")
     
@@ -55,10 +47,6 @@ else()
     
     # 设置文件夹属性
     set_target_properties(glfw PROPERTIES FOLDER "ThirdParty/Window")
-    
-    # 标记为已找到
-    set(GLFW_FOUND TRUE)
-    set(GLFW_TARGET glfw)
 endif()
 
 # 添加第三方目录(使用现代 CMake 方式包含头文件目录)
