@@ -16,15 +16,28 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
+    
+    - name: Install Ninja
+      run: |
+        # 安装Ninja构建工具
+        brew install ninja
+        
+        # 安装GLFW库(Macos专用, 由于GLFW在MacOS上默认使用Cocoa,依赖OBJCXX,所以无法通过ninja手动编译GLFW Submodule)
+        brew install glfw
 
     - name: Build
       run: |
         # 创建构建目录
         mkdir -p build && cd build
-
-        # 使用 Unix Makefiles 生成器
-        cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
-        make -j$(sysctl -n hw.ncpu)
+        
+        # 配置并构建
+        # 强制GLFW使用Cocoa后端
+        cmake -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DGLFW_BUILD_X11=OFF \
+          -DGLFW_BUILD_COCOA=ON \
+          ..
+        ninja
     
     - name: Test
       run: |

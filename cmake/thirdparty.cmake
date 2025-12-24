@@ -28,8 +28,40 @@ set(SPIRV_SKIP_TESTS ON)
 # 启用文件夹功能（Visual Studio专用）
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# ============================================
+# GLFW 智能选择：优先使用系统版本，找不到时使用子模块(MacOS专用:由于GLFW在MacOS上默认使用Cocoa,依赖OBJCXX,所以无法通过ninja手动编译GLFW Submodule)
+# ============================================
+option(USE_SYSTEM_GLFW "Use system-installed GLFW instead of submodule" ON)
+# 尝试查找系统 GLFW
+find_package(glfw3 3.3 QUIET)
+if(glfw3_FOUND AND USE_SYSTEM_GLFW)
+    message(STATUS "Using system GLFW: ${glfw3_VERSION}")
+    
+    # 创建导入目标以保持接口一致
+    add_library(glfw INTERFACE)
+    target_link_libraries(glfw INTERFACE glfw)
+    
+    # 设置文件夹属性
+    set_target_properties(glfw PROPERTIES FOLDER "ThirdParty/Window")
+    
+    # 标记为已找到
+    set(GLFW_FOUND TRUE)
+    set(GLFW_TARGET glfw)
+else()
+    message(STATUS "System GLFW not found, using submodule")
+    
+    # 添加 GLFW 子模块
+    add_subdirectory(thirdparty/glfw)
+    
+    # 设置文件夹属性
+    set_target_properties(glfw PROPERTIES FOLDER "ThirdParty/Window")
+    
+    # 标记为已找到
+    set(GLFW_FOUND TRUE)
+    set(GLFW_TARGET glfw)
+endif()
+
 # 添加第三方目录(使用现代 CMake 方式包含头文件目录)
-add_subdirectory(thirdparty/glfw)
 add_subdirectory(thirdparty/spdlog)
 add_subdirectory(thirdparty/assimp)
 add_subdirectory(thirdparty/meshoptimizer)
