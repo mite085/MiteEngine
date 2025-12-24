@@ -25,22 +25,75 @@ void OpenGLWindow::Initialize(const WindowConfig &config) {
     m_Logger->info("Creating GLFW window: {} ({}x{}), VSync: {}", config.title,
                    config.width, config.height, config.vsync);
 
-    // 设置窗口提示
+    // 明确指定使用 GLX（X11）而不是 EGL
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
+    // OpenGL 版本配置
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);  // macOS 兼容
+
+    // 调试上下文
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+    // 窗口属性
     glfwWindowHint(GLFW_RESIZABLE, config.resizable ? GLFW_TRUE : GLFW_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);  // 启用调试上下文
 
     // 创建窗口
     m_Window = glfwCreateWindow(
         static_cast<int>(config.width), static_cast<int>(config.height),
         config.title.c_str(),
         config.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+
+    // 如果失败，尝试回退到兼容模式
     if (!m_Window) {
-      m_Logger->critical("Failed to create GLFW window");
-      throw;
+      m_Logger->warn("Failed with OpenGL 4.6 Core, trying 3.3 Core...");
+
+      // 重置窗口提示
+      glfwDefaultWindowHints();
+
+      // 再次明确指定 GLX
+      glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
+      glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+      glfwWindowHint(GLFW_RESIZABLE, config.resizable ? GLFW_TRUE : GLFW_FALSE);
+      glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+
+      m_Window = glfwCreateWindow(
+          static_cast<int>(config.width), static_cast<int>(config.height),
+          config.title.c_str(),
+          config.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+    }
+
+    // 如果还失败，尝试兼容性配置文件
+    if (!m_Window) {
+      m_Logger->warn("Failed with OpenGL 3.3 Core, trying 3.3 Compat...");
+
+      glfwDefaultWindowHints();
+      glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
+      glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+      glfwWindowHint(GLFW_RESIZABLE, config.resizable ? GLFW_TRUE : GLFW_FALSE);
+      glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+
+      m_Window = glfwCreateWindow(
+          static_cast<int>(config.width), static_cast<int>(config.height),
+          config.title.c_str(),
+          config.fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+    }
+
+    if (!m_Window) {
+      m_Logger->critical(
+          "Failed to create GLFW window after multiple attempts");
+      throw std::runtime_error("Failed to create GLFW window");
     }
 
     // GLFW回调适配器注册回调函数
