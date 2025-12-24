@@ -16,22 +16,15 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-    
-    - name: Install Ninja
-      run: |
-        # 安装Ninja构建工具
-        brew install ninja
 
     - name: Build
       run: |
         # 创建构建目录
         mkdir -p build && cd build
-        
-        # 配置并构建
-        cmake -G Ninja \
-          -DCMAKE_BUILD_TYPE=Release \
-          ..
-        ninja
+
+        # 使用 Xcode 生成器
+        cmake -G Xcode -DCMAKE_BUILD_TYPE=Release ..
+        xcodebuild -configuration Release
     
     - name: Test
       run: |
