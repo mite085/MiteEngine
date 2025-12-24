@@ -15,11 +15,11 @@
 BRDFResult dispatchBRDF(BRDFInput brdfInput, BRDFLightInput lightInput)
 {
     switch (brdfInput.materialType) {
-        case 0: // PBR
+        case 1: // PBR
             return calculatePBRDirectBRDF(brdfInput, lightInput);
-        case 1: // Lambert
+        case 2: // Lambert
             return calculateLambertDirectBRDF(brdfInput, lightInput);
-        case 2: // Emission
+        case 3: // Emission
             return calculateEmissionDirectBRDF(brdfInput, lightInput);
         default:
             // 回退到PBR
@@ -33,11 +33,11 @@ BRDFResult dispatchBRDF(BRDFInput brdfInput, BRDFLightInput lightInput)
 BRDFResult dispatchAmbientBRDF(BRDFInput brdfInput, BRDFAmbientInput ambientInput)
 {
     switch (brdfInput.materialType) {
-        case 0: // PBR
+        case 1: // PBR
             return calculatePBRAmbientBRDF(brdfInput, ambientInput);
-        case 1: // Lambert
+        case 2: // Lambert
             return calculateLambertAmbientBRDF(brdfInput, ambientInput);
-        case 2: // Emission
+        case 3: // Emission
             return calculateEmissionAmbientBRDF(brdfInput, ambientInput);
         default:
             // 回退到PBR

@@ -8,7 +8,8 @@ namespace mite {
 // 材质类型枚举
 enum class MaterialType : uint32_t {
   PBR = 1,       // 基于物理的渲染材质
-  EMISSION = 2,  // 自发光材质（功能性测试专用）
+  Lambert = 2,   // 朗伯体材质（漫反射）
+  EMISSION = 3,  // 自发光材质（功能性测试专用）
 
   CUSTOM = 255  // 自定义材质
 };
