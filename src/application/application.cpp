@@ -103,22 +103,27 @@ void MiteApplication::LoadDemoScene(int index) {
   if (index == 0) {
     m_Logger->info("Loading empty scene");
   } else if (index == 1) {
+    m_Logger->info("Loading materialball demo scene");
+
+    // 加载materialball材质球模型
+    LoadModelToScene("models/materialball.glb");
+  } else if (index == 2) {
     m_Logger->info("Loading chess demo scene");
 
     // 加载Chess模型
     LoadModelToScene("models/chess.glb");
-  } else if (index == 2) {
+  } else if (index == 3) {
     m_Logger->info("Loading sponza demo scene");
 
     // 加载Sponza场景模型
     LoadModelToScene("models/sponza.glb");
-  } else if (index == 3) {
+  } else if (index == 4) {
     m_Logger->info("Loading tree demo scene");
 
     // 加载Ground-Tree模型
     LoadModelToScene("models/ground.glb");
     LoadModelToScene("models/oak.glb");
-  } else if (index == 4) {
+  } else if (index == 5) {
     m_Logger->info("Loading car demo scene");
 
     // 加载Car模型
@@ -263,13 +268,13 @@ void MiteApplication::Initialize() {
   InitializeAssertManager();
   InitializeWindowWithOpenGL();
   InitializeMaterialSystem();  // Material模块初始化不涉及UBO创建和绑定，无依赖
-  InitializeSceneCore();         // 无依赖
-  InitializeSceneGraph();        // 依赖SceneCore
-  InitializeSceneView();         // 依赖SceneCore和SceneGraph
+  InitializeSceneCore();       // 无依赖
+  InitializeSceneGraph();      // 依赖SceneCore
+  InitializeSceneView();       // 依赖SceneCore和SceneGraph
   InitializeRenderWithOpenGL();  // 必须在Window创建GL上下文后执行 &
                                  // 依赖SceneView
   InitializeLightSystem();  // Light模块初始化时同步创建LightSSBO，依赖Render绑定
-  InitializeUI();  // 必须在Window创建GL上下文后执行
+  InitializeUI();           // 必须在Window创建GL上下文后执行
 
   // 加载默认场景
   LoadDemoScene(0);
@@ -462,18 +467,22 @@ void MiteApplication::CreateMenuBar() {
     ;
     EventBus::Publish<SceneReloadCalling>(0);
   });
-  sceneMenu->AddItem("common.Chess_Scene(Material Test)", [&]() {
+  sceneMenu->AddItem("common.Material_Ball_Scene(Material Test)", [&]() {
     ;
     EventBus::Publish<SceneReloadCalling>(1);
   });
-  sceneMenu->AddItem("common.Sponza_Scene(Shadow Map Test)", [&]() {
+  sceneMenu->AddItem("common.Chess_Scene(Normal Test)", [&]() {
     ;
     EventBus::Publish<SceneReloadCalling>(2);
   });
+  sceneMenu->AddItem("common.Sponza_Scene(Shadow Map Test)", [&]() {
+    ;
+    EventBus::Publish<SceneReloadCalling>(3);
+  });
   sceneMenu->AddItem("common.Tree_Scene(Alpha Test)",
-                     [&]() { EventBus::Publish<SceneReloadCalling>(3); });
-  sceneMenu->AddItem("common.Car_Scene(Blend Test)",
                      [&]() { EventBus::Publish<SceneReloadCalling>(4); });
+  sceneMenu->AddItem("common.Car_Scene(Blend Test)",
+                     [&]() { EventBus::Publish<SceneReloadCalling>(5); });
 
   fileMenu->AddItem("common.Load_Model", [&]() {
     m_UISystem->OpenFileDialog(
