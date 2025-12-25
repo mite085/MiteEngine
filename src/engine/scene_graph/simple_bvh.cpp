@@ -346,8 +346,8 @@ void SimpleBVH::DebugDraw(
 
 BVHNode *SimpleBVH::BuildTree(std::vector<std::shared_ptr<SceneNode>> &nodes,
                               size_t start, size_t end, size_t depth) {
+  // 边界检查
   if (start >= end) return nullptr;
-
   const size_t count = end - start;
 
   // 创建新节点
@@ -432,10 +432,24 @@ bool SimpleBVH::FindBestSplit(
     centers.push_back(nodes[i]->GetWorldBounds().GetCenter()[axis]);
   }
 
+  // 确保有足够的元素进行分割
+  if (centers.size() < 2) {
+    return false;
+  }
+
   // nth_element从序列中找到第n小或第n大的元素，并将其移动到第n的位置处
   // centers.begin() + count / 2表示中位数
   std::nth_element(centers.begin(), centers.begin() + count / 2, centers.end());
   splitPos = centers[count / 2];
+
+  // 确保分割位置在有效范围内
+  float minVal = *std::min_element(centers.begin(), centers.end());
+  float maxVal = *std::max_element(centers.begin(), centers.end());
+
+  // 如果分割位置太接近边界，无法有效分割
+  if (splitPos <= minVal + 1e-6f || splitPos >= maxVal - 1e-6f) {
+    return false;
+  }
 
   return true;
 }
@@ -443,6 +457,14 @@ bool SimpleBVH::FindBestSplit(
 size_t SimpleBVH::PartitionNodes(std::vector<std::shared_ptr<SceneNode>> &nodes,
                                  size_t start, size_t end, int &axis,
                                  float splitPos) const {
+  // 添加边界检查 - 防止整数下溢
+  if (start >= end) {
+    return start;  // 这种情况不应该发生，但作为安全措施
+  }
+
+  // 添加断言方便调试
+  assert(end <= nodes.size());
+
   size_t left = start;
   size_t right = end - 1;
 
