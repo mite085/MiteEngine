@@ -15,17 +15,81 @@
 **基于OpenGL的轻量级、模块化的C++三维图形引擎**
 
 ## 🚀 快速概览
-**MiteEngine** 是一个采用现代C++和OpenGL构建的、面向学习和生产的三维图形引擎。它强调清晰的架构设计、高效的模块化组织和高性能的渲染管线，旨在为图形开发者提供一个易于理解、扩展和维护的现代图形引擎实现范例。
+**MiteEngine** 是一个采用C++17和OpenGL4.6构建的、面向学习和生产的三维图形引擎。它强调清晰的架构设计、高效的模块化组织和高性能的渲染管线，旨在为图形开发者提供一个易于理解、扩展和维护的现代图形引擎实现范例。
 ### ✨ 核心亮点
 - **🎯 现代架构设计**：融合了**ECS数据层**、**事件驱动**和**模块化分层**等现代软件设计理念，确保代码结构清晰、职责明确。
 - **🖼️ 高质量渲染管线**：实现了**PBR材质**、**ShadowMap阴影**，并构建了**ShadowMap-GBuffer-DeferredLighting-Forward-Blend混合渲染管线**，兼顾性能与视觉效果。
-- **👨‍💻 开发者友好**：代码注释详尽（注释比例高达**27%**），模块边界清晰，依赖关系严格控制，极大降低了学习和二次开发的门槛。
-- **🌍 跨平台支持**：已在 **Windows**、**Ubuntu (Linux)** 和 **macOS** 三大主流桌面平台完成自动化构建与运行测试，确保一致的开发体验。
+- **👨‍💻 开发者友好**：代码注释详尽（注释比例高达**28%**），[架构设计文档Design.md](./docs/00-Index目录.md)完备，模块边界清晰，依赖关系严格控制，极大降低了学习和二次开发的门槛。
+- **🌍 跨平台支持**：已在 **Windows**、**Ubuntu (Linux)** 和 **macOS** 三大主流桌面平台完成自动化构建，并在**Windows**、**Ubuntu** 上运行测试，确保一致的开发体验。
 - **📦 标准资产支持**：完整支持行业标准的 **GLTF 2.0** 模型格式加载，便于集成现有三维资产。
 - **🛠️ 集成编辑器**：内置基于 **Dear ImGui** 的编辑器界面，包含视口、场景树、属性面板，支持**中文显示**与**样式切换**，开箱即用。
 ### 📊 项目规模
 - **总代码量**：约**50,000**行
 - **核心语言**：**C++**, **GLSL**, **CMake**
+
+## 🎬 截图与演示
+
+MiteEngine 提供了完整的可视化编辑器和多个精心设计的测试场景，全面展示引擎的渲染能力、交互功能和编辑器工作流。以下内容包含动态交互演示和静态渲染效果展示。
+
+### 🎮 交互功能演示（动态GIF）
+
+#### 1. 视图操控组件交互
+![View Manipulation](docs/screenshots/view_manipulate.gif)
+* **功能**：展示编辑器右上角的**视图操控组件**，支持快速切换顶视图、前视图、侧视图等标准视角，以及视角复位功能。
+* **技术体现**：直观的编辑器UI设计，提升场景编辑效率。
+
+#### 2. 场景对象变换
+![Object Transformation](docs/screenshots/object_transform.gif)
+* **功能**：演示在视口中**选择、移动、旋转、缩放**场景中的模型对象。
+* **技术体现**：完整的场景图（Scene Graph）支持，实时的变换矩阵更新，与属性面板的联动。
+
+#### 3. 自由相机漫游
+![Camera Navigation](docs/screenshots/camera_navigate.gif)
+* **功能**：展示**WASD**移动、鼠标拖拽旋转、滚轮缩放的**第一人称/观察者相机**控制模式。
+* **技术体现**：灵活的相机系统，平滑的插值运动，与输入系统（Input Stack）的深度集成。
+
+#### 4. 动态光源调整
+![Light Manipulation](docs/screenshots/light_adjust.gif)
+* **功能**：实时**移动点光源/方向光**，观察场景光照与阴影的即时变化。
+* **技术体现**：动态光源管理系统，实时的ShadowMap重计算，延迟光照管线的快速响应。
+
+#### 5. 渲染管线阶段预览
+![Pipeline Stage Preview](docs/screenshots/pipeline_preview.gif)
+* **功能**：**一键切换**渲染管线的中间结果与最终输出：
+  - **G-Buffer分解**：世界坐标（World Position）、法线（Normal）、基础色（Base Color）
+  - **延迟光照结果**（Deferred Lighting Output）
+  - **前向渲染结果**（Forward Output）
+  - **最终混合结果**（Final Blend Output）
+* **技术体现**：**混合渲染管线**（ShadowMap→G-Buffer→Deferred→Forward→Blend）的完整实现，强大的调试与可视化能力。
+
+### 🖼️ 渲染效果展示
+
+<div align="center">
+
+| 场景 | 截图 | 描述 |
+| :--- | :--- | :--- |
+| **材质球场景**<br>PBR材质测试 | ![PBR Material Test](docs/screenshots/pbr_materials.png) | • **核心技术**：PBR材质<br>• **测试重点**：金属度/粗糙度工作流<br>• **渲染阶段**：延迟光照 |
+| **棋盘场景**<br>法线贴图测试 | ![Checkerboard Normal Map](docs/screenshots/checkerboard_normal.png) | • **核心技术**：法线贴图、纹理映射<br>• **渲染阶段**：G-Buffer生成 |
+| **Sponza场景**<br>复杂光照与阴影 | ![Sponza Lighting and Shadows](docs/screenshots/sponza_scene.png) | • **核心技术**：ShadowMap、多光源管理<br>• **测试重点**：阴影质量、复杂场景渲染<br>• **渲染阶段**：延迟光照 |
+| **树木场景**<br>Alpha测试（遮罩） | ![Trees Alpha Mask](docs/screenshots/trees_alpha.png) | • **核心技术**：Alpha Test（Mask）<br>• **测试重点**：硬边透明、植被渲染<br>• **渲染阶段**：延迟光照 |
+| **汽车场景**<br>透明混合渲染 | ![Car Transparency Blend](docs/screenshots/car_blend.png) | • **核心技术**：Alpha Blend<br>• **测试重点**：软透明、多层排序<br>• **渲染阶段**：透明混合阶段 |
+
+</div>
+
+### 🛠️ 引擎功能展示
+
+<div align="center">
+
+| 功能 | 截图 | 描述 |
+| :--- | :--- | :--- |
+| **编辑器界面**<br> | ![Editor Interface](docs/screenshots/editor_interface.png) | • **核心面板**：视口、场景树、属性面板、菜单栏<br>• **特色功能**：中文界面支持、实体组件编辑<br>• |
+| **跨平台运行**<br>Ubuntu实机演示 | ![Ubuntu Running](docs/screenshots/ubuntu_running.png) | • **平台验证**：原生Linux支持与兼容性<br>• **一致性**：跨平台渲染效果一致<br>• **部署**：通过GitHub Actions自动化构建验证 |
+| **界面主题**<br>浅色样式展示 | ![Light UI Style](docs/screenshots/light_style.png) | • **个性化**：支持浅色/深色主题切换<br>• **用户体验**：适应不同使用环境与偏好 |
+| **开发中功能**<br> |  • **近期目标**：场景序列化/反序列化，支持场景保存与加载<br>• **架构演进**：Editor与Runtime分离<br>• **API支持**：Vulkan后端支持<br>• **未来规划**：光线追踪、后处理效果栈、骨骼/动画系统 | |
+
+</div>
+
+> **提示**：上述所有功能均可通过Releases界面下载并运行MiteEngine实时体验。编辑器提供了完整的交互界面，用户可以直接操作场景、修改属性并观察实时渲染结果。
 
 
 ## 🎨 功能特性
@@ -86,7 +150,7 @@ MiteEngine 基于现代、稳定且广泛使用的技术栈构建，确保了项
 | **工具库** | spdlog | 最新 | 高性能日志记录 |
 | | stduuid | 最新 | UUID生成 |
 | **构建系统** | CMake | 3.10 | 跨平台项目构建与依赖管理 |
-| **着色器编译** | Shaderc | （集成） | GLSL着色器离线编译与优化 |
+| **着色器编译** | Shaderc | 集成 | GLSL着色器离线编译与优化 |
 
 ### 📊 代码规模与质量
 项目总规模约 **31,000+** 行有效代码，体现了完整的引擎实现复杂度。详细的代码统计如下（使用 `cloc` 生成）：
@@ -216,63 +280,4 @@ graph LR
 
 此架构为引擎的稳定性、性能优化和未来功能扩展（如Vulkan后端、新的渲染特性）奠定了基础。
 
-## 🎬 截图与演示
 
-MiteEngine 提供了完整的可视化编辑器和多个精心设计的测试场景，全面展示引擎的渲染能力、交互功能和编辑器工作流。以下内容包含动态交互演示和静态渲染效果展示。
-
-### 🎮 交互功能演示（动态GIF）
-
-#### 1. 视图操控组件交互
-![View Manipulation](docs/screenshots/view_manipulate.gif)
-* **功能**：展示编辑器右上角的**视图操控组件**，支持快速切换顶视图、前视图、侧视图等标准视角，以及视角复位功能。
-* **技术体现**：直观的编辑器UI设计，提升场景编辑效率。
-
-#### 2. 场景对象变换
-![Object Transformation](docs/screenshots/object_transform.gif)
-* **功能**：演示在视口中**选择、移动、旋转、缩放**场景中的模型对象。
-* **技术体现**：完整的场景图（Scene Graph）支持，实时的变换矩阵更新，与属性面板的联动。
-
-#### 3. 自由相机漫游
-![Camera Navigation](docs/screenshots/camera_navigate.gif)
-* **功能**：展示**WASD**移动、鼠标拖拽旋转、滚轮缩放的**第一人称/观察者相机**控制模式。
-* **技术体现**：灵活的相机系统，平滑的插值运动，与输入系统（Input Stack）的深度集成。
-
-#### 4. 动态光源调整
-![Light Manipulation](docs/screenshots/light_adjust.gif)
-* **功能**：实时**移动点光源/方向光**，观察场景光照与阴影的即时变化。
-* **技术体现**：动态光源管理系统，实时的ShadowMap重计算，延迟光照管线的快速响应。
-
-#### 5. 渲染管线阶段预览
-![Pipeline Stage Preview](docs/screenshots/pipeline_preview.gif)
-* **功能**：**一键切换**渲染管线的中间结果与最终输出：
-  - **G-Buffer分解**：世界坐标（World Position）、法线（Normal）、基础色（Base Color）
-  - **延迟光照结果**（Deferred Lighting Output）
-  - **前向渲染结果**（Forward Output）
-  - **最终混合结果**（Final Blend Output）
-* **技术体现**：**混合渲染管线**（ShadowMap→G-Buffer→Deferred→Forward→Blend）的完整实现，强大的调试与可视化能力。
-
-### 🖼️ 渲染效果与功能展示
-
-<div align="center">
-
-| 渲染效果展示 | 引擎功能展示 |
-| :--- | :--- |
-| ![PBR Material Test](docs/screenshots/pbr_materials.png)<br>**材质球场景 - PBR材质测试**<br>• 验证金属度/粗糙度工作流<br>• HDR环境光照与IBL<br>• GLTF 2.0标准PBR实现 | ![Editor Interface](docs/screenshots/editor_interface.png)<br>**编辑器界面概览**<br>• 视口/场景树/属性面板<br>• 中文界面支持<br>• 完整的实体编辑工作流 |
-| ![Checkerboard Normal Map](docs/screenshots/checkerboard_normal.png)<br>**棋盘场景 - 法线贴图测试**<br>• 法线贴图增强表面细节<br>• 纹理平铺与过滤<br>• 各向异性过滤表现 | ![Ubuntu Running](docs/screenshots/ubuntu_running.png)<br>**Ubuntu平台运行实况**<br>• 原生Linux支持<br>• 一致的渲染效果<br>• 跨平台兼容性验证 |
-| ![Sponza Lighting and Shadows](docs/screenshots/sponza_scene.png)<br>**Sponza场景 - 复杂光照与阴影**<br>• 多光源ShadowMap阴影<br>• 方向光+点光源混合照明<br>• 大规模场景渲染性能 | ![Light UI Style](docs/screenshots/light_style.png)<br>**浅色主题界面**<br>• 支持界面样式切换<br>• 浅色/深色主题<br>• 可定制的UI外观 |
-| ![Trees Alpha Mask](docs/screenshots/trees_alpha.png)<br>**树木场景 - Alpha测试（遮罩）**<br>• Alpha Mask硬边透明<br>• 植被渲染优化<br>• 正确的深度排序 | *更多功能持续开发中*<br>• 场景序列化<br>• Editor/Runtime分离<br>• 后处理效果栈 |
-| ![Car Transparency Blend](docs/screenshots/car_blend.png)<br>**汽车场景 - 透明混合渲染**<br>• Alpha Blend软透明<br>• 多层透明物体排序<br>• 折射/反射效果支持 | |
-
-</div>
-
-### 📋 场景技术要点总结
-
-| 场景名称 | 核心技术 | 测试重点 | 渲染管线阶段 |
-| :--- | :--- | :--- | :--- |
-| **材质球场景** | PBR材质 | 材质真实性、能量守恒 | 延迟光照 + 前向混合 |
-| **棋盘场景** | 法线贴图、纹理映射 | 表面细节、纹理质量 | G-Buffer生成 |
-| **Sponza场景** | ShadowMap、多光源 | 阴影质量、光照复杂度 | 全管线（阴影→最终） |
-| **树木场景** | Alpha Test（Mask） | 硬边透明、渲染效率 | 前向渲染阶段 |
-| **汽车场景** | Alpha Blend | 软透明、渲染排序 | 透明混合阶段 |
-
-> **提示**：上述所有功能均可通过下载并运行MiteEngine实时体验。编辑器提供了完整的交互界面，用户可以直接操作场景、修改属性并观察实时渲染结果。
