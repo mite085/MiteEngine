@@ -137,22 +137,90 @@ uint32_t OpenGLShader::CompileSPIRVToGLShader(
   };
 
   bool format_found = false;
-  for (GLenum format : formats) {
-    glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(),
-                   static_cast<GLsizei>(spirv.size() * sizeof(uint32_t)));
+  GLenum last_error = GL_NO_ERROR;
 
+  for (GLenum format : formats) {
+    glShaderBinary(1, &shader, format, spirv.data(),
+                   static_cast<GLsizei>(spirv.size() * sizeof(uint32_t)));
     GLenum error = glGetError();
     if (error == GL_NO_ERROR) {
       format_found = true;
       LOG_DEBUG("Found working SPIR-V format: 0x{:X}", format);
       break;
     }
-    glGetError();  // 清除错误状态
+    last_error = error;
   }
 
   if (!format_found) {
+    // 获取详细的 OpenGL 版本和扩展信息
+    const char *version = (const char *)glGetString(GL_VERSION);
+    const char *glsl_version =
+        (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
+    const char *vendor = (const char *)glGetString(GL_VENDOR);
+    const char *renderer = (const char *)glGetString(GL_RENDERER);
+
+    std::string error_msg = "No working SPIR-V format found.\n";
+    error_msg += "===========================================\n";
+    error_msg += "SPIR-V SUPPORT REQUIREMENTS:\n";
+    error_msg += "===========================================\n";
+    error_msg += "Minimum: OpenGL 4.6 with ARB_gl_spirv extension\n";
+    error_msg += "Recommended: OpenGL 4.6+\n\n";
+
+    error_msg += "SYSTEM INFORMATION:\n";
+    error_msg += "-------------------\n";
+    error_msg += "OpenGL Version: ";
+    error_msg += version ? version : "Unknown";
+    error_msg += "\nGLSL Version: ";
+    error_msg += glsl_version ? glsl_version : "Unknown";
+    error_msg += "\nVendor: ";
+    error_msg += vendor ? vendor : "Unknown";
+    error_msg += "\nRenderer: ";
+    error_msg += renderer ? renderer : "Unknown";
+
+    // 检查扩展
+    error_msg += "\n\nChecking SPIR-V extensions...\n";
+
+    // 检查 ARB_gl_spirv 扩展
+    bool has_arb_gl_spirv = false;
+    if (GLAD_GL_ARB_gl_spirv) {
+      has_arb_gl_spirv = true;
+      error_msg += "✓ GL_ARB_gl_spirv: AVAILABLE\n";
+    } else {
+      error_msg += "✗ GL_ARB_gl_spirv: NOT AVAILABLE\n";
+    }
+
+    // 检查 ARB_spirv_extensions 扩展
+    if (GLAD_GL_ARB_spirv_extensions) {
+      error_msg += "✓ GL_ARB_spirv_extensions: AVAILABLE\n";
+    } else {
+      error_msg += "✗ GL_ARB_spirv_extensions: NOT AVAILABLE\n";
+    }
+
+    error_msg +=
+        "\nLast OpenGL error code: 0x" + std::to_string(last_error) + "\n";
+
+    error_msg += "\n===========================================\n";
+    error_msg += "POSSIBLE SOLUTIONS:\n";
+    error_msg += "===========================================\n";
+    error_msg += "1. UPDATE GRAPHICS DRIVERS\n";
+    error_msg += "   - NVIDIA: Download latest from nvidia.com\n";
+    error_msg += "   - AMD: Download latest from amd.com\n";
+    error_msg += "   - Intel: Download latest from intel.com\n\n";
+
+    error_msg += "2. CHECK GPU CAPABILITIES\n";
+    error_msg += "   - Ensure your GPU supports OpenGL 4.6+\n";
+    error_msg += "   - Older GPUs may not support SPIR-V\n\n";
+
+    error_msg += "3. USE NON-SPIR-V MODE\n";
+    error_msg += "   - Modify shader compilation to use native GLSL\n";
+    error_msg += "   - This avoids SPIR-V requirement\n\n";
+
+    error_msg += "4. VERIFY OPENGL CONTEXT CREATION\n";
+    error_msg += "   - Ensure context is created with OpenGL 4.6+ profile\n";
+    error_msg += "   - Check GLFW/GLAD initialization code\n";
+
     glDeleteShader(shader);
-    throw std::runtime_error("No working SPIR-V format found");
+    throw std::runtime_error(error_msg);
   }
 
   // 检查SPIR-V是否成功加载
