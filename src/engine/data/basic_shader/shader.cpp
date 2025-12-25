@@ -181,9 +181,7 @@ uint32_t OpenGLShader::CompileSPIRVToGLShader(
     error_msg += "\n\nChecking SPIR-V extensions...\n";
 
     // 检查 ARB_gl_spirv 扩展
-    bool has_arb_gl_spirv = false;
     if (GLAD_GL_ARB_gl_spirv) {
-      has_arb_gl_spirv = true;
       error_msg += "✓ GL_ARB_gl_spirv: AVAILABLE\n";
     } else {
       error_msg += "✗ GL_ARB_gl_spirv: NOT AVAILABLE\n";
