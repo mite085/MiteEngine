@@ -112,7 +112,7 @@ MiteEngine 采用精心设计的模块化分层架构，各模块职责清晰、
 
 ### 📐 核心架构图
 
-以下图表清晰地展示了引擎各模块之间的分层依赖关系：
+以下图表展示了引擎各模块之间的分层依赖关系：
 
 ```mermaid
 graph TD
@@ -176,15 +176,14 @@ graph TD
 
 ### 🔄 混合渲染管线流程
 
-引擎的渲染管线是现代混合式架构，结合了延迟渲染和前向渲染的优势：
+引擎的渲染管线为混合式架构，结合了延迟渲染和前向渲染的优势：
 ```mermaid
 graph LR
-    A[场景数据] --> B(ShadowMap Pass<br/>阴影贴图生成);
+    B(ShadowMap Pass<br/>阴影贴图生成);
     B --> C(GBuffer Pass<br/>几何缓冲填充);
     C --> D(Deferred Lighting Pass<br/>延迟光照计算);
     D --> E(Forward Pass<br/>前向渲染透明/特殊物体);
     E --> F(Blend/Post-Process Pass<br/>混合与后处理);
-    F --> G[最终画面];
     
     style B fill:#ffebee
     style C fill:#e8f5e8
@@ -214,5 +213,66 @@ graph LR
 - 数据驱动: ECS架构使游戏逻辑与数据分离，提升缓存友好性和系统灵活性。
 - 事件驱动: 通过EventBus实现模块间解耦，提高代码的可测试性和可维护性。
 - 混合渲染: 结合延迟渲染的效率与前向渲染的灵活性，适应复杂的渲染需求。
-- 
+
 此架构为引擎的稳定性、性能优化和未来功能扩展（如Vulkan后端、新的渲染特性）奠定了基础。
+
+## 🎬 截图与演示
+
+MiteEngine 提供了完整的可视化编辑器和多个精心设计的测试场景，全面展示引擎的渲染能力、交互功能和编辑器工作流。以下内容包含动态交互演示和静态渲染效果展示。
+
+### 🎮 交互功能演示（动态GIF）
+
+#### 1. 视图操控组件交互
+![View Manipulation](docs/screenshots/view_manipulate.gif)
+* **功能**：展示编辑器右上角的**视图操控组件**，支持快速切换顶视图、前视图、侧视图等标准视角，以及视角复位功能。
+* **技术体现**：直观的编辑器UI设计，提升场景编辑效率。
+
+#### 2. 场景对象变换
+![Object Transformation](docs/screenshots/object_transform.gif)
+* **功能**：演示在视口中**选择、移动、旋转、缩放**场景中的模型对象。
+* **技术体现**：完整的场景图（Scene Graph）支持，实时的变换矩阵更新，与属性面板的联动。
+
+#### 3. 自由相机漫游
+![Camera Navigation](docs/screenshots/camera_navigate.gif)
+* **功能**：展示**WASD**移动、鼠标拖拽旋转、滚轮缩放的**第一人称/观察者相机**控制模式。
+* **技术体现**：灵活的相机系统，平滑的插值运动，与输入系统（Input Stack）的深度集成。
+
+#### 4. 动态光源调整
+![Light Manipulation](docs/screenshots/light_adjust.gif)
+* **功能**：实时**移动点光源/方向光**，观察场景光照与阴影的即时变化。
+* **技术体现**：动态光源管理系统，实时的ShadowMap重计算，延迟光照管线的快速响应。
+
+#### 5. 渲染管线阶段预览
+![Pipeline Stage Preview](docs/screenshots/pipeline_preview.gif)
+* **功能**：**一键切换**渲染管线的中间结果与最终输出：
+  - **G-Buffer分解**：世界坐标（World Position）、法线（Normal）、基础色（Base Color）
+  - **延迟光照结果**（Deferred Lighting Output）
+  - **前向渲染结果**（Forward Output）
+  - **最终混合结果**（Final Blend Output）
+* **技术体现**：**混合渲染管线**（ShadowMap→G-Buffer→Deferred→Forward→Blend）的完整实现，强大的调试与可视化能力。
+
+### 🖼️ 渲染效果与功能展示
+
+<div align="center">
+
+| 渲染效果展示 | 引擎功能展示 |
+| :--- | :--- |
+| ![PBR Material Test](docs/screenshots/pbr_materials.png)<br>**材质球场景 - PBR材质测试**<br>• 验证金属度/粗糙度工作流<br>• HDR环境光照与IBL<br>• GLTF 2.0标准PBR实现 | ![Editor Interface](docs/screenshots/editor_interface.png)<br>**编辑器界面概览**<br>• 视口/场景树/属性面板<br>• 中文界面支持<br>• 完整的实体编辑工作流 |
+| ![Checkerboard Normal Map](docs/screenshots/checkerboard_normal.png)<br>**棋盘场景 - 法线贴图测试**<br>• 法线贴图增强表面细节<br>• 纹理平铺与过滤<br>• 各向异性过滤表现 | ![Ubuntu Running](docs/screenshots/ubuntu_running.png)<br>**Ubuntu平台运行实况**<br>• 原生Linux支持<br>• 一致的渲染效果<br>• 跨平台兼容性验证 |
+| ![Sponza Lighting and Shadows](docs/screenshots/sponza_scene.png)<br>**Sponza场景 - 复杂光照与阴影**<br>• 多光源ShadowMap阴影<br>• 方向光+点光源混合照明<br>• 大规模场景渲染性能 | ![Light UI Style](docs/screenshots/light_style.png)<br>**浅色主题界面**<br>• 支持界面样式切换<br>• 浅色/深色主题<br>• 可定制的UI外观 |
+| ![Trees Alpha Mask](docs/screenshots/trees_alpha.png)<br>**树木场景 - Alpha测试（遮罩）**<br>• Alpha Mask硬边透明<br>• 植被渲染优化<br>• 正确的深度排序 | *更多功能持续开发中*<br>• 场景序列化<br>• Editor/Runtime分离<br>• 后处理效果栈 |
+| ![Car Transparency Blend](docs/screenshots/car_blend.png)<br>**汽车场景 - 透明混合渲染**<br>• Alpha Blend软透明<br>• 多层透明物体排序<br>• 折射/反射效果支持 | |
+
+</div>
+
+### 📋 场景技术要点总结
+
+| 场景名称 | 核心技术 | 测试重点 | 渲染管线阶段 |
+| :--- | :--- | :--- | :--- |
+| **材质球场景** | PBR材质 | 材质真实性、能量守恒 | 延迟光照 + 前向混合 |
+| **棋盘场景** | 法线贴图、纹理映射 | 表面细节、纹理质量 | G-Buffer生成 |
+| **Sponza场景** | ShadowMap、多光源 | 阴影质量、光照复杂度 | 全管线（阴影→最终） |
+| **树木场景** | Alpha Test（Mask） | 硬边透明、渲染效率 | 前向渲染阶段 |
+| **汽车场景** | Alpha Blend | 软透明、渲染排序 | 透明混合阶段 |
+
+> **提示**：上述所有功能均可通过下载并运行MiteEngine实时体验。编辑器提供了完整的交互界面，用户可以直接操作场景、修改属性并观察实时渲染结果。
