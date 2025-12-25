@@ -81,7 +81,19 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         -P "${CMAKE_CURRENT_BINARY_DIR}/copy_filtered_assets.cmake"
     COMMENT "Copying filtered assets to executable directory"
 )
-
+# 复制config/imgui.ini文件到可执行文件目录
+if(EXISTS "${CMAKE_SOURCE_DIR}/config/imgui.ini")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_SOURCE_DIR}/config/imgui.ini"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config/imgui.ini"
+        COMMENT "Copying imgui.ini to executable directory"
+    )
+else()
+    message(WARNING "imgui.ini not found at ${CMAKE_SOURCE_DIR}/config/imgui.ini")
+endif()
 # 在Linux平台下复制mite_ubuntu.sh脚本
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     # 检查脚本文件是否存在
