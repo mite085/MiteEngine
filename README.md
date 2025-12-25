@@ -60,7 +60,7 @@ MiteEngine 提供了完整的可视化编辑器和多个精心设计的测试场
   - **延迟光照结果**（Deferred Lighting Output）
   - **前向渲染结果**（Forward Output）
   - **最终混合结果**（Final Blend Output）
-* **技术体现**：**混合渲染管线**（ShadowMap→G-Buffer→Deferred→Forward→Blend）的完整实现，强大的调试与可视化能力。
+* **技术体现**：**混合渲染管线**（ShadowMap→G-Buffer→Deferred→Forward→Blend）的完整实现，确保支持可视化调试能力。
 
 ### 🖼️ 渲染效果展示
 
@@ -89,7 +89,7 @@ MiteEngine 提供了完整的可视化编辑器和多个精心设计的测试场
 
 </div>
 
-> **提示**：上述所有功能均可通过Releases界面下载并运行MiteEngine实时体验。编辑器提供了完整的交互界面，用户可以直接操作场景、修改属性并观察实时渲染结果。
+> **提示**：上述所有功能均可通过[Releases发布界面](https://github.com/mite085/MiteEngine/releases)下载并运行MiteEngine实时体验。编辑器提供了完整的交互界面，用户可以直接操作场景、修改属性并观察实时渲染结果。
 
 
 ## 🎨 功能特性
@@ -146,7 +146,7 @@ MiteEngine 基于现代、稳定且广泛使用的技术栈构建，确保了项
 | **数学库** | GLM | 最新 | 图形数学运算（向量、矩阵） |
 | **资产加载** | Assimp | 5.0 | 模型文件（GLTF等）导入 |
 | | stb_image | 最新 | 纹理图片加载 |
-| | meshoptimizer | 最新 | 网格数据处理与优化 |
+| | meshoptimizer | 最新 | 网格数据处理与优化（多级LOD自动生成） |
 | **工具库** | spdlog | 最新 | 高性能日志记录 |
 | | stduuid | 最新 | UUID生成 |
 | **构建系统** | CMake | 3.10 | 跨平台项目构建与依赖管理 |
@@ -169,6 +169,109 @@ MiteEngine 基于现代、稳定且广泛使用的技术栈构建，确保了项
 ### 🔗 第三方依赖管理
 - 主要第三方库均通过 **Git Submodules** 集成，确保版本可控和构建一致性。
 - CMake脚本自动处理依赖的查找、编译与链接，用户只需一条命令即可完成环境准备与项目构建。
+
+## 🚀 快速开始
+
+本节将指导您在不同平台上快速构建并运行 MiteEngine。
+
+### 📋 前置要求
+
+#### Windows
+- **Git** - 用于克隆仓库和子模块
+- **CMake** (>= 3.20) - 构建系统
+- **Visual Studio 2022** - 编译器 (MSVC) 和 IDE
+- **Python 3** - 用于 Shaderc 着色器编译
+- **OpenGL 4.6** 兼容的显卡与驱动程序
+
+#### Linux (Ubuntu/Debian)
+- **Git** - 用于克隆仓库和子模块
+- **CMake** (>= 3.20) - 构建系统
+- **Ninja** - 构建工具 (推荐，更快)
+- **Python 3** - 用于 Shaderc 着色器编译
+- **OpenGL 4.5+** 兼容的显卡与驱动程序
+- **基础开发工具包**：
+  ```bash
+  sudo apt update
+  sudo apt install build-essential libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
+  ````
+
+#### macOS
+暂未测试
+
+### 📥 获取源代码
+```bash
+# 克隆主仓库（包含子模块）
+git clone --recursive https://github.com/yourusername/MiteEngine.git
+cd MiteEngine
+
+# 如果已克隆但未包含子模块，可运行：
+git submodule update --init --recursive
+````
+
+### 🛠️ 构建项目
+
+#### Windows系统 (使用 Visual Studio 2022)
+1. 使用 CMake 生成 Visual Studio 解决方案：
+    ```bash
+    mkdir build
+    cd build
+    cmake .. -G "Visual Studio 17 2022" -A x64
+    ````
+2. 打开生成的 MiteEngine.sln，选择 Debug 或 Release 配置。
+3. 构建 main 项目（设为启动项目）。
+
+#### Linux系统/Ubuntu (使用 Ninja)
+
+```bash
+mkdir build && cd build
+cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release  # 或 Debug
+ninja
+````
+
+#### macOS系统
+暂未测试，可参考[macos_build.yaml脚本](.github/workflows/macos_build.yaml)执行构建
+
+### ▶️ 运行MiteEngine
+
+#### Windows系统
+构建完成后，可执行文件位于：
+```text
+build/src/main/Debug/MiteEngine.exe    # Debug 版本
+build/src/main/Release/MiteEngine.exe   # Release 版本
+````
+直接双击 MiteEngine.exe 启动。
+
+#### Linux系统/Ubuntu
+构建完成后，可执行文件位于：
+```text
+build/src/main/Debug/MiteEngine    # Debug 版本  
+build/src/main/Release/MiteEngine   # Release 版本
+````
+推荐使用启动脚本（构建后自动复制到可执行文件同级目录）：
+```bash
+# 进入可执行文件目录
+cd build/src/main/Release  # 或 Debug
+# 使用启动脚本（自动检测OpenGL环境）
+./mite_ubuntu.sh
+````
+脚本功能：自动检测系统 OpenGL 版本，若低于 4.5，则使用 LLVMPipe 软件渲染器启动，确保兼容性。
+
+### 🔧 常见问题
+1. CMake 配置失败
+     - 确保 CMake 版本 >= 3.20
+     - 检查子模块是否完整：运行 git submodule update --init --recursive
+     - 清理构建目录：删除 build 文件夹重新生成
+2. 运行时缺少 OpenGL 4.5+
+     - Windows：更新显卡驱动程序
+     - Linux：安装正确的显卡驱动（NVIDIA: nvidia-driver-xxx, AMD: mesa-vulkan-drivers）
+     - macOS：确保系统为较新版本（支持 Metal/OpenGL 4.1）
+3. 着色器编译错误
+     - 确保 Python 3 已正确安装 并在 PATH 中
+     - 检查 Shaderc 子模块：thirdparty/shaderc 目录应存在
+4. 启动脚本权限问题 (Linux)
+    ```bash
+    chmod +x mite_ubuntu.sh
+    ````
 
 ## 🏗️ 架构展示
 
@@ -281,3 +384,137 @@ graph LR
 此架构为引擎的稳定性、性能优化和未来功能扩展（如Vulkan后端、新的渲染特性）奠定了基础。
 
 
+## 📁 项目结构与文档
+
+MiteEngine 采用清晰、模块化的项目结构，便于代码维护、功能扩展和团队协作。本节将详细介绍项目的目录结构、核心模块组织以及相关文档资源。
+
+### 🏗️ 项目目录结构
+```
+MiteEngine/
+├── src/                          # 引擎源代码
+│   ├── application/              # 应用层：整合所有模块
+│   ├── asset/                    # 资产层：资源加载与管理
+│   ├── editor/                   # 编辑器层（规划中）
+│   ├── engine/                   # 引擎核心层（15+个模块）
+│   │   ├── command/              # 命令系统：撤销/重做、UI命令
+│   │   ├── core/                 # 核心工具：日志、文件系统、线程池等
+│   │   ├── data/                 # 数据定义：几何、材质、着色器等
+│   │   ├── event/                # 事件系统：模块间通信总线
+│   │   ├── input/                # 输入系统：上下文栈、处理器
+│   │   ├── light/                # 光照系统：光源管理与阴影
+│   │   ├── material/             # 材质系统：PBR模板与工厂
+│   │   ├── renderer/             # 渲染系统：管线、阶段、OpenGL后端
+│   │   ├── scene_core/           # 场景核心：ECS架构实现
+│   │   ├── scene_graph/          # 场景图：空间结构与BVH加速
+│   │   ├── scene_serializer/     # 场景序列化：持久化支持
+│   │   ├── scene_view/           # 场景视图：渲染队列与LOD
+│   │   ├── ui/                   # UI系统：编辑器界面与属性面板
+│   │   └── window/               # 窗口系统：GLFW抽象与事件
+│   ├── main/                     # 程序入口点
+│   └── runtime/                  # 运行时层（规划中）
+├── tests/                        # 测试代码
+│   ├── unit/                     # 单元测试：核心模块验证
+│   ├── integration/              # 集成测试：模块间协作
+│   ├── system/                   # 系统测试：端到端功能
+│   └── fixtures/                 # 测试夹具：共享测试数据
+├── docs/                         # 项目文档
+│   ├── ./                        # 架构设计文档
+│   └── screenshots/              # 截图与演示素材
+├── thirdparty/                   # 第三方依赖（Git Submodules）
+├── assets/                       # 测试资产：模型、纹理、着色器
+├── CMakeLists.txt                # 根CMake配置
+└── README.md                     # 项目总览文档
+```
+
+
+### 📚 核心模块详解
+
+#### 1. 基础支撑层
+- **`core/`** - 跨平台工具库：日志(`logger/`)、文件系统(`filesystem/`)、线程池(`thread/`)、计时器(`timer/`)、UUID生成(`uuid/`)
+- **`event/`** - 事件总线：中心化的事件分发系统，支持同步/异步事件
+- **`data/`** - 基础数据结构：变换(`transform`)、包围体(`bounding_volume`)、相机(`camera`)、网格(`mesh`)、着色器(`shader`)等
+
+#### 2. 场景管理层
+- **`scene_core/`** - ECS核心：实体(`entity`)、组件(`component`)、系统(`system`)管理
+- **`scene_graph/`** - 空间结构：场景节点(`scene_node`)、BVH加速(`simple_bvh`)、空间划分(`spatial_partition`)
+- **`scene_view/`** - 渲染准备：渲染队列(`render_queue`)、LOD处理(`lod_processor`)、批处理优化(`batch_optimizer`)
+
+#### 3. 渲染管线层
+- **`renderer/`** - 渲染核心：管线(`render_pipeline`)、设备(`render_device`)、命令(`render_command`)
+  - `render_stages/` - 渲染阶段：阴影(`shadow_map_stage`)、G-Buffer(`gbuffer_stage`)、延迟光照(`deferred_lighting_stage`)、前向(`forward_stage`)、混合(`blend_stage`)
+  - `render_opengl/` - OpenGL后端：具体API实现
+- **`light/`** - 光照系统：光源类型(`directional_light`、`point_light`等)、阴影映射(`shadow_map`)
+- **`material/`** - 材质系统：PBR模板(`material_template_gltf_pbr`)、材质工厂(`material_factory`)
+
+#### 4. 用户交互层
+- **`ui/`** - 界面系统：核心(`ui_core`)、ImGui后端(`ui_imgui_backend`)、面板(`ui_panel`)、属性编辑(`ui_property`)
+- **`input/`** - 输入系统：上下文栈(`input_context_stack`)、处理器(`camera_input_processor`)
+- **`window/`** - 窗口管理：GLFW抽象(`glfw_window`)、事件适配(`window_event`)
+
+#### 5. 资产与工具层
+- **`asset/`** - 资产管理：加载器(`model_loader`、`texture_loader`、`material_loader`)、缓存(`asset_cache`)
+- **`command/`** - 命令系统：撤销/重做栈(`undo_stack`/`redo_stack`)、执行器(`command_executor`)、注册表(`command_registry`)
+
+### 📖 文档体系
+
+项目提供了完整的中文架构设计文档，位于 `docs/` 目录：
+
+| 文档 | 内容概述 |
+| :--- | :--- |
+| [**00-Index目录.md**](./docs/00-Index目录.md) | 所有文档的索引与导航 |
+| [**01-整体架构概述.md**](./docs/01-整体架构概述.md) | 引擎的总体架构设计、模块划分与数据流 |
+| [**02-Core工具模块.md**](./docs/02-Core工具模块.md) | 日志、文件系统、线程池等基础工具的实现与使用 |
+| [**03-Event事件模块.md**](./docs/03-Event事件模块.md) | 事件总线的设计、事件类型定义与订阅机制 |
+| [**04-Data数据模块.md**](./docs/04-Data数据模块.md) | 基础数据结构（变换、相机、网格等）的定义与操作 |
+| [**05-Shader着色器模块.md**](./docs/05-Shader着色器模块.md) | 着色器管理、UBO/SSBO绑定、G-Buffer结构 |
+| [**06-Asset资产模块.md**](./docs/06-Asset资产模块.md) | GLTF加载、纹理管理、材质导入流程 |
+| [**07-Material材质模块.md**](./docs/07-Material材质模块.md) | PBR材质系统、材质模板、参数变体 |
+| [**08-Light光照模块.md**](./docs/08-Light光照模块.md) | 光源类型、阴影映射、光照计算 |
+| [**09-Input输入模块.md**](./docs/09-Input输入模块.md) | 输入上下文栈、处理器设计、相机控制 |
+| [**10-SceneCore场景核心模块.md**](./docs/10-SceneCore场景核心模块.md) | ECS架构详解、组件系统、实体管理 |
+| [**11-SceneGraph场景图模块.md**](./docs/11-SceneGraph场景图模块.md) | 场景节点树、BVH加速、空间查询 |
+| [**12-SceneView场景视图模块.md**](./docs/12-SceneView场景视图模块.md) | 渲染队列构建、LOD系统、可见性判断 |
+| [**13-Render渲染模块.md**](./docs/13-Render渲染模块.md) | 混合渲染管线、各阶段实现、OpenGL后端 |
+| [**14-UI界面模块.md**](./docs/14-UI界面模块.md) | 编辑器UI架构、面板系统、属性编辑 |
+
+## 🧪 测试体系（未完成）
+
+项目采用分层测试策略，确保代码质量：
+
+- **单元测试** (`tests/unit/`): 验证单个模块的功能正确性
+- **集成测试** (`tests/integration/`): 验证多个模块间的协作
+- **系统测试** (`tests/system/`): 验证端到端的引擎功能
+
+目前仅对`core/`部分执行了一些单元测试，更多测试内容待后续完善
+
+## 🚧 开发状态与路线图
+
+MiteEngine 目前处于 **积极开发阶段**，核心渲染管线、编辑器框架和基础架构已基本稳定。项目遵循模块化设计，便于功能迭代与社区贡献。
+
+### 📊 当前状态
+- ✅ **核心渲染管线**：混合渲染（延迟+前向）完整实现
+- ✅ **编辑器框架**：完整的可视化编辑工具链
+- ✅ **ECS架构**：基于组件的场景管理系统
+- ✅ **跨平台支持**：Windows、Linux (Ubuntu) 已验证
+- ✅ **PBR材质系统**：支持GLTF 2.0标准工作流
+- 🔄 **场景序列化**：基础支持，持续完善中
+
+### 🗺️ 开发路线图
+
+#### 近期重点
+- **场景数据持久化**：完整的场景序列化/反序列化支持，实现场景保存与加载
+- **架构演进**：Editor（编辑器）与Runtime（运行时）的清晰分离
+- **API扩展**：初步的Vulkan后端支持，为多图形API奠定基础
+
+#### 中长期规划
+- **渲染增强**：后处理效果栈
+- **光线追踪**：基于Path Tracing的近实时光线追踪渲染
+- **动态内容**：基础的骨骼动画系统支持
+- **工具链完善**：资源浏览器、性能分析工具
+
+### 📄 许可证
+本项目采用 **MIT 许可证** - 详见 [LICENSE](LICENSE) 文件。
+
+---
+
+感谢您对 MiteEngine 的关注！✨  
