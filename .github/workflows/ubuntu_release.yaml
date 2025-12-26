@@ -45,9 +45,6 @@ jobs:
           wayland-protocols \
           zlib1g-dev
 
-        # 安装系统GLFW
-        sudo apt-get install -y libglfw3-dev
-
         # 验证工具链
         echo "=== Toolchain versions ==="
         cmake --version
