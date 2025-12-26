@@ -15,21 +15,38 @@ jobs:
       with:
         submodules: recursive
     
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
     - name: Install dependencies
       run: brew install ninja glfw
     
     - name: Build
       run: |
         mkdir build && cd build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DGLFW_BUILD_X11=OFF -DGLFW_BUILD_COCOA=ON ..
+        cmake -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DGLFW_BUILD_X11=OFF \
+          -DGLFW_BUILD_COCOA=ON \
+          ..
         ninja
     
     - name: Package
       run: |
         exe_dir="build/src/main"
+        
+        # 验证文件存在
+        if [ ! -f "$exe_dir/MiteEngine" ]; then
+          echo "Error: MiteEngine not found at $exe_dir/MiteEngine"
+          exit 1
+        fi
+        
         tar -czf "MiteEngine-macOS-x64.tar.gz" \
           -C "$exe_dir" \
           MiteEngine assets imgui.ini
+        
+        echo "Package created: MiteEngine-macOS-x64.tar.gz"
     
     - uses: softprops/action-gh-release@v1
       with:

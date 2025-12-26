@@ -15,10 +15,9 @@ jobs:
     
     - name: Install dependencies
       run: |
-        # 更新包列表
         sudo apt-get update
         
-        # 安装基础编译工具（catthehacker镜像可能没有这些）
+        # 基础编译工具
         sudo apt-get install -y \
           cmake \
           ninja-build \
@@ -26,7 +25,7 @@ jobs:
           pkg-config \
           python3
         
-        # 安装图形库依赖
+        # 图形库依赖
         sudo apt-get install -y \
           libgl1-mesa-dev \
           libglu1-mesa-dev \
@@ -36,18 +35,18 @@ jobs:
           libxcursor-dev \
           libxi-dev \
           libwayland-dev \
+          libwayland-bin \
           libxkbcommon-dev \
           libxkbcommon-x11-dev \
           wayland-protocols \
           zlib1g-dev
-        
+      
         # 验证工具链
         echo "=== Toolchain versions ==="
         cmake --version
         ninja --version
         g++ --version
         python3 --version
-      
     - name: Configure with Ninja
       run: |
         mkdir -p build

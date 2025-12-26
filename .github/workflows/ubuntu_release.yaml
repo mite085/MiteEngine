@@ -18,21 +18,53 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake ninja-build build-essential
-        sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev
+        # 基础编译工具
+        sudo apt-get install -y \
+          cmake \
+          ninja-build \
+          build-essential \
+          pkg-config \
+          python3
+        
+        # 图形库依赖
+        sudo apt-get install -y \
+          libgl1-mesa-dev \
+          libx11-dev \
+          libxrandr-dev \
+          libxi-dev \
+          libwayland-dev \
+          libwayland-bin \
+          libxkbcommon-dev \
+          libxkbcommon-x11-dev \
+          wayland-protocols
+        
+        # 验证wayland-scanner安装
+        which wayland-scanner || echo "wayland-scanner not found"
     
     - name: Build
       run: |
         mkdir build && cd build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+        # 添加OpenGL_GL_PREFERENCE设置避免警告
+        cmake -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DOpenGL_GL_PREFERENCE=GLVND \
+          ..
         ninja -j$(nproc)
     
     - name: Package
       run: |
         exe_dir="build/src/main"
+        # 检查文件是否存在
+        if [ ! -f "$exe_dir/MiteEngine" ]; then
+          echo "Error: MiteEngine not found at $exe_dir/MiteEngine"
+          exit 1
+        fi
+        
         tar -czf "MiteEngine-Linux-x64.tar.gz" \
           -C "$exe_dir" \
           MiteEngine assets imgui.ini mite_ubuntu.sh
+        
+        echo "Package created successfully"
     
     - uses: softprops/action-gh-release@v1
       with:
