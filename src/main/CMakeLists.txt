@@ -84,11 +84,9 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 # 复制config/imgui.ini文件到可执行文件目录
 if(EXISTS "${CMAKE_SOURCE_DIR}/config/imgui.ini")
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_SOURCE_DIR}/config/imgui.ini"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config/imgui.ini"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/imgui.ini"
         COMMENT "Copying imgui.ini to executable directory"
     )
 else()
