@@ -18,6 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
+
         # 基础编译工具
         sudo apt-get install -y \
           cmake \
@@ -29,18 +30,29 @@ jobs:
         # 图形库依赖
         sudo apt-get install -y \
           libgl1-mesa-dev \
+          libglu1-mesa-dev \
           libx11-dev \
           libxrandr-dev \
+          libxinerama-dev \
+          libxcursor-dev \
           libxi-dev \
           libwayland-dev \
           libwayland-bin \
           libxkbcommon-dev \
           libxkbcommon-x11-dev \
-          wayland-protocols
-        
-        # 验证wayland-scanner安装
-        which wayland-scanner || echo "wayland-scanner not found"
-    
+          wayland-protocols \
+          zlib1g-dev
+
+        # 安装系统GLFW
+        sudo apt-get install -y libglfw3-dev
+
+        # 验证工具链
+        echo "=== Toolchain versions ==="
+        cmake --version
+        ninja --version
+        g++ --version
+        python3 --version
+
     - name: Build
       run: |
         mkdir build && cd build
