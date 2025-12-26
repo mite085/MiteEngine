@@ -1,0 +1,44 @@
+# .github/workflows/windows_release.yaml
+name: Windows Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install build tools
+      run: choco install cmake ninja -y
+    
+    - name: Build
+      run: |
+        mkdir build && cd build
+        cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ..
+        ninja
+    
+    - name: Package
+      run: |
+        $exeDir = "build\src\main\Release"
+        $packageName = "MiteEngine-Windows-x64"
+        Compress-Archive -Path "$exeDir\MiteEngine.exe", "$exeDir\assets", "$exeDir\imgui.ini" `
+          -DestinationPath "$packageName.zip"
+    
+    - uses: softprops/action-gh-release@v1
+      with:
+        files: MiteEngine-Windows-x64.zip

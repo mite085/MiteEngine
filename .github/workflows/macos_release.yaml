@@ -1,0 +1,36 @@
+# .github/workflows/macos_release.yaml
+name: macOS Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  macos-release:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: brew install ninja glfw
+    
+    - name: Build
+      run: |
+        mkdir build && cd build
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DGLFW_BUILD_X11=OFF -DGLFW_BUILD_COCOA=ON ..
+        ninja
+    
+    - name: Package
+      run: |
+        exe_dir="build/src/main"
+        tar -czf "MiteEngine-macOS-x64.tar.gz" \
+          -C "$exe_dir" \
+          MiteEngine assets imgui.ini
+    
+    - uses: softprops/action-gh-release@v1
+      with:
+        files: MiteEngine-macOS-x64.tar.gz
