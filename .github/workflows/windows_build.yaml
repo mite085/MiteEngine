@@ -9,7 +9,7 @@ jobs:
     
     steps:
     - name: Checkout code with submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         submodules: recursive
         fetch-depth: 0
@@ -20,7 +20,7 @@ jobs:
         arch: x64
     
     - name: Setup Python for shaderc
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: '3.9'  # shaderc需要的Python版本
     

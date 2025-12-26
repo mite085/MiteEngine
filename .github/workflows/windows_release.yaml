@@ -13,7 +13,7 @@ jobs:
       contents: write  # 授予写入权限以创建发布包
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
     
@@ -21,7 +21,7 @@ jobs:
       with:
         arch: x64
     
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.9'
     
@@ -54,6 +54,6 @@ jobs:
         
         Write-Host "Package created: $packageName.zip" -ForegroundColor Green
     
-    - uses: softprops/action-gh-release@v1
+    - uses: softprops/action-gh-release@v2
       with:
         files: MiteEngine-Windows-x64.zip
