@@ -9,6 +9,8 @@ on:
 jobs:
   macos-release:
     runs-on: macos-latest
+    permissions:
+      contents: write  # 授予写入权限以创建发布包
     
     steps:
     - uses: actions/checkout@v3
