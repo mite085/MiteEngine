@@ -13,11 +13,11 @@ jobs:
       contents: write  # 授予写入权限以创建发布包
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
     
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.9'
     
@@ -50,6 +50,6 @@ jobs:
         
         echo "Package created: MiteEngine-macOS-x64.tar.gz"
     
-    - uses: softprops/action-gh-release@v1
+    - uses: softprops/action-gh-release@v2
       with:
         files: MiteEngine-macOS-x64.tar.gz
